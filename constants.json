@@ -20,6 +20,8 @@
 	"NEW_EVENT_READ_MESSAGE": "read_message",
 	"NEW_EVENT_ONLINE_STATUS": "online_status",
 	"NEW_EVENT_REQUEST_PUBLIC_KEY": "requestPublicKey",
-
+	"NEW_EVENT_ADD_REACTION": "add_reaction",
+  	"NEW_EVENT_REMOVE_REACTION": "remove_reaction",
+	"NEW_EVENT_REACTION_UPDATED": "reaction_updated",
 	"FIFTEEN_MINUTES": 900000
 }

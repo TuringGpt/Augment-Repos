@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const ReactionsHandler = require('./sockets/reactions');
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -50,6 +51,7 @@ const CloseChatHandler = require('./sockets/close');
 const stopSearch = require('./sockets/stopSearch');
 const onlineStatus = require('./sockets/onlineStatus');
 const requestPublicKeyHandler = require('./sockets/requestPublicKey');
+const MessageReactionsHandler = require('./sockets/messageReactions');
 
 app.use(express.json());
 app.use(cors());
@@ -66,6 +68,8 @@ io.on('connection', (socket) => {
    * This event is emitted once the user clicks on the Start button or
    * navigates to the /founduser route
    */
+  MessageReactionsHandler(socket);
+  ReactionsHandler(socket);
   JoinHandler(io, socket);
   SendMessageHandler(socket);
   EditMessageHandler(socket);
