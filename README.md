@@ -21,7 +21,7 @@
 
 ## Whisper
 
-This app is developed to make chatting much private and easy without stealing your data!!
+This app is developed to make ecommerce safe and easy to manage.
 
 ### ✨ Built With
 
