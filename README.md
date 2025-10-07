@@ -21,7 +21,7 @@
 
 ## Whisper
 
-This app is developed to make chatting much private and easy without stealing your data!!
+This app is developed to make chating much private and easy without stealing your data!!
 
 ### ✨ Built With
 
@@ -134,7 +134,7 @@ Before installation, please make sure you have already installed the following t
 
 > For those who do not wish to use Docker, here is another option -> [to start the project](https://github.com/Dun-sin/Whisper/blob/main/CONTRIBUTING.md#starting-the-project-without-docker)
 
-8. To test things out, you can open the same URL in two different browsers or open a private browsing window in the same browser. This allows you to connect to yourself, use `login anonymously` if you aren't dealing with anything that uses user data, else use `login` and open an account on [mailtrap](https://mailtrap.io/) using their demo to domain and get the token into .env
+8. To test things out, you can open the same URL in two different browsers or open a private browsing windo in the same browser. This allows you to connect to yourself, use `login anonymously` if you aren't dealing with anything that uses user data, else use `login` and open an account on [mailtrap](https://mailtrap.io/) using their demo to domain and get the token into .env
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
