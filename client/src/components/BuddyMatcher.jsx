@@ -13,7 +13,7 @@ import Anonymous from 'components/Anonymous';
 import { createBrowserNotification } from 'src/lib/browserNotification';
 import { isExplicitDisconnection } from 'src/lib/utils';
 import { useApp } from 'src/context/AppContext';
-import { useAuth } from 'src/contect/AuthContext';
+import { useAuth } from 'src/context/AuthContext';
 import { useChat } from 'src/context/ChatContext';
 import useCloseChat from 'src/hooks/useCloseChat';
 import { useNotification } from 'src/lib/notification';
