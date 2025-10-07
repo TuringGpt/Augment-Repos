@@ -6,8 +6,6 @@
   "scripts": {
     "start": "nodemon index.js",
     "dev": "nodemon index.js",
-    "dev:docker": "docker compose up -d && nodemon index.js",
-    "debug:docker": "docker compose up -d && DEBUG=socket.io* nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore --fix ./",
     "format": "prettier --write .",
@@ -25,7 +23,6 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.1",
-    "image-moderation": "^1.0.6",
     "mailtrap": "^3.4.0",
     "mongodb": "^5.7.0",
     "mongoose": "^7.4.3",
