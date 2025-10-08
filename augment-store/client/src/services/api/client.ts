@@ -21,6 +21,8 @@ class ApiClient {
         // Add auth token if available
         const token = localStorage.getItem('accessToken')
         if (token) {
+          // Ensure headers object exists before assigning
+          config.headers = config.headers || {}
           config.headers.Authorization = `Bearer ${token}`
         }
         return config
@@ -51,10 +53,9 @@ class ApiClient {
 
               localStorage.setItem('accessToken', accessToken)
 
-              // Retry original request
-              if (originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${accessToken}`
-              }
+              // Retry original request with new token
+              originalRequest.headers = originalRequest.headers || {}
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`
               return this.client(originalRequest)
             }
           } catch (refreshError) {
