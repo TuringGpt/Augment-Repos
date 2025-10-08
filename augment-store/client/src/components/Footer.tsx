@@ -1,4 +1,5 @@
-import { Box, Container, Typography, Link, Grid } from '@mui/material'
+import { Box, Container, Typography, Link, Grid } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -7,10 +8,9 @@ const Footer = () => {
       sx={{
         py: 3,
         px: 2,
-        mt: 'auto',
+        mt: "auto",
         backgroundColor: (theme) => theme.palette.grey[200],
-      }}
-    >
+      }}>
       <Container maxWidth="xl">
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
@@ -25,13 +25,13 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom>
               Quick Links
             </Typography>
-            <Link href="/products" color="inherit" display="block">
+            <Link component={RouterLink} to="/products" color="inherit" display="block">
               Products
             </Link>
-            <Link href="/about" color="inherit" display="block">
+            <Link component={RouterLink} to="/about" color="inherit" display="block">
               About Us
             </Link>
-            <Link href="/contact" color="inherit" display="block">
+            <Link component={RouterLink} to="/contact" color="inherit" display="block">
               Contact
             </Link>
           </Grid>
@@ -55,8 +55,7 @@ const Footer = () => {
         </Typography>
       </Container>
     </Box>
-  )
-}
+  );
+};
 
-export default Footer
-
+export default Footer;
