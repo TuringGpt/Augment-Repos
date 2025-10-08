@@ -39,17 +39,25 @@ class ApiClient {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
 
         // Handle 401 errors (unauthorized)
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Skip retry if this is already a retry attempt or if it's the refresh token endpoint
+        const isRefreshTokenEndpoint = originalRequest.url?.includes(
+          API_ENDPOINTS.AUTH.REFRESH_TOKEN
+        )
+
+        if (error.response?.status === 401 && !originalRequest._retry && !isRefreshTokenEndpoint) {
           originalRequest._retry = true
 
           try {
-            // Try to refresh token
+            // Try to refresh token using a separate axios instance to avoid interceptor recursion
             const refreshToken = localStorage.getItem('refreshToken')
             if (refreshToken) {
-              const response = await this.client.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
-                refreshToken,
-              })
-              const { accessToken } = response.data
+              // Create a new axios instance without interceptors for the refresh call
+              const refreshResponse = await axios.post(
+                `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+                { refreshToken },
+                { headers: API_CONFIG.HEADERS }
+              )
+              const { accessToken } = refreshResponse.data
 
               localStorage.setItem('accessToken', accessToken)
 
