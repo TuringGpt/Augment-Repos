@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { API_CONFIG, API_ENDPOINTS } from '@config/api'
+import { useAuthStore } from '@store/authStore'
 
 class ApiClient {
   private client: AxiosInstance
@@ -18,8 +19,8 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Add auth token if available
-        const token = localStorage.getItem('accessToken')
+        // Add auth token if available from Zustand store
+        const token = useAuthStore.getState().accessToken
         if (token) {
           // Ensure headers object exists before assigning
           config.headers = config.headers || {}
@@ -49,7 +50,7 @@ class ApiClient {
 
           try {
             // Try to refresh token using a separate axios instance to avoid interceptor recursion
-            const refreshToken = localStorage.getItem('refreshToken')
+            const refreshToken = useAuthStore.getState().refreshToken
             if (refreshToken) {
               // Create a new axios instance without interceptors for the refresh call
               const refreshResponse = await axios.post(
@@ -59,7 +60,8 @@ class ApiClient {
               )
               const { accessToken } = refreshResponse.data
 
-              localStorage.setItem('accessToken', accessToken)
+              // Update Zustand store with new access token
+              useAuthStore.getState().setTokens(accessToken, refreshToken)
 
               // Retry original request with new token
               originalRequest.headers = originalRequest.headers || {}
@@ -67,9 +69,8 @@ class ApiClient {
               return this.client(originalRequest)
             }
           } catch (refreshError) {
-            // Refresh failed, redirect to login
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('refreshToken')
+            // Refresh failed, logout and redirect to login
+            useAuthStore.getState().logout()
             window.location.href = '/login'
             return Promise.reject(refreshError)
           }
