@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Product, ProductSearchParams } from "features/products/types";
+import type { Product, ProductSearchParams } from "@features/products/types";
 
 interface ProductState {
   products: Product[];
