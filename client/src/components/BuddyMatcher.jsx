@@ -9,7 +9,7 @@ import {
 import { connectWithId, socket } from 'src/lib/socketConnection';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import Anonymous from 'components/Anonymous';
+import Anonymous from 'Anonymous';
 import { createBrowserNotification } from 'src/lib/browserNotification';
 import { isExplicitDisconnection } from 'src/lib/utils';
 import { useApp } from 'src/context/AppContext';
