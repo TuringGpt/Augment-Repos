@@ -15,6 +15,13 @@ import OrderDetailPage from '@features/orders/order-detail/components/OrderDetai
 import ProfilePage from '@features/user/profile/components/ProfilePage'
 import WishlistPage from '@features/user/wishlist/components/WishlistPage'
 
+// Info pages
+import AboutPage from '@features/info/about/components/AboutPage'
+import ContactPage from '@features/info/contact/components/ContactPage'
+import HelpPage from '@features/info/help/components/HelpPage'
+import ReturnsPage from '@features/info/returns/components/ReturnsPage'
+import ShippingPage from '@features/info/shipping/components/ShippingPage'
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -24,6 +31,13 @@ const AppRoutes = () => {
         <Route path="/products" element={<ProductListPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
+
+        {/* Info pages */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/returns" element={<ReturnsPage />} />
+        <Route path="/shipping" element={<ShippingPage />} />
       </Route>
 
       {/* Auth routes with auth layout */}
