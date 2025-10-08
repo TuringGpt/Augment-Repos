@@ -39,13 +39,13 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom>
               Customer Service
             </Typography>
-            <Link href="/help" color="inherit" display="block">
+            <Link component={RouterLink} to="/help" color="inherit" display="block">
               Help Center
             </Link>
-            <Link href="/returns" color="inherit" display="block">
+            <Link component={RouterLink} to="/returns" color="inherit" display="block">
               Returns
             </Link>
-            <Link href="/shipping" color="inherit" display="block">
+            <Link component={RouterLink} to="/shipping" color="inherit" display="block">
               Shipping Info
             </Link>
           </Grid>
