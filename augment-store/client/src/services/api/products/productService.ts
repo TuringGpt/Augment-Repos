@@ -1,10 +1,10 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { 
-  Product, 
-  ProductListResponse, 
+import type {
+  Product,
+  ProductListResponse,
   ProductSearchParams,
-  Category 
+  Category,
 } from '@features/products/types'
 
 export const productService = {
@@ -16,7 +16,10 @@ export const productService = {
     return apiClient.get<Product>(API_ENDPOINTS.PRODUCTS.DETAIL(id))
   },
 
-  searchProducts: async (query: string, params?: ProductSearchParams): Promise<ProductListResponse> => {
+  searchProducts: async (
+    query: string,
+    params?: ProductSearchParams
+  ): Promise<ProductListResponse> => {
     return apiClient.get<ProductListResponse>(API_ENDPOINTS.PRODUCTS.SEARCH, {
       params: { q: query, ...params },
     })
@@ -30,4 +33,3 @@ export const productService = {
     return apiClient.get<Product[]>(API_ENDPOINTS.PRODUCTS.FEATURED)
   },
 }
-

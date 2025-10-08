@@ -17,7 +17,7 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth/verify-email',
   },
-  
+
   // Product endpoints
   PRODUCTS: {
     LIST: '/products',
@@ -26,7 +26,7 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/products/categories',
     FEATURED: '/products/featured',
   },
-  
+
   // Cart endpoints
   CART: {
     GET: '/cart',
@@ -35,14 +35,14 @@ export const API_ENDPOINTS = {
     REMOVE: (itemId: string) => `/cart/items/${itemId}`,
     CLEAR: '/cart/clear',
   },
-  
+
   // Checkout endpoints
   CHECKOUT: {
     INIT: '/checkout/init',
     PROCESS: '/checkout/process',
     VALIDATE: '/checkout/validate',
   },
-  
+
   // Order endpoints
   ORDERS: {
     LIST: '/orders',
@@ -50,7 +50,7 @@ export const API_ENDPOINTS = {
     CREATE: '/orders',
     CANCEL: (id: string) => `/orders/${id}/cancel`,
   },
-  
+
   // User endpoints
   USER: {
     PROFILE: '/user/profile',
@@ -63,7 +63,7 @@ export const API_ENDPOINTS = {
     ADD_TO_WISHLIST: '/user/wishlist',
     REMOVE_FROM_WISHLIST: (id: string) => `/user/wishlist/${id}`,
   },
-  
+
   // Payment endpoints
   PAYMENT: {
     METHODS: '/payment/methods',
@@ -71,4 +71,3 @@ export const API_ENDPOINTS = {
     VERIFY: '/payment/verify',
   },
 }
-

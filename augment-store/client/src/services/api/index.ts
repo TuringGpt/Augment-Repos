@@ -5,4 +5,3 @@ export { cartService } from './cart/cartService'
 export { orderService } from './orders/orderService'
 export { userService } from './user/userService'
 export { apiClient } from './client'
-

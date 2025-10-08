@@ -40,4 +40,3 @@ export interface ProductListResponse {
   limit: number
   totalPages: number
 }
-

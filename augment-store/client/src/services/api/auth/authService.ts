@@ -1,12 +1,12 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { 
-  LoginRequest, 
-  LoginResponse, 
-  RegisterRequest, 
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
   RegisterResponse,
   ForgotPasswordRequest,
-  ResetPasswordRequest 
+  ResetPasswordRequest,
 } from '@features/auth/types'
 
 export const authService = {
@@ -36,4 +36,3 @@ export const authService = {
     return apiClient.post(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token })
   },
 }
-

@@ -6,12 +6,9 @@ const CheckoutPage = () => {
       <Typography variant="h4" gutterBottom>
         Checkout
       </Typography>
-      <Typography color="text.secondary">
-        Checkout form will be displayed here
-      </Typography>
+      <Typography color="text.secondary">Checkout form will be displayed here</Typography>
     </Container>
   )
 }
 
 export default CheckoutPage
-

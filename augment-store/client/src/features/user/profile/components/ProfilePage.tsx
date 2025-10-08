@@ -6,12 +6,9 @@ const ProfilePage = () => {
       <Typography variant="h4" gutterBottom>
         My Profile
       </Typography>
-      <Typography color="text.secondary">
-        User profile will be displayed here
-      </Typography>
+      <Typography color="text.secondary">User profile will be displayed here</Typography>
     </Container>
   )
 }
 
 export default ProfilePage
-

@@ -23,4 +23,3 @@ export const cartService = {
     return apiClient.delete(API_ENDPOINTS.CART.CLEAR)
   },
 }
-

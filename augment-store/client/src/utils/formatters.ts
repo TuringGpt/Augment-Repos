@@ -13,7 +13,7 @@ export const formatCurrency = (amount: number, currency = 'USD'): string => {
  */
 export const formatDate = (date: string | Date, format: 'short' | 'long' = 'short'): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  
+
   if (format === 'long') {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -23,7 +23,7 @@ export const formatDate = (date: string | Date, format: 'short' | 'long' = 'shor
       minute: '2-digit',
     }).format(dateObj)
   }
-  
+
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -38,4 +38,3 @@ export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
-

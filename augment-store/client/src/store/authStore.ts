@@ -9,7 +9,7 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
-  
+
   // Actions
   setUser: (user: User) => void
   setTokens: (accessToken: string, refreshToken: string) => void
@@ -31,29 +31,31 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      
+
       setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
-      
-      login: (user, accessToken, refreshToken) => set({
-        user,
-        accessToken,
-        refreshToken,
-        isAuthenticated: true,
-        error: null,
-      }),
-      
-      logout: () => set({
-        user: null,
-        accessToken: null,
-        refreshToken: null,
-        isAuthenticated: false,
-        error: null,
-      }),
-      
+
+      login: (user, accessToken, refreshToken) =>
+        set({
+          user,
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+          error: null,
+        }),
+
+      logout: () =>
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+          error: null,
+        }),
+
       setLoading: (isLoading) => set({ isLoading }),
-      
+
       setError: (error) => set({ error }),
-      
+
       clearError: () => set({ error: null }),
     }),
     {
@@ -67,4 +69,3 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
-

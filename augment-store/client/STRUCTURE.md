@@ -181,7 +181,9 @@ augment-store/client/
 ## 🎯 Architecture Principles
 
 ### 1. Feature-Based Organization
+
 Each feature is self-contained with its own:
+
 - Components
 - Hooks
 - Utilities
@@ -190,23 +192,30 @@ Each feature is self-contained with its own:
 - Services (when needed)
 
 ### 2. Sub-Features
+
 Complex features can have sub-features (e.g., auth/login, auth/register) that follow the same structure.
 
 ### 3. Shared Resources
+
 Common resources used across features are placed at the root level:
+
 - `components/` - Shared UI components
 - `hooks/` - Shared custom hooks
 - `utils/` - Shared utility functions
 - `types/` - Shared TypeScript types
 
 ### 4. API Services Layer
+
 Centralized API communication in `services/api/`:
+
 - One service file per feature
 - Uses shared `apiClient` for all HTTP requests
 - Type-safe API calls
 
 ### 5. Configuration
+
 All configuration is centralized in `config/`:
+
 - Theme configuration
 - API endpoints
 - App settings
@@ -231,4 +240,3 @@ All configuration is centralized in `config/`:
 ## 🚀 Getting Started
 
 Refer to the main [README.md](./README.md) for installation and development instructions.
-

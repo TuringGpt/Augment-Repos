@@ -31,6 +31,7 @@ src/store/
 Manages user authentication state.
 
 **State:**
+
 - `user` - Current user object
 - `accessToken` - JWT access token
 - `refreshToken` - JWT refresh token
@@ -39,6 +40,7 @@ Manages user authentication state.
 - `error` - Error message
 
 **Actions:**
+
 - `setUser(user)` - Set current user
 - `setTokens(accessToken, refreshToken)` - Set auth tokens
 - `login(user, accessToken, refreshToken)` - Complete login
@@ -48,17 +50,18 @@ Manages user authentication state.
 - `clearError()` - Clear error
 
 **Example Usage:**
+
 ```typescript
 import { useAuthStore } from '@store/authStore'
 
 function LoginPage() {
   const { login, isLoading, error } = useAuthStore()
-  
+
   const handleLogin = async (credentials) => {
     const response = await authService.login(credentials)
     login(response.user, response.accessToken, response.refreshToken)
   }
-  
+
   return (
     // Your component JSX
   )
@@ -75,11 +78,13 @@ Auth state is persisted to localStorage automatically.
 Manages shopping cart state.
 
 **State:**
+
 - `cart` - Cart object with items
 - `isLoading` - Loading state
 - `error` - Error message
 
 **Actions:**
+
 - `setCart(cart)` - Set entire cart
 - `addItem(item)` - Add item to cart
 - `updateItem(itemId, quantity)` - Update item quantity
@@ -89,16 +94,18 @@ Manages shopping cart state.
 - `setError(error)` - Set error message
 
 **Computed:**
+
 - `getItemCount()` - Get total number of items
 - `getTotal()` - Get cart total amount
 
 **Example Usage:**
+
 ```typescript
 import { useCartStore } from '@store/cartStore'
 
 function ProductCard({ product }) {
   const { addItem } = useCartStore()
-  
+
   const handleAddToCart = () => {
     addItem({
       id: Date.now().toString(),
@@ -108,7 +115,7 @@ function ProductCard({ product }) {
       subtotal: product.price,
     })
   }
-  
+
   return (
     <button onClick={handleAddToCart}>Add to Cart</button>
   )
@@ -117,7 +124,7 @@ function ProductCard({ product }) {
 function Header() {
   const { getItemCount } = useCartStore()
   const itemCount = getItemCount()
-  
+
   return (
     <Badge badgeContent={itemCount}>
       <ShoppingCart />
@@ -136,6 +143,7 @@ Cart state is persisted to localStorage automatically.
 Manages products and search state.
 
 **State:**
+
 - `products` - Array of products
 - `selectedProduct` - Currently selected product
 - `searchParams` - Search/filter parameters
@@ -146,6 +154,7 @@ Manages products and search state.
 - `totalPages` - Total pages
 
 **Actions:**
+
 - `setProducts(products, total, page, totalPages)` - Set products list
 - `setSelectedProduct(product)` - Set selected product
 - `setSearchParams(params)` - Update search parameters
@@ -154,12 +163,13 @@ Manages products and search state.
 - `clearProducts()` - Clear products list
 
 **Example Usage:**
+
 ```typescript
 import { useProductStore } from '@store/productStore'
 
 function ProductList() {
   const { products, isLoading, setProducts, setSearchParams } = useProductStore()
-  
+
   useEffect(() => {
     const fetchProducts = async () => {
       const response = await productService.getProducts()
@@ -167,7 +177,7 @@ function ProductList() {
     }
     fetchProducts()
   }, [])
-  
+
   return (
     // Your component JSX
   )
@@ -181,12 +191,14 @@ function ProductList() {
 Manages UI state like modals, notifications, etc.
 
 **State:**
+
 - `isSidebarOpen` - Sidebar open state
 - `isCartDrawerOpen` - Cart drawer open state
 - `notifications` - Array of notifications
 - `isLoading` - Global loading state
 
 **Actions:**
+
 - `toggleSidebar()` - Toggle sidebar
 - `setSidebarOpen(isOpen)` - Set sidebar state
 - `toggleCartDrawer()` - Toggle cart drawer
@@ -196,12 +208,13 @@ Manages UI state like modals, notifications, etc.
 - `setGlobalLoading(isLoading)` - Set global loading
 
 **Example Usage:**
+
 ```typescript
 import { useUIStore } from '@store/uiStore'
 
 function App() {
   const { addNotification } = useUIStore()
-  
+
   const showSuccess = () => {
     addNotification({
       type: 'success',
@@ -209,7 +222,7 @@ function App() {
       duration: 3000,
     })
   }
-  
+
   return (
     // Your component JSX
   )
@@ -261,10 +274,10 @@ const itemCount = useCartStore((state) => state.getItemCount())
 ```typescript
 const fetchProducts = async () => {
   const { setLoading, setProducts, setError } = useProductStore.getState()
-  
+
   setLoading(true)
   setError(null)
-  
+
   try {
     const response = await productService.getProducts()
     setProducts(response.products, response.total, response.page, response.totalPages)
@@ -291,10 +304,12 @@ const handleLogout = () => {
 Auth and Cart stores use Zustand's `persist` middleware to save state to localStorage.
 
 **Persisted Data:**
+
 - Auth: user, tokens, isAuthenticated
 - Cart: cart items
 
 **Not Persisted:**
+
 - Loading states
 - Error messages
 - UI state
@@ -328,11 +343,11 @@ import { useAuthStore } from '@store/authStore'
 describe('AuthStore', () => {
   it('should login user', () => {
     const { result } = renderHook(() => useAuthStore())
-    
+
     act(() => {
       result.current.login(mockUser, 'token', 'refresh')
     })
-    
+
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.user).toEqual(mockUser)
   })
@@ -373,4 +388,3 @@ const { user, login } = useAuthStore()
 ## Summary
 
 Zustand provides a simple, performant, and type-safe way to manage global state in your React application. The stores are organized by domain (auth, cart, products, UI) and provide a clean API for both reading and updating state.
-

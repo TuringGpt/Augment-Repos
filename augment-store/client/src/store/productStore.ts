@@ -1,23 +1,23 @@
-import { create } from "zustand";
-import type { Product, ProductSearchParams } from "@features/products/types";
+import { create } from 'zustand'
+import type { Product, ProductSearchParams } from '@features/products/types'
 
 interface ProductState {
-  products: Product[];
-  selectedProduct: Product | null;
-  searchParams: ProductSearchParams;
-  isLoading: boolean;
-  error: string | null;
-  total: number;
-  page: number;
-  totalPages: number;
+  products: Product[]
+  selectedProduct: Product | null
+  searchParams: ProductSearchParams
+  isLoading: boolean
+  error: string | null
+  total: number
+  page: number
+  totalPages: number
 
   // Actions
-  setProducts: (products: Product[], total: number, page: number, totalPages: number) => void;
-  setSelectedProduct: (product: Product | null) => void;
-  setSearchParams: (params: Partial<ProductSearchParams>) => void;
-  setLoading: (isLoading: boolean) => void;
-  setError: (error: string | null) => void;
-  clearProducts: () => void;
+  setProducts: (products: Product[], total: number, page: number, totalPages: number) => void
+  setSelectedProduct: (product: Product | null) => void
+  setSearchParams: (params: Partial<ProductSearchParams>) => void
+  setLoading: (isLoading: boolean) => void
+  setError: (error: string | null) => void
+  clearProducts: () => void
 }
 
 export const useProductStore = create<ProductState>((set) => ({
@@ -59,4 +59,4 @@ export const useProductStore = create<ProductState>((set) => ({
       page: 1,
       totalPages: 0,
     }),
-}));
+}))

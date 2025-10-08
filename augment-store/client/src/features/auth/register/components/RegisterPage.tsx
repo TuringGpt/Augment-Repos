@@ -7,13 +7,10 @@ const RegisterPage = () => {
         <Typography variant="h4" gutterBottom>
           Register
         </Typography>
-        <Typography color="text.secondary">
-          Registration form will be displayed here
-        </Typography>
+        <Typography color="text.secondary">Registration form will be displayed here</Typography>
       </Box>
     </Paper>
   )
 }
 
 export default RegisterPage
-

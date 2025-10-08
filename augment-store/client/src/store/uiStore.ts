@@ -12,7 +12,7 @@ interface UIState {
   isCartDrawerOpen: boolean
   notifications: Notification[]
   isLoading: boolean
-  
+
   // Actions
   toggleSidebar: () => void
   setSidebarOpen: (isOpen: boolean) => void
@@ -30,24 +30,22 @@ export const useUIStore = create<UIState>((set) => ({
   isLoading: false,
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-  
+
   setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
-  
+
   toggleCartDrawer: () => set((state) => ({ isCartDrawerOpen: !state.isCartDrawerOpen })),
-  
+
   setCartDrawerOpen: (isOpen) => set({ isCartDrawerOpen: isOpen }),
-  
-  addNotification: (notification) => set((state) => ({
-    notifications: [
-      ...state.notifications,
-      { ...notification, id: Date.now().toString() },
-    ],
-  })),
-  
-  removeNotification: (id) => set((state) => ({
-    notifications: state.notifications.filter((n) => n.id !== id),
-  })),
-  
+
+  addNotification: (notification) =>
+    set((state) => ({
+      notifications: [...state.notifications, { ...notification, id: Date.now().toString() }],
+    })),
+
+  removeNotification: (id) =>
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    })),
+
   setGlobalLoading: (isLoading) => set({ isLoading }),
 }))
-

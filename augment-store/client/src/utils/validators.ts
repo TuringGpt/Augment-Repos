@@ -33,4 +33,3 @@ export const isValidPostalCode = (postalCode: string, country = 'US'): boolean =
   // Add more country-specific validations as needed
   return postalCode.length > 0
 }
-

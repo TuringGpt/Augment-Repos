@@ -1,11 +1,11 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { 
-  UserProfile, 
-  UpdateProfileRequest, 
-  Address, 
+import type {
+  UserProfile,
+  UpdateProfileRequest,
+  Address,
   CreateAddressRequest,
-  WishlistItem 
+  WishlistItem,
 } from '@features/user/types'
 
 export const userService = {
@@ -45,4 +45,3 @@ export const userService = {
     return apiClient.delete(API_ENDPOINTS.USER.REMOVE_FROM_WISHLIST(id))
   },
 }
-

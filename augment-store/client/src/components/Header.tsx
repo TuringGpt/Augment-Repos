@@ -1,20 +1,29 @@
-import { AppBar, Toolbar, Typography, Button, IconButton, Badge, Box, Container } from "@mui/material";
-import { ShoppingCart, Person, Favorite, Logout } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@store/authStore";
-import { useCartStore } from "@store/cartStore";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Badge,
+  Box,
+  Container,
+} from '@mui/material'
+import { ShoppingCart, Person, Favorite, Logout } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from '@store/authStore'
+import { useCartStore } from '@store/cartStore'
 
 const Header = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuthStore();
-  const { getItemCount } = useCartStore();
+  const navigate = useNavigate()
+  const { isAuthenticated, user, logout } = useAuthStore()
+  const { getItemCount } = useCartStore()
 
-  const cartItemCount = getItemCount();
+  const cartItemCount = getItemCount()
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+    logout()
+    navigate('/login')
+  }
 
   return (
     <AppBar position="sticky">
@@ -23,31 +32,32 @@ const Header = () => {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, cursor: "pointer" }}
-            onClick={() => navigate("/")}>
+            sx={{ flexGrow: 1, cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          >
             Augment Store
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <Button color="inherit" onClick={() => navigate("/products")}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button color="inherit" onClick={() => navigate('/products')}>
               Products
             </Button>
 
             {isAuthenticated && (
               <>
-                <IconButton color="inherit" onClick={() => navigate("/wishlist")}>
+                <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
                 </IconButton>
 
-                <IconButton color="inherit" onClick={() => navigate("/cart")}>
+                <IconButton color="inherit" onClick={() => navigate('/cart')}>
                   <Badge badgeContent={cartItemCount} color="error">
                     <ShoppingCart />
                   </Badge>
                 </IconButton>
 
-                <IconButton color="inherit" onClick={() => navigate("/profile")}>
+                <IconButton color="inherit" onClick={() => navigate('/profile')}>
                   <Person />
                 </IconButton>
 
@@ -62,7 +72,7 @@ const Header = () => {
             )}
 
             {!isAuthenticated && (
-              <Button color="inherit" onClick={() => navigate("/login")}>
+              <Button color="inherit" onClick={() => navigate('/login')}>
                 Login
               </Button>
             )}
@@ -70,7 +80,7 @@ const Header = () => {
         </Toolbar>
       </Container>
     </AppBar>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

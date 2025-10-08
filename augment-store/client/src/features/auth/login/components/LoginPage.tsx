@@ -7,13 +7,10 @@ const LoginPage = () => {
         <Typography variant="h4" gutterBottom>
           Login
         </Typography>
-        <Typography color="text.secondary">
-          Login form will be displayed here
-        </Typography>
+        <Typography color="text.secondary">Login form will be displayed here</Typography>
       </Box>
     </Paper>
   )
 }
 
 export default LoginPage
-

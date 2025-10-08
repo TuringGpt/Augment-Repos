@@ -162,10 +162,10 @@ npm run lint
 The project uses path aliases for cleaner imports:
 
 ```typescript
-import Header from "@components/Header";
-import { authService } from "@services/api/auth/authService";
-import { Product } from "@features/products/types";
-import { formatCurrency } from "@utils/formatters";
+import Header from '@components/Header'
+import { authService } from '@services/api/auth/authService'
+import { Product } from '@features/products/types'
+import { formatCurrency } from '@utils/formatters'
 ```
 
 Available aliases:
@@ -224,15 +224,15 @@ src/features/my-feature/
 Example:
 
 ```typescript
-import { apiClient } from "../client";
-import { API_ENDPOINTS } from "@config/api";
-import type { MyType } from "@features/my-feature/types";
+import { apiClient } from '../client'
+import { API_ENDPOINTS } from '@config/api'
+import type { MyType } from '@features/my-feature/types'
 
 export const myService = {
   getData: async (): Promise<MyType> => {
-    return apiClient.get<MyType>(API_ENDPOINTS.MY_ENDPOINT);
+    return apiClient.get<MyType>(API_ENDPOINTS.MY_ENDPOINT)
   },
-};
+}
 ```
 
 ## 🔐 Authentication

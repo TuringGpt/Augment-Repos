@@ -6,12 +6,9 @@ const OrdersPage = () => {
       <Typography variant="h4" gutterBottom>
         My Orders
       </Typography>
-      <Typography color="text.secondary">
-        Order list will be displayed here
-      </Typography>
+      <Typography color="text.secondary">Order list will be displayed here</Typography>
     </Container>
   )
 }
 
 export default OrdersPage
-

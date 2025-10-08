@@ -42,4 +42,3 @@ export const PAYMENT_STATUS_LABELS = {
   failed: 'Failed',
   refunded: 'Refunded',
 } as const
-

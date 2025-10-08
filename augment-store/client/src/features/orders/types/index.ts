@@ -1,12 +1,12 @@
 import type { CartItem } from '@features/cart/types'
 import type { Address } from '@features/user/types'
 
-export type OrderStatus = 
-  | 'pending' 
-  | 'confirmed' 
-  | 'processing' 
-  | 'shipped' 
-  | 'delivered' 
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
   | 'cancelled'
 
 export interface Order {
@@ -39,4 +39,3 @@ export interface OrderListResponse {
   limit: number
   totalPages: number
 }
-

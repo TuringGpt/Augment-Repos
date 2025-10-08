@@ -9,12 +9,9 @@ const ProductDetailPage = () => {
       <Typography variant="h4" gutterBottom>
         Product Detail
       </Typography>
-      <Typography color="text.secondary">
-        Product ID: {id}
-      </Typography>
+      <Typography color="text.secondary">Product ID: {id}</Typography>
     </Container>
   )
 }
 
 export default ProductDetailPage
-

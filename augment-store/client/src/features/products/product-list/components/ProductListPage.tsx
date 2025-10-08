@@ -6,12 +6,9 @@ const ProductListPage = () => {
       <Typography variant="h4" gutterBottom>
         Products
       </Typography>
-      <Typography color="text.secondary">
-        Product list will be displayed here
-      </Typography>
+      <Typography color="text.secondary">Product list will be displayed here</Typography>
     </Container>
   )
 }
 
 export default ProductListPage
-

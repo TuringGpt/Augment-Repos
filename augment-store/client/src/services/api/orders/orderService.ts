@@ -21,4 +21,3 @@ export const orderService = {
     return apiClient.post<Order>(API_ENDPOINTS.ORDERS.CANCEL(id))
   },
 }
-
