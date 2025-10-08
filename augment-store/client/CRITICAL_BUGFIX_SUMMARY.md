@@ -262,19 +262,21 @@ tsc --noEmit
 2. ✅ Infinite loop on token refresh (CRITICAL)
 3. ✅ Auth store and API client mismatch (CRITICAL)
 
-### Lines Changed: 12
+### Lines Changed: 15
 
-### Files Modified: 1
+### Files Modified: 2
 
 - `src/services/api/client.ts`
+- `src/services/api/auth/authService.ts`
 
-### Critical Fixes: 5
+### Critical Fixes: 6
 
 1. Headers initialization (request interceptor)
 2. Headers initialization (response interceptor)
 3. Infinite loop prevention (endpoint check)
 4. Infinite loop prevention (separate axios instance)
-5. Auth store synchronization (4 locations)
+5. Auth store synchronization in API client (4 locations)
+6. Auth store synchronization in auth service (logout function)
 
 ### Severity Levels
 

@@ -118,7 +118,7 @@ useAuthStore.getState().setTokens(accessToken, refreshToken) // ✅ Updates stor
 // Zustand persist middleware automatically syncs to localStorage
 ```
 
-#### 5. Logout via Zustand Store
+#### 5. Logout via Zustand Store (API Client)
 
 **Before (Broken)**:
 
@@ -133,6 +133,30 @@ localStorage.removeItem('refreshToken')
 ```typescript
 useAuthStore.getState().logout() // ✅ Clears store
 // Zustand persist middleware automatically syncs to localStorage
+```
+
+#### 6. Logout via Zustand Store (Auth Service)
+
+**Before (Broken)**:
+
+```typescript
+// In authService.ts
+logout: async (): Promise<void> => {
+  await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
+  localStorage.removeItem('accessToken') // ❌ Direct localStorage manipulation
+  localStorage.removeItem('refreshToken') // ❌ Zustand store not updated!
+}
+```
+
+**After (Fixed)**:
+
+```typescript
+// In authService.ts
+logout: async (): Promise<void> => {
+  await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
+  // Clear auth state from Zustand store (which automatically syncs to localStorage)
+  useAuthStore.getState().logout() // ✅ Single source of truth
+}
 ```
 
 ---
@@ -350,10 +374,11 @@ Use Zustand store as single source of truth for all token operations.
 
 ### Changes
 
-1. Import `useAuthStore` in API client
+1. Import `useAuthStore` in API client and auth service
 2. Read tokens from Zustand using `getState()`
 3. Update tokens in Zustand after refresh
-4. Logout via Zustand store
+4. Logout via Zustand store (API client interceptor)
+5. Logout via Zustand store (auth service)
 
 ### Result
 
@@ -365,8 +390,17 @@ Use Zustand store as single source of truth for all token operations.
 
 ### Files Modified
 
-- `src/services/api/client.ts` (4 locations)
+1. `src/services/api/client.ts` (4 locations)
+   - Import useAuthStore
+   - Read access token from Zustand (request interceptor)
+   - Read refresh token from Zustand (response interceptor)
+   - Update tokens in Zustand after refresh
+   - Logout via Zustand on auth failure
+
+2. `src/services/api/auth/authService.ts` (1 location)
+   - Import useAuthStore
+   - Logout function now uses Zustand store instead of direct localStorage manipulation
 
 ### Status
 
-✅ **CRITICAL ISSUE FIXED**
+✅ **CRITICAL ISSUE FIXED - ALL LOCATIONS**

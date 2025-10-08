@@ -1,5 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
+import { useAuthStore } from '@store/authStore'
 import type {
   LoginRequest,
   LoginResponse,
@@ -20,8 +21,8 @@ export const authService = {
 
   logout: async (): Promise<void> => {
     await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
+    // Clear auth state from Zustand store (which automatically syncs to localStorage)
+    useAuthStore.getState().logout()
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
