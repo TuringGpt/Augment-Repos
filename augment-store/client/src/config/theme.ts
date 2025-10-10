@@ -1,30 +1,52 @@
 import { createTheme } from '@mui/material/styles'
+import { Colors } from './colors'
 
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-      contrastText: '#fff',
+      main: Colors.primary.main,
+      light: Colors.primary.light,
+      dark: Colors.primary.dark,
+      contrastText: Colors.primary.contrastText,
     },
     secondary: {
-      main: '#9c27b0',
-      light: '#ba68c8',
-      dark: '#7b1fa2',
-      contrastText: '#fff',
+      main: Colors.secondary.main,
+      light: Colors.secondary.light,
+      dark: Colors.secondary.dark,
+      contrastText: Colors.secondary.contrastText,
     },
     error: {
-      main: '#d32f2f',
+      main: Colors.error.main,
+      light: Colors.error.light,
+      dark: Colors.error.dark,
+      contrastText: Colors.error.contrastText,
     },
     warning: {
-      main: '#ed6c02',
+      main: Colors.warning.main,
+      light: Colors.warning.light,
+      dark: Colors.warning.dark,
+      contrastText: Colors.warning.contrastText,
     },
     info: {
-      main: '#0288d1',
+      main: Colors.info.main,
+      light: Colors.info.light,
+      dark: Colors.info.dark,
+      contrastText: Colors.info.contrastText,
     },
     success: {
-      main: '#2e7d32',
+      main: Colors.success.main,
+      light: Colors.success.light,
+      dark: Colors.success.dark,
+      contrastText: Colors.success.contrastText,
+    },
+    background: {
+      default: Colors.background.default,
+      paper: Colors.background.paper,
+    },
+    text: {
+      primary: Colors.text.primary,
+      secondary: Colors.text.secondary,
+      disabled: Colors.text.disabled,
     },
   },
   typography: {
