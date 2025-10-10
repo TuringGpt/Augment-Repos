@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useState } from 'react'
 import {
   Drawer,
   List,
@@ -25,7 +25,6 @@ import {
   ExpandMore,
   Close,
 } from '@mui/icons-material'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
 
@@ -125,7 +124,6 @@ const categories: Category[] = [
 
 const Sidebar = () => {
   const navigate = useNavigate()
-  const sidebarRef = useRef<HTMLDivElement>(null)
   const { isSidebarOpen, closeSidebar } = useUIStore()
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
@@ -147,31 +145,6 @@ const Sidebar = () => {
     closeSidebar()
   }
 
-  // Handle click outside to close sidebar
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isSidebarOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
-        closeSidebar()
-      }
-    }
-
-    if (isSidebarOpen) {
-      // Add a small delay to prevent immediate closing when opening
-      const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-      }, 100)
-
-      return () => {
-        clearTimeout(timer)
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }
-  }, [isSidebarOpen, closeSidebar])
-
   return (
     <Drawer
       anchor="left"
@@ -185,9 +158,6 @@ const Sidebar = () => {
           color: 'white',
           boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
         },
-      }}
-      SlideProps={{
-        ref: sidebarRef,
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
