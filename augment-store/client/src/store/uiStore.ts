@@ -15,6 +15,8 @@ interface UIState {
 
   // Actions
   toggleSidebar: () => void
+  openSidebar: () => void
+  closeSidebar: () => void
   setSidebarOpen: (isOpen: boolean) => void
   toggleCartDrawer: () => void
   setCartDrawerOpen: (isOpen: boolean) => void
@@ -30,6 +32,10 @@ export const useUIStore = create<UIState>((set) => ({
   isLoading: false,
 
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+
+  openSidebar: () => set({ isSidebarOpen: true }),
+
+  closeSidebar: () => set({ isSidebarOpen: false }),
 
   setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
 
