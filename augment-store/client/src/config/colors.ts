@@ -108,7 +108,7 @@ export class Colors {
   // ============================================
   static readonly gradient = {
     purpleViolet: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    blueIndigo: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    blueIndigo: 'linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%)',
     oceanBlue: 'linear-gradient(135deg, #2e3192 0%, #1bffff 100%)',
     sunset: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
     greenTeal: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)',
@@ -192,12 +192,25 @@ export class Colors {
 
   /**
    * Create a custom hex color with alpha
-   * @param hex - Hex color (e.g., '#1976d2')
+   * @param hex - Hex color (e.g., '#1976d2' or '1976d2')
    * @param alpha - Alpha (0-1)
+   * @throws Error if hex format is invalid
    */
   static hexWithAlpha(hex: string, alpha: number): string {
     // Remove # if present
     const cleanHex = hex.replace('#', '')
+
+    // Validate hex format (must be 6 characters)
+    if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
+      throw new Error(
+        `Invalid hex color format: "${hex}". Expected format: #RRGGBB or RRGGBB (6 hex digits)`
+      )
+    }
+
+    // Validate alpha range
+    if (alpha < 0 || alpha > 1) {
+      throw new Error(`Invalid alpha value: ${alpha}. Alpha must be between 0 and 1`)
+    }
 
     // Parse hex to RGB
     const r = parseInt(cleanHex.substring(0, 2), 16)

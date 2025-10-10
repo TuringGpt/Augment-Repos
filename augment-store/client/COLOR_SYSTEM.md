@@ -50,9 +50,9 @@ const StyledBox = styled(Box)({
 Used for main brand colors and primary actions.
 
 ```typescript
-Colors.primary.main        // #1976d2
-Colors.primary.light       // #42a5f5
-Colors.primary.dark        // #1565c0
+Colors.primary.main // #1976d2
+Colors.primary.light // #42a5f5
+Colors.primary.dark // #1565c0
 Colors.primary.contrastText // #fff
 ```
 
@@ -63,9 +63,9 @@ Colors.primary.contrastText // #fff
 Used for secondary actions and accents.
 
 ```typescript
-Colors.secondary.main        // #9c27b0
-Colors.secondary.light       // #ba68c8
-Colors.secondary.dark        // #7b1fa2
+Colors.secondary.main // #9c27b0
+Colors.secondary.light // #ba68c8
+Colors.secondary.dark // #7b1fa2
 Colors.secondary.contrastText // #fff
 ```
 
@@ -76,9 +76,9 @@ Colors.secondary.contrastText // #fff
 #### Error
 
 ```typescript
-Colors.error.main        // #d32f2f
-Colors.error.light       // #ef5350
-Colors.error.dark        // #c62828
+Colors.error.main // #d32f2f
+Colors.error.light // #ef5350
+Colors.error.dark // #c62828
 Colors.error.contrastText // #fff
 ```
 
@@ -87,9 +87,9 @@ Colors.error.contrastText // #fff
 #### Warning
 
 ```typescript
-Colors.warning.main        // #ed6c02
-Colors.warning.light       // #ff9800
-Colors.warning.dark        // #e65100
+Colors.warning.main // #ed6c02
+Colors.warning.light // #ff9800
+Colors.warning.dark // #e65100
 Colors.warning.contrastText // #fff
 ```
 
@@ -98,9 +98,9 @@ Colors.warning.contrastText // #fff
 #### Info
 
 ```typescript
-Colors.info.main        // #0288d1
-Colors.info.light       // #03a9f4
-Colors.info.dark        // #01579b
+Colors.info.main // #0288d1
+Colors.info.light // #03a9f4
+Colors.info.dark // #01579b
 Colors.info.contrastText // #fff
 ```
 
@@ -109,9 +109,9 @@ Colors.info.contrastText // #fff
 #### Success
 
 ```typescript
-Colors.success.main        // #2e7d32
-Colors.success.light       // #4caf50
-Colors.success.dark        // #1b5e20
+Colors.success.main // #2e7d32
+Colors.success.light // #4caf50
+Colors.success.dark // #1b5e20
 Colors.success.contrastText // #fff
 ```
 
@@ -122,9 +122,9 @@ Colors.success.contrastText // #fff
 Grayscale colors for backgrounds, borders, and text.
 
 ```typescript
-Colors.neutral.white   // #ffffff
-Colors.neutral.black   // #000000
-Colors.neutral.gray50  // #fafafa
+Colors.neutral.white // #ffffff
+Colors.neutral.black // #000000
+Colors.neutral.gray50 // #fafafa
 Colors.neutral.gray100 // #f5f5f5
 Colors.neutral.gray200 // #eeeeee
 Colors.neutral.gray300 // #e0e0e0
@@ -142,9 +142,9 @@ Colors.neutral.gray900 // #212121
 
 ```typescript
 Colors.background.default // #ffffff
-Colors.background.paper   // #ffffff
-Colors.background.light   // #f5f5f5
-Colors.background.dark    // #212121
+Colors.background.paper // #ffffff
+Colors.background.light // #f5f5f5
+Colors.background.dark // #212121
 ```
 
 **Usage**: Page backgrounds, card backgrounds
@@ -152,11 +152,11 @@ Colors.background.dark    // #212121
 ### 6. Text Colors
 
 ```typescript
-Colors.text.primary   // rgba(0, 0, 0, 0.87)
+Colors.text.primary // rgba(0, 0, 0, 0.87)
 Colors.text.secondary // rgba(0, 0, 0, 0.6)
-Colors.text.disabled  // rgba(0, 0, 0, 0.38)
-Colors.text.hint      // rgba(0, 0, 0, 0.38)
-Colors.text.white     // #ffffff
+Colors.text.disabled // rgba(0, 0, 0, 0.38)
+Colors.text.hint // rgba(0, 0, 0, 0.38)
+Colors.text.white // #ffffff
 ```
 
 **Usage**: Text content with different emphasis levels
@@ -167,11 +167,11 @@ Pre-defined gradients for special effects.
 
 ```typescript
 Colors.gradient.purpleViolet // linear-gradient(135deg, #667eea 0%, #764ba2 100%)
-Colors.gradient.blueIndigo   // linear-gradient(135deg, #667eea 0%, #764ba2 100%)
-Colors.gradient.oceanBlue    // linear-gradient(135deg, #2e3192 0%, #1bffff 100%)
-Colors.gradient.sunset       // linear-gradient(135deg, #fa709a 0%, #fee140 100%)
-Colors.gradient.greenTeal    // linear-gradient(135deg, #0ba360 0%, #3cba92 100%)
-Colors.gradient.orangeRed    // linear-gradient(135deg, #f83600 0%, #f9d423 100%)
+Colors.gradient.blueIndigo // linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%)
+Colors.gradient.oceanBlue // linear-gradient(135deg, #2e3192 0%, #1bffff 100%)
+Colors.gradient.sunset // linear-gradient(135deg, #fa709a 0%, #fee140 100%)
+Colors.gradient.greenTeal // linear-gradient(135deg, #0ba360 0%, #3cba92 100%)
+Colors.gradient.orangeRed // linear-gradient(135deg, #f83600 0%, #f9d423 100%)
 ```
 
 **Usage**: Hero sections, special cards, decorative elements
@@ -204,10 +204,10 @@ Colors.overlay.dark87 // rgba(0, 0, 0, 0.87)
 Pre-defined box shadows.
 
 ```typescript
-Colors.shadow.light  // 0 2px 4px rgba(0, 0, 0, 0.1)
+Colors.shadow.light // 0 2px 4px rgba(0, 0, 0, 0.1)
 Colors.shadow.medium // 0 4px 8px rgba(0, 0, 0, 0.15)
-Colors.shadow.heavy  // 0 10px 40px rgba(0, 0, 0, 0.3)
-Colors.shadow.card   // 0 2px 8px rgba(0, 0, 0, 0.1)
+Colors.shadow.heavy // 0 10px 40px rgba(0, 0, 0, 0.3)
+Colors.shadow.card // 0 2px 8px rgba(0, 0, 0, 0.1)
 ```
 
 **Usage**: Box shadows for cards, modals, elevated elements
@@ -215,10 +215,10 @@ Colors.shadow.card   // 0 2px 8px rgba(0, 0, 0, 0.1)
 ### 10. Border Colors
 
 ```typescript
-Colors.border.light  // rgba(0, 0, 0, 0.12)
+Colors.border.light // rgba(0, 0, 0, 0.12)
 Colors.border.medium // rgba(0, 0, 0, 0.23)
-Colors.border.dark   // rgba(0, 0, 0, 0.42)
-Colors.border.white  // rgba(255, 255, 255, 0.2)
+Colors.border.dark // rgba(0, 0, 0, 0.42)
+Colors.border.white // rgba(255, 255, 255, 0.2)
 ```
 
 **Usage**: Borders, dividers, outlines
@@ -229,20 +229,20 @@ Feature-specific color schemes.
 
 ```typescript
 // Sidebar
-Colors.brand.sidebar.gradient         // Sidebar gradient background
-Colors.brand.sidebar.text             // Sidebar text color
-Colors.brand.sidebar.hover            // Sidebar hover effect
-Colors.brand.sidebar.subcategoryBg    // Subcategory background
+Colors.brand.sidebar.gradient // Sidebar gradient background
+Colors.brand.sidebar.text // Sidebar text color
+Colors.brand.sidebar.hover // Sidebar hover effect
+Colors.brand.sidebar.subcategoryBg // Subcategory background
 Colors.brand.sidebar.subcategoryHover // Subcategory hover
-Colors.brand.sidebar.divider          // Sidebar divider
+Colors.brand.sidebar.divider // Sidebar divider
 
 // Header
 Colors.brand.header.background // Header background
-Colors.brand.header.text       // Header text
+Colors.brand.header.text // Header text
 
 // Footer
-Colors.brand.footer.background    // Footer background
-Colors.brand.footer.text          // Footer text
+Colors.brand.footer.background // Footer background
+Colors.brand.footer.text // Footer text
 Colors.brand.footer.textSecondary // Footer secondary text
 ```
 
@@ -264,7 +264,14 @@ Add transparency to a hex color.
 
 ```typescript
 Colors.hexWithAlpha('#1976d2', 0.5) // rgba(25, 118, 210, 0.5)
+Colors.hexWithAlpha('1976d2', 0.5) // rgba(25, 118, 210, 0.5) - # is optional
 ```
+
+**Validation**:
+
+- Hex must be exactly 6 characters (RRGGBB format)
+- Alpha must be between 0 and 1
+- Throws error if format is invalid
 
 ### linearGradient()
 
@@ -406,11 +413,13 @@ import type { PrimaryColor, GradientColor } from '@config/colors'
 If you have hardcoded colors in your components:
 
 **Before:**
+
 ```typescript
 <Box sx={{ backgroundColor: '#1976d2' }}>
 ```
 
 **After:**
+
 ```typescript
 import { Colors } from '@config/colors'
 
@@ -421,4 +430,3 @@ import { Colors } from '@config/colors'
 
 **Last Updated**: 2025-10-10
 **Version**: 1.0.0
-
