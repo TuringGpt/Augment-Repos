@@ -8,15 +8,17 @@ import {
   Box,
   Container,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout } from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
+import { useUIStore } from '@store/uiStore'
 
 const Header = () => {
   const navigate = useNavigate()
   const { isAuthenticated, user, logout } = useAuthStore()
   const { getItemCount } = useCartStore()
+  const { toggleSidebar } = useUIStore()
 
   const cartItemCount = getItemCount()
 
@@ -29,6 +31,17 @@ const Header = () => {
     <AppBar position="sticky">
       <Container maxWidth="xl">
         <Toolbar>
+          {/* Burger Menu Button */}
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={toggleSidebar}
+            sx={{ mr: 2 }}
+            aria-label="menu"
+          >
+            <Menu />
+          </IconButton>
+
           <Typography
             variant="h6"
             component="div"
