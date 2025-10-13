@@ -1,5 +1,5 @@
 
-from django.urls import path
+from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -16,4 +16,5 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('schema/redoc/', SpectacularRedocView.as_view(url_name='v1:schema'), name='redoc'),
     path('health-check/', health_check, name='health_check'),
+    path('auth/', include('authentication.urls')),
 ]

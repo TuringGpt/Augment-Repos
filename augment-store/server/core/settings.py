@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'drf_spectacular',
+    'rest_framework_simplejwt',
+    'accounts',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -46,6 +49,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+AUTH_USER_MODEL = "accounts.User"
 
 TEMPLATES = [
     {
@@ -123,6 +127,10 @@ REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    "NON_FIELD_ERRORS_KEY": "details",
 }
 
 SPECTACULAR_SETTINGS = {
@@ -130,5 +138,4 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'An E-Commerce API for Augment Store',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
 }
