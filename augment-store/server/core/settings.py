@@ -129,7 +129,8 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    "NON_FIELD_ERRORS_KEY": "details",
 }
 
 SPECTACULAR_SETTINGS = {

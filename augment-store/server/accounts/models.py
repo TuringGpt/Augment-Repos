@@ -85,4 +85,8 @@ class User(AbstractUser):
         if self.first_name:
             return True
         return False
+    
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
