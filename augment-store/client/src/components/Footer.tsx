@@ -1,5 +1,6 @@
 import { Box, Container, Typography, Link, Grid } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
+import { Colors } from '@config/colors'
 
 const Footer = () => {
   return (
@@ -9,7 +10,7 @@ const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: (theme) => theme.palette.grey[200],
+        backgroundColor: Colors.neutral.gray200,
       }}
     >
       <Container maxWidth="xl">
