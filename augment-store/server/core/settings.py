@@ -6,9 +6,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 config = {
-    # load evironment system variables
-    **os.environ,  # override loaded values with environment variables
-    **dotenv_values(".env"),  # load shared development variables
+    **os.environ,  # load evironment system variables
+    **dotenv_values(".env"),  # override loaded environment variables with .env file
 }
 
 
@@ -19,9 +18,11 @@ config = {
 SECRET_KEY = config.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config.get('DEBUG', False) == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    config.get('ALLOWED_HOSTS', '*')
+]
 
 
 # Application definition

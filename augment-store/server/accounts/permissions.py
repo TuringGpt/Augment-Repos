@@ -2,19 +2,19 @@
 from rest_framework.permissions import BasePermission
 from accounts.models import User
 
-class IsAdminUser(BasePermission):
+class hasAdminRole(BasePermission):
     def has_permission(self, request, view):
         user: User = request.user
         return user.is_authenticated and user.is_admin
 
 
-class IsMerchantUser(BasePermission):
+class hasMerchantRole(BasePermission):
     def has_permission(self, request, view):
         user: User = request.user
         return user.is_authenticated and user.is_merchant
 
 
-class IsMemberUser(BasePermission):
+class hasMemberRole(BasePermission):
     def has_permission(self, request, view):
         user: User = request.user
         return user.is_authenticated and user.is_member

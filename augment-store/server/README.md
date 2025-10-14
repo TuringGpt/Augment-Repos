@@ -36,7 +36,7 @@ This is a Django REST Framework API server that provides endpoints for the Augme
 
 Before you begin, ensure you have the following installed:
 
-- **Python 3.8+** - [Download Python](https://www.python.org/downloads/)
+- **Python 3.10+** - [Download Python](https://www.python.org/downloads/)
 - **pip** - Python package manager (comes with Python)
 - **PostgreSQL 12+** - [Download PostgreSQL](https://www.postgresql.org/download/)
 - **Git** - [Download Git](https://git-scm.com/downloads)
@@ -165,6 +165,11 @@ DATABASE_PORT=5432
 The PostgreSQL driver is included in requirements.txt, but ensure it's installed:
 
 ```bash
+pip install psycopg2
+```
+
+If you encounter issues, try:
+```bash
 pip install psycopg2-binary
 ```
 
@@ -268,61 +273,20 @@ augment-store/server/
     └── migrations/          # Database migrations
 ```
 
-## Available Commands
 
-### Django Management Commands
-
-```bash
-# Run migrations
-python manage.py migrate
-
-# Create migrations for changes
-python manage.py makemigrations
-
-# Create a superuser (admin account)
-python manage.py createsuperuser
-
-# Run the development server
-python manage.py runserver
-
-# Run tests
-python manage.py test
-
-# Access Django shell
-python manage.py shell
-
-# Collect static files (for production)
-python manage.py collectstatic
-```
-
-### Virtual Environment Commands
-
-```bash
-# Activate virtual environment (macOS/Linux)
-source env/bin/activate
-
-# Activate virtual environment (Windows)
-env\Scripts\activate
-
-# Deactivate virtual environment
-deactivate
-
-# Install new package
-pip install package-name
-
-# Update requirements.txt
-pip freeze > requirements.txt
-```
 
 ## Development Workflow
 
 ### 1. Activate Virtual Environment
 
+Ensure you activate the virtual environment before making any changes:
+
+If use are using venv
 ```bash
-source env/bin/activate  # macOS/Linux
-# or
-env\Scripts\activate     # Windows
+source env/bin/activate
 ```
+
+Else use the appropriate command for your virtual environment manager
 
 ### 2. Start the Server
 
