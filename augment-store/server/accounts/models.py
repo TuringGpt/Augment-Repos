@@ -50,6 +50,17 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
 
+    class Role:
+        ADMIN = "admin"
+        MERCHANT = "merchant"
+        MEMBER = "member"
+
+        CHOICES = (
+            (ADMIN, _("Admin")),
+            (MERCHANT, _("Merchant")),
+            (MEMBER, _("Member")),
+        )
+
     class Gender:
         MALE = "Male"
         FEMALE = "Female"
@@ -71,7 +82,7 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
-
+    role = models.CharField(max_length=20, choices=Role.CHOICES, default=Role.MEMBER)
     objects: UserManager = UserManager()
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
@@ -90,3 +101,14 @@ class User(AbstractUser):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
+
+    @property
+    def is_merchant(self):
+        return self.role == self.Role.MERCHANT
+
+    @property
+    def is_member(self):
+        return self.role == self.Role.MEMBER

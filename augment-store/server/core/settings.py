@@ -1,10 +1,13 @@
 from pathlib import Path
 from dotenv import dotenv_values
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 config = {
+    # load evironment system variables
+    **os.environ,  # override loaded values with environment variables
     **dotenv_values(".env"),  # load shared development variables
 }
 
@@ -74,9 +77,13 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": config.get("DATABASE_NAME"),
+        "USER": config.get("DATABASE_USER"),
+        "PASSWORD": config.get("DATABASE_PASSWORD"),
+        "HOST": config.get("DATABASE_HOST"),
+        "PORT": config.get("DATABASE_PORT"),
     }
 }
 
