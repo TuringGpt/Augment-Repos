@@ -1,0 +1,116 @@
+name: Test Server Application
+
+on:
+  push:
+    branches:
+      - main
+      - augment
+      - develop
+    paths:
+      - 'augment-store/server/**'
+      - '.github/workflows/test-server.yml'
+  pull_request:
+    branches:
+      - main
+      - augment
+      - develop
+    paths:
+      - 'augment-store/server/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'augment-store/server/requirements.txt'
+
+      - name: Install dependencies
+        working-directory: augment-store/server
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            echo 'Waiting for PostgreSQL...'
+            sleep 1
+          done
+
+      - name: Run migrations
+        working-directory: augment-store/server
+        env:
+          DEBUG: 'False'
+          SECRET_KEY: 'test-secret-key-for-ci'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test_db'
+          DATABASE_NAME: 'test_db'
+          DATABASE_USER: 'postgres'
+          DATABASE_PASSWORD: 'postgres'
+          DATABASE_HOST: 'localhost'
+          DATABASE_PORT: '5432'
+        run: |
+          python manage.py migrate
+
+      - name: Run tests
+        working-directory: augment-store/server
+        env:
+          DEBUG: 'False'
+          SECRET_KEY: 'test-secret-key-for-ci'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test_db'
+          DATABASE_NAME: 'test_db'
+          DATABASE_USER: 'postgres'
+          DATABASE_PASSWORD: 'postgres'
+          DATABASE_HOST: 'localhost'
+          DATABASE_PORT: '5432'
+
+        run: |
+          python manage.py test --verbosity=2
+
+      - name: Generate coverage report
+        working-directory: augment-store/server
+        env:
+          DEBUG: 'False'
+          SECRET_KEY: 'test-secret-key-for-ci'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test_db'
+          DATABASE_NAME: 'test_db'
+          DATABASE_USER: 'postgres'
+          DATABASE_PASSWORD: 'postgres'
+          DATABASE_HOST: 'localhost'
+          DATABASE_PORT: '5432'
+        run: |
+          pip install coverage
+          coverage run --source='.' manage.py test
+          coverage report
+          coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./augment-store/server/coverage.xml
+          flags: server
+          name: server-coverage
+          fail_ci_if_error: false
+
