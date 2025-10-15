@@ -68,19 +68,18 @@ const ResetPasswordPage = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleChange = (field: keyof ResetPasswordFormData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+  const handleChange =
+    (field: keyof ResetPasswordFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }))
+      }
+      // Clear API error when user starts typing
+      if (apiError) {
+        setApiError(null)
+      }
     }
-    // Clear API error when user starts typing
-    if (apiError) {
-      setApiError(null)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,6 +185,7 @@ const ResetPasswordPage = () => {
             <form onSubmit={handleSubmit}>
               <TextField
                 fullWidth
+                size="small"
                 label="New Password"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.newPassword}
@@ -216,6 +216,7 @@ const ResetPasswordPage = () => {
 
               <TextField
                 fullWidth
+                size="small"
                 label="Confirm New Password"
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
@@ -260,11 +261,7 @@ const ResetPasswordPage = () => {
                   },
                 }}
               >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  'Reset Password'
-                )}
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Reset Password'}
               </Button>
             </form>
 
@@ -294,4 +291,3 @@ const ResetPasswordPage = () => {
 }
 
 export default ResetPasswordPage
-

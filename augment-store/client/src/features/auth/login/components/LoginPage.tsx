@@ -147,6 +147,7 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit}>
               <TextField
                 fullWidth
+                size="small"
                 label="Email Address"
                 type="email"
                 value={formData.email}
@@ -166,6 +167,7 @@ const LoginPage = () => {
 
               <TextField
                 fullWidth
+                size="small"
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}

@@ -194,6 +194,7 @@ const RegisterPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="First Name"
                     value={formData.firstName}
                     onChange={handleChange('firstName')}
@@ -213,6 +214,7 @@ const RegisterPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Last Name"
                     value={formData.lastName}
                     onChange={handleChange('lastName')}
@@ -232,6 +234,7 @@ const RegisterPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Email Address"
                     type="email"
                     value={formData.email}
@@ -252,6 +255,7 @@ const RegisterPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Password"
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
@@ -283,6 +287,7 @@ const RegisterPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Confirm Password"
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}

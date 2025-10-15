@@ -41,22 +41,21 @@ const ForgotPasswordPage = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleChange = (field: keyof ForgotPasswordRequest) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+  const handleChange =
+    (field: keyof ForgotPasswordRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }))
+      }
+      // Clear messages when user starts typing
+      if (apiError) {
+        setApiError(null)
+      }
+      if (successMessage) {
+        setSuccessMessage(null)
+      }
     }
-    // Clear messages when user starts typing
-    if (apiError) {
-      setApiError(null)
-    }
-    if (successMessage) {
-      setSuccessMessage(null)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -148,6 +147,7 @@ const ForgotPasswordPage = () => {
             <form onSubmit={handleSubmit}>
               <TextField
                 fullWidth
+                size="small"
                 label="Email Address"
                 type="email"
                 value={formData.email}
@@ -216,4 +216,3 @@ const ForgotPasswordPage = () => {
 }
 
 export default ForgotPasswordPage
-
