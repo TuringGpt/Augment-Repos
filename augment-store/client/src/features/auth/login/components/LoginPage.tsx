@@ -8,21 +8,12 @@ import {
   InputAdornment,
   IconButton,
   Link,
-  Divider,
   Alert,
   CircularProgress,
   Fade,
   Slide,
 } from '@mui/material'
-import {
-  Visibility,
-  VisibilityOff,
-  Email,
-  Lock,
-  Google,
-  Facebook,
-  GitHub,
-} from '@mui/icons-material'
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
@@ -102,12 +93,6 @@ const LoginPage = () => {
       setIsSubmitting(false)
       setLoading(false)
     }
-  }
-
-  const handleSocialLogin = (provider: string) => {
-    // TODO: Implement social login
-    console.log(`Login with ${provider}`)
-    setApiError(`${provider} login is not yet implemented`)
   }
 
   return (
@@ -243,72 +228,6 @@ const LoginPage = () => {
                 {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
               </Button>
             </form>
-
-            <Divider sx={{ my: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                OR
-              </Typography>
-            </Divider>
-
-            {/* Social Login Buttons */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<Google />}
-                onClick={() => handleSocialLogin('Google')}
-                disabled={isSubmitting}
-                sx={{
-                  py: 1.2,
-                  borderColor: Colors.border.medium,
-                  color: Colors.text.primary,
-                  '&:hover': {
-                    borderColor: Colors.primary.main,
-                    backgroundColor: Colors.overlay.light10,
-                  },
-                }}
-              >
-                Continue with Google
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<Facebook />}
-                onClick={() => handleSocialLogin('Facebook')}
-                disabled={isSubmitting}
-                sx={{
-                  py: 1.2,
-                  borderColor: Colors.border.medium,
-                  color: Colors.text.primary,
-                  '&:hover': {
-                    borderColor: '#1877f2',
-                    backgroundColor: Colors.overlay.light10,
-                  },
-                }}
-              >
-                Continue with Facebook
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<GitHub />}
-                onClick={() => handleSocialLogin('GitHub')}
-                disabled={isSubmitting}
-                sx={{
-                  py: 1.2,
-                  borderColor: Colors.border.medium,
-                  color: Colors.text.primary,
-                  '&:hover': {
-                    borderColor: Colors.neutral.gray900,
-                    backgroundColor: Colors.overlay.light10,
-                  },
-                }}
-              >
-                Continue with GitHub
-              </Button>
-            </Box>
 
             {/* Sign Up Link */}
             <Box sx={{ mt: 4, textAlign: 'center' }}>
