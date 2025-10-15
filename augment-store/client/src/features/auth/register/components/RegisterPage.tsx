@@ -204,7 +204,7 @@ const RegisterPage = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Person color={errors.firstName ? 'error' : 'action'} />
+                          <Person fontSize="small" color={errors.firstName ? 'error' : 'action'} />
                         </InputAdornment>
                       ),
                     }}
@@ -224,7 +224,7 @@ const RegisterPage = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Person color={errors.lastName ? 'error' : 'action'} />
+                          <Person fontSize="small" color={errors.lastName ? 'error' : 'action'} />
                         </InputAdornment>
                       ),
                     }}
@@ -245,7 +245,7 @@ const RegisterPage = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Email color={errors.email ? 'error' : 'action'} />
+                          <Email fontSize="small" color={errors.email ? 'error' : 'action'} />
                         </InputAdornment>
                       ),
                     }}
@@ -266,7 +266,7 @@ const RegisterPage = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Lock color={errors.password ? 'error' : 'action'} />
+                          <Lock fontSize="small" color={errors.password ? 'error' : 'action'} />
                         </InputAdornment>
                       ),
                       endAdornment: (
@@ -274,9 +274,14 @@ const RegisterPage = () => {
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
+                            size="small"
                             disabled={isSubmitting}
                           >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                            {showPassword ? (
+                              <VisibilityOff fontSize="small" />
+                            ) : (
+                              <Visibility fontSize="small" />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       ),
@@ -298,7 +303,10 @@ const RegisterPage = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Lock color={errors.confirmPassword ? 'error' : 'action'} />
+                          <Lock
+                            fontSize="small"
+                            color={errors.confirmPassword ? 'error' : 'action'}
+                          />
                         </InputAdornment>
                       ),
                       endAdornment: (
@@ -306,9 +314,14 @@ const RegisterPage = () => {
                           <IconButton
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             edge="end"
+                            size="small"
                             disabled={isSubmitting}
                           >
-                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                            {showConfirmPassword ? (
+                              <VisibilityOff fontSize="small" />
+                            ) : (
+                              <Visibility fontSize="small" />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       ),

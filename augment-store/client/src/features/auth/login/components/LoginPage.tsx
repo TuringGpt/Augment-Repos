@@ -158,7 +158,7 @@ const LoginPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color={errors.email ? 'error' : 'action'} />
+                      <Email fontSize="small" color={errors.email ? 'error' : 'action'} />
                     </InputAdornment>
                   ),
                 }}
@@ -178,7 +178,7 @@ const LoginPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color={errors.password ? 'error' : 'action'} />
+                      <Lock fontSize="small" color={errors.password ? 'error' : 'action'} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -186,9 +186,14 @@ const LoginPage = () => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        size="small"
                         disabled={isSubmitting}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),

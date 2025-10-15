@@ -197,7 +197,7 @@ const ResetPasswordPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color={errors.newPassword ? 'error' : 'action'} />
+                      <Lock fontSize="small" color={errors.newPassword ? 'error' : 'action'} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -205,9 +205,14 @@ const ResetPasswordPage = () => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        size="small"
                         disabled={isSubmitting || !token}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -228,7 +233,7 @@ const ResetPasswordPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color={errors.confirmPassword ? 'error' : 'action'} />
+                      <Lock fontSize="small" color={errors.confirmPassword ? 'error' : 'action'} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -236,9 +241,14 @@ const ResetPasswordPage = () => {
                       <IconButton
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         edge="end"
+                        size="small"
                         disabled={isSubmitting || !token}
                       >
-                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        {showConfirmPassword ? (
+                          <VisibilityOff fontSize="small" />
+                        ) : (
+                          <Visibility fontSize="small" />
+                        )}
                       </IconButton>
                     </InputAdornment>
                   ),

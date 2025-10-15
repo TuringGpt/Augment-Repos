@@ -159,7 +159,7 @@ const ForgotPasswordPage = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color={errors.email ? 'error' : 'action'} />
+                      <Email fontSize="small" color={errors.email ? 'error' : 'action'} />
                     </InputAdornment>
                   ),
                 }}
