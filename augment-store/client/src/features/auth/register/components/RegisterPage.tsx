@@ -363,8 +363,27 @@ const RegisterPage = () => {
               </Button>
             </form>
 
+            {/* Password Requirements */}
+            <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.light, borderRadius: 1 }}>
+              <Typography variant="caption" color="text.secondary" component="div">
+                Password must contain:
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • At least 8 characters
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • One uppercase letter
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • One lowercase letter
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • One number
+              </Typography>
+            </Box>
+
             {/* Sign In Link */}
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
                 Already have an account?{' '}
                 <Link

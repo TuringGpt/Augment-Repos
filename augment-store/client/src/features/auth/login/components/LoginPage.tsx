@@ -229,8 +229,15 @@ const LoginPage = () => {
               </Button>
             </form>
 
+            {/* Password Requirements */}
+            <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.light, borderRadius: 1 }}>
+              <Typography variant="caption" color="text.secondary" component="div">
+                Password must contain uppercase, lowercase, and number
+              </Typography>
+            </Box>
+
             {/* Sign Up Link */}
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
                 Don't have an account?{' '}
                 <Link
