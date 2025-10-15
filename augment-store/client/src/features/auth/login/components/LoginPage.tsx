@@ -43,11 +43,9 @@ const LoginPage = () => {
       newErrors.email = 'Please enter a valid email address'
     }
 
-    // Password validation
+    // Password validation - only check if provided, no length/strength requirements on login
     if (!formData.password) {
       newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
     }
 
     setErrors(newErrors)
@@ -235,13 +233,6 @@ const LoginPage = () => {
                 {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
               </Button>
             </form>
-
-            {/* Password Requirements */}
-            <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.light, borderRadius: 1 }}>
-              <Typography variant="caption" color="text.secondary" component="div">
-                Password must contain uppercase, lowercase, and number
-              </Typography>
-            </Box>
 
             {/* Sign Up Link */}
             <Box sx={{ mt: 3, textAlign: 'center' }}>

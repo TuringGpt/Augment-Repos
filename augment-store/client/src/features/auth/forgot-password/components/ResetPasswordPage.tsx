@@ -45,6 +45,17 @@ const ResetPasswordPage = () => {
     }
   }, [token])
 
+  // Cleanup timeout on unmount to prevent navigation after component unmounts
+  useEffect(() => {
+    if (successMessage) {
+      const timeoutId = setTimeout(() => {
+        navigate('/login')
+      }, 2000)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [successMessage, navigate])
+
   const validateForm = (): boolean => {
     const newErrors: Partial<ResetPasswordFormData> = {}
 
@@ -104,10 +115,7 @@ const ResetPasswordPage = () => {
       }
       await authService.resetPassword(resetData)
       setSuccessMessage('Your password has been reset successfully!')
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        navigate('/login')
-      }, 2000)
+      // Redirect handled by useEffect with cleanup
     } catch (error) {
       const errorMessage =
         (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
