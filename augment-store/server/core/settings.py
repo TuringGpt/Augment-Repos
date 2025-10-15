@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authentication',
     'mptt',
     'products',
+    'storage',
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,58 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
+FILE_UPLOAD_STORAGE = config.get("FILE_UPLOAD_STORAGE", "local")  # local | s3
+
+IS_USING_LOCAL_STORAGE = FILE_UPLOAD_STORAGE == "local"
+
+
+
+if FILE_UPLOAD_STORAGE == "local":
+    MEDIA_ROOT_NAME = "media"
+    MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_ROOT_NAME)
+    MEDIA_URL = f"/{MEDIA_ROOT_NAME}/"
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    PUBLIC_MEDIA_LOCATION = "media/public/"
+    PRIVATE_MEDIA_LOCATION = "media/private/"
+    STATIC_LOCATION = "static/"
+
+    AWS_ACCESS_KEY_ID = config.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = config.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = config.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = config.get("AWS_S3_REGION_NAME")
+    AWS_S3_CUSTOM_DOMAIN = config.get("AWS_S3_CUSTOM_DOMAIN")
+
+    
+else:
+    PUBLIC_MEDIA_LOCATION = "media/public/"
+    PRIVATE_MEDIA_LOCATION = "media/private/"
+    STATIC_LOCATION = "static/"
+
+    AWS_ACCESS_KEY_ID = config.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = config.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = config.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = config.get("AWS_S3_REGION_NAME")
+    AWS_S3_CUSTOM_DOMAIN = config.get("AWS_S3_CUSTOM_DOMAIN")
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = "public-read"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_PRESIGNED_EXPIRY = int(config.get("AWS_PRESIGNED_EXPIRY", 10))
+    FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
+
+
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}"
+    STATICFILES_STORAGE = "core.storage_backends.StaticStorage"
+
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}"
+    DEFAULT_FILE_STORAGE = "storage.storage_backends.PublicMediaStorage"
+    PRIVATE_FILE_STORAGE = "storage.storage_backends.PrivateMediaStorage"
+
+    FILE_UPLOAD_STORAGE = config.get("FILE_UPLOAD_STORAGE", "s3")
+    AWS_PRESIGNED_EXPIRY = int(config.get("AWS_PRESIGNED_EXPIRY", 10))
+    FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -160,4 +213,5 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'An E-Commerce API for Augment Store',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
 }
