@@ -342,11 +342,21 @@ const RegisterPage = () => {
                     label={
                       <Typography variant="body2" color={errors.agreeToTerms ? 'error' : 'inherit'}>
                         I agree to the{' '}
-                        <Link href="/terms" target="_blank" sx={{ color: Colors.primary.main }}>
+                        <Link
+                          component={RouterLink}
+                          to="/terms"
+                          target="_blank"
+                          sx={{ color: Colors.primary.main }}
+                        >
                           Terms and Conditions
                         </Link>{' '}
                         and{' '}
-                        <Link href="/privacy" target="_blank" sx={{ color: Colors.primary.main }}>
+                        <Link
+                          component={RouterLink}
+                          to="/privacy"
+                          target="_blank"
+                          sx={{ color: Colors.primary.main }}
+                        >
                           Privacy Policy
                         </Link>
                       </Typography>

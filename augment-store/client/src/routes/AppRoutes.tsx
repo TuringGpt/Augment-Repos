@@ -23,6 +23,8 @@ import ContactPage from '@features/info/contact/components/ContactPage'
 import HelpPage from '@features/info/help/components/HelpPage'
 import ReturnsPage from '@features/info/returns/components/ReturnsPage'
 import ShippingPage from '@features/info/shipping/components/ShippingPage'
+import TermsPage from '@features/info/terms/components/TermsPage'
+import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
 
 const AppRoutes = () => {
   return (
@@ -40,6 +42,8 @@ const AppRoutes = () => {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/returns" element={<ReturnsPage />} />
         <Route path="/shipping" element={<ShippingPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
       {/* Auth routes with auth layout */}
