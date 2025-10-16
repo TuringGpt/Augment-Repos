@@ -6,6 +6,8 @@ import AuthLayout from '@layouts/AuthLayout'
 import HomePage from '@features/products/product-list/components/HomePage'
 import LoginPage from '@features/auth/login/components/LoginPage'
 import RegisterPage from '@features/auth/register/components/RegisterPage'
+import ForgotPasswordPage from '@features/auth/forgot-password/components/ForgotPasswordPage'
+import ResetPasswordPage from '@features/auth/forgot-password/components/ResetPasswordPage'
 import ProductListPage from '@features/products/product-list/components/ProductListPage'
 import ProductDetailPage from '@features/products/product-detail/components/ProductDetailPage'
 import CartPage from '@features/cart/components/CartPage'
@@ -21,6 +23,8 @@ import ContactPage from '@features/info/contact/components/ContactPage'
 import HelpPage from '@features/info/help/components/HelpPage'
 import ReturnsPage from '@features/info/returns/components/ReturnsPage'
 import ShippingPage from '@features/info/shipping/components/ShippingPage'
+import TermsPage from '@features/info/terms/components/TermsPage'
+import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
 
 const AppRoutes = () => {
   return (
@@ -38,12 +42,16 @@ const AppRoutes = () => {
         <Route path="/help" element={<HelpPage />} />
         <Route path="/returns" element={<ReturnsPage />} />
         <Route path="/shipping" element={<ShippingPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
       {/* Auth routes with auth layout */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 
       {/* Protected routes with main layout */}
