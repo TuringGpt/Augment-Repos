@@ -37,7 +37,8 @@
       "@routes/*": ["src/routes/*"],
       "@context/*": ["src/context/*"],
       "@config/*": ["src/config/*"],
-      "@store/*": ["src/store/*"]
+      "@store/*": ["src/store/*"],
+      "@data/*": ["src/data/*"]
     }
   },
   "include": ["src"],

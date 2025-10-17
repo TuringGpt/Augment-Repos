@@ -79,4 +79,3 @@ export const mockProductService = {
     return (dummyProducts as Product[]).filter((p) => p.discountPrice).slice(0, 6)
   },
 }
-
