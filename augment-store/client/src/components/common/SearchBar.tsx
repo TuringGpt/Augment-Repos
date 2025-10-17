@@ -57,6 +57,7 @@ const SearchBar = ({
   const inputRef = useRef<HTMLInputElement>(null)
   const latestQueryRef = useRef<string>('')
   const isMountedRef = useRef<boolean>(true)
+  const userDismissedRef = useRef<boolean>(false)
 
   // Debounced search function using useMemo
   const debouncedSearch = useMemo(
@@ -84,8 +85,10 @@ const SearchBar = ({
           // Only update results if component is still mounted and this is still the latest query
           if (isMountedRef.current && latestQueryRef.current === requestQuery) {
             setSearchResults(response.products)
-            // Keep dropdown open even with 0 results to show "No products found"
-            setIsOpen(true)
+            // Only open dropdown if user hasn't explicitly dismissed it
+            if (!userDismissedRef.current) {
+              setIsOpen(true)
+            }
           }
           // Otherwise, discard stale results
         } catch (err) {
@@ -94,8 +97,10 @@ const SearchBar = ({
           if (isMountedRef.current && latestQueryRef.current === requestQuery) {
             setError('Failed to search products')
             setSearchResults([])
-            // Keep dropdown open to show error message
-            setIsOpen(true)
+            // Only open dropdown if user hasn't explicitly dismissed it
+            if (!userDismissedRef.current) {
+              setIsOpen(true)
+            }
           }
         } finally {
           // Only update loading state if component is still mounted and this is still the latest query
@@ -126,6 +131,9 @@ const SearchBar = ({
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value
     setSearchQuery(query)
+
+    // Reset user dismissed flag when user starts typing again
+    userDismissedRef.current = false
 
     // Only update showClearButton when transitioning between empty and non-empty
     const shouldShow = query.length > 0
@@ -158,12 +166,15 @@ const SearchBar = ({
     setIsOpen(false)
     setError(null)
     latestQueryRef.current = ''
+    userDismissedRef.current = false
     inputRef.current?.focus()
   }, [debouncedSearch])
 
   // Handle click away
   const handleClickAway = () => {
     setIsOpen(false)
+    // Mark that user explicitly dismissed the dropdown
+    userDismissedRef.current = true
   }
 
   // Memoize end adornment to prevent re-renders
@@ -314,7 +325,7 @@ const SearchBar = ({
                       >
                         <ListItemAvatar sx={{ minWidth: 'auto' }}>
                           <Avatar
-                            src={product.images?.[0] || '/placeholder-product.png'}
+                            src={product.images?.[0]}
                             alt={product.name}
                             variant="rounded"
                             sx={{ width: 56, height: 56 }}
