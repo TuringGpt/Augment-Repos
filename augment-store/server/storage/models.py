@@ -1,6 +1,5 @@
 from accounts.models import User
 from core.models import BaseModel
-from .storage_backends import PublicMediaStorage, PrivateMediaStorage
 from django.db import models
 from .utils import file_generate_upload_path
 
@@ -12,14 +11,12 @@ class File(BaseModel):
         upload_to=file_generate_upload_path,
         blank=True,
         null=True,
-        storage=PublicMediaStorage(),
     )
 
     thumbnail = models.FileField(
         upload_to=file_generate_upload_path,
         blank=True,
         null=True,
-        storage=PublicMediaStorage(),
     )
 
     original_file_name = models.TextField()

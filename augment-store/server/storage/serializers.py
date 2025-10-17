@@ -26,9 +26,9 @@ class FileSerializer(serializers.ModelSerializer):
 
 
     def get_file(self, obj: File):
+        if not obj.file: return None
 
-        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL:
-            return obj.file.url if obj.file else None
+        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL: return obj.file.url
         
         return create_presigned_url(obj.file.name)
 
