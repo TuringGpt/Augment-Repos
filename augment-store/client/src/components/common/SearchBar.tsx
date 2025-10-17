@@ -248,12 +248,14 @@ const SearchBar = ({
                         onClick={() => handleResultClick(product)}
                         sx={{
                           py: 1.5,
+                          px: 2,
+                          gap: 2,
                           '&:hover': {
                             bgcolor: 'action.hover',
                           },
                         }}
                       >
-                        <ListItemAvatar>
+                        <ListItemAvatar sx={{ minWidth: 'auto' }}>
                           <Avatar
                             src={product.images?.[0] || '/placeholder-product.png'}
                             alt={product.name}
