@@ -48,6 +48,20 @@ class StartDirectFileUploadSerializer( serializers.Serializer):
 
         return data
 
+class DirectLocalFileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField(write_only=True)
+    file_id = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        file_id = validated_data["file_id"]
+        file_obj = validated_data["file"]
+
+        file = get_object_or_404(File, id=file_id)
+
+        service = FileDirectUploadService(user)
+        file = service.upload_local(file=file, file_obj=file_obj)
+        return {"file": file, "file_id": file_id,}
 
 class FinishFileUploadSerializer(serializers.Serializer):
     file_id = serializers.CharField(write_only=True)
@@ -61,7 +75,7 @@ class FinishFileUploadSerializer(serializers.Serializer):
 
         service = FileDirectUploadService(user)
         file = service.finish(file=file)
-        return {"file": file, "file_id": file_id, 'preview': file.preview}
+        return {"file": file, "file_id": file_id,}
 
     def get_file(self, obj: File):
         file = obj.get("file")

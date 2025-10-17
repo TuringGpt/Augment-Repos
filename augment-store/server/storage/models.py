@@ -2,11 +2,9 @@ from accounts.models import User
 from core.models import BaseModel
 from .storage_backends import PublicMediaStorage, PrivateMediaStorage
 from django.db import models
+from .utils import file_generate_upload_path
 
 
-
-def file_generate_upload_path(instance: "File"):
-    return f"files/{instance.file_name}"
 
 
 class File(BaseModel):

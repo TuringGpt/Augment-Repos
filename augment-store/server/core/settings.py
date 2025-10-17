@@ -20,6 +20,7 @@ SECRET_KEY = config.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.get('DEBUG', False) == 'True'
 
+APP_DOMAIN = config.get('APP_DOMAIN', 'http://localhost:8000')
 ALLOWED_HOSTS = [
     config.get('ALLOWED_HOSTS', '*')
 ]
@@ -181,7 +182,7 @@ else:
 
 
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}"
-    STATICFILES_STORAGE = "core.storage_backends.StaticStorage"
+    STATICFILES_STORAGE = "storage.storage_backends.StaticStorage"
 
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}"
     DEFAULT_FILE_STORAGE = "storage.storage_backends.PublicMediaStorage"

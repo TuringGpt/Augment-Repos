@@ -74,7 +74,7 @@ class FileStandardUploadService:
             original_file_name=file_name,
             file_name=file_generate_name(file_name),
             file_type=file_type,
-            uploaded_by=self.user,
+            created_by=self.user,
             upload_finished_at=timezone.now(),
         )
 
@@ -126,10 +126,10 @@ class FileDirectUploadService:
 
     @transaction.atomic
     def start(self, data: StorageValidatedData) -> StartFileUploadData:
-
+        original_file_name = data.get("original_file_name")
         file = File(
-            original_file_name=data.get("original_file_name"),
-            file_name=file_generate_name(data["file_name"]),
+            original_file_name=original_file_name,
+            file_name=file_generate_name(original_file_name),
             file_type=data.get("file_type"),
             created_by=data["user"],
             file=None,
@@ -158,7 +158,7 @@ class FileDirectUploadService:
         else:
             presigned_data = {
                 "url": file_generate_local_upload_url(file_id=str(file.id)),
-                'fields': {}
+                'presigned_data': {}
             }
 
         return {

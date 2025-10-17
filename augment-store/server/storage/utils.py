@@ -171,11 +171,11 @@ def file_generate_name(original_file_name):
 
 
 def file_generate_upload_path(instance, filename):
-    return f"keepeet/files/{instance.file_name}"
+    return f"augment-store/{instance.file_name}"
 
 
 def file_generate_local_upload_url(*, file_id: str):
-    url = reverse("storage:direct_local_upload", kwargs={"file_id": file_id})
+    url = reverse("v1:storage:direct_local_upload", kwargs={"file_id": file_id})
     app_domain: str = settings.APP_DOMAIN  # type: ignore
     return f"{app_domain}{url}"
 
