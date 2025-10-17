@@ -253,7 +253,7 @@ const SearchBar = ({
             'aria-label': 'Search products',
             'aria-describedby': 'search-products-description',
             'aria-autocomplete': 'list',
-            'aria-controls': isOpen ? 'search-results-list' : undefined,
+            'aria-controls': isOpen && searchResults.length > 0 ? 'search-results-list' : undefined,
             'aria-expanded': isOpen,
           }}
           sx={{
