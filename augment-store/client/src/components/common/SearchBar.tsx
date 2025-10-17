@@ -83,7 +83,8 @@ const SearchBar = ({
           // Only update results if this is still the latest query
           if (latestQueryRef.current === requestQuery) {
             setSearchResults(response.products)
-            setIsOpen(response.products.length > 0)
+            // Keep dropdown open even with 0 results to show "No products found"
+            setIsOpen(true)
           }
           // Otherwise, discard stale results
         } catch (err) {
@@ -92,6 +93,8 @@ const SearchBar = ({
           if (latestQueryRef.current === requestQuery) {
             setError('Failed to search products')
             setSearchResults([])
+            // Keep dropdown open to show error message
+            setIsOpen(true)
           }
         } finally {
           // Only update loading state if this is still the latest query
