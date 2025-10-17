@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import {
   Box,
   TextField,
@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Fade,
   ClickAwayListener,
+  IconButton,
 } from '@mui/material'
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
@@ -28,6 +29,20 @@ interface SearchBarProps {
   maxResults?: number
   onResultClick?: (product: Product) => void
 }
+
+// Memoized icon components to prevent re-renders
+const SearchIconMemo = memo(() => <SearchIcon sx={{ color: 'action.active' }} />)
+SearchIconMemo.displayName = 'SearchIconMemo'
+
+const ClearButton = memo(({ onClick }: { onClick: () => void }) => (
+  <IconButton size="small" onClick={onClick} edge="end" aria-label="clear search">
+    <CloseIcon fontSize="small" />
+  </IconButton>
+))
+ClearButton.displayName = 'ClearButton'
+
+const LoadingSpinner = memo(() => <CircularProgress size={20} />)
+LoadingSpinner.displayName = 'LoadingSpinner'
 
 const SearchBar = ({
   placeholder = 'Search products...',
@@ -100,14 +115,17 @@ const SearchBar = ({
     setIsOpen(false)
   }
 
-  // Handle clear search
-  const handleClear = () => {
-    setSearchQuery('')
-    setSearchResults([])
-    setIsOpen(false)
-    setError(null)
-    inputRef.current?.focus()
-  }
+  // Handle clear search - memoized to prevent re-creating on every render
+  const handleClear = useMemo(
+    () => () => {
+      setSearchQuery('')
+      setSearchResults([])
+      setIsOpen(false)
+      setError(null)
+      inputRef.current?.focus()
+    },
+    []
+  )
 
   // Handle click away
   const handleClickAway = () => {
@@ -151,20 +169,15 @@ const SearchBar = ({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'action.active' }} />
+                <SearchIconMemo />
               </InputAdornment>
             ),
-            endAdornment: (
-              <InputAdornment position="end">
-                {isLoading && <CircularProgress size={20} />}
-                {searchQuery && !isLoading && (
-                  <CloseIcon
-                    sx={{ cursor: 'pointer', color: 'action.active' }}
-                    onClick={handleClear}
-                  />
-                )}
-              </InputAdornment>
-            ),
+            endAdornment:
+              searchQuery || isLoading ? (
+                <InputAdornment position="end">
+                  {isLoading ? <LoadingSpinner /> : <ClearButton onClick={handleClear} />}
+                </InputAdornment>
+              ) : null,
           }}
           sx={{
             bgcolor: 'background.paper',
