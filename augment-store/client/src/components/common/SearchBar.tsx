@@ -55,12 +55,17 @@ const SearchBar = ({
   const [error, setError] = useState<string | null>(null)
   const [showClearButton, setShowClearButton] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const latestQueryRef = useRef<string>('')
 
   // Debounced search function using useMemo
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string) => {
-        if (!query.trim()) {
+        // Store the query that triggered this request
+        const requestQuery = query.trim()
+        latestQueryRef.current = requestQuery
+
+        if (!requestQuery) {
           setSearchResults([])
           setIsLoading(false)
           setIsOpen(false)
@@ -71,17 +76,28 @@ const SearchBar = ({
         setError(null)
 
         try {
-          const response = await productService.searchProducts(query, {
+          const response = await productService.searchProducts(requestQuery, {
             limit: maxResults,
           })
-          setSearchResults(response.products)
-          setIsOpen(response.products.length > 0)
+
+          // Only update results if this is still the latest query
+          if (latestQueryRef.current === requestQuery) {
+            setSearchResults(response.products)
+            setIsOpen(response.products.length > 0)
+          }
+          // Otherwise, discard stale results
         } catch (err) {
           console.error('Search error:', err)
-          setError('Failed to search products')
-          setSearchResults([])
+          // Only show error if this is still the latest query
+          if (latestQueryRef.current === requestQuery) {
+            setError('Failed to search products')
+            setSearchResults([])
+          }
         } finally {
-          setIsLoading(false)
+          // Only update loading state if this is still the latest query
+          if (latestQueryRef.current === requestQuery) {
+            setIsLoading(false)
+          }
         }
       }, debounceDelay),
     [debounceDelay, maxResults]
@@ -127,6 +143,7 @@ const SearchBar = ({
     setSearchResults([])
     setIsOpen(false)
     setError(null)
+    latestQueryRef.current = ''
     inputRef.current?.focus()
   }, [])
 
