@@ -107,10 +107,17 @@ const SearchBar = ({
     [debounceDelay, maxResults]
   )
 
-  // Cleanup debounce on unmount and prevent setState on unmounted component
+  // Track mount/unmount state - only runs on mount and unmount
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
+    }
+  }, [])
+
+  // Cleanup debounce when it changes or on unmount
+  useEffect(() => {
+    return () => {
       debouncedSearch.cancel()
     }
   }, [debouncedSearch])
@@ -207,10 +214,24 @@ const SearchBar = ({
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Box sx={{ position: 'relative', width: '100%', maxWidth: 600 }}>
-        {/* Hidden description for screen readers */}
-        <span id="search-products-description" style={{ display: 'none' }}>
+        {/* Visually hidden description for screen readers */}
+        <Box
+          id="search-products-description"
+          component="span"
+          sx={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
+        >
           Type to search for products. Results will appear below as you type.
-        </span>
+        </Box>
         <TextField
           inputRef={inputRef}
           fullWidth
