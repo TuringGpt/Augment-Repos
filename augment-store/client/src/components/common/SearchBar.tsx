@@ -150,6 +150,8 @@ const SearchBar = ({
 
   // Handle clear search - useCallback to prevent re-creating on every render
   const handleClear = useCallback(() => {
+    // Cancel any pending debounced search to prevent stale results
+    debouncedSearch.cancel()
     setSearchQuery('')
     setShowClearButton(false)
     setSearchResults([])
@@ -157,7 +159,7 @@ const SearchBar = ({
     setError(null)
     latestQueryRef.current = ''
     inputRef.current?.focus()
-  }, [])
+  }, [debouncedSearch])
 
   // Handle click away
   const handleClickAway = () => {
