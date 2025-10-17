@@ -19,7 +19,8 @@ import {
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { debounce } from 'lodash'
-import { productService } from '@services/api'
+// Using mock service for now until backend is ready
+import { mockProductService as productService } from '@services/api/products/mockProductService'
 import type { Product } from '@features/products/types'
 import { Colors } from '@config/colors'
 
@@ -30,29 +31,15 @@ interface SearchBarProps {
   onResultClick?: (product: Product) => void
 }
 
+// Static style objects to prevent re-creation
+const searchIconStyle = { color: 'action.active' }
+
 // Memoized icon components to prevent re-renders
-const SearchIconMemo = memo(() => <SearchIcon sx={{ color: 'action.active' }} />)
+const SearchIconMemo = memo(() => <SearchIcon sx={searchIconStyle} />)
 SearchIconMemo.displayName = 'SearchIconMemo'
 
 const LoadingSpinner = memo(() => <CircularProgress size={20} />)
 LoadingSpinner.displayName = 'LoadingSpinner'
-
-// Separate memoized components for each state to prevent re-renders
-const ClearButtonAdornment = memo(({ onClick }: { onClick: () => void }) => (
-  <InputAdornment position="end">
-    <IconButton size="small" onClick={onClick} edge="end" aria-label="clear search">
-      <CloseIcon fontSize="small" />
-    </IconButton>
-  </InputAdornment>
-))
-ClearButtonAdornment.displayName = 'ClearButtonAdornment'
-
-const LoadingAdornment = memo(() => (
-  <InputAdornment position="end">
-    <LoadingSpinner />
-  </InputAdornment>
-))
-LoadingAdornment.displayName = 'LoadingAdornment'
 
 const SearchBar = ({
   placeholder = 'Search products...',
@@ -66,7 +53,7 @@ const SearchBar = ({
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hasQuery, setHasQuery] = useState(false)
+  const [showClearButton, setShowClearButton] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Debounced search function using useMemo
@@ -111,7 +98,13 @@ const SearchBar = ({
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value
     setSearchQuery(query)
-    setHasQuery(query.length > 0)
+
+    // Only update showClearButton when transitioning between empty and non-empty
+    const shouldShow = query.length > 0
+    if (shouldShow !== showClearButton) {
+      setShowClearButton(shouldShow)
+    }
+
     debouncedSearch(query)
   }
 
@@ -130,7 +123,7 @@ const SearchBar = ({
   // Handle clear search - useCallback to prevent re-creating on every render
   const handleClear = useCallback(() => {
     setSearchQuery('')
-    setHasQuery(false)
+    setShowClearButton(false)
     setSearchResults([])
     setIsOpen(false)
     setError(null)
@@ -142,23 +135,28 @@ const SearchBar = ({
     setIsOpen(false)
   }
 
-  // Memoize InputProps to prevent re-creating endAdornment on every render
-  // Only depends on hasQuery (boolean), not searchQuery (string)
-  const inputProps = useMemo(
-    () => ({
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIconMemo />
+  // Memoize end adornment to prevent re-renders
+  const endAdornment = useMemo(() => {
+    if (isLoading) {
+      return (
+        <InputAdornment position="end">
+          <LoadingSpinner />
         </InputAdornment>
-      ),
-      endAdornment: isLoading ? (
-        <LoadingAdornment />
-      ) : hasQuery ? (
-        <ClearButtonAdornment onClick={handleClear} />
-      ) : null,
-    }),
-    [isLoading, hasQuery, handleClear]
-  )
+      )
+    }
+
+    if (showClearButton) {
+      return (
+        <InputAdornment position="end">
+          <IconButton size="small" onClick={handleClear} edge="end" aria-label="clear search">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </InputAdornment>
+      )
+    }
+
+    return null
+  }, [isLoading, showClearButton, handleClear])
 
   // Format price
   const formatPrice = (price: number, discountPrice?: number) => {
@@ -194,7 +192,14 @@ const SearchBar = ({
           placeholder={placeholder}
           value={searchQuery}
           onChange={handleSearchChange}
-          InputProps={inputProps}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIconMemo />
+              </InputAdornment>
+            ),
+            endAdornment,
+          }}
           sx={{
             bgcolor: 'background.paper',
             borderRadius: 1,
