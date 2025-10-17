@@ -11,3 +11,5 @@ pillow==11.3.0
 psycopg2==2.9.11
 djangorestframework_simplejwt==5.5.1
 django-mptt==0.18.0
+boto3==1.40.53
+django-storages==1.14.6

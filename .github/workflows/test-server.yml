@@ -71,6 +71,12 @@ jobs:
           DATABASE_PASSWORD: 'postgres'
           DATABASE_HOST: 'localhost'
           DATABASE_PORT: '5432'
+          FILE_UPLOAD_STORAGE: 'local'
+          AWS_ACCESS_KEY_ID: 'test-access-key'
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key'
+          AWS_STORAGE_BUCKET_NAME: 'test-bucket'
+          AWS_S3_REGION_NAME: 'us-east-1'
+          AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
         run: |
           python manage.py migrate
 
@@ -85,6 +91,12 @@ jobs:
           DATABASE_PASSWORD: 'postgres'
           DATABASE_HOST: 'localhost'
           DATABASE_PORT: '5432'
+          FILE_UPLOAD_STORAGE: 'local'
+          AWS_ACCESS_KEY_ID: 'test-access-key'
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key'
+          AWS_STORAGE_BUCKET_NAME: 'test-bucket'
+          AWS_S3_REGION_NAME: 'us-east-1'
+          AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
 
         run: |
           python manage.py test --verbosity=2
@@ -100,6 +112,12 @@ jobs:
           DATABASE_PASSWORD: 'postgres'
           DATABASE_HOST: 'localhost'
           DATABASE_PORT: '5432'
+          FILE_UPLOAD_STORAGE: 'local'
+          AWS_ACCESS_KEY_ID: 'test-access-key'
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key'
+          AWS_STORAGE_BUCKET_NAME: 'test-bucket'
+          AWS_S3_REGION_NAME: 'us-east-1'
+          AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
         run: |
           pip install coverage
           coverage run --source='.' manage.py test
