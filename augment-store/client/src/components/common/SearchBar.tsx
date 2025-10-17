@@ -56,6 +56,7 @@ const SearchBar = ({
   const [showClearButton, setShowClearButton] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const latestQueryRef = useRef<string>('')
+  const isMountedRef = useRef<boolean>(true)
 
   // Debounced search function using useMemo
   const debouncedSearch = useMemo(
@@ -80,8 +81,8 @@ const SearchBar = ({
             limit: maxResults,
           })
 
-          // Only update results if this is still the latest query
-          if (latestQueryRef.current === requestQuery) {
+          // Only update results if component is still mounted and this is still the latest query
+          if (isMountedRef.current && latestQueryRef.current === requestQuery) {
             setSearchResults(response.products)
             // Keep dropdown open even with 0 results to show "No products found"
             setIsOpen(true)
@@ -89,16 +90,16 @@ const SearchBar = ({
           // Otherwise, discard stale results
         } catch (err) {
           console.error('Search error:', err)
-          // Only show error if this is still the latest query
-          if (latestQueryRef.current === requestQuery) {
+          // Only show error if component is still mounted and this is still the latest query
+          if (isMountedRef.current && latestQueryRef.current === requestQuery) {
             setError('Failed to search products')
             setSearchResults([])
             // Keep dropdown open to show error message
             setIsOpen(true)
           }
         } finally {
-          // Only update loading state if this is still the latest query
-          if (latestQueryRef.current === requestQuery) {
+          // Only update loading state if component is still mounted and this is still the latest query
+          if (isMountedRef.current && latestQueryRef.current === requestQuery) {
             setIsLoading(false)
           }
         }
@@ -106,9 +107,10 @@ const SearchBar = ({
     [debounceDelay, maxResults]
   )
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce on unmount and prevent setState on unmounted component
   useEffect(() => {
     return () => {
+      isMountedRef.current = false
       debouncedSearch.cancel()
     }
   }, [debouncedSearch])
@@ -205,6 +207,10 @@ const SearchBar = ({
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Box sx={{ position: 'relative', width: '100%', maxWidth: 600 }}>
+        {/* Hidden description for screen readers */}
+        <span id="search-products-description" style={{ display: 'none' }}>
+          Type to search for products. Results will appear below as you type.
+        </span>
         <TextField
           inputRef={inputRef}
           fullWidth
@@ -219,6 +225,13 @@ const SearchBar = ({
               </InputAdornment>
             ),
             endAdornment,
+          }}
+          inputProps={{
+            'aria-label': 'Search products',
+            'aria-describedby': 'search-products-description',
+            'aria-autocomplete': 'list',
+            'aria-controls': isOpen ? 'search-results-list' : undefined,
+            'aria-expanded': isOpen,
           }}
           sx={{
             bgcolor: 'background.paper',
@@ -261,11 +274,12 @@ const SearchBar = ({
                   </Typography>
                 </Box>
               ) : searchResults.length > 0 ? (
-                <List disablePadding>
+                <List disablePadding id="search-results-list" role="listbox">
                   {searchResults.map((product) => (
-                    <ListItem key={product.id} disablePadding>
+                    <ListItem key={product.id} disablePadding role="option">
                       <ListItemButton
                         onClick={() => handleResultClick(product)}
+                        aria-label={`${product.name}, ${product.discountPrice ? `$${product.discountPrice}` : `$${product.price}`}`}
                         sx={{
                           py: 1.5,
                           px: 2,
