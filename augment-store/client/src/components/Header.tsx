@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
+import SearchBar from '@components/common/SearchBar'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -30,13 +31,13 @@ const Header = () => {
   return (
     <AppBar position="sticky">
       <Container maxWidth="xl">
-        <Toolbar>
+        <Toolbar sx={{ gap: 2 }}>
           {/* Burger Menu Button */}
           <IconButton
             color="inherit"
             edge="start"
             onClick={toggleSidebar}
-            sx={{ mr: 2 }}
+            sx={{ mr: 1 }}
             aria-label="menu"
           >
             <Menu />
@@ -45,11 +46,16 @@ const Header = () => {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, cursor: 'pointer' }}
+            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
             onClick={() => navigate('/')}
           >
             Augment Store
           </Typography>
+
+          {/* Search Bar */}
+          <Box sx={{ flexGrow: 1, mx: 2, display: { xs: 'none', md: 'block' } }}>
+            <SearchBar />
+          </Box>
 
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <Button color="inherit" onClick={() => navigate('/products')}>
