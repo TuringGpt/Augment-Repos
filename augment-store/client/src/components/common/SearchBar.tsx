@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, memo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
 import {
   Box,
   TextField,
@@ -43,6 +43,28 @@ ClearButton.displayName = 'ClearButton'
 
 const LoadingSpinner = memo(() => <CircularProgress size={20} />)
 LoadingSpinner.displayName = 'LoadingSpinner'
+
+// Memoized end adornment component to prevent re-renders
+const EndAdornment = memo(
+  ({
+    isLoading,
+    hasQuery,
+    onClear,
+  }: {
+    isLoading: boolean
+    hasQuery: boolean
+    onClear: () => void
+  }) => {
+    if (!isLoading && !hasQuery) return null
+
+    return (
+      <InputAdornment position="end">
+        {isLoading ? <LoadingSpinner /> : <ClearButton onClick={onClear} />}
+      </InputAdornment>
+    )
+  }
+)
+EndAdornment.displayName = 'EndAdornment'
 
 const SearchBar = ({
   placeholder = 'Search products...',
@@ -115,17 +137,14 @@ const SearchBar = ({
     setIsOpen(false)
   }
 
-  // Handle clear search - memoized to prevent re-creating on every render
-  const handleClear = useMemo(
-    () => () => {
-      setSearchQuery('')
-      setSearchResults([])
-      setIsOpen(false)
-      setError(null)
-      inputRef.current?.focus()
-    },
-    []
-  )
+  // Handle clear search - useCallback to prevent re-creating on every render
+  const handleClear = useCallback(() => {
+    setSearchQuery('')
+    setSearchResults([])
+    setIsOpen(false)
+    setError(null)
+    inputRef.current?.focus()
+  }, [])
 
   // Handle click away
   const handleClickAway = () => {
@@ -172,12 +191,9 @@ const SearchBar = ({
                 <SearchIconMemo />
               </InputAdornment>
             ),
-            endAdornment:
-              searchQuery || isLoading ? (
-                <InputAdornment position="end">
-                  {isLoading ? <LoadingSpinner /> : <ClearButton onClick={handleClear} />}
-                </InputAdornment>
-              ) : null,
+            endAdornment: (
+              <EndAdornment isLoading={isLoading} hasQuery={!!searchQuery} onClear={handleClear} />
+            ),
           }}
           sx={{
             bgcolor: 'background.paper',
