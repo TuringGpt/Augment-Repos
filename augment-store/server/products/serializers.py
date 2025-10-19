@@ -7,7 +7,7 @@ from .models import ProductBrand, ProductCategory, Product
 class CreateProductBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductBrand
-        fields = ["name", "description"]
+        fields = ["name", "description" , "image"]
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -32,7 +32,7 @@ class ProductBrandDetailSerializer(serializers.ModelSerializer):
 class CreateProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = ["name", "slug", "description", "parent"]
+        fields = ["name", "slug", "description", "parent", "image"]
 
     def validate(self, attrs):
         parent = attrs.get("parent")
@@ -47,7 +47,7 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
 class ProductCategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
-        fields = ["id", "name", "description", "parent"]
+        fields = ["id", "name", "description", "parent", "image"]
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
@@ -61,7 +61,7 @@ class ProductCategoryDetailSerializer(serializers.ModelSerializer):
 class CreateProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ["name", "description", "price", "brand", "category", "quantity"]
+        fields = ["name", "description", "price", "brand", "category", "quantity", "images"]
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -72,7 +72,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "price", "brand", "category", "quantity", "rating"]
+        fields = ["id", "name", "description", "price", "brand", "category", "quantity", "rating", "images"]
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
