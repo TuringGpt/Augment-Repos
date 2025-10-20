@@ -50,15 +50,15 @@ const ShopPage = () => {
 
     // Apply filters
     result = result.filter((product) => {
-      const price = product.discountPrice || product.price
+      const price = product.discountPrice ?? product.price
 
       // Price filter
-      if (price < (filters.minPrice || 0) || price > (filters.maxPrice || Infinity)) {
+      if (price < (filters.minPrice ?? 0) || price > (filters.maxPrice ?? Infinity)) {
         return false
       }
 
       // Rating filter
-      if (product.rating < (filters.minRating || 0) || product.rating > (filters.maxRating || 5)) {
+      if (product.rating < (filters.minRating ?? 0) || product.rating > (filters.maxRating ?? 5)) {
         return false
       }
 
@@ -124,12 +124,12 @@ const ShopPage = () => {
       <PriceRangeFilter
         minPrice={priceRange.min}
         maxPrice={priceRange.max}
-        value={[filters.minPrice || priceRange.min, filters.maxPrice || priceRange.max]}
+        value={[filters.minPrice ?? priceRange.min, filters.maxPrice ?? priceRange.max]}
         onChange={handlePriceChange}
       />
 
       <RatingFilter
-        value={[filters.minRating || 0, filters.maxRating || 5]}
+        value={[filters.minRating ?? 0, filters.maxRating ?? 5]}
         onChange={handleRatingChange}
       />
     </Box>
