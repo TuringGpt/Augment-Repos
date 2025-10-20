@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Typography, Slider } from '@mui/material'
 
 interface PriceRangeFilterProps {
@@ -11,6 +11,11 @@ interface PriceRangeFilterProps {
 const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFilterProps) => {
   const [localValue, setLocalValue] = useState<[number, number]>(value)
 
+  // Update local value when prop changes (e.g., reset filters)
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
+
   const handleChange = (_event: Event, newValue: number | number[]) => {
     setLocalValue(newValue as [number, number])
   }
@@ -20,11 +25,6 @@ const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFil
     newValue: number | number[]
   ) => {
     onChange(newValue as [number, number])
-  }
-
-  // Update local value when prop changes (e.g., reset filters)
-  if (value[0] !== localValue[0] || value[1] !== localValue[1]) {
-    setLocalValue(value)
   }
 
   return (

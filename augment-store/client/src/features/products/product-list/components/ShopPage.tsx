@@ -58,10 +58,7 @@ const ShopPage = () => {
       }
 
       // Rating filter
-      if (
-        product.rating < (filters.minRating || 0) ||
-        product.rating > (filters.maxRating || 5)
-      ) {
+      if (product.rating < (filters.minRating || 0) || product.rating > (filters.maxRating || 5)) {
         return false
       }
 
@@ -187,9 +184,9 @@ const ShopPage = () => {
           {/* Products Grid */}
           {filteredAndSortedProducts.length > 0 ? (
             <Grid container spacing={3}>
-              {filteredAndSortedProducts.map((product) => (
+              {filteredAndSortedProducts.map((product, index) => (
                 <Grid item xs={12} sm={6} md={4} key={product.id}>
-                  <ProductCard product={product} />
+                  <ProductCard product={product} index={index} />
                 </Grid>
               ))}
             </Grid>
@@ -210,11 +207,7 @@ const ShopPage = () => {
       </Grid>
 
       {/* Mobile Filters Drawer */}
-      <Drawer
-        anchor="left"
-        open={mobileFiltersOpen}
-        onClose={() => setMobileFiltersOpen(false)}
-      >
+      <Drawer anchor="left" open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}>
         <Box sx={{ width: 300, p: 3 }}>
           <FiltersContent />
         </Box>
@@ -224,4 +217,3 @@ const ShopPage = () => {
 }
 
 export default ShopPage
-

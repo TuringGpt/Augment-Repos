@@ -8,9 +8,8 @@ import LoginPage from '@features/auth/login/components/LoginPage'
 import RegisterPage from '@features/auth/register/components/RegisterPage'
 import ForgotPasswordPage from '@features/auth/forgot-password/components/ForgotPasswordPage'
 import ResetPasswordPage from '@features/auth/forgot-password/components/ResetPasswordPage'
-import ProductListPage from '@features/products/product-list/components/ProductListPage'
-import ProductDetailPage from '@features/products/product-detail/components/ProductDetailPage'
 import ShopPage from '@features/products/product-list/components/ShopPage'
+import ProductDetailPage from '@features/products/product-detail/components/ProductDetailPage'
 import CartPage from '@features/cart/components/CartPage'
 import CheckoutPage from '@features/checkout/components/CheckoutPage'
 import OrdersPage from '@features/orders/order-list/components/OrdersPage'
@@ -33,8 +32,7 @@ const AppRoutes = () => {
       {/* Public routes with main layout */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/shop" element={<ShopPage />} />
-        <Route path="/products" element={<ProductListPage />} />
+        <Route path="/products" element={<ShopPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
 
