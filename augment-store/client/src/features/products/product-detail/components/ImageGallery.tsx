@@ -38,7 +38,8 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         sx={{
           position: 'relative',
           width: '100%',
-          paddingTop: '100%', // 1:1 Aspect Ratio
+          height: { xs: '300px', sm: '400px', md: '50vh' }, // Half screen height on desktop
+          maxHeight: '600px',
           backgroundColor: 'grey.100',
           borderRadius: 2,
           overflow: 'hidden',
@@ -53,12 +54,9 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           src={images[activeStep]}
           alt={`${productName} - Image ${activeStep + 1}`}
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            objectFit: 'contain',
             userSelect: 'none',
           }}
         />
@@ -180,4 +178,3 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 }
 
 export default ImageGallery
-
