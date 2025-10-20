@@ -174,31 +174,31 @@ const ProductDetailPage = () => {
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Button
               variant="contained"
-              size="large"
+              size="medium"
               onClick={() => navigate('/products')}
               sx={{
-                px: 4,
-                py: 1.5,
+                px: 3,
+                py: 1,
                 borderRadius: 2,
                 fontWeight: 600,
                 textTransform: 'none',
-                fontSize: '1rem',
+                fontSize: '0.875rem',
               }}
             >
               Browse All Products
             </Button>
             <Button
               variant="outlined"
-              size="large"
+              size="medium"
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(-1)}
               sx={{
-                px: 4,
-                py: 1.5,
+                px: 3,
+                py: 1,
                 borderRadius: 2,
                 fontWeight: 600,
                 textTransform: 'none',
-                fontSize: '1rem',
+                fontSize: '0.875rem',
               }}
             >
               Go Back
