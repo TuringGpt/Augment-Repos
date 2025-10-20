@@ -5,10 +5,8 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Keyboard, Mousewheel } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 
-// Import Swiper styles
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
+// Import Swiper styles - using bundle for better compatibility
+import 'swiper/swiper-bundle.css'
 
 interface ImageGalleryProps {
   images: string[]
