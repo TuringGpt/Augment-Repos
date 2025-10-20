@@ -23,14 +23,32 @@ export interface Category {
   parentId?: string
 }
 
+export interface ProductFilters {
+  categoryId?: string
+  minPrice?: number
+  maxPrice?: number
+  minRating?: number
+  maxRating?: number
+  inStockOnly?: boolean
+}
+
+export type SortBy = 'newest' | 'price-asc' | 'price-desc' | 'rating-desc'
+
+export interface ProductSortOption {
+  value: SortBy
+  label: string
+}
+
 export interface ProductSearchParams {
   page?: number
   limit?: number
   categoryId?: string
   minPrice?: number
   maxPrice?: number
-  sortBy?: 'price' | 'rating' | 'createdAt' | 'name'
-  sortOrder?: 'asc' | 'desc'
+  minRating?: number
+  maxRating?: number
+  sortBy?: SortBy
+  inStockOnly?: boolean
 }
 
 export interface ProductListResponse {
