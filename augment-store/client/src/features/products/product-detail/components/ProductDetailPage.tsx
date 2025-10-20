@@ -112,8 +112,8 @@ const ProductDetailPage = () => {
           {/* Illustration/Icon */}
           <Box
             sx={{
-              width: { xs: 200, sm: 300, md: 400 },
-              height: { xs: 200, sm: 300, md: 400 },
+              width: { xs: 150, sm: 200, md: 250 },
+              height: { xs: 150, sm: 200, md: 250 },
               mb: 4,
               display: 'flex',
               alignItems: 'center',
@@ -134,7 +134,7 @@ const ProductDetailPage = () => {
             />
             <Box
               sx={{
-                fontSize: { xs: 120, sm: 160, md: 200 },
+                fontSize: { xs: 80, sm: 100, md: 120 },
                 color: 'text.disabled',
                 zIndex: 1,
               }}
