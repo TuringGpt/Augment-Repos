@@ -272,6 +272,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         }}
       >
         <Box
+          {...handlers}
           sx={{
             position: 'relative',
             width: '100vw',
@@ -279,6 +280,10 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            cursor: 'grab',
+            '&:active': {
+              cursor: 'grabbing',
+            },
           }}
         >
           {/* Close Button */}
@@ -323,6 +328,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
                   objectFit: 'contain',
                   userSelect: 'none',
                   padding: 4,
+                  pointerEvents: 'none', // Prevent image from blocking swipe events
                 }}
               />
             ))}
