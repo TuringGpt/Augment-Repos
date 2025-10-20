@@ -164,7 +164,7 @@ const ProductDetailPage = () => {
             sx={{
               mb: 4,
               maxWidth: 500,
-              fontSize: { xs: '1rem', sm: '1.25rem' },
+              fontSize: { xs: '0.875rem', sm: '1rem' },
             }}
           >
             Uh-oh! Looks like the product you are looking for isn't available right now.
