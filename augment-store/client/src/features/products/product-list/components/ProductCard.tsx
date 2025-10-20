@@ -149,7 +149,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
             {/* Stock Info */}
             {product.stock > 0 && product.stock < 20 && (
-              <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
+              <Typography variant="caption" sx={{ mt: 0.5, color: 'warning.main' }}>
                 Only {product.stock} left in stock
               </Typography>
             )}
