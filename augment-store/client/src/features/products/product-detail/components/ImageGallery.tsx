@@ -1,5 +1,5 @@
 import { useState, useRef, MouseEvent } from 'react'
-import { Box, IconButton, Dialog, IconButton as MuiIconButton } from '@mui/material'
+import { Box, IconButton, Dialog } from '@mui/material'
 import { Close as CloseIcon, ZoomIn as ZoomInIcon } from '@mui/icons-material'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Keyboard, Mousewheel } from 'swiper/modules'
@@ -249,7 +249,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           }}
         >
           {/* Close Button */}
-          <MuiIconButton
+          <IconButton
             onClick={handleFullscreenClose}
             sx={{
               position: 'absolute',
@@ -265,7 +265,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             aria-label="close fullscreen"
           >
             <CloseIcon />
-          </MuiIconButton>
+          </IconButton>
 
           {/* Fullscreen Swiper */}
           <Swiper
