@@ -167,8 +167,7 @@ const ProductDetailPage = () => {
               fontSize: { xs: '1rem', sm: '1.25rem' },
             }}
           >
-            {error ||
-              "Uh-oh! Looks like the product you are looking for isn't available right now."}
+            Uh-oh! Looks like the product you are looking for isn't available right now.
           </Typography>
 
           {/* Action Buttons */}
