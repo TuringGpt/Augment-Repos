@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, memo, useId } from 'react'
 import {
   Box,
   TextField,
@@ -48,6 +48,11 @@ const SearchBar = ({
   onResultClick,
 }: SearchBarProps) => {
   const navigate = useNavigate()
+
+  // Generate unique IDs for this instance to avoid collisions with multiple SearchBars
+  const descriptionId = useId()
+  const resultsListId = useId()
+
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -234,7 +239,7 @@ const SearchBar = ({
       <Box sx={{ position: 'relative', width: '100%', maxWidth: 600 }}>
         {/* Visually hidden description for screen readers */}
         <Box
-          id="search-products-description"
+          id={descriptionId}
           component="span"
           sx={{
             position: 'absolute',
@@ -267,9 +272,9 @@ const SearchBar = ({
           }}
           inputProps={{
             'aria-label': 'Search products',
-            'aria-describedby': 'search-products-description',
+            'aria-describedby': descriptionId,
             'aria-autocomplete': 'list',
-            'aria-controls': isOpen && searchResults.length > 0 ? 'search-results-list' : undefined,
+            'aria-controls': isOpen && searchResults.length > 0 ? resultsListId : undefined,
             'aria-expanded': isOpen,
           }}
           sx={{
@@ -313,7 +318,7 @@ const SearchBar = ({
                   </Typography>
                 </Box>
               ) : searchResults.length > 0 ? (
-                <List disablePadding id="search-results-list" role="listbox">
+                <List disablePadding id={resultsListId} role="listbox">
                   {searchResults.map((product) => (
                     <ListItem key={product.id} disablePadding role="option">
                       <ListItemButton
