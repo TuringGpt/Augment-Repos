@@ -1,4 +1,9 @@
-import type { Product, ProductListResponse, ProductSearchParams } from '@features/products/types'
+import type {
+  Product,
+  ProductListResponse,
+  ProductSearchParams,
+  Category,
+} from '@features/products/types'
 import dummyProducts from '@data/dummyProducts.json'
 
 export const mockProductService = {
@@ -58,11 +63,11 @@ export const mockProductService = {
     return product
   },
 
-  getCategories: async () => {
+  getCategories: async (): Promise<Category[]> => {
     await new Promise((resolve) => setTimeout(resolve, 300))
 
     // Extract unique categories from products
-    const categoriesMap = new Map()
+    const categoriesMap = new Map<string, Category>()
     ;(dummyProducts as Product[]).forEach((product) => {
       if (!categoriesMap.has(product.category.id)) {
         categoriesMap.set(product.category.id, product.category)

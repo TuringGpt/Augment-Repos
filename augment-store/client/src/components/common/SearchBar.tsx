@@ -146,6 +146,11 @@ const SearchBar = ({
 
   // Handle result click
   const handleResultClick = (product: Product) => {
+    // Cancel any pending debounced search to prevent stale results
+    debouncedSearch.cancel()
+    // Reset latest query to prevent in-flight requests from updating state
+    latestQueryRef.current = ''
+
     if (onResultClick) {
       onResultClick(product)
     } else {
