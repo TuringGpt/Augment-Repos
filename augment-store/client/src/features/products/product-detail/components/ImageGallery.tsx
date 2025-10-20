@@ -24,18 +24,21 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
   const handleNext = () => {
     setIsTransitioning(true)
+    setIsZoomed(false) // Reset zoom when changing images
     setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps)
     setTimeout(() => setIsTransitioning(false), 300)
   }
 
   const handleBack = () => {
     setIsTransitioning(true)
+    setIsZoomed(false) // Reset zoom when changing images
     setActiveStep((prevActiveStep) => (prevActiveStep - 1 + maxSteps) % maxSteps)
     setTimeout(() => setIsTransitioning(false), 300)
   }
 
   const handleStepChange = (step: number) => {
     setIsTransitioning(true)
+    setIsZoomed(false) // Reset zoom when changing images
     setActiveStep(step)
     setTimeout(() => setIsTransitioning(false), 300)
   }
