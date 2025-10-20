@@ -1,21 +1,21 @@
-import { useState, useMemo } from 'react'
+import { mockProducts } from '@data/mockProducts'
+import type { ProductFilters, SortBy } from '@features/products/types'
+import { FilterList as FilterListIcon } from '@mui/icons-material'
 import {
   Box,
+  Button,
   Container,
+  Divider,
+  Drawer,
   Grid,
   Paper,
   Typography,
-  Divider,
-  Button,
-  Drawer,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import { FilterList as FilterListIcon } from '@mui/icons-material'
-import type { Product, ProductFilters, SortBy } from '@features/products/types'
-import { mockProducts } from '@data/mockProducts'
-import ProductCard from './ProductCard'
+import { useMemo, useState } from 'react'
 import PriceRangeFilter from './PriceRangeFilter'
+import ProductCard from './ProductCard'
 import RatingFilter from './RatingFilter'
 import SortDropdown from './SortDropdown'
 
