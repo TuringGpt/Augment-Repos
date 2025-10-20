@@ -10,6 +10,7 @@ import ForgotPasswordPage from '@features/auth/forgot-password/components/Forgot
 import ResetPasswordPage from '@features/auth/forgot-password/components/ResetPasswordPage'
 import ProductListPage from '@features/products/product-list/components/ProductListPage'
 import ProductDetailPage from '@features/products/product-detail/components/ProductDetailPage'
+import ShopPage from '@features/products/product-list/components/ShopPage'
 import CartPage from '@features/cart/components/CartPage'
 import CheckoutPage from '@features/checkout/components/CheckoutPage'
 import OrdersPage from '@features/orders/order-list/components/OrdersPage'
@@ -32,6 +33,7 @@ const AppRoutes = () => {
       {/* Public routes with main layout */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/shop" element={<ShopPage />} />
         <Route path="/products" element={<ProductListPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />

@@ -2,6 +2,7 @@ export const APP_NAME = 'Augment Store'
 
 export const ROUTES = {
   HOME: '/',
+  SHOP: '/shop',
   PRODUCTS: '/products',
   PRODUCT_DETAIL: '/products/:id',
   CART: '/cart',
