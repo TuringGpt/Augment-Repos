@@ -1,12 +1,14 @@
 import { useState, useRef, MouseEvent } from 'react'
-import { Box, IconButton, MobileStepper, Dialog, IconButton as MuiIconButton } from '@mui/material'
-import {
-  KeyboardArrowLeft,
-  KeyboardArrowRight,
-  Close as CloseIcon,
-  ZoomIn as ZoomInIcon,
-} from '@mui/icons-material'
-import { useSwipeable } from 'react-swipeable'
+import { Box, IconButton, Dialog, IconButton as MuiIconButton } from '@mui/material'
+import { Close as CloseIcon, ZoomIn as ZoomInIcon } from '@mui/icons-material'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination, Keyboard, Mousewheel } from 'swiper/modules'
+import type { Swiper as SwiperType } from 'swiper'
+
+// Import Swiper styles
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 
 interface ImageGalleryProps {
   images: string[]
@@ -15,32 +17,21 @@ interface ImageGalleryProps {
 
 const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeStep, setActiveStep] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
   const [isFullscreen, setIsFullscreen] = useState(false)
   const imageRef = useRef<HTMLDivElement>(null)
+  const swiperRef = useRef<SwiperType | null>(null)
   const maxSteps = images.length
 
-  const handleNext = () => {
-    setIsTransitioning(true)
+  const handleSlideChange = (swiper: SwiperType) => {
+    setActiveStep(swiper.activeIndex)
     setIsZoomed(false) // Reset zoom when changing images
-    setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps)
-    setTimeout(() => setIsTransitioning(false), 300)
   }
 
-  const handleBack = () => {
-    setIsTransitioning(true)
-    setIsZoomed(false) // Reset zoom when changing images
-    setActiveStep((prevActiveStep) => (prevActiveStep - 1 + maxSteps) % maxSteps)
-    setTimeout(() => setIsTransitioning(false), 300)
-  }
-
-  const handleStepChange = (step: number) => {
-    setIsTransitioning(true)
-    setIsZoomed(false) // Reset zoom when changing images
-    setActiveStep(step)
-    setTimeout(() => setIsTransitioning(false), 300)
+  const handleThumbnailClick = (index: number) => {
+    setIsZoomed(false)
+    swiperRef.current?.slideTo(index)
   }
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -69,20 +60,10 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
     setIsFullscreen(false)
   }
 
-  const handlers = useSwipeable({
-    onSwipedLeft: () => handleNext(),
-    onSwipedRight: () => handleBack(),
-    trackMouse: true,
-    trackTouch: true,
-    preventScrollOnSwipe: true,
-    delta: 10, // Minimum distance for swipe detection
-  })
-
   return (
     <Box sx={{ width: '100%', position: 'relative' }}>
-      {/* Main Image */}
+      {/* Main Image Swiper */}
       <Box
-        {...handlers}
         ref={imageRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
@@ -90,7 +71,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         sx={{
           position: 'relative',
           width: '100%',
-          height: { xs: '300px', sm: '400px', md: '50vh' }, // Half screen height on desktop
+          height: { xs: '300px', sm: '400px', md: '50vh' },
           maxHeight: '600px',
           backgroundColor: 'grey.100',
           borderRadius: 2,
@@ -99,37 +80,66 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           '&:active': {
             cursor: isZoomed ? 'zoom-in' : 'grabbing',
           },
-        }}
-      >
-        {/* Image Container with Sliding Effect */}
-        <Box
-          sx={{
-            display: 'flex',
+          '& .swiper': {
             width: '100%',
             height: '100%',
-            transform: `translateX(-${activeStep * 100}%)`,
-            transition: isTransitioning ? 'transform 0.3s ease-in-out' : 'none',
-          }}
+          },
+          '& .swiper-button-next, & .swiper-button-prev': {
+            color: '#fff',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            '&:after': {
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: '#000',
+            },
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 1)',
+            },
+          },
+          '& .swiper-pagination-bullet': {
+            backgroundColor: '#fff',
+            opacity: 0.5,
+          },
+          '& .swiper-pagination-bullet-active': {
+            opacity: 1,
+            backgroundColor: 'primary.main',
+          },
+        }}
+      >
+        <Swiper
+          modules={[Navigation, Pagination, Keyboard, Mousewheel]}
+          navigation
+          pagination={{ clickable: true }}
+          keyboard={{ enabled: true }}
+          mousewheel={{ forceToAxis: true }}
+          onSwiper={(swiper) => (swiperRef.current = swiper)}
+          onSlideChange={handleSlideChange}
+          spaceBetween={0}
+          slidesPerView={1}
+          style={{ width: '100%', height: '100%' }}
         >
           {images.map((image, index) => (
-            <Box
-              key={index}
-              component="img"
-              src={image}
-              alt={`${productName} - Image ${index + 1}`}
-              sx={{
-                minWidth: '100%',
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                userSelect: 'none',
-                transform: isZoomed && index === activeStep ? 'scale(2)' : 'scale(1)',
-                transformOrigin: isZoomed ? `${zoomPosition.x}% ${zoomPosition.y}%` : 'center',
-                transition: isZoomed ? 'none' : 'transform 0.3s ease-in-out',
-              }}
-            />
+            <SwiperSlide key={index}>
+              <Box
+                component="img"
+                src={image}
+                alt={`${productName} - Image ${index + 1}`}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  userSelect: 'none',
+                  transform: isZoomed && index === activeStep ? 'scale(2)' : 'scale(1)',
+                  transformOrigin: isZoomed ? `${zoomPosition.x}% ${zoomPosition.y}%` : 'center',
+                  transition: isZoomed ? 'none' : 'transform 0.3s ease-in-out',
+                }}
+              />
+            </SwiperSlide>
           ))}
-        </Box>
+        </Swiper>
 
         {/* Fullscreen Button */}
         <IconButton
@@ -142,48 +152,12 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 1)',
             },
-            zIndex: 2,
+            zIndex: 10,
           }}
           aria-label="view fullscreen"
         >
           <ZoomInIcon />
         </IconButton>
-
-        {/* Navigation Arrows */}
-        {maxSteps > 1 && (
-          <>
-            <IconButton
-              onClick={handleBack}
-              sx={{
-                position: 'absolute',
-                left: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                },
-              }}
-            >
-              <KeyboardArrowLeft />
-            </IconButton>
-            <IconButton
-              onClick={handleNext}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 1)',
-                },
-              }}
-            >
-              <KeyboardArrowRight />
-            </IconButton>
-          </>
-        )}
       </Box>
 
       {/* Thumbnail Navigation */}
@@ -207,7 +181,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           {images.map((image, index) => (
             <Box
               key={index}
-              onClick={() => handleStepChange(index)}
+              onClick={() => handleThumbnailClick(index)}
               sx={{
                 minWidth: 80,
                 height: 80,
@@ -239,29 +213,6 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         </Box>
       )}
 
-      {/* Stepper Dots */}
-      {maxSteps > 1 && (
-        <MobileStepper
-          steps={maxSteps}
-          position="static"
-          activeStep={activeStep}
-          sx={{
-            mt: 2,
-            backgroundColor: 'transparent',
-            justifyContent: 'center',
-            '& .MuiMobileStepper-dot': {
-              width: 8,
-              height: 8,
-            },
-            '& .MuiMobileStepper-dotActive': {
-              backgroundColor: 'primary.main',
-            },
-          }}
-          nextButton={<Box />}
-          backButton={<Box />}
-        />
-      )}
-
       {/* Fullscreen Dialog */}
       <Dialog
         open={isFullscreen}
@@ -275,17 +226,27 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         }}
       >
         <Box
-          {...handlers}
           sx={{
             position: 'relative',
             width: '100vw',
             height: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'grab',
-            '&:active': {
-              cursor: 'grabbing',
+            '& .swiper': {
+              width: '100%',
+              height: '100%',
+            },
+            '& .swiper-button-next, & .swiper-button-prev': {
+              color: '#fff',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '50%',
+              width: '50px',
+              height: '50px',
+              '&:after': {
+                fontSize: '24px',
+                fontWeight: 'bold',
+              },
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              },
             },
           }}
         >
@@ -301,83 +262,52 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
               },
-              zIndex: 3,
+              zIndex: 1000,
             }}
             aria-label="close fullscreen"
           >
             <CloseIcon />
           </MuiIconButton>
 
-          {/* Fullscreen Image Container */}
-          <Box
-            sx={{
-              display: 'flex',
-              width: '100%',
-              height: '100%',
-              transform: `translateX(-${activeStep * 100}%)`,
-              transition: isTransitioning ? 'transform 0.3s ease-in-out' : 'none',
-            }}
+          {/* Fullscreen Swiper */}
+          <Swiper
+            modules={[Navigation, Keyboard, Mousewheel]}
+            navigation
+            keyboard={{ enabled: true }}
+            mousewheel={{ forceToAxis: true }}
+            initialSlide={activeStep}
+            onSlideChange={handleSlideChange}
+            spaceBetween={0}
+            slidesPerView={1}
+            style={{ width: '100%', height: '100%' }}
           >
             {images.map((image, index) => (
-              <Box
-                key={index}
-                component="img"
-                src={image}
-                alt={`${productName} - Image ${index + 1}`}
-                sx={{
-                  minWidth: '100%',
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  userSelect: 'none',
-                  padding: 4,
-                  pointerEvents: 'none', // Prevent image from blocking swipe events
-                }}
-              />
+              <SwiperSlide key={index}>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 4,
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={image}
+                    alt={`${productName} - Image ${index + 1}`}
+                    sx={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      objectFit: 'contain',
+                      userSelect: 'none',
+                    }}
+                  />
+                </Box>
+              </SwiperSlide>
             ))}
-          </Box>
-
-          {/* Fullscreen Navigation Arrows */}
-          {maxSteps > 1 && (
-            <>
-              <IconButton
-                onClick={handleBack}
-                sx={{
-                  position: 'absolute',
-                  left: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  },
-                  zIndex: 2,
-                }}
-                aria-label="previous image"
-              >
-                <KeyboardArrowLeft fontSize="large" />
-              </IconButton>
-              <IconButton
-                onClick={handleNext}
-                sx={{
-                  position: 'absolute',
-                  right: 16,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  },
-                  zIndex: 2,
-                }}
-                aria-label="next image"
-              >
-                <KeyboardArrowRight fontSize="large" />
-              </IconButton>
-            </>
-          )}
+          </Swiper>
 
           {/* Fullscreen Image Counter */}
           <Box
@@ -393,6 +323,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
               borderRadius: 2,
               fontSize: '1rem',
               fontWeight: 500,
+              zIndex: 1000,
             }}
           >
             {activeStep + 1} / {maxSteps}
