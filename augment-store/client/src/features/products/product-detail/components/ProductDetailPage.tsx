@@ -98,13 +98,114 @@ const ProductDetailPage = () => {
 
   if (error || !product) {
     return (
-      <Container maxWidth="xl" sx={{ py: 8 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error || 'Product not found'}
-        </Alert>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/products')}>
-          Back to Products
-        </Button>
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            minHeight: '60vh',
+          }}
+        >
+          {/* Illustration/Icon */}
+          <Box
+            sx={{
+              width: { xs: 200, sm: 300, md: 400 },
+              height: { xs: 200, sm: 300, md: 400 },
+              mb: 4,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+            }}
+          >
+            {/* Empty Box Illustration */}
+            <Box
+              sx={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '50%',
+                opacity: 0.1,
+                position: 'absolute',
+              }}
+            />
+            <Box
+              sx={{
+                fontSize: { xs: 120, sm: 160, md: 200 },
+                color: 'text.disabled',
+                zIndex: 1,
+              }}
+            >
+              📦
+            </Box>
+          </Box>
+
+          {/* Error Message */}
+          <Typography
+            variant="h3"
+            gutterBottom
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              mb: 2,
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            }}
+          >
+            Product Not Found
+          </Typography>
+
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            paragraph
+            sx={{
+              mb: 4,
+              maxWidth: 500,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+            }}
+          >
+            {error ||
+              "We couldn't find the product you're looking for. It may have been removed or is temporarily unavailable."}
+          </Typography>
+
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/products')}
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+              }}
+            >
+              Browse All Products
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate(-1)}
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '1rem',
+              }}
+            >
+              Go Back
+            </Button>
+          </Box>
+        </Box>
       </Container>
     )
   }
