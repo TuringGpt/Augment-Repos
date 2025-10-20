@@ -10,24 +10,34 @@ interface ImageGalleryProps {
 
 const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [activeStep, setActiveStep] = useState(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const maxSteps = images.length
 
   const handleNext = () => {
+    setIsTransitioning(true)
     setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps)
+    setTimeout(() => setIsTransitioning(false), 300)
   }
 
   const handleBack = () => {
+    setIsTransitioning(true)
     setActiveStep((prevActiveStep) => (prevActiveStep - 1 + maxSteps) % maxSteps)
+    setTimeout(() => setIsTransitioning(false), 300)
   }
 
   const handleStepChange = (step: number) => {
+    setIsTransitioning(true)
     setActiveStep(step)
+    setTimeout(() => setIsTransitioning(false), 300)
   }
 
   const handlers = useSwipeable({
     onSwipedLeft: () => handleNext(),
     onSwipedRight: () => handleBack(),
     trackMouse: true,
+    trackTouch: true,
+    preventScrollOnSwipe: true,
+    delta: 10, // Minimum distance for swipe detection
   })
 
   return (
@@ -49,17 +59,32 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           },
         }}
       >
+        {/* Image Container with Sliding Effect */}
         <Box
-          component="img"
-          src={images[activeStep]}
-          alt={`${productName} - Image ${activeStep + 1}`}
           sx={{
+            display: 'flex',
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
-            userSelect: 'none',
+            transform: `translateX(-${activeStep * 100}%)`,
+            transition: isTransitioning ? 'transform 0.3s ease-in-out' : 'none',
           }}
-        />
+        >
+          {images.map((image, index) => (
+            <Box
+              key={index}
+              component="img"
+              src={image}
+              alt={`${productName} - Image ${index + 1}`}
+              sx={{
+                minWidth: '100%',
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                userSelect: 'none',
+              }}
+            />
+          ))}
+        </Box>
 
         {/* Navigation Arrows */}
         {maxSteps > 1 && (
