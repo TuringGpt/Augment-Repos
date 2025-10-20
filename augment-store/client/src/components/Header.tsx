@@ -58,10 +58,6 @@ const Header = () => {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-            <Button color="inherit" onClick={() => navigate('/products')}>
-              Products
-            </Button>
-
             {/* Cart Icon - Always visible */}
             <IconButton
               color="inherit"
@@ -72,6 +68,10 @@ const Header = () => {
                 <ShoppingCart />
               </Badge>
             </IconButton>
+
+            <Button color="inherit" onClick={() => navigate('/products')}>
+              Products
+            </Button>
 
             {isAuthenticated && (
               <>
