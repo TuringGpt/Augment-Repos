@@ -19,12 +19,24 @@ interface CartState {
   // Computed
   getItemCount: () => number
   getTotal: () => number
+  isInCart: (productId: string) => boolean
+  getCartItem: (productId: string) => CartItem | undefined
+}
+
+const initialCart: Cart = {
+  id: 'cart-' + Date.now(),
+  items: [],
+  subtotal: 0,
+  tax: 0,
+  shipping: 0,
+  total: 0,
+  itemCount: 0,
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
-      cart: null,
+      cart: initialCart,
       isLoading: false,
       error: null,
 
@@ -99,6 +111,16 @@ export const useCartStore = create<CartState>()(
       getTotal: () => {
         const { cart } = get()
         return cart?.total || 0
+      },
+
+      isInCart: (productId) => {
+        const { cart } = get()
+        return cart?.items.some((item) => item.product.id === productId) || false
+      },
+
+      getCartItem: (productId) => {
+        const { cart } = get()
+        return cart?.items.find((item) => item.product.id === productId)
       },
     }),
     {
