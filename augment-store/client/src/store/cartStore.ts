@@ -23,7 +23,7 @@ interface CartState {
   getCartItem: (productId: string) => CartItem | undefined
 }
 
-const initialCart: Cart = {
+const createEmptyCart = (): Cart => ({
   id: 'cart-' + Date.now(),
   items: [],
   subtotal: 0,
@@ -31,7 +31,9 @@ const initialCart: Cart = {
   shipping: 0,
   total: 0,
   itemCount: 0,
-}
+})
+
+const initialCart: Cart = createEmptyCart()
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -44,18 +46,19 @@ export const useCartStore = create<CartState>()(
 
       addItem: (item) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
 
-          const existingItemIndex = state.cart.items.findIndex(
+          const existingItemIndex = currentCart.items.findIndex(
             (i) => i.product.id === item.product.id
           )
 
           if (existingItemIndex >= 0) {
-            const updatedItems = [...state.cart.items]
+            const updatedItems = [...currentCart.items]
             updatedItems[existingItemIndex].quantity += item.quantity
             return {
               cart: {
-                ...state.cart,
+                ...currentCart,
                 items: updatedItems,
               },
             }
@@ -63,23 +66,24 @@ export const useCartStore = create<CartState>()(
 
           return {
             cart: {
-              ...state.cart,
-              items: [...state.cart.items, item],
+              ...currentCart,
+              items: [...currentCart.items, item],
             },
           }
         }),
 
       updateItem: (itemId, quantity) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
 
-          const updatedItems = state.cart.items.map((item) =>
+          const updatedItems = currentCart.items.map((item) =>
             item.id === itemId ? { ...item, quantity } : item
           )
 
           return {
             cart: {
-              ...state.cart,
+              ...currentCart,
               items: updatedItems,
             },
           }
@@ -87,17 +91,18 @@ export const useCartStore = create<CartState>()(
 
       removeItem: (itemId) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
 
           return {
             cart: {
-              ...state.cart,
-              items: state.cart.items.filter((item) => item.id !== itemId),
+              ...currentCart,
+              items: currentCart.items.filter((item) => item.id !== itemId),
             },
           }
         }),
 
-      clearCart: () => set({ cart: null }),
+      clearCart: () => set({ cart: createEmptyCart() }),
 
       setLoading: (isLoading) => set({ isLoading }),
 
