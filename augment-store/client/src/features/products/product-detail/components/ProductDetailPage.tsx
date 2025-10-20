@@ -255,10 +255,21 @@ const ProductDetailPage = () => {
                     variant="outlined"
                     color="error"
                     size="large"
-                    fullWidth
                     startIcon={<CartIcon />}
                     onClick={handleRemoveFromCart}
-                    sx={{ py: 1.5 }}
+                    sx={{
+                      py: 1.5,
+                      px: 4,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '1rem',
+                      minWidth: 200,
+                      boxShadow: 'none',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      },
+                    }}
                   >
                     Remove from Cart
                   </Button>
@@ -266,10 +277,23 @@ const ProductDetailPage = () => {
                   <Button
                     variant="contained"
                     size="large"
-                    fullWidth
                     startIcon={<CartIcon />}
                     onClick={handleAddToCart}
-                    sx={{ py: 1.5 }}
+                    sx={{
+                      py: 1.5,
+                      px: 4,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '1rem',
+                      minWidth: 200,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      '&:hover': {
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+                        transform: 'translateY(-1px)',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
                   >
                     Add to Cart
                   </Button>
