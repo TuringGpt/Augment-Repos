@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { Box, Typography, Slider, Rating } from '@mui/material'
+import { Box, Rating, Slider, Typography } from '@mui/material'
+import { SyntheticEvent, useEffect, useState } from 'react'
 
 interface RatingFilterProps {
   value: [number, number]
@@ -18,10 +18,7 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
     setLocalValue(newValue as [number, number])
   }
 
-  const handleChangeCommitted = (
-    _event: Event | React.SyntheticEvent,
-    newValue: number | number[]
-  ) => {
+  const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
     onChange(newValue as [number, number])
   }
 

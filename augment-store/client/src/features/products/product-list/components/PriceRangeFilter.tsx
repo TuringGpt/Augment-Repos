@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, SyntheticEvent } from 'react'
 import { Box, Typography, Slider } from '@mui/material'
 
 interface PriceRangeFilterProps {
@@ -20,10 +20,7 @@ const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFil
     setLocalValue(newValue as [number, number])
   }
 
-  const handleChangeCommitted = (
-    _event: Event | React.SyntheticEvent,
-    newValue: number | number[]
-  ) => {
+  const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
     onChange(newValue as [number, number])
   }
 
