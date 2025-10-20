@@ -151,7 +151,7 @@ const ProductDetailPage = () => {
               fontWeight: 700,
               color: 'text.primary',
               mb: 2,
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
             }}
           >
             Product Not Found
@@ -168,7 +168,7 @@ const ProductDetailPage = () => {
             }}
           >
             {error ||
-              "We couldn't find the product you're looking for. It may have been removed or is temporarily unavailable."}
+              "Uh-oh! Looks like the product you are looking for isn't available right now."}
           </Typography>
 
           {/* Action Buttons */}
