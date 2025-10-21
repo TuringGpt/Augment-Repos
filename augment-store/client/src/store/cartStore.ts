@@ -75,18 +75,30 @@ export const useCartStore = create<CartState>()(
           )
 
           if (existingItemIndex >= 0) {
-            // Update existing item
+            // Update existing item with stock validation
             updatedItems = [...currentCart.items]
+            const existingItem = updatedItems[existingItemIndex]
+            const newQuantity = existingItem.quantity + item.quantity
+
+            // Cap quantity at available stock
+            const finalQuantity = Math.min(newQuantity, existingItem.product.stock)
+
             updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity: updatedItems[existingItemIndex].quantity + item.quantity,
-              subtotal:
-                (updatedItems[existingItemIndex].quantity + item.quantity) *
-                updatedItems[existingItemIndex].price,
+              ...existingItem,
+              quantity: finalQuantity,
+              subtotal: finalQuantity * existingItem.price,
             }
           } else {
-            // Add new item
-            updatedItems = [...currentCart.items, item]
+            // Add new item with stock validation
+            const finalQuantity = Math.min(item.quantity, item.product.stock)
+            updatedItems = [
+              ...currentCart.items,
+              {
+                ...item,
+                quantity: finalQuantity,
+                subtotal: finalQuantity * item.price,
+              },
+            ]
           }
 
           // Calculate totals
@@ -106,9 +118,14 @@ export const useCartStore = create<CartState>()(
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
 
-          const updatedItems = currentCart.items.map((item) =>
-            item.id === itemId ? { ...item, quantity, subtotal: quantity * item.price } : item
-          )
+          const updatedItems = currentCart.items.map((item) => {
+            if (item.id === itemId) {
+              // Cap quantity at available stock
+              const finalQuantity = Math.min(Math.max(1, quantity), item.product.stock)
+              return { ...item, quantity: finalQuantity, subtotal: finalQuantity * item.price }
+            }
+            return item
+          })
 
           // Calculate totals
           const totals = calculateCartTotals(updatedItems)
