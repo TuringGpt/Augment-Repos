@@ -72,6 +72,10 @@ class ProductListView(BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
 
+    ordering_fields = ["created_at", "price", "rating", "quantity", "category__name1"]
+    search_fields = ["name", "descriptin", "brand__name", "category__name"]
+
+
 class CreateProductView(BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
