@@ -5,7 +5,7 @@ from .models import User
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for retrieving user profile information"""
     full_name = serializers.CharField(read_only=True)
-    is_registration_completed = serializers.BooleanField(read_only=True)=
+    is_registration_completed = serializers.BooleanField(read_only=True)
     
     class Meta:
         model = User
