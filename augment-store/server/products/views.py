@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
+from .filters import ProductFilter
 
 if typing.TYPE_CHECKING:
     from accounts.models import User
@@ -64,7 +65,8 @@ class BaseProductView:
         return Product.objects.all()
 
 class ProductListView(BaseProductView, ListAPIView):
-    pass
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
 
 class CreateProductView(BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
