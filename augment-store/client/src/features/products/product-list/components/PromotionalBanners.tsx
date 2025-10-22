@@ -10,7 +10,7 @@ const PromotionalBanners = () => {
 
   return (
     <Box sx={{ mb: 6 }}>
-      <Grid container spacing={3} sx={{ px: 3 }}>
+      <Grid container spacing={3} sx={{ px: 6 }}>
         {/* Left Side - 2 Small Banners */}
         <Grid item xs={12} md={3}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
