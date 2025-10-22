@@ -475,6 +475,319 @@ class ProductTests(BaseAPITestCase):
         # AND the response should contain the products
         self.assertEqual(len(response.data), 2)
 
+    def test_product_list_filter_by_price_range(self):
+        # GIVEN products with different prices exist in the database
+        ProductFactory(
+            name="Cheap Product",
+            price=Decimal("50.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Mid Product",
+            price=Decimal("150.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Expensive Product",
+            price=Decimal("300.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by price range (100-200)
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"price_min": "100", "price_max": "200"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products within the price range should be returned
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Mid Product")
+
+    def test_product_list_filter_by_rating_range(self):
+        # GIVEN products with different ratings exist in the database
+        ProductFactory(
+            name="Low Rated Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("2.5"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Mid Rated Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("3.5"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="High Rated Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.8"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by rating range (3.0-4.0)
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"rating_min": "3.0", "rating_max": "4.0"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products within the rating range should be returned
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Mid Rated Product")
+
+    def test_product_list_filter_by_category_slug(self):
+        # GIVEN products with different categories exist in the database
+        category_electronics = ProductCategoryFactory(
+            name="Electronics",
+            slug="electronics",
+            created_by=self.merchant_user
+        )
+        category_clothing = ProductCategoryFactory(
+            name="Clothing",
+            slug="clothing",
+            created_by=self.merchant_user
+        )
+
+        ProductFactory(
+            name="Laptop",
+            price=Decimal("1000.00"),
+            brand=self.brand,
+            category=category_electronics,
+            quantity=10,
+            rating=Decimal("4.5"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="T-Shirt",
+            price=Decimal("25.00"),
+            brand=self.brand,
+            category=category_clothing,
+            quantity=50,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Smartphone",
+            price=Decimal("800.00"),
+            brand=self.brand,
+            category=category_electronics,
+            quantity=15,
+            rating=Decimal("4.7"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by category slug "electronics"
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"category": "electronics"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products in the electronics category should be returned
+        self.assertEqual(len(response.data), 2)
+        product_names = [product["name"] for product in response.data]
+        self.assertIn("Laptop", product_names)
+        self.assertIn("Smartphone", product_names)
+        self.assertNotIn("T-Shirt", product_names)
+
+    def test_product_list_filter_by_brand_name(self):
+        # GIVEN products with different brands exist in the database
+        brand_apple = ProductBrandFactory(
+            name="Apple",
+            created_by=self.merchant_user
+        )
+        brand_samsung = ProductBrandFactory(
+            name="Samsung",
+            created_by=self.merchant_user
+        )
+
+        ProductFactory(
+            name="iPhone",
+            price=Decimal("999.00"),
+            brand=brand_apple,
+            category=self.category,
+            quantity=20,
+            rating=Decimal("4.8"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Galaxy Phone",
+            price=Decimal("899.00"),
+            brand=brand_samsung,
+            category=self.category,
+            quantity=25,
+            rating=Decimal("4.6"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="MacBook",
+            price=Decimal("1999.00"),
+            brand=brand_apple,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.9"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by brand name "Apple"
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"brand": "Apple"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products from Apple brand should be returned
+        self.assertEqual(len(response.data), 2)
+        product_names = [product["name"] for product in response.data]
+        self.assertIn("iPhone", product_names)
+        self.assertIn("MacBook", product_names)
+        self.assertNotIn("Galaxy Phone", product_names)
+
+    def test_product_list_filter_by_quantity_range(self):
+        # GIVEN products with different quantities exist in the database
+        ProductFactory(
+            name="Low Stock Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Medium Stock Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=50,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="High Stock Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=200,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by quantity range (20-100)
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"quantity_min": "20", "quantity_max": "100"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products within the quantity range should be returned
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Medium Stock Product")
+
+    def test_product_list_filter_multiple_filters_combined(self):
+        # GIVEN products with various attributes exist in the database
+        brand_nike = ProductBrandFactory(
+            name="Nike",
+            created_by=self.merchant_user
+        )
+        brand_adidas = ProductBrandFactory(
+            name="Adidas",
+            created_by=self.merchant_user
+        )
+        category_shoes = ProductCategoryFactory(
+            name="Shoes",
+            slug="shoes",
+            created_by=self.merchant_user
+        )
+
+        ProductFactory(
+            name="Nike Running Shoes",
+            price=Decimal("120.00"),
+            brand=brand_nike,
+            category=category_shoes,
+            quantity=30,
+            rating=Decimal("4.5"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Nike Basketball Shoes",
+            price=Decimal("180.00"),
+            brand=brand_nike,
+            category=category_shoes,
+            quantity=20,
+            rating=Decimal("4.8"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Adidas Running Shoes",
+            price=Decimal("110.00"),
+            brand=brand_adidas,
+            category=category_shoes,
+            quantity=40,
+            rating=Decimal("4.3"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products by multiple criteria: brand=Nike, price_min=100, price_max=150, rating_min=4.0
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {
+            "brand": "Nike",
+            "price_min": "100",
+            "price_max": "150",
+            "rating_min": "4.0"
+        })
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND only products matching all criteria should be returned
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Nike Running Shoes")
+
+    def test_product_list_filter_no_results(self):
+        # GIVEN products exist in the database
+        ProductFactory(
+            name="Product 1",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter products with criteria that match no products
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"price_min": "1000", "price_max": "2000"})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND an empty list should be returned
+        self.assertEqual(len(response.data), 0)
+
     def test_create_product_success(self):
         # GIVEN a merchant user is authenticated
         # WHEN we make a post request to create a product with valid data
