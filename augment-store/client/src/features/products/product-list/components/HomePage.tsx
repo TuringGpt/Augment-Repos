@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Container, Typography, Box, Grid, Button } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import { mockProductService } from '@services/api/products/mockProductService'
-import ProductCard from './ProductCard'
 import type { Product } from '@features/products/types'
+import { Box, Container, Grid, Typography } from '@mui/material'
+import { mockProductService } from '@services/api/products/mockProductService'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import ProductCard from './ProductCard'
 import PromotionalBanners from './PromotionalBanners'
 
 const HomePage = () => {
@@ -29,14 +29,6 @@ const HomePage = () => {
       <Box sx={{ py: 4 }}>
         {/* Promotional Banners Section */}
         <PromotionalBanners />
-        <Button
-          variant="contained"
-          size="large"
-          onClick={() => navigate('/products')}
-          sx={{ mt: 2 }}
-        >
-          Shop Now
-        </Button>
       </Box>
 
       {/* Featured Products */}
