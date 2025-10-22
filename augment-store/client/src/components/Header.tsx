@@ -19,13 +19,17 @@ const Header = () => {
   const navigate = useNavigate()
   const { isAuthenticated, user, logout } = useAuthStore()
   const { getItemCount } = useCartStore()
-  const { toggleSidebar } = useUIStore()
+  const { toggleSidebar, toggleCartDrawer } = useUIStore()
 
   const cartItemCount = getItemCount()
 
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const handleCartClick = () => {
+    toggleCartDrawer()
   }
 
   return (
@@ -70,7 +74,7 @@ const Header = () => {
                   </Badge>
                 </IconButton>
 
-                <IconButton color="inherit" onClick={() => navigate('/cart')}>
+                <IconButton color="inherit" onClick={handleCartClick} aria-label="open cart">
                   <Badge badgeContent={cartItemCount} color="error">
                     <ShoppingCart />
                   </Badge>
