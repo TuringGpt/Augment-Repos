@@ -16,6 +16,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
   }
 
   const isLarge = banner.size === 'large'
+  const isCardClickable = banner.ctaLink && !banner.ctaText
 
   return (
     <Card
@@ -23,16 +24,16 @@ const BannerCard = ({ banner }: BannerCardProps) => {
         position: 'relative',
         height: isLarge ? 358 : 167,
         overflow: 'hidden',
-        cursor: banner.ctaLink ? 'pointer' : 'default',
+        cursor: isCardClickable ? 'pointer' : 'default',
         transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-        '&:hover': banner.ctaLink
+        '&:hover': isCardClickable
           ? {
               transform: 'translateY(-4px)',
               boxShadow: 6,
             }
           : {},
       }}
-      onClick={banner.ctaLink && !banner.ctaText ? handleClick : undefined}
+      onClick={isCardClickable ? handleClick : undefined}
     >
       {/* Background Image */}
       <CardMedia
