@@ -15,7 +15,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
     }
   }
 
-  const isLarge = banner.type === 'large'
+  const isLarge = banner.size === 'large'
 
   return (
     <Card

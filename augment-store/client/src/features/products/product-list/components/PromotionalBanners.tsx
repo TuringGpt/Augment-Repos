@@ -7,7 +7,7 @@ const PromotionalBanners = () => {
   // Split banners into left (2), center (3 for carousel), right (2)
   const leftBanners = mockBanners.filter((b) => b.id === 'banner-1' || b.id === 'banner-2')
   const centerBanners = mockBanners.filter(
-    (b) => b.bannerId === 'banner-3' || b.bannerId === 'banner-6' || b.bannerId === 'banner-7'
+    (b) => b.id === 'banner-3' || b.id === 'banner-6' || b.id === 'banner-7'
   )
   const rightBanners = mockBanners.filter((b) => b.id === 'banner-4' || b.id === 'banner-5')
 
