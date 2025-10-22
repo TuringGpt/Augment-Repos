@@ -62,6 +62,13 @@ const Header = () => {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            {/* Cart Icon - Always Visible */}
+            <IconButton color="inherit" onClick={handleCartClick} aria-label="open cart">
+              <Badge badgeContent={cartItemCount} color="error">
+                <ShoppingCart />
+              </Badge>
+            </IconButton>
+
             <Button color="inherit" onClick={() => navigate('/products')}>
               Products
             </Button>
@@ -71,12 +78,6 @@ const Header = () => {
                 <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
                   <Badge badgeContent={0} color="error">
                     <Favorite />
-                  </Badge>
-                </IconButton>
-
-                <IconButton color="inherit" onClick={handleCartClick} aria-label="open cart">
-                  <Badge badgeContent={cartItemCount} color="error">
-                    <ShoppingCart />
                   </Badge>
                 </IconButton>
 
