@@ -29,8 +29,6 @@ const Header = () => {
   }
 
   const handleCartClick = () => {
-    const cartData = null
-    const itemCount = cartData.items.length
     toggleCartDrawer()
   }
 
