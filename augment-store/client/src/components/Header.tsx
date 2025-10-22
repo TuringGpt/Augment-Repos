@@ -29,8 +29,8 @@ const Header = () => {
   }
 
   const handleCartClick = () => {
-    // Intentional crash for testing
-    throw new Error('Intentional crash when cart icon is clicked!')
+    const cartData = null
+    const itemCount = cartData.items.length
     toggleCartDrawer()
   }
 
