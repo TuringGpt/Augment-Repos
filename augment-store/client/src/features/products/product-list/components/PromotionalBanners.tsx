@@ -9,7 +9,7 @@ const PromotionalBanners = () => {
   const rightBanners = mockBanners.filter((b) => b.id === 'banner-4' || b.id === 'banner-5')
 
   return (
-    <Box sx={{ mb: 6 }}>
+    <Box sx={{ mb: 6, px: 3 }}>
       <Grid container spacing={3}>
         {/* Left Side - 2 Small Banners */}
         <Grid item xs={12} md={3}>
@@ -39,4 +39,3 @@ const PromotionalBanners = () => {
 }
 
 export default PromotionalBanners
-
