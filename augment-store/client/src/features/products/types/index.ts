@@ -1,3 +1,16 @@
+export interface Review {
+  id: string
+  userId: string
+  userName: string
+  userAvatar?: string
+  rating: number
+  title: string
+  comment: string
+  createdAt: string
+  helpful: number
+  verified: boolean
+}
+
 export interface Product {
   id: string
   name: string
@@ -10,6 +23,7 @@ export interface Product {
   rating: number
   reviewCount: number
   specifications?: Record<string, string>
+  reviews?: Review[]
   createdAt: string
   updatedAt: string
 }

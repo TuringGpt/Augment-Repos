@@ -75,13 +75,21 @@ const Header = () => {
 
             {isAuthenticated && (
               <>
-                <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/wishlist')}
+                  aria-label="wishlist"
+                >
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
                 </IconButton>
 
-                <IconButton color="inherit" onClick={() => navigate('/profile')}>
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/profile')}
+                  aria-label="profile"
+                >
                   <Person />
                 </IconButton>
 
@@ -89,7 +97,12 @@ const Header = () => {
                   {user?.firstName}
                 </Typography>
 
-                <IconButton color="inherit" onClick={handleLogout} title="Logout">
+                <IconButton
+                  color="inherit"
+                  onClick={handleLogout}
+                  title="Logout"
+                  aria-label="logout"
+                >
                   <Logout />
                 </IconButton>
               </>
