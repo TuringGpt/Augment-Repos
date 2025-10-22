@@ -29,7 +29,7 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
         loop={true}
         style={{ height: '100%' }}
       >
-        {banners.map((banner) => (
+        {banners.items.map((banner) => (
           <SwiperSlide key={banner.id}>
             <BannerCard banner={banner} />
           </SwiperSlide>
@@ -40,4 +40,3 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
 }
 
 export default BannerCarousel
-
