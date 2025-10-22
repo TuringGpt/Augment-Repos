@@ -58,25 +58,38 @@ const Header = () => {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            {/* Cart Icon - Always visible */}
+            <IconButton
+              color="inherit"
+              onClick={() => navigate('/cart')}
+              aria-label="shopping cart"
+            >
+              <Badge badgeContent={cartItemCount} color="error">
+                <ShoppingCart />
+              </Badge>
+            </IconButton>
+
             <Button color="inherit" onClick={() => navigate('/products')}>
               Products
             </Button>
 
             {isAuthenticated && (
               <>
-                <IconButton color="inherit" onClick={() => navigate('/wishlist')}>
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/wishlist')}
+                  aria-label="wishlist"
+                >
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
                 </IconButton>
 
-                <IconButton color="inherit" onClick={() => navigate('/cart')}>
-                  <Badge badgeContent={cartItemCount} color="error">
-                    <ShoppingCart />
-                  </Badge>
-                </IconButton>
-
-                <IconButton color="inherit" onClick={() => navigate('/profile')}>
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/profile')}
+                  aria-label="profile"
+                >
                   <Person />
                 </IconButton>
 
@@ -84,7 +97,12 @@ const Header = () => {
                   {user?.firstName}
                 </Typography>
 
-                <IconButton color="inherit" onClick={handleLogout} title="Logout">
+                <IconButton
+                  color="inherit"
+                  onClick={handleLogout}
+                  title="Logout"
+                  aria-label="logout"
+                >
                   <Logout />
                 </IconButton>
               </>

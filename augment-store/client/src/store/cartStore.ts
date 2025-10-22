@@ -19,12 +19,45 @@ interface CartState {
   // Computed
   getItemCount: () => number
   getTotal: () => number
+  isInCart: (productId: string) => boolean
+  getCartItem: (productId: string) => CartItem | undefined
 }
+
+const createEmptyCart = (): Cart => ({
+  id: 'cart-' + Date.now(),
+  items: [],
+  subtotal: 0,
+  tax: 0,
+  shipping: 0,
+  total: 0,
+  itemCount: 0,
+})
+
+// Helper function to calculate cart totals
+const calculateCartTotals = (
+  items: CartItem[]
+): Pick<Cart, 'subtotal' | 'tax' | 'shipping' | 'total' | 'itemCount'> => {
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const tax = subtotal * 0.1 // 10% tax rate
+  const shipping = subtotal > 50 ? 0 : 5.99 // Free shipping over $50
+  const total = subtotal + tax + shipping
+
+  return {
+    subtotal,
+    tax,
+    shipping,
+    total,
+    itemCount,
+  }
+}
+
+const initialCart: Cart = createEmptyCart()
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
-      cart: null,
+      cart: initialCart,
       isLoading: false,
       error: null,
 
@@ -32,60 +65,100 @@ export const useCartStore = create<CartState>()(
 
       addItem: (item) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
 
-          const existingItemIndex = state.cart.items.findIndex(
+          let updatedItems: CartItem[]
+
+          const existingItemIndex = currentCart.items.findIndex(
             (i) => i.product.id === item.product.id
           )
 
           if (existingItemIndex >= 0) {
-            const updatedItems = [...state.cart.items]
-            updatedItems[existingItemIndex].quantity += item.quantity
-            return {
-              cart: {
-                ...state.cart,
-                items: updatedItems,
-              },
+            // Update existing item with stock validation
+            updatedItems = [...currentCart.items]
+            const existingItem = updatedItems[existingItemIndex]
+            const newQuantity = existingItem.quantity + item.quantity
+
+            // Cap quantity at available stock
+            const finalQuantity = Math.min(newQuantity, existingItem.product.stock)
+
+            updatedItems[existingItemIndex] = {
+              ...existingItem,
+              quantity: finalQuantity,
+              subtotal: finalQuantity * existingItem.price,
             }
+          } else {
+            // Add new item with stock validation
+            const finalQuantity = Math.min(item.quantity, item.product.stock)
+            updatedItems = [
+              ...currentCart.items,
+              {
+                ...item,
+                quantity: finalQuantity,
+                subtotal: finalQuantity * item.price,
+              },
+            ]
           }
+
+          // Calculate totals
+          const totals = calculateCartTotals(updatedItems)
 
           return {
             cart: {
-              ...state.cart,
-              items: [...state.cart.items, item],
+              ...currentCart,
+              items: updatedItems,
+              ...totals,
             },
           }
         }),
 
       updateItem: (itemId, quantity) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
 
-          const updatedItems = state.cart.items.map((item) =>
-            item.id === itemId ? { ...item, quantity } : item
-          )
+          const updatedItems = currentCart.items.map((item) => {
+            if (item.id === itemId) {
+              // Cap quantity at available stock
+              const finalQuantity = Math.min(Math.max(1, quantity), item.product.stock)
+              return { ...item, quantity: finalQuantity, subtotal: finalQuantity * item.price }
+            }
+            return item
+          })
+
+          // Calculate totals
+          const totals = calculateCartTotals(updatedItems)
 
           return {
             cart: {
-              ...state.cart,
+              ...currentCart,
               items: updatedItems,
+              ...totals,
             },
           }
         }),
 
       removeItem: (itemId) =>
         set((state) => {
-          if (!state.cart) return state
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
+
+          const updatedItems = currentCart.items.filter((item) => item.id !== itemId)
+
+          // Calculate totals
+          const totals = calculateCartTotals(updatedItems)
 
           return {
             cart: {
-              ...state.cart,
-              items: state.cart.items.filter((item) => item.id !== itemId),
+              ...currentCart,
+              items: updatedItems,
+              ...totals,
             },
           }
         }),
 
-      clearCart: () => set({ cart: null }),
+      clearCart: () => set({ cart: createEmptyCart() }),
 
       setLoading: (isLoading) => set({ isLoading }),
 
@@ -99,6 +172,16 @@ export const useCartStore = create<CartState>()(
       getTotal: () => {
         const { cart } = get()
         return cart?.total || 0
+      },
+
+      isInCart: (productId) => {
+        const { cart } = get()
+        return cart?.items.some((item) => item.product.id === productId) || false
+      },
+
+      getCartItem: (productId) => {
+        const { cart } = get()
+        return cart?.items.find((item) => item.product.id === productId)
       },
     }),
     {
