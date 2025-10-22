@@ -2,12 +2,10 @@ import type { Product } from '@features/products/types'
 import { Box, Container, Grid, Typography } from '@mui/material'
 import { mockProductService } from '@services/api/products/mockProductService'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import ProductCard from './ProductCard'
 import PromotionalBanners from './PromotionalBanners'
 
 const HomePage = () => {
-  const navigate = useNavigate()
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
 
   useEffect(() => {
