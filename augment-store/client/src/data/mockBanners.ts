@@ -24,16 +24,40 @@ export const mockBanners: PromotionalBanner[] = [
     textColor: '#1a1a1a',
     size: 'small',
   },
-  // Center banner (large)
+  // Center banners (large) - for carousel
   {
     id: 'banner-3',
     title: 'Mega Sale Event',
     subtitle: 'Limited Time Offer',
-    description: 'Get amazing deals on all categories. Don\'t miss out!',
+    description: "Get amazing deals on all categories. Don't miss out!",
     imageUrl: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&h=600&fit=crop',
     ctaText: 'Shop All Deals',
     ctaLink: '/products',
     backgroundColor: '#1a1a1a',
+    textColor: '#ffffff',
+    size: 'large',
+  },
+  {
+    id: 'banner-6',
+    title: 'Winter Collection',
+    subtitle: 'New Season Arrivals',
+    description: 'Discover the latest trends for the winter season',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&h=600&fit=crop',
+    ctaText: 'Explore Now',
+    ctaLink: '/products',
+    backgroundColor: '#2c3e50',
+    textColor: '#ffffff',
+    size: 'large',
+  },
+  {
+    id: 'banner-7',
+    title: 'Tech Deals',
+    subtitle: 'Up to 40% Off',
+    description: 'Latest gadgets and electronics at unbeatable prices',
+    imageUrl: 'https://images.unsplash.com/photo-1519558260268-cde7e03a0152?w=1200&h=600&fit=crop',
+    ctaText: 'Shop Tech',
+    ctaLink: '/products',
+    backgroundColor: '#34495e',
     textColor: '#ffffff',
     size: 'large',
   },
@@ -61,4 +85,3 @@ export const mockBanners: PromotionalBanner[] = [
     size: 'small',
   },
 ]
-

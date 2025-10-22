@@ -1,11 +1,14 @@
 import { Box, Grid } from '@mui/material'
 import { mockBanners } from '@data/mockBanners'
 import BannerCard from './BannerCard'
+import BannerCarousel from './BannerCarousel'
 
 const PromotionalBanners = () => {
-  // Split banners into left (2), center (1), right (2)
+  // Split banners into left (2), center (3 for carousel), right (2)
   const leftBanners = mockBanners.filter((b) => b.id === 'banner-1' || b.id === 'banner-2')
-  const centerBanner = mockBanners.find((b) => b.id === 'banner-3')
+  const centerBanners = mockBanners.filter(
+    (b) => b.id === 'banner-3' || b.id === 'banner-6' || b.id === 'banner-7'
+  )
   const rightBanners = mockBanners.filter((b) => b.id === 'banner-4' || b.id === 'banner-5')
 
   return (
@@ -20,9 +23,9 @@ const PromotionalBanners = () => {
           </Box>
         </Grid>
 
-        {/* Center - 1 Large Banner */}
+        {/* Center - Banner Carousel */}
         <Grid item xs={12} md={6}>
-          {centerBanner && <BannerCard banner={centerBanner} />}
+          <BannerCarousel banners={centerBanners} />
         </Grid>
 
         {/* Right Side - 2 Small Banners */}

@@ -21,7 +21,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
     <Card
       sx={{
         position: 'relative',
-        height: isLarge ? 350 : 167,
+        height: isLarge ? 358 : 167,
         overflow: 'hidden',
         cursor: banner.ctaLink ? 'pointer' : 'default',
         transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
