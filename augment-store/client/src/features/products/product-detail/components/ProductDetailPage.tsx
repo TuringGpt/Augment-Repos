@@ -71,6 +71,15 @@ const ProductDetailPage = () => {
     fetchProduct()
   }, [id])
 
+  // Sync quantity with cart item when product is in cart
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity)
+    } else {
+      setQuantity(1)
+    }
+  }, [cartItem])
+
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(product?.stock || 1, prev + delta)))
   }

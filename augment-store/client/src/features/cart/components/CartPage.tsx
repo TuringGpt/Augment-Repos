@@ -39,13 +39,6 @@ const CartPage = () => {
   const [removeItemDialogOpen, setRemoveItemDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
 
-  // Debug: Log cart state
-  console.log('Cart Page - Cart:', cart)
-  console.log('Cart Page - Items:', cart?.items)
-  console.log('Cart Page - Item Count:', cart?.itemCount)
-  console.log('Cart Page - Items Length:', cart?.items?.length)
-  console.log('Cart Page - Empty check:', !cart || !cart.items || cart.items.length === 0)
-
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       setSelectedItems(cart?.items.map((item) => item.id) || [])

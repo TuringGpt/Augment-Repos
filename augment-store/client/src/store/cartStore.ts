@@ -69,37 +69,19 @@ export const useCartStore = create<CartState>()(
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
 
-          console.log('=== ADD ITEM DEBUG ===')
-          console.log('Item being added:', item)
-          console.log('Item product ID:', item.product.id)
-          console.log('Current cart items:', currentCart.items)
-          console.log(
-            'Current cart item product IDs:',
-            currentCart.items.map((i) => i.product.id)
-          )
-
           let updatedItems: CartItem[]
 
           const existingItemIndex = currentCart.items.findIndex(
             (i) => i.product.id === item.product.id
           )
 
-          console.log('Existing item index:', existingItemIndex)
-
           if (existingItemIndex >= 0) {
             // Replace quantity for existing item (don't add to it)
-            console.log('REPLACING existing item quantity')
             updatedItems = [...currentCart.items]
             const existingItem = updatedItems[existingItemIndex]
 
-            console.log('Existing item:', existingItem)
-            console.log('Old quantity:', existingItem.quantity)
-            console.log('New quantity:', item.quantity)
-
             // Cap quantity at available stock
             const finalQuantity = Math.min(item.quantity, existingItem.product.stock)
-
-            console.log('Final quantity:', finalQuantity)
 
             updatedItems[existingItemIndex] = {
               ...existingItem,
@@ -108,9 +90,7 @@ export const useCartStore = create<CartState>()(
             }
           } else {
             // Add new item with stock validation
-            console.log('ADDING new item')
             const finalQuantity = Math.min(item.quantity, item.product.stock)
-            console.log('New item quantity:', finalQuantity)
             updatedItems = [
               ...currentCart.items,
               {
@@ -123,9 +103,6 @@ export const useCartStore = create<CartState>()(
 
           // Calculate totals
           const totals = calculateCartTotals(updatedItems)
-
-          console.log('Updated items:', updatedItems)
-          console.log('=== END DEBUG ===')
 
           return {
             cart: {
