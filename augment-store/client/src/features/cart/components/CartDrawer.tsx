@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Drawer,
@@ -10,6 +11,11 @@ import {
   ListItem,
   Avatar,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Close as CloseIcon,
@@ -25,6 +31,8 @@ const CartDrawer = () => {
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
   const { cart, updateItem, removeItem } = useCartStore()
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
 
   const handleClose = () => {
     setCartDrawerOpen(false)
@@ -44,6 +52,24 @@ const CartDrawer = () => {
     if (newQuantity >= 1) {
       updateItem(itemId, newQuantity)
     }
+  }
+
+  const handleRemoveClick = (itemId: string, itemName: string) => {
+    setItemToRemove({ id: itemId, name: itemName })
+    setRemoveDialogOpen(true)
+  }
+
+  const handleRemoveConfirm = () => {
+    if (itemToRemove) {
+      removeItem(itemToRemove.id)
+      setRemoveDialogOpen(false)
+      setItemToRemove(null)
+    }
+  }
+
+  const handleRemoveCancel = () => {
+    setRemoveDialogOpen(false)
+    setItemToRemove(null)
   }
 
   const itemCount = cart?.itemCount || 0
@@ -137,7 +163,7 @@ const CartDrawer = () => {
                     <IconButton
                       size="small"
                       color="error"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveClick(item.id, item.product.name)}
                       aria-label="Remove item"
                       sx={{ alignSelf: 'flex-start' }}
                     >
@@ -261,6 +287,29 @@ const CartDrawer = () => {
           </Box>
         )}
       </Box>
+
+      {/* Remove Item Confirmation Dialog */}
+      <Dialog
+        open={removeDialogOpen}
+        onClose={handleRemoveCancel}
+        aria-labelledby="remove-item-dialog-title"
+        aria-describedby="remove-item-dialog-description"
+      >
+        <DialogTitle id="remove-item-dialog-title">Remove Item?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-item-dialog-description">
+            Are you sure you want to remove <strong>{itemToRemove?.name}</strong> from your cart?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRemoveCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Drawer>
   )
 }
