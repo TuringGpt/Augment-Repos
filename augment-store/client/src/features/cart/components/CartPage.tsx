@@ -35,6 +35,8 @@ const CartPage = () => {
   console.log('Cart Page - Cart:', cart)
   console.log('Cart Page - Items:', cart?.items)
   console.log('Cart Page - Item Count:', cart?.itemCount)
+  console.log('Cart Page - Items Length:', cart?.items?.length)
+  console.log('Cart Page - Empty check:', !cart || !cart.items || cart.items.length === 0)
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -73,7 +75,8 @@ const CartPage = () => {
   }
 
   // Empty cart state
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
+    console.log('Showing empty cart state')
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Paper
@@ -100,6 +103,8 @@ const CartPage = () => {
       </Container>
     )
   }
+
+  console.log('Rendering cart with items:', cart.items.length)
 
   const allSelected = cart.items.length > 0 && selectedItems.length === cart.items.length
 
