@@ -31,6 +31,11 @@ const CartPage = () => {
   const { cart, updateItem, removeItem, removeItems, clearCart } = useCartStore()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
 
+  // Debug: Log cart state
+  console.log('Cart Page - Cart:', cart)
+  console.log('Cart Page - Items:', cart?.items)
+  console.log('Cart Page - Item Count:', cart?.itemCount)
+
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       setSelectedItems(cart?.items.map((item) => item.id) || [])

@@ -12,7 +12,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const products = await mockProductService.getProducts()
+        const { products } = await mockProductService.getProducts()
         // Get first 6 products as featured
         setFeaturedProducts(products.slice(0, 6))
       } catch (error) {
