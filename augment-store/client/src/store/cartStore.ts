@@ -69,6 +69,9 @@ export const useCartStore = create<CartState>()(
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
 
+          console.log('Adding item to cart:', item)
+          console.log('Item quantity:', item.quantity)
+
           let updatedItems: CartItem[]
 
           const existingItemIndex = currentCart.items.findIndex(
@@ -81,8 +84,15 @@ export const useCartStore = create<CartState>()(
             const existingItem = updatedItems[existingItemIndex]
             const newQuantity = existingItem.quantity + item.quantity
 
+            console.log('Item already exists in cart')
+            console.log('Existing quantity:', existingItem.quantity)
+            console.log('Adding quantity:', item.quantity)
+            console.log('New total quantity:', newQuantity)
+
             // Cap quantity at available stock
             const finalQuantity = Math.min(newQuantity, existingItem.product.stock)
+
+            console.log('Final quantity (after stock cap):', finalQuantity)
 
             updatedItems[existingItemIndex] = {
               ...existingItem,
@@ -92,6 +102,11 @@ export const useCartStore = create<CartState>()(
           } else {
             // Add new item with stock validation
             const finalQuantity = Math.min(item.quantity, item.product.stock)
+
+            console.log('Adding new item to cart')
+            console.log('Requested quantity:', item.quantity)
+            console.log('Final quantity (after stock cap):', finalQuantity)
+
             updatedItems = [
               ...currentCart.items,
               {
@@ -104,6 +119,8 @@ export const useCartStore = create<CartState>()(
 
           // Calculate totals
           const totals = calculateCartTotals(updatedItems)
+
+          console.log('Updated cart items:', updatedItems)
 
           return {
             cart: {
