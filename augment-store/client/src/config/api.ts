@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
   TIMEOUT: 30000,
   HEADERS: {
     'Content-Type': 'application/json',
@@ -9,13 +9,13 @@ export const API_CONFIG = {
 export const API_ENDPOINTS = {
   // Auth endpoints
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    LOGOUT: '/auth/logout',
-    REFRESH_TOKEN: '/auth/refresh',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_EMAIL: '/auth/verify-email',
+    LOGIN: '/auth/login/',
+    REGISTER: '/auth/register/',
+    LOGOUT: '/auth/logout/',
+    REFRESH_TOKEN: '/auth/refresh-token/',
+    FORGOT_PASSWORD: '/auth/forgot-password/',
+    RESET_PASSWORD: '/auth/reset-password/',
+    VERIFY_EMAIL: '/auth/verify-email/',
   },
 
   // Product endpoints
@@ -53,8 +53,8 @@ export const API_ENDPOINTS = {
 
   // User endpoints
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
+    PROFILE: '/accounts/profile/',
+    UPDATE_PROFILE: '/accounts/profile/',
     ADDRESSES: '/user/addresses',
     ADD_ADDRESS: '/user/addresses',
     UPDATE_ADDRESS: (id: string) => `/user/addresses/${id}`,

@@ -30,7 +30,7 @@ interface RegisterFormData extends RegisterRequest {
 
 const RegisterPage = () => {
   const navigate = useNavigate()
-  const { login: setAuthState, setLoading, setError } = useAuthStore()
+  const { setLoading, setError } = useAuthStore()
 
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
@@ -45,6 +45,7 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState<Partial<RegisterFormData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: Partial<RegisterFormData> = {}
@@ -119,19 +120,63 @@ const RegisterPage = () => {
     setIsSubmitting(true)
     setLoading(true)
     setApiError(null)
+    setSuccessMessage(null)
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, agreeToTerms, ...registerData } = formData
-      const response = await authService.register(registerData)
-      setAuthState(response.user, response.accessToken, response.refreshToken)
-      navigate('/')
+      await authService.register(registerData)
+
+      // Show success message
+      setSuccessMessage('Registration successful! Redirecting to email verification...')
+
+      // Redirect to email verification page with email as query param
+      setTimeout(() => {
+        navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`)
+      }, 1500)
     } catch (error) {
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (error as { message?: string }).message ||
-        'Registration failed. Please try again.'
+      // Enhanced error handling for Django backend responses
+      let errorMessage = 'Registration failed. Please try again.'
+
+      const axiosError = error as {
+        response?: {
+          data?: {
+            email?: string[]
+            password?: string[]
+            first_name?: string[]
+            last_name?: string[]
+            detail?: string
+            message?: string
+            non_field_errors?: string[]
+          }
+          status?: number
+        }
+        message?: string
+      }
+
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data
+
+        // Handle field-specific errors from Django
+        if (data.email) {
+          errorMessage = `Email: ${data.email[0]}`
+        } else if (data.password) {
+          errorMessage = `Password: ${data.password[0]}`
+        } else if (data.first_name) {
+          errorMessage = `First Name: ${data.first_name[0]}`
+        } else if (data.last_name) {
+          errorMessage = `Last Name: ${data.last_name[0]}`
+        } else if (data.non_field_errors) {
+          errorMessage = data.non_field_errors[0]
+        } else if (data.detail) {
+          errorMessage = data.detail
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message
+      }
+
       setApiError(errorMessage)
       setError(errorMessage)
     } finally {
@@ -181,6 +226,16 @@ const RegisterPage = () => {
 
           {/* Form Section */}
           <Box sx={{ p: 4 }}>
+            {/* Success Banner */}
+            {successMessage && (
+              <Fade in={true}>
+                <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+                  {successMessage}
+                </Alert>
+              </Fade>
+            )}
+
+            {/* Error Banner */}
             {apiError && (
               <Fade in={true}>
                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setApiError(null)}>

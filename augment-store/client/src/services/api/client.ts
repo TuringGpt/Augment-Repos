@@ -53,19 +53,20 @@ class ApiClient {
             const refreshToken = useAuthStore.getState().refreshToken
             if (refreshToken) {
               // Create a new axios instance without interceptors for the refresh call
+              // Django expects {refresh: "..."} and returns {access: "...", refresh: "..."}
               const refreshResponse = await axios.post(
                 `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
-                { refreshToken },
+                { refresh: refreshToken },
                 { headers: API_CONFIG.HEADERS }
               )
-              const { accessToken } = refreshResponse.data
+              const { access, refresh } = refreshResponse.data
 
-              // Update Zustand store with new access token
-              useAuthStore.getState().setTokens(accessToken, refreshToken)
+              // Update Zustand store with new tokens
+              useAuthStore.getState().setTokens(access, refresh)
 
               // Retry original request with new token
               originalRequest.headers = originalRequest.headers || {}
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`
+              originalRequest.headers.Authorization = `Bearer ${access}`
               return this.client(originalRequest)
             }
           } catch (refreshError) {
