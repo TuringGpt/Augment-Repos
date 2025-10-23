@@ -259,6 +259,7 @@ const CartPage = () => {
                           <RemoveIcon fontSize="small" />
                         </IconButton>
                         <TextField
+                          type="number"
                           value={item.quantity}
                           onChange={(e) => {
                             const value = parseInt(e.target.value)
@@ -275,6 +276,7 @@ const CartPage = () => {
                           inputProps={{
                             min: 1,
                             max: item.product.stock,
+                            inputMode: 'numeric',
                           }}
                         />
                         <IconButton
