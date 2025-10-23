@@ -186,12 +186,7 @@ const CartDrawer = () => {
                     <TextField
                       type="number"
                       value={item.quantity}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value)
-                        if (!isNaN(value)) {
-                          handleQuantityChange(item.id, value)
-                        }
-                      }}
+                      disabled
                       size="small"
                       sx={{
                         width: 50,
