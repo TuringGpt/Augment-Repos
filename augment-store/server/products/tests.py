@@ -1070,313 +1070,158 @@ class ProductTests(BaseAPITestCase):
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def _create_products_and_test_ordering(self, products_data, ordering_param, expected_order):
+        """
+        Helper method to create products and test ordering.
+
+        Args:
+            products_data: List of dicts with product attributes
+            ordering_param: The ordering parameter to use in the request
+            expected_order: List of tuples (product_name, field_name, expected_value) or (product_name, nested_field_path, expected_value)
+        """
+        # Create products
+        for product_data in products_data:
+            ProductFactory(**product_data, created_by=self.merchant_user)
+
+        # Make request with ordering
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"ordering": ordering_param})
+
+        # Assert response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), len(products_data))
+
+        # Assert ordering
+        for idx, (expected_name, field_path, expected_value) in enumerate(expected_order):
+            self.assertEqual(response.data[idx]["name"], expected_name)
+
+            # Handle nested fields (e.g., "brand.name" or "category.name")
+            if "." in field_path:
+                parts = field_path.split(".")
+                value = response.data[idx]
+                for part in parts:
+                    value = value[part]
+                self.assertEqual(value, expected_value)
+            else:
+                # Handle direct fields
+                actual_value = response.data[idx][field_path]
+                if isinstance(expected_value, float):
+                    self.assertEqual(float(actual_value), expected_value)
+                else:
+                    self.assertEqual(actual_value, expected_value)
+
     def test_product_list_ordering_by_price_ascending(self):
         # GIVEN multiple products with different prices exist
-        product1 = ProductFactory(
-            name="Expensive Product",
-            price=299.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=10,
-            rating=4.5,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Cheap Product",
-            price=49.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=20,
-            rating=3.5,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Mid-range Product",
-            price=149.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=15,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "Expensive Product", "price": 299.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.5},
+            {"name": "Cheap Product", "price": 49.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 3.5},
+            {"name": "Mid-range Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Cheap Product", "price", 49.99),
+            ("Mid-range Product", "price", 149.99),
+            ("Expensive Product", "price", 299.99),
+        ]
 
         # WHEN we request the product list ordered by price ascending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "price"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by price ascending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Cheap Product")
-        self.assertEqual(float(response.data[0]["price"]), 49.99)
-        self.assertEqual(response.data[1]["name"], "Mid-range Product")
-        self.assertEqual(float(response.data[1]["price"]), 149.99)
-        self.assertEqual(response.data[2]["name"], "Expensive Product")
-        self.assertEqual(float(response.data[2]["price"]), 299.99)
+        # THEN the products should be ordered by price ascending
+        self._create_products_and_test_ordering(products_data, "price", expected_order)
 
     def test_product_list_ordering_by_price_descending(self):
         # GIVEN multiple products with different prices exist
-        product1 = ProductFactory(
-            name="Expensive Product",
-            price=299.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=10,
-            rating=4.5,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Cheap Product",
-            price=49.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=20,
-            rating=3.5,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Mid-range Product",
-            price=149.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=15,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "Expensive Product", "price": 299.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.5},
+            {"name": "Cheap Product", "price": 49.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 3.5},
+            {"name": "Mid-range Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Expensive Product", "price", 299.99),
+            ("Mid-range Product", "price", 149.99),
+            ("Cheap Product", "price", 49.99),
+        ]
 
         # WHEN we request the product list ordered by price descending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "-price"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by price descending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Expensive Product")
-        self.assertEqual(float(response.data[0]["price"]), 299.99)
-        self.assertEqual(response.data[1]["name"], "Mid-range Product")
-        self.assertEqual(float(response.data[1]["price"]), 149.99)
-        self.assertEqual(response.data[2]["name"], "Cheap Product")
-        self.assertEqual(float(response.data[2]["price"]), 49.99)
+        # THEN the products should be ordered by price descending
+        self._create_products_and_test_ordering(products_data, "-price", expected_order)
 
     def test_product_list_ordering_by_rating_descending(self):
         # GIVEN multiple products with different ratings exist
-        product1 = ProductFactory(
-            name="Highly Rated Product",
-            price=199.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=10,
-            rating=4.8,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Low Rated Product",
-            price=99.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=20,
-            rating=2.5,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Average Rated Product",
-            price=149.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=15,
-            rating=3.7,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "Highly Rated Product", "price": 199.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.8},
+            {"name": "Low Rated Product", "price": 99.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 2.5},
+            {"name": "Average Rated Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 3.7},
+        ]
+
+        expected_order = [
+            ("Highly Rated Product", "rating", 4.8),
+            ("Average Rated Product", "rating", 3.7),
+            ("Low Rated Product", "rating", 2.5),
+        ]
 
         # WHEN we request the product list ordered by rating descending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "-rating"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by rating descending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Highly Rated Product")
-        self.assertEqual(float(response.data[0]["rating"]), 4.8)
-        self.assertEqual(response.data[1]["name"], "Average Rated Product")
-        self.assertEqual(float(response.data[1]["rating"]), 3.7)
-        self.assertEqual(response.data[2]["name"], "Low Rated Product")
-        self.assertEqual(float(response.data[2]["rating"]), 2.5)
+        # THEN the products should be ordered by rating descending
+        self._create_products_and_test_ordering(products_data, "-rating", expected_order)
 
     def test_product_list_ordering_by_quantity_ascending(self):
         # GIVEN multiple products with different quantities exist
-        product1 = ProductFactory(
-            name="High Stock Product",
-            price=199.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=100,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Low Stock Product",
-            price=99.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=5,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Medium Stock Product",
-            price=149.99,
-            brand=self.brand,
-            category=self.category,
-            quantity=50,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "High Stock Product", "price": 199.99, "brand": self.brand, "category": self.category, "quantity": 100, "rating": 4.0},
+            {"name": "Low Stock Product", "price": 99.99, "brand": self.brand, "category": self.category, "quantity": 5, "rating": 4.0},
+            {"name": "Medium Stock Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 50, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Low Stock Product", "quantity", 5),
+            ("Medium Stock Product", "quantity", 50),
+            ("High Stock Product", "quantity", 100),
+        ]
 
         # WHEN we request the product list ordered by quantity ascending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "quantity"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by quantity ascending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Low Stock Product")
-        self.assertEqual(response.data[0]["quantity"], 5)
-        self.assertEqual(response.data[1]["name"], "Medium Stock Product")
-        self.assertEqual(response.data[1]["quantity"], 50)
-        self.assertEqual(response.data[2]["name"], "High Stock Product")
-        self.assertEqual(response.data[2]["quantity"], 100)
+        # THEN the products should be ordered by quantity ascending
+        self._create_products_and_test_ordering(products_data, "quantity", expected_order)
 
     def test_product_list_ordering_by_brand_name(self):
         # GIVEN multiple products with different brands exist
-        brand_a = ProductBrandFactory(
-            name="Alpha Brand",
-            description="First brand",
-            created_by=self.merchant_user
-        )
-        brand_z = ProductBrandFactory(
-            name="Zeta Brand",
-            description="Last brand",
-            created_by=self.merchant_user
-        )
-        brand_m = ProductBrandFactory(
-            name="Mega Brand",
-            description="Middle brand",
-            created_by=self.merchant_user
-        )
+        brand_a = ProductBrandFactory(name="Alpha Brand", description="First brand", created_by=self.merchant_user)
+        brand_z = ProductBrandFactory(name="Zeta Brand", description="Last brand", created_by=self.merchant_user)
+        brand_m = ProductBrandFactory(name="Mega Brand", description="Middle brand", created_by=self.merchant_user)
 
-        product1 = ProductFactory(
-            name="Product from Zeta",
-            price=199.99,
-            brand=brand_z,
-            category=self.category,
-            quantity=10,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Product from Alpha",
-            price=99.99,
-            brand=brand_a,
-            category=self.category,
-            quantity=20,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Product from Mega",
-            price=149.99,
-            brand=brand_m,
-            category=self.category,
-            quantity=15,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "Product from Zeta", "price": 199.99, "brand": brand_z, "category": self.category, "quantity": 10, "rating": 4.0},
+            {"name": "Product from Alpha", "price": 99.99, "brand": brand_a, "category": self.category, "quantity": 20, "rating": 4.0},
+            {"name": "Product from Mega", "price": 149.99, "brand": brand_m, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Product from Alpha", "brand.name", "Alpha Brand"),
+            ("Product from Mega", "brand.name", "Mega Brand"),
+            ("Product from Zeta", "brand.name", "Zeta Brand"),
+        ]
 
         # WHEN we request the product list ordered by brand name ascending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "brand__name"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by brand name ascending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Product from Alpha")
-        self.assertEqual(response.data[0]["brand"]["name"], "Alpha Brand")
-        self.assertEqual(response.data[1]["name"], "Product from Mega")
-        self.assertEqual(response.data[1]["brand"]["name"], "Mega Brand")
-        self.assertEqual(response.data[2]["name"], "Product from Zeta")
-        self.assertEqual(response.data[2]["brand"]["name"], "Zeta Brand")
+        # THEN the products should be ordered by brand name ascending
+        self._create_products_and_test_ordering(products_data, "brand__name", expected_order)
 
     def test_product_list_ordering_by_category_name(self):
         # GIVEN multiple products with different categories exist
-        category_a = ProductCategoryFactory(
-            name="Accessories",
-            slug="accessories",
-            description="Accessories category",
-            created_by=self.merchant_user
-        )
-        category_e = ProductCategoryFactory(
-            name="Electronics",
-            slug="electronics",
-            description="Electronics category",
-            created_by=self.merchant_user
-        )
-        category_c = ProductCategoryFactory(
-            name="Clothing",
-            slug="clothing",
-            description="Clothing category",
-            created_by=self.merchant_user
-        )
+        category_a = ProductCategoryFactory(name="Accessories", slug="accessories", description="Accessories category", created_by=self.merchant_user)
+        category_e = ProductCategoryFactory(name="Electronics", slug="electronics", description="Electronics category", created_by=self.merchant_user)
+        category_c = ProductCategoryFactory(name="Clothing", slug="clothing", description="Clothing category", created_by=self.merchant_user)
 
-        product1 = ProductFactory(
-            name="Electronic Product",
-            price=199.99,
-            brand=self.brand,
-            category=category_e,
-            quantity=10,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product2 = ProductFactory(
-            name="Accessory Product",
-            price=99.99,
-            brand=self.brand,
-            category=category_a,
-            quantity=20,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
-        product3 = ProductFactory(
-            name="Clothing Product",
-            price=149.99,
-            brand=self.brand,
-            category=category_c,
-            quantity=15,
-            rating=4.0,
-            created_by=self.merchant_user
-        )
+        products_data = [
+            {"name": "Electronic Product", "price": 199.99, "brand": self.brand, "category": category_e, "quantity": 10, "rating": 4.0},
+            {"name": "Accessory Product", "price": 99.99, "brand": self.brand, "category": category_a, "quantity": 20, "rating": 4.0},
+            {"name": "Clothing Product", "price": 149.99, "brand": self.brand, "category": category_c, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Accessory Product", "category.name", "Accessories"),
+            ("Clothing Product", "category.name", "Clothing"),
+            ("Electronic Product", "category.name", "Electronics"),
+        ]
 
         # WHEN we request the product list ordered by category name ascending
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"ordering": "category__name"})
-
-        # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # AND the products should be ordered by category name ascending
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["name"], "Accessory Product")
-        self.assertEqual(response.data[0]["category"]["name"], "Accessories")
-        self.assertEqual(response.data[1]["name"], "Clothing Product")
-        self.assertEqual(response.data[1]["category"]["name"], "Clothing")
-        self.assertEqual(response.data[2]["name"], "Electronic Product")
-        self.assertEqual(response.data[2]["category"]["name"], "Electronics")
+        # THEN the products should be ordered by category name ascending
+        self._create_products_and_test_ordering(products_data, "category__name", expected_order)
