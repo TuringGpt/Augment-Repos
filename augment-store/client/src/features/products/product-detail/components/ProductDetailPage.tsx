@@ -350,30 +350,7 @@ const ProductDetailPage = () => {
                   </Typography>
                 </Box>
 
-                {productInCart ? (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="large"
-                    startIcon={<CartIcon />}
-                    onClick={handleRemoveFromCart}
-                    sx={{
-                      py: 1.5,
-                      px: 4,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      minWidth: 200,
-                      boxShadow: 'none',
-                      '&:hover': {
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      },
-                    }}
-                  >
-                    Remove from Cart
-                  </Button>
-                ) : (
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
                     variant="contained"
                     size="large"
@@ -395,9 +372,31 @@ const ProductDetailPage = () => {
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
-                    Add to Cart
+                    {productInCart ? 'Update Cart' : 'Add to Cart'}
                   </Button>
-                )}
+                  {productInCart && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="large"
+                      onClick={handleRemoveFromCart}
+                      sx={{
+                        py: 1.5,
+                        px: 3,
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        boxShadow: 'none',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        },
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Box>
               </Box>
             )}
 
