@@ -12,6 +12,7 @@ interface CartState {
   addItem: (item: CartItem) => void
   updateItem: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
+  removeItems: (itemIds: string[]) => void
   clearCart: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -145,6 +146,25 @@ export const useCartStore = create<CartState>()(
           const currentCart = state.cart || createEmptyCart()
 
           const updatedItems = currentCart.items.filter((item) => item.id !== itemId)
+
+          // Calculate totals
+          const totals = calculateCartTotals(updatedItems)
+
+          return {
+            cart: {
+              ...currentCart,
+              items: updatedItems,
+              ...totals,
+            },
+          }
+        }),
+
+      removeItems: (itemIds) =>
+        set((state) => {
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
+
+          const updatedItems = currentCart.items.filter((item) => !itemIds.includes(item.id))
 
           // Calculate totals
           const totals = calculateCartTotals(updatedItems)
