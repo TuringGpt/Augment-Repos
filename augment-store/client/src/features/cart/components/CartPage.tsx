@@ -37,6 +37,7 @@ const CartPage = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false)
   const [removeItemDialogOpen, setRemoveItemDialogOpen] = useState(false)
+  const [removeSelectedDialogOpen, setRemoveSelectedDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,11 +60,22 @@ const CartPage = () => {
     }
   }
 
-  const handleRemoveSelected = () => {
+  const handleRemoveSelectedClick = () => {
+    if (selectedItems.length > 0) {
+      setRemoveSelectedDialogOpen(true)
+    }
+  }
+
+  const handleRemoveSelectedConfirm = () => {
     if (selectedItems.length > 0) {
       removeItems(selectedItems)
       setSelectedItems([])
+      setRemoveSelectedDialogOpen(false)
     }
+  }
+
+  const handleRemoveSelectedCancel = () => {
+    setRemoveSelectedDialogOpen(false)
   }
 
   const handleClearCartClick = () => {
@@ -150,7 +162,7 @@ const CartPage = () => {
           variant="outlined"
           color="error"
           startIcon={<DeleteIcon />}
-          onClick={handleRemoveSelected}
+          onClick={handleRemoveSelectedClick}
           disabled={selectedItems.length === 0}
         >
           Remove Selected ({selectedItems.length})
@@ -408,6 +420,30 @@ const CartPage = () => {
           </Button>
           <Button onClick={handleRemoveItemConfirm} color="error" variant="contained" autoFocus>
             Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Remove Selected Items Confirmation Dialog */}
+      <Dialog
+        open={removeSelectedDialogOpen}
+        onClose={handleRemoveSelectedCancel}
+        aria-labelledby="remove-selected-dialog-title"
+        aria-describedby="remove-selected-dialog-description"
+      >
+        <DialogTitle id="remove-selected-dialog-title">Remove Selected Items?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-selected-dialog-description">
+            Are you sure you want to remove <strong>{selectedItems.length}</strong> selected{' '}
+            {selectedItems.length === 1 ? 'item' : 'items'} from your cart?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRemoveSelectedCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleRemoveSelectedConfirm} color="error" variant="contained" autoFocus>
+            Remove {selectedItems.length} {selectedItems.length === 1 ? 'Item' : 'Items'}
           </Button>
         </DialogActions>
       </Dialog>
