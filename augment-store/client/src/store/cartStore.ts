@@ -12,6 +12,7 @@ interface CartState {
   addItem: (item: CartItem) => void
   updateItem: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
+  removeItems: (itemIds: string[]) => void
   clearCart: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -75,13 +76,12 @@ export const useCartStore = create<CartState>()(
           )
 
           if (existingItemIndex >= 0) {
-            // Update existing item with stock validation
+            // Replace quantity for existing item (don't add to it)
             updatedItems = [...currentCart.items]
             const existingItem = updatedItems[existingItemIndex]
-            const newQuantity = existingItem.quantity + item.quantity
 
             // Cap quantity at available stock
-            const finalQuantity = Math.min(newQuantity, existingItem.product.stock)
+            const finalQuantity = Math.min(item.quantity, existingItem.product.stock)
 
             updatedItems[existingItemIndex] = {
               ...existingItem,
@@ -145,6 +145,25 @@ export const useCartStore = create<CartState>()(
           const currentCart = state.cart || createEmptyCart()
 
           const updatedItems = currentCart.items.filter((item) => item.id !== itemId)
+
+          // Calculate totals
+          const totals = calculateCartTotals(updatedItems)
+
+          return {
+            cart: {
+              ...currentCart,
+              items: updatedItems,
+              ...totals,
+            },
+          }
+        }),
+
+      removeItems: (itemIds) =>
+        set((state) => {
+          // Initialize cart if it's null
+          const currentCart = state.cart || createEmptyCart()
+
+          const updatedItems = currentCart.items.filter((item) => !itemIds.includes(item.id))
 
           // Calculate totals
           const totals = calculateCartTotals(updatedItems)

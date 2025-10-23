@@ -12,6 +12,11 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -34,6 +39,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
 
   const { cart, addItem, removeItem, isInCart, getCartItem } = useCartStore()
   const productInCart = id ? isInCart(id) : false
@@ -65,6 +71,15 @@ const ProductDetailPage = () => {
     fetchProduct()
   }, [id])
 
+  // Sync quantity with cart item when product is in cart
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity)
+    } else {
+      setQuantity(1)
+    }
+  }, [cartItem])
+
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(product?.stock || 1, prev + delta)))
   }
@@ -83,9 +98,18 @@ const ProductDetailPage = () => {
     addItem(cartItem)
   }
 
-  const handleRemoveFromCart = () => {
+  const handleRemoveClick = () => {
+    setRemoveDialogOpen(true)
+  }
+
+  const handleRemoveConfirm = () => {
     if (!cartItem) return
     removeItem(cartItem.id)
+    setRemoveDialogOpen(false)
+  }
+
+  const handleRemoveCancel = () => {
+    setRemoveDialogOpen(false)
   }
 
   if (loading) {
@@ -350,30 +374,7 @@ const ProductDetailPage = () => {
                   </Typography>
                 </Box>
 
-                {productInCart ? (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    size="large"
-                    startIcon={<CartIcon />}
-                    onClick={handleRemoveFromCart}
-                    sx={{
-                      py: 1.5,
-                      px: 4,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      fontSize: '1rem',
-                      minWidth: 200,
-                      boxShadow: 'none',
-                      '&:hover': {
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      },
-                    }}
-                  >
-                    Remove from Cart
-                  </Button>
-                ) : (
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
                     variant="contained"
                     size="large"
@@ -395,9 +396,31 @@ const ProductDetailPage = () => {
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
-                    Add to Cart
+                    {productInCart ? 'Update Cart' : 'Add to Cart'}
                   </Button>
-                )}
+                  {productInCart && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="large"
+                      onClick={handleRemoveClick}
+                      sx={{
+                        py: 1.5,
+                        px: 3,
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        boxShadow: 'none',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        },
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Box>
               </Box>
             )}
 
@@ -433,6 +456,29 @@ const ProductDetailPage = () => {
       <Box sx={{ mt: 6 }}>
         <ReviewSection reviews={product.reviews || []} rating={product.rating} />
       </Box>
+
+      {/* Remove Confirmation Dialog */}
+      <Dialog
+        open={removeDialogOpen}
+        onClose={handleRemoveCancel}
+        aria-labelledby="remove-dialog-title"
+        aria-describedby="remove-dialog-description"
+      >
+        <DialogTitle id="remove-dialog-title">Remove from Cart?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-dialog-description">
+            Are you sure you want to remove this product from your cart?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRemoveCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
