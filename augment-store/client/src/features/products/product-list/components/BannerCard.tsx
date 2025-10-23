@@ -15,6 +15,13 @@ const BannerCard = ({ banner }: BannerCardProps) => {
     }
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleClick()
+    }
+  }
+
   const isLarge = banner.size === 'large'
   const isCardClickable = banner.ctaLink && !banner.ctaText
 
@@ -32,8 +39,19 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               boxShadow: 6,
             }
           : {},
+        '&:focus-visible': isCardClickable
+          ? {
+              outline: '2px solid',
+              outlineColor: 'primary.main',
+              outlineOffset: '2px',
+            }
+          : {},
       }}
       onClick={isCardClickable ? handleClick : undefined}
+      onKeyDown={isCardClickable ? handleKeyDown : undefined}
+      role={isCardClickable ? 'button' : undefined}
+      tabIndex={isCardClickable ? 0 : undefined}
+      aria-label={isCardClickable ? `${banner.title}. Click to view details` : undefined}
     >
       {/* Background Image */}
       <CardMedia
