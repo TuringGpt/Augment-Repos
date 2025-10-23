@@ -17,6 +17,11 @@ import {
   Divider,
   TextField,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -30,6 +35,7 @@ const CartPage = () => {
   const navigate = useNavigate()
   const { cart, updateItem, removeItem, removeItems, clearCart } = useCartStore()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false)
 
   // Debug: Log cart state
   console.log('Cart Page - Cart:', cart)
@@ -65,9 +71,18 @@ const CartPage = () => {
     }
   }
 
-  const handleClearCart = () => {
+  const handleClearCartClick = () => {
+    setClearCartDialogOpen(true)
+  }
+
+  const handleClearCartConfirm = () => {
     clearCart()
     setSelectedItems([])
+    setClearCartDialogOpen(false)
+  }
+
+  const handleClearCartCancel = () => {
+    setClearCartDialogOpen(false)
   }
 
   const handleCheckout = () => {
@@ -125,7 +140,7 @@ const CartPage = () => {
         >
           Remove Selected ({selectedItems.length})
         </Button>
-        <Button variant="outlined" color="warning" onClick={handleClearCart}>
+        <Button variant="outlined" color="warning" onClick={handleClearCartClick}>
           Clear Cart
         </Button>
       </Box>
@@ -335,6 +350,29 @@ const CartPage = () => {
           </Paper>
         </Box>
       </Box>
+
+      {/* Clear Cart Confirmation Dialog */}
+      <Dialog
+        open={clearCartDialogOpen}
+        onClose={handleClearCartCancel}
+        aria-labelledby="clear-cart-dialog-title"
+        aria-describedby="clear-cart-dialog-description"
+      >
+        <DialogTitle id="clear-cart-dialog-title">Clear Cart?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="clear-cart-dialog-description">
+            Are you sure you want to remove all items from your cart? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClearCartCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleClearCartConfirm} color="warning" variant="contained" autoFocus>
+            Clear Cart
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

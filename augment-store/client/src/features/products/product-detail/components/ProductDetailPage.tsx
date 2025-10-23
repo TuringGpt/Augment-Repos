@@ -12,6 +12,11 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -34,6 +39,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
 
   const { cart, addItem, removeItem, isInCart, getCartItem } = useCartStore()
   const productInCart = id ? isInCart(id) : false
@@ -83,9 +89,18 @@ const ProductDetailPage = () => {
     addItem(cartItem)
   }
 
-  const handleRemoveFromCart = () => {
+  const handleRemoveClick = () => {
+    setRemoveDialogOpen(true)
+  }
+
+  const handleRemoveConfirm = () => {
     if (!cartItem) return
     removeItem(cartItem.id)
+    setRemoveDialogOpen(false)
+  }
+
+  const handleRemoveCancel = () => {
+    setRemoveDialogOpen(false)
   }
 
   if (loading) {
@@ -379,7 +394,7 @@ const ProductDetailPage = () => {
                       variant="outlined"
                       color="error"
                       size="large"
-                      onClick={handleRemoveFromCart}
+                      onClick={handleRemoveClick}
                       sx={{
                         py: 1.5,
                         px: 3,
@@ -432,6 +447,29 @@ const ProductDetailPage = () => {
       <Box sx={{ mt: 6 }}>
         <ReviewSection reviews={product.reviews || []} rating={product.rating} />
       </Box>
+
+      {/* Remove Confirmation Dialog */}
+      <Dialog
+        open={removeDialogOpen}
+        onClose={handleRemoveCancel}
+        aria-labelledby="remove-dialog-title"
+        aria-describedby="remove-dialog-description"
+      >
+        <DialogTitle id="remove-dialog-title">Remove from Cart?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-dialog-description">
+            Are you sure you want to remove this product from your cart?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRemoveCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
+            Remove
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
