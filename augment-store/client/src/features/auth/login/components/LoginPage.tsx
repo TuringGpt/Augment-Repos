@@ -284,6 +284,30 @@ const LoginPage = () => {
               </Button>
             </form>
 
+            {/* Continue as Guest Button */}
+            <Box sx={{ mt: 2 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/')}
+                disabled={isSubmitting}
+                sx={{
+                  py: 1.5,
+                  borderColor: Colors.primary.main,
+                  color: Colors.primary.main,
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  '&:hover': {
+                    borderColor: Colors.primary.dark,
+                    backgroundColor: 'rgba(124, 58, 237, 0.04)',
+                  },
+                }}
+              >
+                Continue as Guest
+              </Button>
+            </Box>
+
             {/* Sign Up Link */}
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
