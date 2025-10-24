@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'mptt',
     'products',
     'storage',
+    'carts',
 ]
 
 MIDDLEWARE = [
