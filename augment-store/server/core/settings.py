@@ -27,7 +27,7 @@ ALLOWED_HOSTS = [
 
 # CORS settings - Allow all localhost origins
 CORS_ALLOW_ALL_ORIGINS = config.get('CORS_ALLOW_ALL_ORIGINS', False) == 'True'
-CORS_ALLOWED_ORIGINS = [config.get('FRONTEDN_URL', 'http://localhost:3000')]
+CORS_ALLOWED_ORIGINS = [config.get('FRONTEND_URL', 'http://localhost:3000')]
 
 # Allow all localhost origins using regex pattern
 CORS_ALLOWED_ORIGIN_REGEXES = [
