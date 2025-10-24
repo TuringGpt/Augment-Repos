@@ -85,6 +85,7 @@ const LoginPage = () => {
 
       // Set auth state and redirect after a brief delay to show success message
       setAuthState(response.user, response.accessToken, response.refreshToken)
+      // Note: Keep form disabled during redirect to prevent duplicate submissions
       setTimeout(() => {
         navigate('/')
       }, 1500)
@@ -131,7 +132,7 @@ const LoginPage = () => {
 
       setApiError(errorMessage)
       setError(errorMessage)
-    } finally {
+      // Only reset submitting state on error to re-enable the form
       setIsSubmitting(false)
       setLoading(false)
     }

@@ -131,6 +131,7 @@ const RegisterPage = () => {
       setSuccessMessage('Registration successful! Redirecting to email verification...')
 
       // Redirect to email verification page with email as query param
+      // Note: Keep form disabled during redirect to prevent duplicate submissions
       setTimeout(() => {
         navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`)
       }, 1500)
@@ -183,7 +184,7 @@ const RegisterPage = () => {
 
       setApiError(errorMessage)
       setError(errorMessage)
-    } finally {
+      // Only reset submitting state on error to re-enable the form
       setIsSubmitting(false)
       setLoading(false)
     }
