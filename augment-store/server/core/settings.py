@@ -25,6 +25,38 @@ ALLOWED_HOSTS = [
     config.get('ALLOWED_HOSTS', '*')
 ]
 
+# CORS settings - Allow all localhost origins
+CORS_ALLOW_ALL_ORIGINS = config.get('CORS_ALLOW_ALL_ORIGINS', False) == 'True'
+CORS_ALLOWED_ORIGINS = [config.get('FRONTEND_URL', 'http://localhost:3000')]
+
+# Allow all localhost origins using regex pattern
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]
+
+# CORS headers configuration
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 
 # Application definition
 
@@ -35,10 +67,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
+     "corsheaders",
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
+    'api',
     'accounts',
     'authentication',
     'mptt',
@@ -49,6 +82,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
