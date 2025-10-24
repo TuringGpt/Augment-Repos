@@ -146,6 +146,7 @@ const RegisterPage = () => {
             first_name?: string[]
             last_name?: string[]
             detail?: string
+            details?: string[]
             message?: string
             non_field_errors?: string[]
           }
@@ -166,6 +167,9 @@ const RegisterPage = () => {
           errorMessage = `First Name: ${data.first_name[0]}`
         } else if (data.last_name) {
           errorMessage = `Last Name: ${data.last_name[0]}`
+        } else if (data.details) {
+          // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
+          errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
         } else if (data.non_field_errors) {
           errorMessage = data.non_field_errors[0]
         } else if (data.detail) {
