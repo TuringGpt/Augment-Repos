@@ -41,9 +41,6 @@ class AuthenticationTests(BaseAPITestCase):
     @override_settings(DISABLE_EMAIL_VERIFICATION=False)
     def test_create_user_when_verification_enabled(self):
         # GIVEN verification is enabled
-        # from django.conf import settings
-        # settings.DISABLE_EMAIL_VERIFICATION = False
-
         # WHEN we create a user
         url = reverse("v1:register")
         payload = {
