@@ -148,7 +148,7 @@ class AuthenticationTests(BaseAPITestCase):
         response = self.client.post(url)
 
         # THEN we should get a 200 response
-        self.assertTrue(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND the response should contain success message
         self.assertEqual(response.data["message"], "Logged out")
