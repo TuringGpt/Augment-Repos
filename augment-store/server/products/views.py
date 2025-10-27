@@ -4,6 +4,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDe
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
@@ -69,8 +70,12 @@ class BaseProductView:
         return Product.objects.all()
 
 class ProductListView(BaseProductView, ListAPIView):
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = ProductFilter
+
+    ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
+    search_fields = ["name", "description", "brand__name", "category__name"]
+
 
 class CreateProductView(BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer

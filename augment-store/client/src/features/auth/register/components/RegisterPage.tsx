@@ -131,6 +131,7 @@ const RegisterPage = () => {
       setSuccessMessage('Registration successful! Redirecting to email verification...')
 
       // Redirect to email verification page with email as query param
+      // Note: Keep form disabled during redirect to prevent duplicate submissions
       setTimeout(() => {
         navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`)
       }, 1500)
@@ -146,6 +147,7 @@ const RegisterPage = () => {
             first_name?: string[]
             last_name?: string[]
             detail?: string
+            details?: string[]
             message?: string
             non_field_errors?: string[]
           }
@@ -166,6 +168,9 @@ const RegisterPage = () => {
           errorMessage = `First Name: ${data.first_name[0]}`
         } else if (data.last_name) {
           errorMessage = `Last Name: ${data.last_name[0]}`
+        } else if (data.details) {
+          // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
+          errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
         } else if (data.non_field_errors) {
           errorMessage = data.non_field_errors[0]
         } else if (data.detail) {
@@ -179,7 +184,7 @@ const RegisterPage = () => {
 
       setApiError(errorMessage)
       setError(errorMessage)
-    } finally {
+      // Only reset submitting state on error to re-enable the form
       setIsSubmitting(false)
       setLoading(false)
     }

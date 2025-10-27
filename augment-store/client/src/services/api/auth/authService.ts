@@ -92,9 +92,17 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
-    // Clear auth state from Zustand store (which automatically syncs to localStorage)
-    useAuthStore.getState().logout()
+    try {
+      // Attempt to notify backend of logout (may fail if endpoint not implemented)
+      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
+    } catch (error) {
+      // Ignore API errors - client-side logout should always succeed
+      console.warn('Logout API call failed, but clearing client auth state:', error)
+    } finally {
+      // Always clear auth state from Zustand store (which automatically syncs to localStorage)
+      // This ensures users can reliably log out even if the backend endpoint fails
+      useAuthStore.getState().logout()
+    }
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {

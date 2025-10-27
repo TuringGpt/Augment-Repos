@@ -14,17 +14,18 @@ import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
+import { authService } from '@services/api/auth/authService'
 
 const Header = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, user, logout } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const { getItemCount } = useCartStore()
   const { toggleSidebar, toggleCartDrawer } = useUIStore()
 
   const cartItemCount = getItemCount()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await authService.logout()
     navigate('/login')
   }
 
