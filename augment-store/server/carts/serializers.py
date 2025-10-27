@@ -35,29 +35,33 @@ class AddToCartSerializer(serializers.Serializer):
         user_cart = Cart.objects.add_to_cart(user, product, quantity)
         return user_cart
 
-class UpdateCartItemSerializer(serializers.Serializer):
+class UpdateCartItemSerializer(serializers.ModelSerializer):
     quantity = serializers.IntegerField(min_value=1)
-    cart_item_id = serializers.UUIDField()
     operation = serializers.ChoiceField(choices=["add", "subtract", "set"], default="set")
 
+    class Meta:
+        model = CartItem
+        fields = ["quantity", "operation"]
+
     def validate(self, attrs):
-        try:
-            user = self.context.get("request").user
-            cart_item = CartItem.objects.get(id=attrs.get("cart_item_id"))
-            quantity = attrs.get("quantity")
+        cart_item = self.instance
+        quantity = attrs.get("quantity")
+        if not cart_item.product.check_stock(quantity):
+            raise serializers.ValidationError("Quantity exceeds stock")
 
-            if not Cart.objects.contains_cart_item(user, cart_item.id):
-                raise serializers.ValidationError("Cart item does not exist")
-            
-            if not cart_item.product.check_stock(quantity):
-                raise serializers.ValidationError("Quantity exceeds stock")
-
-        except CartItem.DoesNotExist:
-            raise serializers.ValidationError("Cart item does not exist")
-        
         return attrs
 
-
+    def update(self, instance, validated_data):
+        quantity = validated_data.get("quantity")
+        operation = validated_data.get("operation")
+        if operation == "add":
+            instance.quantity += quantity
+        elif operation == "subtract":
+            instance.quantity -= quantity
+        else:
+            instance.quantity = quantity
+        instance.save()
+        return instance
 class CartItemListSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
 

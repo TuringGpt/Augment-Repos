@@ -170,3 +170,33 @@ class AddToCartViewTests(BaseAPITestCase):
 
         # AND the response should contain an error message
         self.assertIn("Product does not exist", str(response.data))
+
+    def test_update_cart_item_success(self):
+        # GIVEN an authenticated user exists
+        user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        client = self.authenticated_client
+        client.force_authenticate(user=user)
+        # AND the user has an item in their cart
+        cart = Cart.objects.get_user_cart(user)
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=2,
+            created_by=user
+        )
+        cart.items.add(cart_item)
+
+        # WHEN we make a PATCH request to update the cart item
+        url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
+        payload = {
+            "operation": "set",
+            "quantity": 3,
+        }
+        response = client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        cart_item.refresh_from_db()
+        self.assertEqual(cart_item.quantity, 3)

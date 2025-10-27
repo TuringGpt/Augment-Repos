@@ -14,10 +14,17 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
 
     def get_object(self):
         return Cart.objects.get_user_cart(self.request.user)
+
+class BaseCartItemView:
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_cart = Cart.objects.get_user_cart(self.request.user)
+        return user_cart.items.all()
     
-class AddToCartView(BaseCartView, CreateAPIView):
+class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
 
-class UpdateCartItemView(BaseCartView, RetrieveUpdateDestroyAPIView):
+class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateCartItemSerializer
     
