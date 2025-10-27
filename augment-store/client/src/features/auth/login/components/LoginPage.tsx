@@ -32,6 +32,7 @@ const LoginPage = () => {
   const [errors, setErrors] = useState<Partial<LoginRequest>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginRequest> = {}
@@ -74,20 +75,64 @@ const LoginPage = () => {
     setIsSubmitting(true)
     setLoading(true)
     setApiError(null)
+    setSuccessMessage(null)
 
     try {
       const response = await authService.login(formData)
+
+      // Show success message
+      setSuccessMessage('Login successful! Redirecting...')
+
+      // Set auth state and redirect after a brief delay to show success message
       setAuthState(response.user, response.accessToken, response.refreshToken)
-      navigate('/')
+      // Note: Keep form disabled during redirect to prevent duplicate submissions
+      setTimeout(() => {
+        navigate('/')
+      }, 1500)
     } catch (error) {
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (error as { message?: string }).message ||
-        'Login failed. Please try again.'
+      // Enhanced error handling for Django backend responses
+      let errorMessage = 'Login failed. Please try again.'
+
+      const axiosError = error as {
+        response?: {
+          data?: {
+            email?: string[]
+            password?: string[]
+            detail?: string
+            details?: string[]
+            message?: string
+            non_field_errors?: string[]
+          }
+          status?: number
+        }
+        message?: string
+      }
+
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data
+
+        // Handle field-specific errors from Django
+        if (data.email) {
+          errorMessage = `Email: ${data.email[0]}`
+        } else if (data.password) {
+          errorMessage = `Password: ${data.password[0]}`
+        } else if (data.details) {
+          // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
+          errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
+        } else if (data.non_field_errors) {
+          errorMessage = data.non_field_errors[0]
+        } else if (data.detail) {
+          errorMessage = data.detail
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message
+      }
+
       setApiError(errorMessage)
       setError(errorMessage)
-    } finally {
+      // Only reset submitting state on error to re-enable the form
       setIsSubmitting(false)
       setLoading(false)
     }
@@ -134,6 +179,16 @@ const LoginPage = () => {
 
           {/* Form Section */}
           <Box sx={{ p: 4 }}>
+            {/* Success Banner */}
+            {successMessage && (
+              <Fade in={true}>
+                <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+                  {successMessage}
+                </Alert>
+              </Fade>
+            )}
+
+            {/* Error Banner */}
             {apiError && (
               <Fade in={true}>
                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setApiError(null)}>

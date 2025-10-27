@@ -14,6 +14,12 @@ export interface LoginRequest {
   password: string
 }
 
+// Backend API response format from Django
+export interface LoginResponseAPI {
+  refresh: string
+  access: string
+}
+
 export interface LoginResponse {
   user: User
   accessToken: string
@@ -27,10 +33,25 @@ export interface RegisterRequest {
   lastName: string
 }
 
+// Backend API request format (snake_case)
+export interface RegisterRequestAPI {
+  email: string
+  password: string
+  first_name: string
+  last_name: string
+}
+
+// Backend API response format (no tokens - email verification required)
+export interface RegisterResponseAPI {
+  email: string
+  first_name: string
+  last_name: string
+}
+
 export interface RegisterResponse {
-  user: User
-  accessToken: string
-  refreshToken: string
+  email: string
+  firstName: string
+  lastName: string
 }
 
 export interface ForgotPasswordRequest {
