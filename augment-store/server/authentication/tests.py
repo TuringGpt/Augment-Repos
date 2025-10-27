@@ -4,6 +4,9 @@ from rest_framework import status
 from django.urls import reverse
 class AuthenticationTests(BaseAPITestCase):
 
+    def setUp(self):
+        super().setUp()
+
     def test_register(self):
         # GIVEN a user does not exist
         # WHEN we make a post request to /auth/register/ with valid data
@@ -134,3 +137,18 @@ class AuthenticationTests(BaseAPITestCase):
         # AND the response should contain success message
         self.assertEqual(response.data["message"], "Password reset email sent")
 
+    def test_logout(self):
+        # GIVEN a user with email:user@demo.com and passowrd:asdf1234 exist
+        user = UserFactory(email="user@demo.com", password="asdf1234", is_active=True)
+        # AND the user is logged in
+        self.client.force_authenticate(user=user)
+
+        # WHEN we make a post request to logout
+        url = reverse("v1:logout")
+        response = self.client.post(url)
+
+        # THEN we should get a 200 response
+        self.assertTrue(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should contain success message
+        self.assertEqual(response.data["message"], "Logged out")
