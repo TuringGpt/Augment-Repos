@@ -6,8 +6,8 @@ from accounts.factory import UserFactory
 
 class BaseAPITestCase(APITestCase):
     # this class setup basic client 
-    client = None
-    authenticated_client = None
+    client:APIClient = None
+    authenticated_client:APIClient = None
     user = None
 
     def setUp(self):
