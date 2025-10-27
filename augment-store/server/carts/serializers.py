@@ -6,8 +6,8 @@ from products.serializers import ProductListSerializer
 
 
 class AddToCartSerializer(serializers.Serializer):
-    product_id = serializers.UUIDField()
-    quantity = serializers.IntegerField(min_value=1)
+    product_id = serializers.UUIDField(write_only=True)
+    quantity = serializers.IntegerField(min_value=1, write_only=True)
 
     def validate(self, attrs):
         product_id = attrs.get("product_id")
