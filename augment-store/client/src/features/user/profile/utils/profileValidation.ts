@@ -1,110 +1,61 @@
+import { z } from 'zod'
 import type { UpdateProfileRequest, UserProfile } from '@features/user/types'
 
 /**
- * Validation error messages
+ * Zod schema for profile update validation
  */
-export const VALIDATION_MESSAGES = {
-  USERNAME: {
-    REQUIRED: 'Username is required',
-    MIN_LENGTH: 'Username must be at least 3 characters',
-    MAX_LENGTH: 'Username must be less than 150 characters',
-  },
-  FIRST_NAME: {
-    REQUIRED: 'First name is required',
-    MIN_LENGTH: 'First name must be at least 2 characters',
-    MAX_LENGTH: 'First name must be less than 150 characters',
-  },
-  LAST_NAME: {
-    REQUIRED: 'Last name is required',
-    MIN_LENGTH: 'Last name must be at least 2 characters',
-    MAX_LENGTH: 'Last name must be less than 150 characters',
-  },
-  MOBILE: {
-    MAX_LENGTH: 'Mobile number must be less than 20 characters',
-  },
-  FORM: {
-    NO_CHANGES: 'No changes detected. Please modify at least one field.',
-  },
-} as const
+export const profileUpdateSchema = z.object({
+  username: z
+    .string()
+    .min(1, 'Username is required')
+    .trim()
+    .min(3, 'Username must be at least 3 characters')
+    .max(150, 'Username must be less than 150 characters'),
+  first_name: z
+    .string()
+    .min(1, 'First name is required')
+    .trim()
+    .min(2, 'First name must be at least 2 characters')
+    .max(150, 'First name must be less than 150 characters'),
+  last_name: z
+    .string()
+    .min(1, 'Last name is required')
+    .trim()
+    .min(2, 'Last name must be at least 2 characters')
+    .max(150, 'Last name must be less than 150 characters'),
+  mobile: z
+    .string()
+    .max(20, 'Mobile number must be less than 20 characters')
+    .optional()
+    .or(z.literal('')),
+  gender: z.enum(['Male', 'Female', 'Other']).optional(),
+})
 
 /**
- * Validation constraints
+ * Infer TypeScript type from Zod schema
  */
-export const VALIDATION_CONSTRAINTS = {
-  USERNAME: {
-    MIN_LENGTH: 3,
-    MAX_LENGTH: 150,
-  },
-  FIRST_NAME: {
-    MIN_LENGTH: 2,
-    MAX_LENGTH: 150,
-  },
-  LAST_NAME: {
-    MIN_LENGTH: 2,
-    MAX_LENGTH: 150,
-  },
-  MOBILE: {
-    MAX_LENGTH: 20,
-  },
-} as const
+export type ProfileUpdateFormValues = z.infer<typeof profileUpdateSchema>
 
 /**
- * Validate username field
+ * Zod resolver for Mantine form
+ * Converts Zod validation to Mantine form errors format
  */
-export const validateUsername = (value?: string): string | null => {
-  if (!value || value.trim() === '') {
-    return VALIDATION_MESSAGES.USERNAME.REQUIRED
-  }
-  if (value.trim().length < VALIDATION_CONSTRAINTS.USERNAME.MIN_LENGTH) {
-    return VALIDATION_MESSAGES.USERNAME.MIN_LENGTH
-  }
-  if (value.trim().length > VALIDATION_CONSTRAINTS.USERNAME.MAX_LENGTH) {
-    return VALIDATION_MESSAGES.USERNAME.MAX_LENGTH
-  }
-  return null
-}
+export const zodResolver =
+  <T extends z.ZodType>(schema: T) =>
+  (values: unknown): Record<string, string> => {
+    const result = schema.safeParse(values)
 
-/**
- * Validate first name field
- */
-export const validateFirstName = (value?: string): string | null => {
-  if (!value || value.trim() === '') {
-    return VALIDATION_MESSAGES.FIRST_NAME.REQUIRED
-  }
-  if (value.trim().length < VALIDATION_CONSTRAINTS.FIRST_NAME.MIN_LENGTH) {
-    return VALIDATION_MESSAGES.FIRST_NAME.MIN_LENGTH
-  }
-  if (value.trim().length > VALIDATION_CONSTRAINTS.FIRST_NAME.MAX_LENGTH) {
-    return VALIDATION_MESSAGES.FIRST_NAME.MAX_LENGTH
-  }
-  return null
-}
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join('.')
+        errors[path] = issue.message
+      })
+      return errors
+    }
 
-/**
- * Validate last name field
- */
-export const validateLastName = (value?: string): string | null => {
-  if (!value || value.trim() === '') {
-    return VALIDATION_MESSAGES.LAST_NAME.REQUIRED
+    return {}
   }
-  if (value.trim().length < VALIDATION_CONSTRAINTS.LAST_NAME.MIN_LENGTH) {
-    return VALIDATION_MESSAGES.LAST_NAME.MIN_LENGTH
-  }
-  if (value.trim().length > VALIDATION_CONSTRAINTS.LAST_NAME.MAX_LENGTH) {
-    return VALIDATION_MESSAGES.LAST_NAME.MAX_LENGTH
-  }
-  return null
-}
-
-/**
- * Validate mobile field
- */
-export const validateMobile = (value?: string): string | null => {
-  if (value && value.trim() !== '' && value.length > VALIDATION_CONSTRAINTS.MOBILE.MAX_LENGTH) {
-    return VALIDATION_MESSAGES.MOBILE.MAX_LENGTH
-  }
-  return null
-}
 
 /**
  * Check if any field has changed from the original profile
@@ -155,32 +106,20 @@ export const getChangedFields = (
 }
 
 /**
- * Main validation function for profile form
+ * Main validation function for profile form using Zod
+ * Combines schema validation with custom business logic (change detection)
  */
 export const validateProfileForm = (
   values: UpdateProfileRequest,
   profile: UserProfile | null
 ): Record<string, string> => {
-  const errors: Record<string, string> = {}
-
-  // Field-level validation
-  const usernameError = validateUsername(values.username)
-  if (usernameError) errors.username = usernameError
-
-  const firstNameError = validateFirstName(values.first_name)
-  if (firstNameError) errors.first_name = firstNameError
-
-  const lastNameError = validateLastName(values.last_name)
-  if (lastNameError) errors.last_name = lastNameError
-
-  const mobileError = validateMobile(values.mobile)
-  if (mobileError) errors.mobile = mobileError
+  // Field-level validation using Zod resolver
+  const errors = zodResolver(profileUpdateSchema)(values)
 
   // Form-level validation: check if any field has changed
   if (!hasProfileChanges(values, profile)) {
-    errors.username = errors.username || VALIDATION_MESSAGES.FORM.NO_CHANGES
+    errors.username = errors.username || 'No changes detected. Please modify at least one field.'
   }
 
   return errors
 }
-
