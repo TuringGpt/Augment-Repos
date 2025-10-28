@@ -61,14 +61,13 @@ const AppRoutes = () => {
       </Route>
 
       {/* Protected routes with main layout - require authentication */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/orders/:id" element={<OrderDetailPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-        </Route>
+
+      <Route element={<MainLayout />}>
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
       </Route>
 
       {/* Catch all */}
