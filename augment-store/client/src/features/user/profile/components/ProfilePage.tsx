@@ -35,31 +35,55 @@ const ProfilePage = () => {
       mobile: '',
       gender: undefined,
     },
-    validate: {
-      username: (value) => {
-        if (!value || value.trim() === '') return 'Username is required'
-        if (value.trim().length < 3) return 'Username must be at least 3 characters'
-        if (value.trim().length > 150) return 'Username must be less than 150 characters'
-        return null
-      },
-      first_name: (value) => {
-        if (!value || value.trim() === '') return 'First name is required'
-        if (value.trim().length < 2) return 'First name must be at least 2 characters'
-        if (value.trim().length > 150) return 'First name must be less than 150 characters'
-        return null
-      },
-      last_name: (value) => {
-        if (!value || value.trim() === '') return 'Last name is required'
-        if (value.trim().length < 2) return 'Last name must be at least 2 characters'
-        if (value.trim().length > 150) return 'Last name must be less than 150 characters'
-        return null
-      },
-      mobile: (value) => {
-        if (value && value.trim() !== '' && value.length > 20) {
-          return 'Mobile number must be less than 20 characters'
-        }
-        return null
-      },
+    validate: (values) => {
+      const errors: Record<string, string> = {}
+
+      // Username validation
+      if (!values.username || values.username.trim() === '') {
+        errors.username = 'Username is required'
+      } else if (values.username.trim().length < 3) {
+        errors.username = 'Username must be at least 3 characters'
+      } else if (values.username.trim().length > 150) {
+        errors.username = 'Username must be less than 150 characters'
+      }
+
+      // First name validation
+      if (!values.first_name || values.first_name.trim() === '') {
+        errors.first_name = 'First name is required'
+      } else if (values.first_name.trim().length < 2) {
+        errors.first_name = 'First name must be at least 2 characters'
+      } else if (values.first_name.trim().length > 150) {
+        errors.first_name = 'First name must be less than 150 characters'
+      }
+
+      // Last name validation
+      if (!values.last_name || values.last_name.trim() === '') {
+        errors.last_name = 'Last name is required'
+      } else if (values.last_name.trim().length < 2) {
+        errors.last_name = 'Last name must be at least 2 characters'
+      } else if (values.last_name.trim().length > 150) {
+        errors.last_name = 'Last name must be less than 150 characters'
+      }
+
+      // Mobile validation
+      if (values.mobile && values.mobile.trim() !== '' && values.mobile.length > 20) {
+        errors.mobile = 'Mobile number must be less than 20 characters'
+      }
+
+      // Check if any field has actually changed
+      const hasChanges =
+        (values.username && values.username !== (profile?.username || '')) ||
+        (values.first_name && values.first_name !== (profile?.first_name || '')) ||
+        (values.last_name && values.last_name !== (profile?.last_name || '')) ||
+        (values.mobile && values.mobile !== (profile?.mobile || '')) ||
+        (values.gender && values.gender !== (profile?.gender || ''))
+
+      if (!hasChanges) {
+        errors.username =
+          errors.username || 'No changes detected. Please modify at least one field.'
+      }
+
+      return errors
     },
   })
 
@@ -125,7 +149,7 @@ const ProfilePage = () => {
       setError(null)
       setSuccessMessage(null)
 
-      // Only send fields that have changed and are not empty
+      // Build update data with only changed fields
       const updateData: UpdateProfileRequest = {}
 
       if (values.username && values.username !== (profile?.username || '')) {
@@ -144,12 +168,7 @@ const ProfilePage = () => {
         updateData.gender = values.gender
       }
 
-      // Check if there are any changes to send
-      if (Object.keys(updateData).length === 0) {
-        setError('No changes to save')
-        return
-      }
-
+      // Update profile via API
       const updatedProfile = await userService.updateProfile(updateData)
       setProfile(updatedProfile)
 
