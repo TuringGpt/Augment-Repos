@@ -30,8 +30,8 @@ const ProfilePage = () => {
 
   const [formData, setFormData] = useState({
     username: '',
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     mobile: '',
     gender: '' as 'Male' | 'Female' | 'Other' | '',
   })
@@ -49,8 +49,8 @@ const ProfilePage = () => {
       setProfile(profileData)
       setFormData({
         username: profileData.username || '',
-        firstName: profileData.firstName || '',
-        lastName: profileData.lastName || '',
+        first_name: profileData.first_name || '',
+        last_name: profileData.last_name || '',
         mobile: profileData.mobile || '',
         gender: profileData.gender || '',
       })
@@ -88,8 +88,8 @@ const ProfilePage = () => {
     if (profile) {
       setFormData({
         username: profile.username || '',
-        firstName: profile.firstName || '',
-        lastName: profile.lastName || '',
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
         mobile: profile.mobile || '',
         gender: profile.gender || '',
       })
@@ -108,11 +108,11 @@ const ProfilePage = () => {
       if (formData.username && formData.username !== (profile?.username || '')) {
         updateData.username = formData.username
       }
-      if (formData.firstName && formData.firstName !== (profile?.firstName || '')) {
-        updateData.firstName = formData.firstName
+      if (formData.first_name && formData.first_name !== (profile?.first_name || '')) {
+        updateData.first_name = formData.first_name
       }
-      if (formData.lastName && formData.lastName !== (profile?.lastName || '')) {
-        updateData.lastName = formData.lastName
+      if (formData.last_name && formData.last_name !== (profile?.last_name || '')) {
+        updateData.last_name = formData.last_name
       }
       if (formData.mobile && formData.mobile !== (profile?.mobile || '')) {
         updateData.mobile = formData.mobile
@@ -196,18 +196,18 @@ const ProfilePage = () => {
               mr: 3,
             }}
           >
-            {profile?.firstName?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || 'U'}
+            {profile?.first_name?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || 'U'}
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              {profile?.fullName || `${profile?.firstName} ${profile?.lastName}`}
+              {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {profile?.email}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Member since{' '}
-              {profile?.dateJoined ? new Date(profile.dateJoined).toLocaleDateString() : 'N/A'}
+              {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : 'N/A'}
             </Typography>
           </Box>
           {!isEditing && (
@@ -253,8 +253,8 @@ const ProfilePage = () => {
             <TextField
               fullWidth
               label="First Name"
-              name="firstName"
-              value={formData.firstName}
+              name="first_name"
+              value={formData.first_name}
               onChange={handleInputChange}
               disabled={!isEditing}
               variant={isEditing ? 'outlined' : 'filled'}
@@ -265,8 +265,8 @@ const ProfilePage = () => {
             <TextField
               fullWidth
               label="Last Name"
-              name="lastName"
-              value={formData.lastName}
+              name="last_name"
+              value={formData.last_name}
               onChange={handleInputChange}
               disabled={!isEditing}
               variant={isEditing ? 'outlined' : 'filled'}
@@ -321,7 +321,7 @@ const ProfilePage = () => {
             <TextField
               fullWidth
               label="Account Status"
-              value={profile?.isActive ? 'Active' : 'Inactive'}
+              value={profile?.is_active ? 'Active' : 'Inactive'}
               disabled
               variant="filled"
             />

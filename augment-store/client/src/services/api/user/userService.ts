@@ -2,58 +2,19 @@ import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import type {
   UserProfile,
-  UserProfileAPI,
   UpdateProfileRequest,
-  UpdateProfileRequestAPI,
   Address,
   CreateAddressRequest,
   WishlistItem,
 } from '@features/user/types'
 
-// Helper function to convert API response to frontend format
-const convertProfileFromAPI = (apiProfile: UserProfileAPI): UserProfile => ({
-  id: apiProfile.id,
-  email: apiProfile.email,
-  username: apiProfile.username,
-  firstName: apiProfile.first_name,
-  lastName: apiProfile.last_name,
-  fullName: apiProfile.full_name,
-  mobile: apiProfile.mobile,
-  gender: apiProfile.gender,
-  image: apiProfile.image,
-  role: apiProfile.role,
-  isActive: apiProfile.is_active,
-  isRegistrationCompleted: apiProfile.is_registration_completed,
-  dateJoined: apiProfile.date_joined,
-})
-
-// Helper function to convert frontend request to API format
-const convertProfileToAPI = (data: UpdateProfileRequest): UpdateProfileRequestAPI => {
-  const apiData: UpdateProfileRequestAPI = {}
-
-  if (data.username !== undefined) apiData.username = data.username
-  if (data.firstName !== undefined) apiData.first_name = data.firstName
-  if (data.lastName !== undefined) apiData.last_name = data.lastName
-  if (data.mobile !== undefined) apiData.mobile = data.mobile
-  if (data.gender !== undefined) apiData.gender = data.gender
-  if (data.image !== undefined) apiData.image = data.image
-
-  return apiData
-}
-
 export const userService = {
   getProfile: async (): Promise<UserProfile> => {
-    const response = await apiClient.get<UserProfileAPI>(API_ENDPOINTS.USER.PROFILE)
-    return convertProfileFromAPI(response)
+    return apiClient.get<UserProfile>(API_ENDPOINTS.USER.PROFILE)
   },
 
   updateProfile: async (data: UpdateProfileRequest): Promise<UserProfile> => {
-    const apiData = convertProfileToAPI(data)
-    const response = await apiClient.patch<UserProfileAPI>(
-      API_ENDPOINTS.USER.UPDATE_PROFILE,
-      apiData
-    )
-    return convertProfileFromAPI(response)
+    return apiClient.patch<UserProfile>(API_ENDPOINTS.USER.UPDATE_PROFILE, data)
   },
 
   getAddresses: async (): Promise<Address[]> => {

@@ -1,7 +1,7 @@
 import type { Product } from '@features/products/types'
 
-// Backend API response format (snake_case)
-export interface UserProfileAPI {
+// User profile (matches backend API format with snake_case)
+export interface UserProfile {
   id: string
   email: string
   username: string
@@ -17,38 +17,11 @@ export interface UserProfileAPI {
   date_joined: string
 }
 
-// Frontend format (camelCase)
-export interface UserProfile {
-  id: string
-  email: string
-  username: string
-  firstName: string
-  lastName: string
-  fullName: string
-  mobile: string
-  gender: 'Male' | 'Female' | 'Other'
-  image: string
-  role: 'admin' | 'customer'
-  isActive: boolean
-  isRegistrationCompleted: boolean
-  dateJoined: string
-}
-
-// Backend API request format for update (snake_case)
-export interface UpdateProfileRequestAPI {
+// Update profile request (matches backend API format with snake_case)
+export interface UpdateProfileRequest {
   username?: string
   first_name?: string
   last_name?: string
-  mobile?: string
-  gender?: 'Male' | 'Female' | 'Other'
-  image?: string
-}
-
-// Frontend format for update (camelCase)
-export interface UpdateProfileRequest {
-  username?: string
-  firstName?: string
-  lastName?: string
   mobile?: string
   gender?: 'Male' | 'Female' | 'Other'
   image?: string
