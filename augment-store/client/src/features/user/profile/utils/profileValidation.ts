@@ -28,7 +28,7 @@ export const profileUpdateSchema = z.object({
     .max(20, 'Mobile number must be less than 20 characters')
     .optional()
     .or(z.literal('')),
-  gender: z.enum(['Male', 'Female', 'Other']).optional(),
+  gender: z.enum(['Male', 'Female', 'Other']).optional().or(z.literal('')), // Allow empty string for "Not specified"
 })
 
 /**
@@ -77,6 +77,7 @@ export const hasProfileChanges = (
 
 /**
  * Get only the changed fields from form values
+ * Uses !== undefined to allow clearing fields (e.g., setting mobile to empty string)
  */
 export const getChangedFields = (
   values: UpdateProfileRequest,
@@ -86,19 +87,19 @@ export const getChangedFields = (
 
   if (!profile) return updateData
 
-  if (values.username && values.username !== (profile.username || '')) {
+  if (values.username !== undefined && values.username !== (profile.username || '')) {
     updateData.username = values.username
   }
-  if (values.first_name && values.first_name !== (profile.first_name || '')) {
+  if (values.first_name !== undefined && values.first_name !== (profile.first_name || '')) {
     updateData.first_name = values.first_name
   }
-  if (values.last_name && values.last_name !== (profile.last_name || '')) {
+  if (values.last_name !== undefined && values.last_name !== (profile.last_name || '')) {
     updateData.last_name = values.last_name
   }
-  if (values.mobile && values.mobile !== (profile.mobile || '')) {
+  if (values.mobile !== undefined && values.mobile !== (profile.mobile || '')) {
     updateData.mobile = values.mobile
   }
-  if (values.gender && values.gender !== (profile.gender || '')) {
+  if (values.gender !== undefined && values.gender !== (profile.gender || '')) {
     updateData.gender = values.gender
   }
 
