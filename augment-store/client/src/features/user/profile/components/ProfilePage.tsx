@@ -13,11 +13,12 @@ import {
   Grid,
   MenuItem,
 } from '@mui/material'
-import { useForm } from '@mantine/form'
 import { Edit, Save, Cancel } from '@mui/icons-material'
 import { userService } from '@services/api/user/userService'
-import type { UserProfile, UpdateProfileRequest } from '@features/user/types'
+import type { UserProfile } from '@features/user/types'
 import { Colors } from '@config/colors'
+import { useProfileForm } from '../hooks/useProfileForm'
+import { getChangedFields } from '../utils/profileValidation'
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -26,66 +27,8 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Mantine form with validation
-  const form = useForm<UpdateProfileRequest>({
-    initialValues: {
-      username: '',
-      first_name: '',
-      last_name: '',
-      mobile: '',
-      gender: undefined,
-    },
-    validate: (values) => {
-      const errors: Record<string, string> = {}
-
-      // Username validation
-      if (!values.username || values.username.trim() === '') {
-        errors.username = 'Username is required'
-      } else if (values.username.trim().length < 3) {
-        errors.username = 'Username must be at least 3 characters'
-      } else if (values.username.trim().length > 150) {
-        errors.username = 'Username must be less than 150 characters'
-      }
-
-      // First name validation
-      if (!values.first_name || values.first_name.trim() === '') {
-        errors.first_name = 'First name is required'
-      } else if (values.first_name.trim().length < 2) {
-        errors.first_name = 'First name must be at least 2 characters'
-      } else if (values.first_name.trim().length > 150) {
-        errors.first_name = 'First name must be less than 150 characters'
-      }
-
-      // Last name validation
-      if (!values.last_name || values.last_name.trim() === '') {
-        errors.last_name = 'Last name is required'
-      } else if (values.last_name.trim().length < 2) {
-        errors.last_name = 'Last name must be at least 2 characters'
-      } else if (values.last_name.trim().length > 150) {
-        errors.last_name = 'Last name must be less than 150 characters'
-      }
-
-      // Mobile validation
-      if (values.mobile && values.mobile.trim() !== '' && values.mobile.length > 20) {
-        errors.mobile = 'Mobile number must be less than 20 characters'
-      }
-
-      // Check if any field has actually changed
-      const hasChanges =
-        (values.username && values.username !== (profile?.username || '')) ||
-        (values.first_name && values.first_name !== (profile?.first_name || '')) ||
-        (values.last_name && values.last_name !== (profile?.last_name || '')) ||
-        (values.mobile && values.mobile !== (profile?.mobile || '')) ||
-        (values.gender && values.gender !== (profile?.gender || ''))
-
-      if (!hasChanges) {
-        errors.username =
-          errors.username || 'No changes detected. Please modify at least one field.'
-      }
-
-      return errors
-    },
-  })
+  // Profile form with validation
+  const { form, setProfileValues, resetToProfile } = useProfileForm(profile)
 
   // Fetch profile on mount
   useEffect(() => {
@@ -99,15 +42,7 @@ const ProfilePage = () => {
       setError(null)
       const profileData = await userService.getProfile()
       setProfile(profileData)
-
-      // Set form values
-      form.setValues({
-        username: profileData.username || '',
-        first_name: profileData.first_name || '',
-        last_name: profileData.last_name || '',
-        mobile: profileData.mobile || '',
-        gender: profileData.gender || undefined,
-      })
+      setProfileValues(profileData)
     } catch (err) {
       const errorMessage =
         (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
@@ -130,17 +65,10 @@ const ProfilePage = () => {
     setIsEditing(false)
     setError(null)
     setSuccessMessage(null)
-    form.reset()
 
     // Reset form to current profile data
     if (profile) {
-      form.setValues({
-        username: profile.username || '',
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        mobile: profile.mobile || '',
-        gender: profile.gender || undefined,
-      })
+      resetToProfile(profile)
     }
   }
 
@@ -149,37 +77,13 @@ const ProfilePage = () => {
       setError(null)
       setSuccessMessage(null)
 
-      // Build update data with only changed fields
-      const updateData: UpdateProfileRequest = {}
-
-      if (values.username && values.username !== (profile?.username || '')) {
-        updateData.username = values.username
-      }
-      if (values.first_name && values.first_name !== (profile?.first_name || '')) {
-        updateData.first_name = values.first_name
-      }
-      if (values.last_name && values.last_name !== (profile?.last_name || '')) {
-        updateData.last_name = values.last_name
-      }
-      if (values.mobile && values.mobile !== (profile?.mobile || '')) {
-        updateData.mobile = values.mobile
-      }
-      if (values.gender && values.gender !== (profile?.gender || '')) {
-        updateData.gender = values.gender
-      }
+      // Get only changed fields
+      const updateData = getChangedFields(values, profile)
 
       // Update profile via API
       const updatedProfile = await userService.updateProfile(updateData)
       setProfile(updatedProfile)
-
-      // Update form with new profile data
-      form.setValues({
-        username: updatedProfile.username || '',
-        first_name: updatedProfile.first_name || '',
-        last_name: updatedProfile.last_name || '',
-        mobile: updatedProfile.mobile || '',
-        gender: updatedProfile.gender || undefined,
-      })
+      setProfileValues(updatedProfile)
 
       setIsEditing(false)
       setSuccessMessage('Profile updated successfully!')
