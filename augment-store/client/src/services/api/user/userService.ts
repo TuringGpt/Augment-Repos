@@ -49,7 +49,10 @@ export const userService = {
 
   updateProfile: async (data: UpdateProfileRequest): Promise<UserProfile> => {
     const apiData = convertProfileToAPI(data)
-    const response = await apiClient.put<UserProfileAPI>(API_ENDPOINTS.USER.UPDATE_PROFILE, apiData)
+    const response = await apiClient.patch<UserProfileAPI>(
+      API_ENDPOINTS.USER.UPDATE_PROFILE,
+      apiData
+    )
     return convertProfileFromAPI(response)
   },
 

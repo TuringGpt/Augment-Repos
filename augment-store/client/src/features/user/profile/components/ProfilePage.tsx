@@ -102,12 +102,30 @@ const ProfilePage = () => {
       setError(null)
       setSuccessMessage(null)
 
-      const updateData: UpdateProfileRequest = {
-        username: formData.username,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        mobile: formData.mobile,
-        gender: formData.gender || undefined,
+      // Only send fields that have changed and are not empty
+      const updateData: UpdateProfileRequest = {}
+
+      if (formData.username && formData.username !== (profile?.username || '')) {
+        updateData.username = formData.username
+      }
+      if (formData.firstName && formData.firstName !== (profile?.firstName || '')) {
+        updateData.firstName = formData.firstName
+      }
+      if (formData.lastName && formData.lastName !== (profile?.lastName || '')) {
+        updateData.lastName = formData.lastName
+      }
+      if (formData.mobile && formData.mobile !== (profile?.mobile || '')) {
+        updateData.mobile = formData.mobile
+      }
+      if (formData.gender && formData.gender !== (profile?.gender || '')) {
+        updateData.gender = formData.gender
+      }
+
+      // Check if there are any changes to send
+      if (Object.keys(updateData).length === 0) {
+        setError('No changes to save')
+        setIsSaving(false)
+        return
       }
 
       const updatedProfile = await userService.updateProfile(updateData)
