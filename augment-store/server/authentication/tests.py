@@ -2,6 +2,10 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from rest_framework import status
 from django.urls import reverse
+from django.test import override_settings
+from accounts.models import User
+
+
 class AuthenticationTests(BaseAPITestCase):
 
     def setUp(self):
@@ -19,6 +23,41 @@ class AuthenticationTests(BaseAPITestCase):
         }
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, 201)
+
+    @override_settings(DISABLE_EMAIL_VERIFICATION=True)
+    def test_create_user_when_verification_disabled(self):
+        # GIVEN verification is disabled
+        # WHEN we create a user
+        url = reverse("v1:register")
+        payload = {
+            "email": "test@example.com",
+            "password": "testpassword",
+            "first_name": "Test",
+            "last_name": "User",
+        }
+        response = self.client.post(url, payload)
+
+        user = User.objects.get(email="test@example.com")
+        # THEN the user should be active
+        self.assertTrue(user.is_active)
+
+    @override_settings(DISABLE_EMAIL_VERIFICATION=False)
+    def test_create_user_when_verification_enabled(self):
+        # GIVEN verification is enabled
+        # WHEN we create a user
+        url = reverse("v1:register")
+        payload = {
+            "email": "test@example.com",
+            "password": "testpassword",
+            "first_name": "Test",
+            "last_name": "User",
+        }
+        response = self.client.post(url, payload)
+        user = User.objects.get(email="test@example.com")
+
+        # THEN the user should not be active
+        self.assertFalse(user.is_active)
+
 
     def test_active_user_login(self):
         # GIVEN a user with email:user@demo.com and passowrd:asdf1234 exist

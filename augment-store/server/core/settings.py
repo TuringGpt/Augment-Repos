@@ -228,6 +228,9 @@ else:
     FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
 
 
+# Accounts settings
+DISABLE_EMAIL_VERIFICATION = config.get("DISABLE_EMAIL_VERIFICATION", False) == "True"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
