@@ -18,7 +18,7 @@ class Order(BaseModel):
         )
 
     items = models.ManyToManyField(CartItem, related_name='orders')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
 
 
@@ -47,6 +47,7 @@ class Payment(BaseModel):
         )
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.CHOICES, default=PaymentMethod.STRIPE)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.CHOICES, default=PaymentStatus.PENDING)
