@@ -134,6 +134,7 @@ const LoginPage = () => {
       setError(errorMessage)
       // Only reset submitting state on error to re-enable the form
       setIsSubmitting(false)
+    } finally {
       setLoading(false)
     }
   }
