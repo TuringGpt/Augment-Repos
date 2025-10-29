@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Container,
   Typography,
@@ -14,6 +14,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { Edit, Save, Cancel } from '@mui/icons-material'
+import delay from 'lodash/delay'
 import { userService } from '@services/api/user/userService'
 import type { UserProfile } from '@features/user/types'
 import { Colors } from '@config/colors'
@@ -28,6 +29,9 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  // Ref to store timeout ID for cleanup
+  const successTimeoutRef = useRef<number | null>(null)
+
   // Profile form with validation
   const { form, setProfileValues, resetToProfile } = useProfileForm(profile)
 
@@ -35,6 +39,15 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current !== null) {
+        clearTimeout(successTimeoutRef.current)
+      }
+    }
   }, [])
 
   const fetchProfile = async () => {
@@ -82,6 +95,12 @@ const ProfilePage = () => {
       setError(null)
       setSuccessMessage(null)
 
+      // Clear any existing success message timeout
+      if (successTimeoutRef.current !== null) {
+        clearTimeout(successTimeoutRef.current)
+        successTimeoutRef.current = null
+      }
+
       // Get only changed fields
       const updateData = getChangedFields(values, profile)
 
@@ -94,7 +113,7 @@ const ProfilePage = () => {
       setSuccessMessage('Profile updated successfully!')
 
       // Auto-hide success message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000)
+      successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
       const errorMessage =
         (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
