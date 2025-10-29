@@ -52,7 +52,7 @@ class ProductBrandTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND the response should contain the brands
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get("results", [])), 2)
 
     def test_create_brand_success(self):
         # GIVEN a merchant user is authenticated
@@ -227,7 +227,7 @@ class ProductCategoryTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND the response should contain the categories
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get("results", [])), 2)
 
     def test_create_category_success(self):
         # GIVEN a merchant user is authenticated
@@ -471,9 +471,10 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        
+        result = response.data.get("results", [])
         # AND the response should contain the products
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(result), 2)
 
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
@@ -512,9 +513,10 @@ class ProductTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        result = response.data.get("results", [])
         # AND only products within the price range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Mid Product")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Mid Product")
 
     def test_product_list_filter_by_rating_range(self):
         # GIVEN products with different ratings exist in the database
@@ -552,10 +554,11 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        
+        result = response.data.get("results", [])
         # AND only products within the rating range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Mid Rated Product")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Mid Rated Product")
 
     def test_product_list_filter_by_category_slug(self):
         # GIVEN products with different categories exist in the database
@@ -606,8 +609,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products in the electronics category should be returned
-        self.assertEqual(len(response.data), 2)
-        product_names = [product["name"] for product in response.data]
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 2)
+        product_names = [product["name"] for product in result]
         self.assertIn("Laptop", product_names)
         self.assertIn("Smartphone", product_names)
         self.assertNotIn("T-Shirt", product_names)
@@ -658,9 +662,10 @@ class ProductTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        result = response.data.get("results", [])
         # AND only products from Apple brand should be returned
-        self.assertEqual(len(response.data), 2)
-        product_names = [product["name"] for product in response.data]
+        self.assertEqual(len(result), 2)
+        product_names = [product["name"] for product in result]
         self.assertIn("iPhone", product_names)
         self.assertIn("MacBook", product_names)
         self.assertNotIn("Galaxy Phone", product_names)
@@ -703,8 +708,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products within the quantity range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Medium Stock Product")
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Medium Stock Product")
 
     def test_product_list_filter_multiple_filters_combined(self):
         # GIVEN products with various attributes exist in the database
@@ -763,8 +769,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products matching all criteria should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Nike Running Shoes")
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Nike Running Shoes")
 
     def test_product_list_filter_no_results(self):
         # GIVEN products exist in the database
@@ -786,7 +793,7 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND an empty list should be returned
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data.get("results", [])), 0)
 
     def test_create_product_success(self):
         # GIVEN a merchant user is authenticated
@@ -1089,22 +1096,24 @@ class ProductTests(BaseAPITestCase):
 
         # Assert response status
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), len(products_data))
+
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), len(products_data))
 
         # Assert ordering
         for idx, (expected_name, field_path, expected_value) in enumerate(expected_order):
-            self.assertEqual(response.data[idx]["name"], expected_name)
+            self.assertEqual(result[idx]["name"], expected_name)
 
             # Handle nested fields (e.g., "brand.name" or "category.name")
             if "." in field_path:
                 parts = field_path.split(".")
-                value = response.data[idx]
+                value = result[idx]
                 for part in parts:
                     value = value[part]
                 self.assertEqual(value, expected_value)
             else:
                 # Handle direct fields
-                actual_value = response.data[idx][field_path]
+                actual_value = result[idx][field_path]
                 if isinstance(expected_value, float):
                     self.assertEqual(float(actual_value), expected_value)
                 else:
