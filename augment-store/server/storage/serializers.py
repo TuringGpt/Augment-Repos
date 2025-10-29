@@ -34,23 +34,34 @@ class FileSerializer(serializers.ModelSerializer):
 
 
 class StartDirectFileUploadSerializer( serializers.Serializer):
-    
+
     original_file_name = serializers.CharField(write_only=True)
     file_type = serializers.CharField(write_only=True)
-   
-    
+    file = serializers.SerializerMethodField()
+    presigned_data = serializers.SerializerMethodField()
+
+
     def create(self, validated_data: StorageValidatedData):
-      
-        user = self.context["request"].user 
+
+        user = self.context["request"].user
         validated_data["user"] = user
         service = FileDirectUploadService(user)
         data = service.start(validated_data)
 
         return data
 
+    def get_file(self, obj):
+        file = obj.get("file")
+        if not file: return None
+        return FileSerializer(file).data
+
+    def get_presigned_data(self, obj):
+        return obj.get("presigned_data")
+
 class DirectLocalFileUploadSerializer(serializers.Serializer):
     file = serializers.FileField(write_only=True)
     file_id = serializers.CharField(write_only=True)
+    
 
     def create(self, validated_data):
         user = self.context["request"].user
