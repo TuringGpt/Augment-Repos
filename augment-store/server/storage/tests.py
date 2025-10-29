@@ -11,10 +11,10 @@ import os
 
 
 @override_settings(
-    FILE_UPLOAD_STORAGE='local',
-    MEDIA_ROOT=os.path.join(settings.BASE_DIR, 'test_media'),
-    DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
-    APP_DOMAIN='http://testserver'
+    FILE_UPLOAD_STORAGE="local",
+    MEDIA_ROOT=os.path.join(settings.BASE_DIR, "test_media"),
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    APP_DOMAIN="http://testserver",
 )
 class StorageTests(BaseAPITestCase):
 
@@ -25,7 +25,7 @@ class StorageTests(BaseAPITestCase):
             email="merchant@demo.com",
             password="testpass123",
             is_active=True,
-            role=User.Role.MERCHANT
+            role=User.Role.MERCHANT,
         )
         self.merchant_client = self.authenticated_client
         self.merchant_client.force_authenticate(user=self.merchant_user)
@@ -35,7 +35,7 @@ class StorageTests(BaseAPITestCase):
             email="member@demo.com",
             password="testpass123",
             is_active=True,
-            role=User.Role.MEMBER
+            role=User.Role.MEMBER,
         )
 
     def test_start_direct_upload_success(self):
@@ -52,7 +52,9 @@ class StorageTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # AND a File object should be created in the database
-        self.assertTrue(File.objects.filter(original_file_name="test_image.jpg").exists())
+        self.assertTrue(
+            File.objects.filter(original_file_name="test_image.jpg").exists()
+        )
 
     def test_start_direct_upload_unauthenticated(self):
         # GIVEN a user is not authenticated
@@ -67,8 +69,8 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_start_direct_upload_member_role_forbidden(self):
-        # GIVEN a member user is authenticated (not merchant or admin)
+    def test_start_direct_upload_member_role_allowed(self):
+        # GIVEN a member user is authenticated (for avatar uploads)
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -80,8 +82,8 @@ class StorageTests(BaseAPITestCase):
         }
         response = member_client.post(url, payload)
 
-        # THEN we should get a 403 response
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # THEN we should get a 201 response (member users can now upload for avatars)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_start_direct_upload_missing_fields(self):
         # GIVEN a merchant user is authenticated
@@ -103,21 +105,21 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.merchant_user,
         )
 
         # WHEN we make a post request to upload the actual file
-        url = reverse("v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)})
+        url = reverse(
+            "v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)}
+        )
         test_file = SimpleUploadedFile(
-            "test_upload.jpg",
-            b"file_content",
-            content_type="image/jpeg"
+            "test_upload.jpg", b"file_content", content_type="image/jpeg"
         )
         payload = {
             "file": test_file,
             "file_id": str(file_record.id),
         }
-        response = self.merchant_client.post(url, payload, format='multipart')
+        response = self.merchant_client.post(url, payload, format="multipart")
 
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -133,27 +135,27 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.merchant_user,
         )
 
         # WHEN we make a post request to upload the actual file
-        url = reverse("v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)})
+        url = reverse(
+            "v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)}
+        )
         test_file = SimpleUploadedFile(
-            "test_upload.jpg",
-            b"file_content",
-            content_type="image/jpeg"
+            "test_upload.jpg", b"file_content", content_type="image/jpeg"
         )
         payload = {
             "file": test_file,
             "file_id": str(file_record.id),
         }
-        response = self.client.post(url, payload, format='multipart')
+        response = self.client.post(url, payload, format="multipart")
 
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_direct_local_upload_member_role_forbidden(self):
-        # GIVEN a member user is authenticated (not merchant or admin)
+    def test_direct_local_upload_member_role_allowed(self):
+        # GIVEN a member user is authenticated (for avatar uploads)
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -162,39 +164,40 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user,
         )
 
         # WHEN we make a post request to upload the actual file
-        url = reverse("v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)})
+        url = reverse(
+            "v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)}
+        )
         test_file = SimpleUploadedFile(
-            "test_upload.jpg",
-            b"file_content",
-            content_type="image/jpeg"
+            "test_upload.jpg", b"file_content", content_type="image/jpeg"
         )
         payload = {
             "file": test_file,
             "file_id": str(file_record.id),
         }
-        response = member_client.post(url, payload, format='multipart')
+        response = member_client.post(url, payload, format="multipart")
 
-        # THEN we should get a 403 response
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # THEN we should get a 200 response (member users can now upload for avatars)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_direct_local_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated
         # WHEN we make a post request with a non-existent file_id
-        url = reverse("v1:storage:direct_local_upload", kwargs={"file_id": "99999999-9999-9999-9999-999999999999"})
+        url = reverse(
+            "v1:storage:direct_local_upload",
+            kwargs={"file_id": "99999999-9999-9999-9999-999999999999"},
+        )
         test_file = SimpleUploadedFile(
-            "test_upload.jpg",
-            b"file_content",
-            content_type="image/jpeg"
+            "test_upload.jpg", b"file_content", content_type="image/jpeg"
         )
         payload = {
             "file": test_file,
             "file_id": "99999999-9999-9999-9999-999999999999",
         }
-        response = self.merchant_client.post(url, payload, format='multipart')
+        response = self.merchant_client.post(url, payload, format="multipart")
 
         # THEN we should get a 404 response
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -207,7 +210,7 @@ class StorageTests(BaseAPITestCase):
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
             created_by=self.merchant_user,
-            file=SimpleUploadedFile("test_finish.jpg", b"file_content")
+            file=SimpleUploadedFile("test_finish.jpg", b"file_content"),
         )
 
         # WHEN we make a post request to finish the upload
@@ -234,7 +237,7 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_finish.jpg",
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.merchant_user,
         )
 
         # WHEN we make a post request to finish the upload
@@ -247,8 +250,8 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_finish_direct_upload_member_role_forbidden(self):
-        # GIVEN a member user is authenticated (not merchant or admin)
+    def test_finish_direct_upload_member_role_allowed(self):
+        # GIVEN a member user is authenticated (for avatar uploads)
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -257,7 +260,7 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_finish.jpg",
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user,
         )
 
         # WHEN we make a post request to finish the upload
@@ -267,8 +270,8 @@ class StorageTests(BaseAPITestCase):
         }
         response = member_client.post(url, payload)
 
-        # THEN we should get a 403 response
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # THEN we should get a 200 response (member users can now upload for avatars)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_finish_direct_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated

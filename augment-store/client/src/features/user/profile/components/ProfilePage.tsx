@@ -277,7 +277,7 @@ const ProfilePage = () => {
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.username}
-                helperText={isEditing ? form.errors.username : ''}
+                helperText={isEditing ? form.errors.username : ' '}
               />
             </Grid>
 
@@ -302,7 +302,7 @@ const ProfilePage = () => {
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.first_name}
-                helperText={isEditing ? form.errors.first_name : ''}
+                helperText={isEditing ? form.errors.first_name : ' '}
               />
             </Grid>
 
@@ -315,7 +315,7 @@ const ProfilePage = () => {
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.last_name}
-                helperText={isEditing ? form.errors.last_name : ''}
+                helperText={isEditing ? form.errors.last_name : ' '}
               />
             </Grid>
 
@@ -329,7 +329,7 @@ const ProfilePage = () => {
                 variant={isEditing ? 'outlined' : 'filled'}
                 placeholder="+1234567890"
                 error={isEditing && !!form.errors.mobile}
-                helperText={isEditing ? form.errors.mobile : ''}
+                helperText={isEditing ? form.errors.mobile : ' '}
               />
             </Grid>
 
@@ -343,7 +343,7 @@ const ProfilePage = () => {
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.gender}
-                helperText={isEditing ? form.errors.gender : ''}
+                helperText={isEditing ? form.errors.gender : ' '}
               >
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
@@ -371,6 +371,7 @@ const ProfilePage = () => {
                 value={profile?.is_active ? 'Active' : 'Inactive'}
                 disabled
                 variant="filled"
+                helperText=" "
               />
             </Grid>
           </Grid>
