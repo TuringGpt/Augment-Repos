@@ -1,52 +1,35 @@
 import { apiClient } from '../client'
 import { useAuthStore } from '@store/authStore'
-import type {
-  FileUploadStartRequest,
-  FileUploadStartResponse,
-  FileUploadFinishRequest,
-  FileUploadFinishResponse,
-} from '@features/storage/types'
+import { API_ENDPOINTS } from '@config/api'
 
 /**
  * Storage Service
- * Handles file uploads using the 3-step direct upload process:
- * 1. Start upload - get presigned URL
- * 2. Upload file to local storage or S3
- * 3. Finish upload - mark as complete
+ * Handles file uploads using a 2-step process:
+ * 1. Upload file to /storage/direct/local/{file_id}/ (file_id is generated as random UUID)
+ * 2. Finish upload by calling /storage/direct/finish/ which returns the file URL as string
  */
 class StorageService {
   /**
-   * Step 1: Start direct file upload
-   * Creates a file record and returns upload URL
+   * Generate a random UUID v4
    */
-  async startUpload(data: FileUploadStartRequest): Promise<FileUploadStartResponse> {
-    // Debug: Check if user is authenticated
-    const { accessToken, isAuthenticated } = useAuthStore.getState()
-    console.log('🔍 Storage Service Debug:', {
-      isAuthenticated,
-      hasAccessToken: !!accessToken,
-      tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'null',
+  private generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
     })
-
-    if (!isAuthenticated || !accessToken) {
-      throw new Error('You must be logged in to upload files. Please login and try again.')
-    }
-
-    // apiClient.post already returns response.data, so we don't need .data again
-    const response = await apiClient.post<FileUploadStartResponse>('/storage/direct/', data)
-    return response
   }
 
   /**
-   * Step 2: Upload file to local storage
-   * For local storage, uploads the actual file
+   * Step 1: Upload file to local storage
+   * Uploads the actual file with a generated UUID
    */
-  async uploadLocal(file: File, fileId: string): Promise<void> {
+  private async uploadToLocal(file: File, fileId: string): Promise<void> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('file_id', fileId)
 
-    await apiClient.post(`/storage/direct/local/${fileId}/`, formData, {
+    await apiClient.post(API_ENDPOINTS.STORAGE.LOCAL_UPLOAD(fileId), formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -54,54 +37,48 @@ class StorageService {
   }
 
   /**
-   * Step 3: Finish direct file upload
-   * Marks the upload as complete
+   * Step 2: Finish upload and get the file URL
+   * Returns the file URL as a string
    */
-  async finishUpload(data: FileUploadFinishRequest): Promise<FileUploadFinishResponse> {
-    // apiClient.post already returns response.data, so we don't need .data again
-    const response = await apiClient.post<FileUploadFinishResponse>('/storage/direct/finish/', data)
-    return response
+  private async finishUpload(fileId: string): Promise<string> {
+    const response = await apiClient.post<{ file: string }>(API_ENDPOINTS.STORAGE.FINISH_UPLOAD, {
+      file_id: fileId,
+    })
+    return response.file
   }
 
   /**
-   * Complete upload process (all 3 steps)
-   * Returns the final file URL
+   * Complete upload process (2 steps)
+   * Returns the final file URL as a string
    */
   async uploadFile(file: File): Promise<string> {
+    // Check authentication
+    const { accessToken, isAuthenticated } = useAuthStore.getState()
+    if (!isAuthenticated || !accessToken) {
+      throw new Error('You must be logged in to upload files. Please login and try again.')
+    }
+
     try {
-      // Step 1: Start upload
-      console.log('📤 Step 1: Starting upload for file:', file.name)
-      const startResponse = await this.startUpload({
-        original_file_name: file.name,
-        file_type: file.type,
-      })
-      console.log('✅ Step 1 response:', startResponse)
+      // Generate a random UUID for the file
+      const fileId = this.generateUUID()
+      console.log('📤 Starting upload for file:', file.name)
+      console.log('📝 Generated file ID:', fileId)
 
-      const fileId = startResponse.file.id
-      console.log('📝 File ID:', fileId)
+      // Step 1: Upload file to local storage
+      console.log('📤 Step 1: Uploading to /storage/direct/local/{file_id}/')
+      await this.uploadToLocal(file, fileId)
+      console.log('✅ Step 1 complete')
 
-      // Step 2: Upload to local storage
-      console.log('📤 Step 2: Uploading to local storage...')
-      await this.uploadLocal(file, fileId)
+      // Step 2: Finish upload and get file URL
+      console.log('📤 Step 2: Calling /storage/direct/finish/ to get file URL')
+      const fileUrl = await this.finishUpload(fileId)
       console.log('✅ Step 2 complete')
 
-      // Step 3: Finish upload
-      console.log('📤 Step 3: Finishing upload...')
-      const finishResponse = await this.finishUpload({ file_id: fileId })
-      console.log('✅ Step 3 response:', finishResponse)
-
-      // Check if response has the expected structure
-      if (!finishResponse.file) {
-        console.error('❌ finishResponse.file is undefined:', finishResponse)
-        throw new Error('Invalid response from server: missing file data')
-      }
-
-      if (!finishResponse.file.file) {
-        console.error('❌ finishResponse.file.file is undefined:', finishResponse.file)
+      if (!fileUrl) {
+        console.error('❌ File URL is empty or undefined')
         throw new Error('Invalid response from server: missing file URL')
       }
 
-      const fileUrl = finishResponse.file.file
       console.log('✅ Upload complete! File URL:', fileUrl)
       return fileUrl
     } catch (error) {

@@ -10,10 +10,8 @@ from .models import File
 from .enums import FileUploadStorage
 
 
-
 class FileSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
- 
 
     class Meta:
         model = File
@@ -24,29 +22,30 @@ class FileSerializer(serializers.ModelSerializer):
             "created_by",
         )
 
-
     def get_file(self, obj: File):
-        if not obj.file: return None
+        if not obj.file:
+            return None
 
-        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL: return obj.file.url
-        
+        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL:
+            return obj.file.url
+
         return create_presigned_url(obj.file.name)
 
 
-class StartDirectFileUploadSerializer( serializers.Serializer):
-    
+class StartDirectFileUploadSerializer(serializers.Serializer):
+
     original_file_name = serializers.CharField(write_only=True)
     file_type = serializers.CharField(write_only=True)
-   
-    
+
     def create(self, validated_data: StorageValidatedData):
-      
-        user = self.context["request"].user 
+
+        user = self.context["request"].user
         validated_data["user"] = user
         service = FileDirectUploadService(user)
         data = service.start(validated_data)
 
         return data
+
 
 class DirectLocalFileUploadSerializer(serializers.Serializer):
     file = serializers.FileField(write_only=True)
@@ -57,11 +56,26 @@ class DirectLocalFileUploadSerializer(serializers.Serializer):
         file_id = validated_data["file_id"]
         file_obj = validated_data["file"]
 
-        file = get_object_or_404(File, id=file_id)
+        # Try to get existing file, or create a new one if it doesn't exist
+        try:
+            file = File.objects.get(id=file_id)
+        except File.DoesNotExist:
+            # Create a new file record if it doesn't exist
+            file = File(
+                id=file_id,
+                original_file_name=file_obj.name,
+                file_name=file_obj.name,
+                file_type=file_obj.content_type,
+                created_by=user,
+                file=None,
+            )
+            file.full_clean()
+            file.save()
 
         service = FileDirectUploadService(user)
         file = service.upload_local(file=file, file_obj=file_obj)
-        return {"file": file, "file_id": file_id,}
+        return {"file": file, "file_id": file_id}
+
 
 class FinishFileUploadSerializer(serializers.Serializer):
     file_id = serializers.CharField(write_only=True)
@@ -75,11 +89,24 @@ class FinishFileUploadSerializer(serializers.Serializer):
 
         service = FileDirectUploadService(user)
         file = service.finish(file=file)
-        return {"file": file, "file_id": file_id,}
+        return {
+            "file": file,
+            "file_id": file_id,
+        }
 
-    def get_file(self, obj: File):
+    def get_file(self, obj):
+        """
+        Return the file URL as a string instead of the full file object
+        """
         file = obj.get("file")
-        if not file: return
-        return FileSerializer(file).data
+        if not file:
+            return None
 
+        # Return the file URL as a string
+        if not file.file:
+            return None
 
+        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL:
+            return file.file.url
+
+        return create_presigned_url(file.file.name)
