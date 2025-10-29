@@ -5,6 +5,7 @@ import type {
   ProductListResponse,
   ProductSearchParams,
   Category,
+  CategoryAPIResponse,
 } from '@features/products/types'
 
 export const productService = {
@@ -26,7 +27,13 @@ export const productService = {
   },
 
   getCategories: async (): Promise<Category[]> => {
-    return apiClient.get<Category[]>(API_ENDPOINTS.PRODUCTS.CATEGORIES)
+    try {
+      const response = await apiClient.get<CategoryAPIResponse>(API_ENDPOINTS.PRODUCTS.CATEGORIES)
+      return response.results || []
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
+      return []
+    }
   },
 
   getFeaturedProducts: async (): Promise<Product[]> => {
