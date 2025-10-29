@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -26,7 +27,8 @@ class UserManager(BaseUserManager):
         if not password:
             raise ValueError(_("The Password must be set"))
         email = self.normalize_email(email)
-        extra_fields.setdefault("is_active", False)
+
+        extra_fields.setdefault("is_active", True if settings.DISABLE_EMAIL_VERIFICATION else False)
         user: "User" = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()

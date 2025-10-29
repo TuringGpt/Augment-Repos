@@ -47,6 +47,10 @@ class Product(BaseModel):
     images = models.ManyToManyField(File, related_name='products', blank=True)
     objects:ProductManager = ProductManager()
 
+
+    def check_stock(self, quantity):
+        return self.quantity >= quantity
+
    
 
     

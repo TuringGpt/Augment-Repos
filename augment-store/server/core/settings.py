@@ -25,6 +25,38 @@ ALLOWED_HOSTS = [
     config.get('ALLOWED_HOSTS', '*')
 ]
 
+# CORS settings - Allow all localhost origins
+CORS_ALLOW_ALL_ORIGINS = config.get('CORS_ALLOW_ALL_ORIGINS', False) == 'True'
+CORS_ALLOWED_ORIGINS = [config.get('FRONTEND_URL', 'http://localhost:3000')]
+
+# Allow all localhost origins using regex pattern
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]
+
+# CORS headers configuration
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 
 # Application definition
 
@@ -35,20 +67,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
+     "corsheaders",
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
+    'api',
     'accounts',
     'authentication',
     'mptt',
     'products',
     'storage',
+    'carts',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -193,6 +228,9 @@ else:
     FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
 
 
+# Accounts settings
+DISABLE_EMAIL_VERIFICATION = config.get("DISABLE_EMAIL_VERIFICATION", False) == "True"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -207,6 +245,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     "NON_FIELD_ERRORS_KEY": "details",
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
 }
 
 SPECTACULAR_SETTINGS = {

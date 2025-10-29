@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from '@layouts/MainLayout'
 import AuthLayout from '@layouts/AuthLayout'
+import ProtectedRoute from '@components/ProtectedRoute'
+import PublicRoute from '@components/PublicRoute'
 
 // Placeholder pages - to be implemented
 import HomePage from '@features/products/product-list/components/HomePage'
@@ -8,6 +10,7 @@ import LoginPage from '@features/auth/login/components/LoginPage'
 import RegisterPage from '@features/auth/register/components/RegisterPage'
 import ForgotPasswordPage from '@features/auth/forgot-password/components/ForgotPasswordPage'
 import ResetPasswordPage from '@features/auth/forgot-password/components/ResetPasswordPage'
+import VerifyEmailPage from '@features/auth/verify-email/components/VerifyEmailPage'
 import ShopPage from '@features/products/product-list/components/ShopPage'
 import ProductDetailPage from '@features/products/product-detail/components/ProductDetailPage'
 import CartPage from '@features/cart/components/CartPage'
@@ -46,21 +49,26 @@ const AppRoutes = () => {
         <Route path="/privacy" element={<PrivacyPage />} />
       </Route>
 
-      {/* Auth routes with auth layout */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Auth routes with auth layout - redirect to home if already logged in */}
+      <Route element={<PublicRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+        </Route>
       </Route>
 
-      {/* Protected routes with main layout */}
-      <Route element={<MainLayout />}>
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
-        <Route path="/orders/:id" element={<OrderDetailPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
+      {/* Protected routes with main layout - require authentication */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders/:id" element={<OrderDetailPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+        </Route>
       </Route>
 
       {/* Catch all */}
