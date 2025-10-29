@@ -24,7 +24,7 @@ class BaseBrandView:
     serializer_class = ProductBrandListSerializer
 
     def get_queryset(self):
-        return ProductBrand.objects.all()
+        return ProductBrand.objects.all().order_by('name')
     
 class ProductBrandListView(BaseBrandView, ListAPIView):
     pass
@@ -45,7 +45,7 @@ class BaseCategoryView:
     serializer_class = ProductCategoryListSerializer
 
     def get_queryset(self):
-        return ProductCategory.objects.all()
+        return ProductCategory.objects.all().order_by('name')
     
 class ProductCategoryListView(BaseCategoryView, ListAPIView):
     pass
@@ -67,7 +67,7 @@ class BaseProductView:
     serializer_class = ProductListSerializer
 
     def get_queryset(self):
-        return Product.objects.all()
+        return Product.objects.all().order_by('-created_at')
 
 class ProductListView(BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
