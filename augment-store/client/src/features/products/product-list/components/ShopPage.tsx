@@ -34,6 +34,7 @@ const ShopPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
 
   // Calculate min and max prices from products
   const priceRange = useMemo(() => {
@@ -72,10 +73,13 @@ const ShopPage = () => {
 
         setProducts(response.products)
         setTotalPages(response.totalPages)
+        setTotalCount(response.total)
       } catch (err) {
         console.error('Failed to fetch products:', err)
         setError('Failed to load products. Please try again later.')
         setProducts([])
+        setTotalPages(1)
+        setTotalCount(0)
       } finally {
         setIsLoading(false)
       }
@@ -232,7 +236,7 @@ const ShopPage = () => {
                 All Products
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                ({filteredAndSortedProducts.length} items)
+                ({totalCount} {totalCount === 1 ? 'item' : 'items'})
               </Typography>
             </Box>
 

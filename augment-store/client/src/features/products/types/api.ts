@@ -26,7 +26,17 @@ export interface ProductAPI {
   category: ProductCategoryAPI
   quantity: number
   rating: string // Django returns Decimal as string
-  images: string[] // Array of image URLs
+  images: string[] // Array of image URLs (file IDs)
+}
+
+/**
+ * Paginated response from Django REST Framework
+ */
+export interface PaginatedProductsAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: ProductAPI[]
 }
 
 /**
@@ -55,4 +65,3 @@ export function transformProductFromAPI(apiProduct: ProductAPI) {
     updatedAt: new Date().toISOString(), // Backend doesn't return this in list
   }
 }
-

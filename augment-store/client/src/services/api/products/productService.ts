@@ -6,37 +6,36 @@ import type {
   ProductSearchParams,
   Category,
 } from '@features/products/types'
-import type { ProductAPI } from '@features/products/types/api'
+import type { ProductAPI, PaginatedProductsAPI } from '@features/products/types/api'
 import { transformProductFromAPI } from '@features/products/types/api'
 
 export const productService = {
   /**
    * Get products from backend API
-   * Backend returns array of products without pagination metadata
-   * We implement pagination on the frontend
+   * Backend returns paginated response with count, next, previous, results
    */
   getProducts: async (params?: ProductSearchParams): Promise<ProductListResponse> => {
     try {
-      // Fetch all products from backend
-      const apiProducts = await apiClient.get<ProductAPI[]>(API_ENDPOINTS.PRODUCTS.LIST)
-
-      // Transform backend products to frontend format
-      const products: Product[] = apiProducts.map(transformProductFromAPI)
-
-      // Implement frontend pagination
       const page = params?.page || 1
       const limit = params?.limit || 12
-      const startIndex = (page - 1) * limit
-      const endIndex = startIndex + limit
 
-      const paginatedProducts = products.slice(startIndex, endIndex)
+      // Fetch products from backend with pagination
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+        params: {
+          page,
+          page_size: limit, // Django REST Framework uses page_size
+        },
+      })
+
+      // Transform backend products to frontend format
+      const products: Product[] = response.results.map(transformProductFromAPI)
 
       return {
-        products: paginatedProducts,
-        total: products.length,
+        products,
+        total: response.count,
         page,
         limit,
-        totalPages: Math.ceil(products.length / limit),
+        totalPages: Math.ceil(response.count / limit),
       }
     } catch (error) {
       console.error('Failed to fetch products:', error)
@@ -60,49 +59,85 @@ export const productService = {
     query: string,
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
-    // Backend doesn't have search endpoint yet, so we fetch all and filter on frontend
-    const allProductsResponse = await productService.getProducts({ ...params, limit: 1000 })
+    try {
+      // Backend doesn't have search endpoint yet, so we fetch all and filter on frontend
+      // Fetch a large page to get all products for filtering
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+        params: {
+          page: 1,
+          page_size: 1000, // Get a large number of products
+        },
+      })
 
-    const filteredProducts = allProductsResponse.products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase())
-    )
+      // Transform and filter products
+      const allProducts = response.results.map(transformProductFromAPI)
+      const filteredProducts = allProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.description.toLowerCase().includes(query.toLowerCase())
+      )
 
-    // Apply pagination to filtered results
-    const page = params?.page || 1
-    const limit = params?.limit || 12
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
+      // Apply pagination to filtered results
+      const page = params?.page || 1
+      const limit = params?.limit || 12
+      const startIndex = (page - 1) * limit
+      const endIndex = startIndex + limit
 
-    return {
-      products: filteredProducts.slice(startIndex, endIndex),
-      total: filteredProducts.length,
-      page,
-      limit,
-      totalPages: Math.ceil(filteredProducts.length / limit),
+      return {
+        products: filteredProducts.slice(startIndex, endIndex),
+        total: filteredProducts.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredProducts.length / limit),
+      }
+    } catch (error) {
+      console.error('Failed to search products:', error)
+      return {
+        products: [],
+        total: 0,
+        page: 1,
+        limit: params?.limit || 12,
+        totalPages: 0,
+      }
     }
   },
 
   getCategories: async (): Promise<Category[]> => {
-    // Backend doesn't have categories endpoint in the format we need
-    // For now, extract unique categories from products
-    const allProductsResponse = await productService.getProducts({ limit: 1000 })
-    const categoriesMap = new Map<string, Category>()
+    try {
+      // Backend doesn't have categories endpoint in the format we need
+      // For now, extract unique categories from products
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+        params: {
+          page: 1,
+          page_size: 1000,
+        },
+      })
 
-    allProductsResponse.products.forEach((product) => {
-      if (!categoriesMap.has(product.category.id)) {
-        categoriesMap.set(product.category.id, product.category)
-      }
-    })
+      const products = response.results.map(transformProductFromAPI)
+      const categoriesMap = new Map<string, Category>()
 
-    return Array.from(categoriesMap.values())
+      products.forEach((product) => {
+        if (!categoriesMap.has(product.category.id)) {
+          categoriesMap.set(product.category.id, product.category)
+        }
+      })
+
+      return Array.from(categoriesMap.values())
+    } catch (error) {
+      console.error('Failed to fetch categories:', error)
+      return []
+    }
   },
 
   getFeaturedProducts: async (): Promise<Product[]> => {
-    // Backend doesn't have featured endpoint yet
-    // Return first 6 products as featured
-    const response = await productService.getProducts({ limit: 6 })
-    return response.products
+    try {
+      // Backend doesn't have featured endpoint yet
+      // Return first 6 products as featured
+      const response = await productService.getProducts({ page: 1, limit: 6 })
+      return response.products
+    } catch (error) {
+      console.error('Failed to fetch featured products:', error)
+      return []
+    }
   },
 }
