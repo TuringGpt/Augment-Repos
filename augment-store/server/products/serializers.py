@@ -72,6 +72,10 @@ class CreateProductSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     brand = ProductBrandListSerializer(read_only=True)
     category = ProductCategoryListSerializer(read_only=True)
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj: Product):
+        return [image.file.url for image in obj.images.all()]
 
     class Meta:
         model = Product

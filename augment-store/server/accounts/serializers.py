@@ -6,6 +6,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for retrieving user profile information"""
     full_name = serializers.CharField(read_only=True)
     is_registration_completed = serializers.BooleanField(read_only=True)
+    profile_image = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -19,12 +20,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "mobile",
             "gender",
             "image",
+            "profile_image",
             "role",
             "is_active",
             "is_registration_completed",
             "date_joined",
         ]
         read_only_fields = ["id", "email", "role", "is_active", "date_joined"]
+
+    def get_profile_image(self, obj: User):
+        if obj.profile_image:
+            return obj.profile_image.file.url
+        return None
 
 
 class UpdateUserProfileSerializer(serializers.ModelSerializer):
@@ -39,6 +46,7 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
             "mobile",
             "gender",
             "image",
+            "profile_image",
         ]
     
     def validate_mobile(self, value):
