@@ -1,23 +1,30 @@
 import type { Product } from '@features/products/types'
 
+// User profile (matches backend API format with snake_case)
 export interface UserProfile {
   id: string
   email: string
-  firstName: string
-  lastName: string
-  phone?: string
-  avatar?: string
-  dateOfBirth?: string
-  createdAt: string
-  updatedAt: string
+  username: string
+  first_name: string
+  last_name: string
+  full_name: string
+  mobile: string
+  gender: 'Male' | 'Female' | 'Other'
+  image: string
+  role: 'admin' | 'customer'
+  is_active: boolean
+  is_registration_completed: boolean
+  date_joined: string
 }
 
+// Update profile request (matches backend API format with snake_case)
 export interface UpdateProfileRequest {
-  firstName?: string
-  lastName?: string
-  phone?: string
-  avatar?: string
-  dateOfBirth?: string
+  username?: string
+  first_name?: string
+  last_name?: string
+  mobile?: string
+  gender?: 'Male' | 'Female' | 'Other'
+  image?: string
 }
 
 export interface Address {
