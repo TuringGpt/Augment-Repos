@@ -1,22 +1,33 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
+import type { Cart, CartAPI, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
+import { transformCart, createEmptyCart } from '@utils/cartUtils'
 
 export const cartService = {
   getCart: async (): Promise<Cart> => {
-    return apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
+    try {
+      const apiCart = await apiClient.get<CartAPI>(API_ENDPOINTS.CART.GET)
+      return transformCart(apiCart)
+    } catch (error) {
+      console.error('Failed to fetch cart:', error)
+      // Return empty cart on error
+      return createEmptyCart()
+    }
   },
 
   addToCart: async (data: AddToCartRequest): Promise<Cart> => {
-    return apiClient.post<Cart>(API_ENDPOINTS.CART.ADD, data)
+    const apiCart = await apiClient.post<CartAPI>(API_ENDPOINTS.CART.ADD, data)
+    return transformCart(apiCart)
   },
 
   updateCartItem: async (itemId: string, data: UpdateCartItemRequest): Promise<Cart> => {
-    return apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
+    const apiCart = await apiClient.patch<CartAPI>(API_ENDPOINTS.CART.UPDATE(itemId), data)
+    return transformCart(apiCart)
   },
 
   removeFromCart: async (itemId: string): Promise<Cart> => {
-    return apiClient.delete<Cart>(API_ENDPOINTS.CART.REMOVE(itemId))
+    const apiCart = await apiClient.delete<CartAPI>(API_ENDPOINTS.CART.REMOVE(itemId))
+    return transformCart(apiCart)
   },
 
   clearCart: async (): Promise<void> => {

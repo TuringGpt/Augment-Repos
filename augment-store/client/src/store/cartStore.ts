@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Cart, CartItem } from '@features/cart/types'
+import { createEmptyCart } from '@utils/cartUtils'
 
 interface CartState {
   cart: Cart | null
@@ -23,16 +24,6 @@ interface CartState {
   isInCart: (productId: string) => boolean
   getCartItem: (productId: string) => CartItem | undefined
 }
-
-const createEmptyCart = (): Cart => ({
-  id: 'cart-' + Date.now(),
-  items: [],
-  subtotal: 0,
-  tax: 0,
-  shipping: 0,
-  total: 0,
-  itemCount: 0,
-})
 
 // Helper function to calculate cart totals
 const calculateCartTotals = (
