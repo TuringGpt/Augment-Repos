@@ -69,8 +69,8 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_start_direct_upload_member_role_allowed(self):
-        # GIVEN a member user is authenticated (for avatar uploads)
+    def test_start_direct_upload_member_role_success(self):
+        # GIVEN a member user is authenticated
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -82,8 +82,13 @@ class StorageTests(BaseAPITestCase):
         }
         response = member_client.post(url, payload)
 
-        # THEN we should get a 201 response (member users can now upload for avatars)
+        # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND a File object should be created in the database
+        self.assertTrue(
+            File.objects.filter(original_file_name="test_image.jpg").exists()
+        )
 
     def test_start_direct_upload_missing_fields(self):
         # GIVEN a merchant user is authenticated
@@ -154,8 +159,8 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_direct_local_upload_member_role_allowed(self):
-        # GIVEN a member user is authenticated (for avatar uploads)
+    def test_direct_local_upload_member_role_success(self):
+        # GIVEN a member user is authenticated
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -180,8 +185,12 @@ class StorageTests(BaseAPITestCase):
         }
         response = member_client.post(url, payload, format="multipart")
 
-        # THEN we should get a 200 response (member users can now upload for avatars)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND the file record should be updated with the file
+        file_record.refresh_from_db()
+        self.assertIsNotNone(file_record.file)
 
     def test_direct_local_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated
@@ -250,8 +259,8 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_finish_direct_upload_member_role_allowed(self):
-        # GIVEN a member user is authenticated (for avatar uploads)
+    def test_finish_direct_upload_member_role_success(self):
+        # GIVEN a member user is authenticated
         member_client = self.authenticated_client
         member_client.force_authenticate(user=self.member_user)
 
@@ -270,8 +279,15 @@ class StorageTests(BaseAPITestCase):
         }
         response = member_client.post(url, payload)
 
-        # THEN we should get a 200 response (member users can now upload for avatars)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND the response should contain file data
+        self.assertIn("file", response.data)
+
+        # AND the file record should have upload_finished_at set
+        file_record.refresh_from_db()
+        self.assertIsNotNone(file_record.upload_finished_at)
 
     def test_finish_direct_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated
