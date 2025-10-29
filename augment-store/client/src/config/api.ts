@@ -67,7 +67,6 @@ export const API_ENDPOINTS = {
   // Storage endpoints
   STORAGE: {
     START_UPLOAD: '/storage/direct/',
-    LOCAL_UPLOAD: (fileId: string) => `/storage/direct/local/${fileId}/`,
     FINISH_UPLOAD: '/storage/direct/finish/',
   },
 

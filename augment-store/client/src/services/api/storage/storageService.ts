@@ -24,8 +24,7 @@ interface StartUploadResponse {
  * Storage Service
  * Handles file uploads through backend (backend uploads to S3):
  * 1. POST /storage/direct/ → Create file record, get file.id
- * 2. POST /storage/direct/local/{file_id}/ → Upload file to backend (backend uploads to S3)
- * 3. POST /storage/direct/finish/ → Confirm upload and get final file URL
+ * 2. POST /storage/direct/finish/ → Confirm upload and get final file URL
  */
 class StorageService {
   /**
@@ -41,23 +40,7 @@ class StorageService {
   }
 
   /**
-   * Step 2: Upload file to backend (backend handles S3 upload)
-   * Sends the actual file data to the backend
-   */
-  private async uploadToBackend(file: File, fileId: string): Promise<void> {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('file_id', fileId)
-
-    await apiClient.post(API_ENDPOINTS.STORAGE.LOCAL_UPLOAD(fileId), formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  }
-
-  /**
-   * Step 3: Finish upload and get the final file URL
+   * Step 2: Finish upload and get the final file URL
    * Returns the file URL as a string (from file.file field)
    */
   private async finishUpload(fileId: string): Promise<string> {
@@ -70,7 +53,7 @@ class StorageService {
   }
 
   /**
-   * Complete upload process (3 steps)
+   * Complete upload process (2 steps)
    * Returns the final file URL as a string
    */
   async uploadFile(file: File): Promise<string> {
@@ -83,21 +66,16 @@ class StorageService {
     try {
       console.log('📤 Starting upload for file:', file.name)
 
-      // Step 1: Create file record
+      // Step 1: Create file record and get file.id
       console.log('📤 Step 1: Creating file record at /storage/direct/')
       const startResponse = await this.startUpload(file.name, file.type)
       const fileId = startResponse.file.id
       console.log('✅ Step 1 complete - File ID:', fileId)
 
-      // Step 2: Upload file to backend (backend uploads to S3)
-      console.log('📤 Step 2: Uploading file to backend at /storage/direct/local/{file_id}/')
-      await this.uploadToBackend(file, fileId)
-      console.log('✅ Step 2 complete - Backend uploaded file to S3')
-
-      // Step 3: Finish upload and get final file URL
-      console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
+      // Step 2: Finish upload and get final file URL
+      console.log('📤 Step 2: Finishing upload at /storage/direct/finish/')
       const fileUrl = await this.finishUpload(fileId)
-      console.log('✅ Step 3 complete - Received file URL from /storage/direct/finish/')
+      console.log('✅ Step 2 complete - Received file URL from /storage/direct/finish/')
       console.log('📝 Final file URL:', fileUrl)
 
       if (!fileUrl) {
