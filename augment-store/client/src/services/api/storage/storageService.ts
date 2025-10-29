@@ -32,8 +32,9 @@ class StorageService {
       throw new Error('You must be logged in to upload files. Please login and try again.')
     }
 
+    // apiClient.post already returns response.data, so we don't need .data again
     const response = await apiClient.post<FileUploadStartResponse>('/storage/direct/', data)
-    return response.data
+    return response
   }
 
   /**
@@ -57,8 +58,9 @@ class StorageService {
    * Marks the upload as complete
    */
   async finishUpload(data: FileUploadFinishRequest): Promise<FileUploadFinishResponse> {
+    // apiClient.post already returns response.data, so we don't need .data again
     const response = await apiClient.post<FileUploadFinishResponse>('/storage/direct/finish/', data)
-    return response.data
+    return response
   }
 
   /**
@@ -66,21 +68,46 @@ class StorageService {
    * Returns the final file URL
    */
   async uploadFile(file: File): Promise<string> {
-    // Step 1: Start upload
-    const startResponse = await this.startUpload({
-      original_file_name: file.name,
-      file_type: file.type,
-    })
+    try {
+      // Step 1: Start upload
+      console.log('📤 Step 1: Starting upload for file:', file.name)
+      const startResponse = await this.startUpload({
+        original_file_name: file.name,
+        file_type: file.type,
+      })
+      console.log('✅ Step 1 response:', startResponse)
 
-    const fileId = startResponse.file.id
+      const fileId = startResponse.file.id
+      console.log('📝 File ID:', fileId)
 
-    // Step 2: Upload to local storage
-    await this.uploadLocal(file, fileId)
+      // Step 2: Upload to local storage
+      console.log('📤 Step 2: Uploading to local storage...')
+      await this.uploadLocal(file, fileId)
+      console.log('✅ Step 2 complete')
 
-    // Step 3: Finish upload
-    const finishResponse = await this.finishUpload({ file_id: fileId })
+      // Step 3: Finish upload
+      console.log('📤 Step 3: Finishing upload...')
+      const finishResponse = await this.finishUpload({ file_id: fileId })
+      console.log('✅ Step 3 response:', finishResponse)
 
-    return finishResponse.file.file
+      // Check if response has the expected structure
+      if (!finishResponse.file) {
+        console.error('❌ finishResponse.file is undefined:', finishResponse)
+        throw new Error('Invalid response from server: missing file data')
+      }
+
+      if (!finishResponse.file.file) {
+        console.error('❌ finishResponse.file.file is undefined:', finishResponse.file)
+        throw new Error('Invalid response from server: missing file URL')
+      }
+
+      const fileUrl = finishResponse.file.file
+      console.log('✅ Upload complete! File URL:', fileUrl)
+      return fileUrl
+    } catch (error) {
+      console.error('❌ Upload failed:', error)
+      throw error
+    }
   }
 
   /**
