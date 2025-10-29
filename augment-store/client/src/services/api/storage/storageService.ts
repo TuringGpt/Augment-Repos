@@ -80,12 +80,14 @@ class StorageService {
 
   /**
    * Step 3: Confirm upload and get the final file URL
-   * Returns the file URL as a string
+   * Returns the file URL as a string (from file.file field)
    */
   private async finishUpload(fileId: string): Promise<string> {
     const response = await apiClient.post<{ file: string }>(API_ENDPOINTS.STORAGE.FINISH_UPLOAD, {
       file_id: fileId,
     })
+    console.log('📥 Response from /storage/direct/finish/:', response)
+    console.log('📥 Extracted file URL:', response.file)
     return response.file
   }
 
@@ -121,14 +123,16 @@ class StorageService {
       // Step 3: Confirm upload and get final file URL
       console.log('📤 Step 3: Confirming upload at /storage/direct/finish/')
       const fileUrl = await this.finishUpload(fileId)
-      console.log('✅ Step 3 complete')
+      console.log('✅ Step 3 complete - Received file URL from /storage/direct/finish/')
+      console.log('📝 Final file URL:', fileUrl)
 
       if (!fileUrl) {
         console.error('❌ File URL is empty or undefined')
         throw new Error('Invalid response from server: missing file URL')
       }
 
-      console.log('✅ Upload complete! File URL:', fileUrl)
+      console.log('✅ Upload complete! Using file URL from finish endpoint:', fileUrl)
+      console.log('📌 This URL will be saved to profile.image')
       return fileUrl
     } catch (error) {
       console.error('❌ Upload failed:', error)
