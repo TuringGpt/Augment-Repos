@@ -24,6 +24,7 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -73,7 +74,11 @@ const ProfilePage = () => {
   }
 
   const handleSave = form.onSubmit(async (values) => {
+    // Prevent concurrent submissions
+    if (isSaving) return
+
     try {
+      setIsSaving(true)
       setError(null)
       setSuccessMessage(null)
 
@@ -97,6 +102,8 @@ const ProfilePage = () => {
         (err as { message?: string }).message ||
         'Failed to update profile'
       setError(errorMessage)
+    } finally {
+      setIsSaving(false)
     }
   })
 
@@ -290,13 +297,15 @@ const ProfilePage = () => {
                 startIcon={<Cancel />}
                 onClick={handleCancel}
                 type="button"
+                disabled={isSaving}
               >
                 Cancel
               </Button>
               <Button
                 variant="contained"
-                startIcon={<Save />}
+                startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
                 type="submit"
+                disabled={isSaving}
                 sx={{
                   background: Colors.gradient.purpleViolet,
                   '&:hover': {
@@ -304,7 +313,7 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                Save Changes
+                {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
             </Box>
           )}
