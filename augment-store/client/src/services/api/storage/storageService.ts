@@ -1,7 +1,6 @@
 import { apiClient } from '../client'
 import { useAuthStore } from '@store/authStore'
 import { API_ENDPOINTS } from '@config/api'
-import axios from 'axios'
 
 interface StartUploadResponse {
   file: {
@@ -17,30 +16,21 @@ interface StartUploadResponse {
   }
   presigned_data: {
     url: string
-    fields: {
-      acl: string
-      'Content-Type': string
-      key: string
-      'x-amz-algorithm': string
-      'x-amz-credential': string
-      'x-amz-date': string
-      policy: string
-      'x-amz-signature': string
-    }
+    fields: Record<string, string>
   }
 }
 
 /**
  * Storage Service
- * Handles file uploads using S3 presigned POST:
- * 1. POST /storage/direct/ → Get presigned data and file_id
- * 2. POST to S3 with presigned fields → Upload file
- * 3. POST /storage/direct/{file_id}/ → Confirm upload and get final URL
+ * Handles file uploads through backend (backend uploads to S3):
+ * 1. POST /storage/direct/ → Create file record, get file.id
+ * 2. POST /storage/direct/local/{file_id}/ → Upload file to backend (backend uploads to S3)
+ * 3. POST /storage/direct/finish/ → Confirm upload and get final file URL
  */
 class StorageService {
   /**
-   * Step 1: Start upload and get presigned data
-   * Returns file_id and presigned POST data for S3 upload
+   * Step 1: Create file record
+   * Returns file.id for the upload
    */
   private async startUpload(fileName: string, fileType: string): Promise<StartUploadResponse> {
     const response = await apiClient.post<StartUploadResponse>(API_ENDPOINTS.STORAGE.START_UPLOAD, {
@@ -51,27 +41,15 @@ class StorageService {
   }
 
   /**
-   * Step 2: Upload file to S3 using presigned POST
-   * Uses FormData with presigned fields
+   * Step 2: Upload file to backend (backend handles S3 upload)
+   * Sends the actual file data to the backend
    */
-  private async uploadToS3(
-    file: File,
-    presignedUrl: string,
-    presignedFields: Record<string, string>
-  ): Promise<void> {
-    // Create FormData with presigned fields
+  private async uploadToBackend(file: File, fileId: string): Promise<void> {
     const formData = new FormData()
-
-    // Add all presigned fields first (order matters for S3)
-    Object.entries(presignedFields).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
-
-    // Add the file last
     formData.append('file', file)
+    formData.append('file_id', fileId)
 
-    // Upload to S3 using POST (not PUT)
-    await axios.post(presignedUrl, formData, {
+    await apiClient.post(API_ENDPOINTS.STORAGE.LOCAL_UPLOAD(fileId), formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -79,7 +57,7 @@ class StorageService {
   }
 
   /**
-   * Step 3: Confirm upload and get the final file URL
+   * Step 3: Finish upload and get the final file URL
    * Returns the file URL as a string (from file.file field)
    */
   private async finishUpload(fileId: string): Promise<string> {
@@ -105,23 +83,19 @@ class StorageService {
     try {
       console.log('📤 Starting upload for file:', file.name)
 
-      // Step 1: Get presigned data from backend
-      console.log('📤 Step 1: Getting presigned data from /storage/direct/')
+      // Step 1: Create file record
+      console.log('📤 Step 1: Creating file record at /storage/direct/')
       const startResponse = await this.startUpload(file.name, file.type)
       const fileId = startResponse.file.id
-      const presignedUrl = startResponse.presigned_data.url
-      const presignedFields = startResponse.presigned_data.fields
       console.log('✅ Step 1 complete - File ID:', fileId)
-      console.log('📝 Presigned URL:', presignedUrl)
-      console.log('📝 Presigned fields:', presignedFields)
 
-      // Step 2: Upload to S3 using presigned POST
-      console.log('📤 Step 2: Uploading to S3 with presigned POST...')
-      await this.uploadToS3(file, presignedUrl, presignedFields)
-      console.log('✅ Step 2 complete')
+      // Step 2: Upload file to backend (backend uploads to S3)
+      console.log('📤 Step 2: Uploading file to backend at /storage/direct/local/{file_id}/')
+      await this.uploadToBackend(file, fileId)
+      console.log('✅ Step 2 complete - Backend uploaded file to S3')
 
-      // Step 3: Confirm upload and get final file URL
-      console.log('📤 Step 3: Confirming upload at /storage/direct/finish/')
+      // Step 3: Finish upload and get final file URL
+      console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
       const fileUrl = await this.finishUpload(fileId)
       console.log('✅ Step 3 complete - Received file URL from /storage/direct/finish/')
       console.log('📝 Final file URL:', fileUrl)
