@@ -56,21 +56,7 @@ class DirectLocalFileUploadSerializer(serializers.Serializer):
         file_id = validated_data["file_id"]
         file_obj = validated_data["file"]
 
-        # Try to get existing file, or create a new one if it doesn't exist
-        try:
-            file = File.objects.get(id=file_id)
-        except File.DoesNotExist:
-            # Create a new file record if it doesn't exist
-            file = File(
-                id=file_id,
-                original_file_name=file_obj.name,
-                file_name=file_obj.name,
-                file_type=file_obj.content_type,
-                created_by=user,
-                file=None,
-            )
-            file.full_clean()
-            file.save()
+        file = get_object_or_404(File, id=file_id)
 
         service = FileDirectUploadService(user)
         file = service.upload_local(file=file, file_obj=file_obj)

@@ -1,43 +1,57 @@
 import { apiClient } from '../client'
 import { useAuthStore } from '@store/authStore'
 import { API_ENDPOINTS } from '@config/api'
+import axios from 'axios'
+
+interface StartUploadResponse {
+  file: {
+    id: string
+    original_file_name: string
+    file_name: string
+    file_type: string
+  }
+  presigned_data: {
+    url: string
+    presigned_data?: Record<string, unknown>
+  }
+}
 
 /**
  * Storage Service
- * Handles file uploads using a 2-step process:
- * 1. Upload file to /storage/direct/local/{file_id}/ (file_id is generated as random UUID)
- * 2. Finish upload by calling /storage/direct/finish/ which returns the file URL as string
+ * Handles file uploads using S3 presigned URLs:
+ * 1. POST /storage/direct/ → Get presigned URL and file_id
+ * 2. Upload file to S3 using presigned URL
+ * 3. POST /storage/direct/finish/ → Get the actual file URL as string
  */
 class StorageService {
   /**
-   * Generate a random UUID v4
+   * Step 1: Start upload and get presigned URL
+   * Returns file_id and presigned URL for S3 upload
    */
-  private generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0
-      const v = c === 'x' ? r : (r & 0x3) | 0x8
-      return v.toString(16)
+  private async startUpload(fileName: string, fileType: string): Promise<StartUploadResponse> {
+    const response = await apiClient.post<StartUploadResponse>(API_ENDPOINTS.STORAGE.START_UPLOAD, {
+      original_file_name: fileName,
+      file_type: fileType,
     })
+    return response
   }
 
   /**
-   * Step 1: Upload file to local storage
-   * Uploads the actual file with a generated UUID
+   * Step 2: Upload file to S3 using presigned URL
+   * Uses axios directly (not apiClient) to avoid auth headers
    */
-  private async uploadToLocal(file: File, fileId: string): Promise<void> {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('file_id', fileId)
-
-    await apiClient.post(API_ENDPOINTS.STORAGE.LOCAL_UPLOAD(fileId), formData, {
+  private async uploadToS3(file: File, presignedUrl: string): Promise<void> {
+    // Upload directly to S3 using presigned URL
+    // Don't use apiClient here as S3 doesn't need auth headers
+    await axios.put(presignedUrl, file, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': file.type,
       },
     })
   }
 
   /**
-   * Step 2: Finish upload and get the file URL
+   * Step 3: Finish upload and get the file URL
    * Returns the file URL as a string
    */
   private async finishUpload(fileId: string): Promise<string> {
@@ -48,7 +62,7 @@ class StorageService {
   }
 
   /**
-   * Complete upload process (2 steps)
+   * Complete upload process (3 steps)
    * Returns the final file URL as a string
    */
   async uploadFile(file: File): Promise<string> {
@@ -59,20 +73,25 @@ class StorageService {
     }
 
     try {
-      // Generate a random UUID for the file
-      const fileId = this.generateUUID()
       console.log('📤 Starting upload for file:', file.name)
-      console.log('📝 Generated file ID:', fileId)
 
-      // Step 1: Upload file to local storage
-      console.log('📤 Step 1: Uploading to /storage/direct/local/{file_id}/')
-      await this.uploadToLocal(file, fileId)
-      console.log('✅ Step 1 complete')
+      // Step 1: Get presigned URL from backend
+      console.log('📤 Step 1: Getting presigned URL from /storage/direct/')
+      const startResponse = await this.startUpload(file.name, file.type)
+      const fileId = startResponse.file.id
+      const presignedUrl = startResponse.presigned_data.url
+      console.log('✅ Step 1 complete - File ID:', fileId)
+      console.log('📝 Presigned URL:', presignedUrl)
 
-      // Step 2: Finish upload and get file URL
-      console.log('📤 Step 2: Calling /storage/direct/finish/ to get file URL')
-      const fileUrl = await this.finishUpload(fileId)
+      // Step 2: Upload to S3 using presigned URL
+      console.log('📤 Step 2: Uploading to S3...')
+      await this.uploadToS3(file, presignedUrl)
       console.log('✅ Step 2 complete')
+
+      // Step 3: Finish upload and get file URL
+      console.log('📤 Step 3: Calling /storage/direct/finish/ to get file URL')
+      const fileUrl = await this.finishUpload(fileId)
+      console.log('✅ Step 3 complete')
 
       if (!fileUrl) {
         console.error('❌ File URL is empty or undefined')
