@@ -28,7 +28,7 @@ export const profileUpdateSchema = z.object({
     .max(20, 'Mobile number must be less than 20 characters')
     .optional()
     .or(z.literal('')),
-  gender: z.enum(['Male', 'Female', 'Other']).optional().or(z.literal('')), // Allow empty string for "Not specified"
+  gender: z.enum(['Male', 'Female', 'Other']), // Required field, backend default is 'Other'
 })
 
 /**

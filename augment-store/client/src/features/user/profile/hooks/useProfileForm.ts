@@ -12,7 +12,7 @@ export const useProfileForm = (profile: UserProfile | null) => {
       first_name: '',
       last_name: '',
       mobile: '',
-      gender: undefined,
+      gender: 'Other', // Backend default
     },
     validate: (values) => validateProfileForm(values, profile),
   })
@@ -26,7 +26,7 @@ export const useProfileForm = (profile: UserProfile | null) => {
       first_name: profileData.first_name || '',
       last_name: profileData.last_name || '',
       mobile: profileData.mobile || '',
-      gender: profileData.gender || undefined,
+      gender: profileData.gender, // Backend always returns a value
     })
   }
 
@@ -44,4 +44,3 @@ export const useProfileForm = (profile: UserProfile | null) => {
     resetToProfile,
   }
 }
-

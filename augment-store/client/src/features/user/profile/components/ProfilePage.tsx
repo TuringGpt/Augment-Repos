@@ -258,9 +258,6 @@ const ProfilePage = () => {
                 error={isEditing && !!form.errors.gender}
                 helperText={isEditing ? form.errors.gender : ''}
               >
-                <MenuItem value="">
-                  <em>Not specified</em>
-                </MenuItem>
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
                 <MenuItem value="Other">Other</MenuItem>
