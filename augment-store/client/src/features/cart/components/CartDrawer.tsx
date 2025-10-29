@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Drawer,
@@ -26,13 +26,23 @@ import {
 } from '@mui/icons-material'
 import { useUIStore } from '@store/uiStore'
 import { useCartStore } from '@store/cartStore'
+import { useCartSync } from '@features/cart/hooks/useCartSync'
 
 const CartDrawer = () => {
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
   const { cart, updateItem, removeItem } = useCartStore()
+  const { refetchCart } = useCartSync()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+
+  // Refetch cart when drawer opens
+  useEffect(() => {
+    if (isCartDrawerOpen) {
+      console.log('🔄 Cart drawer opened - refetching cart from API')
+      refetchCart()
+    }
+  }, [isCartDrawerOpen, refetchCart])
 
   const handleClose = () => {
     setCartDrawerOpen(false)

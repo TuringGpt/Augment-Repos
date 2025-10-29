@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -30,15 +30,23 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material'
 import { useCartStore } from '@store/cartStore'
+import { useCartSync } from '@features/cart/hooks/useCartSync'
 
 const CartPage = () => {
   const navigate = useNavigate()
   const { cart, updateItem, removeItem, removeItems, clearCart } = useCartStore()
+  const { refetchCart } = useCartSync()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false)
   const [removeItemDialogOpen, setRemoveItemDialogOpen] = useState(false)
   const [removeSelectedDialogOpen, setRemoveSelectedDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+
+  // Refetch cart when page mounts
+  useEffect(() => {
+    console.log('🔄 Cart page mounted - refetching cart from API')
+    refetchCart()
+  }, [refetchCart])
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
