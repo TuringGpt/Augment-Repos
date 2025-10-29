@@ -1,71 +1,81 @@
-import type { CartAPI, Cart, CartItemAPI, CartItem } from '@features/cart/types'
+import type { Cart, CartItem } from '@features/cart/types'
 
 /**
- * Transforms a cart item from API format (snake_case) to frontend format (camelCase)
- * and calculates price and subtotal
- * 
- * @param apiItem - Cart item from API
- * @returns Transformed cart item for frontend
+ * Gets the price for a cart item
+ *
+ * @param item - Cart item
+ * @returns Price as a number
  */
-export function transformCartItem(apiItem: CartItemAPI): CartItem {
-  const price = parseFloat(apiItem.product.price.toString())
-  const quantity = apiItem.quantity
-  const subtotal = price * quantity
-
-  return {
-    id: apiItem.id,
-    product: apiItem.product,
-    quantity: quantity,
-    price: price,
-    subtotal: subtotal,
-    createdAt: apiItem.created_at,
-    updatedAt: apiItem.updated_at,
-  }
+export function getItemPrice(item: CartItem): number {
+  return parseFloat(item.product.price.toString())
 }
 
 /**
- * Transforms a cart from API format to frontend format
- * Calculates totals (subtotal, tax, shipping, total, itemCount)
- * 
- * @param apiCart - Cart from API
- * @returns Transformed cart for frontend with calculated totals
+ * Gets the subtotal for a cart item (price * quantity)
+ *
+ * @param item - Cart item
+ * @returns Subtotal as a number
  */
-export function transformCart(apiCart: CartAPI): Cart {
-  // Transform cart items
-  const items = apiCart.items
-    .filter((item) => !item.is_deleted) // Filter out deleted items
-    .map(transformCartItem)
+export function getItemSubtotal(item: CartItem): number {
+  return getItemPrice(item) * item.quantity
+}
 
-  // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+/**
+ * Calculates cart totals from cart items
+ *
+ * @param items - Array of cart items
+ * @returns Object with subtotal, tax, shipping, total, itemCount
+ */
+export function calculateCartTotals(items: CartItem[]) {
+  const subtotal = items.reduce((sum, item) => sum + getItemSubtotal(item), 0)
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const tax = subtotal * 0.1 // 10% tax rate
   const shipping = subtotal > 50 ? 0 : 5.99 // Free shipping over $50
   const total = subtotal + tax + shipping
 
   return {
-    id: apiCart.id,
-    items: items,
-    subtotal: subtotal,
-    tax: tax,
-    shipping: shipping,
-    total: total,
-    itemCount: itemCount,
-    createdAt: apiCart.created_at,
-    updatedAt: apiCart.updated_at,
-    user: apiCart.user,
+    subtotal,
+    tax,
+    shipping,
+    total,
+    itemCount,
+  }
+}
+
+/**
+ * Adds calculated totals to a cart
+ * Filters out deleted items
+ *
+ * @param cart - Cart from API
+ * @returns Cart with calculated totals
+ */
+export function enrichCart(cart: Cart): Cart {
+  // Filter out deleted items
+  const activeItems = cart.items.filter((item) => !item.is_deleted)
+
+  // Calculate totals
+  const totals = calculateCartTotals(activeItems)
+
+  return {
+    ...cart,
+    items: activeItems,
+    ...totals,
   }
 }
 
 /**
  * Creates an empty cart
- * 
+ *
  * @returns Empty cart object
  */
 export function createEmptyCart(): Cart {
   return {
     id: 'cart-' + Date.now(),
     items: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    is_deleted: false,
+    user: '',
     subtotal: 0,
     tax: 0,
     shipping: 0,
@@ -73,4 +83,3 @@ export function createEmptyCart(): Cart {
     itemCount: 0,
   }
 }
-

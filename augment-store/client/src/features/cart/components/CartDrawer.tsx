@@ -27,6 +27,7 @@ import {
 import { useUIStore } from '@store/uiStore'
 import { useCartStore } from '@store/cartStore'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
+import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 
 const CartDrawer = () => {
   const navigate = useNavigate()
@@ -159,13 +160,13 @@ const CartDrawer = () => {
                         {item.product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        ${item.price.toFixed(2)} each
+                        ${getItemPrice(item).toFixed(2)} each
                       </Typography>
                       <Typography
                         variant="subtitle2"
                         sx={{ fontWeight: 600, color: 'primary.main' }}
                       >
-                        ${item.subtotal.toFixed(2)}
+                        ${getItemSubtotal(item).toFixed(2)}
                       </Typography>
                     </Box>
 
@@ -232,19 +233,19 @@ const CartDrawer = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2">Subtotal:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    ${cart.subtotal.toFixed(2)}
+                    ${(cart.subtotal ?? 0).toFixed(2)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2">Tax:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    ${cart.tax.toFixed(2)}
+                    ${(cart.tax ?? 0).toFixed(2)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2">Shipping:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {cart.shipping === 0 ? 'FREE' : `$${cart.shipping.toFixed(2)}`}
+                    {(cart.shipping ?? 0) === 0 ? 'FREE' : `$${(cart.shipping ?? 0).toFixed(2)}`}
                   </Typography>
                 </Box>
                 <Divider sx={{ my: 1.5 }} />
@@ -253,7 +254,7 @@ const CartDrawer = () => {
                     Total:
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    ${cart.total.toFixed(2)}
+                    ${(cart.total ?? 0).toFixed(2)}
                   </Typography>
                 </Box>
               </Box>

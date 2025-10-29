@@ -1,7 +1,7 @@
 import type { Product } from '@features/products/types'
 
-// API Response Types (snake_case from backend)
-export interface CartItemAPI {
+// Single source of truth - API Response Types (snake_case from backend)
+export interface CartItem {
   id: string
   product: Product
   created_at: string
@@ -11,37 +11,19 @@ export interface CartItemAPI {
   created_by: string
 }
 
-export interface CartAPI {
+export interface Cart {
   id: string
-  items: CartItemAPI[]
+  items: CartItem[]
   created_at: string
   updated_at: string
   is_deleted: boolean
   user: string
-}
-
-// Frontend Types (camelCase for UI)
-export interface CartItem {
-  id: string
-  product: Product
-  quantity: number
-  price: number
-  subtotal: number
-  createdAt?: string
-  updatedAt?: string
-}
-
-export interface Cart {
-  id: string
-  items: CartItem[]
-  subtotal: number
-  tax: number
-  shipping: number
-  total: number
-  itemCount: number
-  createdAt?: string
-  updatedAt?: string
-  user?: string
+  // Calculated fields (not from API)
+  subtotal?: number
+  tax?: number
+  shipping?: number
+  total?: number
+  itemCount?: number
 }
 
 export interface AddToCartRequest {
@@ -51,4 +33,10 @@ export interface AddToCartRequest {
 
 export interface UpdateCartItemRequest {
   quantity: number
+}
+
+// Helper type for cart items with calculated fields
+export interface CartItemWithCalculations extends CartItem {
+  price: number
+  subtotal: number
 }

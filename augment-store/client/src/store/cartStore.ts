@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Cart, CartItem } from '@features/cart/types'
-import { createEmptyCart } from '@utils/cartUtils'
+import { createEmptyCart, calculateCartTotals } from '@utils/cartUtils'
 
 interface CartState {
   cart: Cart | null
@@ -25,25 +25,6 @@ interface CartState {
   getTotal: () => number
   isInCart: (productId: string) => boolean
   getCartItem: (productId: string) => CartItem | undefined
-}
-
-// Helper function to calculate cart totals
-const calculateCartTotals = (
-  items: CartItem[]
-): Pick<Cart, 'subtotal' | 'tax' | 'shipping' | 'total' | 'itemCount'> => {
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const tax = subtotal * 0.1 // 10% tax rate
-  const shipping = subtotal > 50 ? 0 : 5.99 // Free shipping over $50
-  const total = subtotal + tax + shipping
-
-  return {
-    subtotal,
-    tax,
-    shipping,
-    total,
-    itemCount,
-  }
 }
 
 const initialCart: Cart = createEmptyCart()
@@ -82,7 +63,6 @@ export const useCartStore = create<CartState>()(
             updatedItems[existingItemIndex] = {
               ...existingItem,
               quantity: finalQuantity,
-              subtotal: finalQuantity * existingItem.price,
             }
           } else {
             // Add new item with stock validation
@@ -92,7 +72,6 @@ export const useCartStore = create<CartState>()(
               {
                 ...item,
                 quantity: finalQuantity,
-                subtotal: finalQuantity * item.price,
               },
             ]
           }
@@ -125,7 +104,7 @@ export const useCartStore = create<CartState>()(
             if (item.id === itemId) {
               // Cap quantity at available stock
               const finalQuantity = Math.min(Math.max(1, quantity), item.product.stock)
-              return { ...item, quantity: finalQuantity, subtotal: finalQuantity * item.price }
+              return { ...item, quantity: finalQuantity }
             }
             return item
           })

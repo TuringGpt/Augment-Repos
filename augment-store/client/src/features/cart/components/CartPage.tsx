@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material'
 import { useCartStore } from '@store/cartStore'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
+import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 
 const CartPage = () => {
   const navigate = useNavigate()
@@ -254,7 +255,7 @@ const CartPage = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        ${item.price.toFixed(2)}
+                        ${getItemPrice(item).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
@@ -293,7 +294,7 @@ const CartPage = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        ${item.subtotal.toFixed(2)}
+                        ${getItemSubtotal(item).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
@@ -324,27 +325,27 @@ const CartPage = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="body1">Subtotal:</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  ${cart.subtotal.toFixed(2)}
+                  ${(cart.subtotal ?? 0).toFixed(2)}
                 </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="body1">Tax (10%):</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  ${cart.tax.toFixed(2)}
+                  ${(cart.tax ?? 0).toFixed(2)}
                 </Typography>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="body1">Shipping:</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  {cart.shipping === 0 ? 'FREE' : `$${cart.shipping.toFixed(2)}`}
+                  {(cart.shipping ?? 0) === 0 ? 'FREE' : `$${(cart.shipping ?? 0).toFixed(2)}`}
                 </Typography>
               </Box>
 
-              {cart.subtotal < 50 && cart.subtotal > 0 && (
+              {(cart.subtotal ?? 0) < 50 && (cart.subtotal ?? 0) > 0 && (
                 <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
-                  Add ${(50 - cart.subtotal).toFixed(2)} more for free shipping!
+                  Add ${(50 - (cart.subtotal ?? 0)).toFixed(2)} more for free shipping!
                 </Alert>
               )}
 
@@ -355,7 +356,7 @@ const CartPage = () => {
                   Total:
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  ${cart.total.toFixed(2)}
+                  ${(cart.total ?? 0).toFixed(2)}
                 </Typography>
               </Box>
             </Box>
