@@ -7,7 +7,6 @@ import {
   Alert,
   CircularProgress,
   Divider,
-  Avatar,
   TextField,
   Button,
   Grid,
@@ -16,10 +15,12 @@ import {
 import { Edit, Save, Cancel } from '@mui/icons-material'
 import delay from 'lodash/delay'
 import { userService } from '@services/api/user/userService'
+import { storageService } from '@services/api/storage/storageService'
 import type { UserProfile } from '@features/user/types'
 import { Colors } from '@config/colors'
 import { useProfileForm } from '../hooks/useProfileForm'
 import { getChangedFields } from '../utils/profileValidation'
+import { AvatarUpload } from './AvatarUpload'
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -28,6 +29,13 @@ const ProfilePage = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Avatar upload state (consolidated)
+  const [avatarState, setAvatarState] = useState({
+    isUploading: false,
+    error: null as string | null,
+    newUrl: null as string | null,
+  })
 
   // Ref to store timeout ID for cleanup
   const successTimeoutRef = useRef<number | null>(null)
@@ -126,6 +134,56 @@ const ProfilePage = () => {
     }
   })
 
+  const handleAvatarSelect = async (file: File) => {
+    setAvatarState({ isUploading: true, error: null, newUrl: null })
+
+    try {
+      // Upload avatar to storage
+      const avatarUrl = await storageService.uploadAvatar(file)
+      setAvatarState((prev) => ({ ...prev, newUrl: avatarUrl }))
+
+      // Update profile with new avatar URL
+      const updatedProfile = await userService.updateProfile({ image: avatarUrl })
+      setProfile(updatedProfile)
+      setProfileValues(updatedProfile)
+
+      setSuccessMessage('Avatar updated successfully!')
+      successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
+          ?.message ||
+        (err as { message?: string }).message ||
+        'Failed to upload avatar'
+      setAvatarState((prev) => ({ ...prev, error: errorMessage }))
+    } finally {
+      setAvatarState((prev) => ({ ...prev, isUploading: false }))
+    }
+  }
+
+  const handleAvatarRemove = async () => {
+    setAvatarState({ isUploading: true, error: null, newUrl: null })
+
+    try {
+      // Update profile to remove avatar
+      const updatedProfile = await userService.updateProfile({ image: '' })
+      setProfile(updatedProfile)
+      setProfileValues(updatedProfile)
+
+      setSuccessMessage('Avatar removed successfully!')
+      successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
+          ?.message ||
+        (err as { message?: string }).message ||
+        'Failed to remove avatar'
+      setAvatarState((prev) => ({ ...prev, error: errorMessage }))
+    } finally {
+      setAvatarState((prev) => ({ ...prev, isUploading: false }))
+    }
+  }
+
   if (isLoading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -164,19 +222,23 @@ const ProfilePage = () => {
       )}
 
       <Paper elevation={3} sx={{ p: 4 }}>
+        {/* Avatar Upload Section */}
+        <Box sx={{ mb: 4 }}>
+          <AvatarUpload
+            currentImage={avatarState.newUrl || profile?.image || null}
+            userName={profile?.first_name || profile?.email || 'User'}
+            onImageSelect={handleAvatarSelect}
+            onImageRemove={handleAvatarRemove}
+            isUploading={avatarState.isUploading}
+            disabled={false}
+            error={avatarState.error}
+          />
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
         {/* Profile Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 80,
-              height: 80,
-              bgcolor: Colors.primary.main,
-              fontSize: '2rem',
-              mr: 3,
-            }}
-          >
-            {profile?.first_name?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || 'U'}
-          </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
               {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
@@ -209,6 +271,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Username"
                 {...form.getInputProps('username')}
                 disabled={!isEditing}
@@ -221,6 +284,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Email"
                 value={profile?.email || ''}
                 disabled
@@ -232,6 +296,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="First Name"
                 {...form.getInputProps('first_name')}
                 disabled={!isEditing}
@@ -244,6 +309,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Last Name"
                 {...form.getInputProps('last_name')}
                 disabled={!isEditing}
@@ -256,6 +322,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Mobile"
                 {...form.getInputProps('mobile')}
                 disabled={!isEditing}
@@ -269,6 +336,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 select
                 label="Gender"
                 {...form.getInputProps('gender')}
@@ -286,6 +354,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Role"
                 value={profile?.role || 'customer'}
                 disabled
@@ -297,6 +366,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Account Status"
                 value={profile?.is_active ? 'Active' : 'Inactive'}
                 disabled

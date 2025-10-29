@@ -64,6 +64,13 @@ export const API_ENDPOINTS = {
     REMOVE_FROM_WISHLIST: (id: string) => `/user/wishlist/${id}`,
   },
 
+  // Storage endpoints
+  STORAGE: {
+    START_UPLOAD: '/storage/direct/',
+    LOCAL_UPLOAD: (fileId: string) => `/storage/direct/local/${fileId}/`,
+    FINISH_UPLOAD: '/storage/direct/finish/',
+  },
+
   // Payment endpoints
   PAYMENT: {
     METHODS: '/payment/methods',
