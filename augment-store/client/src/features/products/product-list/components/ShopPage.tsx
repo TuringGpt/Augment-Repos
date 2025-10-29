@@ -1,42 +1,56 @@
-import { mockProducts } from '@data/mockProducts'
-import type { ProductFilters, SortBy } from '@features/products/types'
+import type { Product, ProductFilters, SortBy } from '@features/products/types'
 import { FilterList as FilterListIcon } from '@mui/icons-material'
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Divider,
   Drawer,
   Grid,
+  Pagination,
   Paper,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { productService } from '@services/api/products/productService'
+import { useEffect, useMemo, useState } from 'react'
 import PriceRangeFilter from './PriceRangeFilter'
 import ProductCard from './ProductCard'
 import RatingFilter from './RatingFilter'
 import SortDropdown from './SortDropdown'
+
+const PRODUCTS_PER_PAGE = 12
 
 const ShopPage = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
+  // API state
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
   // Calculate min and max prices from products
   const priceRange = useMemo(() => {
-    const prices = mockProducts.map((p) => p.discountPrice || p.price)
+    if (products.length === 0) {
+      return { min: 0, max: 1000 }
+    }
+    const prices = products.map((p) => p.discountPrice || p.price)
     return {
       min: Math.floor(Math.min(...prices)),
       max: Math.ceil(Math.max(...prices)),
     }
-  }, [])
+  }, [products])
 
   // Filter state
   const [filters, setFilters] = useState<ProductFilters>({
-    minPrice: priceRange.min,
-    maxPrice: priceRange.max,
+    minPrice: 0,
+    maxPrice: 1000,
     minRating: 0,
     maxRating: 5,
   })
@@ -44,9 +58,46 @@ const ShopPage = () => {
   // Sort state
   const [sortBy, setSortBy] = useState<SortBy>('newest')
 
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await productService.getProducts({
+          page: currentPage,
+          limit: PRODUCTS_PER_PAGE,
+        })
+
+        setProducts(response.products)
+        setTotalPages(response.totalPages)
+      } catch (err) {
+        console.error('Failed to fetch products:', err)
+        setError('Failed to load products. Please try again later.')
+        setProducts([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [currentPage])
+
+  // Update filter price range when products change
+  useEffect(() => {
+    if (products.length > 0 && filters.minPrice === 0 && filters.maxPrice === 1000) {
+      setFilters((prev) => ({
+        ...prev,
+        minPrice: priceRange.min,
+        maxPrice: priceRange.max,
+      }))
+    }
+  }, [priceRange, products.length, filters.minPrice, filters.maxPrice])
+
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
-    let result = [...mockProducts]
+    let result = [...products]
 
     // Apply filters
     result = result.filter((product) => {
@@ -82,7 +133,14 @@ const ShopPage = () => {
     })
 
     return result
-  }, [filters, sortBy])
+  }, [products, filters, sortBy])
+
+  // Handle page change
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page)
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handlePriceChange = (value: [number, number]) => {
     setFilters((prev) => ({
@@ -181,26 +239,63 @@ const ShopPage = () => {
             <SortDropdown value={sortBy} onChange={setSortBy} />
           </Box>
 
-          {/* Products Grid */}
-          {filteredAndSortedProducts.length > 0 ? (
-            <Grid container spacing={3}>
-              {filteredAndSortedProducts.map((product, index) => (
-                <Grid item xs={12} sm={6} md={4} key={product.id}>
-                  <ProductCard product={product} index={index} />
-                </Grid>
-              ))}
-            </Grid>
+          {/* Loading State */}
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            /* Error State */
+            <Paper sx={{ p: 6, textAlign: 'center' }}>
+              <Typography variant="h6" color="error" gutterBottom>
+                {error}
+              </Typography>
+              <Button variant="contained" onClick={() => window.location.reload()} sx={{ mt: 2 }}>
+                Retry
+              </Button>
+            </Paper>
+          ) : filteredAndSortedProducts.length > 0 ? (
+            /* Products Grid */
+            <>
+              <Grid container spacing={3}>
+                {filteredAndSortedProducts.map((product, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={product.id}>
+                    <ProductCard product={product} index={index} />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              )}
+            </>
           ) : (
+            /* No Products Found */
             <Paper sx={{ p: 6, textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary" gutterBottom>
                 No products found
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Try adjusting your filters
+                {products.length === 0
+                  ? 'No products available at the moment.'
+                  : 'Try adjusting your filters'}
               </Typography>
-              <Button variant="contained" onClick={handleResetFilters}>
-                Reset Filters
-              </Button>
+              {products.length > 0 && (
+                <Button variant="contained" onClick={handleResetFilters}>
+                  Reset Filters
+                </Button>
+              )}
             </Paper>
           )}
         </Grid>
