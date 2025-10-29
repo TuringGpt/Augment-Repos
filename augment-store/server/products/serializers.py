@@ -70,6 +70,9 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
+    brand = ProductBrandListSerializer(read_only=True)
+    category = ProductCategoryListSerializer(read_only=True)
+
     class Meta:
         model = Product
         fields = ["id", "name", "description", "price", "brand", "category", "quantity", "rating", "images"]

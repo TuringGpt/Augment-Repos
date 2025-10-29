@@ -52,7 +52,7 @@ class ProductBrandTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND the response should contain the brands
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get("results", [])), 2)
 
     def test_create_brand_success(self):
         # GIVEN a merchant user is authenticated
@@ -227,7 +227,7 @@ class ProductCategoryTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND the response should contain the categories
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data.get("results", [])), 2)
 
     def test_create_category_success(self):
         # GIVEN a merchant user is authenticated
@@ -471,9 +471,10 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        
+        result = response.data.get("results", [])
         # AND the response should contain the products
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(result), 2)
 
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
@@ -512,9 +513,10 @@ class ProductTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        result = response.data.get("results", [])
         # AND only products within the price range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Mid Product")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Mid Product")
 
     def test_product_list_filter_by_rating_range(self):
         # GIVEN products with different ratings exist in the database
@@ -552,10 +554,11 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        
+        result = response.data.get("results", [])
         # AND only products within the rating range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Mid Rated Product")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Mid Rated Product")
 
     def test_product_list_filter_by_category_slug(self):
         # GIVEN products with different categories exist in the database
@@ -606,8 +609,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products in the electronics category should be returned
-        self.assertEqual(len(response.data), 2)
-        product_names = [product["name"] for product in response.data]
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 2)
+        product_names = [product["name"] for product in result]
         self.assertIn("Laptop", product_names)
         self.assertIn("Smartphone", product_names)
         self.assertNotIn("T-Shirt", product_names)
@@ -658,9 +662,10 @@ class ProductTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        result = response.data.get("results", [])
         # AND only products from Apple brand should be returned
-        self.assertEqual(len(response.data), 2)
-        product_names = [product["name"] for product in response.data]
+        self.assertEqual(len(result), 2)
+        product_names = [product["name"] for product in result]
         self.assertIn("iPhone", product_names)
         self.assertIn("MacBook", product_names)
         self.assertNotIn("Galaxy Phone", product_names)
@@ -703,8 +708,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products within the quantity range should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Medium Stock Product")
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Medium Stock Product")
 
     def test_product_list_filter_multiple_filters_combined(self):
         # GIVEN products with various attributes exist in the database
@@ -763,8 +769,9 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND only products matching all criteria should be returned
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Nike Running Shoes")
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Nike Running Shoes")
 
     def test_product_list_filter_no_results(self):
         # GIVEN products exist in the database
@@ -786,7 +793,7 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # AND an empty list should be returned
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data.get("results", [])), 0)
 
     def test_create_product_success(self):
         # GIVEN a merchant user is authenticated
@@ -1069,3 +1076,161 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def _create_products_and_test_ordering(self, products_data, ordering_param, expected_order):
+        """
+        Helper method to create products and test ordering.
+
+        Args:
+            products_data: List of dicts with product attributes
+            ordering_param: The ordering parameter to use in the request
+            expected_order: List of tuples (product_name, field_name, expected_value) or (product_name, nested_field_path, expected_value)
+        """
+        # Create products
+        for product_data in products_data:
+            ProductFactory(**product_data, created_by=self.merchant_user)
+
+        # Make request with ordering
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"ordering": ordering_param})
+
+        # Assert response status
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        result = response.data.get("results", [])
+        self.assertEqual(len(result), len(products_data))
+
+        # Assert ordering
+        for idx, (expected_name, field_path, expected_value) in enumerate(expected_order):
+            self.assertEqual(result[idx]["name"], expected_name)
+
+            # Handle nested fields (e.g., "brand.name" or "category.name")
+            if "." in field_path:
+                parts = field_path.split(".")
+                value = result[idx]
+                for part in parts:
+                    value = value[part]
+                self.assertEqual(value, expected_value)
+            else:
+                # Handle direct fields
+                actual_value = result[idx][field_path]
+                if isinstance(expected_value, float):
+                    self.assertEqual(float(actual_value), expected_value)
+                else:
+                    self.assertEqual(actual_value, expected_value)
+
+    def test_product_list_ordering_by_price_ascending(self):
+        # GIVEN multiple products with different prices exist
+        products_data = [
+            {"name": "Expensive Product", "price": 299.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.5},
+            {"name": "Cheap Product", "price": 49.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 3.5},
+            {"name": "Mid-range Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Cheap Product", "price", 49.99),
+            ("Mid-range Product", "price", 149.99),
+            ("Expensive Product", "price", 299.99),
+        ]
+
+        # WHEN we request the product list ordered by price ascending
+        # THEN the products should be ordered by price ascending
+        self._create_products_and_test_ordering(products_data, "price", expected_order)
+
+    def test_product_list_ordering_by_price_descending(self):
+        # GIVEN multiple products with different prices exist
+        products_data = [
+            {"name": "Expensive Product", "price": 299.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.5},
+            {"name": "Cheap Product", "price": 49.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 3.5},
+            {"name": "Mid-range Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Expensive Product", "price", 299.99),
+            ("Mid-range Product", "price", 149.99),
+            ("Cheap Product", "price", 49.99),
+        ]
+
+        # WHEN we request the product list ordered by price descending
+        # THEN the products should be ordered by price descending
+        self._create_products_and_test_ordering(products_data, "-price", expected_order)
+
+    def test_product_list_ordering_by_rating_descending(self):
+        # GIVEN multiple products with different ratings exist
+        products_data = [
+            {"name": "Highly Rated Product", "price": 199.99, "brand": self.brand, "category": self.category, "quantity": 10, "rating": 4.8},
+            {"name": "Low Rated Product", "price": 99.99, "brand": self.brand, "category": self.category, "quantity": 20, "rating": 2.5},
+            {"name": "Average Rated Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 15, "rating": 3.7},
+        ]
+
+        expected_order = [
+            ("Highly Rated Product", "rating", 4.8),
+            ("Average Rated Product", "rating", 3.7),
+            ("Low Rated Product", "rating", 2.5),
+        ]
+
+        # WHEN we request the product list ordered by rating descending
+        # THEN the products should be ordered by rating descending
+        self._create_products_and_test_ordering(products_data, "-rating", expected_order)
+
+    def test_product_list_ordering_by_quantity_ascending(self):
+        # GIVEN multiple products with different quantities exist
+        products_data = [
+            {"name": "High Stock Product", "price": 199.99, "brand": self.brand, "category": self.category, "quantity": 100, "rating": 4.0},
+            {"name": "Low Stock Product", "price": 99.99, "brand": self.brand, "category": self.category, "quantity": 5, "rating": 4.0},
+            {"name": "Medium Stock Product", "price": 149.99, "brand": self.brand, "category": self.category, "quantity": 50, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Low Stock Product", "quantity", 5),
+            ("Medium Stock Product", "quantity", 50),
+            ("High Stock Product", "quantity", 100),
+        ]
+
+        # WHEN we request the product list ordered by quantity ascending
+        # THEN the products should be ordered by quantity ascending
+        self._create_products_and_test_ordering(products_data, "quantity", expected_order)
+
+    def test_product_list_ordering_by_brand_name(self):
+        # GIVEN multiple products with different brands exist
+        brand_a = ProductBrandFactory(name="Alpha Brand", description="First brand", created_by=self.merchant_user)
+        brand_z = ProductBrandFactory(name="Zeta Brand", description="Last brand", created_by=self.merchant_user)
+        brand_m = ProductBrandFactory(name="Mega Brand", description="Middle brand", created_by=self.merchant_user)
+
+        products_data = [
+            {"name": "Product from Zeta", "price": 199.99, "brand": brand_z, "category": self.category, "quantity": 10, "rating": 4.0},
+            {"name": "Product from Alpha", "price": 99.99, "brand": brand_a, "category": self.category, "quantity": 20, "rating": 4.0},
+            {"name": "Product from Mega", "price": 149.99, "brand": brand_m, "category": self.category, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Product from Alpha", "brand.name", "Alpha Brand"),
+            ("Product from Mega", "brand.name", "Mega Brand"),
+            ("Product from Zeta", "brand.name", "Zeta Brand"),
+        ]
+
+        # WHEN we request the product list ordered by brand name ascending
+        # THEN the products should be ordered by brand name ascending
+        self._create_products_and_test_ordering(products_data, "brand__name", expected_order)
+
+    def test_product_list_ordering_by_category_name(self):
+        # GIVEN multiple products with different categories exist
+        category_a = ProductCategoryFactory(name="Accessories", slug="accessories", description="Accessories category", created_by=self.merchant_user)
+        category_e = ProductCategoryFactory(name="Electronics", slug="electronics", description="Electronics category", created_by=self.merchant_user)
+        category_c = ProductCategoryFactory(name="Clothing", slug="clothing", description="Clothing category", created_by=self.merchant_user)
+
+        products_data = [
+            {"name": "Electronic Product", "price": 199.99, "brand": self.brand, "category": category_e, "quantity": 10, "rating": 4.0},
+            {"name": "Accessory Product", "price": 99.99, "brand": self.brand, "category": category_a, "quantity": 20, "rating": 4.0},
+            {"name": "Clothing Product", "price": 149.99, "brand": self.brand, "category": category_c, "quantity": 15, "rating": 4.0},
+        ]
+
+        expected_order = [
+            ("Accessory Product", "category.name", "Accessories"),
+            ("Clothing Product", "category.name", "Clothing"),
+            ("Electronic Product", "category.name", "Electronics"),
+        ]
+
+        # WHEN we request the product list ordered by category name ascending
+        # THEN the products should be ordered by category name ascending
+        self._create_products_and_test_ordering(products_data, "category__name", expected_order)

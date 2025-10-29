@@ -4,6 +4,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDe
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
@@ -23,7 +24,7 @@ class BaseBrandView:
     serializer_class = ProductBrandListSerializer
 
     def get_queryset(self):
-        return ProductBrand.objects.all()
+        return ProductBrand.objects.all().order_by('name')
     
 class ProductBrandListView(BaseBrandView, ListAPIView):
     pass
@@ -44,7 +45,7 @@ class BaseCategoryView:
     serializer_class = ProductCategoryListSerializer
 
     def get_queryset(self):
-        return ProductCategory.objects.all()
+        return ProductCategory.objects.all().order_by('name')
     
 class ProductCategoryListView(BaseCategoryView, ListAPIView):
     pass
@@ -66,11 +67,15 @@ class BaseProductView:
     serializer_class = ProductListSerializer
 
     def get_queryset(self):
-        return Product.objects.all()
+        return Product.objects.all().order_by('-created_at')
 
 class ProductListView(BaseProductView, ListAPIView):
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = ProductFilter
+
+    ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
+    search_fields = ["name", "description", "brand__name", "category__name"]
+
 
 class CreateProductView(BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer

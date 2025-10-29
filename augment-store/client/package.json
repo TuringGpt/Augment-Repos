@@ -14,6 +14,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@mantine/form": "^8.3.5",
     "@mui/icons-material": "^5.14.19",
     "@mui/material": "^5.14.19",
     "axios": "^1.6.2",
@@ -23,6 +24,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "swiper": "^12.0.2",
+    "zod": "^4.1.12",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
