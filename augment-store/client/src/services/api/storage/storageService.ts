@@ -1,4 +1,5 @@
 import { apiClient } from '../client'
+import { useAuthStore } from '@store/authStore'
 import type {
   FileUploadStartRequest,
   FileUploadStartResponse,
@@ -19,6 +20,18 @@ class StorageService {
    * Creates a file record and returns upload URL
    */
   async startUpload(data: FileUploadStartRequest): Promise<FileUploadStartResponse> {
+    // Debug: Check if user is authenticated
+    const { accessToken, isAuthenticated } = useAuthStore.getState()
+    console.log('🔍 Storage Service Debug:', {
+      isAuthenticated,
+      hasAccessToken: !!accessToken,
+      tokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : 'null',
+    })
+
+    if (!isAuthenticated || !accessToken) {
+      throw new Error('You must be logged in to upload files. Please login and try again.')
+    }
+
     const response = await apiClient.post<FileUploadStartResponse>('/storage/direct/', data)
     return response.data
   }
@@ -44,10 +57,7 @@ class StorageService {
    * Marks the upload as complete
    */
   async finishUpload(data: FileUploadFinishRequest): Promise<FileUploadFinishResponse> {
-    const response = await apiClient.post<FileUploadFinishResponse>(
-      '/storage/direct/finish/',
-      data
-    )
+    const response = await apiClient.post<FileUploadFinishResponse>('/storage/direct/finish/', data)
     return response.data
   }
 
@@ -95,4 +105,3 @@ class StorageService {
 }
 
 export const storageService = new StorageService()
-
