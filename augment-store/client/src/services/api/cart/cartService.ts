@@ -1,22 +1,29 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
+import { enrichCart } from '@utils/cartUtils'
 
 export const cartService = {
   getCart: async (): Promise<Cart> => {
-    return apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
+    // Don't catch errors - let them propagate to the caller
+    // This prevents overwriting existing cart on transient failures
+    const cart = await apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
+    return enrichCart(cart)
   },
 
   addToCart: async (data: AddToCartRequest): Promise<Cart> => {
-    return apiClient.post<Cart>(API_ENDPOINTS.CART.ADD, data)
+    const cart = await apiClient.post<Cart>(API_ENDPOINTS.CART.ADD, data)
+    return enrichCart(cart)
   },
 
   updateCartItem: async (itemId: string, data: UpdateCartItemRequest): Promise<Cart> => {
-    return apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
+    const cart = await apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
+    return enrichCart(cart)
   },
 
   removeFromCart: async (itemId: string): Promise<Cart> => {
-    return apiClient.delete<Cart>(API_ENDPOINTS.CART.REMOVE(itemId))
+    const cart = await apiClient.delete<Cart>(API_ENDPOINTS.CART.REMOVE(itemId))
+    return enrichCart(cart)
   },
 
   clearCart: async (): Promise<void> => {

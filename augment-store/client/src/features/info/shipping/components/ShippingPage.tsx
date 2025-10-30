@@ -69,7 +69,7 @@ const ShippingPage = () => {
             </Table>
           </TableContainer>
           <Typography variant="body2" sx={{ mt: 2 }} color="text.secondary">
-            * Free standard shipping on orders over $50
+            * Free standard shipping on orders of $50 or more
           </Typography>
         </Box>
 

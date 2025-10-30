@@ -91,8 +91,10 @@ const ProductDetailPage = () => {
       id: `cart-${product.id}-${Date.now()}`,
       product,
       quantity,
-      price: product.discountPrice || product.price,
-      subtotal: (product.discountPrice || product.price) * quantity,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_deleted: false,
+      created_by: '', // Will be set by backend
     }
 
     addItem(cartItem)

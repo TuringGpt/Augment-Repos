@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Cart, CartItem } from '@features/cart/types'
+import { createEmptyCart, calculateCartTotals } from '@utils/cartUtils'
 
 interface CartState {
   cart: Cart | null
@@ -16,41 +17,13 @@ interface CartState {
   clearCart: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
+  refetchCart: () => Promise<void>
 
   // Computed
   getItemCount: () => number
   getTotal: () => number
   isInCart: (productId: string) => boolean
   getCartItem: (productId: string) => CartItem | undefined
-}
-
-const createEmptyCart = (): Cart => ({
-  id: 'cart-' + Date.now(),
-  items: [],
-  subtotal: 0,
-  tax: 0,
-  shipping: 0,
-  total: 0,
-  itemCount: 0,
-})
-
-// Helper function to calculate cart totals
-const calculateCartTotals = (
-  items: CartItem[]
-): Pick<Cart, 'subtotal' | 'tax' | 'shipping' | 'total' | 'itemCount'> => {
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const tax = subtotal * 0.1 // 10% tax rate
-  const shipping = subtotal > 50 ? 0 : 5.99 // Free shipping over $50
-  const total = subtotal + tax + shipping
-
-  return {
-    subtotal,
-    tax,
-    shipping,
-    total,
-    itemCount,
-  }
 }
 
 const initialCart: Cart = createEmptyCart()
@@ -64,7 +37,31 @@ export const useCartStore = create<CartState>()(
 
       setCart: (cart) => set({ cart }),
 
-      addItem: (item) =>
+      refetchCart: async () => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        try {
+          const cart = await cartService.getCart()
+          set({ cart, error: null })
+        } catch (error) {
+          console.error('Failed to refetch cart:', error)
+
+          // Only create empty cart for 404 (user has no cart yet)
+          // For other errors (network, 5xx), preserve existing cart
+          const isNotFound = (error as { response?: { status?: number } })?.response?.status === 404
+
+          if (isNotFound) {
+            console.log('No cart found for user - creating empty cart')
+            set({ cart: createEmptyCart(), error: null })
+          } else {
+            // Preserve existing cart on transient failures
+            console.warn('Preserving existing cart due to transient error')
+            set({ error: 'Failed to load cart. Please try again.' })
+          }
+        }
+      },
+
+      addItem: (item) => {
         set((state) => {
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
@@ -86,7 +83,6 @@ export const useCartStore = create<CartState>()(
             updatedItems[existingItemIndex] = {
               ...existingItem,
               quantity: finalQuantity,
-              subtotal: finalQuantity * existingItem.price,
             }
           } else {
             // Add new item with stock validation
@@ -96,7 +92,6 @@ export const useCartStore = create<CartState>()(
               {
                 ...item,
                 quantity: finalQuantity,
-                subtotal: finalQuantity * item.price,
               },
             ]
           }
@@ -111,9 +106,10 @@ export const useCartStore = create<CartState>()(
               ...totals,
             },
           }
-        }),
+        })
+      },
 
-      updateItem: (itemId, quantity) =>
+      updateItem: (itemId, quantity) => {
         set((state) => {
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
@@ -122,7 +118,7 @@ export const useCartStore = create<CartState>()(
             if (item.id === itemId) {
               // Cap quantity at available stock
               const finalQuantity = Math.min(Math.max(1, quantity), item.product.stock)
-              return { ...item, quantity: finalQuantity, subtotal: finalQuantity * item.price }
+              return { ...item, quantity: finalQuantity }
             }
             return item
           })
@@ -137,9 +133,10 @@ export const useCartStore = create<CartState>()(
               ...totals,
             },
           }
-        }),
+        })
+      },
 
-      removeItem: (itemId) =>
+      removeItem: (itemId) => {
         set((state) => {
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
@@ -156,9 +153,10 @@ export const useCartStore = create<CartState>()(
               ...totals,
             },
           }
-        }),
+        })
+      },
 
-      removeItems: (itemIds) =>
+      removeItems: (itemIds) => {
         set((state) => {
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
@@ -175,9 +173,12 @@ export const useCartStore = create<CartState>()(
               ...totals,
             },
           }
-        }),
+        })
+      },
 
-      clearCart: () => set({ cart: createEmptyCart() }),
+      clearCart: () => {
+        set({ cart: createEmptyCart() })
+      },
 
       setLoading: (isLoading) => set({ isLoading }),
 
