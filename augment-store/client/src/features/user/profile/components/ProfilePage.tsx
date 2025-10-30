@@ -142,8 +142,19 @@ const ProfilePage = () => {
       const fileId = await storageService.uploadAvatar(file)
       console.log('📤 Received file ID from upload:', fileId)
 
-      // Update profile with file ID (ForeignKey to storage.File)
-      const updatedProfile = await userService.updateProfile({ profile_image: fileId })
+      // Get any pending form changes (if user is editing)
+      const formChanges = getChangedFields(form.values, profile)
+
+      // Combine avatar update with any pending form changes
+      const updateData = {
+        ...formChanges,
+        profile_image: fileId,
+      }
+
+      console.log('📤 Sending profile update with:', updateData)
+
+      // Update profile with file ID (ForeignKey to storage.File) + any form changes
+      const updatedProfile = await userService.updateProfile(updateData)
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 
@@ -169,9 +180,19 @@ const ProfilePage = () => {
     setAvatarState({ isUploading: true, error: null, newUrl: null })
 
     try {
-      // Update profile to remove avatar (set profile_image to null)
-      // Note: Sending empty string to clear the ForeignKey field
-      const updatedProfile = await userService.updateProfile({ profile_image: '' })
+      // Get any pending form changes (if user is editing)
+      const formChanges = getChangedFields(form.values, profile)
+
+      // Combine avatar removal with any pending form changes
+      const updateData = {
+        ...formChanges,
+        profile_image: '', // Empty string to clear the ForeignKey field
+      }
+
+      console.log('📤 Sending profile update with:', updateData)
+
+      // Update profile to remove avatar + any form changes
+      const updatedProfile = await userService.updateProfile(updateData)
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 
