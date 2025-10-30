@@ -4,7 +4,6 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from storage.services import FileDirectUploadService, StorageValidatedData
-from .utils import create_presigned_url
 
 from .models import File
 from .enums import FileUploadStorage
@@ -29,7 +28,11 @@ class FileSerializer(serializers.ModelSerializer):
         if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL:
             return obj.file.url
 
-        return create_presigned_url(obj.file.name)
+        if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.LOCAL:
+            return obj.file.url
+
+        # For S3, use the direct URL since PublicMediaStorage makes files public
+        return obj.file.url
 
 
 class StartDirectFileUploadSerializer(serializers.Serializer):

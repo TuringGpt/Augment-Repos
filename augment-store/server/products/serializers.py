@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import ProductBrand, ProductCategory, Product
+from storage.serializers import FileSerializer
 
 
 #  Product Brand Serializers
@@ -16,9 +17,11 @@ class CreateProductBrandSerializer(serializers.ModelSerializer):
 
 
 class ProductBrandListSerializer(serializers.ModelSerializer):
+    image = FileSerializer(read_only=True)
+
     class Meta:
         model = ProductBrand
-        fields = ["id", "name", "description"]
+        fields = ["id", "name", "description", "image"]
 
 
 class ProductBrandDetailSerializer(serializers.ModelSerializer):
@@ -45,6 +48,8 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
 
 
 class ProductCategoryListSerializer(serializers.ModelSerializer):
+    image = FileSerializer(read_only=True)
+
     class Meta:
         model = ProductCategory
         fields = ["id", "name", "description", "parent", "image"]
@@ -72,10 +77,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     brand = ProductBrandListSerializer(read_only=True)
     category = ProductCategoryListSerializer(read_only=True)
-    images = serializers.SerializerMethodField()
-
-    def get_images(self, obj: Product):
-        return [image.file.url for image in obj.images.all()]
+    images = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
