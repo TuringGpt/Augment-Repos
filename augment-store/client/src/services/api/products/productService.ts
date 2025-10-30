@@ -28,8 +28,16 @@ export const productService = {
 
   getCategories: async (): Promise<Category[]> => {
     try {
-      const response = await apiClient.get<CategoryAPIResponse>(API_ENDPOINTS.PRODUCTS.CATEGORIES)
-      return response.results || []
+      let allCategories: Category[] = []
+      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
+
+      while (nextUrl) {
+        const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
+        allCategories = [...allCategories, ...(response.results || [])]
+        nextUrl = response.next
+      }
+
+      return allCategories
     } catch (error) {
       console.error('Failed to fetch categories:', error)
       return []
