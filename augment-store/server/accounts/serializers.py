@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from .models import User
+from storage.serializers import FileSerializer
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for retrieving user profile information"""
     full_name = serializers.CharField(read_only=True)
     is_registration_completed = serializers.BooleanField(read_only=True)
-    profile_image = serializers.SerializerMethodField()
+    profile_image = FileSerializer(read_only=True)
     
     class Meta:
         model = User
@@ -28,10 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "email", "role", "is_active", "date_joined"]
 
-    def get_profile_image(self, obj: User):
-        if obj.profile_image:
-            return obj.profile_image.file.url
-        return None
+    
 
 
 class UpdateUserProfileSerializer(serializers.ModelSerializer):
