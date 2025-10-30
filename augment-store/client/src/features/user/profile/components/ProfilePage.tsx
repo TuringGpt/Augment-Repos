@@ -138,17 +138,17 @@ const ProfilePage = () => {
     setAvatarState({ isUploading: true, error: null, newUrl: null })
 
     try {
-      // Upload avatar to storage and get file ID
-      const fileId = await storageService.uploadAvatar(file)
-      console.log('📤 Received file ID from upload:', fileId)
+      // Upload avatar to storage and get file URL
+      const fileUrl = await storageService.uploadAvatar(file)
+      console.log('📤 Received file URL from upload:', fileUrl)
 
-      // Update profile with file ID (ForeignKey to storage.File)
-      const updatedProfile = await userService.updateProfile({ profile_image: fileId })
+      // Update profile with file URL (profile_image field)
+      const updatedProfile = await userService.updateProfile({ profile_image: fileUrl })
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 
-      // Update avatar state with the new image URL from profile
-      setAvatarState((prev) => ({ ...prev, newUrl: updatedProfile.image }))
+      // Update avatar state with the new image URL
+      setAvatarState((prev) => ({ ...prev, newUrl: fileUrl }))
 
       setSuccessMessage('Avatar updated successfully!')
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
