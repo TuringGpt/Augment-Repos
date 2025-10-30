@@ -147,8 +147,9 @@ const ProfilePage = () => {
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 
-      // Update avatar state with the new image URL from profile
-      setAvatarState((prev) => ({ ...prev, newUrl: updatedProfile.image }))
+      // Update avatar state with the new image URL from profile_image.file
+      const newAvatarUrl = updatedProfile.profile_image?.file || updatedProfile.image || null
+      setAvatarState((prev) => ({ ...prev, newUrl: newAvatarUrl }))
 
       setSuccessMessage('Avatar updated successfully!')
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
@@ -229,7 +230,9 @@ const ProfilePage = () => {
         {/* Avatar Upload Section */}
         <Box sx={{ mb: 4 }}>
           <AvatarUpload
-            currentImage={avatarState.newUrl || profile?.image || null}
+            currentImage={
+              avatarState.newUrl || profile?.profile_image?.file || profile?.image || null
+            }
             userName={profile?.first_name || profile?.email || 'User'}
             onImageSelect={handleAvatarSelect}
             onImageRemove={handleAvatarRemove}
