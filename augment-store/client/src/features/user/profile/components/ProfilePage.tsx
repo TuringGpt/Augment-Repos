@@ -138,14 +138,17 @@ const ProfilePage = () => {
     setAvatarState({ isUploading: true, error: null, newUrl: null })
 
     try {
-      // Upload avatar to storage
-      const avatarUrl = await storageService.uploadAvatar(file)
-      setAvatarState((prev) => ({ ...prev, newUrl: avatarUrl }))
+      // Upload avatar to storage and get file ID
+      const fileId = await storageService.uploadAvatar(file)
+      console.log('📤 Received file ID from upload:', fileId)
 
-      // Update profile with new avatar URL
-      const updatedProfile = await userService.updateProfile({ image: avatarUrl })
+      // Update profile with file ID (ForeignKey to storage.File)
+      const updatedProfile = await userService.updateProfile({ profile_image: fileId })
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
+
+      // Update avatar state with the new image URL from profile
+      setAvatarState((prev) => ({ ...prev, newUrl: updatedProfile.image }))
 
       setSuccessMessage('Avatar updated successfully!')
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
@@ -165,8 +168,9 @@ const ProfilePage = () => {
     setAvatarState({ isUploading: true, error: null, newUrl: null })
 
     try {
-      // Update profile to remove avatar
-      const updatedProfile = await userService.updateProfile({ image: '' })
+      // Update profile to remove avatar (set profile_image to null)
+      // Note: Sending empty string to clear the ForeignKey field
+      const updatedProfile = await userService.updateProfile({ profile_image: '' })
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 

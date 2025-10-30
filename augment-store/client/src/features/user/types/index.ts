@@ -24,7 +24,8 @@ export interface UpdateProfileRequest {
   last_name?: string
   mobile?: string
   gender?: 'Male' | 'Female' | 'Other'
-  image?: string
+  image?: string // Legacy ImageField (direct file URL)
+  profile_image?: string // ForeignKey to storage.File (file ID)
 }
 
 export interface Address {

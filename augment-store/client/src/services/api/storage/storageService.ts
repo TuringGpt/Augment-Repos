@@ -40,21 +40,23 @@ class StorageService {
   }
 
   /**
-   * Step 2: Finish upload and get the final file URL
-   * Returns the file URL as a string (from file.file field)
+   * Step 2: Finish upload and get the final file response
+   * Returns the full response with file object and presigned_data
    */
-  private async finishUpload(fileId: string): Promise<string> {
-    const response = await apiClient.post<{ file: string }>(API_ENDPOINTS.STORAGE.FINISH_UPLOAD, {
-      file_id: fileId,
-    })
+  private async finishUpload(fileId: string): Promise<StartUploadResponse> {
+    const response = await apiClient.post<StartUploadResponse>(
+      API_ENDPOINTS.STORAGE.FINISH_UPLOAD,
+      {
+        file_id: fileId,
+      }
+    )
     console.log('📥 Response from /storage/direct/finish/:', response)
-    console.log('📥 Extracted file URL:', response.file)
-    return response.file
+    return response
   }
 
   /**
    * Complete upload process (2 steps)
-   * Returns the final file URL as a string
+   * Returns the file ID (to be used as ForeignKey reference)
    */
   async uploadFile(file: File): Promise<string> {
     // Check authentication
@@ -72,20 +74,20 @@ class StorageService {
       const fileId = startResponse.file.id
       console.log('✅ Step 1 complete - File ID:', fileId)
 
-      // Step 2: Finish upload and get final file URL
+      // Step 2: Finish upload and get final response
       console.log('📤 Step 2: Finishing upload at /storage/direct/finish/')
-      const fileUrl = await this.finishUpload(fileId)
-      console.log('✅ Step 2 complete - Received file URL from /storage/direct/finish/')
-      console.log('📝 Final file URL:', fileUrl)
+      const finishResponse = await this.finishUpload(fileId)
+      console.log('✅ Step 2 complete - Received response from /storage/direct/finish/')
+      console.log('📝 File object:', finishResponse.file)
 
-      if (!fileUrl) {
-        console.error('❌ File URL is empty or undefined')
-        throw new Error('Invalid response from server: missing file URL')
+      if (!finishResponse.file?.id) {
+        console.error('❌ File ID is empty or undefined')
+        throw new Error('Invalid response from server: missing file ID')
       }
 
-      console.log('✅ Upload complete! Using file URL from finish endpoint:', fileUrl)
-      console.log('📌 This URL will be saved to profile.image')
-      return fileUrl
+      console.log('✅ Upload complete! Returning file ID:', finishResponse.file.id)
+      console.log('📌 This ID will be saved to profile.profile_image (ForeignKey)')
+      return finishResponse.file.id
     } catch (error) {
       console.error('❌ Upload failed:', error)
       throw error
