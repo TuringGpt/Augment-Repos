@@ -43,7 +43,8 @@ const CartDrawer = () => {
       console.log('🔄 Cart drawer opened - refetching cart from API')
       refetchCart()
     }
-  }, [isCartDrawerOpen, refetchCart])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCartDrawerOpen]) // Only refetch when drawer open state changes
 
   const handleClose = () => {
     setCartDrawerOpen(false)

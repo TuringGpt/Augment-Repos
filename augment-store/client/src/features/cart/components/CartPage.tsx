@@ -47,7 +47,8 @@ const CartPage = () => {
   useEffect(() => {
     console.log('🔄 Cart page mounted - refetching cart from API')
     refetchCart()
-  }, [refetchCart])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {

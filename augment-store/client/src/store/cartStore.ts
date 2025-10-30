@@ -7,7 +7,6 @@ interface CartState {
   cart: Cart | null
   isLoading: boolean
   error: string | null
-  refetchCallback: (() => Promise<void>) | null
 
   // Actions
   setCart: (cart: Cart) => void
@@ -18,7 +17,7 @@ interface CartState {
   clearCart: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
-  setRefetchCallback: (callback: (() => Promise<void>) | null) => void
+  refetchCart: () => Promise<void>
 
   // Computed
   getItemCount: () => number
@@ -35,11 +34,20 @@ export const useCartStore = create<CartState>()(
       cart: initialCart,
       isLoading: false,
       error: null,
-      refetchCallback: null,
 
       setCart: (cart) => set({ cart }),
 
-      setRefetchCallback: (callback) => set({ refetchCallback: callback }),
+      refetchCart: async () => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        try {
+          const cart = await cartService.getCart()
+          set({ cart, error: null })
+        } catch (error) {
+          console.error('Failed to refetch cart:', error)
+          set({ error: 'Failed to refetch cart' })
+        }
+      },
 
       addItem: (item) => {
         set((state) => {
@@ -87,12 +95,6 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
-
-        // Refetch cart from API after mutation
-        const { refetchCallback } = get()
-        if (refetchCallback) {
-          refetchCallback()
-        }
       },
 
       updateItem: (itemId, quantity) => {
@@ -120,12 +122,6 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
-
-        // Refetch cart from API after mutation
-        const { refetchCallback } = get()
-        if (refetchCallback) {
-          refetchCallback()
-        }
       },
 
       removeItem: (itemId) => {
@@ -146,12 +142,6 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
-
-        // Refetch cart from API after mutation
-        const { refetchCallback } = get()
-        if (refetchCallback) {
-          refetchCallback()
-        }
       },
 
       removeItems: (itemIds) => {
@@ -172,22 +162,10 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
-
-        // Refetch cart from API after mutation
-        const { refetchCallback } = get()
-        if (refetchCallback) {
-          refetchCallback()
-        }
       },
 
       clearCart: () => {
         set({ cart: createEmptyCart() })
-
-        // Refetch cart from API after mutation
-        const { refetchCallback } = get()
-        if (refetchCallback) {
-          refetchCallback()
-        }
       },
 
       setLoading: (isLoading) => set({ isLoading }),
