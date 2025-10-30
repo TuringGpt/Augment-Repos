@@ -1,1 +1,43 @@
-./augment-store/client/node_modules
+# Node modules
+augment-store/client/node_modules/
+node_modules/
+
+# Uploaded media files (images, etc.)
+augment-store/server/augment-store/*.jpg
+augment-store/server/augment-store/*.jpeg
+augment-store/server/augment-store/*.png
+augment-store/server/augment-store/*.gif
+augment-store/server/augment-store/*.webp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/media/
+/static/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
