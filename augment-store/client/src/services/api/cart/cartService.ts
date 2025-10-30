@@ -1,18 +1,14 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
-import { enrichCart, createEmptyCart } from '@utils/cartUtils'
+import { enrichCart } from '@utils/cartUtils'
 
 export const cartService = {
   getCart: async (): Promise<Cart> => {
-    try {
-      const cart = await apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
-      return enrichCart(cart)
-    } catch (error) {
-      console.error('Failed to fetch cart:', error)
-      // Return empty cart on error
-      return createEmptyCart()
-    }
+    // Don't catch errors - let them propagate to the caller
+    // This prevents overwriting existing cart on transient failures
+    const cart = await apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
+    return enrichCart(cart)
   },
 
   addToCart: async (data: AddToCartRequest): Promise<Cart> => {

@@ -45,7 +45,19 @@ export const useCartStore = create<CartState>()(
           set({ cart, error: null })
         } catch (error) {
           console.error('Failed to refetch cart:', error)
-          set({ error: 'Failed to refetch cart' })
+
+          // Only create empty cart for 404 (user has no cart yet)
+          // For other errors (network, 5xx), preserve existing cart
+          const isNotFound = (error as { response?: { status?: number } })?.response?.status === 404
+
+          if (isNotFound) {
+            console.log('No cart found for user - creating empty cart')
+            set({ cart: createEmptyCart(), error: null })
+          } else {
+            // Preserve existing cart on transient failures
+            console.warn('Preserving existing cart due to transient error')
+            set({ error: 'Failed to load cart. Please try again.' })
+          }
         }
       },
 
