@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { apiClient } from '../client'
 import { useAuthStore } from '@store/authStore'
 import { API_ENDPOINTS } from '@config/api'
@@ -55,7 +56,33 @@ class StorageService {
   }
 
   /**
-   * Complete upload process (2 steps)
+   * Step 2: Upload file to S3 using presigned URL
+   */
+  private async uploadToS3(
+    file: File,
+    presignedUrl: string,
+    presignedFields: Record<string, string>
+  ): Promise<void> {
+    const formData = new FormData()
+
+    // Add all the presigned fields to formData
+    Object.keys(presignedFields).forEach((key) => {
+      formData.append(key, presignedFields[key])
+    })
+
+    // Add the file last (important for S3)
+    formData.append('file', file)
+
+    // Upload directly to S3 (not through our API)
+    await axios.post(presignedUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  }
+
+  /**
+   * Complete upload process (3 steps)
    * Returns the file ID (to be used as ForeignKey reference)
    */
   async uploadFile(file: File): Promise<string> {
@@ -68,16 +95,24 @@ class StorageService {
     try {
       console.log('📤 Starting upload for file:', file.name)
 
-      // Step 1: Create file record and get file.id
+      // Step 1: Create file record and get presigned URL
       console.log('📤 Step 1: Creating file record at /storage/direct/')
       const startResponse = await this.startUpload(file.name, file.type)
       const fileId = startResponse.file.id
+      const presignedUrl = startResponse.presigned_data.url
+      const presignedFields = startResponse.presigned_data.fields
       console.log('✅ Step 1 complete - File ID:', fileId)
+      console.log('📝 Presigned URL:', presignedUrl)
 
-      // Step 2: Finish upload and get final response
-      console.log('📤 Step 2: Finishing upload at /storage/direct/finish/')
+      // Step 2: Upload file directly to S3
+      console.log('📤 Step 2: Uploading file to S3...')
+      await this.uploadToS3(file, presignedUrl, presignedFields)
+      console.log('✅ Step 2 complete - File uploaded to S3')
+
+      // Step 3: Finish upload and get final response
+      console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
       const finishResponse = await this.finishUpload(fileId)
-      console.log('✅ Step 2 complete - Received response from /storage/direct/finish/')
+      console.log('✅ Step 3 complete - Received response from /storage/direct/finish/')
       console.log('📝 File object:', finishResponse.file)
 
       if (!finishResponse.file?.id) {
