@@ -2,13 +2,13 @@ import type { Cart, CartItem } from '@features/cart/types'
 
 /**
  * Gets the price for a cart item
- * Uses discountPrice if available, otherwise uses regular price
+ * Uses discountPrice if available (including 0 for free items), otherwise uses regular price
  *
  * @param item - Cart item
  * @returns Price as a number
  */
 export function getItemPrice(item: CartItem): number {
-  const price = item.product.discountPrice || item.product.price
+  const price = item.product.discountPrice ?? item.product.price
   return parseFloat(price.toString())
 }
 
