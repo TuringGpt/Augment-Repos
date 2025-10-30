@@ -84,6 +84,9 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
+    profile_image = models.ForeignKey(
+        "storage.File", null=True, blank=True, on_delete=models.SET_NULL
+    )
     role = models.CharField(max_length=20, choices=Role.CHOICES, default=Role.MEMBER)
     objects: UserManager = UserManager()
     USERNAME_FIELD = "email"

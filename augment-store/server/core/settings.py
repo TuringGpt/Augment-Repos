@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 from dotenv import dotenv_values
 import os
@@ -201,9 +202,9 @@ if FILE_UPLOAD_STORAGE == "local":
 
     
 else:
-    PUBLIC_MEDIA_LOCATION = "media/public/"
-    PRIVATE_MEDIA_LOCATION = "media/private/"
-    STATIC_LOCATION = "static/"
+    PUBLIC_MEDIA_LOCATION = "augment-store/media/public/"
+    PRIVATE_MEDIA_LOCATION = "augment-store/media/private/"
+    STATIC_LOCATION = "augment-store/static/"
 
     AWS_ACCESS_KEY_ID = config.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = config.get("AWS_SECRET_ACCESS_KEY")
@@ -217,10 +218,10 @@ else:
     FILE_MAX_SIZE = int(config.get("FILE_MAX_SIZE", 1024))
 
 
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
     STATICFILES_STORAGE = "storage.storage_backends.StaticStorage"
 
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
     DEFAULT_FILE_STORAGE = "storage.storage_backends.PublicMediaStorage"
     PRIVATE_FILE_STORAGE = "storage.storage_backends.PrivateMediaStorage"
 
@@ -248,6 +249,14 @@ REST_FRAMEWORK = {
     "NON_FIELD_ERRORS_KEY": "details",
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(config.get("ACCESS_TOKEN_EXPIRATION_TIME_IN_MINUTES", 30))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=int(config.get("REFRESH_TOKEN_EXPIRATION_TIME_IN_MINUTES", 300))),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
 }
 
 SPECTACULAR_SETTINGS = {
