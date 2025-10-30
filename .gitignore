@@ -26,6 +26,9 @@ db.sqlite3-journal
 /media/
 /static/
 
+# Development/testing scripts
+augment-store/server/generate_dummy_product.py
+
 # Environment variables
 .env
 .env.local
