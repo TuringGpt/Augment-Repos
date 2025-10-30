@@ -56,7 +56,7 @@ class StorageService {
 
   /**
    * Complete upload process (2 steps)
-   * Returns the file URL (from file.file attribute)
+   * Returns the file ID (to be used as ForeignKey reference)
    */
   async uploadFile(file: File): Promise<string> {
     // Check authentication
@@ -80,14 +80,14 @@ class StorageService {
       console.log('✅ Step 2 complete - Received response from /storage/direct/finish/')
       console.log('📝 File object:', finishResponse.file)
 
-      if (!finishResponse.file?.file) {
-        console.error('❌ File URL is empty or undefined')
-        throw new Error('Invalid response from server: missing file URL')
+      if (!finishResponse.file?.id) {
+        console.error('❌ File ID is empty or undefined')
+        throw new Error('Invalid response from server: missing file ID')
       }
 
-      console.log('✅ Upload complete! Returning file URL:', finishResponse.file.file)
-      console.log('📌 This URL will be saved to profile.profile_image')
-      return finishResponse.file.file
+      console.log('✅ Upload complete! Returning file ID:', finishResponse.file.id)
+      console.log('📌 This ID will be saved to profile.profile_image (ForeignKey)')
+      return finishResponse.file.id
     } catch (error) {
       console.error('❌ Upload failed:', error)
       throw error
