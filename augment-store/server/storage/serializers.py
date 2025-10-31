@@ -33,6 +33,11 @@ class FileSerializer(serializers.ModelSerializer):
         # For S3, use the direct URL since PublicMediaStorage makes files public
         return obj.file.url
 
+class FileListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ["id", "file"]
+
 
 class StartDirectFileUploadSerializer( serializers.Serializer):
 
