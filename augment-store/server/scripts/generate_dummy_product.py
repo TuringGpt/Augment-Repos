@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+"""
+Script to generate dummy products for testing purposes.
+"""
 
 def generate_dummy_products(count=50, delete_existing=True, dry_run=True):
     from products.factory import ProductFactory
@@ -9,14 +13,17 @@ def generate_dummy_products(count=50, delete_existing=True, dry_run=True):
         return
 
     # Create merchant user if it doesn't exist
-    merchant_user, created = User.objects.get_or_create(
+    merchant_user, _ = User.objects.get_or_create(
         email="merchant@demo.com",
         defaults={
-            'password': 'testpass123',
             'is_active': True,
             'role': User.Role.MERCHANT
         }
     )
+    merchant_user: User
+    merchant_user.set_password('testpass123')
+    merchant_user.save()
+
 
     if delete_existing:
         deleted_count = Product.objects.filter(created_by=merchant_user).delete()[0]
@@ -35,6 +42,11 @@ if __name__ == "__main__":
     import os
     import django
     import argparse
+    import sys
+
+    # Add the server directory to Python path so Django can find the core module
+    server_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, server_dir)
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
     os.environ["SECRET_KEY"] = "test-secret-key"
