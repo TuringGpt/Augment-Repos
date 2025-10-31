@@ -41,6 +41,15 @@ export const AvatarUpload = ({
     }
   }, [previewUrl])
 
+  // Clear preview URL when server image becomes available (after successful upload)
+  // This prevents showing stale blob URL and releases memory immediately
+  useEffect(() => {
+    if (currentImage && previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(null)
+    }
+  }, [currentImage, previewUrl])
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
