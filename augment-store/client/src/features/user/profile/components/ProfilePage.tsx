@@ -151,8 +151,6 @@ const ProfilePage = () => {
         profile_image: fileId,
       }
 
-      console.log('📤 Sending profile update with:', updateData)
-
       // Update profile with file ID (ForeignKey to storage.File) + any form changes
       const updatedProfile = await userService.updateProfile(updateData)
       setProfile(updatedProfile)
@@ -188,8 +186,6 @@ const ProfilePage = () => {
         ...formChanges,
         profile_image: null, // null to clear the ForeignKey field
       }
-
-      console.log('📤 Sending profile update with:', updateData)
 
       // Update profile to remove avatar + any form changes
       const updatedProfile = await userService.updateProfile(updateData)

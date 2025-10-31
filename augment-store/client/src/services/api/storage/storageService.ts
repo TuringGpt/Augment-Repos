@@ -71,7 +71,7 @@ class StorageService {
   }
 
   /**
-   * Step 2: Upload file to S3 using presigned URL
+   * Step 2: Upload file to S3 using presigned POST
    */
   private async uploadToS3(
     file: File,
@@ -89,11 +89,8 @@ class StorageService {
     formData.append('file', file)
 
     // Upload directly to S3 (not through our API)
-    await axios.post(presignedUrl, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    // Note: Don't set Content-Type header - let browser set it with proper boundary
+    await axios.post(presignedUrl, formData)
   }
 
   /**
