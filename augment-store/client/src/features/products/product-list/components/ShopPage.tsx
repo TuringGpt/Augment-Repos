@@ -107,64 +107,23 @@ const ShopPage = () => {
     }
   }, [priceRange, products.length, filters.minPrice, filters.maxPrice])
 
-  // Filter and sort products
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...products]
-
-    // Apply filters
-    result = result.filter((product) => {
-      const price = product.discountPrice || product.price
-
-      // Price filter
-      if (price < (filters.minPrice || 0) || price > (filters.maxPrice || Infinity)) {
-        return false
-      }
-
-      // Rating filter
-      if (product.rating < (filters.minRating || 0) || product.rating > (filters.maxRating || 5)) {
-        return false
-      }
-
-      return true
-    })
-
-    // Apply sorting
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        case 'price-asc':
-          return (a.discountPrice || a.price) - (b.discountPrice || b.price)
-        case 'price-desc':
-          return (b.discountPrice || b.price) - (a.discountPrice || a.price)
-        case 'rating-desc':
-          return b.rating - a.rating
-        default:
-          return 0
-      }
-    })
-
-    return result
-  }, [products, filters, sortBy])
-
-  // Calculate client-side pagination
-  const totalClientPages = Math.ceil(filteredAndSortedProducts.length / PRODUCTS_PER_PAGE)
+  // Calculate client-side pagination (no filtering or sorting for now)
+  const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
   const paginatedProducts = useMemo(() => {
     const startIndex = (clientPage - 1) * PRODUCTS_PER_PAGE
     const endIndex = startIndex + PRODUCTS_PER_PAGE
 
     console.log('📊 Pagination Info:', {
       totalProducts: products.length,
-      filteredProducts: filteredAndSortedProducts.length,
       clientPage,
       totalClientPages,
       startIndex,
       endIndex,
-      paginatedCount: filteredAndSortedProducts.slice(startIndex, endIndex).length,
+      paginatedCount: products.slice(startIndex, endIndex).length,
     })
 
-    return filteredAndSortedProducts.slice(startIndex, endIndex)
-  }, [filteredAndSortedProducts, clientPage, products.length, totalClientPages])
+    return products.slice(startIndex, endIndex)
+  }, [products, clientPage, totalClientPages])
 
   // Handle page change (client-side pagination)
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
@@ -173,10 +132,10 @@ const ShopPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Reset client page when filters or sort changes
+  // Reset client page when products change
   useEffect(() => {
     setClientPage(1)
-  }, [filters, sortBy])
+  }, [products.length])
 
   const handlePriceChange = (value: [number, number]) => {
     setFilters((prev) => ({
