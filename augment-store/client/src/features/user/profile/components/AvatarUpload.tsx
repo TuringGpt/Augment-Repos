@@ -11,6 +11,7 @@ interface AvatarUploadProps {
   isUploading: boolean
   disabled?: boolean
   error?: string | null
+  onValidationError?: (error: string) => void
 }
 
 /**
@@ -25,23 +26,42 @@ export const AvatarUpload = ({
   isUploading,
   disabled = false,
   error = null,
+  onValidationError,
 }: AvatarUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
+    // Clear any previous validation errors
+    setValidationError(null)
+
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
+      const errorMsg = 'Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.'
+      setValidationError(errorMsg)
+      onValidationError?.(errorMsg)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
       return
     }
 
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
+      const errorMsg = `File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`
+      setValidationError(errorMsg)
+      onValidationError?.(errorMsg)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
       return
     }
 
@@ -55,6 +75,7 @@ export const AvatarUpload = ({
 
   const handleRemoveImage = () => {
     setPreviewUrl(null)
+    setValidationError(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -169,6 +190,14 @@ export const AvatarUpload = ({
         </Typography>
       )}
 
+      {/* Display validation errors */}
+      {validationError && (
+        <Alert severity="warning" sx={{ width: '100%', maxWidth: 400 }}>
+          {validationError}
+        </Alert>
+      )}
+
+      {/* Display upload/API errors */}
       {error && (
         <Alert severity="error" sx={{ width: '100%', maxWidth: 400 }}>
           {error}
@@ -177,4 +206,3 @@ export const AvatarUpload = ({
     </Box>
   )
 }
-
