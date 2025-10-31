@@ -30,11 +30,12 @@ const ShopPage = () => {
 
   // API state
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   // Calculate min and max prices from products
   const priceRange = useMemo(() => {
@@ -74,12 +75,14 @@ const ShopPage = () => {
         setProducts(response.products)
         setTotalPages(response.totalPages)
         setTotalCount(response.total)
+        setHasLoadedOnce(true)
       } catch (err) {
         console.error('Failed to fetch products:', err)
         setError('Failed to load products. Please try again later.')
         setProducts([])
         setTotalPages(1)
         setTotalCount(0)
+        setHasLoadedOnce(true)
       } finally {
         setIsLoading(false)
       }
@@ -244,7 +247,7 @@ const ShopPage = () => {
           </Box>
 
           {/* Loading State */}
-          {isLoading ? (
+          {isLoading || !hasLoadedOnce ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
               <CircularProgress />
             </Box>
