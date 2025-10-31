@@ -21,7 +21,7 @@ import ProductCard from './ProductCard'
 import RatingFilter from './RatingFilter'
 import SortDropdown from './SortDropdown'
 
-const PRODUCTS_PER_PAGE = 12
+const PRODUCTS_PER_PAGE = 100 // Match backend page size
 
 const ShopPage = () => {
   const theme = useTheme()
@@ -33,7 +33,7 @@ const ShopPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiPage, setApiPage] = useState(1) // Backend page (100 items per page)
-  const [clientPage, setClientPage] = useState(1) // Frontend page (12 items per page)
+  const [clientPage, setClientPage] = useState(1) // Frontend page (100 items per page, matches backend)
   const [totalCount, setTotalCount] = useState(0)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
