@@ -71,6 +71,14 @@ const ShopPage = () => {
           page: apiPage,
         })
 
+        console.log('📦 API Response:', {
+          productsCount: response.products.length,
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+        })
+
         setProducts(response.products)
         setTotalCount(response.total)
         setHasLoadedOnce(true)
@@ -144,8 +152,19 @@ const ShopPage = () => {
   const paginatedProducts = useMemo(() => {
     const startIndex = (clientPage - 1) * PRODUCTS_PER_PAGE
     const endIndex = startIndex + PRODUCTS_PER_PAGE
+
+    console.log('📊 Pagination Info:', {
+      totalProducts: products.length,
+      filteredProducts: filteredAndSortedProducts.length,
+      clientPage,
+      totalClientPages,
+      startIndex,
+      endIndex,
+      paginatedCount: filteredAndSortedProducts.slice(startIndex, endIndex).length,
+    })
+
     return filteredAndSortedProducts.slice(startIndex, endIndex)
-  }, [filteredAndSortedProducts, clientPage])
+  }, [filteredAndSortedProducts, clientPage, products.length, totalClientPages])
 
   // Handle page change (client-side pagination)
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {

@@ -29,8 +29,20 @@ export const productService = {
         },
       })
 
+      console.log('🔍 Raw API Response:', {
+        count: response.count,
+        resultsLength: response.results.length,
+        next: response.next,
+        previous: response.previous,
+      })
+
       // Transform backend products to frontend format
       const products: Product[] = response.results.map(transformProductFromAPI)
+
+      console.log('✅ Transformed Products:', {
+        transformedCount: products.length,
+        firstProduct: products[0],
+      })
 
       return {
         products,
