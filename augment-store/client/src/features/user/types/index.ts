@@ -21,7 +21,7 @@ export interface UserProfile {
   full_name: string
   mobile: string
   gender: 'Male' | 'Female' | 'Other'
-  image: string // Legacy ImageField (direct file URL)
+  image: string | null // Legacy ImageField (direct file URL, can be null)
   profile_image: StorageFile | null // ForeignKey to storage.File (expanded object)
   role: 'admin' | 'customer'
   is_active: boolean
@@ -36,7 +36,7 @@ export interface UpdateProfileRequest {
   last_name?: string
   mobile?: string
   gender?: 'Male' | 'Female' | 'Other'
-  image?: string // Legacy ImageField (direct file URL)
+  image?: string | null // Legacy ImageField (direct file URL or null to clear)
   profile_image?: string | null // ForeignKey to storage.File (file ID or null to clear)
 }
 
