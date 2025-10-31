@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Box, Avatar, IconButton, CircularProgress, Typography, Alert } from '@mui/material'
 import { PhotoCamera, Delete } from '@mui/icons-material'
 import { Colors } from '@config/colors'
@@ -31,6 +31,15 @@ export const AvatarUpload = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Cleanup blob URL on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -65,7 +74,12 @@ export const AvatarUpload = ({
       return
     }
 
-    // Create preview URL
+    // Revoke previous preview URL to prevent memory leak
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+
+    // Create new preview URL
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
 
@@ -74,6 +88,10 @@ export const AvatarUpload = ({
   }
 
   const handleRemoveImage = () => {
+    // Revoke preview URL to prevent memory leak
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
     setPreviewUrl(null)
     setValidationError(null)
     if (fileInputRef.current) {
