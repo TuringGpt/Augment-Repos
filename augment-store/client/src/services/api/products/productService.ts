@@ -65,8 +65,7 @@ export const productService = {
   },
 
   getProductById: async (id: string): Promise<Product> => {
-    const apiProduct = await apiClient.get<ProductAPI>(API_ENDPOINTS.PRODUCTS.DETAIL(id))
-    return transformProductFromAPI(apiProduct)
+    return apiClient.get<Product>(API_ENDPOINTS.PRODUCTS.DETAIL(id))
   },
 
   searchProducts: async (
