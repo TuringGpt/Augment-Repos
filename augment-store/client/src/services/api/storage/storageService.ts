@@ -6,7 +6,7 @@ import { API_ENDPOINTS } from '@config/api'
 interface StartUploadResponse {
   file: {
     id: string
-    file: string
+    file: string | null // null until upload is finished
     original_file_name: string
     file_name: string
     file_type: string
@@ -21,16 +21,32 @@ interface StartUploadResponse {
   }
 }
 
+interface FinishUploadResponse {
+  file: {
+    id: string
+    file: string // Final file URL (always present after finish)
+    original_file_name: string
+    file_name: string
+    file_type: string
+    upload_finished_at: string
+    created_by: string
+    created_at: string
+    updated_at: string
+  }
+  file_id: string
+}
+
 /**
  * Storage Service
- * Handles file uploads through backend (backend uploads to S3):
- * 1. POST /storage/direct/ → Create file record, get file.id
- * 2. POST /storage/direct/finish/ → Confirm upload and get final file URL
+ * Handles direct file uploads to S3 via presigned POST:
+ * 1. POST /storage/direct/ → Create file record and get presigned POST data
+ * 2. POST <presigned_url> → Upload file directly to S3 (client-side)
+ * 3. POST /storage/direct/finish/ → Mark upload complete and get final file URL
  */
 class StorageService {
   /**
-   * Step 1: Create file record
-   * Returns file.id for the upload
+   * Step 1: Create file record and get presigned POST data
+   * Returns file.id and presigned S3 POST data (url + fields)
    */
   private async startUpload(fileName: string, fileType: string): Promise<StartUploadResponse> {
     const response = await apiClient.post<StartUploadResponse>(API_ENDPOINTS.STORAGE.START_UPLOAD, {
@@ -41,17 +57,16 @@ class StorageService {
   }
 
   /**
-   * Step 2: Finish upload and get the final file response
-   * Returns the full response with file object and presigned_data
+   * Step 3: Finish upload and get the final file response
+   * Returns the full response with file object containing the final file URL
    */
-  private async finishUpload(fileId: string): Promise<StartUploadResponse> {
-    const response = await apiClient.post<StartUploadResponse>(
+  private async finishUpload(fileId: string): Promise<FinishUploadResponse> {
+    const response = await apiClient.post<FinishUploadResponse>(
       API_ENDPOINTS.STORAGE.FINISH_UPLOAD,
       {
         file_id: fileId,
       }
     )
-    console.log('📥 Response from /storage/direct/finish/:', response)
     return response
   }
 
@@ -95,25 +110,23 @@ class StorageService {
     try {
       console.log('📤 Starting upload for file:', file.name)
 
-      // Step 1: Create file record and get presigned URL
+      // Step 1: Create file record and get presigned POST data
       console.log('📤 Step 1: Creating file record at /storage/direct/')
       const startResponse = await this.startUpload(file.name, file.type)
       const fileId = startResponse.file.id
       const presignedUrl = startResponse.presigned_data.url
       const presignedFields = startResponse.presigned_data.fields
       console.log('✅ Step 1 complete - File ID:', fileId)
-      console.log('📝 Presigned URL:', presignedUrl)
 
-      // Step 2: Upload file directly to S3
-      console.log('📤 Step 2: Uploading file to S3...')
+      // Step 2: Upload file directly to S3 using presigned POST
+      console.log('📤 Step 2: Uploading file directly to S3...')
       await this.uploadToS3(file, presignedUrl, presignedFields)
       console.log('✅ Step 2 complete - File uploaded to S3')
 
-      // Step 3: Finish upload and get final response
+      // Step 3: Finish upload and get final file URL
       console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
       const finishResponse = await this.finishUpload(fileId)
-      console.log('✅ Step 3 complete - Received response from /storage/direct/finish/')
-      console.log('📝 File object:', finishResponse.file)
+      console.log('✅ Step 3 complete - File ID:', finishResponse.file.id)
 
       if (!finishResponse.file?.id) {
         console.error('❌ File ID is empty or undefined')
@@ -121,7 +134,6 @@ class StorageService {
       }
 
       console.log('✅ Upload complete! Returning file ID:', finishResponse.file.id)
-      console.log('📌 This ID will be saved to profile.profile_image (ForeignKey)')
       return finishResponse.file.id
     } catch (error) {
       console.error('❌ Upload failed:', error)
