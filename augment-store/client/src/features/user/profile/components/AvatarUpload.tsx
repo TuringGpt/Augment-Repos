@@ -31,6 +31,7 @@ export const AvatarUpload = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const previousCurrentImageRef = useRef<string | null>(null)
 
   // Cleanup blob URL on unmount to prevent memory leaks
   useEffect(() => {
@@ -44,10 +45,13 @@ export const AvatarUpload = ({
   // Clear preview URL when server image becomes available (after successful upload)
   // This prevents showing stale blob URL and releases memory immediately
   useEffect(() => {
-    if (currentImage && previewUrl) {
+    // Only clear preview if currentImage actually changed (new upload completed)
+    if (currentImage && previewUrl && currentImage !== previousCurrentImageRef.current) {
+      console.log('🖼️ Server image available, clearing preview:', currentImage)
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
     }
+    previousCurrentImageRef.current = currentImage
   }, [currentImage, previewUrl])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +121,14 @@ export const AvatarUpload = ({
 
   const displayImage = previewUrl || currentImage
   const showInitials = !displayImage
+
+  // Debug logging
+  console.log('🎨 AvatarUpload render:', {
+    currentImage,
+    previewUrl,
+    displayImage,
+    showInitials,
+  })
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>

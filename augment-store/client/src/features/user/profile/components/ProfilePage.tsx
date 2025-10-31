@@ -158,6 +158,8 @@ const ProfilePage = () => {
 
       // Update avatar state with the new image URL from profile_image.file
       const newAvatarUrl = updatedProfile.profile_image?.file || updatedProfile.image || null
+      console.log('🖼️ New avatar URL from server:', newAvatarUrl)
+      console.log('📦 Updated profile:', updatedProfile)
       setAvatarState((prev) => ({ ...prev, newUrl: newAvatarUrl }))
 
       setSuccessMessage('Avatar updated successfully!')
