@@ -32,8 +32,8 @@ const ShopPage = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [apiPage, setApiPage] = useState(1) // Backend page (100 items per page)
+  const [clientPage, setClientPage] = useState(1) // Frontend page (12 items per page)
   const [totalCount, setTotalCount] = useState(0)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
@@ -60,7 +60,7 @@ const ShopPage = () => {
   // Sort state
   const [sortBy, setSortBy] = useState<SortBy>('newest')
 
-  // Fetch products from API
+  // Fetch products from API (backend returns 100 items per page)
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true)
@@ -68,19 +68,16 @@ const ShopPage = () => {
 
       try {
         const response = await productService.getProducts({
-          page: currentPage,
-          limit: PRODUCTS_PER_PAGE,
+          page: apiPage,
         })
 
         setProducts(response.products)
-        setTotalPages(response.totalPages)
         setTotalCount(response.total)
         setHasLoadedOnce(true)
       } catch (err) {
         console.error('Failed to fetch products:', err)
         setError('Failed to load products. Please try again later.')
         setProducts([])
-        setTotalPages(1)
         setTotalCount(0)
         setHasLoadedOnce(true)
       } finally {
@@ -89,7 +86,7 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [currentPage])
+  }, [apiPage])
 
   // Update filter price range when products change
   useEffect(() => {
@@ -142,12 +139,25 @@ const ShopPage = () => {
     return result
   }, [products, filters, sortBy])
 
-  // Handle page change
+  // Calculate client-side pagination
+  const totalClientPages = Math.ceil(filteredAndSortedProducts.length / PRODUCTS_PER_PAGE)
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (clientPage - 1) * PRODUCTS_PER_PAGE
+    const endIndex = startIndex + PRODUCTS_PER_PAGE
+    return filteredAndSortedProducts.slice(startIndex, endIndex)
+  }, [filteredAndSortedProducts, clientPage])
+
+  // Handle page change (client-side pagination)
   const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page)
+    setClientPage(page)
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  // Reset client page when filters or sort changes
+  useEffect(() => {
+    setClientPage(1)
+  }, [filters, sortBy])
 
   const handlePriceChange = (value: [number, number]) => {
     setFilters((prev) => ({
@@ -261,11 +271,11 @@ const ShopPage = () => {
                 Retry
               </Button>
             </Paper>
-          ) : filteredAndSortedProducts.length > 0 ? (
+          ) : paginatedProducts.length > 0 ? (
             /* Products Grid */
             <>
               <Grid container spacing={3}>
-                {filteredAndSortedProducts.map((product, index) => (
+                {paginatedProducts.map((product, index) => (
                   <Grid item xs={12} sm={6} md={4} key={product.id}>
                     <ProductCard product={product} index={index} />
                   </Grid>
@@ -273,11 +283,11 @@ const ShopPage = () => {
               </Grid>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {totalClientPages > 1 && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
                   <Pagination
-                    count={totalPages}
-                    page={currentPage}
+                    count={totalClientPages}
+                    page={clientPage}
                     onChange={handlePageChange}
                     color="primary"
                     size="large"
