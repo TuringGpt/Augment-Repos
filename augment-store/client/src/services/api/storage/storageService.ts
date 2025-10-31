@@ -2,39 +2,7 @@ import axios from 'axios'
 import { apiClient } from '../client'
 import { useAuthStore } from '@store/authStore'
 import { API_ENDPOINTS } from '@config/api'
-
-interface StartUploadResponse {
-  file: {
-    id: string
-    file: string | null // null until upload is finished
-    original_file_name: string
-    file_name: string
-    file_type: string
-    upload_finished_at: string | null
-    created_by: string
-    created_at: string
-    updated_at: string
-  }
-  presigned_data: {
-    url: string
-    fields: Record<string, string>
-  }
-}
-
-interface FinishUploadResponse {
-  file: {
-    id: string
-    file: string // Final file URL (always present after finish)
-    original_file_name: string
-    file_name: string
-    file_type: string
-    upload_finished_at: string
-    created_by: string
-    created_at: string
-    updated_at: string
-  }
-  file_id: string
-}
+import type { FileUploadStartResponse, FileUploadFinishResponse } from '@features/storage/types'
 
 /**
  * Storage Service
@@ -48,11 +16,14 @@ class StorageService {
    * Step 1: Create file record and get presigned POST data
    * Returns file.id and presigned S3 POST data (url + fields)
    */
-  private async startUpload(fileName: string, fileType: string): Promise<StartUploadResponse> {
-    const response = await apiClient.post<StartUploadResponse>(API_ENDPOINTS.STORAGE.START_UPLOAD, {
-      original_file_name: fileName,
-      file_type: fileType,
-    })
+  private async startUpload(fileName: string, fileType: string): Promise<FileUploadStartResponse> {
+    const response = await apiClient.post<FileUploadStartResponse>(
+      API_ENDPOINTS.STORAGE.START_UPLOAD,
+      {
+        original_file_name: fileName,
+        file_type: fileType,
+      }
+    )
     return response
   }
 
@@ -60,8 +31,8 @@ class StorageService {
    * Step 3: Finish upload and get the final file response
    * Returns the full response with file object containing the final file URL
    */
-  private async finishUpload(fileId: string): Promise<FinishUploadResponse> {
-    const response = await apiClient.post<FinishUploadResponse>(
+  private async finishUpload(fileId: string): Promise<FileUploadFinishResponse> {
+    const response = await apiClient.post<FileUploadFinishResponse>(
       API_ENDPOINTS.STORAGE.FINISH_UPLOAD,
       {
         file_id: fileId,
