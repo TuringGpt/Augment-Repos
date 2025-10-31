@@ -61,9 +61,9 @@ class ProductCategoryDetailView(BaseCategoryView, RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         super().get_permissions()
         if self.request.method == "GET":
-            self.permission_classes = [IsAuthenticatedOrReadOnly]
+            return [IsAuthenticatedOrReadOnly()]
         
-        return [IsAuthenticatedOrReadOnly, hasAdminOrMerchantRole]
+        return [IsAuthenticatedOrReadOnly(), hasAdminOrMerchantRole()]
 
 
 # Product views
@@ -101,9 +101,9 @@ class ProductUpdateDeleteView(BaseProductView, RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         super().get_permissions()
         if self.request.method == "GET":
-            self.permission_classes = [IsAuthenticatedOrReadOnly]
+            return [IsAuthenticatedOrReadOnly()]
         
-        return [IsAuthenticated, hasAdminOrMerchantRole]
+        return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
 
 
