@@ -31,10 +31,21 @@ export interface Product {
 export interface Category {
   id: string
   name: string
-  slug: string
+  slug?: string
   description?: string
   image?: string
-  parentId?: string
+  parent?: string | null
+}
+
+export interface CategoryWithChildren extends Category {
+  children?: CategoryWithChildren[]
+}
+
+export interface CategoryAPIResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Category[]
 }
 
 export interface ProductFilters {

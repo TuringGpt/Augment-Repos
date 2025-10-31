@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Drawer,
   List,
@@ -11,132 +11,64 @@ import {
   Divider,
   Collapse,
   IconButton,
+  CircularProgress,
 } from '@mui/material'
 import {
-  Category,
-  Devices,
-  Checkroom,
-  Home,
-  SportsEsports,
-  MenuBook,
-  FitnessCenter,
-  Pets,
+  Category as CategoryIcon,
   ExpandLess,
   ExpandMore,
   Close,
+  FolderOpen,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
-
-interface Category {
-  id: string
-  name: string
-  icon: JSX.Element
-  subcategories?: { id: string; name: string }[]
-}
-
-const categories: Category[] = [
-  {
-    id: 'electronics',
-    name: 'Electronics',
-    icon: <Devices />,
-    subcategories: [
-      { id: 'phones', name: 'Phones & Tablets' },
-      { id: 'computers', name: 'Computers' },
-      { id: 'audio', name: 'Audio & Headphones' },
-      { id: 'cameras', name: 'Cameras' },
-      { id: 'accessories', name: 'Accessories' },
-    ],
-  },
-  {
-    id: 'fashion',
-    name: 'Fashion',
-    icon: <Checkroom />,
-    subcategories: [
-      { id: 'mens', name: "Men's Clothing" },
-      { id: 'womens', name: "Women's Clothing" },
-      { id: 'shoes', name: 'Shoes' },
-      { id: 'accessories', name: 'Accessories' },
-      { id: 'jewelry', name: 'Jewelry' },
-    ],
-  },
-  {
-    id: 'home',
-    name: 'Home & Garden',
-    icon: <Home />,
-    subcategories: [
-      { id: 'furniture', name: 'Furniture' },
-      { id: 'decor', name: 'Home Decor' },
-      { id: 'kitchen', name: 'Kitchen & Dining' },
-      { id: 'bedding', name: 'Bedding' },
-      { id: 'garden', name: 'Garden & Outdoor' },
-    ],
-  },
-  {
-    id: 'sports',
-    name: 'Sports & Outdoors',
-    icon: <FitnessCenter />,
-    subcategories: [
-      { id: 'fitness', name: 'Fitness Equipment' },
-      { id: 'outdoor', name: 'Outdoor Recreation' },
-      { id: 'cycling', name: 'Cycling' },
-      { id: 'camping', name: 'Camping & Hiking' },
-      { id: 'water', name: 'Water Sports' },
-    ],
-  },
-  {
-    id: 'gaming',
-    name: 'Gaming',
-    icon: <SportsEsports />,
-    subcategories: [
-      { id: 'consoles', name: 'Consoles' },
-      { id: 'games', name: 'Video Games' },
-      { id: 'accessories', name: 'Gaming Accessories' },
-      { id: 'pc', name: 'PC Gaming' },
-      { id: 'vr', name: 'VR & AR' },
-    ],
-  },
-  {
-    id: 'books',
-    name: 'Books & Media',
-    icon: <MenuBook />,
-    subcategories: [
-      { id: 'books', name: 'Books' },
-      { id: 'ebooks', name: 'E-Books' },
-      { id: 'audiobooks', name: 'Audiobooks' },
-      { id: 'movies', name: 'Movies & TV' },
-      { id: 'music', name: 'Music' },
-    ],
-  },
-  {
-    id: 'pets',
-    name: 'Pet Supplies',
-    icon: <Pets />,
-    subcategories: [
-      { id: 'dog', name: 'Dog Supplies' },
-      { id: 'cat', name: 'Cat Supplies' },
-      { id: 'fish', name: 'Fish & Aquatic' },
-      { id: 'bird', name: 'Bird Supplies' },
-      { id: 'small', name: 'Small Animals' },
-    ],
-  },
-]
+import { productService } from '@services/api/products/productService'
+import { buildCategoryTree } from '@utils/categoryUtils'
+import type { CategoryWithChildren } from '@features/products/types'
 
 const Sidebar = () => {
   const navigate = useNavigate()
   const { isSidebarOpen, closeSidebar } = useUIStore()
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleCategoryClick = (categoryId: string) => {
-    if (expandedCategory === categoryId) {
-      setExpandedCategory(null)
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoading(true)
+      try {
+        const flatCategories = await productService.getCategories()
+        const hierarchicalCategories = buildCategoryTree(flatCategories)
+        setCategories(hierarchicalCategories)
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+        setCategories([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
+  const handleCategoryClick = (categoryId: string, hasChildren: boolean) => {
+    if (hasChildren) {
+      // Toggle expansion for categories with children
+      if (expandedCategory === categoryId) {
+        setExpandedCategory(null)
+      } else {
+        setExpandedCategory(categoryId)
+      }
     } else {
-      setExpandedCategory(categoryId)
+      // Navigate directly for categories without children
+      navigate(`/products?category=${categoryId}`)
+      closeSidebar()
     }
   }
 
-  const handleSubcategoryClick = (categoryId: string, subcategoryId: string) => {
-    navigate(`/products?category=${categoryId}&subcategory=${subcategoryId}`)
+  const handleSubcategoryClick = (subcategoryId: string) => {
+    navigate(`/products?category=${subcategoryId}`)
     closeSidebar()
   }
 
@@ -172,7 +104,7 @@ const Sidebar = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Category sx={{ fontSize: 28 }} />
+            <CategoryIcon sx={{ fontSize: 28 }} />
             <Typography variant="h6" fontWeight="bold">
               Categories
             </Typography>
@@ -197,7 +129,7 @@ const Sidebar = () => {
               }}
             >
               <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
-                <Category />
+                <CategoryIcon />
               </ListItemIcon>
               <ListItemText
                 primary="All Products"
@@ -211,56 +143,74 @@ const Sidebar = () => {
 
         {/* Categories List */}
         <List sx={{ flex: 1, overflow: 'auto', pt: 1 }}>
-          {categories.map((category) => (
-            <Box key={category.id}>
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => handleCategoryClick(category.id)}
-                  sx={{
-                    py: 1.5,
-                    '&:hover': {
-                      background: 'rgba(255,255,255,0.1)',
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>{category.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={category.name}
-                    primaryTypographyProps={{ fontWeight: 'medium' }}
-                  />
-                  {category.subcategories &&
-                    (expandedCategory === category.id ? <ExpandLess /> : <ExpandMore />)}
-                </ListItemButton>
-              </ListItem>
-
-              {/* Subcategories */}
-              {category.subcategories && (
-                <Collapse in={expandedCategory === category.id} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {category.subcategories.map((subcategory) => (
-                      <ListItemButton
-                        key={subcategory.id}
-                        onClick={() => handleSubcategoryClick(category.id, subcategory.id)}
-                        sx={{
-                          pl: 7,
-                          py: 1,
-                          background: 'rgba(0,0,0,0.1)',
-                          '&:hover': {
-                            background: 'rgba(255,255,255,0.15)',
-                          },
-                        }}
-                      >
-                        <ListItemText
-                          primary={subcategory.name}
-                          primaryTypographyProps={{ fontSize: '0.9rem' }}
-                        />
-                      </ListItemButton>
-                    ))}
-                  </List>
-                </Collapse>
-              )}
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress sx={{ color: 'white' }} size={40} />
             </Box>
-          ))}
+          ) : categories.length === 0 ? (
+            <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                No categories available
+              </Typography>
+            </Box>
+          ) : (
+            categories.map((category) => {
+              const hasChildren = !!(category.children && category.children.length > 0)
+
+              return (
+                <Box key={category.id}>
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      onClick={() => handleCategoryClick(category.id, hasChildren)}
+                      sx={{
+                        py: 1.5,
+                        '&:hover': {
+                          background: 'rgba(255,255,255,0.1)',
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                        <FolderOpen />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={category.name}
+                        primaryTypographyProps={{ fontWeight: 'medium' }}
+                      />
+                      {hasChildren &&
+                        (expandedCategory === category.id ? <ExpandLess /> : <ExpandMore />)}
+                    </ListItemButton>
+                  </ListItem>
+
+                  {/* Subcategories */}
+                  {hasChildren && (
+                    <Collapse in={expandedCategory === category.id} timeout="auto" unmountOnExit>
+                      <List component="div" disablePadding>
+                        {category.children!.map((subcategory) => (
+                          <ListItemButton
+                            key={subcategory.id}
+                            onClick={() => handleSubcategoryClick(subcategory.id)}
+                            sx={{
+                              pl: 7,
+                              py: 1,
+                              background: 'rgba(0,0,0,0.1)',
+                              '&:hover': {
+                                background: 'rgba(255,255,255,0.15)',
+                              },
+                            }}
+                          >
+                            <ListItemText
+                              primary={subcategory.name}
+                              primaryTypographyProps={{ fontSize: '0.9rem' }}
+                            />
+                          </ListItemButton>
+                        ))}
+                      </List>
+                    </Collapse>
+                  )}
+                </Box>
+              )
+            })
+          )}
         </List>
       </Box>
     </Drawer>

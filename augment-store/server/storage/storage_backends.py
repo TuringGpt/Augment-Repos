@@ -9,6 +9,8 @@ class StaticStorage(S3Boto3Storage):
 class PublicMediaStorage(S3Boto3Storage):
     location = settings.PUBLIC_MEDIA_LOCATION
     file_overwrite = False
+    default_acl = "public-read"
+    querystring_auth = False  # This ensures URLs are not presigned
 
 
 class PrivateMediaStorage(S3Boto3Storage):

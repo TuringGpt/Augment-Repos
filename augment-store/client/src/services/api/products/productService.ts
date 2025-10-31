@@ -5,6 +5,7 @@ import type {
   ProductListResponse,
   ProductSearchParams,
   Category,
+  CategoryAPIResponse,
 } from '@features/products/types'
 import type { ProductAPI, PaginatedProductsAPI } from '@features/products/types/api'
 import { transformProductFromAPI } from '@features/products/types/api'
@@ -104,25 +105,16 @@ export const productService = {
 
   getCategories: async (): Promise<Category[]> => {
     try {
-      // Backend doesn't have categories endpoint in the format we need
-      // For now, extract unique categories from products
-      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-        params: {
-          page: 1,
-          page_size: 1000,
-        },
-      })
+      let allCategories: Category[] = []
+      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
 
-      const products = response.results.map(transformProductFromAPI)
-      const categoriesMap = new Map<string, Category>()
+      while (nextUrl) {
+        const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
+        allCategories = [...allCategories, ...(response.results || [])]
+        nextUrl = response.next
+      }
 
-      products.forEach((product) => {
-        if (!categoriesMap.has(product.category.id)) {
-          categoriesMap.set(product.category.id, product.category)
-        }
-      })
-
-      return Array.from(categoriesMap.values())
+      return allCategories
     } catch (error) {
       console.error('Failed to fetch categories:', error)
       return []
