@@ -8,21 +8,43 @@ This feature allows users to upload and manage their profile avatar images using
 
 ### 3-Step Upload Process
 
-1. **Start Upload** - Create file record and get upload URL
-   - `POST /storage/direct/`
-   - Returns file ID and presigned URL
+#### For S3 Storage:
 
-2. **Upload File** - Upload actual file to storage
-   - `POST /storage/direct/local/{file_id}/` (for local storage)
+1. **Start Upload** - Create file record and get presigned POST data
+   - `POST /storage/direct/`
+   - Request: `{ original_file_name: string, file_type: string }`
+   - Returns: `{ file: { id, ... }, presigned_data: { url, fields } }`
+   - The `fields` object contains S3 presigned POST fields (key, policy, signature, etc.)
+
+2. **Upload File** - Upload directly to S3 using presigned POST
+   - `POST <presigned_data.url>` (direct to S3, not through backend)
+   - Create FormData with all `presigned_data.fields` first, then append file last
+   - Important: File must be appended last for S3 compatibility
+   - Content-Type: `multipart/form-data`
+
+3. **Finish Upload** - Mark upload as complete and get final file URL
+   - `POST /storage/direct/finish/`
+   - Request: `{ file_id: string }`
+   - Returns: `{ file: { id, file: "https://...", ... }, file_id }`
+
+4. **Update Profile** - Update user profile with file ID
+   - `PATCH /accounts/profile/`
+   - Request: `{ profile_image: file_id }` (ForeignKey to storage.File)
+   - To remove: `{ profile_image: null }`
+
+#### For Local Storage:
+
+1. **Start Upload** - Create file record
+   - `POST /storage/direct/`
+   - Returns file ID
+
+2. **Upload File** - Upload to backend
+   - `POST /storage/direct/local/{file_id}/`
    - Uploads file using multipart/form-data
 
 3. **Finish Upload** - Mark upload as complete
    - `POST /storage/direct/finish/`
    - Returns final file URL
-
-4. **Update Profile** - Update user profile with avatar URL
-   - `PATCH /accounts/profile/`
-   - Updates `profile_image` field with file URL
 
 ## Components
 
@@ -125,8 +147,8 @@ interface FileUploadStartResponse {
     updated_at: string
   }
   presigned_data: {
-    url: string
-    presigned_data?: Record<string, unknown>
+    url: string // S3 presigned POST URL
+    fields: Record<string, string> // S3 presigned POST fields (key, policy, signature, etc.)
   }
 }
 
@@ -134,7 +156,13 @@ interface FileUploadFinishResponse {
   file: {
     id: string
     file: string // Final file URL
-    // ... other fields
+    original_file_name: string
+    file_name: string
+    file_type: string
+    created_by: string
+    upload_finished_at: string
+    created_at: string
+    updated_at: string
   }
   file_id: string
 }

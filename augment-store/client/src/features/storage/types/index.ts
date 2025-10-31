@@ -19,7 +19,7 @@ export interface FileUploadStartResponse {
   }
   presigned_data: {
     url: string
-    presigned_data?: Record<string, unknown>
+    fields: Record<string, string> // S3 presigned POST fields (key, policy, signature, etc.)
   }
 }
 
@@ -46,4 +46,3 @@ export interface FileUploadFinishResponse {
   }
   file_id: string
 }
-
