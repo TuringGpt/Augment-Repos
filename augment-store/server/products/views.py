@@ -57,7 +57,13 @@ class CreateProductCategoryView(BaseCategoryView, CreateAPIView):
 
 class ProductCategoryDetailView(BaseCategoryView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductCategoryDetailSerializer
-    permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+
+    def get_permissions(self):
+        super().get_permissions()
+        if self.request.method == "GET":
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        
+        return [IsAuthenticatedOrReadOnly, hasAdminOrMerchantRole]
 
 
 # Product views
@@ -91,6 +97,13 @@ class ProductUpdateDeleteView(BaseProductView, RetrieveUpdateDestroyAPIView):
             return Product.objects.all()
     
         return Product.objects.get_user_products(user)
+    
+    def get_permissions(self):
+        super().get_permissions()
+        if self.request.method == "GET":
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        
+        return [IsAuthenticated, hasAdminOrMerchantRole]
     
 
 
