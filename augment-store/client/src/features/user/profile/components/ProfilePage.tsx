@@ -186,7 +186,7 @@ const ProfilePage = () => {
       // Combine avatar removal with any pending form changes
       const updateData = {
         ...formChanges,
-        profile_image: '', // Empty string to clear the ForeignKey field
+        profile_image: null, // null to clear the ForeignKey field
       }
 
       console.log('📤 Sending profile update with:', updateData)

@@ -22,7 +22,7 @@ This feature allows users to upload and manage their profile avatar images using
 
 4. **Update Profile** - Update user profile with avatar URL
    - `PATCH /accounts/profile/`
-   - Updates `image` field with file URL
+   - Updates `profile_image` field with file URL
 
 ## Components
 
@@ -31,6 +31,7 @@ This feature allows users to upload and manage their profile avatar images using
 **Location:** `augment-store/client/src/features/user/profile/components/AvatarUpload.tsx`
 
 **Features:**
+
 - Avatar preview with user initials fallback
 - Click to upload functionality
 - File type validation (JPEG, PNG, GIF, WebP)
@@ -41,15 +42,16 @@ This feature allows users to upload and manage their profile avatar images using
 - Accessibility support (ARIA labels, keyboard navigation)
 
 **Props:**
+
 ```typescript
 interface AvatarUploadProps {
-  currentImage: string | null        // Current avatar URL
-  userName: string                    // User name for initials
+  currentImage: string | null // Current avatar URL
+  userName: string // User name for initials
   onImageSelect: (file: File) => void // Callback when file selected
-  onImageRemove: () => void           // Callback when avatar removed
-  isUploading: boolean                // Upload in progress
-  disabled?: boolean                  // Disable upload
-  error?: string | null               // Error message
+  onImageRemove: () => void // Callback when avatar removed
+  isUploading: boolean // Upload in progress
+  disabled?: boolean // Disable upload
+  error?: string | null // Error message
 }
 ```
 
@@ -58,11 +60,13 @@ interface AvatarUploadProps {
 **Location:** `augment-store/client/src/features/user/profile/components/ProfilePage.tsx`
 
 **State:**
+
 - `isUploadingAvatar` - Upload in progress flag
 - `avatarError` - Avatar upload error message
 - `newAvatarUrl` - Newly uploaded avatar URL (before profile refresh)
 
 **Handlers:**
+
 - `handleAvatarSelect(file)` - Uploads avatar and updates profile
 - `handleAvatarRemove()` - Removes avatar from profile
 
@@ -92,6 +96,7 @@ uploadAvatar(file: File): Promise<string>
 ```
 
 **Validation:**
+
 - File type: JPEG, JPG, PNG, GIF, WebP
 - File size: Maximum 5MB
 
@@ -128,7 +133,7 @@ interface FileUploadStartResponse {
 interface FileUploadFinishResponse {
   file: {
     id: string
-    file: string  // Final file URL
+    file: string // Final file URL
     // ... other fields
   }
   file_id: string
@@ -160,6 +165,7 @@ PATCH  /accounts/profile/                  - Update profile (including image)
 **Note:** For avatar upload to work for regular users, the backend permissions need to be updated to allow authenticated users to upload their own avatars.
 
 **Recommended Solution:**
+
 - Create a separate avatar upload endpoint with `IsAuthenticated` permission only
 - OR modify storage permissions to allow authenticated users for avatar uploads
 - OR use a custom permission class that allows users to upload their own avatars
@@ -217,15 +223,18 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
 ## Error Handling
 
 ### Validation Errors
+
 - Invalid file type → "Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image."
 - File too large → "File size too large. Maximum size is 5MB."
 
 ### Upload Errors
+
 - Network error → "Failed to upload avatar"
 - Server error → Error message from API response
 - Permission error → "You don't have permission to upload files"
 
 ### Display
+
 - Errors are shown in an Alert component below the avatar
 - Errors auto-clear when user selects a new file
 
@@ -279,6 +288,7 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
 The storage endpoints currently require `hasAdminOrMerchantRole` permission, which prevents regular users from uploading avatars. This needs to be addressed in the backend.
 
 **Temporary Workaround:**
+
 - Grant merchant role to users who need to upload avatars
 - OR modify backend permissions (requires backend changes)
 
@@ -288,4 +298,3 @@ The storage endpoints currently require `hasAdminOrMerchantRole` permission, whi
 - `@mui/material` - UI components
 - `@mui/icons-material` - Icons (PhotoCamera, Delete)
 - Existing: `axios`, `react`, `typescript`
-
