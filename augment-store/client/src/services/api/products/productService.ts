@@ -14,17 +14,18 @@ export const productService = {
   /**
    * Get products from backend API
    * Backend returns paginated response with count, next, previous, results
+   * Note: Backend has fixed page_size of 100 (configured in settings.py)
    */
   getProducts: async (params?: ProductSearchParams): Promise<ProductListResponse> => {
     try {
       const page = params?.page || 1
-      const limit = params?.limit || 12
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
       // Fetch products from backend with pagination
+      // Note: page_size is fixed at 100 on backend, cannot be overridden
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
         params: {
           page,
-          page_size: limit, // Django REST Framework uses page_size
         },
       })
 
@@ -35,8 +36,8 @@ export const productService = {
         products,
         total: response.count,
         page,
-        limit,
-        totalPages: Math.ceil(response.count / limit),
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
       console.error('Failed to fetch products:', error)
@@ -45,7 +46,7 @@ export const productService = {
         products: [],
         total: 0,
         page: 1,
-        limit: params?.limit || 12,
+        limit: 100,
         totalPages: 0,
       }
     }
@@ -61,17 +62,25 @@ export const productService = {
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
     try {
-      // Backend doesn't have search endpoint yet, so we fetch all and filter on frontend
-      // Fetch a large page to get all products for filtering
-      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-        params: {
-          page: 1,
-          page_size: 1000, // Get a large number of products
-        },
-      })
+      // Backend doesn't have search endpoint yet, so we fetch all pages and filter on frontend
+      // Note: Backend page_size is fixed at 100, so we need to fetch all pages
+      let allProducts: Product[] = []
+      let currentPage = 1
+      let hasMore = true
 
-      // Transform and filter products
-      const allProducts = response.results.map(transformProductFromAPI)
+      while (hasMore) {
+        const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+          params: { page: currentPage },
+        })
+
+        const pageProducts = response.results.map(transformProductFromAPI)
+        allProducts = [...allProducts, ...pageProducts]
+
+        hasMore = response.next !== null
+        currentPage++
+      }
+
+      // Filter products by query
       const filteredProducts = allProducts.filter(
         (product) =>
           product.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -124,9 +133,9 @@ export const productService = {
   getFeaturedProducts: async (): Promise<Product[]> => {
     try {
       // Backend doesn't have featured endpoint yet
-      // Return first 6 products as featured
-      const response = await productService.getProducts({ page: 1, limit: 6 })
-      return response.products
+      // Return first 6 products from page 1 (backend returns 100 per page)
+      const response = await productService.getProducts({ page: 1 })
+      return response.products.slice(0, 6)
     } catch (error) {
       console.error('Failed to fetch featured products:', error)
       return []
