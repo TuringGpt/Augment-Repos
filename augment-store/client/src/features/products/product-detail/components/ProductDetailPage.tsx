@@ -11,7 +11,6 @@ import {
   Divider,
   IconButton,
   CircularProgress,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -40,8 +39,9 @@ const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
 
-  const { cart, addItem, removeItem, isInCart, getCartItem } = useCartStore()
+  const { addItemToCart, removeItem, isInCart, getCartItem } = useCartStore()
   const productInCart = id ? isInCart(id) : false
   const cartItem = id ? getCartItem(id) : undefined
 
@@ -84,20 +84,19 @@ const ProductDetailPage = () => {
     setQuantity((prev) => Math.max(1, Math.min(product?.stock || 1, prev + delta)))
   }
 
-  const handleAddToCart = () => {
-    if (!product || !cart) return
+  const handleAddToCart = async () => {
+    if (!product || !id) return
 
-    const cartItem = {
-      id: `cart-${product.id}-${Date.now()}`,
-      product,
-      quantity,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_deleted: false,
-      created_by: '', // Will be set by backend
+    try {
+      setAddingToCart(true)
+      // Call API to add item to cart
+      await addItemToCart(id, quantity)
+    } catch (error) {
+      console.error('Failed to add item to cart:', error)
+      // Error is already handled in the store
+    } finally {
+      setAddingToCart(false)
     }
-
-    addItem(cartItem)
   }
 
   const handleRemoveClick = () => {
@@ -380,8 +379,11 @@ const ProductDetailPage = () => {
                   <Button
                     variant="contained"
                     size="large"
-                    startIcon={<CartIcon />}
+                    startIcon={
+                      addingToCart ? <CircularProgress size={20} color="inherit" /> : <CartIcon />
+                    }
                     onClick={handleAddToCart}
+                    disabled={addingToCart}
                     sx={{
                       py: 1.5,
                       px: 4,
@@ -398,7 +400,7 @@ const ProductDetailPage = () => {
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
-                    {productInCart ? 'Update Cart' : 'Add to Cart'}
+                    {addingToCart ? 'Adding...' : productInCart ? 'Update Cart' : 'Add to Cart'}
                   </Button>
                   {productInCart && (
                     <Button
@@ -406,6 +408,7 @@ const ProductDetailPage = () => {
                       color="error"
                       size="large"
                       onClick={handleRemoveClick}
+                      disabled={addingToCart}
                       sx={{
                         py: 1.5,
                         px: 3,
