@@ -4,12 +4,14 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDe
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter
+
 
 
 
@@ -57,7 +59,13 @@ class CreateProductCategoryView(BaseCategoryView, CreateAPIView):
 
 class ProductCategoryDetailView(BaseCategoryView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductCategoryDetailSerializer
-    permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+
+    def get_permissions(self):
+        super().get_permissions()
+        if self.request.method == "GET":
+            return [IsAuthenticatedOrReadOnly()]
+        
+        return [IsAuthenticatedOrReadOnly(), hasAdminOrMerchantRole()]
 
 
 # Product views
@@ -67,7 +75,12 @@ class BaseProductView:
     serializer_class = ProductListSerializer
 
     def get_queryset(self):
-        return Product.objects.all().order_by('-created_at')
+        user: "User" = self.request.user
+        
+        if self.request.method in SAFE_METHODS or user.is_admin:
+            return Product.objects.all()
+    
+        return Product.objects.get_user_products(user)
 
 class ProductListView(BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
@@ -85,12 +98,12 @@ class ProductUpdateDeleteView(BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
-    def get_queryset(self):
-        user: "User" = self.request.user
-        if user.is_admin:
-            return Product.objects.all()
-    
-        return Product.objects.get_user_products(user)
+    def get_permissions(self):
+        super().get_permissions()
+        if self.request.method == "GET":
+            return [IsAuthenticatedOrReadOnly()]
+        
+        return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
 
 

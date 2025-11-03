@@ -25,7 +25,7 @@ import {
   LocalShipping as ShippingIcon,
 } from '@mui/icons-material'
 import { useCartStore } from '@store/cartStore'
-import { mockProductService } from '@services/api/products/mockProductService'
+import { productService } from '@services/api/products/productService'
 import type { Product } from '@features/products/types'
 import { mockReviews } from '@data/mockReviews'
 import ImageGallery from './ImageGallery'
@@ -52,7 +52,7 @@ const ProductDetailPage = () => {
       try {
         setLoading(true)
         setError(null)
-        const data = await mockProductService.getProductById(id)
+        const data = await productService.getProductById(id)
 
         // Add reviews to product
         const productWithReviews = {

@@ -43,4 +43,5 @@ augment-store/server/generate_dummy_product.py
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
