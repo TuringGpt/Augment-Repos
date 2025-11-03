@@ -26,14 +26,14 @@ import {
 } from '@mui/icons-material'
 import { useCartStore } from '@store/cartStore'
 import { productService } from '@services/api/products/productService'
-import type { ProductDetail } from '@features/products/types/api'
+import type { ProductDetailAPI } from '@features/products/types/api'
 import ImageGallery from './ImageGallery'
 import ReviewSection from './ReviewSection'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [product, setProduct] = useState<ProductDetail | null>(null)
+  const [product, setProduct] = useState<ProductDetailAPI | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)

@@ -43,7 +43,7 @@ export interface ProductAPI {
  * Product Detail API Response
  * Backend returns all fields including timestamps and nested objects
  */
-export interface ProductDetail {
+export interface ProductDetailAPI {
   id: string
   created_at: string
   updated_at: string
