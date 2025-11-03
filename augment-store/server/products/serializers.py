@@ -85,6 +85,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
+    brand = ProductBrandListSerializer(read_only=True)
+    categories = ProductCategoryListSerializer(read_only=True)
+    images = FileListSerializer(read_only=True)
     class Meta:
         model = Product
         fields = "__all__"
