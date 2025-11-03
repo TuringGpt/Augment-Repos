@@ -104,9 +104,6 @@ interface AvatarUploadProps {
 // Start direct file upload
 startUpload(data: FileUploadStartRequest): Promise<FileUploadStartResponse>
 
-// Upload file to local storage
-uploadLocal(file: File, fileId: string): Promise<void>
-
 // Finish direct file upload
 finishUpload(data: FileUploadFinishRequest): Promise<FileUploadFinishResponse>
 
@@ -244,7 +241,7 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
 ### Remove Avatar
 
 1. User clicks delete icon on avatar
-2. Profile is updated with empty image field
+2. Profile is updated with null profile_image field
 3. Avatar is removed
 4. Success message is displayed
 
