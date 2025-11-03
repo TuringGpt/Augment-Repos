@@ -33,7 +33,7 @@ class ProductManager(models.Manager):
         return super().get_queryset().order_by('-created_at')
     
     def get_user_products(self, user):
-        return self.get_queryset().filter(created_by=user)
+        return self.get_queryset().filter(created_by=user).order_by('-created_at')
 
 class Product(BaseModel):
     name = models.CharField(max_length=255)
