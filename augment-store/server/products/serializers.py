@@ -5,10 +5,11 @@ from storage.serializers import FileListSerializer
 
 #  Product Brand Serializers
 
+
 class CreateProductBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductBrand
-        fields = ["name", "description" , "image"]
+        fields = ["name", "description", "image"]
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -32,6 +33,7 @@ class ProductBrandDetailSerializer(serializers.ModelSerializer):
 
 # Product Category Serializers
 
+
 class CreateProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
@@ -40,8 +42,10 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         parent = attrs.get("parent")
         if parent and parent.is_child_node():
-            raise serializers.ValidationError("Parent category cannot be a child category")
-        
+            raise serializers.ValidationError(
+                "Parent category cannot be a child category"
+            )
+
         request = self.context.get("request")
         attrs["created_by"] = request.user
         return attrs
@@ -63,10 +67,19 @@ class ProductCategoryDetailSerializer(serializers.ModelSerializer):
 
 #  Product Serializers
 
+
 class CreateProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ["name", "description", "price", "brand", "category", "quantity", "images"]
+        fields = [
+            "name",
+            "description",
+            "price",
+            "brand",
+            "category",
+            "quantity",
+            "images",
+        ]
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -81,10 +94,24 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ["id", "name", "description", "price", "brand", "category", "quantity", "rating", "images"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "price",
+            "brand",
+            "category",
+            "quantity",
+            "rating",
+            "images",
+        ]
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
+    brand = ProductBrandListSerializer(read_only=True)
+    category = ProductCategoryListSerializer(read_only=True)
+    images = FileListSerializer(many=True, read_only=True)
+
     class Meta:
         model = Product
         fields = "__all__"

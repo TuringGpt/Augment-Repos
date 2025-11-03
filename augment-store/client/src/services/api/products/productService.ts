@@ -7,8 +7,11 @@ import type {
   Category,
   CategoryAPIResponse,
 } from '@features/products/types'
-import type { ProductAPI, PaginatedProductsAPI } from '@features/products/types/api'
-import { transformProductFromAPI } from '@features/products/types/api'
+import type { PaginatedProductsAPI, ProductDetailAPI } from '@features/products/types/api'
+import {
+  transformProductFromAPI,
+  transformProductDetailFromAPI,
+} from '@features/products/types/api'
 
 export const productService = {
   /**
@@ -65,7 +68,16 @@ export const productService = {
   },
 
   getProductById: async (id: string): Promise<Product> => {
-    return apiClient.get<Product>(API_ENDPOINTS.PRODUCTS.DETAIL(id))
+    try {
+      // Fetch product detail from backend
+      const response = await apiClient.get<ProductDetailAPI>(API_ENDPOINTS.PRODUCTS.DETAIL(id))
+
+      // Transform to frontend format
+      return transformProductDetailFromAPI(response)
+    } catch (error) {
+      console.error('Failed to fetch product by ID:', error)
+      throw error
+    }
   },
 
   searchProducts: async (
