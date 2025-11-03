@@ -5,6 +5,7 @@ from carts.models import CartItem
 
 
 
+
 class Order(BaseModel):
     class OrderStatus:
         PENDING = 'pending'
@@ -17,10 +18,13 @@ class Order(BaseModel):
             (COMPLETED, 'Completed'),
         )
 
-    items = models.ManyToManyField(CartItem, related_name='orders')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
 
+class OrderItem(BaseModel):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    cart_item = models.ForeignKey(CartItem, on_delete=models.SET_NULL, null=True, related_name='order_items')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_items')
 
 
 class Payment(BaseModel):
