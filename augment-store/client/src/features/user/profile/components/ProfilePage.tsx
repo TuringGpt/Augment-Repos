@@ -7,7 +7,6 @@ import {
   Alert,
   CircularProgress,
   Divider,
-  Avatar,
   TextField,
   Button,
   Grid,
@@ -16,10 +15,12 @@ import {
 import { Edit, Save, Cancel } from '@mui/icons-material'
 import delay from 'lodash/delay'
 import { userService } from '@services/api/user/userService'
+import { storageService } from '@services/api/storage/storageService'
 import type { UserProfile } from '@features/user/types'
 import { Colors } from '@config/colors'
 import { useProfileForm } from '../hooks/useProfileForm'
 import { getChangedFields } from '../utils/profileValidation'
+import { AvatarUpload } from './AvatarUpload'
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -28,6 +29,13 @@ const ProfilePage = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Avatar upload state (consolidated)
+  const [avatarState, setAvatarState] = useState({
+    isUploading: false,
+    error: null as string | null,
+    newUrl: null as string | null,
+  })
 
   // Ref to store timeout ID for cleanup
   const successTimeoutRef = useRef<number | null>(null)
@@ -126,6 +134,80 @@ const ProfilePage = () => {
     }
   })
 
+  const handleAvatarSelect = async (file: File) => {
+    setAvatarState({ isUploading: true, error: null, newUrl: null })
+
+    try {
+      // Upload avatar to storage and get file ID
+      const fileId = await storageService.uploadAvatar(file)
+      console.log('📤 Received file ID from upload:', fileId)
+
+      // Get any pending form changes (if user is editing)
+      const formChanges = getChangedFields(form.values, profile)
+
+      // Combine avatar update with any pending form changes
+      const updateData = {
+        ...formChanges,
+        profile_image: fileId,
+      }
+
+      // Update profile with file ID (ForeignKey to storage.File) + any form changes
+      const updatedProfile = await userService.updateProfile(updateData)
+      setProfile(updatedProfile)
+      setProfileValues(updatedProfile)
+
+      // Update avatar state with the new image URL from profile_image.file
+      const newAvatarUrl = updatedProfile.profile_image?.file || updatedProfile.image || null
+      console.log('🖼️ New avatar URL from server:', newAvatarUrl)
+      console.log('📦 Updated profile:', updatedProfile)
+      setAvatarState((prev) => ({ ...prev, newUrl: newAvatarUrl }))
+
+      setSuccessMessage('Avatar updated successfully!')
+      successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
+          ?.message ||
+        (err as { message?: string }).message ||
+        'Failed to upload avatar'
+      setAvatarState((prev) => ({ ...prev, error: errorMessage }))
+    } finally {
+      setAvatarState((prev) => ({ ...prev, isUploading: false }))
+    }
+  }
+
+  const handleAvatarRemove = async () => {
+    setAvatarState({ isUploading: true, error: null, newUrl: null })
+
+    try {
+      // Get any pending form changes (if user is editing)
+      const formChanges = getChangedFields(form.values, profile)
+
+      // Combine avatar removal with any pending form changes
+      const updateData = {
+        ...formChanges,
+        profile_image: null, // null to clear the ForeignKey field
+      }
+
+      // Update profile to remove avatar + any form changes
+      const updatedProfile = await userService.updateProfile(updateData)
+      setProfile(updatedProfile)
+      setProfileValues(updatedProfile)
+
+      setSuccessMessage('Avatar removed successfully!')
+      successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
+    } catch (err) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
+          ?.message ||
+        (err as { message?: string }).message ||
+        'Failed to remove avatar'
+      setAvatarState((prev) => ({ ...prev, error: errorMessage }))
+    } finally {
+      setAvatarState((prev) => ({ ...prev, isUploading: false }))
+    }
+  }
+
   if (isLoading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -164,19 +246,25 @@ const ProfilePage = () => {
       )}
 
       <Paper elevation={3} sx={{ p: 4 }}>
+        {/* Avatar Upload Section */}
+        <Box sx={{ mb: 4 }}>
+          <AvatarUpload
+            currentImage={
+              avatarState.newUrl || profile?.profile_image?.file || profile?.image || null
+            }
+            userName={profile?.first_name || profile?.email || 'User'}
+            onImageSelect={handleAvatarSelect}
+            onImageRemove={handleAvatarRemove}
+            isUploading={avatarState.isUploading}
+            disabled={false}
+            error={avatarState.error}
+          />
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
         {/* Profile Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Avatar
-            sx={{
-              width: 80,
-              height: 80,
-              bgcolor: Colors.primary.main,
-              fontSize: '2rem',
-              mr: 3,
-            }}
-          >
-            {profile?.first_name?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || 'U'}
-          </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
               {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
@@ -209,18 +297,20 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Username"
                 {...form.getInputProps('username')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.username}
-                helperText={isEditing ? form.errors.username : ''}
+                helperText={isEditing ? form.errors.username : ' '}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Email"
                 value={profile?.email || ''}
                 disabled
@@ -232,50 +322,54 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="First Name"
                 {...form.getInputProps('first_name')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.first_name}
-                helperText={isEditing ? form.errors.first_name : ''}
+                helperText={isEditing ? form.errors.first_name : ' '}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Last Name"
                 {...form.getInputProps('last_name')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.last_name}
-                helperText={isEditing ? form.errors.last_name : ''}
+                helperText={isEditing ? form.errors.last_name : ' '}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Mobile"
                 {...form.getInputProps('mobile')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 placeholder="+1234567890"
                 error={isEditing && !!form.errors.mobile}
-                helperText={isEditing ? form.errors.mobile : ''}
+                helperText={isEditing ? form.errors.mobile : ' '}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 select
                 label="Gender"
                 {...form.getInputProps('gender')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.gender}
-                helperText={isEditing ? form.errors.gender : ''}
+                helperText={isEditing ? form.errors.gender : ' '}
               >
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
@@ -286,6 +380,7 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Role"
                 value={profile?.role || 'customer'}
                 disabled
@@ -297,10 +392,12 @@ const ProfilePage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                size="small"
                 label="Account Status"
                 value={profile?.is_active ? 'Active' : 'Inactive'}
                 disabled
                 variant="filled"
+                helperText=" "
               />
             </Grid>
           </Grid>

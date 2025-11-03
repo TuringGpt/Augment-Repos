@@ -1,5 +1,16 @@
 import type { Product } from '@features/products/types'
 
+// Storage File object (from backend)
+export interface StorageFile {
+  id: string
+  file: string // The actual file URL
+  original_file_name: string
+  file_name: string
+  file_type: string
+  file_size: number
+  uploaded_at: string
+}
+
 // User profile (matches backend API format with snake_case)
 export interface UserProfile {
   id: string
@@ -10,7 +21,8 @@ export interface UserProfile {
   full_name: string
   mobile: string
   gender: 'Male' | 'Female' | 'Other'
-  image: string
+  image: string | null // Legacy ImageField (direct file URL, can be null)
+  profile_image: StorageFile | null // ForeignKey to storage.File (expanded object)
   role: 'admin' | 'customer'
   is_active: boolean
   is_registration_completed: boolean
@@ -24,7 +36,8 @@ export interface UpdateProfileRequest {
   last_name?: string
   mobile?: string
   gender?: 'Male' | 'Female' | 'Other'
-  image?: string
+  image?: string | null // Legacy ImageField (direct file URL or null to clear)
+  profile_image?: string | null // ForeignKey to storage.File (file ID or null to clear)
 }
 
 export interface Address {
