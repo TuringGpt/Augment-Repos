@@ -72,6 +72,10 @@ class CartItemListSerializer(serializers.ModelSerializer):
         
 class CartDetailSerializer(serializers.ModelSerializer):
     items = CartItemListSerializer(many=True)
+    total = serializers.ReadOnlyField()
+    subtotal = serializers.ReadOnlyField()
+    tax = serializers.ReadOnlyField()
+    shipping = serializers.ReadOnlyField()
 
     class Meta:
         model = Cart

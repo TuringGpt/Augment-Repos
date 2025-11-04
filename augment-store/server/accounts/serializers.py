@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from storage.serializers import FileSerializer
+from storage.serializers import FileSerializer, FileListSerializer
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -53,3 +53,20 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Mobile number is too long")
         return value
 
+
+class UserListSerializer(serializers.ModelSerializer):
+    """Serializer for retrieving list of users"""
+    full_name = serializers.CharField(read_only=True)
+    profile_image = FileListSerializer(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "full_name",
+            "profile_image",
+        ]
