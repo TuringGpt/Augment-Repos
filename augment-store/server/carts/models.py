@@ -46,7 +46,25 @@ class CartManager(models.Manager):
    
 
 class Cart(BaseModel):
-    items = models.ManyToManyField(CartItem, related_name='carts')
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
-    objects: CartManager = CartManager()
+    items = models.ManyToManyField("CartItem", related_name='carts')
+    user = models.OneToOneField("User", on_delete=models.CASCADE, related_name='cart')
+    objects = CartManager()
+
+    @property
+    def subtotal(self):
+        return sum(item.product.price * item.quantity for item in self.items.all())
+
+    @property
+    def tax(self):
+        # TODO: I will get the tax rate from the tax service later (this unblock frontend for now)
+        return round(self.subtotal * 0.1, 2)
+
+    @property
+    def shipping(self):
+        # TODO: I will get the shipping cost from the shipping service later (this unblock frontend for now)
+        return 10 if self.subtotal < 50 else 0
+
+    @property
+    def total(self):
+        return self.subtotal + self.tax + self.shipping
 
