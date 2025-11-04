@@ -163,6 +163,8 @@ export const useCartStore = create<CartState>()(
         // Import cartService dynamically to avoid circular dependency
         const { cartService } = await import('@services/api/cart/cartService')
 
+        console.log('🔄 Updating cart item:', { itemId, quantity })
+
         // Add item to updating set
         set((state) => ({
           updatingItemIds: new Set(state.updatingItemIds).add(itemId),
@@ -177,18 +179,24 @@ export const useCartStore = create<CartState>()(
             operation: 'set',
           })
 
+          console.log('✅ Received updated cart from API:', updatedCart)
+          console.log('📦 Updated cart items:', updatedCart.items)
+
           // Set the updated cart from API response and remove from updating set
           set((state) => {
             const newSet = new Set(state.updatingItemIds)
             newSet.delete(itemId)
+            console.log('💾 Setting cart in store:', updatedCart)
             return {
               cart: updatedCart,
               error: null,
               updatingItemIds: newSet,
             }
           })
+
+          console.log('✅ Cart updated successfully')
         } catch (error) {
-          console.error('Failed to update cart item:', error)
+          console.error('❌ Failed to update cart item:', error)
 
           // Remove from updating set and set error
           set((state) => {
