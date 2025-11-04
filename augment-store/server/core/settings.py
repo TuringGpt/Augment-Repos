@@ -248,7 +248,8 @@ REST_FRAMEWORK = {
     ),
     "NON_FIELD_ERRORS_KEY": "details",
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
+    'COERCE_DECIMAL_TO_STRING': False,
 }
 
 SIMPLE_JWT = {
