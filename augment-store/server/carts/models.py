@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from core.models import BaseModel
 from accounts.models import User
@@ -47,8 +48,8 @@ class CartManager(models.Manager):
 
 class Cart(BaseModel):
     items = models.ManyToManyField("CartItem", related_name='carts')
-    user = models.OneToOneField("User", on_delete=models.CASCADE, related_name='cart')
-    objects = CartManager()
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    objects:CartManager = CartManager()
 
     @property
     def subtotal(self):
@@ -57,7 +58,8 @@ class Cart(BaseModel):
     @property
     def tax(self):
         # TODO: I will get the tax rate from the tax service later (this unblock frontend for now)
-        return round(self.subtotal * 0.1, 2)
+        # return Decimal
+        return round(self.subtotal * Decimal("0.1") , 2)
 
     @property
     def shipping(self):
