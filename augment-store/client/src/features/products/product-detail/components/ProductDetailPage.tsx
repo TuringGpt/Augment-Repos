@@ -11,7 +11,6 @@ import {
   Divider,
   IconButton,
   CircularProgress,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -26,16 +25,16 @@ import {
   LocalShipping as ShippingIcon,
 } from '@mui/icons-material'
 import { useCartStore } from '@store/cartStore'
-import { mockProductService } from '@services/api/products/mockProductService'
-import type { Product } from '@features/products/types'
-import { mockReviews } from '@data/mockReviews'
+import { productService } from '@services/api/products/productService'
+import type { ProductDetailAPI } from '@features/products/types/api'
+import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
 import ImageGallery from './ImageGallery'
 import ReviewSection from './ReviewSection'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [product, setProduct] = useState<Product | null>(null)
+  const [product, setProduct] = useState<ProductDetailAPI | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
@@ -52,15 +51,8 @@ const ProductDetailPage = () => {
       try {
         setLoading(true)
         setError(null)
-        const data = await mockProductService.getProductById(id)
-
-        // Add reviews to product
-        const productWithReviews = {
-          ...data,
-          reviews: mockReviews[id] || [],
-        }
-
-        setProduct(productWithReviews)
+        const data = await productService.getProductById(id)
+        setProduct(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load product')
       } finally {
@@ -81,15 +73,42 @@ const ProductDetailPage = () => {
   }, [cartItem])
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(product?.stock || 1, prev + delta)))
+    setQuantity((prev) => Math.max(1, Math.min(product?.quantity || 1, prev + delta)))
   }
 
   const handleAddToCart = () => {
     if (!product || !cart) return
 
+    // Extract image URLs with placeholder fallback
+    const productImages = product.images
+      .map((img) => img.file)
+      .filter((url): url is string => url !== null)
+    const imagesForCart = productImages.length > 0 ? productImages : [PLACEHOLDER_IMAGE]
+
+    // Transform ProductDetail to Product format for cart
+    const productForCart = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: parseFloat(product.price),
+      images: imagesForCart,
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+        description: product.category.description,
+        image: product.category.image?.file || undefined,
+        parent: product.category.parent || undefined,
+      },
+      stock: product.quantity,
+      rating: parseFloat(product.rating),
+      reviewCount: 0,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+    }
+
     const cartItem = {
       id: `cart-${product.id}-${Date.now()}`,
-      product,
+      product: productForCart,
       quantity,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -235,11 +254,16 @@ const ProductDetailPage = () => {
     )
   }
 
-  const displayPrice = product.discountPrice || product.price
-  const hasDiscount = !!product.discountPrice
-  const discountPercentage = hasDiscount
-    ? Math.round(((product.price - product.discountPrice!) / product.price) * 100)
-    : 0
+  // Extract image URLs from FileAPI objects, use placeholder if no images
+  const imageUrls = product.images
+    .map((img) => img.file)
+    .filter((url): url is string => url !== null)
+
+  // Use placeholder image if no images available
+  const displayImages = imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE]
+
+  const priceNumber = parseFloat(product.price)
+  const ratingNumber = parseFloat(product.rating)
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -251,7 +275,7 @@ const ProductDetailPage = () => {
       <Grid container spacing={4}>
         {/* Image Gallery */}
         <Grid item xs={12} md={6}>
-          <ImageGallery images={product.images} productName={product.name} />
+          <ImageGallery images={displayImages} productName={product.name} />
         </Grid>
 
         {/* Product Info */}
@@ -267,9 +291,9 @@ const ProductDetailPage = () => {
 
             {/* Rating */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Rating value={product.rating} precision={0.1} readOnly />
+              <Rating value={ratingNumber} precision={0.1} readOnly />
               <Typography variant="body2" color="text.secondary">
-                {product.rating} ({product.reviewCount} reviews)
+                {ratingNumber.toFixed(1)} (0 reviews)
               </Typography>
             </Box>
 
@@ -277,34 +301,18 @@ const ProductDetailPage = () => {
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mb: 1 }}>
                 <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  ${displayPrice.toFixed(2)}
+                  ${priceNumber.toFixed(2)}
                 </Typography>
-                {hasDiscount && (
-                  <>
-                    <Typography
-                      variant="h5"
-                      sx={{ textDecoration: 'line-through', color: 'text.secondary' }}
-                    >
-                      ${product.price.toFixed(2)}
-                    </Typography>
-                    <Chip
-                      label={`${discountPercentage}% OFF`}
-                      color="error"
-                      size="small"
-                      sx={{ fontWeight: 600 }}
-                    />
-                  </>
-                )}
               </Box>
             </Box>
 
             {/* Stock Status */}
             <Box sx={{ mb: 3 }}>
-              {product.stock > 0 ? (
+              {product.quantity > 0 ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Chip
-                    label={product.stock > 20 ? 'In Stock' : `Only ${product.stock} left`}
-                    color={product.stock > 20 ? 'success' : 'warning'}
+                    label={product.quantity > 20 ? 'In Stock' : `Only ${product.quantity} left`}
+                    color={product.quantity > 20 ? 'success' : 'warning'}
                     size="small"
                   />
                   <ShippingIcon fontSize="small" color="action" />
@@ -330,7 +338,7 @@ const ProductDetailPage = () => {
             <Divider sx={{ my: 3 }} />
 
             {/* Quantity Selector & Add to Cart */}
-            {product.stock > 0 && (
+            {product.quantity > 0 && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
                   Quantity
@@ -365,14 +373,14 @@ const ProductDetailPage = () => {
                     </Typography>
                     <IconButton
                       onClick={() => handleQuantityChange(1)}
-                      disabled={quantity >= product.stock}
+                      disabled={quantity >= product.quantity}
                       size="small"
                     >
                       <AddIcon />
                     </IconButton>
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {product.stock} available
+                    {product.quantity} available
                   </Typography>
                 </Box>
 
@@ -425,38 +433,13 @@ const ProductDetailPage = () => {
                 </Box>
               </Box>
             )}
-
-            {/* Specifications */}
-            {product.specifications && Object.keys(product.specifications).length > 0 && (
-              <>
-                <Divider sx={{ my: 3 }} />
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                  Specifications
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <Box
-                      key={key}
-                      sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        {key}
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {value}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </>
-            )}
           </Box>
         </Grid>
       </Grid>
 
       {/* Reviews Section */}
       <Box sx={{ mt: 6 }}>
-        <ReviewSection reviews={product.reviews || []} rating={product.rating} />
+        <ReviewSection reviews={[]} rating={ratingNumber} />
       </Box>
 
       {/* Remove Confirmation Dialog */}

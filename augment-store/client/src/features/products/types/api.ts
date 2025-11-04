@@ -40,6 +40,26 @@ export interface ProductAPI {
 }
 
 /**
+ * Product Detail API Response
+ * Backend returns all fields including timestamps and nested objects
+ */
+export interface ProductDetailAPI {
+  id: string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+  name: string
+  description: string
+  price: string // Django returns Decimal as string
+  quantity: number
+  rating: string // Django returns Decimal as string
+  brand: ProductBrandAPI
+  category: ProductCategoryAPI
+  created_by: string // UUID string
+  images: FileAPI[] // Array of file objects from FileListSerializer
+}
+
+/**
  * Paginated response from Django REST Framework
  */
 export interface PaginatedProductsAPI {
@@ -53,11 +73,11 @@ export interface PaginatedProductsAPI {
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
-const PLACEHOLDER_IMAGE =
+export const PLACEHOLDER_IMAGE =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect width="400" height="400" fill="%23e0e0e0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E'
 
 /**
- * Transform backend product to frontend product format
+ * Transform backend product to frontend product format (for list view)
  */
 export function transformProductFromAPI(apiProduct: ProductAPI) {
   // Extract image URLs from FileAPI objects
