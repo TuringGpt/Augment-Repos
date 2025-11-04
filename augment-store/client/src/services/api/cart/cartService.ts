@@ -11,9 +11,9 @@ export const cartService = {
     return enrichCart(cart)
   },
 
-  addToCart: async (data: AddToCartRequest): Promise<Cart> => {
-    const cart = await apiClient.post<Cart>(API_ENDPOINTS.CART.ADD, data)
-    return enrichCart(cart)
+  addToCart: async (data: AddToCartRequest): Promise<void> => {
+    // Backend returns 200/201 with no response body
+    await apiClient.post(API_ENDPOINTS.CART.ADD, data)
   },
 
   updateCartItem: async (itemId: string, data: UpdateCartItemRequest): Promise<Cart> => {

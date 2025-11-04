@@ -27,7 +27,7 @@ export interface Cart {
 }
 
 export interface AddToCartRequest {
-  productId: string
+  product_id: string
   quantity: number
 }
 

@@ -11,6 +11,7 @@ interface CartState {
   // Actions
   setCart: (cart: Cart) => void
   addItem: (item: CartItem) => void
+  addItemToCart: (productId: string, quantity: number) => Promise<void>
   updateItem: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
   removeItems: (itemIds: string[]) => void
@@ -107,6 +108,24 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
+      },
+
+      addItemToCart: async (productId: string, quantity: number) => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        try {
+          set({ isLoading: true, error: null })
+          // Call API to add item to cart
+          await cartService.addToCart({ product_id: productId, quantity })
+          // Refetch cart to get updated data from backend
+          await get().refetchCart()
+        } catch (error) {
+          console.error('Failed to add item to cart:', error)
+          set({ error: 'Failed to add item to cart. Please try again.' })
+          throw error
+        } finally {
+          set({ isLoading: false })
+        }
       },
 
       updateItem: (itemId, quantity) => {

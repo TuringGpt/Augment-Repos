@@ -39,8 +39,9 @@ const ProductDetailPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
 
-  const { cart, addItem, removeItem, isInCart, getCartItem } = useCartStore()
+  const { addItemToCart, removeItem, isInCart, getCartItem } = useCartStore()
   const productInCart = id ? isInCart(id) : false
   const cartItem = id ? getCartItem(id) : undefined
 
@@ -76,47 +77,19 @@ const ProductDetailPage = () => {
     setQuantity((prev) => Math.max(1, Math.min(product?.quantity || 1, prev + delta)))
   }
 
-  const handleAddToCart = () => {
-    if (!product || !cart) return
+  const handleAddToCart = async () => {
+    if (!product || !id) return
 
-    // Extract image URLs with placeholder fallback
-    const productImages = product.images
-      .map((img) => img.file)
-      .filter((url): url is string => url !== null)
-    const imagesForCart = productImages.length > 0 ? productImages : [PLACEHOLDER_IMAGE]
-
-    // Transform ProductDetail to Product format for cart
-    const productForCart = {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: parseFloat(product.price),
-      images: imagesForCart,
-      category: {
-        id: product.category.id,
-        name: product.category.name,
-        description: product.category.description,
-        image: product.category.image?.file || undefined,
-        parent: product.category.parent || undefined,
-      },
-      stock: product.quantity,
-      rating: parseFloat(product.rating),
-      reviewCount: 0,
-      createdAt: product.created_at,
-      updatedAt: product.updated_at,
+    try {
+      setAddingToCart(true)
+      // Call API to add item to cart
+      await addItemToCart(id, quantity)
+    } catch (error) {
+      console.error('Failed to add item to cart:', error)
+      // Error is already handled in the store
+    } finally {
+      setAddingToCart(false)
     }
-
-    const cartItem = {
-      id: `cart-${product.id}-${Date.now()}`,
-      product: productForCart,
-      quantity,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_deleted: false,
-      created_by: '', // Will be set by backend
-    }
-
-    addItem(cartItem)
   }
 
   const handleRemoveClick = () => {
@@ -388,8 +361,11 @@ const ProductDetailPage = () => {
                   <Button
                     variant="contained"
                     size="large"
-                    startIcon={<CartIcon />}
+                    startIcon={
+                      addingToCart ? <CircularProgress size={20} color="inherit" /> : <CartIcon />
+                    }
                     onClick={handleAddToCart}
+                    disabled={addingToCart}
                     sx={{
                       py: 1.5,
                       px: 4,
@@ -406,7 +382,7 @@ const ProductDetailPage = () => {
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
-                    {productInCart ? 'Update Cart' : 'Add to Cart'}
+                    {addingToCart ? 'Adding...' : productInCart ? 'Update Cart' : 'Add to Cart'}
                   </Button>
                   {productInCart && (
                     <Button
@@ -414,6 +390,7 @@ const ProductDetailPage = () => {
                       color="error"
                       size="large"
                       onClick={handleRemoveClick}
+                      disabled={addingToCart}
                       sx={{
                         py: 1.5,
                         px: 3,
