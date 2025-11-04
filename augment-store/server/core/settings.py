@@ -187,14 +187,14 @@ IS_USING_LOCAL_STORAGE = FILE_UPLOAD_STORAGE == "local"
 
 
 if FILE_UPLOAD_STORAGE == "local":
-    MEDIA_ROOT_NAME = "augment-store/"
+    MEDIA_ROOT_NAME = "media"
     MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_ROOT_NAME)
-    MEDIA_URL = "/"
+    MEDIA_URL = "/media/"
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    PUBLIC_MEDIA_LOCATION = "augment-store/media/public/"
-    PRIVATE_MEDIA_LOCATION = "augment-store/media/private/"
+    PUBLIC_MEDIA_LOCATION = "public/"
+    PRIVATE_MEDIA_LOCATION = "private/"
     STATIC_LOCATION = "static/"
-
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     AWS_ACCESS_KEY_ID = config.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = config.get("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = config.get("AWS_STORAGE_BUCKET_NAME")
