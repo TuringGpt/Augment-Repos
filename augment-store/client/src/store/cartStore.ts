@@ -169,8 +169,8 @@ export const useCartStore = create<CartState>()(
             error: null,
           }))
 
-          // Call API to update item quantity
-          await cartService.updateCartItem(itemId, { quantity })
+          // Call API to update item quantity with 'set' operation
+          await cartService.updateCartItem(itemId, { quantity, operation: 'set' })
 
           // Refetch cart to get updated data from backend
           await get().refetchCart()
