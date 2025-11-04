@@ -17,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--static-path',
             type=str,
-            default='init_data/static',
+            default='dummy_data/static',
             help='Path to static folder containing product images organized by category'
         )
         parser.add_argument(

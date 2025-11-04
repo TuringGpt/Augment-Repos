@@ -187,8 +187,9 @@ IS_USING_LOCAL_STORAGE = FILE_UPLOAD_STORAGE == "local"
 
 
 if FILE_UPLOAD_STORAGE == "local":
-    MEDIA_ROOT_NAME = ""
+    MEDIA_ROOT_NAME = "augment-store/"
     MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_ROOT_NAME)
+    MEDIA_URL = "/"
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
     PUBLIC_MEDIA_LOCATION = "augment-store/media/public/"
     PRIVATE_MEDIA_LOCATION = "augment-store/media/private/"
