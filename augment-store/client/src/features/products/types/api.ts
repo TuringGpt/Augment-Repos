@@ -107,36 +107,3 @@ export function transformProductFromAPI(apiProduct: ProductAPI) {
     updatedAt: new Date().toISOString(), // Backend doesn't return this in list
   }
 }
-
-/**
- * Transform backend product detail to frontend product format
- * Detail endpoint now returns nested objects for brand, category, and images
- */
-export function transformProductDetailFromAPI(apiProduct: ProductDetailAPI) {
-  // Extract image URLs from FileAPI objects
-  const imageUrls = apiProduct.images
-    .map((fileObj) => fileObj.file)
-    .filter((url): url is string => url !== null)
-
-  return {
-    id: apiProduct.id,
-    name: apiProduct.name,
-    description: apiProduct.description,
-    price: parseFloat(apiProduct.price),
-    discountPrice: undefined, // Backend doesn't have discount price yet
-    images: imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE],
-    category: {
-      id: apiProduct.category.id,
-      name: apiProduct.category.name,
-      slug: apiProduct.category.name.toLowerCase().replace(/\s+/g, '-'),
-      description: apiProduct.category.description,
-      image: apiProduct.category.image?.file || undefined,
-      parent: apiProduct.category.parent || undefined,
-    },
-    stock: apiProduct.quantity,
-    rating: parseFloat(apiProduct.rating),
-    reviewCount: 0, // Backend doesn't have review count yet
-    createdAt: apiProduct.created_at,
-    updatedAt: apiProduct.updated_at,
-  }
-}
