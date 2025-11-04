@@ -194,50 +194,53 @@ const CartDrawer = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
                       Quantity:
                     </Typography>
-                    {isItemUpdating(item.id) ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
-                        <CircularProgress size={20} />
-                        <Typography variant="body2" color="text.secondary">
-                          Updating...
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
-                        >
-                          <RemoveIcon fontSize="small" />
-                        </IconButton>
-                        <TextField
-                          type="number"
-                          value={item.quantity}
-                          disabled
-                          size="small"
+                    <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1 || isItemUpdating(item.id)}
+                      >
+                        <RemoveIcon fontSize="small" />
+                      </IconButton>
+                      <TextField
+                        type="number"
+                        value={item.quantity}
+                        disabled
+                        size="small"
+                        sx={{
+                          width: 50,
+                          '& input': { textAlign: 'center', py: 0.5 },
+                        }}
+                        inputProps={{
+                          min: 1,
+                          max: item.product.stock,
+                          inputMode: 'numeric',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        disabled={item.quantity >= item.product.stock || isItemUpdating(item.id)}
+                      >
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                      {isItemUpdating(item.id) && (
+                        <CircularProgress
+                          size={16}
                           sx={{
-                            width: 50,
-                            '& input': { textAlign: 'center', py: 0.5 },
-                          }}
-                          inputProps={{
-                            min: 1,
-                            max: item.product.stock,
-                            inputMode: 'numeric',
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            marginLeft: '-8px',
+                            marginTop: '-8px',
                           }}
                         />
-                        <IconButton
-                          size="small"
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          disabled={item.quantity >= item.product.stock}
-                        >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                        {item.quantity >= item.product.stock && (
-                          <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
-                            Max stock
-                          </Typography>
-                        )}
-                      </>
+                      )}
+                    </Box>
+                    {item.quantity >= item.product.stock && !isItemUpdating(item.id) && (
+                      <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
+                        Max stock
+                      </Typography>
                     )}
                   </Box>
                 </ListItem>

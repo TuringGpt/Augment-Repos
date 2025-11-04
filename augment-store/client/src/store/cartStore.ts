@@ -162,13 +162,14 @@ export const useCartStore = create<CartState>()(
       updateItemInCart: async (itemId: string, quantity: number) => {
         // Import cartService dynamically to avoid circular dependency
         const { cartService } = await import('@services/api/cart/cartService')
-        try {
-          // Add item to updating set
-          set((state) => ({
-            updatingItemIds: new Set(state.updatingItemIds).add(itemId),
-            error: null,
-          }))
 
+        // Add item to updating set
+        set((state) => ({
+          updatingItemIds: new Set(state.updatingItemIds).add(itemId),
+          error: null,
+        }))
+
+        try {
           // Call API to update item quantity with 'set' operation
           // API returns the updated cart with new quantity
           const updatedCart = await cartService.updateCartItem(itemId, {
@@ -176,19 +177,29 @@ export const useCartStore = create<CartState>()(
             operation: 'set',
           })
 
-          // Set the updated cart from API response
-          set({ cart: updatedCart, error: null })
-        } catch (error) {
-          console.error('Failed to update cart item:', error)
-          set({ error: 'Failed to update item quantity. Please try again.' })
-          throw error
-        } finally {
-          // Remove item from updating set
+          // Set the updated cart from API response and remove from updating set
           set((state) => {
             const newSet = new Set(state.updatingItemIds)
             newSet.delete(itemId)
-            return { updatingItemIds: newSet }
+            return {
+              cart: updatedCart,
+              error: null,
+              updatingItemIds: newSet,
+            }
           })
+        } catch (error) {
+          console.error('Failed to update cart item:', error)
+
+          // Remove from updating set and set error
+          set((state) => {
+            const newSet = new Set(state.updatingItemIds)
+            newSet.delete(itemId)
+            return {
+              error: 'Failed to update item quantity. Please try again.',
+              updatingItemIds: newSet,
+            }
+          })
+          throw error
         }
       },
 

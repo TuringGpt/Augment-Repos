@@ -267,56 +267,57 @@ const CartPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      {isItemUpdating(item.id) ? (
-                        <Box
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative',
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1 || isItemUpdating(item.id)}
+                        >
+                          <RemoveIcon fontSize="small" />
+                        </IconButton>
+                        <TextField
+                          type="number"
+                          value={item.quantity}
+                          disabled
+                          size="small"
                           sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 1,
+                            width: 60,
+                            mx: 1,
+                            '& input': { textAlign: 'center' },
                           }}
+                          inputProps={{
+                            min: 1,
+                            max: item.product.stock,
+                            inputMode: 'numeric',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          disabled={item.quantity >= item.product.stock || isItemUpdating(item.id)}
                         >
-                          <CircularProgress size={20} />
-                          <Typography variant="body2" color="text.secondary">
-                            Updating...
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <IconButton
-                            size="small"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
-                          >
-                            <RemoveIcon fontSize="small" />
-                          </IconButton>
-                          <TextField
-                            type="number"
-                            value={item.quantity}
-                            disabled
-                            size="small"
+                          <AddIcon fontSize="small" />
+                        </IconButton>
+                        {isItemUpdating(item.id) && (
+                          <CircularProgress
+                            size={20}
                             sx={{
-                              width: 60,
-                              mx: 1,
-                              '& input': { textAlign: 'center' },
-                            }}
-                            inputProps={{
-                              min: 1,
-                              max: item.product.stock,
-                              inputMode: 'numeric',
+                              position: 'absolute',
+                              left: '50%',
+                              top: '50%',
+                              marginLeft: '-10px',
+                              marginTop: '-10px',
                             }}
                           />
-                          <IconButton
-                            size="small"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            disabled={item.quantity >= item.product.stock}
-                          >
-                            <AddIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      )}
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
