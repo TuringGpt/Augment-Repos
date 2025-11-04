@@ -170,10 +170,14 @@ export const useCartStore = create<CartState>()(
           }))
 
           // Call API to update item quantity with 'set' operation
-          await cartService.updateCartItem(itemId, { quantity, operation: 'set' })
+          // API returns the updated cart with new quantity
+          const updatedCart = await cartService.updateCartItem(itemId, {
+            quantity,
+            operation: 'set',
+          })
 
-          // Refetch cart to get updated data from backend
-          await get().refetchCart()
+          // Set the updated cart from API response
+          set({ cart: updatedCart, error: null })
         } catch (error) {
           console.error('Failed to update cart item:', error)
           set({ error: 'Failed to update item quantity. Please try again.' })
