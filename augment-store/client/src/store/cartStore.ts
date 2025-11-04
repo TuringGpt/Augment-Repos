@@ -7,12 +7,14 @@ interface CartState {
   cart: Cart | null
   isLoading: boolean
   error: string | null
+  updatingItemIds: Set<string> // Track which items are being updated
 
   // Actions
   setCart: (cart: Cart) => void
   addItem: (item: CartItem) => void
   addItemToCart: (productId: string, quantity: number) => Promise<void>
   updateItem: (itemId: string, quantity: number) => void
+  updateItemInCart: (itemId: string, quantity: number) => Promise<void>
   removeItem: (itemId: string) => void
   removeItems: (itemIds: string[]) => void
   clearCart: () => void
@@ -25,6 +27,7 @@ interface CartState {
   getTotal: () => number
   isInCart: (productId: string) => boolean
   getCartItem: (productId: string) => CartItem | undefined
+  isItemUpdating: (itemId: string) => boolean
 }
 
 const initialCart: Cart = createEmptyCart()
@@ -35,6 +38,7 @@ export const useCartStore = create<CartState>()(
       cart: initialCart,
       isLoading: false,
       error: null,
+      updatingItemIds: new Set<string>(),
 
       setCart: (cart) => set({ cart }),
 
@@ -155,6 +159,35 @@ export const useCartStore = create<CartState>()(
         })
       },
 
+      updateItemInCart: async (itemId: string, quantity: number) => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        try {
+          // Add item to updating set
+          set((state) => ({
+            updatingItemIds: new Set(state.updatingItemIds).add(itemId),
+            error: null,
+          }))
+
+          // Call API to update item quantity
+          await cartService.updateCartItem(itemId, { quantity })
+
+          // Refetch cart to get updated data from backend
+          await get().refetchCart()
+        } catch (error) {
+          console.error('Failed to update cart item:', error)
+          set({ error: 'Failed to update item quantity. Please try again.' })
+          throw error
+        } finally {
+          // Remove item from updating set
+          set((state) => {
+            const newSet = new Set(state.updatingItemIds)
+            newSet.delete(itemId)
+            return { updatingItemIds: newSet }
+          })
+        }
+      },
+
       removeItem: (itemId) => {
         set((state) => {
           // Initialize cart if it's null
@@ -221,6 +254,11 @@ export const useCartStore = create<CartState>()(
       getCartItem: (productId) => {
         const { cart } = get()
         return cart?.items.find((item) => item.product.id === productId)
+      },
+
+      isItemUpdating: (itemId) => {
+        const { updatingItemIds } = get()
+        return updatingItemIds.has(itemId)
       },
     }),
     {

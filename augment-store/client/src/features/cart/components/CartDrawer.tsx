@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from '@mui/material'
 import {
   Close as CloseIcon,
@@ -32,7 +33,7 @@ import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 const CartDrawer = () => {
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
-  const { cart, updateItem, removeItem } = useCartStore()
+  const { cart, updateItemInCart, removeItem, isItemUpdating } = useCartStore()
   const { refetchCart } = useCartSync()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
@@ -60,9 +61,14 @@ const CartDrawer = () => {
     navigate('/checkout')
   }
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateItem(itemId, newQuantity)
+      try {
+        await updateItemInCart(itemId, newQuantity)
+      } catch (error) {
+        // Error is already handled in the store
+        console.error('Failed to update cart item:', error)
+      }
     }
   }
 
@@ -188,39 +194,50 @@ const CartDrawer = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
                       Quantity:
                     </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                    >
-                      <RemoveIcon fontSize="small" />
-                    </IconButton>
-                    <TextField
-                      type="number"
-                      value={item.quantity}
-                      disabled
-                      size="small"
-                      sx={{
-                        width: 50,
-                        '& input': { textAlign: 'center', py: 0.5 },
-                      }}
-                      inputProps={{
-                        min: 1,
-                        max: item.product.stock,
-                        inputMode: 'numeric',
-                      }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.product.stock}
-                    >
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                    {item.quantity >= item.product.stock && (
-                      <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
-                        Max stock
-                      </Typography>
+                    {isItemUpdating(item.id) ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
+                        <CircularProgress size={20} />
+                        <Typography variant="body2" color="text.secondary">
+                          Updating...
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <RemoveIcon fontSize="small" />
+                        </IconButton>
+                        <TextField
+                          type="number"
+                          value={item.quantity}
+                          disabled
+                          size="small"
+                          sx={{
+                            width: 50,
+                            '& input': { textAlign: 'center', py: 0.5 },
+                          }}
+                          inputProps={{
+                            min: 1,
+                            max: item.product.stock,
+                            inputMode: 'numeric',
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          disabled={item.quantity >= item.product.stock}
+                        >
+                          <AddIcon fontSize="small" />
+                        </IconButton>
+                        {item.quantity >= item.product.stock && (
+                          <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
+                            Max stock
+                          </Typography>
+                        )}
+                      </>
                     )}
                   </Box>
                 </ListItem>
