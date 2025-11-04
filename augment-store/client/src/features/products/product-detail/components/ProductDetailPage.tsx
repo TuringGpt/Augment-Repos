@@ -293,7 +293,7 @@ const ProductDetailPage = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <Rating value={ratingNumber} precision={0.1} readOnly />
               <Typography variant="body2" color="text.secondary">
-                {product.rating} (0 reviews)
+                {ratingNumber.toFixed(1)} (0 reviews)
               </Typography>
             </Box>
 
