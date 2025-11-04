@@ -27,6 +27,7 @@ import {
 import { useCartStore } from '@store/cartStore'
 import { productService } from '@services/api/products/productService'
 import type { ProductDetailAPI } from '@features/products/types/api'
+import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
 import ImageGallery from './ImageGallery'
 import ReviewSection from './ReviewSection'
 
@@ -78,13 +79,19 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     if (!product || !cart) return
 
+    // Extract image URLs with placeholder fallback
+    const productImages = product.images
+      .map((img) => img.file)
+      .filter((url): url is string => url !== null)
+    const imagesForCart = productImages.length > 0 ? productImages : [PLACEHOLDER_IMAGE]
+
     // Transform ProductDetail to Product format for cart
     const productForCart = {
       id: product.id,
       name: product.name,
       description: product.description,
       price: parseFloat(product.price),
-      images: product.images.map((img) => img.file).filter((url): url is string => url !== null),
+      images: imagesForCart,
       category: {
         id: product.category.id,
         name: product.category.name,
@@ -247,10 +254,13 @@ const ProductDetailPage = () => {
     )
   }
 
-  // Extract image URLs from FileAPI objects
+  // Extract image URLs from FileAPI objects, use placeholder if no images
   const imageUrls = product.images
     .map((img) => img.file)
     .filter((url): url is string => url !== null)
+
+  // Use placeholder image if no images available
+  const displayImages = imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE]
 
   const priceNumber = parseFloat(product.price)
   const ratingNumber = parseFloat(product.rating)
@@ -265,7 +275,7 @@ const ProductDetailPage = () => {
       <Grid container spacing={4}>
         {/* Image Gallery */}
         <Grid item xs={12} md={6}>
-          <ImageGallery images={imageUrls} productName={product.name} />
+          <ImageGallery images={displayImages} productName={product.name} />
         </Grid>
 
         {/* Product Info */}
