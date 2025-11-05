@@ -14,6 +14,7 @@ interface CartState {
   addItemToCart: (productId: string, quantity: number) => Promise<void>
   updateItem: (itemId: string, quantity: number) => void
   removeItem: (itemId: string) => void
+  removeItemFromCart: (itemId: string) => Promise<void>
   removeItems: (itemIds: string[]) => void
   clearCart: () => void
   setLoading: (isLoading: boolean) => void
@@ -173,6 +174,24 @@ export const useCartStore = create<CartState>()(
             },
           }
         })
+      },
+
+      removeItemFromCart: async (itemId: string) => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        try {
+          set({ isLoading: true, error: null })
+          // Call API to remove item from cart
+          await cartService.removeFromCart(itemId)
+          // Refetch cart to get updated data from backend
+          await get().refetchCart()
+        } catch (error) {
+          console.error('Failed to remove item from cart:', error)
+          set({ error: 'Failed to remove item from cart. Please try again.' })
+          throw error
+        } finally {
+          set({ isLoading: false })
+        }
       },
 
       removeItems: (itemIds) => {

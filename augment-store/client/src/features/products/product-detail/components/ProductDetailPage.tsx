@@ -40,8 +40,9 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1)
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [addingToCart, setAddingToCart] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
 
-  const { addItemToCart, removeItem, isInCart, getCartItem } = useCartStore()
+  const { addItemToCart, removeItemFromCart, isInCart, getCartItem } = useCartStore()
   const productInCart = id ? isInCart(id) : false
   const cartItem = id ? getCartItem(id) : undefined
 
@@ -96,10 +97,18 @@ const ProductDetailPage = () => {
     setRemoveDialogOpen(true)
   }
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (!cartItem) return
-    removeItem(cartItem.id)
-    setRemoveDialogOpen(false)
+    setIsRemoving(true)
+    try {
+      await removeItemFromCart(cartItem.id)
+      setRemoveDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to remove item:', error)
+      // Dialog stays open on error so user can retry
+    } finally {
+      setIsRemoving(false)
+    }
   }
 
   const handleRemoveCancel = () => {
@@ -433,11 +442,17 @@ const ProductDetailPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveCancel} color="primary">
+          <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>

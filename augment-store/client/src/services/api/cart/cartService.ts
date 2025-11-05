@@ -21,9 +21,9 @@ export const cartService = {
     return enrichCart(cart)
   },
 
-  removeFromCart: async (itemId: string): Promise<Cart> => {
-    const cart = await apiClient.delete<Cart>(API_ENDPOINTS.CART.REMOVE(itemId))
-    return enrichCart(cart)
+  removeFromCart: async (itemId: string): Promise<void> => {
+    // Backend returns no response body on success
+    await apiClient.delete(API_ENDPOINTS.CART.REMOVE(itemId))
   },
 
   clearCart: async (): Promise<void> => {
