@@ -1,8 +1,7 @@
-
 from django.urls import path
-from .views import AddToCartView, UpdateCartItemView, CartDetailView, MerchantBrandListView
+from .views import MerchantBrandListView
 
 app_name = "merchant"
 urlpatterns = [
-    path('brands' MerchantBrand.as_view() name='merchant_brand_list'),
+    path('<uuid:pk>/brands', MerchantBrandListView.as_view(), name='merchant_brand_list'),
 ]
