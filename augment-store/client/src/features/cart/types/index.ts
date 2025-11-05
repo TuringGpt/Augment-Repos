@@ -33,6 +33,7 @@ export interface AddToCartRequest {
 
 export interface UpdateCartItemRequest {
   quantity: number
+  operation?: 'add' | 'subtract' | 'set'
 }
 
 // Helper type for cart items with calculated fields

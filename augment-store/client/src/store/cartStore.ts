@@ -7,12 +7,14 @@ interface CartState {
   cart: Cart | null
   isLoading: boolean
   error: string | null
+  updatingItemIds: Set<string> // Track which items are being updated
 
   // Actions
   setCart: (cart: Cart) => void
   addItem: (item: CartItem) => void
   addItemToCart: (productId: string, quantity: number) => Promise<void>
   updateItem: (itemId: string, quantity: number) => void
+  updateItemInCart: (itemId: string, quantity: number) => Promise<void>
   removeItem: (itemId: string) => void
   removeItems: (itemIds: string[]) => void
   clearCart: () => void
@@ -25,6 +27,7 @@ interface CartState {
   getTotal: () => number
   isInCart: (productId: string) => boolean
   getCartItem: (productId: string) => CartItem | undefined
+  isItemUpdating: (itemId: string) => boolean
 }
 
 const initialCart: Cart = createEmptyCart()
@@ -35,6 +38,7 @@ export const useCartStore = create<CartState>()(
       cart: initialCart,
       isLoading: false,
       error: null,
+      updatingItemIds: new Set<string>(),
 
       setCart: (cart) => set({ cart }),
 
@@ -155,6 +159,68 @@ export const useCartStore = create<CartState>()(
         })
       },
 
+      updateItemInCart: async (itemId: string, quantity: number) => {
+        // Import cartService dynamically to avoid circular dependency
+        const { cartService } = await import('@services/api/cart/cartService')
+        const { calculateCartTotals } = await import('@utils/cartUtils')
+
+        // Add item to updating set
+        set((state) => ({
+          updatingItemIds: new Set(state.updatingItemIds).add(itemId),
+          error: null,
+        }))
+
+        try {
+          // Call API to update item quantity with 'set' operation
+          // API returns just { quantity: number }, not the full cart
+          const response = await cartService.updateCartItem(itemId, {
+            quantity,
+            operation: 'set',
+          })
+
+          // Update the specific item's quantity in the cart and recalculate totals
+          set((state) => {
+            const newSet = new Set(state.updatingItemIds)
+            newSet.delete(itemId)
+
+            if (!state.cart) {
+              return { updatingItemIds: newSet }
+            }
+
+            // Update the quantity of the specific item
+            const updatedItems = state.cart.items.map((item) =>
+              item.id === itemId ? { ...item, quantity: response.quantity } : item
+            )
+
+            // Recalculate totals with the updated items
+            const totals = calculateCartTotals(updatedItems)
+
+            return {
+              cart: {
+                ...state.cart,
+                items: updatedItems,
+                ...totals,
+              },
+              error: null,
+              updatingItemIds: newSet,
+            }
+          })
+        } catch (error) {
+          console.error('Failed to update cart item:', error)
+
+          // Remove from updating set and set error
+          set((state) => {
+            const newSet = new Set(state.updatingItemIds)
+            newSet.delete(itemId)
+            return {
+              error: 'Failed to update item quantity. Please try again.',
+              updatingItemIds: newSet,
+            }
+          })
+          throw error
+        }
+      },
+
       removeItem: (itemId) => {
         set((state) => {
           // Initialize cart if it's null
@@ -221,6 +287,11 @@ export const useCartStore = create<CartState>()(
       getCartItem: (productId) => {
         const { cart } = get()
         return cart?.items.find((item) => item.product.id === productId)
+      },
+
+      isItemUpdating: (itemId) => {
+        const { updatingItemIds } = get()
+        return updatingItemIds.has(itemId)
       },
     }),
     {
