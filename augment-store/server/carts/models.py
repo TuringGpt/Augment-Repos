@@ -6,10 +6,18 @@ from products.models import Product
 from django.db.models import F
 
 
+class CartItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-created_at')
+    
+    def get_user_cart_items(self, user):
+        return self.get_queryset().filter(created_by=user)
+
 class CartItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='cart_items')
     quantity = models.IntegerField(default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
+    objects:CartItemManager = CartItemManager()
 
 
 class CartManager(models.Manager):

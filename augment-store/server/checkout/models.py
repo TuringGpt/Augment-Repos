@@ -1,8 +1,8 @@
+from decimal import Decimal
 from django.db import models
 from accounts.models import User
 from core.models import BaseModel
 from carts.models import CartItem
-
 
 
 
@@ -18,8 +18,30 @@ class Order(BaseModel):
             (COMPLETED, 'Completed'),
         )
 
+    payment: "Payment"
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
+
+    @property
+    def subtotal(self):
+        return sum(item.cart_item.product.price * item.cart_item.quantity for item in self.items.all())
+
+    @property
+    def tax(self):
+        # TODO: I will get the tax rate from the tax service later (this unblock frontend for now)
+        # return Decimal
+        return round(self.subtotal * Decimal("0.1") , 2)
+
+    @property
+    def shipping(self):
+        # TODO: I will get the shipping cost from the shipping service later (this unblock frontend for now)
+        return 10 if self.subtotal < 50 else 0
+
+    @property
+    def total(self):
+        return self.subtotal + self.tax + self.shipping
+
+
 
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

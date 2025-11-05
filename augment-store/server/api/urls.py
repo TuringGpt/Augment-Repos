@@ -23,4 +23,5 @@ urlpatterns = [
     path('products/categories/', include('products.urls_categories')),
     path('storage/', include('storage.urls', namespace='storage')),
     path('carts/', include('carts.urls')),
+    path('checkout/', include('checkout.urls')),
 ]
