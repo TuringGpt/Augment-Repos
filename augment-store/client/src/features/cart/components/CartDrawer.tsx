@@ -41,7 +41,6 @@ const CartDrawer = () => {
   // Refetch cart when drawer opens
   useEffect(() => {
     if (isCartDrawerOpen) {
-      console.log('🔄 Cart drawer opened - refetching cart from API')
       refetchCart()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,11 +62,8 @@ const CartDrawer = () => {
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
-      console.log('🎯 CartDrawer: Changing quantity for item:', itemId, 'to:', newQuantity)
-      console.log('📊 Current cart before update:', cart)
       try {
         await updateItemInCart(itemId, newQuantity)
-        console.log('📊 Current cart after update:', cart)
       } catch (error) {
         // Error is already handled in the store
         console.error('Failed to update cart item:', error)

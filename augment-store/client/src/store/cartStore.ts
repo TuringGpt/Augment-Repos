@@ -164,8 +164,6 @@ export const useCartStore = create<CartState>()(
         const { cartService } = await import('@services/api/cart/cartService')
         const { calculateCartTotals } = await import('@utils/cartUtils')
 
-        console.log('🔄 Updating cart item:', { itemId, quantity })
-
         // Add item to updating set
         set((state) => ({
           updatingItemIds: new Set(state.updatingItemIds).add(itemId),
@@ -179,8 +177,6 @@ export const useCartStore = create<CartState>()(
             quantity,
             operation: 'set',
           })
-
-          console.log('✅ Received response from API:', response)
 
           // Update the specific item's quantity in the cart and recalculate totals
           set((state) => {
@@ -199,8 +195,6 @@ export const useCartStore = create<CartState>()(
             // Recalculate totals with the updated items
             const totals = calculateCartTotals(updatedItems)
 
-            console.log('💾 Updated cart with new quantity:', response.quantity)
-
             return {
               cart: {
                 ...state.cart,
@@ -211,10 +205,8 @@ export const useCartStore = create<CartState>()(
               updatingItemIds: newSet,
             }
           })
-
-          console.log('✅ Cart updated successfully')
         } catch (error) {
-          console.error('❌ Failed to update cart item:', error)
+          console.error('Failed to update cart item:', error)
 
           // Remove from updating set and set error
           set((state) => {
