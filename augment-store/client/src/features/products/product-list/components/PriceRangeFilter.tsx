@@ -8,7 +8,7 @@ interface PriceRangeFilterProps {
   onChange: (value: [number, number]) => void
 }
 
-const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFilterProps) => {
+const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
   const [localMinPrice, setLocalMinPrice] = useState<string>(value[0].toString())
   const [localMaxPrice, setLocalMaxPrice] = useState<string>(value[1].toString())
   const [minPriceError, setMinPriceError] = useState<string>('')
