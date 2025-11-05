@@ -10,7 +10,7 @@ class MerchantBrandListViewTests(TestCase):
     def setUp(self):
         super().setUp()
         self.merchant_id = uuid.uuid4()
-        self.product_brand = ["Nike", "Adidas", "Puma"]
+        self.product_brand_names = ["Nike", "Adidas", "Puma"]
         self.merchant = UserFactory(
             id=self.merchant_id,
             email="merchant@demo.com",
@@ -24,9 +24,9 @@ class MerchantBrandListViewTests(TestCase):
         self.product_brand_3 = ProductBrandFactory(created_by=self.merchant, name="Puma")
     
     def test_merchant_brand_list_view(self):
-        url = reverse(f"v1:merchants:{self.merchant.id}:brands")
-        response = self.member_client.get(url)
+        url = reverse(f"v1:merchant:{self.merchant.id}:brands")
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
         values =[response.data[i]["name"] for i in range(len(response.data))]
-        self.assertEqual(values, self.product_brand)
+        self.assertEqual(values, self.product_brand_names)
