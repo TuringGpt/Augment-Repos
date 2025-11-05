@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     "corsheaders",
+    "corsheaders",
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'products',
     'storage',
     'carts',
+    "dummy_data",
     "checkout",
 ]
 
@@ -188,12 +189,12 @@ IS_USING_LOCAL_STORAGE = FILE_UPLOAD_STORAGE == "local"
 if FILE_UPLOAD_STORAGE == "local":
     MEDIA_ROOT_NAME = "media"
     MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_ROOT_NAME)
-    MEDIA_URL = f"/{MEDIA_ROOT_NAME}/"
+    MEDIA_URL = "/media/"
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-    PUBLIC_MEDIA_LOCATION = "media/public/"
-    PRIVATE_MEDIA_LOCATION = "media/private/"
+    PUBLIC_MEDIA_LOCATION = "public/"
+    PRIVATE_MEDIA_LOCATION = "private/"
     STATIC_LOCATION = "static/"
-
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     AWS_ACCESS_KEY_ID = config.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = config.get("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = config.get("AWS_STORAGE_BUCKET_NAME")
