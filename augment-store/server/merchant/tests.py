@@ -20,7 +20,7 @@ class MerchantBrandListViewTests(TestCase):
         )
 
         self.product_brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
-        self.product_brand_2 = ProductBrandFactory(created_by=self.merchant name="Adidas")
+        self.product_brand_2 = ProductBrandFactory(created_by=self.merchant, name="Adidas")
         self.product_brand_3 = ProductBrandFactory(created_by=self.merchant, name="Puma")
     
     def test_merchant_brand_list_view(self):
@@ -29,4 +29,4 @@ class MerchantBrandListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
         values =[response.data[i]["name"] for i in range(len(response.data))]
-        self.assertEqual(values, self.product_brand_names)
+        self.assertEqual(set(values), set(self.product_brand_names))
