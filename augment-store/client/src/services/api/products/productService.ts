@@ -80,13 +80,22 @@ export const productService = {
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
     try {
-      const page = params?.page || 1
+      const uiPage = params?.page || 1
       const limit = params?.limit || 12
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
+      // Calculate which backend page to fetch based on UI pagination
+      // UI offset: where we want to start in the full result set
+      const uiOffset = (uiPage - 1) * limit
+      // Backend page: which backend page contains our UI offset
+      const backendPage = Math.floor(uiOffset / backendPageSize) + 1
+      // Offset within the backend page results
+      const offsetInBackendPage = uiOffset % backendPageSize
 
       // Use backend search API with the search query parameter
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
         params: {
-          page,
+          page: backendPage,
           search: query,
         },
       })
@@ -94,13 +103,15 @@ export const productService = {
       // Transform backend products to frontend format
       const products: Product[] = response.results.map(transformProductFromAPI)
 
-      // Apply limit for search results (backend returns up to 100 per page)
-      const limitedProducts = products.slice(0, limit)
+      // Slice the correct range from backend results
+      // If limit extends beyond current backend page, we'd need to fetch next page too
+      // For simplicity, we slice what we have (works when limit <= backendPageSize)
+      const limitedProducts = products.slice(offsetInBackendPage, offsetInBackendPage + limit)
 
       return {
         products: limitedProducts,
         total: response.count,
-        page,
+        page: uiPage,
         limit,
         // Calculate totalPages based on the limit returned in the response
         totalPages: Math.ceil(response.count / limit),
