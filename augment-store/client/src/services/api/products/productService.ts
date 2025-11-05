@@ -82,7 +82,6 @@ export const productService = {
     try {
       const page = params?.page || 1
       const limit = params?.limit || 12
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
       // Use backend search API with the search query parameter
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
@@ -103,7 +102,8 @@ export const productService = {
         total: response.count,
         page,
         limit,
-        totalPages: Math.ceil(response.count / backendPageSize),
+        // Calculate totalPages based on the limit returned in the response
+        totalPages: Math.ceil(response.count / limit),
       }
     } catch (error) {
       console.error('Failed to search products:', error)
