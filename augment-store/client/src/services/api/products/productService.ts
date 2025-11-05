@@ -80,43 +80,30 @@ export const productService = {
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
     try {
-      // Backend doesn't have search endpoint yet, so we fetch all pages and filter on frontend
-      // Note: Backend page_size is fixed at 100, so we need to fetch all pages
-      let allProducts: Product[] = []
-      let currentPage = 1
-      let hasMore = true
-
-      while (hasMore) {
-        const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-          params: { page: currentPage },
-        })
-
-        const pageProducts = response.results.map(transformProductFromAPI)
-        allProducts = [...allProducts, ...pageProducts]
-
-        hasMore = response.next !== null
-        currentPage++
-      }
-
-      // Filter products by query
-      const filteredProducts = allProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query.toLowerCase()) ||
-          product.description.toLowerCase().includes(query.toLowerCase())
-      )
-
-      // Apply pagination to filtered results
       const page = params?.page || 1
       const limit = params?.limit || 12
-      const startIndex = (page - 1) * limit
-      const endIndex = startIndex + limit
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
+      // Use backend search API with the search query parameter
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+        params: {
+          page,
+          search: query,
+        },
+      })
+
+      // Transform backend products to frontend format
+      const products: Product[] = response.results.map(transformProductFromAPI)
+
+      // Apply limit for search results (backend returns up to 100 per page)
+      const limitedProducts = products.slice(0, limit)
 
       return {
-        products: filteredProducts.slice(startIndex, endIndex),
-        total: filteredProducts.length,
+        products: limitedProducts,
+        total: response.count,
         page,
         limit,
-        totalPages: Math.ceil(filteredProducts.length / limit),
+        totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
       console.error('Failed to search products:', error)

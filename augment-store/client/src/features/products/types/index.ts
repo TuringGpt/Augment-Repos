@@ -67,6 +67,7 @@ export interface ProductSortOption {
 export interface ProductSearchParams {
   page?: number
   limit?: number
+  search?: string
   categoryId?: string
   minPrice?: number
   maxPrice?: number
