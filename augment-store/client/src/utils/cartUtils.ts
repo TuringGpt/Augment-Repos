@@ -52,15 +52,6 @@ export function calculateCartTotals(items: CartItem[]) {
  * @returns Cart with calculated totals
  */
 export function enrichCart(cart: Cart): Cart {
-  console.log('🔧 enrichCart called with:', cart)
-  console.log('🔧 cart.items:', cart?.items)
-
-  // Safety check: ensure cart and items exist
-  if (!cart || !cart.items) {
-    console.error('❌ enrichCart: Invalid cart object received:', cart)
-    throw new Error('Invalid cart object: missing items array')
-  }
-
   // Filter out deleted items
   const activeItems = cart.items.filter((item) => !item.is_deleted)
 

@@ -162,6 +162,7 @@ export const useCartStore = create<CartState>()(
       updateItemInCart: async (itemId: string, quantity: number) => {
         // Import cartService dynamically to avoid circular dependency
         const { cartService } = await import('@services/api/cart/cartService')
+        const { calculateCartTotals } = await import('@utils/cartUtils')
 
         console.log('🔄 Updating cart item:', { itemId, quantity })
 
@@ -173,22 +174,39 @@ export const useCartStore = create<CartState>()(
 
         try {
           // Call API to update item quantity with 'set' operation
-          // API returns the updated cart with new quantity
-          const updatedCart = await cartService.updateCartItem(itemId, {
+          // API returns just { quantity: number }, not the full cart
+          const response = await cartService.updateCartItem(itemId, {
             quantity,
             operation: 'set',
           })
 
-          console.log('✅ Received updated cart from API:', updatedCart)
-          console.log('📦 Updated cart items:', updatedCart.items)
+          console.log('✅ Received response from API:', response)
 
-          // Set the updated cart from API response and remove from updating set
+          // Update the specific item's quantity in the cart and recalculate totals
           set((state) => {
             const newSet = new Set(state.updatingItemIds)
             newSet.delete(itemId)
-            console.log('💾 Setting cart in store:', updatedCart)
+
+            if (!state.cart) {
+              return { updatingItemIds: newSet }
+            }
+
+            // Update the quantity of the specific item
+            const updatedItems = state.cart.items.map((item) =>
+              item.id === itemId ? { ...item, quantity: response.quantity } : item
+            )
+
+            // Recalculate totals with the updated items
+            const totals = calculateCartTotals(updatedItems)
+
+            console.log('💾 Updated cart with new quantity:', response.quantity)
+
             return {
-              cart: updatedCart,
+              cart: {
+                ...state.cart,
+                items: updatedItems,
+                ...totals,
+              },
               error: null,
               updatingItemIds: newSet,
             }
