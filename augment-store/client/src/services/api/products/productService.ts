@@ -21,12 +21,22 @@ export const productService = {
       const page = params?.page || 1
       const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      // Fetch products from backend with pagination
-      // Note: page_size is fixed at 100 on backend, cannot be overridden
+      // Build query params for backend API
+      const queryParams: Record<string, number | string> = {
+        page,
+      }
+
+      // Add rating filters if provided
+      if (params?.minRating !== undefined && params?.minRating !== null) {
+        queryParams.rating_min = params.minRating
+      }
+      if (params?.maxRating !== undefined && params?.maxRating !== null) {
+        queryParams.rating_max = params.maxRating
+      }
+
+      // Fetch products from backend with pagination and filters
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-        params: {
-          page,
-        },
+        params: queryParams,
       })
 
       console.log('🔍 Raw API Response:', {
@@ -34,6 +44,10 @@ export const productService = {
         resultsLength: response.results.length,
         next: response.next,
         previous: response.previous,
+        filters: {
+          minRating: params?.minRating,
+          maxRating: params?.maxRating,
+        },
       })
 
       // Transform backend products to frontend format

@@ -54,7 +54,7 @@ const ShopPage = () => {
     minPrice: 0,
     maxPrice: 1000,
     minRating: 0,
-    maxRating: 5,
+    maxRating: 10,
   })
 
   // Sort state
@@ -69,6 +69,8 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
+          minRating: filters.minRating,
+          maxRating: filters.maxRating,
         })
 
         console.log('📦 API Response:', {
@@ -77,6 +79,10 @@ const ShopPage = () => {
           page: response.page,
           limit: response.limit,
           totalPages: response.totalPages,
+          appliedFilters: {
+            minRating: filters.minRating,
+            maxRating: filters.maxRating,
+          },
         })
 
         setProducts(response.products)
@@ -94,7 +100,7 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage])
+  }, [apiPage, filters.minRating, filters.maxRating])
 
   // Update filter price range when products change
   useEffect(() => {
@@ -158,7 +164,7 @@ const ShopPage = () => {
       minPrice: priceRange.min,
       maxPrice: priceRange.max,
       minRating: 0,
-      maxRating: 5,
+      maxRating: 10,
     })
   }
 
@@ -182,7 +188,7 @@ const ShopPage = () => {
       />
 
       <RatingFilter
-        value={[filters.minRating || 0, filters.maxRating || 5]}
+        value={[filters.minRating || 0, filters.maxRating || 10]}
         onChange={handleRatingChange}
       />
     </Box>
