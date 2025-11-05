@@ -33,10 +33,11 @@ import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 const CartDrawer = () => {
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
-  const { cart, updateItemInCart, removeItem, isItemUpdating } = useCartStore()
+  const { cart, updateItemInCart, removeItem, isItemUpdating, removeItemFromCart } = useCartStore()
   const { refetchCart } = useCartSync()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   // Refetch cart when drawer opens
   useEffect(() => {
@@ -76,11 +77,19 @@ const CartDrawer = () => {
     setRemoveDialogOpen(true)
   }
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (itemToRemove) {
-      removeItem(itemToRemove.id)
-      setRemoveDialogOpen(false)
-      setItemToRemove(null)
+      setIsRemoving(true)
+      try {
+        await removeItemFromCart(itemToRemove.id)
+        setRemoveDialogOpen(false)
+        setItemToRemove(null)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+        // Dialog stays open on error so user can retry
+      } finally {
+        setIsRemoving(false)
+      }
     }
   }
 
@@ -330,11 +339,17 @@ const CartDrawer = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveCancel} color="primary">
+          <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>
