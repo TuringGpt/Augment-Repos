@@ -17,8 +17,11 @@ export const cartService = {
   },
 
   updateCartItem: async (itemId: string, data: UpdateCartItemRequest): Promise<Cart> => {
-    const cart = await apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
-    return enrichCart(cart)
+    const response = await apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
+    console.log('🔍 Raw API response from updateCartItem:', response)
+    console.log('🔍 Response type:', typeof response)
+    console.log('🔍 Response keys:', Object.keys(response || {}))
+    return enrichCart(response)
   },
 
   removeFromCart: async (itemId: string): Promise<Cart> => {
