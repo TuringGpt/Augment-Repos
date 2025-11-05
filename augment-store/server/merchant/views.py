@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from products.models import ProductBrand
 from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer
