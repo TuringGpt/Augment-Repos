@@ -4,5 +4,5 @@ from .views import AddToCartView, UpdateCartItemView, CartDetailView, MerchantBr
 
 app_name = "merchant"
 urlpatterns = [
-    path('brands', MerchantBrandListView.as_view(), name='merchant_brand_list'),
+    path('brands', MerchantBrand.as_view(), name='merchant_brand_list'),
 ]
