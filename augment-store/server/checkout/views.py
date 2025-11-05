@@ -22,6 +22,7 @@ class OrderListView(BaseOrderView, ListAPIView):
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
+<<<<<<< HEAD
 
 
 class ListShippingAddressView(ListAPIView):
@@ -45,3 +46,7 @@ class ListContactInformationView(ListAPIView):
 
     def get_queryset(self):
         return ContactInformation.objects.filter(user=self.request.user)
+=======
+class OrderPaymentView(BaseOrderView, CreateAPIView):
+    serializer_class = OrderPaymentSerializer
+>>>>>>> 2c9b8412 (SCRUM-35 - create serializer for order payment)

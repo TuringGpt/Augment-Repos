@@ -234,4 +234,30 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             return Payment.PaymentStatus.PENDING
        
 
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    order = serializers.UUIDField()
+    payment_method = serializers.CharField(choices=Payment.PaymentMethod.CHOCES)
+
+    class Meta:
+        model = Payment
+        fields = ["order", "payment_method"]
+        read_only_fields = ["id", "created_at", "updated_at", "amount", "payment_status"]
+
+    def validate_order(self, value):
+        user = self.context.get("request").user
+        try:
+            order = Order.objects.get(id=value, created_by=user)
+            return order
+        except Order.DoesNotExist:
+            raise serializers.ValidationError("Order does not exist")
+        
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        order = validated_data.get("order")
+        payment_method = validated_data.get("payent_method")
+        amount = order.total
+        payment = Payment.object.create(order=order, created_by=user, amount=amount, payment_method=payment_method)
+        return payment
+        
+    
 
