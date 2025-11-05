@@ -14,12 +14,20 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
 
 class CreateOrderSerializer(serializers.ModelSerializer):
-    cart_items = serializers.PrimaryKeyRelatedField(many=True, queryset=CartItem.objects.all(), write_only=True)
+    cart_items = serializers.ListField(child=serializers.UUIDField(), write_only=True)
 
     class Meta:
         model = Order
         fields = ["id", "cart_items", "status", "created_at"]
         read_only_fields = ["id", "status", "created_at"]
+
+
+    def validate_cart_items(self, value):
+        user = self.context.get("request").user
+        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=value)
+        if cart_items.count() != len(value):
+            raise serializers.ValidationError("One or more cart items do not exist")
+        return cart_items
 
     def create(self, validated_data):
 
@@ -55,9 +63,11 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = "__all__"
 
-    def get_payment_status(self, obj):
-        if hasattr(obj, 'payment'):
+    def get_payment_status(self, obj: Order):
+        try:
             return obj.payment.payment_status
-        return None
+        except:
+            return Payment.PaymentStatus.PENDING
+       
 
 

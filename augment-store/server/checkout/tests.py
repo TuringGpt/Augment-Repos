@@ -81,7 +81,7 @@ class CreateOrderViewTests(BaseAPITestCase):
             "cart_items": [str(cart_item.id)]
         }
         response = self.member_client.post(url, payload, format='json')
-
+        
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
