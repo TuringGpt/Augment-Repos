@@ -183,12 +183,12 @@ const ShopPage = () => {
       <PriceRangeFilter
         minPrice={priceRange.min}
         maxPrice={priceRange.max}
-        value={[filters.minPrice || priceRange.min, filters.maxPrice || priceRange.max]}
+        value={[filters.minPrice ?? priceRange.min, filters.maxPrice ?? priceRange.max]}
         onChange={handlePriceChange}
       />
 
       <RatingFilter
-        value={[filters.minRating || 0, filters.maxRating || 10]}
+        value={[filters.minRating ?? 0, filters.maxRating ?? 10]}
         onChange={handleRatingChange}
       />
     </Box>
