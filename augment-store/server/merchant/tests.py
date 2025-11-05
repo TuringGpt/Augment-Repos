@@ -24,7 +24,7 @@ class MerchantBrandListViewTests(TestCase):
         self.product_brand_3 = ProductBrandFactory(created_by=self.merchant, name="Puma")
     
     def test_merchant_brand_list_view(self):
-        url = reverse(f"v1:merchant:{self.merchant.id}:brands")
+        url = reverse(f"v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_id)})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
