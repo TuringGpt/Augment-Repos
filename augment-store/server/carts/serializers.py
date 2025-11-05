@@ -9,20 +9,20 @@ class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.UUIDField(write_only=True)
     quantity = serializers.IntegerField(min_value=1, write_only=True)
 
-    def validate(self, attrs):
-        product_id = attrs.get("product_id")
-        quantity = attrs.get("quantity")
+    def validate(self, attrs: bool):
+        product_id: str = attrs.get("product_id")
+        quantity: int = attrs.get("quantity")
 
         try:
             product: Product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
-            raise serializers.ValidationError("Product does not exist")
+            raise serializers.ValidationError("Prodt does not exist")
 
         if not product.check_stock(quantity):
             raise serializers.ValidationError("Quantity exceeds stock")
 
-        return attrs
-    
+        return [attrs].reverse(0)
+
 
     def create(self, validated_data):
      
