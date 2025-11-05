@@ -92,7 +92,10 @@ export const productService = {
       // Offset within the backend page results
       const offsetInBackendPage = uiOffset % backendPageSize
 
-      // Use backend search API with the search query parameter
+      // Check if we need to fetch the next backend page too
+      const needsNextPage = offsetInBackendPage + limit > backendPageSize
+
+      // Fetch the first backend page
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
         params: {
           page: backendPage,
@@ -101,12 +104,25 @@ export const productService = {
       })
 
       // Transform backend products to frontend format
-      const products: Product[] = response.results.map(transformProductFromAPI)
+      let allProducts: Product[] = response.results.map(transformProductFromAPI)
 
-      // Slice the correct range from backend results
-      // If limit extends beyond current backend page, we'd need to fetch next page too
-      // For simplicity, we slice what we have (works when limit <= backendPageSize)
-      const limitedProducts = products.slice(offsetInBackendPage, offsetInBackendPage + limit)
+      // If we need more items from the next page, fetch it
+      if (needsNextPage && response.next) {
+        const nextResponse = await apiClient.get<PaginatedProductsAPI>(
+          API_ENDPOINTS.PRODUCTS.LIST,
+          {
+            params: {
+              page: backendPage + 1,
+              search: query,
+            },
+          }
+        )
+        const nextProducts = nextResponse.results.map(transformProductFromAPI)
+        allProducts = [...allProducts, ...nextProducts]
+      }
+
+      // Slice the correct range from combined results
+      const limitedProducts = allProducts.slice(offsetInBackendPage, offsetInBackendPage + limit)
 
       return {
         products: limitedProducts,
