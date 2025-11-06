@@ -207,16 +207,22 @@ const OrderSummary = () => {
             <Typography align="right">${(cart.subtotal ?? 0).toFixed(2)}</Typography>
           </Grid>
           <Grid item xs={6}>
+            <Typography color="text.secondary">Tax</Typography>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography align="right">${(cart.tax ?? 0).toFixed(2)}</Typography>
+          </Grid>
+          <Grid item xs={6}>
             <Typography color="text.secondary">Delivery Fee</Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">$0</Typography>
+            <Typography align="right">${(cart.shipping ?? 0).toFixed(2)}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography color="text.secondary">Discount</Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">$0</Typography>
+            <Typography align="right">${(0).toFixed(2)}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography sx={{ fontWeight: 700 }}>Total</Typography>
