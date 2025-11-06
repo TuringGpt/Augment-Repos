@@ -67,9 +67,7 @@ const OrderSummary = (props: Props) => {
           <Typography variant="h4" fontWeight={600}>
             Order Summary
           </Typography>
-          <Typography color="text.secondary">
-            {cart.itemCount} item(s)
-          </Typography>
+          <Typography color="text.secondary">{cart.itemCount} item(s)</Typography>
         </Box>
         <Divider />
 
@@ -154,20 +152,20 @@ const OrderSummary = (props: Props) => {
                   }}
                   inputProps={{
                     min: 1,
-                    max: item.product.stock,
+                    max: item?.product?.quantity || 0,
                     inputMode: 'numeric',
                   }}
                 />
                 <IconButton
                   size="small"
                   onClick={() => handleQuantityChange(item.id, Number(item.quantity || 0) + 1)}
-                  disabled={item.quantity >= item.product.stock}
+                  disabled={item.quantity >= (item?.product?.quantity || 0)}
                 >
                   <AddIcon fontSize="small" />
                 </IconButton>
-                {item.quantity >= item.product.stock && (
+                {item.quantity >= (item?.product?.quantity || 0) && (
                   <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
-                    Max stock
+                    Max quantity
                   </Typography>
                 )}
               </Box>
