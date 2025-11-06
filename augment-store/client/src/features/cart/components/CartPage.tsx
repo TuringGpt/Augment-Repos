@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -35,13 +36,15 @@ import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 
 const CartPage = () => {
   const navigate = useNavigate()
-  const { cart, updateItem, removeItem, removeItems, clearCart } = useCartStore()
+  const { cart, removeItemFromCart, updateItemInCart, removeItems, clearCart, isItemUpdating } =
+    useCartStore()
   const { refetchCart } = useCartSync()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false)
   const [removeItemDialogOpen, setRemoveItemDialogOpen] = useState(false)
   const [removeSelectedDialogOpen, setRemoveSelectedDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   // Refetch cart when page mounts
   useEffect(() => {
@@ -64,9 +67,14 @@ const CartPage = () => {
     )
   }
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateItem(itemId, newQuantity)
+      try {
+        await updateItemInCart(itemId, newQuantity)
+      } catch (error) {
+        // Error is already handled in the store
+        console.error('Failed to update cart item:', error)
+      }
     }
   }
 
@@ -107,13 +115,21 @@ const CartPage = () => {
     setRemoveItemDialogOpen(true)
   }
 
-  const handleRemoveItemConfirm = () => {
+  const handleRemoveItemConfirm = async () => {
     if (itemToRemove) {
-      removeItem(itemToRemove.id)
-      // Also remove from selected items if it was selected
-      setSelectedItems((prev) => prev.filter((id) => id !== itemToRemove.id))
-      setRemoveItemDialogOpen(false)
-      setItemToRemove(null)
+      setIsRemoving(true)
+      try {
+        await removeItemFromCart(itemToRemove.id)
+        // Also remove from selected items if it was selected
+        setSelectedItems((prev) => prev.filter((id) => id !== itemToRemove.id))
+        setRemoveItemDialogOpen(false)
+        setItemToRemove(null)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+        // Dialog stays open on error so user can retry
+      } finally {
+        setIsRemoving(false)
+      }
     }
   }
 
@@ -260,11 +276,18 @@ const CartPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative',
+                        }}
+                      >
                         <IconButton
                           size="small"
                           onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
+                          disabled={item.quantity <= 1 || isItemUpdating(item.id)}
                         >
                           <RemoveIcon fontSize="small" />
                         </IconButton>
@@ -287,10 +310,22 @@ const CartPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          disabled={item.quantity >= item.product.stock}
+                          disabled={item.quantity >= item.product.stock || isItemUpdating(item.id)}
                         >
                           <AddIcon fontSize="small" />
                         </IconButton>
+                        {isItemUpdating(item.id) && (
+                          <CircularProgress
+                            size={20}
+                            sx={{
+                              position: 'absolute',
+                              left: '50%',
+                              top: '50%',
+                              marginLeft: '-10px',
+                              marginTop: '-10px',
+                            }}
+                          />
+                        )}
                       </Box>
                     </TableCell>
                     <TableCell align="right">
@@ -422,11 +457,17 @@ const CartPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveItemCancel} color="primary">
+          <Button onClick={handleRemoveItemCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveItemConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveItemConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from '@mui/material'
 import {
   Close as CloseIcon,
@@ -32,15 +33,15 @@ import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 const CartDrawer = () => {
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
-  const { cart, updateItem, removeItem } = useCartStore()
+  const { cart, updateItemInCart, removeItem, isItemUpdating, removeItemFromCart } = useCartStore()
   const { refetchCart } = useCartSync()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   // Refetch cart when drawer opens
   useEffect(() => {
     if (isCartDrawerOpen) {
-      console.log('🔄 Cart drawer opened - refetching cart from API')
       refetchCart()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,9 +61,14 @@ const CartDrawer = () => {
     navigate('/checkout')
   }
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateItem(itemId, newQuantity)
+      try {
+        await updateItemInCart(itemId, newQuantity)
+      } catch (error) {
+        // Error is already handled in the store
+        console.error('Failed to update cart item:', error)
+      }
     }
   }
 
@@ -71,11 +77,19 @@ const CartDrawer = () => {
     setRemoveDialogOpen(true)
   }
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (itemToRemove) {
-      removeItem(itemToRemove.id)
-      setRemoveDialogOpen(false)
-      setItemToRemove(null)
+      setIsRemoving(true)
+      try {
+        await removeItemFromCart(itemToRemove.id)
+        setRemoveDialogOpen(false)
+        setItemToRemove(null)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+        // Dialog stays open on error so user can retry
+      } finally {
+        setIsRemoving(false)
+      }
     }
   }
 
@@ -188,36 +202,50 @@ const CartDrawer = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
                       Quantity:
                     </Typography>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                    >
-                      <RemoveIcon fontSize="small" />
-                    </IconButton>
-                    <TextField
-                      type="number"
-                      value={item.quantity}
-                      disabled
-                      size="small"
-                      sx={{
-                        width: 50,
-                        '& input': { textAlign: 'center', py: 0.5 },
-                      }}
-                      inputProps={{
-                        min: 1,
-                        max: item.product.stock,
-                        inputMode: 'numeric',
-                      }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.product.stock}
-                    >
-                      <AddIcon fontSize="small" />
-                    </IconButton>
-                    {item.quantity >= item.product.stock && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1 || isItemUpdating(item.id)}
+                      >
+                        <RemoveIcon fontSize="small" />
+                      </IconButton>
+                      <TextField
+                        type="number"
+                        value={item.quantity}
+                        disabled
+                        size="small"
+                        sx={{
+                          width: 50,
+                          '& input': { textAlign: 'center', py: 0.5 },
+                        }}
+                        inputProps={{
+                          min: 1,
+                          max: item.product.stock,
+                          inputMode: 'numeric',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        disabled={item.quantity >= item.product.stock || isItemUpdating(item.id)}
+                      >
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                      {isItemUpdating(item.id) && (
+                        <CircularProgress
+                          size={16}
+                          sx={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%',
+                            marginLeft: '-8px',
+                            marginTop: '-8px',
+                          }}
+                        />
+                      )}
+                    </Box>
+                    {item.quantity >= item.product.stock && !isItemUpdating(item.id) && (
                       <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
                         Max stock
                       </Typography>
@@ -311,11 +339,17 @@ const CartDrawer = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveCancel} color="primary">
+          <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>

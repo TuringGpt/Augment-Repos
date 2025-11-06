@@ -16,14 +16,21 @@ export const cartService = {
     await apiClient.post(API_ENDPOINTS.CART.ADD, data)
   },
 
-  updateCartItem: async (itemId: string, data: UpdateCartItemRequest): Promise<Cart> => {
-    const cart = await apiClient.patch<Cart>(API_ENDPOINTS.CART.UPDATE(itemId), data)
-    return enrichCart(cart)
+  updateCartItem: async (
+    itemId: string,
+    data: UpdateCartItemRequest
+  ): Promise<{ quantity: number }> => {
+    // API returns just { quantity: number }, not the full cart
+    const response = await apiClient.patch<{ quantity: number }>(
+      API_ENDPOINTS.CART.UPDATE(itemId),
+      data
+    )
+    return response
   },
 
-  removeFromCart: async (itemId: string): Promise<Cart> => {
-    const cart = await apiClient.delete<Cart>(API_ENDPOINTS.CART.REMOVE(itemId))
-    return enrichCart(cart)
+  removeFromCart: async (itemId: string): Promise<void> => {
+    // Backend returns no response body on success
+    await apiClient.delete(API_ENDPOINTS.CART.REMOVE(itemId))
   },
 
   clearCart: async (): Promise<void> => {
