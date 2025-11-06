@@ -12,3 +12,12 @@ class ProductFilter(filters.FilterSet):
     class Meta:
         model = Product
         fields = ["category", "brand", "rating", "price", "quantity" ]
+
+class ProductSearchFilter(filters.FilterSet):
+    limit = filters.NumberFilter(field_name="limit", method="limit_filter", max_value=100, min_value=1)
+    class Meta:
+        model = Product
+        fields = ["limit"]
+
+    def limit_filter(self, queryset, name, value):
+        return queryset[:value]
