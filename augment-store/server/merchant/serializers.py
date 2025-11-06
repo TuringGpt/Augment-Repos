@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from products.models import ProductBrand, Product
-from storage.serializers import FileSerializer
+from storage.serializers import FileSerializer, FileListSerializer
 
 class MerchantBrandSerializer(serializers.ModelSerializer):
     image = FileSerializer(read_only=True)
@@ -11,7 +11,7 @@ class MerchantBrandSerializer(serializers.ModelSerializer):
 
 
 class MerchantProductSerializer(serializers.ModelSerializer):
-    images = FileSerializer(read_only=True)
+    images = FileListSerializer(read_only=True)
 
     class Meta:
         model = Product
