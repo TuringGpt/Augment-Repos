@@ -36,13 +36,13 @@ const Header = () => {
   return (
     <AppBar position="sticky">
       <Container maxWidth="xl">
-        <Toolbar sx={{ gap: 2 }}>
+        <Toolbar sx={{ gap: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 0.5, sm: 2 } }}>
           {/* Burger Menu Button */}
           <IconButton
             color="inherit"
             edge="start"
             onClick={toggleSidebar}
-            sx={{ mr: 1 }}
+            sx={{ mr: { xs: 0.5, sm: 1 } }}
             aria-label="menu"
           >
             <Menu />
@@ -51,18 +51,26 @@ const Header = () => {
           <Typography
             variant="h6"
             component="div"
-            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+            sx={{
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              flexShrink: 0,
+            }}
             onClick={() => navigate('/')}
           >
             Augment Store
           </Typography>
 
-          {/* Search Bar */}
-          <Box sx={{ flexGrow: 1, mx: 2, display: { xs: 'none', md: 'block' } }}>
+          {/* Search Bar - Hidden on mobile */}
+          <Box sx={{ flexGrow: 1, mx: { xs: 0, md: 2 }, display: { xs: 'none', md: 'block' } }}>
             <SearchBar />
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {/* Spacer for mobile to push icons to the right */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'block', md: 'none' } }} />
+
+          <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1, md: 2 }, alignItems: 'center' }}>
             {/* Cart Icon - Always Visible */}
             <IconButton color="inherit" onClick={handleCartClick} aria-label="open cart">
               <Badge badgeContent={cartItemCount} color="error">
@@ -70,39 +78,54 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            <Button color="inherit" onClick={() => navigate('/products')}>
+            {/* Products Button - Hidden on mobile */}
+            <Button
+              color="inherit"
+              onClick={() => navigate('/products')}
+              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+            >
               Products
             </Button>
 
             {isAuthenticated && (
               <>
+                {/* Wishlist - Hidden on mobile */}
                 <IconButton
                   color="inherit"
                   onClick={() => navigate('/wishlist')}
                   aria-label="wishlist"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
                 </IconButton>
 
+                {/* Profile Icon - Hidden on mobile */}
                 <IconButton
                   color="inherit"
                   onClick={() => navigate('/profile')}
                   aria-label="profile"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Person />
                 </IconButton>
 
-                <Typography variant="body2" sx={{ mr: 1 }}>
+                {/* User Name - Hidden on mobile */}
+                <Typography
+                  variant="body2"
+                  sx={{ mr: { xs: 0, sm: 1 }, display: { xs: 'none', md: 'block' } }}
+                >
                   {user?.firstName}
                 </Typography>
 
+                {/* Logout - Hidden on mobile */}
                 <IconButton
                   color="inherit"
                   onClick={handleLogout}
                   title="Logout"
                   aria-label="logout"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Logout />
                 </IconButton>
@@ -110,7 +133,11 @@ const Header = () => {
             )}
 
             {!isAuthenticated && (
-              <Button color="inherit" onClick={() => navigate('/login')}>
+              <Button
+                color="inherit"
+                onClick={() => navigate('/login')}
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Login
               </Button>
             )}
