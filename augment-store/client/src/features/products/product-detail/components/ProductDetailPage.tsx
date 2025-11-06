@@ -275,7 +275,7 @@ const ProductDetailPage = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <Rating value={ratingNumber / 2} precision={0.1} readOnly max={5} />
               <Typography variant="body2" color="text.secondary">
-                {ratingNumber.toFixed(1)} (0 reviews)
+                ({ratingNumber.toFixed(1)})
               </Typography>
             </Box>
 
