@@ -152,14 +152,14 @@ const OrderSummary = (props: Props) => {
                   }}
                   inputProps={{
                     min: 1,
-                    max: item?.product?.quantity || 0,
+                    max: item?.product?.quantity || 1,
                     inputMode: 'numeric',
                   }}
                 />
                 <IconButton
                   size="small"
                   onClick={() => handleQuantityChange(item.id, Number(item.quantity || 0) + 1)}
-                  disabled={item.quantity >= (item?.product?.quantity || 0)}
+                  disabled={item.quantity >= (item?.product?.quantity || 1)}
                 >
                   <AddIcon fontSize="small" />
                 </IconButton>
