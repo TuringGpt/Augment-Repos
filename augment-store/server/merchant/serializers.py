@@ -11,7 +11,7 @@ class MerchantBrandSerializer(serializers.ModelSerializer):
 
 
 class MerchantProductSerializer(serializers.ModelSerializer):
-    images = FileListSerializer(read_only=True)
+    images = FileListSerializer(read_only=True, many=True)
 
     class Meta:
         model = Product
