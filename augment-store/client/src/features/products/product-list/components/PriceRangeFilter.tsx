@@ -1,5 +1,5 @@
-import { useState, useEffect, SyntheticEvent } from 'react'
-import { Box, Typography, Slider } from '@mui/material'
+import { useState, useEffect } from 'react'
+import { Box, Typography, TextField, InputAdornment } from '@mui/material'
 
 interface PriceRangeFilterProps {
   minPrice: number
@@ -8,20 +8,82 @@ interface PriceRangeFilterProps {
   onChange: (value: [number, number]) => void
 }
 
-const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFilterProps) => {
-  const [localValue, setLocalValue] = useState<[number, number]>(value)
+const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
+  const [localMinPrice, setLocalMinPrice] = useState<string>(value[0].toString())
+  const [localMaxPrice, setLocalMaxPrice] = useState<string>(value[1].toString())
+  const [minPriceError, setMinPriceError] = useState<string>('')
+  const [maxPriceError, setMaxPriceError] = useState<string>('')
 
-  // Update local value when prop changes (e.g., reset filters)
+  // Update local values when prop changes (e.g., reset filters)
   useEffect(() => {
-    setLocalValue(value)
+    setLocalMinPrice(value[0].toString())
+    setLocalMaxPrice(value[1].toString())
+    setMinPriceError('')
+    setMaxPriceError('')
   }, [value])
 
-  const handleChange = (_event: Event, newValue: number | number[]) => {
-    setLocalValue(newValue as [number, number])
+  const validateAndUpdate = (newMinPrice: string, newMaxPrice: string) => {
+    const minVal = parseFloat(newMinPrice)
+    const maxVal = parseFloat(newMaxPrice)
+
+    let hasError = false
+
+    // Validate min price
+    if (newMinPrice === '' || isNaN(minVal)) {
+      setMinPriceError('Please enter a valid price')
+      hasError = true
+    } else if (minVal < 0) {
+      setMinPriceError('Price cannot be negative')
+      hasError = true
+    } else {
+      setMinPriceError('')
+    }
+
+    // Validate max price
+    if (newMaxPrice === '' || isNaN(maxVal)) {
+      setMaxPriceError('Please enter a valid price')
+      hasError = true
+    } else if (maxVal < 0) {
+      setMaxPriceError('Price cannot be negative')
+      hasError = true
+    } else {
+      setMaxPriceError('')
+    }
+
+    // Validate min <= max
+    if (!hasError && minVal > maxVal) {
+      setMinPriceError('Min price cannot be greater than max price')
+      hasError = true
+    }
+
+    // If no errors, update parent
+    if (!hasError) {
+      onChange([minVal, maxVal])
+    }
   }
 
-  const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
-    onChange(newValue as [number, number])
+  const handleMinPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value
+    setLocalMinPrice(newValue)
+  }
+
+  const handleMaxPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value
+    setLocalMaxPrice(newValue)
+  }
+
+  const handleMinPriceBlur = () => {
+    validateAndUpdate(localMinPrice, localMaxPrice)
+  }
+
+  const handleMaxPriceBlur = () => {
+    validateAndUpdate(localMinPrice, localMaxPrice)
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      validateAndUpdate(localMinPrice, localMaxPrice)
+    }
   }
 
   return (
@@ -30,43 +92,41 @@ const PriceRangeFilter = ({ minPrice, maxPrice, value, onChange }: PriceRangeFil
         Price Range
       </Typography>
       <Box sx={{ px: 2, py: 1 }}>
-        <Slider
-          value={localValue}
-          onChange={handleChange}
-          onChangeCommitted={handleChangeCommitted}
-          valueLabelDisplay="auto"
-          valueLabelFormat={(value) => `$${value}`}
-          min={minPrice}
-          max={maxPrice}
-          step={1}
-          disableSwap
-          sx={{
-            '& .MuiSlider-thumb': {
-              width: 20,
-              height: 20,
-              '&:hover, &.Mui-focusVisible': {
-                boxShadow: '0 0 0 8px rgba(25, 118, 210, 0.16)',
-              },
-              '&.Mui-active': {
-                boxShadow: '0 0 0 14px rgba(25, 118, 210, 0.16)',
-              },
-            },
-            '& .MuiSlider-track': {
-              height: 4,
-            },
-            '& .MuiSlider-rail': {
-              height: 4,
-              opacity: 0.3,
-            },
-          }}
-        />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-            ${localValue[0].toFixed(2)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-            ${localValue[1].toFixed(2)}
-          </Typography>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+          <TextField
+            label="Min Price"
+            type="number"
+            value={localMinPrice}
+            onChange={handleMinPriceChange}
+            onBlur={handleMinPriceBlur}
+            onKeyDown={handleKeyDown}
+            error={!!minPriceError}
+            helperText={minPriceError}
+            size="small"
+            fullWidth
+            InputProps={{
+              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              inputProps: { min: 0, step: 0.01 },
+            }}
+            aria-label="Minimum price"
+          />
+          <TextField
+            label="Max Price"
+            type="number"
+            value={localMaxPrice}
+            onChange={handleMaxPriceChange}
+            onBlur={handleMaxPriceBlur}
+            onKeyDown={handleKeyDown}
+            error={!!maxPriceError}
+            helperText={maxPriceError}
+            size="small"
+            fullWidth
+            InputProps={{
+              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+              inputProps: { min: 0, step: 0.01 },
+            }}
+            aria-label="Maximum price"
+          />
         </Box>
       </Box>
     </Box>

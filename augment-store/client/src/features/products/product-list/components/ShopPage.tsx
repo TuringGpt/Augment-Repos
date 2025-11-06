@@ -37,22 +37,10 @@ const ShopPage = () => {
   const [totalCount, setTotalCount] = useState(0)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
-  // Calculate min and max prices from products
-  const priceRange = useMemo(() => {
-    if (products.length === 0) {
-      return { min: 0, max: 1000 }
-    }
-    const prices = products.map((p) => p.discountPrice || p.price)
-    return {
-      min: Math.floor(Math.min(...prices)),
-      max: Math.ceil(Math.max(...prices)),
-    }
-  }, [products])
-
   // Filter state
   const [filters, setFilters] = useState<ProductFilters>({
-    minPrice: 0,
-    maxPrice: 1000,
+    minPrice: undefined,
+    maxPrice: undefined,
     minRating: 0,
     maxRating: 10,
   })
@@ -71,6 +59,8 @@ const ShopPage = () => {
           page: apiPage,
           minRating: filters.minRating,
           maxRating: filters.maxRating,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
         })
 
         console.log('📦 API Response:', {
@@ -82,6 +72,8 @@ const ShopPage = () => {
           appliedFilters: {
             minRating: filters.minRating,
             maxRating: filters.maxRating,
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
           },
         })
 
@@ -100,18 +92,7 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage, filters.minRating, filters.maxRating])
-
-  // Update filter price range when products change
-  useEffect(() => {
-    if (products.length > 0 && filters.minPrice === 0 && filters.maxPrice === 1000) {
-      setFilters((prev) => ({
-        ...prev,
-        minPrice: priceRange.min,
-        maxPrice: priceRange.max,
-      }))
-    }
-  }, [priceRange, products.length, filters.minPrice, filters.maxPrice])
+  }, [apiPage, filters.minPrice, filters.maxPrice, filters.minRating, filters.maxRating])
 
   // Calculate client-side pagination (no filtering or sorting for now)
   const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
@@ -161,8 +142,8 @@ const ShopPage = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      minPrice: priceRange.min,
-      maxPrice: priceRange.max,
+      minPrice: undefined,
+      maxPrice: undefined,
       minRating: 0,
       maxRating: 10,
     })
@@ -181,9 +162,9 @@ const ShopPage = () => {
       <Divider sx={{ mb: 3 }} />
 
       <PriceRangeFilter
-        minPrice={priceRange.min}
-        maxPrice={priceRange.max}
-        value={[filters.minPrice ?? priceRange.min, filters.maxPrice ?? priceRange.max]}
+        minPrice={0}
+        maxPrice={10000}
+        value={[filters.minPrice ?? 0, filters.maxPrice ?? 10000]}
         onChange={handlePriceChange}
       />
 
