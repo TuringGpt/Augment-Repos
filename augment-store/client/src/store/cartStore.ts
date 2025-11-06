@@ -136,7 +136,7 @@ export const useCartStore = create<CartState>()(
           const updatedItems = currentCart.items.map((item) => {
             if (item.id === itemId) {
               // Cap quantity at available stock
-              const finalQuantity = Math.min(Math.max(1, quantity), item?.product?.quantity || item.product.stock)
+              const finalQuantity = Math.min(Math.max(1, quantity), item?.product?.quantity ?? item.product.stock)
               return { ...item, quantity: finalQuantity }
             }
             return item
