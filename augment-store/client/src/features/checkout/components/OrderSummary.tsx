@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Avatar,
   Box,
@@ -27,6 +27,11 @@ const OrderSummary = () => {
   const { cart, updateItem, removeItem } = useCartStore()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+
+  // Derived state: calculate total item count
+  const itemCount = useMemo(() => {
+    return cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
+  }, [cart?.items])
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
@@ -88,7 +93,7 @@ const OrderSummary = () => {
           <Typography variant="h4" fontWeight={600}>
             Order Summary
           </Typography>
-          <Typography color="text.secondary">{cart.itemCount} item(s)</Typography>
+          <Typography color="text.secondary">{cart.itemCount || itemCount} item(s)</Typography>
         </Box>
         <Divider />
 
