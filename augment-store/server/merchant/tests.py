@@ -66,7 +66,7 @@ class MerchantProductListViewTests(TestCase):
         values =[response.data['results'][i]["name"] for i in range(len(response.data['results']))]
         self.assertEqual(set(values), set(self.product_names))
 
-    def test_merchant_product_list_view(self):
+    def test_merchant_no_products(self):
         url = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_id_no_products)})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
