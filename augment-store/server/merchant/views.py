@@ -10,3 +10,17 @@ class MerchantBrandListView(ListAPIView):
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
         return ProductBrand.objects.filter(created_by=object_id)
+
+
+class MerchantProductListView(ListAPIView):
+    serializer_class = MerchantBrandSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        object_id = self.kwargs.get("pk")
+        brands = ProductBrand.objects.filter(created_by=object_id)
+        products = []
+        for brand in brands:
+            products.extend(brand.products.all())
+        return products
+
