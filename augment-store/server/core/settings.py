@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'carts',
     "dummy_data",
     "checkout",
+    "merchant",
 ]
 
 MIDDLEWARE = [
