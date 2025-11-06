@@ -91,43 +91,57 @@ export const productService = {
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
     try {
-      // Backend doesn't have search endpoint yet, so we fetch all pages and filter on frontend
-      // Note: Backend page_size is fixed at 100, so we need to fetch all pages
-      let allProducts: Product[] = []
-      let currentPage = 1
-      let hasMore = true
+      const uiPage = params?.page || 1
+      const limit = params?.limit || 12
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      while (hasMore) {
-        const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-          params: { page: currentPage },
-        })
+      // Calculate which backend page to fetch based on UI pagination
+      // UI offset: where we want to start in the full result set
+      const uiOffset = (uiPage - 1) * limit
+      // Backend page: which backend page contains our UI offset
+      const backendPage = Math.floor(uiOffset / backendPageSize) + 1
+      // Offset within the backend page results
+      const offsetInBackendPage = uiOffset % backendPageSize
 
-        const pageProducts = response.results.map(transformProductFromAPI)
-        allProducts = [...allProducts, ...pageProducts]
+      // Check if we need to fetch the next backend page too
+      const needsNextPage = offsetInBackendPage + limit > backendPageSize
 
-        hasMore = response.next !== null
-        currentPage++
+      // Fetch the first backend page
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+        params: {
+          page: backendPage,
+          search: query,
+        },
+      })
+
+      // Transform backend products to frontend format
+      let allProducts: Product[] = response.results.map(transformProductFromAPI)
+
+      // If we need more items from the next page, fetch it
+      if (needsNextPage && response.next) {
+        const nextResponse = await apiClient.get<PaginatedProductsAPI>(
+          API_ENDPOINTS.PRODUCTS.LIST,
+          {
+            params: {
+              page: backendPage + 1,
+              search: query,
+            },
+          }
+        )
+        const nextProducts = nextResponse.results.map(transformProductFromAPI)
+        allProducts = [...allProducts, ...nextProducts]
       }
 
-      // Filter products by query
-      const filteredProducts = allProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query.toLowerCase()) ||
-          product.description.toLowerCase().includes(query.toLowerCase())
-      )
-
-      // Apply pagination to filtered results
-      const page = params?.page || 1
-      const limit = params?.limit || 12
-      const startIndex = (page - 1) * limit
-      const endIndex = startIndex + limit
+      // Slice the correct range from combined results
+      const limitedProducts = allProducts.slice(offsetInBackendPage, offsetInBackendPage + limit)
 
       return {
-        products: filteredProducts.slice(startIndex, endIndex),
-        total: filteredProducts.length,
-        page,
+        products: limitedProducts,
+        total: response.count,
+        page: uiPage,
         limit,
-        totalPages: Math.ceil(filteredProducts.length / limit),
+        // Calculate totalPages based on the limit returned in the response
+        totalPages: Math.ceil(response.count / limit),
       }
     } catch (error) {
       console.error('Failed to search products:', error)

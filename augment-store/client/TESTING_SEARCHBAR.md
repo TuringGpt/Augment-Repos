@@ -1,46 +1,49 @@
 # Testing the SearchBar Component
 
-This guide explains how to test the SearchBar component with dummy product data.
+This guide explains how to test the SearchBar component with the backend API.
 
-## Current Setup: Mock Service (Default)
+## Current Setup: Real Backend Service (Default)
 
-**The SearchBar component is already configured to use the mock service by default.** This allows you to test the component without needing a backend connection.
+**The SearchBar component is configured to use the real backend service.** This means it will search products from your Django backend API.
 
 In `src/components/common/SearchBar.tsx`, you'll see:
 
 ```typescript
-// Using mock service for now until backend is ready
-import { mockProductService as productService } from '@services/api/products/mockProductService'
+import { productService } from '@services/api/products/productService'
 ```
 
-### Testing with Mock Data (No Setup Required)
+### Testing with Backend API
 
-The mock service is already active, so you can start testing immediately:
+The SearchBar uses the backend search API with debouncing (500ms delay by default):
 
-1. Start the development server: `npm run dev`
-2. Navigate to any page with the header
-3. Type in the search bar:
-   - "iPhone" - should show iPhone 15 Pro Max
-   - "MacBook" - should show MacBook Pro
-   - "Sony" - should show Sony headphones and camera
-   - "Samsung" - should show Samsung products
-   - "Logitech" - should show Logitech accessories
+1. Ensure your backend server is running
+2. Start the development server: `npm run dev`
+3. Navigate to any page with the header
+4. Type in the search bar - it will search products by name, description, brand name, and category name
+5. Results will appear in a dropdown below the search bar (max 5 results by default)
 
-## Switching to Real Backend Service
+### How It Works
 
-When the backend is ready and you want to switch from mock to real API:
+- **Debouncing**: Uses lodash debounce with 500ms delay to prevent excessive API calls
+- **Search Query Parameter**: Sends `search` query param to `/api/v1/products?search=query`
+- **Backend Search Fields**: Searches in product name, description, brand name, and category name
+- **No Impact on /products Route**: The main products page is unaffected by search functionality
+
+## Switching to Mock Service (For Testing Without Backend)
+
+If you want to test without a backend connection:
 
 1. In `src/components/common/SearchBar.tsx`, replace the import:
 
 ```typescript
 // Remove this line:
-// import { mockProductService as productService } from '@services/api/products/mockProductService'
+// import { productService } from '@services/api/products/productService'
 
 // Add this line instead:
-import { productService } from '@services/api'
+import { mockProductService as productService } from '@services/api/products/mockProductService'
 ```
 
-2. Ensure your backend server is running and the API endpoint is configured correctly.
+2. The mock service will use dummy data from `src/data/dummyProducts.json`
 
 ## Alternative Testing Options
 

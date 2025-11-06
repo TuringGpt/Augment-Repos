@@ -19,8 +19,7 @@ import {
 import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { debounce } from 'lodash'
-// Using mock service for now until backend is ready
-import { mockProductService as productService } from '@services/api/products/mockProductService'
+import { productService } from '@services/api/products/productService'
 import type { Product } from '@features/products/types'
 import { Colors } from '@config/colors'
 
