@@ -1,6 +1,6 @@
 from django.test import TestCase
 from accounts.factory import UserFactory
-from products.factory import ProductBrandFactory
+from products.factory import ProductBrandFactory, ProductFactory
 from accounts.models import User
 from django.urls import reverse
 import uuid
