@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import CreateOrderView, OrderListView
+from .views import CreateOrderView, OrderListView, RetrieveOrderView
 
 app_name = "checkout"
 urlpatterns = [
