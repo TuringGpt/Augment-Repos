@@ -26,6 +26,14 @@ export const productService = {
         page,
       }
 
+      // Add rating filters if provided
+      if (params?.minRating !== undefined && params?.minRating !== null) {
+        queryParams.rating_min = params.minRating
+      }
+      if (params?.maxRating !== undefined && params?.maxRating !== null) {
+        queryParams.rating_max = params.maxRating
+      }
+
       // Add price filters if provided
       if (params?.minPrice !== undefined && params?.minPrice !== null) {
         queryParams.price_min = params.minPrice
@@ -44,7 +52,12 @@ export const productService = {
         resultsLength: response.results.length,
         next: response.next,
         previous: response.previous,
-        filters: { minPrice: params?.minPrice, maxPrice: params?.maxPrice },
+        filters: {
+          minRating: params?.minRating,
+          maxRating: params?.maxRating,
+          minPrice: params?.minPrice,
+          maxPrice: params?.maxPrice,
+        },
       })
 
       // Transform backend products to frontend format

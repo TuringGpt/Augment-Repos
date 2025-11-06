@@ -42,7 +42,7 @@ const ShopPage = () => {
     minPrice: undefined,
     maxPrice: undefined,
     minRating: 0,
-    maxRating: 5,
+    maxRating: 10,
   })
 
   // Sort state
@@ -57,6 +57,8 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
+          minRating: filters.minRating,
+          maxRating: filters.maxRating,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
         })
@@ -67,7 +69,12 @@ const ShopPage = () => {
           page: response.page,
           limit: response.limit,
           totalPages: response.totalPages,
-          filters: { minPrice: filters.minPrice, maxPrice: filters.maxPrice },
+          appliedFilters: {
+            minRating: filters.minRating,
+            maxRating: filters.maxRating,
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
+          },
         })
 
         setProducts(response.products)
@@ -85,7 +92,7 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage, filters.minPrice, filters.maxPrice])
+  }, [apiPage, filters.minPrice, filters.maxPrice, filters.minRating, filters.maxRating])
 
   // Calculate client-side pagination (no filtering or sorting for now)
   const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
@@ -138,7 +145,7 @@ const ShopPage = () => {
       minPrice: undefined,
       maxPrice: undefined,
       minRating: 0,
-      maxRating: 5,
+      maxRating: 10,
     })
   }
 
@@ -162,7 +169,7 @@ const ShopPage = () => {
       />
 
       <RatingFilter
-        value={[filters.minRating ?? 0, filters.maxRating ?? 5]}
+        value={[filters.minRating ?? 0, filters.maxRating ?? 10]}
         onChange={handleRatingChange}
       />
     </Box>
