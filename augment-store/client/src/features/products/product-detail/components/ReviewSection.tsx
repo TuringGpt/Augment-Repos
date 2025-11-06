@@ -1,4 +1,13 @@
-import { Box, Typography, Rating, Avatar, Chip, Divider, LinearProgress, Paper } from '@mui/material'
+import {
+  Box,
+  Typography,
+  Rating,
+  Avatar,
+  Chip,
+  Divider,
+  LinearProgress,
+  Paper,
+} from '@mui/material'
 import { Verified as VerifiedIcon, ThumbUp as ThumbUpIcon } from '@mui/icons-material'
 import type { Review } from '@features/products/types'
 import { formatDistanceToNow } from 'date-fns'
@@ -29,7 +38,14 @@ const ReviewSection = ({ reviews, rating }: ReviewSectionProps) => {
             <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
               {rating.toFixed(1)}
             </Typography>
-            <Rating value={rating} precision={0.1} readOnly size="large" sx={{ mb: 1 }} />
+            <Rating
+              value={rating / 2}
+              precision={0.1}
+              readOnly
+              size="large"
+              max={5}
+              sx={{ mb: 1 }}
+            />
             <Typography variant="body2" color="text.secondary">
               Based on {reviews.length} review{reviews.length !== 1 ? 's' : ''}
             </Typography>
@@ -67,7 +83,9 @@ const ReviewSection = ({ reviews, rating }: ReviewSectionProps) => {
         <Box sx={{ flex: 1 }}>
           {reviews.length === 0 ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="text.secondary">No reviews yet. Be the first to review!</Typography>
+              <Typography color="text.secondary">
+                No reviews yet. Be the first to review!
+              </Typography>
             </Paper>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -148,4 +166,3 @@ const ReviewSection = ({ reviews, rating }: ReviewSectionProps) => {
 }
 
 export default ReviewSection
-

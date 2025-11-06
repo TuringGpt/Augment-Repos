@@ -119,7 +119,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
 
             {/* Rating */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Rating value={product.rating} readOnly precision={0.1} size="small" />
+              <Rating value={product.rating / 2} readOnly precision={0.1} size="small" max={5} />
               <Typography variant="caption" color="text.secondary">
                 ({product.rating.toFixed(1)})
               </Typography>
