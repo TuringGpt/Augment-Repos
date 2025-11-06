@@ -26,6 +26,7 @@ export interface Product {
   reviews?: Review[]
   createdAt: string
   updatedAt: string
+  quantity?: number
 }
 
 export interface Category {

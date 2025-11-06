@@ -16,7 +16,6 @@ const CheckoutPage = () => {
       <Typography variant="h1" gutterBottom>
         Checkout
       </Typography>
-      <Typography color="text.secondary">1 item(s)</Typography>
       <Stack direction="row" sx={{alignItems: "flex-start"}}>
         <Container>
           {/* Work in Progress */}
