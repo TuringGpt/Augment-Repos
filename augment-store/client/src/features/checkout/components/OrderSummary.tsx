@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Avatar,
   Box,
@@ -16,23 +17,13 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import React, { useState } from 'react'
-import { useCartStore } from '../../../store'
+import { useCartStore } from '@/store/cartStore'
 
-import {
-  Close as CloseIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Remove as RemoveIcon,
-  ShoppingCart as ShoppingCartIcon,
-} from '@mui/icons-material'
+import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material'
 
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
-import { useCartSync } from '../../cart/hooks/useCartSync'
 
-type Props = {}
-
-const OrderSummary = (props: Props) => {
+const OrderSummary = () => {
   const { cart, updateItem, removeItem } = useCartStore()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
@@ -60,6 +51,36 @@ const OrderSummary = (props: Props) => {
     setRemoveDialogOpen(false)
     setItemToRemove(null)
   }
+
+  const handlePlaceOrder  = () => {
+    // TODO: Implement order placement logic
+  }
+
+  // Early return if cart data is not available
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return (
+      <Card sx={{ width: 500, position: 'sticky', top: 80, p: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            py: 6,
+            gap: 2,
+          }}
+        >
+          <Typography variant="h5" fontWeight={600}>
+            Order Summary
+          </Typography>
+          <Typography variant="body1" color="text.secondary" textAlign="center">
+            Your cart is empty
+          </Typography>
+        </Box>
+      </Card>
+    )
+  }
+
   return (
     <>
       <Card sx={{ width: 500, position: 'sticky', top: 80, p: 2 }}>
@@ -178,7 +199,7 @@ const OrderSummary = (props: Props) => {
             <Typography color="text.secondary">Subtotal</Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">${cart.subtotal.toFixed(2)}</Typography>
+            <Typography align="right">${(cart.subtotal ?? 0).toFixed(2)}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography color="text.secondary">Delivery Fee</Typography>
@@ -197,7 +218,7 @@ const OrderSummary = (props: Props) => {
           </Grid>
           <Grid item xs={6}>
             <Typography align="right" sx={{ fontWeight: 700 }}>
-              ${cart.total.toFixed(2)}
+              ${(cart.total ?? 0).toFixed(2)}
             </Typography>
           </Grid>
         </Grid>
@@ -205,38 +226,44 @@ const OrderSummary = (props: Props) => {
         <Divider />
 
         {/* Discount input */}
-        <Grid container spacing={1} py={2}>
-          <Grid item xs={6}>
-            <Typography>Discount Code</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography align="right">
-              <input type="text" placeholder="Enter discount code" />
+        <Grid container spacing={1} py={2} sx={{ alignItems: 'center' }}>
+          <Grid item xs={12} sm={6}>
+            <Typography component="label" htmlFor="discount-code-input">
+              Discount Code
             </Typography>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              id="discount-code-input"
+              type="text"
+              placeholder="Enter discount code"
+              size="small"
+              fullWidth
+              inputProps={{
+                'aria-label': 'Discount code',
+              }}
+            />
           </Grid>
         </Grid>
 
         {/* Agreement */}
-        <Grid container spacing={1} py={2}>
-          <Grid item xs={12}>
-            <Typography variant="body2" color="text.secondary">
-              By placing an order, you agree to our{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer">
-                Terms and Conditions
-              </a>{' '}
-              and{' '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer">
-                Privacy Policy
-              </a>
-            </Typography>
-          </Grid>
-        </Grid>
-        <Divider />
-        <Grid container spacing={1} py={2}>
-          <Grid item xs={12}>
-            <button>Place Order</button>
-          </Grid>
-        </Grid>
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            By placing an order, you agree to our{' '}
+            <a href="/terms" target="_blank" rel="noopener noreferrer">
+              Terms and Conditions
+            </a>{' '}
+            and{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </a>
+          </Typography>
+        </Box>
+        <Box py={2}>
+          <Button variant="contained" fullWidth size="large" onClick={handlePlaceOrder}>
+            Place Order
+          </Button>
+        </Box>
       </Card>
       {/* Remove Item Confirmation Dialog */}
       <Dialog

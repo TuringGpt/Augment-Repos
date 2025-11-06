@@ -2,13 +2,11 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Card,
   Container,
-  Divider,
   Stack,
   Typography,
 } from '@mui/material'
-import OrderSummary from './OrderSummary'
+import OrderSummary from '@/features/checkout/components/OrderSummary'
 
 const CheckoutPage = () => {
   return (
