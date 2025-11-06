@@ -87,7 +87,7 @@ export const useCartStore = create<CartState>()(
             }
           } else {
             // Add new item with stock validation
-            const finalQuantity = Math.min(item.quantity, item.product.stock)
+            const finalQuantity = Math.min(item.quantity, item?.product?.quantity ?? item.product.stock)
             updatedItems = [
               ...currentCart.items,
               {

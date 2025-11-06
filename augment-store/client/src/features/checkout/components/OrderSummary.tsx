@@ -172,7 +172,6 @@ const OrderSummary = (props: Props) => {
             </ListItem>
           ))}
         </List>
-        <Divider />
 
         <Grid container spacing={1} py={2}>
           <Grid item xs={6}>
@@ -193,7 +192,6 @@ const OrderSummary = (props: Props) => {
           <Grid item xs={6}>
             <Typography align="right">$0</Typography>
           </Grid>
-          <Divider />
           <Grid item xs={6}>
             <Typography sx={{ fontWeight: 700 }}>Total</Typography>
           </Grid>
