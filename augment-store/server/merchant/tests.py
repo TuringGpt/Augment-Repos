@@ -54,9 +54,9 @@ class MerchantProductListViewTests(TestCase):
             role=User.Role.MERCHANT
         )
         self.brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
-        self.product_1 = ProductFactory(created_by=self.merchant, name="Nike Shoe")
-        self.product_2 = ProductFactory(created_by=self.merchant, name="Adidas Shoe")
-        self.product_3 = ProductFactory(created_by=self.merchant, name="Puma Shoe")
+        self.product_1 = ProductFactory(created_by=self.merchant, name="Nike Shoe", brand=self.brand)
+        self.product_2 = ProductFactory(created_by=self.merchant, name="Adidas Shoe", brand=self.brand)
+        self.product_3 = ProductFactory(created_by=self.merchant, name="Puma Shoe", brand=self.brand)
 
     def test_merchant_product_list_view(self):
         url = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_id)})
