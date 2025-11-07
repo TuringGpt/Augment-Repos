@@ -5,5 +5,5 @@ app_name = "merchant"
 urlpatterns = [
     path('<uuid:pk>/brands/', MerchantBrandListView.as_view(), name='merchant_brand_list'),
     path('<uuid:pk>/products/', MerchantProductListView.as_view(), name='merchant_product_list'),
-    path('<uuid:pk>/orders/', MerchantOrdersListView.as_view(), name='merchant_order_list'),
+    path('orders/', MerchantOrdersListView.as_view(), name='merchant_order_list'),
 ]
