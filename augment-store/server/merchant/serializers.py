@@ -16,3 +16,11 @@ class MerchantProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ["id", "name", "description", "images"]
+
+
+class MerchantOrdersSerializer(serializers.Serializer):
+    
+    class Meta:
+        model = Order
+        fields = ["id", "status", "items", "subtotal", "tax", "shipping", "total", "created_at", "updated_at"]
+
