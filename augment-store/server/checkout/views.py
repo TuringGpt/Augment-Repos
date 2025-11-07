@@ -19,7 +19,6 @@ class CreateOrderView(BaseOrderView, CreateAPIView):
 class OrderListView(BaseOrderView, ListAPIView):
     serializer_class = OrderListSerializer
 
-# RetrieveOrderView
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
