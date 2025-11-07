@@ -327,8 +327,6 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         )
         self.member_client1 = self.authenticated_client
         self.member_client1.force_authenticate(user=self.member_user1)
-        self.member_client2 = APIClient()
-        self.member_client2.force_authenticate(user=self.member_user2)
 
         # Create test products
         self.product1 = ProductFactory(quantity=100, price=Decimal("25.00"))
