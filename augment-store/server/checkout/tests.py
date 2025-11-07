@@ -2,6 +2,7 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
 from rest_framework import status
+from rest_framework.test import APIClient
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
@@ -305,3 +306,173 @@ class OrderListViewTests(BaseAPITestCase):
 
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class RetrieveOrderViewTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Create two member users for testing access control
+        self.member_user1 = UserFactory(
+            email="member1@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.member_user2 = UserFactory(
+            email="member2@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.member_client1 = self.authenticated_client
+        self.member_client1.force_authenticate(user=self.member_user1)
+
+        # Create test products
+        self.product1 = ProductFactory(quantity=100, price=Decimal("25.00"))
+        self.product2 = ProductFactory(quantity=50, price=Decimal("15.00"))
+
+    def test_retrieve_order_success(self):
+        # GIVEN an authenticated user exists
+        # AND the user has created an order with items
+        cart_item1 = CartItemFactory(
+            product=self.product1,
+            quantity=2,
+            created_by=self.member_user1
+        )
+        cart_item2 = CartItemFactory(
+            product=self.product2,
+            quantity=1,
+            created_by=self.member_user1
+        )
+
+        order = OrderFactory(created_by=self.member_user1)
+        OrderItemFactory(order=order, cart_item=cart_item1, created_by=self.member_user1)
+        OrderItemFactory(order=order, cart_item=cart_item2, created_by=self.member_user1)
+
+        # WHEN we make a GET request to retrieve the order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": str(order.id)})
+        response = self.member_client1.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should contain the order details
+        self.assertEqual(str(response.data["id"]), str(order.id))
+        self.assertEqual(response.data["status"], order.status)
+        self.assertEqual(len(response.data["items"]), 2)
+
+        # AND the order items should be included with cart item details
+        order_items = response.data["items"]
+        self.assertIn("cart_item", order_items[0])
+        self.assertIn("product", order_items[0]["cart_item"])
+
+    def test_retrieve_order_with_payment_status(self):
+        # GIVEN an authenticated user exists
+        # AND the user has created an order
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user1
+        )
+
+        order = OrderFactory(created_by=self.member_user1)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user1)
+
+        # WHEN we make a GET request to retrieve the order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": str(order.id)})
+        response = self.member_client1.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should contain payment status
+        self.assertIn("payment_status", response.data)
+        self.assertEqual(response.data["payment_status"], "pending")
+
+    def test_retrieve_order_not_found(self):
+        # GIVEN an authenticated user exists
+        # AND no order exists with the given ID
+        non_existent_order_id = "00000000-0000-0000-0000-000000000000"
+
+        # WHEN we make a GET request to retrieve the non-existent order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": non_existent_order_id})
+        response = self.member_client1.get(url)
+
+        # THEN we should get a 404 response
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_order_access_control(self):
+        # GIVEN two users exist with their own orders
+        cart_item1 = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user1
+        )
+        cart_item2 = CartItemFactory(
+            product=self.product2,
+            quantity=1,
+            created_by=self.member_user2
+        )
+
+        order1 = OrderFactory(created_by=self.member_user1)
+        OrderItemFactory(order=order1, cart_item=cart_item1, created_by=self.member_user1)
+
+        order2 = OrderFactory(created_by=self.member_user2)
+        OrderItemFactory(order=order2, cart_item=cart_item2, created_by=self.member_user2)
+
+        # WHEN user1 tries to access user2's order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": str(order2.id)})
+        response = self.member_client1.get(url)
+
+        # THEN we should get a 404 response (not found for this user)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_order_unauthenticated(self):
+        # GIVEN a user is not authenticated
+        # AND an order exists
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user1
+        )
+        order = OrderFactory(created_by=self.member_user1)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user1)
+
+        # WHEN we make a GET request to retrieve the order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": str(order.id)})
+        response = self.client.get(url)
+
+        # THEN we should get a 401 response
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_order_response_structure(self):
+        # GIVEN an authenticated user exists
+        # AND the user has created an order
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=3,
+            created_by=self.member_user1
+        )
+
+        order = OrderFactory(created_by=self.member_user1)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user1)
+
+        # WHEN we make a GET request to retrieve the order
+        url = reverse("v1:checkout:retrieve_order", kwargs={"pk": str(order.id)})
+        response = self.member_client1.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should contain all expected fields
+        expected_fields = ["id", "status", "items", "subtotal", "tax", "shipping", "total", "created_at", "updated_at", "payment_status"]
+        for field in expected_fields:
+            self.assertIn(field, response.data)
+
+        # AND the order items should be properly nested
+        self.assertEqual(len(response.data["items"]), 1)
+        order_item = response.data["items"][0]
+        self.assertIn("id", order_item)
+        self.assertIn("cart_item", order_item)
+        self.assertIn("created_at", order_item)
