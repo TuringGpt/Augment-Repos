@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from products.models import ProductBrand, Product
+from checkout.models import Order
 from storage.serializers import FileSerializer, FileListSerializer
 
 class MerchantBrandSerializer(serializers.ModelSerializer):
@@ -18,7 +19,7 @@ class MerchantProductSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "images"]
 
 
-class MerchantOrdersSerializer(serializers.Serializer):
+class MerchantOrdersSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Order

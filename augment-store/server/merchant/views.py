@@ -1,7 +1,7 @@
 from products.models import ProductBrand, Product
 from checkout.models import Order
 from rest_framework.generics import ListAPIView
-from .serializers import MerchantBrandSerializer, MerchantProductSerializer
+from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 class MerchantBrandListView(ListAPIView):
@@ -28,4 +28,4 @@ class MerchantOrdersListView(ListAPIView):
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        return Order.objects.filter(cart_items__product__brand__created_by=object_id)
+        return Order.objects.filter(order_items__cart_items__product__brand__created_by=object_id)
