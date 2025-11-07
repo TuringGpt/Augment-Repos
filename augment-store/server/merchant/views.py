@@ -27,5 +27,4 @@ class MerchantOrdersListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        object_id = self.kwargs.get("pk")
-        return Order.objects.filter(items__cart_item__product__brand__created_by=object_id)
+        return Order.objects.filter(items__cart_item__product__brand__created_by=self.request.user).distinct()
