@@ -2,7 +2,7 @@ from products.models import ProductBrand, Product
 from checkout.models import Order
 from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 class MerchantBrandListView(ListAPIView):
     serializer_class = MerchantBrandSerializer
@@ -24,8 +24,8 @@ class MerchantProductListView(ListAPIView):
 
 class MerchantOrdersListView(ListAPIView):
     serializer_class = MerchantOrdersSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        return Order.objects.filter(order_item__cart_item__product__brand__created_by=object_id)
+        return Order.objects.filter(items__cart_item__product__brand__created_by=object_id)
