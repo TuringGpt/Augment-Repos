@@ -28,4 +28,4 @@ class MerchantOrdersListView(ListAPIView):
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        return Order.objects.filter(order_items__cart_items__product__brand__created_by=object_id)
+        return Order.objects.filter(order_item__cart_item__product__brand__created_by=object_id)
