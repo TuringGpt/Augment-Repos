@@ -22,14 +22,49 @@ import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
 
 const contactInfoSchema = z.object({
-  email: z.email('Invalid email address'),
+  email: z.string().min(1, 'Email is required').email('Invalid email address'),
   phone: z
     .string()
     .min(1, 'Phone number is required')
-    .regex(/^\+?[\d\s\-()]+$/, 'Invalid phone number format')
-    .min(10, 'Phone number must be at least 10 digits'),
-  firstName: z.string().min(1, 'First name is required').max(50, 'First name is too long'),
-  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name is too long'),
+    .transform((val) => val.replace(/[\s\-()]/g, ''))
+    .refine(
+      (val) => {
+        // Remove any leading + sign for digit counting
+        const digitsOnly = val.replace(/^\+/, '')
+        // Check if it contains only digits after removing the optional +
+        return /^\d+$/.test(digitsOnly)
+      },
+      { message: 'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix' }
+    )
+    .refine(
+      (val) => {
+        // Count digits only (excluding the + sign)
+        const digitsOnly = val.replace(/^\+/, '')
+        return digitsOnly.length >= 10 && digitsOnly.length <= 15
+      },
+      { message: 'Phone number must be between 10 and 15 digits' }
+    )
+    .refine(
+      (val) => {
+        // Validate common international formats
+        const patterns = [
+          /^\+?1?\d{10}$/, // US/Canada: +1XXXXXXXXXX or XXXXXXXXXX (10 digits)
+          /^\+?\d{10,15}$/, // International: 10-15 digits with optional +
+        ]
+        return patterns.some((pattern) => pattern.test(val))
+      },
+      { message: 'Invalid phone number format' }
+    ),
+  firstName: z
+    .string()
+    .min(1, 'First name is required')
+    .max(50, 'First name is too long')
+    .regex(/^[a-zA-Z\s\-']+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes'),
+  lastName: z
+    .string()
+    .min(1, 'Last name is required')
+    .max(50, 'Last name is too long')
+    .regex(/^[a-zA-Z\s\-']+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
 })
 
 type ContactInfo = z.infer<typeof contactInfoSchema>
@@ -88,11 +123,15 @@ const CheckoutPage = () => {
   )
 
   const isContactInfoComplete =
-    contactInfo.firstName &&
-    contactInfo.lastName &&
-    contactInfo.email &&
-    contactInfo.phone &&
-    Object.keys(errors).length === 0
+    contactInfo.firstName.trim() !== '' &&
+    contactInfo.lastName.trim() !== '' &&
+    contactInfo.email.trim() !== '' &&
+    contactInfo.phone.trim() !== '' &&
+    Object.keys(errors).length === 0 &&
+    touched.firstName &&
+    touched.lastName &&
+    touched.email &&
+    touched.phone
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -205,7 +244,9 @@ const CheckoutPage = () => {
                     onBlur={handleBlur('phone')}
                     error={touched.phone && !!errors.phone}
                     helperText={
-                      touched.phone && errors.phone ? errors.phone : 'For delivery updates and support'
+                      touched.phone && errors.phone
+                        ? errors.phone
+                        : 'Enter 10-15 digits. Format: +1 (555) 123-4567 or 5551234567'
                     }
                     placeholder="+1 (555) 123-4567"
                     required
