@@ -56,9 +56,15 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
       hasError = true
     }
 
-    // If no errors, update parent
+    // If no errors, update parent only if values have actually changed from the prop values
     if (!hasError) {
-      onChange([minVal, maxVal])
+      const currentMin = value[0]
+      const currentMax = value[1]
+
+      // Only trigger onChange if the values are different from current prop values
+      if (minVal !== currentMin || maxVal !== currentMax) {
+        onChange([minVal, maxVal])
+      }
     }
   }
 

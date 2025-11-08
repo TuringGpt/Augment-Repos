@@ -19,7 +19,12 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
   }
 
   const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
-    onChange(newValue as [number, number])
+    const newRatingValue = newValue as [number, number]
+
+    // Only trigger onChange if the values are different from current prop values
+    if (newRatingValue[0] !== value[0] || newRatingValue[1] !== value[1]) {
+      onChange(newRatingValue)
+    }
   }
 
   return (

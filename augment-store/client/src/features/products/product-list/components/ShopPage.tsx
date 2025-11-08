@@ -37,12 +37,12 @@ const ShopPage = () => {
   const [totalCount, setTotalCount] = useState(0)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
-  // Filter state
+  // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
     minPrice: undefined,
     maxPrice: undefined,
-    minRating: 0,
-    maxRating: 5,
+    minRating: undefined,
+    maxRating: undefined,
   })
 
   // Sort state
@@ -59,6 +59,8 @@ const ShopPage = () => {
           page: apiPage,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
+          minRating: filters.minRating,
+          maxRating: filters.maxRating,
         })
 
         console.log('📦 API Response:', {
@@ -67,7 +69,12 @@ const ShopPage = () => {
           page: response.page,
           limit: response.limit,
           totalPages: response.totalPages,
-          filters: { minPrice: filters.minPrice, maxPrice: filters.maxPrice },
+          filters: {
+            minPrice: filters.minPrice,
+            maxPrice: filters.maxPrice,
+            minRating: filters.minRating,
+            maxRating: filters.maxRating,
+          },
         })
 
         setProducts(response.products)
@@ -85,7 +92,7 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage, filters.minPrice, filters.maxPrice])
+  }, [apiPage, filters.minPrice, filters.maxPrice, filters.minRating, filters.maxRating])
 
   // Calculate client-side pagination (no filtering or sorting for now)
   const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
@@ -137,8 +144,8 @@ const ShopPage = () => {
     setFilters({
       minPrice: undefined,
       maxPrice: undefined,
-      minRating: 0,
-      maxRating: 5,
+      minRating: undefined,
+      maxRating: undefined,
     })
   }
 

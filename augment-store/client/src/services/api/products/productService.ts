@@ -34,6 +34,16 @@ export const productService = {
         queryParams.price_max = params.maxPrice
       }
 
+      // Add rating filters if provided
+      // Backend uses 10-point scale (0-9.99), frontend uses 5-star scale (0-5)
+      // Convert by multiplying by 2
+      if (params?.minRating !== undefined && params?.minRating !== null) {
+        queryParams.rating_min = params.minRating * 2
+      }
+      if (params?.maxRating !== undefined && params?.maxRating !== null) {
+        queryParams.rating_max = params.maxRating * 2
+      }
+
       // Fetch products from backend with pagination and filters
       const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
         params: queryParams,
