@@ -1,7 +1,7 @@
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from .models import Order
-from .serializers import CreateOrderSerializer, OrderListSerializer
+from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer
 
 
 class BaseOrderView:
@@ -18,3 +18,7 @@ class CreateOrderView(BaseOrderView, CreateAPIView):
 
 class OrderListView(BaseOrderView, ListAPIView):
     serializer_class = OrderListSerializer
+
+
+class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
+    serializer_class = OrderDetailSerializer

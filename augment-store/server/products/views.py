@@ -10,7 +10,7 @@ from rest_framework import filters
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
-from .filters import ProductFilter
+from .filters import ProductFilter, ProductSearchFilter
 
 
 
@@ -89,6 +89,13 @@ class ProductListView(BaseProductView, ListAPIView):
     ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+class ProductSearchView(BaseProductView, ListAPIView):
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filterset_class = ProductSearchFilter
+    search_fields = ["name", "description", "brand__name", "category__name"]
+
+    def get_queryset(self):
+        return Product.objects.all()
 
 class CreateProductView(BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer

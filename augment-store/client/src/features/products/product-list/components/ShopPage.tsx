@@ -57,6 +57,8 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
+          minRating: filters.minRating,
+          maxRating: filters.maxRating,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
           minRating: filters.minRating,
@@ -169,7 +171,7 @@ const ShopPage = () => {
       />
 
       <RatingFilter
-        value={[filters.minRating ?? 0, filters.maxRating ?? 5]}
+        value={[filters.minRating ?? 0, filters.maxRating ?? 10]}
         onChange={handleRatingChange}
       />
     </Box>

@@ -39,16 +39,16 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
           onChangeCommitted={handleChangeCommitted}
           valueLabelDisplay="auto"
           min={0}
-          max={5}
+          max={10}
           step={0.5}
           disableSwap
           marks={[
             { value: 0, label: '0' },
-            { value: 1, label: '1' },
             { value: 2, label: '2' },
-            { value: 3, label: '3' },
             { value: 4, label: '4' },
-            { value: 5, label: '5' },
+            { value: 6, label: '6' },
+            { value: 8, label: '8' },
+            { value: 10, label: '10' },
           ]}
           sx={{
             '& .MuiSlider-thumb': {
@@ -75,13 +75,13 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
         />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Rating value={localValue[0]} readOnly precision={0.5} size="small" />
+            <Rating value={localValue[0] / 2} readOnly precision={0.25} size="small" max={5} />
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
               ({localValue[0]})
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Rating value={localValue[1]} readOnly precision={0.5} size="small" />
+            <Rating value={localValue[1] / 2} readOnly precision={0.25} size="small" max={5} />
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
               ({localValue[1]})
             </Typography>
