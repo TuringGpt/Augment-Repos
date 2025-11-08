@@ -61,8 +61,6 @@ const ShopPage = () => {
           maxRating: filters.maxRating,
           minPrice: filters.minPrice,
           maxPrice: filters.maxPrice,
-          minRating: filters.minRating,
-          maxRating: filters.maxRating,
         })
 
         console.log('📦 API Response:', {
@@ -135,10 +133,16 @@ const ShopPage = () => {
   }
 
   const handleRatingChange = (value: [number, number]) => {
+    // Ensure rating values are within valid range (0-10)
+    const minRating = Math.max(0, Math.min(10, value[0]))
+    const maxRating = Math.max(0, Math.min(10, value[1]))
+
+    console.log('Rating filter changed:', { original: value, clamped: [minRating, maxRating] })
+
     setFilters((prev) => ({
       ...prev,
-      minRating: value[0],
-      maxRating: value[1],
+      minRating,
+      maxRating,
     }))
   }
 
