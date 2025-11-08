@@ -20,7 +20,7 @@ const CheckoutPage = () => {
     lastName: '',
   })
 
-  const handleContactChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleContactChange = (field: keyof typeof contactInfo) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setContactInfo(prev => ({
       ...prev,
       [field]: event.target.value,
