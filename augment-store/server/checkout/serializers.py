@@ -150,16 +150,18 @@ class CreateOrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
 
         user = self.context.get("request").user
-        order = Order.objects.create(created_by=user)
+        order = Order.objects.create(
+            created_by=user,
+            shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
+            billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
+            contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
+        )
 
         for cart_item in validated_data.get("cart_items"):
             OrderItem.objects.create(
                 order=order, 
                 cart_item=cart_item, 
-                created_by=user, 
-                shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
-                billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
-                contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
+                created_by=user,
             )
 
         return order
