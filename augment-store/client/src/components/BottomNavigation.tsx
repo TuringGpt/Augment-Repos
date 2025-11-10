@@ -84,6 +84,7 @@ const BottomNavigation = () => {
         right: 0,
         display: { xs: 'block', md: 'none' }, // Only show on mobile
         zIndex: 1100,
+        paddingBottom: 'env(safe-area-inset-bottom)', // Handle bottom safe area for devices like iPhone X+
       }}
       elevation={8}
     >

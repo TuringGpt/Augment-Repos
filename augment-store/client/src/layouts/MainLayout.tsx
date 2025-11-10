@@ -28,7 +28,10 @@ const MainLayout = () => {
         sx={{
           flex: 1,
           py: 3,
-          pb: { xs: 10, md: 3 }, // Add bottom padding on mobile for bottom nav
+          pb: {
+            xs: 'calc(70px + env(safe-area-inset-bottom))', // Bottom nav height + safe area
+            md: 3,
+          },
         }}
       >
         <PageTransition key={location.pathname}>
