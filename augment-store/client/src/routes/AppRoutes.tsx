@@ -19,6 +19,7 @@ import OrdersPage from '@features/orders/order-list/components/OrdersPage'
 import OrderDetailPage from '@features/orders/order-detail/components/OrderDetailPage'
 import ProfilePage from '@features/user/profile/components/ProfilePage'
 import WishlistPage from '@features/user/wishlist/components/WishlistPage'
+import SearchPage from '@features/products/search/components/SearchPage'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ShopPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/cart" element={<CartPage />} />
 
         {/* Info pages */}

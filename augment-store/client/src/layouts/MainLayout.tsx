@@ -1,14 +1,17 @@
 import { useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
 import Header from '@components/Header'
 import Footer from '@components/Footer'
 import Sidebar from '@components/Sidebar'
+import BottomNavigation from '@components/BottomNavigation'
+import PageTransition from '@components/PageTransition'
 import CartDrawer from '@features/cart/components/CartDrawer'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
 
 const MainLayout = () => {
   const { refetchCart } = useCartSync()
+  const location = useLocation()
 
   // Sync cart from API on mount when user is authenticated
   useEffect(() => {
@@ -20,10 +23,21 @@ const MainLayout = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Sidebar />
       <Header />
-      <Box component="main" sx={{ flex: 1, py: 3 }}>
-        <Outlet />
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          py: 3,
+          pb: { xs: 10, md: 3 }, // Add bottom padding on mobile for bottom nav
+          transition: 'padding 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
       </Box>
       <Footer />
+      <BottomNavigation />
       <CartDrawer />
     </Box>
   )
