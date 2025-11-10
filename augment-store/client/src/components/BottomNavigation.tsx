@@ -8,35 +8,41 @@ import {
 import { Home, ShoppingBag, Search, Favorite, Person } from '@mui/icons-material'
 import { useAuthStore } from '@store/authStore'
 
+// Helper function to get initial tab value from pathname
+const getTabFromPath = (pathname: string): number => {
+  // Check for auth routes first (deselect all tabs)
+  if (pathname === '/login' || pathname === '/register') {
+    return -1
+  }
+  // Check for nested routes using prefix matching (order matters - most specific first)
+  if (pathname.startsWith('/wishlist')) {
+    return 3
+  }
+  if (pathname.startsWith('/profile')) {
+    return 4
+  }
+  if (pathname.startsWith('/search')) {
+    return 2
+  }
+  if (pathname.startsWith('/products')) {
+    return 1
+  }
+  if (pathname === '/') {
+    return 0
+  }
+  // For any other route, deselect all tabs
+  return -1
+}
+
 const BottomNavigation = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated } = useAuthStore()
-  const [value, setValue] = useState(0)
+  const [value, setValue] = useState(() => getTabFromPath(location.pathname))
 
   // Update active tab based on current route
   useEffect(() => {
-    const path = location.pathname
-
-    // Check for auth routes first (deselect all tabs)
-    if (path === '/login' || path === '/register') {
-      setValue(-1)
-    }
-    // Check for nested routes using prefix matching (order matters - most specific first)
-    else if (path.startsWith('/wishlist')) {
-      setValue(3)
-    } else if (path.startsWith('/profile')) {
-      setValue(4)
-    } else if (path.startsWith('/search')) {
-      setValue(2)
-    } else if (path.startsWith('/products')) {
-      setValue(1)
-    } else if (path === '/') {
-      setValue(0)
-    } else {
-      // For any other route, deselect all tabs
-      setValue(-1)
-    }
+    setValue(getTabFromPath(location.pathname))
   }, [location.pathname])
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
