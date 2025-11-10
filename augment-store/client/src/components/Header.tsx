@@ -67,7 +67,6 @@ const Header = () => {
             Augment Store
           </Typography>
 
-          {/* Search Bar - Visible on all devices */}
           <Box sx={{ flexGrow: 1, mx: { xs: 1, md: 2 } }}>
             <SearchBar />
           </Box>
