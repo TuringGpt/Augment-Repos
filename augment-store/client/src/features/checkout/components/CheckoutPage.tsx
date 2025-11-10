@@ -10,6 +10,7 @@ import {
   Grid,
   Box,
   Chip,
+  MenuItem,
 } from '@mui/material'
 import {
   ExpandMore as ExpandMoreIcon,
@@ -67,7 +68,36 @@ const contactInfoSchema = z.object({
     .regex(/^[a-zA-Z\s\-']+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
 })
 
+const shippingAddressSchema = z.object({
+  address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
+  address2: z.string().max(100, 'Address is too long').optional(),
+  city: z
+    .string()
+    .min(1, 'City is required')
+    .max(50, 'City name is too long')
+    .regex(/^[a-zA-Z\s\-']+$/, 'City can only contain letters, spaces, hyphens, and apostrophes'),
+  state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
+  postalCode: z
+    .string()
+    .min(1, 'Postal code is required')
+    .max(20, 'Postal code is too long')
+    .regex(/^[a-zA-Z0-9\s\-]+$/, 'Invalid postal code format'),
+  country: z.string().min(1, 'Country is required'),
+})
+
 type ContactInfo = z.infer<typeof contactInfoSchema>
+type ShippingAddress = z.infer<typeof shippingAddressSchema>
+
+const COUNTRIES = [
+  { value: 'US', label: 'United States' },
+  { value: 'CA', label: 'Canada' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'AU', label: 'Australia' },
+  { value: 'DE', label: 'Germany' },
+  { value: 'FR', label: 'France' },
+  { value: 'JP', label: 'Japan' },
+  { value: 'CN', label: 'China' },
+]
 
 const CheckoutPage = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
@@ -77,12 +107,39 @@ const CheckoutPage = () => {
     lastName: '',
   })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo, string>>>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo, boolean>>>({})
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+  })
+
+  const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, string>>>({})
+  const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, boolean>>>({})
 
   const validateField = useCallback((field: keyof ContactInfo, value: string) => {
     try {
       contactInfoSchema.shape[field].parse(value)
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+      return true
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
+        return false
+      }
+      return false
+    }
+  }, [])
+
+  const validateShippingField = useCallback((field: keyof ShippingAddress, value: string) => {
+    try {
+      shippingAddressSchema.shape[field].parse(value)
       setErrors((prev) => {
         const newErrors = { ...prev }
         delete newErrors[field]
@@ -114,12 +171,36 @@ const CheckoutPage = () => {
     [touched, validateField]
   )
 
+  const handleShippingChange = useCallback(
+    (field: keyof ShippingAddress) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value
+      setShippingAddress((prev) => ({
+        ...prev,
+        [field]: value,
+      }))
+
+      // Only validate if field has been touched
+      if (touched[field]) {
+        validateShippingField(field, value)
+      }
+    },
+    [touched, validateShippingField]
+  )
+
   const handleBlur = useCallback(
     (field: keyof ContactInfo) => () => {
       setTouched((prev) => ({ ...prev, [field]: true }))
       validateField(field, contactInfo[field])
     },
     [contactInfo, validateField]
+  )
+
+  const handleShippingBlur = useCallback(
+    (field: keyof ShippingAddress) => () => {
+      setTouched((prev) => ({ ...prev, [field]: true }))
+      validateShippingField(field, shippingAddress[field] || '')
+    },
+    [shippingAddress, validateShippingField]
   )
 
   const isContactInfoComplete =
@@ -132,6 +213,23 @@ const CheckoutPage = () => {
     touched.lastName &&
     touched.email &&
     touched.phone
+
+  const isShippingAddressComplete =
+    shippingAddress.address1.trim() !== '' &&
+    shippingAddress.city.trim() !== '' &&
+    shippingAddress.state.trim() !== '' &&
+    shippingAddress.postalCode.trim() !== '' &&
+    shippingAddress.country.trim() !== '' &&
+    !errors.address1 &&
+    !errors.city &&
+    !errors.state &&
+    !errors.postalCode &&
+    !errors.country &&
+    touched.address1 &&
+    touched.city &&
+    touched.state &&
+    touched.postalCode &&
+    touched.country
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -277,9 +375,9 @@ const CheckoutPage = () => {
                 py: 1.5,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <LocalShippingIcon color="primary" sx={{ fontSize: 28 }} />
-                <Box>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
                     Shipping Address
                   </Typography>
@@ -287,10 +385,110 @@ const CheckoutPage = () => {
                     Where should we deliver your order?
                   </Typography>
                 </Box>
+                {isShippingAddressComplete && (
+                  <Chip
+                    icon={<CheckCircleIcon />}
+                    label="Complete"
+                    color="success"
+                    size="small"
+                    sx={{ mr: 2 }}
+                  />
+                )}
               </Box>
             </AccordionSummary>
             <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
-              <Typography color="text.secondary">Shipping address form coming soon...</Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Street Address"
+                    value={shippingAddress.address1}
+                    onChange={handleShippingChange('address1')}
+                    onBlur={handleShippingBlur('address1')}
+                    error={touched.address1 && !!errors.address1}
+                    helperText={touched.address1 && errors.address1 ? errors.address1 : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Apartment, suite, etc. (optional)"
+                    value={shippingAddress.address2}
+                    onChange={handleShippingChange('address2')}
+                    onBlur={handleShippingBlur('address2')}
+                    error={touched.address2 && !!errors.address2}
+                    helperText={touched.address2 && errors.address2 ? errors.address2 : ''}
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    value={shippingAddress.city}
+                    onChange={handleShippingChange('city')}
+                    onBlur={handleShippingBlur('city')}
+                    error={touched.city && !!errors.city}
+                    helperText={touched.city && errors.city ? errors.city : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="State/Province"
+                    value={shippingAddress.state}
+                    onChange={handleShippingChange('state')}
+                    onBlur={handleShippingBlur('state')}
+                    error={touched.state && !!errors.state}
+                    helperText={touched.state && errors.state ? errors.state : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Postal Code"
+                    value={shippingAddress.postalCode}
+                    onChange={handleShippingChange('postalCode')}
+                    onBlur={handleShippingBlur('postalCode')}
+                    error={touched.postalCode && !!errors.postalCode}
+                    helperText={touched.postalCode && errors.postalCode ? errors.postalCode : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Country"
+                    value={shippingAddress.country}
+                    onChange={handleShippingChange('country')}
+                    onBlur={handleShippingBlur('country')}
+                    error={touched.country && !!errors.country}
+                    helperText={touched.country && errors.country ? errors.country : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  >
+                    {COUNTRIES.map((country) => (
+                      <MenuItem key={country.value} value={country.value}>
+                        {country.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
             </AccordionDetails>
           </Accordion>
 
