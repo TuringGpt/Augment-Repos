@@ -82,6 +82,8 @@ INSTALLED_APPS = [
     "dummy_data",
     "checkout",
     "merchant",
+
+        'schema_viewer',
 ]
 
 MIDDLEWARE = [

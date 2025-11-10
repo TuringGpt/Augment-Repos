@@ -11,6 +11,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', SpectacularSwaggerView.as_view(url_name='v1:schema'), name='swagger-ui'),
     path('api/v1/', include('api.urls', namespace='v1')),
+     path('schema-viewer/', include('schema_viewer.urls')),
 ]
 
 # Serve media files in development mode when using local storage

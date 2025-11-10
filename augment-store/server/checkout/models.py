@@ -5,6 +5,36 @@ from core.models import BaseModel
 from carts.models import CartItem
 
 
+class ShippingAddress(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shipping_addresses')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=255)
+
+class BillingAddress(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='billing_addresses')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=255)
+
+
+class ContactInformation(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contact_information')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+
 
 class Order(BaseModel):
     class OrderStatus:

@@ -5,6 +5,16 @@ from carts.models import CartItem
 from carts.serializers import CartItemListSerializer
 
 
+class ShippingAddressListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShippingAddress
+        fields = "__all__"
+
+class BillingAddressListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingAddress
+        fields = "__all__"
+
 class OrderItemListSerializer(serializers.ModelSerializer):
     cart_item = CartItemListSerializer(read_only=True)
 
@@ -15,6 +25,8 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
 class CreateOrderSerializer(serializers.ModelSerializer):
     cart_items = serializers.ListField(child=serializers.UUIDField(), write_only=True)
+    shipping_address = serializers.UUIDField()
+    billing_address = serializers.UUIDField()
 
     class Meta:
         model = Order
@@ -35,7 +47,14 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         order = Order.objects.create(created_by=user)
 
         for cart_item in validated_data.get("cart_items"):
-            OrderItem.objects.create(order=order, cart_item=cart_item, created_by=user)
+            OrderItem.objects.create(
+                order=order, 
+                cart_item=cart_item, 
+                created_by=user, 
+                shipping_address=validated_data.get("shipping_address"), 
+                billing_address=validated_data.get("billing_address")
+            )
+
         return order
 
 
@@ -58,6 +77,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     subtotal = serializers.ReadOnlyField()
     tax = serializers.ReadOnlyField()
     shipping = serializers.ReadOnlyField()
+    shipping_address = ShippingAddressListSerializer(read_only=True)
+    billing_address = BillingAddressListSerializer(read_only=True)
 
     class Meta:
         model = Order
