@@ -37,9 +37,7 @@ const Header = () => {
     <AppBar
       position="sticky"
       sx={{
-        transform: { xs: 'translateY(-100%)', md: 'translateY(0)' },
-        opacity: { xs: 0, md: 1 },
-        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out',
+        display: { xs: 'none', md: 'block' },
       }}
     >
       <Container maxWidth="xl">

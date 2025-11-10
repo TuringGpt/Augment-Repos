@@ -78,9 +78,6 @@ const BottomNavigation = () => {
         right: 0,
         display: { xs: 'block', md: 'none' }, // Only show on mobile
         zIndex: 1100,
-        transform: { xs: 'translateY(0)', md: 'translateY(100%)' },
-        opacity: { xs: 1, md: 0 },
-        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-in-out',
       }}
       elevation={8}
     >

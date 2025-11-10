@@ -29,7 +29,6 @@ const MainLayout = () => {
           flex: 1,
           py: 3,
           pb: { xs: 10, md: 3 }, // Add bottom padding on mobile for bottom nav
-          transition: 'padding 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         <PageTransition key={location.pathname}>
