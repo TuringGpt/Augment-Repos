@@ -12,10 +12,12 @@ import {
   Grid,
   MenuItem,
 } from '@mui/material'
-import { Edit, Save, Cancel } from '@mui/icons-material'
+import { Edit, Save, Cancel, Logout } from '@mui/icons-material'
 import delay from 'lodash/delay'
+import { useNavigate } from 'react-router-dom'
 import { userService } from '@services/api/user/userService'
 import { storageService } from '@services/api/storage/storageService'
+import { authService } from '@services/api/auth/authService'
 import type { UserProfile } from '@features/user/types'
 import { Colors } from '@config/colors'
 import { useProfileForm } from '../hooks/useProfileForm'
@@ -23,6 +25,7 @@ import { getChangedFields } from '../utils/profileValidation'
 import { AvatarUpload } from './AvatarUpload'
 
 const ProfilePage = () => {
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -206,6 +209,11 @@ const ProfilePage = () => {
     } finally {
       setAvatarState((prev) => ({ ...prev, isUploading: false }))
     }
+  }
+
+  const handleLogout = async () => {
+    await authService.logout()
+    navigate('/login')
   }
 
   if (isLoading) {
@@ -432,6 +440,28 @@ const ProfilePage = () => {
           )}
         </form>
       </Paper>
+
+      {/* Logout Button - Visible on mobile */}
+      <Box sx={{ mt: 3, display: { xs: 'block', md: 'none' } }}>
+        <Button
+          fullWidth
+          variant="outlined"
+          color="error"
+          startIcon={<Logout />}
+          onClick={handleLogout}
+          sx={{
+            py: 1.5,
+            borderWidth: 2,
+            '&:hover': {
+              borderWidth: 2,
+              backgroundColor: 'error.main',
+              color: 'white',
+            },
+          }}
+        >
+          Logout
+        </Button>
+      </Box>
     </Container>
   )
 }
