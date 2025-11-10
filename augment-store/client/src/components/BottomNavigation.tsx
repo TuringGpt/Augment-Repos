@@ -27,6 +27,9 @@ const BottomNavigation = () => {
       setValue(3)
     } else if (path === '/profile') {
       setValue(4)
+    } else if (path === '/login' || path === '/register') {
+      // When redirected to login/register, deselect all tabs
+      setValue(-1)
     }
   }, [location.pathname])
 
