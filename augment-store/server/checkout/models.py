@@ -5,6 +5,36 @@ from core.models import BaseModel
 from carts.models import CartItem
 
 
+class ShippingAddress(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shipping_addresses')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=255)
+
+class BillingAddress(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='billing_addresses')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=255)
+
+
+class ContactInformation(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contact_information')
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+
 
 class Order(BaseModel):
     class OrderStatus:
@@ -21,6 +51,9 @@ class Order(BaseModel):
     payment: "Payment"
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
+    billing_address = models.ForeignKey(BillingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
+    contact_information = models.ForeignKey(ContactInformation, on_delete=models.SET_NULL, null=True, related_name='orders')
 
     @property
     def subtotal(self):
