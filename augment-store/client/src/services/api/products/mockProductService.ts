@@ -21,16 +21,16 @@ export const mockProductService = {
         product.description.toLowerCase().includes(query.toLowerCase())
     )
 
-    // Apply limit
-    const limit = params?.limit || 5
+    // Apply limit (default 12 to match real service)
+    const limit = params?.limit || 12
     const products = filteredProducts.slice(0, limit)
 
     return {
       products,
       total: filteredProducts.length,
-      page: 1,
+      page: 1, // Search always returns first page only
       limit,
-      totalPages: Math.ceil(filteredProducts.length / limit),
+      totalPages: 1, // Search only shows first page
     }
   },
 

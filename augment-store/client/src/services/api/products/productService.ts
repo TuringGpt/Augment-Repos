@@ -104,57 +104,26 @@ export const productService = {
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
     try {
-      const uiPage = params?.page || 1
       const limit = params?.limit || 12
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      // Calculate which backend page to fetch based on UI pagination
-      // UI offset: where we want to start in the full result set
-      const uiOffset = (uiPage - 1) * limit
-      // Backend page: which backend page contains our UI offset
-      const backendPage = Math.floor(uiOffset / backendPageSize) + 1
-      // Offset within the backend page results
-      const offsetInBackendPage = uiOffset % backendPageSize
-
-      // Check if we need to fetch the next backend page too
-      const needsNextPage = offsetInBackendPage + limit > backendPageSize
-
-      // Fetch the first backend page
-      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+      // Fetch products from backend using dedicated search endpoint
+      // Backend supports limit parameter to restrict results
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.SEARCH, {
         params: {
-          page: backendPage,
           search: query,
+          limit: limit,
         },
       })
 
       // Transform backend products to frontend format
-      let allProducts: Product[] = response.results.map(transformProductFromAPI)
-
-      // If we need more items from the next page, fetch it
-      if (needsNextPage && response.next) {
-        const nextResponse = await apiClient.get<PaginatedProductsAPI>(
-          API_ENDPOINTS.PRODUCTS.LIST,
-          {
-            params: {
-              page: backendPage + 1,
-              search: query,
-            },
-          }
-        )
-        const nextProducts = nextResponse.results.map(transformProductFromAPI)
-        allProducts = [...allProducts, ...nextProducts]
-      }
-
-      // Slice the correct range from combined results
-      const limitedProducts = allProducts.slice(offsetInBackendPage, offsetInBackendPage + limit)
+      const products: Product[] = response.results.map(transformProductFromAPI)
 
       return {
-        products: limitedProducts,
+        products,
         total: response.count,
-        page: uiPage,
+        page: 1, // Search always returns first page only
         limit,
-        // Calculate totalPages based on the limit returned in the response
-        totalPages: Math.ceil(response.count / limit),
+        totalPages: 1, // Search only shows first page
       }
     } catch (error) {
       console.error('Failed to search products:', error)

@@ -43,7 +43,7 @@ LoadingSpinner.displayName = 'LoadingSpinner'
 const SearchBar = ({
   placeholder = 'Search products...',
   debounceDelay = 500,
-  maxResults = 5,
+  maxResults = 12,
   onResultClick,
 }: SearchBarProps) => {
   const navigate = useNavigate()
