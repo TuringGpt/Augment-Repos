@@ -64,9 +64,9 @@ class OrderItemListSerializer(serializers.ModelSerializer):
 
 class CreateOrderSerializer(serializers.ModelSerializer):
     cart_items = serializers.ListField(child=serializers.UUIDField(), write_only=True)
-    shipping_address = ShippingAddressCreateSerializer()
-    billing_address = BillingAddressCreateSerializer()
-    contact_information = ContactInformationCreateSerializer()
+    shipping_address = ShippingAddressCreateSerializer(required=False)
+    billing_address = BillingAddressCreateSerializer(required=False)
+    contact_information = ContactInformationCreateSerializer(required=False)
 
     shipping_address_id = serializers.UUIDField(write_only=True, required=False)
     billing_address_id = serializers.UUIDField(write_only=True, required=False)
@@ -74,7 +74,18 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "cart_items", "status", "created_at"]
+        fields = [
+            "id", 
+            "cart_items", 
+            "status", 
+            "created_at", 
+            "shipping_address",
+            "billing_address",
+            "contact_information", 
+            "shipping_address_id", 
+            "billing_address_id", 
+            "contact_information_id"
+        ]
         read_only_fields = ["id", "status", "created_at"]
 
 
@@ -119,7 +130,6 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         )
         return billing_address
 
-
     def validate_contact_information(self, value):
         user = self.context.get("request").user
         contact_information, _ = ContactInformation.objects.get_or_create(
@@ -132,6 +142,30 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         )
         return contact_information
 
+    def validate_shipping_address_id(self, value):
+        user = self.context.get("request").user
+        try:
+            shipping_address = ShippingAddress.objects.get(id=value, user=user)
+        except ShippingAddress.DoesNotExist:
+            raise serializers.ValidationError("Shipping address does not exist")
+        return shipping_address
+    
+    def validate_billing_address_id(self, value):
+        user = self.context.get("request").user
+        try:
+            billing_address = BillingAddress.objects.get(id=value, user=user)
+        except BillingAddress.DoesNotExist:
+            raise serializers.ValidationError("Billing address does not exist")
+        return billing_address
+    
+    def validate_contact_information_id(self, value):
+        user = self.context.get("request").user
+        try:
+            contact_information = ContactInformation.objects.get(id=value, user=user)
+        except ContactInformation.DoesNotExist:
+            raise serializers.ValidationError("Contact information does not exist")
+        return contact_information
+    
     def validate(self, attrs):
         # if both shipping_address and shipping_address_id are provided, raise an error
         if "shipping_address" in attrs and "shipping_address_id" in attrs:
