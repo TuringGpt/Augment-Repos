@@ -17,18 +17,24 @@ const BottomNavigation = () => {
   // Update active tab based on current route
   useEffect(() => {
     const path = location.pathname
-    if (path === '/') {
-      setValue(0)
-    } else if (path === '/products') {
-      setValue(1)
-    } else if (path === '/search') {
-      setValue(2)
-    } else if (path === '/wishlist') {
+
+    // Check for auth routes first (deselect all tabs)
+    if (path === '/login' || path === '/register') {
+      setValue(-1)
+    }
+    // Check for nested routes using prefix matching (order matters - most specific first)
+    else if (path.startsWith('/wishlist')) {
       setValue(3)
-    } else if (path === '/profile') {
+    } else if (path.startsWith('/profile')) {
       setValue(4)
-    } else if (path === '/login' || path === '/register') {
-      // When redirected to login/register, deselect all tabs
+    } else if (path.startsWith('/search')) {
+      setValue(2)
+    } else if (path.startsWith('/products')) {
+      setValue(1)
+    } else if (path === '/') {
+      setValue(0)
+    } else {
+      // For any other route, deselect all tabs
       setValue(-1)
     }
   }, [location.pathname])
