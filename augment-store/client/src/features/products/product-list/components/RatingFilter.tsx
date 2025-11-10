@@ -19,7 +19,18 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
   }
 
   const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
-    onChange(newValue as [number, number])
+    const newRatingValue = newValue as [number, number]
+
+    // Clamp values to valid range (0-10)
+    const clampedValue: [number, number] = [
+      Math.max(0, Math.min(10, newRatingValue[0])),
+      Math.max(0, Math.min(10, newRatingValue[1])),
+    ]
+
+    // Only trigger onChange if the values are different from current prop values
+    if (clampedValue[0] !== value[0] || clampedValue[1] !== value[1]) {
+      onChange(clampedValue)
+    }
   }
 
   return (

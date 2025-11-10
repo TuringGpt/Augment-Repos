@@ -37,12 +37,12 @@ const ShopPage = () => {
   const [totalCount, setTotalCount] = useState(0)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
-  // Filter state
+  // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
     minPrice: undefined,
     maxPrice: undefined,
-    minRating: 0,
-    maxRating: 10,
+    minRating: undefined,
+    maxRating: undefined,
   })
 
   // Sort state
@@ -69,11 +69,11 @@ const ShopPage = () => {
           page: response.page,
           limit: response.limit,
           totalPages: response.totalPages,
-          appliedFilters: {
-            minRating: filters.minRating,
-            maxRating: filters.maxRating,
+          filters: {
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
+            minRating: filters.minRating,
+            maxRating: filters.maxRating,
           },
         })
 
@@ -133,10 +133,16 @@ const ShopPage = () => {
   }
 
   const handleRatingChange = (value: [number, number]) => {
+    // Ensure rating values are within valid range (0-10)
+    const minRating = Math.max(0, Math.min(10, value[0]))
+    const maxRating = Math.max(0, Math.min(10, value[1]))
+
+    console.log('Rating filter changed:', { original: value, clamped: [minRating, maxRating] })
+
     setFilters((prev) => ({
       ...prev,
-      minRating: value[0],
-      maxRating: value[1],
+      minRating,
+      maxRating,
     }))
   }
 
@@ -144,8 +150,8 @@ const ShopPage = () => {
     setFilters({
       minPrice: undefined,
       maxPrice: undefined,
-      minRating: 0,
-      maxRating: 10,
+      minRating: undefined,
+      maxRating: undefined,
     })
   }
 
