@@ -51,6 +51,9 @@ class Order(BaseModel):
     payment: "Payment"
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
+    billing_address = models.ForeignKey(BillingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
+    contact_information = models.ForeignKey(ContactInformation, on_delete=models.SET_NULL, null=True, related_name='orders')
 
     @property
     def subtotal(self):
