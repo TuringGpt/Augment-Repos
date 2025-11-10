@@ -22,6 +22,9 @@ import {
 import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
 
+const nameRegex = /^[a-zA-Z\s\-']+$/
+const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
+
 const contactInfoSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
   phone: z
@@ -30,16 +33,13 @@ const contactInfoSchema = z.object({
     .transform((val) => val.replace(/[\s\-()]/g, ''))
     .refine(
       (val) => {
-        // Remove any leading + sign for digit counting
         const digitsOnly = val.replace(/^\+/, '')
-        // Check if it contains only digits after removing the optional +
         return /^\d+$/.test(digitsOnly)
       },
       { message: 'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix' }
     )
     .refine(
       (val) => {
-        // Count digits only (excluding the + sign)
         const digitsOnly = val.replace(/^\+/, '')
         return digitsOnly.length >= 10 && digitsOnly.length <= 15
       },
@@ -47,11 +47,7 @@ const contactInfoSchema = z.object({
     )
     .refine(
       (val) => {
-        // Validate common international formats
-        const patterns = [
-          /^\+?1?\d{10}$/, // US/Canada: +1XXXXXXXXXX or XXXXXXXXXX (10 digits)
-          /^\+?\d{10,15}$/, // International: 10-15 digits with optional +
-        ]
+        const patterns = [/^\+?1?\d{10}$/, /^\+?\d{10,15}$/]
         return patterns.some((pattern) => pattern.test(val))
       },
       { message: 'Invalid phone number format' }
@@ -60,12 +56,12 @@ const contactInfoSchema = z.object({
     .string()
     .min(1, 'First name is required')
     .max(50, 'First name is too long')
-    .regex(/^[a-zA-Z\s\-']+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes'),
+    .regex(nameRegex, `First name ${nameErrorMessage}`),
   lastName: z
     .string()
     .min(1, 'Last name is required')
     .max(50, 'Last name is too long')
-    .regex(/^[a-zA-Z\s\-']+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
+    .regex(nameRegex, `Last name ${nameErrorMessage}`),
 })
 
 const shippingAddressSchema = z.object({
@@ -75,7 +71,7 @@ const shippingAddressSchema = z.object({
     .string()
     .min(1, 'City is required')
     .max(50, 'City name is too long')
-    .regex(/^[a-zA-Z\s\-']+$/, 'City can only contain letters, spaces, hyphens, and apostrophes'),
+    .regex(nameRegex, `City ${nameErrorMessage}`),
   state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
   postalCode: z
     .string()
@@ -99,6 +95,23 @@ const COUNTRIES = [
   { value: 'CN', label: 'China' },
 ]
 
+const ACCORDION_STYLES = {
+  mb: 2,
+  '&:before': { display: 'none' },
+  boxShadow: 2,
+  borderRadius: 2,
+  overflow: 'hidden',
+}
+
+const ACCORDION_SUMMARY_STYLES = {
+  bgcolor: 'background.paper',
+  '&:hover': { bgcolor: 'action.hover' },
+  px: 3,
+  py: 1.5,
+}
+
+const ACCORDION_DETAILS_STYLES = { px: 3, py: 3, bgcolor: 'grey.50' }
+
 const CheckoutPage = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: '',
@@ -119,117 +132,112 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, string>>>({})
   const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, boolean>>>({})
 
-  const validateField = useCallback((field: keyof ContactInfo, value: string) => {
-    try {
-      contactInfoSchema.shape[field].parse(value)
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
-        return false
-      }
-      return false
-    }
-  }, [])
+  const createFieldValidator = useCallback(
+    <T extends z.ZodTypeAny>(schema: z.ZodObject<Record<string, T>>) =>
+      (field: string, value: string) => {
+        try {
+          schema.shape[field].parse(value)
+          setErrors((prev) => {
+            const newErrors = { ...prev }
+            delete newErrors[field as keyof typeof newErrors]
+            return newErrors
+          })
+          return true
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
+            return false
+          }
+          return false
+        }
+      },
+    []
+  )
 
-  const validateShippingField = useCallback((field: keyof ShippingAddress, value: string) => {
-    try {
-      shippingAddressSchema.shape[field].parse(value)
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
-        return false
-      }
-      return false
-    }
-  }, [])
+  const validateContactField = useCallback(
+    createFieldValidator(contactInfoSchema),
+    [createFieldValidator]
+  )
+
+  const validateShippingField = useCallback(
+    createFieldValidator(shippingAddressSchema),
+    [createFieldValidator]
+  )
+
+  const createChangeHandler = useCallback(
+    <T extends Record<string, any>>(
+      setter: React.Dispatch<React.SetStateAction<T>>,
+      validator: (field: string, value: string) => boolean
+    ) =>
+      (field: keyof T) =>
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setter((prev) => ({ ...prev, [field]: value }))
+
+        if (touched[field as keyof typeof touched]) {
+          validator(field as string, value)
+        }
+      },
+    [touched]
+  )
 
   const handleContactChange = useCallback(
-    (field: keyof ContactInfo) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value
-      setContactInfo((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-
-      // Only validate if field has been touched
-      if (touched[field]) {
-        validateField(field, value)
-      }
-    },
-    [touched, validateField]
+    createChangeHandler(setContactInfo, validateContactField),
+    [createChangeHandler, validateContactField]
   )
 
   const handleShippingChange = useCallback(
-    (field: keyof ShippingAddress) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value
-      setShippingAddress((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-
-      // Only validate if field has been touched
-      if (touched[field]) {
-        validateShippingField(field, value)
-      }
-    },
-    [touched, validateShippingField]
+    createChangeHandler(setShippingAddress, validateShippingField),
+    [createChangeHandler, validateShippingField]
   )
 
-  const handleBlur = useCallback(
-    (field: keyof ContactInfo) => () => {
-      setTouched((prev) => ({ ...prev, [field]: true }))
-      validateField(field, contactInfo[field])
-    },
-    [contactInfo, validateField]
+  const createBlurHandler = useCallback(
+    <T extends Record<string, any>>(
+      data: T,
+      validator: (field: string, value: string) => boolean
+    ) =>
+      (field: keyof T) =>
+      () => {
+        setTouched((prev) => ({ ...prev, [field]: true }))
+        validator(field as string, (data[field] as string) || '')
+      },
+    []
+  )
+
+  const handleContactBlur = useCallback(
+    createBlurHandler(contactInfo, validateContactField),
+    [contactInfo, validateContactField, createBlurHandler]
   )
 
   const handleShippingBlur = useCallback(
-    (field: keyof ShippingAddress) => () => {
-      setTouched((prev) => ({ ...prev, [field]: true }))
-      validateShippingField(field, shippingAddress[field] || '')
-    },
-    [shippingAddress, validateShippingField]
+    createBlurHandler(shippingAddress, validateShippingField),
+    [shippingAddress, validateShippingField, createBlurHandler]
   )
 
-  const isContactInfoComplete =
-    contactInfo.firstName.trim() !== '' &&
-    contactInfo.lastName.trim() !== '' &&
-    contactInfo.email.trim() !== '' &&
-    contactInfo.phone.trim() !== '' &&
-    Object.keys(errors).length === 0 &&
-    touched.firstName &&
-    touched.lastName &&
-    touched.email &&
-    touched.phone
+  const checkFormCompletion = useCallback(
+    <T extends Record<string, any>>(data: T, requiredFields: (keyof T)[]) => {
+      const allFieldsFilled = requiredFields.every((field) => {
+        const value = data[field]
+        return typeof value === 'string' && value.trim() !== ''
+      })
 
-  const isShippingAddressComplete =
-    shippingAddress.address1.trim() !== '' &&
-    shippingAddress.city.trim() !== '' &&
-    shippingAddress.state.trim() !== '' &&
-    shippingAddress.postalCode.trim() !== '' &&
-    shippingAddress.country.trim() !== '' &&
-    !errors.address1 &&
-    !errors.city &&
-    !errors.state &&
-    !errors.postalCode &&
-    !errors.country &&
-    touched.address1 &&
-    touched.city &&
-    touched.state &&
-    touched.postalCode &&
-    touched.country
+      const noErrors = requiredFields.every((field) => !errors[field as keyof typeof errors])
+      const allTouched = requiredFields.every((field) => touched[field as keyof typeof touched])
+
+      return allFieldsFilled && noErrors && allTouched
+    },
+    [errors, touched]
+  )
+
+  const isContactInfoComplete = checkFormCompletion(contactInfo, ['firstName', 'lastName', 'email', 'phone'])
+
+  const isShippingAddressComplete = checkFormCompletion(shippingAddress, [
+    'address1',
+    'city',
+    'state',
+    'postalCode',
+    'country',
+  ])
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -245,25 +253,8 @@ const CheckoutPage = () => {
       <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3} sx={{ alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1, width: '100%' }}>
           {/* Contact Information */}
-          <Accordion
-            defaultExpanded
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
+          <Accordion defaultExpanded sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <ContactMailIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
@@ -285,7 +276,7 @@ const CheckoutPage = () => {
                 )}
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -293,7 +284,7 @@ const CheckoutPage = () => {
                     label="First Name"
                     value={contactInfo.firstName}
                     onChange={handleContactChange('firstName')}
-                    onBlur={handleBlur('firstName')}
+                    onBlur={handleContactBlur('firstName')}
                     error={touched.firstName && !!errors.firstName}
                     helperText={touched.firstName && errors.firstName ? errors.firstName : ''}
                     required
@@ -307,7 +298,7 @@ const CheckoutPage = () => {
                     label="Last Name"
                     value={contactInfo.lastName}
                     onChange={handleContactChange('lastName')}
-                    onBlur={handleBlur('lastName')}
+                    onBlur={handleContactBlur('lastName')}
                     error={touched.lastName && !!errors.lastName}
                     helperText={touched.lastName && errors.lastName ? errors.lastName : ''}
                     required
@@ -322,7 +313,7 @@ const CheckoutPage = () => {
                     type="email"
                     value={contactInfo.email}
                     onChange={handleContactChange('email')}
-                    onBlur={handleBlur('email')}
+                    onBlur={handleContactBlur('email')}
                     error={touched.email && !!errors.email}
                     helperText={
                       touched.email && errors.email ? errors.email : "We'll send your order confirmation here"
@@ -339,7 +330,7 @@ const CheckoutPage = () => {
                     type="tel"
                     value={contactInfo.phone}
                     onChange={handleContactChange('phone')}
-                    onBlur={handleBlur('phone')}
+                    onBlur={handleContactBlur('phone')}
                     error={touched.phone && !!errors.phone}
                     helperText={
                       touched.phone && errors.phone
@@ -357,24 +348,8 @@ const CheckoutPage = () => {
           </Accordion>
 
           {/* Shipping Address */}
-          <Accordion
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
+          <Accordion sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <LocalShippingIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
@@ -396,7 +371,7 @@ const CheckoutPage = () => {
                 )}
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <TextField
@@ -493,24 +468,8 @@ const CheckoutPage = () => {
           </Accordion>
 
           {/* Billing Address */}
-          <Accordion
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
+          <Accordion sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <PaymentIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box>
@@ -523,7 +482,7 @@ const CheckoutPage = () => {
                 </Box>
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
               <Typography color="text.secondary">Billing address form coming soon...</Typography>
             </AccordionDetails>
           </Accordion>
