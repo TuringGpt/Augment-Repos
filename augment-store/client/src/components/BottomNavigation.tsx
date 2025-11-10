@@ -121,12 +121,12 @@ const BottomNavigation = () => {
             marginTop: '4px',
             transition: 'all 0.3s ease',
           },
-          '& .MuiBottomNavigationAction-icon': {
+          '& .MuiSvgIcon-root': {
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           },
           '& .Mui-selected': {
             color: 'primary.main',
-            '& .MuiBottomNavigationAction-icon': {
+            '& .MuiSvgIcon-root': {
               transform: 'scale(1.2)',
             },
             '& .MuiBottomNavigationAction-label': {
