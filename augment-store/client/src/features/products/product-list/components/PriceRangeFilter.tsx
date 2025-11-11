@@ -87,6 +87,12 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent 'e', 'E', '+', '-' from being entered in number input
+    if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
+      event.preventDefault()
+      return
+    }
+
     if (event.key === 'Enter') {
       validateAndUpdate(localMinPrice, localMaxPrice)
     }
