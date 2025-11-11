@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "checkout",
     "merchant",
     'schema_viewer',
+    'contact',
 ]
 
 MIDDLEWARE = [
