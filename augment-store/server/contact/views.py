@@ -4,14 +4,14 @@ from .models import ContactMessage
 from .serializers import ContactMessageSerializer
 
 class BaseContactView:
-    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ContactMessageSerializer
 
     def get_queryset(self):
         return ContactMessage.objects.all().order_by('-created_at')
     
 class ContactListView(BaseContactView, ListAPIView):
-    pass
+    serializer_class = ContactMessageSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class CreateContactView(BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
