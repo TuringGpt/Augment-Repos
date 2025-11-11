@@ -4,6 +4,7 @@ from products.factory import ProductBrandFactory, ProductFactory
 from checkout.factory import OrderFactory, OrderItemFactory
 from accounts.models import User
 from django.urls import reverse
+from core.tests import BaseAPITestCase
 import uuid
 # Create your tests here.
 class MerchantBrandListViewTests(TestCase):
@@ -74,7 +75,7 @@ class MerchantProductListViewTests(TestCase):
         self.assertEqual(len(response.data['results']), 0)
 
 
-class MerchantOrdersListViewTests(TestCase):
+class MerchantOrdersListViewTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         self.merchant_id = uuid.uuid4()
@@ -106,7 +107,7 @@ class MerchantOrdersListViewTests(TestCase):
         merchant_client = self.authenticated_client
         merchant_client.force_authenticate(user=self.merchant)
         url = reverse("v1:merchant:merchant_order_list")
-        response = self.merchant_client.get(url)
+        response = merchant_client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
 
@@ -119,7 +120,7 @@ class MerchantOrdersListViewTests(TestCase):
 
     def test_user_authorization(self):
         member_client = self.authenticated_client
-        member_client.force_authenticate(user=self.member_user)
+        member_client.force_authenticate(user=self.user)
         url = reverse("v1:merchant:merchant_order_list")
         response = member_client.get(url)
         self.assertEqual(response.status_code, 200)
