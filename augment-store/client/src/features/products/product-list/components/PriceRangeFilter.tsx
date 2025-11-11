@@ -68,14 +68,47 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
     }
   }
 
+  const sanitizeNumericInput = (value: string): string => {
+    // Remove characters that are invalid for price inputs: e, E, +, -
+    // (scientific notation and sign characters)
+    return value.replace(/[eE+-]/g, '')
+  }
+
   const handleMinPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value
+    const newValue = sanitizeNumericInput(event.target.value)
     setLocalMinPrice(newValue)
   }
 
   const handleMaxPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value
+    const newValue = sanitizeNumericInput(event.target.value)
     setLocalMaxPrice(newValue)
+  }
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = event.clipboardData.getData('text')
+
+    // Check if pasted text contains invalid characters
+    if (/[eE+-]/.test(pastedText)) {
+      event.preventDefault()
+
+      const input = event.currentTarget
+      const currentValue = input.value
+
+      // Sanitize the pasted text
+      const sanitized = sanitizeNumericInput(pastedText)
+
+      // Note: We cannot use selectionStart/selectionEnd or setSelectionRange on type="number" inputs
+      // as they are not supported in most browsers and will throw errors.
+      // Instead, we append the sanitized text to the current value.
+      const newValue = currentValue + sanitized
+
+      // Determine which field and update state
+      if (input.name === 'minPrice') {
+        setLocalMinPrice(newValue)
+      } else if (input.name === 'maxPrice') {
+        setLocalMaxPrice(newValue)
+      }
+    }
   }
 
   const handleMinPriceBlur = () => {
@@ -87,6 +120,12 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent 'e', 'E', '+', '-' from being entered in number input
+    if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
+      event.preventDefault()
+      return
+    }
+
     if (event.key === 'Enter') {
       validateAndUpdate(localMinPrice, localMaxPrice)
     }
@@ -102,10 +141,12 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
           <TextField
             label="Min Price"
             type="number"
+            name="minPrice"
             value={localMinPrice}
             onChange={handleMinPriceChange}
             onBlur={handleMinPriceBlur}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             error={!!minPriceError}
             helperText={minPriceError}
             size="small"
@@ -119,10 +160,12 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
           <TextField
             label="Max Price"
             type="number"
+            name="maxPrice"
             value={localMaxPrice}
             onChange={handleMaxPriceChange}
             onBlur={handleMaxPriceBlur}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             error={!!maxPriceError}
             helperText={maxPriceError}
             size="small"
