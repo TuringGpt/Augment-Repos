@@ -34,9 +34,10 @@ const OrderSummary = ({
   isShippingAddressComplete = false,
   isBillingAddressComplete = false,
 }: OrderSummaryProps) => {
-  const { cart, updateItemInCart, removeItem } = useCartStore()
+  const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   // Derived state: calculate total item count
   const itemCount = useMemo(() => {
@@ -63,11 +64,19 @@ const OrderSummary = ({
     setRemoveDialogOpen(true)
   }
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (itemToRemove) {
-      removeItem(itemToRemove.id)
-      setRemoveDialogOpen(false)
-      setItemToRemove(null)
+      setIsRemoving(true)
+      try {
+        await removeItemFromCart(itemToRemove.id)
+        setRemoveDialogOpen(false)
+        setItemToRemove(null)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+        // Dialog stays open on error so user can retry
+      } finally {
+        setIsRemoving(false)
+      }
     }
   }
 
@@ -390,11 +399,17 @@ const OrderSummary = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveCancel} color="primary">
+          <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
           </Button>
         </DialogActions>
       </Dialog>
