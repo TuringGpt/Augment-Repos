@@ -2,7 +2,7 @@ from django.urls import path
 from .views import CreateContactView, ContactListView, ContactDetailView
 
 urlpatterns = [
-    path('', ContactListView.as_view(), name='contact_list_create'),
+    path('', ContactListView.as_view(), name='contact_list'),
     path('create/', CreateContactView.as_view(), name='create_contact'),
     path('<uuid:pk>/', ContactDetailView.as_view(), name='contact_detail'),
 ]
