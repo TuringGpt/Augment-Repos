@@ -10,6 +10,7 @@ import {
   Grid,
   Box,
   Chip,
+  MenuItem,
 } from '@mui/material'
 import {
   ExpandMore as ExpandMoreIcon,
@@ -23,6 +24,9 @@ import OrderSummary from '@/features/checkout/components/OrderSummary'
 import { userService } from '@services/api/user/userService'
 import { useAuthStore } from '@store/authStore'
 
+const nameRegex = /^[a-zA-Z\s\-']+$/
+const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
+
 const contactInfoSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
   phone: z
@@ -31,9 +35,7 @@ const contactInfoSchema = z.object({
     .transform((val) => val.replace(/[\s\-()]/g, ''))
     .refine(
       (val) => {
-        // Remove any leading + sign for digit counting
         const digitsOnly = val.replace(/^\+/, '')
-        // Check if it contains only digits after removing the optional +
         return /^\d+$/.test(digitsOnly)
       },
       {
@@ -43,7 +45,6 @@ const contactInfoSchema = z.object({
     )
     .refine(
       (val) => {
-        // Count digits only (excluding the + sign)
         const digitsOnly = val.replace(/^\+/, '')
         return digitsOnly.length >= 10 && digitsOnly.length <= 15
       },
@@ -51,11 +52,7 @@ const contactInfoSchema = z.object({
     )
     .refine(
       (val) => {
-        // Validate common international formats
-        const patterns = [
-          /^\+?1?\d{10}$/, // US/Canada: +1XXXXXXXXXX or XXXXXXXXXX (10 digits)
-          /^\+?\d{10,15}$/, // International: 10-15 digits with optional +
-        ]
+        const patterns = [/^\+?1?\d{10}$/, /^\+?\d{10,15}$/]
         return patterns.some((pattern) => pattern.test(val))
       },
       { message: 'Invalid phone number format' }
@@ -64,21 +61,61 @@ const contactInfoSchema = z.object({
     .string()
     .min(1, 'First name is required')
     .max(50, 'First name is too long')
-    .regex(
-      /^[a-zA-Z\s\-']+$/,
-      'First name can only contain letters, spaces, hyphens, and apostrophes'
-    ),
+    .regex(nameRegex, `First name ${nameErrorMessage}`),
   lastName: z
     .string()
     .min(1, 'Last name is required')
     .max(50, 'Last name is too long')
-    .regex(
-      /^[a-zA-Z\s\-']+$/,
-      'Last name can only contain letters, spaces, hyphens, and apostrophes'
-    ),
+    .regex(nameRegex, `Last name ${nameErrorMessage}`),
+})
+
+const shippingAddressSchema = z.object({
+  address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
+  address2: z.string().max(100, 'Address is too long').optional(),
+  city: z
+    .string()
+    .min(1, 'City is required')
+    .max(50, 'City name is too long')
+    .regex(nameRegex, `City ${nameErrorMessage}`),
+  state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
+  postalCode: z
+    .string()
+    .min(1, 'Postal code is required')
+    .max(20, 'Postal code is too long')
+    .regex(/^[a-zA-Z0-9\s-]+$/, 'Invalid postal code format'),
+  country: z.string().min(1, 'Country is required'),
 })
 
 type ContactInfo = z.infer<typeof contactInfoSchema>
+type ShippingAddress = z.infer<typeof shippingAddressSchema>
+
+const COUNTRIES = [
+  { value: 'US', label: 'United States' },
+  { value: 'CA', label: 'Canada' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'AU', label: 'Australia' },
+  { value: 'DE', label: 'Germany' },
+  { value: 'FR', label: 'France' },
+  { value: 'JP', label: 'Japan' },
+  { value: 'CN', label: 'China' },
+]
+
+const ACCORDION_STYLES = {
+  mb: 2,
+  '&:before': { display: 'none' },
+  boxShadow: 2,
+  borderRadius: 2,
+  overflow: 'hidden',
+}
+
+const ACCORDION_SUMMARY_STYLES = {
+  bgcolor: 'background.paper',
+  '&:hover': { bgcolor: 'action.hover' },
+  px: 3,
+  py: 1.5,
+}
+
+const ACCORDION_DETAILS_STYLES = { px: 3, py: 3, bgcolor: 'grey.50' }
 
 const CheckoutPage = () => {
   const { isAuthenticated } = useAuthStore()
@@ -89,96 +126,132 @@ const CheckoutPage = () => {
     lastName: '',
   })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo, string>>>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo, boolean>>>({})
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+  })
 
-  // Fetch user profile and pre-fill contact info (only for empty/untouched fields)
-  useEffect(() => {
-    let isMounted = true
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ContactInfo | keyof ShippingAddress, string>>
+  >({})
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof ContactInfo | keyof ShippingAddress, boolean>>
+  >({})
 
-    const fetchUserProfile = async () => {
-      if (!isAuthenticated) return
+  const createFieldValidator = useCallback(
+    <T extends z.ZodTypeAny>(schema: z.ZodObject<Record<string, T>>) =>
+      (field: string, value: string) => {
+        try {
+          schema.shape[field].parse(value)
+          setErrors((prev) => {
+            const newErrors = { ...prev }
+            delete newErrors[field as keyof typeof newErrors]
+            return newErrors
+          })
+          return true
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
+            return false
+          }
+          return false
+        }
+      },
+    []
+  )
 
-      try {
-        const profile = await userService.getProfile()
+  const validateContactField = useCallback(createFieldValidator(contactInfoSchema), [
+    createFieldValidator,
+  ])
 
-        // Only update state if component is still mounted
-        if (!isMounted) return
+  const validateShippingField = useCallback(createFieldValidator(shippingAddressSchema), [
+    createFieldValidator,
+  ])
 
-        // Only update fields that are still empty and haven't been touched by the user
-        setContactInfo((prev) => ({
-          email: prev.email === '' && !touched.email ? profile.email || '' : prev.email,
-          phone: prev.phone === '' && !touched.phone ? profile.mobile || '' : prev.phone,
-          firstName:
-            prev.firstName === '' && !touched.firstName ? profile.first_name || '' : prev.firstName,
-          lastName:
-            prev.lastName === '' && !touched.lastName ? profile.last_name || '' : prev.lastName,
-        }))
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error)
-        // Silently fail - user can still fill in the form manually
-      }
-    }
+  const createChangeHandler = useCallback(
+    <T extends Record<string, any>>(
+      setter: React.Dispatch<React.SetStateAction<T>>,
+      validator: (field: string, value: string) => boolean
+    ) =>
+      (field: keyof T) =>
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setter((prev) => ({ ...prev, [field]: value }))
 
-    fetchUserProfile()
-
-    return () => {
-      isMounted = false
-    }
-  }, [isAuthenticated, touched.email, touched.phone, touched.firstName, touched.lastName])
-
-  const validateField = useCallback((field: keyof ContactInfo, value: string) => {
-    try {
-      contactInfoSchema.shape[field].parse(value)
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: error.issues[0]?.message || 'Invalid value' }))
-        return false
-      }
-      return false
-    }
-  }, [])
+        if (touched[field as keyof typeof touched]) {
+          validator(field as string, value)
+        }
+      },
+    [touched]
+  )
 
   const handleContactChange = useCallback(
-    (field: keyof ContactInfo) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value
-      setContactInfo((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-
-      // Only validate if field has been touched
-      if (touched[field]) {
-        validateField(field, value)
-      }
-    },
-    [touched, validateField]
+    createChangeHandler(setContactInfo, validateContactField),
+    [createChangeHandler, validateContactField]
   )
 
-  const handleBlur = useCallback(
-    (field: keyof ContactInfo) => () => {
-      setTouched((prev) => ({ ...prev, [field]: true }))
-      validateField(field, contactInfo[field])
-    },
-    [contactInfo, validateField]
+  const handleShippingChange = useCallback(
+    createChangeHandler(setShippingAddress, validateShippingField),
+    [createChangeHandler, validateShippingField]
   )
 
-  const isContactInfoComplete =
-    contactInfo.firstName.trim() !== '' &&
-    contactInfo.lastName.trim() !== '' &&
-    contactInfo.email.trim() !== '' &&
-    contactInfo.phone.trim() !== '' &&
-    Object.keys(errors).length === 0 &&
-    touched.firstName &&
-    touched.lastName &&
-    touched.email &&
-    touched.phone
+  const createBlurHandler = useCallback(
+    <T extends Record<string, any>>(
+      data: T,
+      validator: (field: string, value: string) => boolean
+    ) =>
+      (field: keyof T) =>
+      () => {
+        setTouched((prev) => ({ ...prev, [field]: true }))
+        validator(field as string, (data[field] as string) || '')
+      },
+    []
+  )
+
+  const handleContactBlur = useCallback(createBlurHandler(contactInfo, validateContactField), [
+    contactInfo,
+    validateContactField,
+    createBlurHandler,
+  ])
+
+  const handleShippingBlur = useCallback(
+    createBlurHandler(shippingAddress, validateShippingField),
+    [shippingAddress, validateShippingField, createBlurHandler]
+  )
+
+  const checkFormCompletion = useCallback(
+    <T extends Record<string, any>>(data: T, requiredFields: (keyof T)[]) => {
+      const allFieldsFilled = requiredFields.every((field) => {
+        const value = data[field]
+        return typeof value === 'string' && value.trim() !== ''
+      })
+
+      const noErrors = requiredFields.every((field) => !errors[field as keyof typeof errors])
+      const allTouched = requiredFields.every((field) => touched[field as keyof typeof touched])
+
+      return allFieldsFilled && noErrors && allTouched
+    },
+    [errors, touched]
+  )
+
+  const isContactInfoComplete = checkFormCompletion(contactInfo, [
+    'firstName',
+    'lastName',
+    'email',
+    'phone',
+  ])
+
+  const isShippingAddressComplete = checkFormCompletion(shippingAddress, [
+    'address1',
+    'city',
+    'state',
+    'postalCode',
+    'country',
+  ])
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -194,25 +267,8 @@ const CheckoutPage = () => {
       <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3} sx={{ alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1, width: '100%' }}>
           {/* Contact Information */}
-          <Accordion
-            defaultExpanded
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
+          <Accordion defaultExpanded sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <ContactMailIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
@@ -234,7 +290,7 @@ const CheckoutPage = () => {
                 )}
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -243,7 +299,7 @@ const CheckoutPage = () => {
                     label="First Name"
                     value={contactInfo.firstName}
                     onChange={handleContactChange('firstName')}
-                    onBlur={handleBlur('firstName')}
+                    onBlur={handleContactBlur('firstName')}
                     error={touched.firstName && !!errors.firstName}
                     helperText={touched.firstName && errors.firstName ? errors.firstName : ''}
                     required
@@ -258,7 +314,7 @@ const CheckoutPage = () => {
                     label="Last Name"
                     value={contactInfo.lastName}
                     onChange={handleContactChange('lastName')}
-                    onBlur={handleBlur('lastName')}
+                    onBlur={handleContactBlur('lastName')}
                     error={touched.lastName && !!errors.lastName}
                     helperText={touched.lastName && errors.lastName ? errors.lastName : ''}
                     required
@@ -274,7 +330,7 @@ const CheckoutPage = () => {
                     type="email"
                     value={contactInfo.email}
                     onChange={handleContactChange('email')}
-                    onBlur={handleBlur('email')}
+                    onBlur={handleContactBlur('email')}
                     error={touched.email && !!errors.email}
                     helperText={
                       touched.email && errors.email
@@ -294,7 +350,7 @@ const CheckoutPage = () => {
                     type="tel"
                     value={contactInfo.phone}
                     onChange={handleContactChange('phone')}
-                    onBlur={handleBlur('phone')}
+                    onBlur={handleContactBlur('phone')}
                     error={touched.phone && !!errors.phone}
                     helperText={
                       touched.phone && errors.phone
@@ -312,27 +368,11 @@ const CheckoutPage = () => {
           </Accordion>
 
           {/* Shipping Address */}
-          <Accordion
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Accordion sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
                 <LocalShippingIcon color="primary" sx={{ fontSize: 28 }} />
-                <Box>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
                     Shipping Address
                   </Typography>
@@ -340,32 +380,116 @@ const CheckoutPage = () => {
                     Where should we deliver your order?
                   </Typography>
                 </Box>
+                {isShippingAddressComplete && (
+                  <Chip
+                    icon={<CheckCircleIcon />}
+                    label="Complete"
+                    color="success"
+                    size="small"
+                    sx={{ mr: 2 }}
+                  />
+                )}
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
-              <Typography color="text.secondary">Shipping address form coming soon...</Typography>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Street Address"
+                    value={shippingAddress.address1}
+                    onChange={handleShippingChange('address1')}
+                    onBlur={handleShippingBlur('address1')}
+                    error={touched.address1 && !!errors.address1}
+                    helperText={touched.address1 && errors.address1 ? errors.address1 : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Apartment, suite, etc. (optional)"
+                    value={shippingAddress.address2}
+                    onChange={handleShippingChange('address2')}
+                    onBlur={handleShippingBlur('address2')}
+                    error={touched.address2 && !!errors.address2}
+                    helperText={touched.address2 && errors.address2 ? errors.address2 : ''}
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    value={shippingAddress.city}
+                    onChange={handleShippingChange('city')}
+                    onBlur={handleShippingBlur('city')}
+                    error={touched.city && !!errors.city}
+                    helperText={touched.city && errors.city ? errors.city : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="State/Province"
+                    value={shippingAddress.state}
+                    onChange={handleShippingChange('state')}
+                    onBlur={handleShippingBlur('state')}
+                    error={touched.state && !!errors.state}
+                    helperText={touched.state && errors.state ? errors.state : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Postal Code"
+                    value={shippingAddress.postalCode}
+                    onChange={handleShippingChange('postalCode')}
+                    onBlur={handleShippingBlur('postalCode')}
+                    error={touched.postalCode && !!errors.postalCode}
+                    helperText={touched.postalCode && errors.postalCode ? errors.postalCode : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Country"
+                    value={shippingAddress.country}
+                    onChange={handleShippingChange('country')}
+                    onBlur={handleShippingBlur('country')}
+                    error={touched.country && !!errors.country}
+                    helperText={touched.country && errors.country ? errors.country : ''}
+                    required
+                    variant="outlined"
+                    sx={{ bgcolor: 'background.paper' }}
+                  >
+                    {COUNTRIES.map((country) => (
+                      <MenuItem key={country.value} value={country.value}>
+                        {country.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
             </AccordionDetails>
           </Accordion>
 
           {/* Billing Address */}
-          <Accordion
-            sx={{
-              mb: 2,
-              '&:before': { display: 'none' },
-              boxShadow: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{
-                bgcolor: 'background.paper',
-                '&:hover': { bgcolor: 'action.hover' },
-                px: 3,
-                py: 1.5,
-              }}
-            >
+          <Accordion sx={ACCORDION_STYLES}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <PaymentIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box>
@@ -378,7 +502,7 @@ const CheckoutPage = () => {
                 </Box>
               </Box>
             </AccordionSummary>
-            <AccordionDetails sx={{ px: 3, py: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
               <Typography color="text.secondary">Billing address form coming soon...</Typography>
             </AccordionDetails>
           </Accordion>
