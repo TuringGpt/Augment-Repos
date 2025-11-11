@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   Accordion,
   AccordionDetails,
@@ -11,16 +11,19 @@ import {
   Box,
   Chip,
   MenuItem,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material'
 import {
   ExpandMore as ExpandMoreIcon,
   ContactMail as ContactMailIcon,
   LocalShipping as LocalShippingIcon,
-  Payment as PaymentIcon,
   CheckCircle as CheckCircleIcon,
+  Receipt as ReceiptIcon,
 } from '@mui/icons-material'
 import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
+import { COUNTRIES } from '@constants/index'
 
 const nameRegex = /^[a-zA-Z\s\-']+$/
 const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
@@ -81,19 +84,26 @@ const shippingAddressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
 })
 
+const billingAddressSchema = z.object({
+  address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
+  address2: z.string().max(100, 'Address is too long').optional(),
+  city: z
+    .string()
+    .min(1, 'City is required')
+    .max(50, 'City name is too long')
+    .regex(nameRegex, `City ${nameErrorMessage}`),
+  state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
+  postalCode: z
+    .string()
+    .min(1, 'Postal code is required')
+    .max(20, 'Postal code is too long')
+    .regex(/^[a-zA-Z0-9\s\-]+$/, 'Invalid postal code format'),
+  country: z.string().min(1, 'Country is required'),
+})
+
 type ContactInfo = z.infer<typeof contactInfoSchema>
 type ShippingAddress = z.infer<typeof shippingAddressSchema>
-
-const COUNTRIES = [
-  { value: 'US', label: 'United States' },
-  { value: 'CA', label: 'Canada' },
-  { value: 'GB', label: 'United Kingdom' },
-  { value: 'AU', label: 'Australia' },
-  { value: 'DE', label: 'Germany' },
-  { value: 'FR', label: 'France' },
-  { value: 'JP', label: 'Japan' },
-  { value: 'CN', label: 'China' },
-]
+type BillingAddress = z.infer<typeof billingAddressSchema>
 
 const ACCORDION_STYLES = {
   mb: 2,
@@ -129,8 +139,23 @@ const CheckoutPage = () => {
     country: '',
   })
 
-  const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, string>>>({})
-  const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo | keyof ShippingAddress, boolean>>>({})
+  const [billingAddress, setBillingAddress] = useState<BillingAddress>({
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+  })
+
+  const [sameAsShipping, setSameAsShipping] = useState(true)
+
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ContactInfo | keyof ShippingAddress | keyof BillingAddress, string>>
+  >({})
+  const [touched, setTouched] = useState<
+    Partial<Record<keyof ContactInfo | keyof ShippingAddress | keyof BillingAddress, boolean>>
+  >({})
 
   const createFieldValidator = useCallback(
     <T extends z.ZodTypeAny>(schema: z.ZodObject<Record<string, T>>) =>
@@ -161,6 +186,11 @@ const CheckoutPage = () => {
 
   const validateShippingField = useCallback(
     createFieldValidator(shippingAddressSchema),
+    [createFieldValidator]
+  )
+
+  const validateBillingField = useCallback(
+    createFieldValidator(billingAddressSchema),
     [createFieldValidator]
   )
 
@@ -214,6 +244,36 @@ const CheckoutPage = () => {
     [shippingAddress, validateShippingField, createBlurHandler]
   )
 
+  const handleBillingChange = useCallback(
+    createChangeHandler(setBillingAddress, validateBillingField),
+    [createChangeHandler, validateBillingField]
+  )
+
+  const handleBillingBlur = useCallback(
+    createBlurHandler(billingAddress, validateBillingField),
+    [billingAddress, validateBillingField, createBlurHandler]
+  )
+
+  const handleSameAsShippingChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = event.target.checked
+      setSameAsShipping(checked)
+      if (checked) {
+        setBillingAddress(shippingAddress)
+        // Clear billing address errors when copying from shipping
+        const billingFields: (keyof BillingAddress)[] = ['address1', 'address2', 'city', 'state', 'postalCode', 'country']
+        setErrors((prev) => {
+          const newErrors = { ...prev }
+          billingFields.forEach((field) => {
+            delete newErrors[field as keyof typeof newErrors]
+          })
+          return newErrors
+        })
+      }
+    },
+    [shippingAddress]
+  )
+
   const checkFormCompletion = useCallback(
     <T extends Record<string, any>>(data: T, requiredFields: (keyof T)[]) => {
       const allFieldsFilled = requiredFields.every((field) => {
@@ -229,15 +289,24 @@ const CheckoutPage = () => {
     [errors, touched]
   )
 
-  const isContactInfoComplete = checkFormCompletion(contactInfo, ['firstName', 'lastName', 'email', 'phone'])
+  const isContactInfoComplete = useMemo(
+    () => checkFormCompletion(contactInfo, ['firstName', 'lastName', 'email', 'phone']),
+    [contactInfo, checkFormCompletion]
+  )
 
-  const isShippingAddressComplete = checkFormCompletion(shippingAddress, [
-    'address1',
-    'city',
-    'state',
-    'postalCode',
-    'country',
-  ])
+  const isShippingAddressComplete = useMemo(
+    () =>
+      checkFormCompletion(shippingAddress, ['address1', 'city', 'state', 'postalCode', 'country']),
+    [shippingAddress, checkFormCompletion]
+  )
+
+  const isBillingAddressComplete = useMemo(
+    () =>
+      sameAsShipping
+        ? isShippingAddressComplete
+        : checkFormCompletion(billingAddress, ['address1', 'city', 'state', 'postalCode', 'country']),
+    [sameAsShipping, isShippingAddressComplete, billingAddress, checkFormCompletion]
+  )
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -470,25 +539,138 @@ const CheckoutPage = () => {
           {/* Billing Address */}
           <Accordion sx={ACCORDION_STYLES}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_STYLES}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <PaymentIcon color="primary" sx={{ fontSize: 28 }} />
-                <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                <ReceiptIcon color="primary" sx={{ fontSize: 28 }} />
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
                     Billing Address
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Payment and billing information
+                    Where should we send the invoice?
                   </Typography>
                 </Box>
+                {isBillingAddressComplete && (
+                  <Chip
+                    icon={<CheckCircleIcon />}
+                    label="Complete"
+                    color="success"
+                    size="small"
+                    sx={{ mr: 2 }}
+                  />
+                )}
               </Box>
             </AccordionSummary>
             <AccordionDetails sx={ACCORDION_DETAILS_STYLES}>
-              <Typography color="text.secondary">Billing address form coming soon...</Typography>
+              <Box sx={{ mb: 3 }}>
+                <FormControlLabel
+                  control={<Checkbox checked={sameAsShipping} onChange={handleSameAsShippingChange} />}
+                  label="Same as shipping address"
+                />
+              </Box>
+
+              {!sameAsShipping && (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Street Address"
+                      value={billingAddress.address1}
+                      onChange={handleBillingChange('address1')}
+                      onBlur={handleBillingBlur('address1')}
+                      error={touched.address1 && !!errors.address1}
+                      helperText={touched.address1 && errors.address1 ? errors.address1 : ''}
+                      required
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Apartment, suite, etc. (optional)"
+                      value={billingAddress.address2}
+                      onChange={handleBillingChange('address2')}
+                      onBlur={handleBillingBlur('address2')}
+                      error={touched.address2 && !!errors.address2}
+                      helperText={touched.address2 && errors.address2 ? errors.address2 : ''}
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="City"
+                      value={billingAddress.city}
+                      onChange={handleBillingChange('city')}
+                      onBlur={handleBillingBlur('city')}
+                      error={touched.city && !!errors.city}
+                      helperText={touched.city && errors.city ? errors.city : ''}
+                      required
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="State / Province"
+                      value={billingAddress.state}
+                      onChange={handleBillingChange('state')}
+                      onBlur={handleBillingBlur('state')}
+                      error={touched.state && !!errors.state}
+                      helperText={touched.state && errors.state ? errors.state : ''}
+                      required
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Postal Code"
+                      value={billingAddress.postalCode}
+                      onChange={handleBillingChange('postalCode')}
+                      onBlur={handleBillingBlur('postalCode')}
+                      error={touched.postalCode && !!errors.postalCode}
+                      helperText={touched.postalCode && errors.postalCode ? errors.postalCode : ''}
+                      required
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      select
+                      label="Country"
+                      value={billingAddress.country}
+                      onChange={handleBillingChange('country')}
+                      onBlur={handleBillingBlur('country')}
+                      error={touched.country && !!errors.country}
+                      helperText={touched.country && errors.country ? errors.country : ''}
+                      required
+                      variant="outlined"
+                      sx={{ bgcolor: 'background.paper' }}
+                    >
+                      {COUNTRIES.map((country) => (
+                        <MenuItem key={country.value} value={country.value}>
+                          {country.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </Grid>
+              )}
             </AccordionDetails>
           </Accordion>
         </Box>
 
-        <OrderSummary />
+        <OrderSummary
+          isContactInfoComplete={isContactInfoComplete}
+          isShippingAddressComplete={isShippingAddressComplete}
+          isBillingAddressComplete={isBillingAddressComplete}
+        />
       </Stack>
     </Container>
   )
