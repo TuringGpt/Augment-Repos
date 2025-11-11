@@ -12,11 +12,11 @@ class BaseContactView:
     
 class ContactListView(BaseContactView, ListAPIView):
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAuthenticated, hasAdminRole()]
+    permission_classes = [IsAuthenticated, hasAdminRole]
 
 class CreateContactView(BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
 
 class ContactDetailView(BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAuthenticated, hasAdminRole()]
+    permission_classes = [IsAuthenticated, hasAdminRole]
