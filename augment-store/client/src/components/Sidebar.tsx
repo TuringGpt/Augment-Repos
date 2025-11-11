@@ -72,7 +72,7 @@ const Sidebar = () => {
       // Navigate directly for categories without children
       // TEMPORARY: Generate slug from name until backend exposes slug field
       const slug = categoryNameToSlug(categoryName)
-      navigate(`/products?category=${slug}`)
+      navigate(`/products?category=${encodeURIComponent(slug)}`)
       closeSidebar()
     }
   }
@@ -80,7 +80,7 @@ const Sidebar = () => {
   const handleSubcategoryClick = (categoryName: string) => {
     // TEMPORARY: Generate slug from name until backend exposes slug field
     const slug = categoryNameToSlug(categoryName)
-    navigate(`/products?category=${slug}`)
+    navigate(`/products?category=${encodeURIComponent(slug)}`)
     closeSidebar()
   }
 
