@@ -257,15 +257,21 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context.get("request").user
         order: Order = validated_data.get("order")
-        payment_method = validated_data.get("payent_method")
+        payment_method = validated_data.get("payment_method", Payment.PaymentMethod.STRIPE)
         amount = order.total
         
         # if we already have a payment for this order, just update the payment
-        payment = order.payment
-        if not payment:
-            payment = Payment.objects.create(order=order, created_by=user, amount=amount, payment_method=payment_method)
-        else:
+        try:
+            payment = order.payment
             Payment.objects.filter(id=payment.id).update(amount=amount, payment_method=payment_method)
+        except Payment.DoesNotExist:
+            payment = Payment.objects.create(
+                order=order, 
+                created_by=user, 
+                amount=amount, 
+                payment_method=payment_method
+            )
+  
 
         stripe_service = StripeService()
         session = stripe_service.create_payment_session(payment)
