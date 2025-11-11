@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { CartItem, EnrichedCart, CartItemWithProduct } from '@features/cart/types'
+import type { Cart, CartItem, EnrichedCart, CartItemWithProduct } from '@features/cart/types'
 import { createEmptyCart, calculateCartTotals, enrichCart } from '@utils/cartUtils'
 
 interface CartState {
@@ -336,6 +336,28 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         cart: state.cart,
       }),
+      // Migration function to handle rehydration of old cart data
+      // Filters out items with null products to ensure EnrichedCart type safety
+      onRehydrateStorage: () => (state) => {
+        if (state?.cart) {
+          // Cast to Cart type to handle old persisted data that may have null products
+          const persistedCart = state.cart as unknown as Cart
+
+          // Use enrichCart to filter out items with null products and recalculate totals
+          // This ensures consistency with how API responses are handled
+          const enrichedCart = enrichCart(persistedCart)
+
+          // Update state with enriched cart
+          state.cart = enrichedCart
+
+          // Log if any items were filtered out during migration
+          if (enrichedCart.items.length !== persistedCart.items.length) {
+            console.log(
+              `Cart migration: Filtered out ${persistedCart.items.length - enrichedCart.items.length} item(s) with deleted products`
+            )
+          }
+        }
+      },
     }
   )
 )
