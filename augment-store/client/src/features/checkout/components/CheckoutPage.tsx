@@ -92,19 +92,21 @@ const CheckoutPage = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo, string>>>({})
   const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo, boolean>>>({})
 
-  // Fetch user profile and pre-fill contact info
+  // Fetch user profile and pre-fill contact info (only for empty/untouched fields)
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!isAuthenticated) return
 
       try {
         const profile = await userService.getProfile()
-        setContactInfo({
-          email: profile.email || '',
-          phone: profile.mobile || '',
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-        })
+
+        // Only update fields that are still empty and haven't been touched by the user
+        setContactInfo((prev) => ({
+          email: prev.email === '' ? profile.email || '' : prev.email,
+          phone: prev.phone === '' ? profile.mobile || '' : prev.phone,
+          firstName: prev.firstName === '' ? profile.first_name || '' : prev.firstName,
+          lastName: prev.lastName === '' ? profile.last_name || '' : prev.lastName,
+        }))
       } catch (error) {
         console.error('Failed to fetch user profile:', error)
         // Silently fail - user can still fill in the form manually
