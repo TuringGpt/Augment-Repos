@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   Accordion,
   AccordionDetails,
@@ -20,6 +20,8 @@ import {
 } from '@mui/icons-material'
 import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
+import { userService } from '@services/api/user/userService'
+import { useAuthStore } from '@store/authStore'
 
 const contactInfoSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -34,7 +36,10 @@ const contactInfoSchema = z.object({
         // Check if it contains only digits after removing the optional +
         return /^\d+$/.test(digitsOnly)
       },
-      { message: 'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix' }
+      {
+        message:
+          'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix',
+      }
     )
     .refine(
       (val) => {
@@ -59,17 +64,24 @@ const contactInfoSchema = z.object({
     .string()
     .min(1, 'First name is required')
     .max(50, 'First name is too long')
-    .regex(/^[a-zA-Z\s\-']+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes'),
+    .regex(
+      /^[a-zA-Z\s\-']+$/,
+      'First name can only contain letters, spaces, hyphens, and apostrophes'
+    ),
   lastName: z
     .string()
     .min(1, 'Last name is required')
     .max(50, 'Last name is too long')
-    .regex(/^[a-zA-Z\s\-']+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes'),
+    .regex(
+      /^[a-zA-Z\s\-']+$/,
+      'Last name can only contain letters, spaces, hyphens, and apostrophes'
+    ),
 })
 
 type ContactInfo = z.infer<typeof contactInfoSchema>
 
 const CheckoutPage = () => {
+  const { isAuthenticated } = useAuthStore()
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: '',
     phone: '',
@@ -79,6 +91,28 @@ const CheckoutPage = () => {
 
   const [errors, setErrors] = useState<Partial<Record<keyof ContactInfo, string>>>({})
   const [touched, setTouched] = useState<Partial<Record<keyof ContactInfo, boolean>>>({})
+
+  // Fetch user profile and pre-fill contact info
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        const profile = await userService.getProfile()
+        setContactInfo({
+          email: profile.email || '',
+          phone: profile.mobile || '',
+          firstName: profile.first_name || '',
+          lastName: profile.last_name || '',
+        })
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+        // Silently fail - user can still fill in the form manually
+      }
+    }
+
+    fetchUserProfile()
+  }, [isAuthenticated])
 
   const validateField = useCallback((field: keyof ContactInfo, value: string) => {
     try {
@@ -192,6 +226,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="First Name"
                     value={contactInfo.firstName}
                     onChange={handleContactChange('firstName')}
@@ -206,6 +241,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Last Name"
                     value={contactInfo.lastName}
                     onChange={handleContactChange('lastName')}
@@ -220,6 +256,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Email Address"
                     type="email"
                     value={contactInfo.email}
@@ -227,7 +264,9 @@ const CheckoutPage = () => {
                     onBlur={handleBlur('email')}
                     error={touched.email && !!errors.email}
                     helperText={
-                      touched.email && errors.email ? errors.email : "We'll send your order confirmation here"
+                      touched.email && errors.email
+                        ? errors.email
+                        : "We'll send your order confirmation here"
                     }
                     required
                     variant="outlined"
@@ -237,6 +276,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Phone Number"
                     type="tel"
                     value={contactInfo.phone}
