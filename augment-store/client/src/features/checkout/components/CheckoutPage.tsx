@@ -94,11 +94,16 @@ const CheckoutPage = () => {
 
   // Fetch user profile and pre-fill contact info (only for empty/untouched fields)
   useEffect(() => {
+    let isMounted = true
+
     const fetchUserProfile = async () => {
       if (!isAuthenticated) return
 
       try {
         const profile = await userService.getProfile()
+
+        // Only update state if component is still mounted
+        if (!isMounted) return
 
         // Only update fields that are still empty and haven't been touched by the user
         setContactInfo((prev) => ({
@@ -114,6 +119,10 @@ const CheckoutPage = () => {
     }
 
     fetchUserProfile()
+
+    return () => {
+      isMounted = false
+    }
   }, [isAuthenticated])
 
   const validateField = useCallback((field: keyof ContactInfo, value: string) => {
