@@ -1,7 +1,10 @@
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import BillingAddress, ContactInformation, Order, ShippingAddress
 from .serializers import BillingAddressListSerializer, ContactInformationListSerializer, CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, ShippingAddressListSerializer
+from .models import Order, Payment
+from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, OrderPaymentSerializer, PaymentStatusSerializer
 
 
 class BaseOrderView:
@@ -22,7 +25,6 @@ class OrderListView(BaseOrderView, ListAPIView):
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
-<<<<<<< HEAD
 
 
 class ListShippingAddressView(ListAPIView):
@@ -46,7 +48,25 @@ class ListContactInformationView(ListAPIView):
 
     def get_queryset(self):
         return ContactInformation.objects.filter(user=self.request.user)
-=======
+
 class OrderPaymentView(BaseOrderView, CreateAPIView):
     serializer_class = OrderPaymentSerializer
->>>>>>> 2c9b8412 (SCRUM-35 - create serializer for order payment)
+
+
+
+class BasePaymentView:
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only see their own payments
+        return Payment.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+class OrderPaymentView(BasePaymentView, CreateAPIView):
+    serializer_class = OrderPaymentSerializer
+
+class PaymentStatusView(BasePaymentView, RetrieveAPIView):
+    serializer_class = PaymentStatusSerializer
+
+
+class StripePaymentCallback(APIView):
+    pass

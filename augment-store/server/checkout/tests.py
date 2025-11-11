@@ -2,15 +2,13 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
 from rest_framework import status
-from rest_framework.test import APIClient
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
-from carts.models import Cart
-from checkout.models import Order, OrderItem
-from checkout.factory import OrderFactory, OrderItemFactory
+from checkout.models import Order
+from checkout.factory import OrderFactory, OrderItemFactory, PaymentFactory
 from decimal import Decimal
-
+from checkout.services import StripeService
 
 class CreateOrderViewTests(BaseAPITestCase):
 
@@ -476,3 +474,20 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         self.assertIn("id", order_item)
         self.assertIn("cart_item", order_item)
         self.assertIn("created_at", order_item)
+
+
+class StripeServiceTests(BaseAPITestCase):
+    def test_create_payment_session(self):
+        # GIVEN I have payment and order
+        order = OrderFactory()
+        cart_item = CartItemFactory(quantity=1)
+        OrderItemFactory(order=order, cart_item=cart_item)
+        payment = PaymentFactory(order=order)
+
+        # WHEN we create a payment session
+        stripe_service = StripeService()
+        session = stripe_service.create_payment_session(payment)
+
+        # THEN we should get a session object
+        self.assertIsNotNone(session)
+        self.assertIn("client_secret", session)

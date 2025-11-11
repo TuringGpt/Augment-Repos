@@ -28,4 +28,5 @@ urlpatterns = [
     path('checkout/addresses/', include('checkout.urls_addresses')),
     path('checkout/contact-information/', include('checkout.urls_contact_info')),
     path('contact/', include('contact.urls')),
+    path('payments/', include('checkout.urls_payments')),
 ]
