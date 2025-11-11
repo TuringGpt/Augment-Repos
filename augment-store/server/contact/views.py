@@ -18,4 +18,4 @@ class CreateContactView(BaseContactView, CreateAPIView):
 
 class ContactDetailView(BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAuthenticatedorReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
