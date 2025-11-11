@@ -56,10 +56,17 @@ const ShopPage = () => {
 
   // Update filters when URL category parameter changes
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      categoryId: categoryIdFromUrl ?? undefined,
-    }))
+    setFilters((prev) => {
+      const newCategoryId = categoryIdFromUrl ?? undefined
+      // Only update if the value actually changed
+      if (prev.categoryId !== newCategoryId) {
+        return {
+          ...prev,
+          categoryId: newCategoryId,
+        }
+      }
+      return prev
+    })
   }, [categoryIdFromUrl])
 
   // Fetch products from API (backend returns 100 items per page)
