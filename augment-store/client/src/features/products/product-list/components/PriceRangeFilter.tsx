@@ -85,22 +85,34 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
   }
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    // Get pasted text
     const pastedText = event.clipboardData.getData('text')
 
     // Check if pasted text contains invalid characters
     if (/[eE+-]/.test(pastedText)) {
       event.preventDefault()
 
-      // Sanitize and set the value manually
-      const sanitized = sanitizeNumericInput(pastedText)
-      const target = event.currentTarget
+      const input = event.currentTarget
+      const start = input.selectionStart ?? 0
+      const end = input.selectionEnd ?? 0
+      const currentValue = input.value
 
-      if (target.name === 'minPrice') {
-        setLocalMinPrice(sanitized)
-      } else if (target.name === 'maxPrice') {
-        setLocalMaxPrice(sanitized)
+      // Sanitize the pasted text
+      const sanitized = sanitizeNumericInput(pastedText)
+
+      // Insert sanitized text at cursor position, replacing any selection
+      const newValue = currentValue.substring(0, start) + sanitized + currentValue.substring(end)
+
+      // Determine which field and update state
+      if (input.name === 'minPrice') {
+        setLocalMinPrice(newValue)
+      } else if (input.name === 'maxPrice') {
+        setLocalMaxPrice(newValue)
       }
+
+      // Set cursor position after the pasted text
+      setTimeout(() => {
+        input.setSelectionRange(start + sanitized.length, start + sanitized.length)
+      }, 0)
     }
   }
 
