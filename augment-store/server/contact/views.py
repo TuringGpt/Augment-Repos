@@ -1,5 +1,5 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer
 
@@ -18,4 +18,4 @@ class CreateContactView(BaseContactView, CreateAPIView):
 
 class ContactDetailView(BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]

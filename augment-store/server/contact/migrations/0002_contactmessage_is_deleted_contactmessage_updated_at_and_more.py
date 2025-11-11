@@ -21,6 +21,22 @@ class Migration(migrations.Migration):
             name='updated_at',
             field=models.DateTimeField(auto_now=True),
         ),
+        # Create a new UUID column
+        migrations.AddField(
+            model_name='contactmessage',
+            name='id_new',
+            field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
+        ),
+        # Remove the old primary key constraint and make id_new the primary key
+        migrations.RemoveField(
+            model_name='contactmessage',
+            name='id',
+        ),
+        migrations.RenameField(
+            model_name='contactmessage',
+            old_name='id_new',
+            new_name='id',
+        ),
         migrations.AlterField(
             model_name='contactmessage',
             name='id',
