@@ -16,6 +16,7 @@ import {
 } from '@mui/material'
 import { productService } from '@services/api/products/productService'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import PriceRangeFilter from './PriceRangeFilter'
 import ProductCard from './ProductCard'
 import RatingFilter from './RatingFilter'
@@ -27,6 +28,10 @@ const ShopPage = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Read category from URL query parameter
+  const categoryIdFromUrl = searchParams.get('category')
 
   // API state
   const [products, setProducts] = useState<Product[]>([])
@@ -39,6 +44,7 @@ const ShopPage = () => {
 
   // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
+    categoryId: categoryIdFromUrl ?? undefined,
     minPrice: undefined,
     maxPrice: undefined,
     minRating: undefined,
@@ -47,6 +53,14 @@ const ShopPage = () => {
 
   // Sort state
   const [sortBy, setSortBy] = useState<SortBy>('newest')
+
+  // Update filters when URL category parameter changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      categoryId: categoryIdFromUrl ?? undefined,
+    }))
+  }, [categoryIdFromUrl])
 
   // Fetch products from API (backend returns 100 items per page)
   useEffect(() => {
@@ -57,6 +71,7 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
+          categoryId: filters.categoryId,
           minRating: filters.minRating,
           maxRating: filters.maxRating,
           minPrice: filters.minPrice,
@@ -70,6 +85,7 @@ const ShopPage = () => {
           limit: response.limit,
           totalPages: response.totalPages,
           filters: {
+            categoryId: filters.categoryId,
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             minRating: filters.minRating,
@@ -92,7 +108,14 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage, filters.minPrice, filters.maxPrice, filters.minRating, filters.maxRating])
+  }, [
+    apiPage,
+    filters.categoryId,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minRating,
+    filters.maxRating,
+  ])
 
   // Calculate client-side pagination (no filtering or sorting for now)
   const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
@@ -148,11 +171,16 @@ const ShopPage = () => {
 
   const handleResetFilters = () => {
     setFilters({
+      categoryId: undefined,
       minPrice: undefined,
       maxPrice: undefined,
       minRating: undefined,
       maxRating: undefined,
     })
+    // Remove category query parameter from URL
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.delete('category')
+    setSearchParams(newSearchParams)
   }
 
   const FiltersContent = () => (

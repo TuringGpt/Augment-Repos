@@ -26,6 +26,11 @@ export const productService = {
         page,
       }
 
+      // Add category filter if provided
+      if (params?.categoryId) {
+        queryParams.category_id = params.categoryId
+      }
+
       // Add rating filters if provided
       if (params?.minRating !== undefined && params?.minRating !== null) {
         queryParams.rating_min = params.minRating
@@ -53,6 +58,7 @@ export const productService = {
         next: response.next,
         previous: response.previous,
         filters: {
+          categoryId: params?.categoryId,
           minRating: params?.minRating,
           maxRating: params?.maxRating,
           minPrice: params?.minPrice,
