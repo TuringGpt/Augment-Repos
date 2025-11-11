@@ -1,6 +1,7 @@
 from django.test import TestCase
 from accounts.factory import UserFactory
 from products.factory import ProductBrandFactory, ProductFactory
+from checkout.factory import OrderFactory, OrderItemFactory
 from accounts.models import User
 from django.urls import reverse
 import uuid
@@ -77,7 +78,7 @@ class MerchantOrdersListViewTests(TestCase):
     def setUp(self):
         super().setUp()
         self.merchant_id = uuid.uuid4()
-        self.merchant_id_no_orders = uuid.uuid4()
+        self.user_id = uuid.uuid4()
         self.merchant = UserFactory(
             id=self.merchant_id,
             email="merchant@demo.com",
@@ -85,12 +86,12 @@ class MerchantOrdersListViewTests(TestCase):
             is_active=True,
             role=User.Role.MERCHANT
         )
-        self.merchant_no_orders = UserFactory(
-            id=self.merchant_id_no_orders,
-            email="merchant_no_orders@demo.com",
+        self.user = UserFactory(
+            id=self.user_id,
+            email="normal_user@demo.com",
             password="testpass123",
             is_active=True,
-            role=User.Role.MERCHANT
+            role=User.Role.USER
         )
         self.brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
         self.product = ProductFactory(created_by=self.merchant, name="Nike Shoe", brand=self.brand)
@@ -102,18 +103,29 @@ class MerchantOrdersListViewTests(TestCase):
         self.order_item_4 = OrderItemFactory(order=self.order_2, cart_item__product=self.product, created_by=self.merchant)
 
     def test_merchant_order_list_view(self):
+        merchant_client = self.authenticated_client
+        merchant_client.force_authenticate(user=self.merchant)
         url = reverse("v1:merchant:merchant_order_list")
-        response = self.client.get(url)
+        response = self.merchant_client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
 
-    def test_merchant_no_orders(self):
+    def test_merchant_authorization(self):
+        merchant_client = self.authenticated_client
+        merchant_client.force_authenticate(user=self.merchant)
         url = reverse("v1:merchant:merchant_order_list")
-        response = self.client.get(url)
+        response = merchant_client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 0)
 
-    def test_merchant_authentication(self):
+    def test_user_authorization(self):
+        member_client = self.authenticated_client
+        member_client.force_authenticate(user=self.member_user)
+        url = reverse("v1:merchant:merchant_order_list")
+        response = member_client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_merchant_order_unauthenticated(self):
         url = reverse("v1:merchant:merchant_order_list")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
+    
