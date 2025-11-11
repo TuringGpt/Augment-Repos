@@ -26,9 +26,9 @@ export const productService = {
         page,
       }
 
-      // Add category filter if provided
-      if (params?.categoryId) {
-        queryParams.category_id = params.categoryId
+      // Add category filter if provided (using slug)
+      if (params?.categorySlug) {
+        queryParams.category = params.categorySlug
       }
 
       // Add rating filters if provided
@@ -58,7 +58,7 @@ export const productService = {
         next: response.next,
         previous: response.previous,
         filters: {
-          categoryId: params?.categoryId,
+          categorySlug: params?.categorySlug,
           minRating: params?.minRating,
           maxRating: params?.maxRating,
           minPrice: params?.minPrice,

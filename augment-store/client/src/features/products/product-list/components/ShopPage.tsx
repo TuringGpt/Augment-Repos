@@ -30,8 +30,8 @@ const ShopPage = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Read category from URL query parameter
-  const categoryIdFromUrl = searchParams.get('category')
+  // Read category slug from URL query parameter
+  const categorySlugFromUrl = searchParams.get('category')
 
   // API state
   const [products, setProducts] = useState<Product[]>([])
@@ -44,7 +44,7 @@ const ShopPage = () => {
 
   // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
-    categoryId: categoryIdFromUrl ?? undefined,
+    categorySlug: categorySlugFromUrl ?? undefined,
     minPrice: undefined,
     maxPrice: undefined,
     minRating: undefined,
@@ -57,17 +57,17 @@ const ShopPage = () => {
   // Update filters when URL category parameter changes
   useEffect(() => {
     setFilters((prev) => {
-      const newCategoryId = categoryIdFromUrl ?? undefined
+      const newCategorySlug = categorySlugFromUrl ?? undefined
       // Only update if the value actually changed
-      if (prev.categoryId !== newCategoryId) {
+      if (prev.categorySlug !== newCategorySlug) {
         return {
           ...prev,
-          categoryId: newCategoryId,
+          categorySlug: newCategorySlug,
         }
       }
       return prev
     })
-  }, [categoryIdFromUrl])
+  }, [categorySlugFromUrl])
 
   // Fetch products from API (backend returns 100 items per page)
   useEffect(() => {
@@ -78,7 +78,7 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
-          categoryId: filters.categoryId,
+          categorySlug: filters.categorySlug,
           minRating: filters.minRating,
           maxRating: filters.maxRating,
           minPrice: filters.minPrice,
@@ -92,7 +92,7 @@ const ShopPage = () => {
           limit: response.limit,
           totalPages: response.totalPages,
           filters: {
-            categoryId: filters.categoryId,
+            categorySlug: filters.categorySlug,
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             minRating: filters.minRating,
@@ -117,7 +117,7 @@ const ShopPage = () => {
     fetchProducts()
   }, [
     apiPage,
-    filters.categoryId,
+    filters.categorySlug,
     filters.minPrice,
     filters.maxPrice,
     filters.minRating,
@@ -178,7 +178,7 @@ const ShopPage = () => {
 
   const handleResetFilters = () => {
     setFilters({
-      categoryId: undefined,
+      categorySlug: undefined,
       minPrice: undefined,
       maxPrice: undefined,
       minRating: undefined,

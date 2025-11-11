@@ -1,6 +1,17 @@
 import type { Category, CategoryWithChildren } from '@features/products/types'
 
 /**
+ * Converts a category name to a URL-friendly slug
+ * Example: "Basket Ball" -> "basket-ball"
+ *
+ * @param name - Category name
+ * @returns URL-friendly slug
+ */
+export function categoryNameToSlug(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '-')
+}
+
+/**
  * Transforms a flat array of categories into a hierarchical tree structure
  *
  * Categories where parent === null are root categories (top-level)
