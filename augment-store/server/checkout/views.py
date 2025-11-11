@@ -1,7 +1,7 @@
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Order
-from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer
+from .models import BillingAddress, ContactInformation, Order, ShippingAddress
+from .serializers import BillingAddressListSerializer, ContactInformationListSerializer, CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, ShippingAddressListSerializer
 
 
 class BaseOrderView:
@@ -22,3 +22,26 @@ class OrderListView(BaseOrderView, ListAPIView):
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
+
+
+class ListShippingAddressView(ListAPIView):
+    serializer_class = ShippingAddressListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ShippingAddress.objects.filter(user=self.request.user)
+    
+class ListBillingAddressView(ListAPIView):
+    serializer_class = BillingAddressListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BillingAddress.objects.filter(user=self.request.user)
+    
+
+class ListContactInformationView(ListAPIView):
+    serializer_class = ContactInformationListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ContactInformation.objects.filter(user=self.request.user)
