@@ -1,16 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Cart, CartItem } from '@features/cart/types'
-import { createEmptyCart, calculateCartTotals } from '@utils/cartUtils'
+import type { Cart, CartItem, EnrichedCart, CartItemWithProduct } from '@features/cart/types'
+import { createEmptyCart, calculateCartTotals, enrichCart } from '@utils/cartUtils'
 
 interface CartState {
-  cart: Cart | null
+  cart: EnrichedCart | null
   isLoading: boolean
   error: string | null
   updatingItemIds: Set<string> // Track which items are being updated
 
   // Actions
-  setCart: (cart: Cart) => void
+  setCart: (cart: EnrichedCart) => void
   addItem: (item: CartItem) => void
   addItemToCart: (productId: string, quantity: number) => Promise<void>
   updateItem: (itemId: string, quantity: number) => void
@@ -27,11 +27,11 @@ interface CartState {
   getItemCount: () => number
   getTotal: () => number
   isInCart: (productId: string) => boolean
-  getCartItem: (productId: string) => CartItem | undefined
+  getCartItem: (productId: string) => CartItemWithProduct | undefined
   isItemUpdating: (itemId: string) => boolean
 }
 
-const initialCart: Cart = createEmptyCart()
+const initialCart: EnrichedCart = createEmptyCart()
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -47,7 +47,8 @@ export const useCartStore = create<CartState>()(
         // Import cartService dynamically to avoid circular dependency
         const { cartService } = await import('@services/api/cart/cartService')
         try {
-          const cart = await cartService.getCart()
+          const rawCart = await cartService.getCart()
+          const cart = enrichCart(rawCart)
           set({ cart, error: null })
         } catch (error) {
           console.error('Failed to refetch cart:', error)
@@ -72,10 +73,18 @@ export const useCartStore = create<CartState>()(
           // Initialize cart if it's null
           const currentCart = state.cart || createEmptyCart()
 
-          let updatedItems: CartItem[]
+          // Skip if product is null
+          if (!item.product) {
+            return state
+          }
+
+          // Type-safe item with non-null product
+          const itemWithProduct = item as CartItemWithProduct
+
+          let updatedItems: CartItemWithProduct[]
 
           const existingItemIndex = currentCart.items.findIndex(
-            (i) => i.product.id === item.product.id
+            (i) => i.product.id === itemWithProduct.product.id
           )
 
           if (existingItemIndex >= 0) {
@@ -83,8 +92,11 @@ export const useCartStore = create<CartState>()(
             updatedItems = [...currentCart.items]
             const existingItem = updatedItems[existingItemIndex]
 
-            // Cap quantity at available stock
-            const finalQuantity = Math.min(item.quantity, existingItem.product.stock)
+            // Cap quantity at available stock (use quantity if available, otherwise stock)
+            const finalQuantity = Math.min(
+              itemWithProduct.quantity,
+              existingItem.product.quantity ?? existingItem.product.stock
+            )
 
             updatedItems[existingItemIndex] = {
               ...existingItem,
@@ -92,11 +104,14 @@ export const useCartStore = create<CartState>()(
             }
           } else {
             // Add new item with stock validation
-            const finalQuantity = Math.min(item.quantity, item?.product?.quantity ?? item.product.stock)
+            const finalQuantity = Math.min(
+              itemWithProduct.quantity,
+              itemWithProduct.product.quantity ?? itemWithProduct.product.stock
+            )
             updatedItems = [
               ...currentCart.items,
               {
-                ...item,
+                ...itemWithProduct,
                 quantity: finalQuantity,
               },
             ]
@@ -139,9 +154,12 @@ export const useCartStore = create<CartState>()(
           const currentCart = state.cart || createEmptyCart()
 
           const updatedItems = currentCart.items.map((item) => {
-            if (item.id === itemId) {
+            if (item.id === itemId && item.product) {
               // Cap quantity at available stock
-              const finalQuantity = Math.min(Math.max(1, quantity), item?.product?.quantity ?? item.product.stock)
+              const finalQuantity = Math.min(
+                Math.max(1, quantity),
+                item.product.quantity ?? item.product.stock
+              )
               return { ...item, quantity: finalQuantity }
             }
             return item
@@ -318,6 +336,28 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         cart: state.cart,
       }),
+      // Migration function to handle rehydration of old cart data
+      // Filters out items with null products to ensure EnrichedCart type safety
+      onRehydrateStorage: () => (state) => {
+        if (state?.cart) {
+          // Cast to Cart type to handle old persisted data that may have null products
+          const persistedCart = state.cart as unknown as Cart
+
+          // Use enrichCart to filter out items with null products and recalculate totals
+          // This ensures consistency with how API responses are handled
+          const enrichedCart = enrichCart(persistedCart)
+
+          // Update state with enriched cart
+          state.cart = enrichedCart
+
+          // Log if any items were filtered out during migration
+          if (enrichedCart.items.length !== persistedCart.items.length) {
+            console.log(
+              `Cart migration: Filtered out ${persistedCart.items.length - enrichedCart.items.length} item(s) with deleted products`
+            )
+          }
+        }
+      },
     }
   )
 )
