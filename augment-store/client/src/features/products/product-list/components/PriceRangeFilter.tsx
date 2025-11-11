@@ -92,15 +92,15 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
       event.preventDefault()
 
       const input = event.currentTarget
-      const start = input.selectionStart ?? 0
-      const end = input.selectionEnd ?? 0
       const currentValue = input.value
 
       // Sanitize the pasted text
       const sanitized = sanitizeNumericInput(pastedText)
 
-      // Insert sanitized text at cursor position, replacing any selection
-      const newValue = currentValue.substring(0, start) + sanitized + currentValue.substring(end)
+      // Note: We cannot use selectionStart/selectionEnd or setSelectionRange on type="number" inputs
+      // as they are not supported in most browsers and will throw errors.
+      // Instead, we append the sanitized text to the current value.
+      const newValue = currentValue + sanitized
 
       // Determine which field and update state
       if (input.name === 'minPrice') {
@@ -108,11 +108,6 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
       } else if (input.name === 'maxPrice') {
         setLocalMaxPrice(newValue)
       }
-
-      // Set cursor position after the pasted text
-      setTimeout(() => {
-        input.setSelectionRange(start + sanitized.length, start + sanitized.length)
-      }, 0)
     }
   }
 
