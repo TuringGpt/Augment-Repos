@@ -92,7 +92,7 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
             email="normal_user@demo.com",
             password="testpass123",
             is_active=True,
-            role=User.Role.USER
+            role=User.Role.MEMBER
         )
         self.brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
         self.product = ProductFactory(created_by=self.merchant, name="Nike Shoe", brand=self.brand)
@@ -128,5 +128,5 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
     def test_merchant_order_unauthenticated(self):
         url = reverse("v1:merchant:merchant_order_list")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
     
