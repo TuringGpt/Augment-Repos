@@ -76,7 +76,7 @@ const OrderSummary = ({
     setItemToRemove(null)
   }
 
-  const handlePlaceOrder  = () => {
+  const handlePlaceOrder = () => {
     // TODO: Implement order placement logic
   }
 
@@ -237,7 +237,7 @@ const OrderSummary = ({
                   }}
                   inputProps={{
                     min: 1,
-                    max: item?.product?.quantity ?? item.product.stock,
+                    max: item.product.quantity ?? item.product.stock,
                     inputMode: 'numeric',
                   }}
                 />

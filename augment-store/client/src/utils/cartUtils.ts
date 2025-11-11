@@ -1,15 +1,27 @@
-import type { Cart, CartItem } from '@features/cart/types'
+import type { Cart, CartItem, CartItemWithProduct, EnrichedCart } from '@features/cart/types'
 
 /**
  * Gets the price for a cart item
  * Uses discountPrice if available (including 0 for free items), otherwise uses regular price
  *
  * @param item - Cart item
- * @returns Price as a number
+ * @returns Price as a number (0 if product is null)
  */
 export function getItemPrice(item: CartItem): number {
+  // Return 0 if product is null (deleted product)
+  if (!item.product) {
+    return 0
+  }
+
+  // Use discountPrice if it exists, otherwise fall back to price
   const price = item.product.discountPrice ?? item.product.price
-  return parseFloat(price.toString())
+
+  // Handle both string and number prices from API
+  if (typeof price === 'number') {
+    return price
+  }
+
+  return parseFloat(price)
 }
 
 /**
@@ -46,14 +58,17 @@ export function calculateCartTotals(items: CartItem[]) {
 
 /**
  * Adds calculated totals to a cart
- * Filters out deleted items
+ * Filters out deleted items and items with null products (deleted products)
  *
  * @param cart - Cart from API
- * @returns Cart with calculated totals
+ * @returns EnrichedCart with calculated totals and items with non-null products
  */
-export function enrichCart(cart: Cart): Cart {
-  // Filter out deleted items
-  const activeItems = cart.items.filter((item) => !item.is_deleted)
+export function enrichCart(cart: Cart): EnrichedCart {
+  // Filter out deleted items and items with null products (deleted products)
+  // Type guard ensures filtered items have non-null products
+  const activeItems = cart.items.filter(
+    (item): item is CartItemWithProduct => !item.is_deleted && item.product !== null
+  )
 
   // Calculate totals
   const totals = calculateCartTotals(activeItems)
@@ -68,9 +83,9 @@ export function enrichCart(cart: Cart): Cart {
 /**
  * Creates an empty cart
  *
- * @returns Empty cart object
+ * @returns Empty enriched cart object with no items
  */
-export function createEmptyCart(): Cart {
+export function createEmptyCart(): EnrichedCart {
   return {
     id: 'cart-' + Date.now(),
     items: [],

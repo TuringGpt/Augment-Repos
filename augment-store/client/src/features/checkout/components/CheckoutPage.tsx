@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import {
   Accordion,
   AccordionDetails,
@@ -24,6 +24,8 @@ import {
 import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
 import { COUNTRIES } from '@constants/index'
+import { userService } from '@services/api/user/userService'
+import { useAuthStore } from '@store/authStore'
 
 const nameRegex = /^[a-zA-Z\s\-']+$/
 const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
@@ -39,7 +41,10 @@ const contactInfoSchema = z.object({
         const digitsOnly = val.replace(/^\+/, '')
         return /^\d+$/.test(digitsOnly)
       },
-      { message: 'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix' }
+      {
+        message:
+          'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix',
+      }
     )
     .refine(
       (val) => {
@@ -80,7 +85,7 @@ const shippingAddressSchema = z.object({
     .string()
     .min(1, 'Postal code is required')
     .max(20, 'Postal code is too long')
-    .regex(/^[a-zA-Z0-9\s\-]+$/, 'Invalid postal code format'),
+    .regex(/^[a-zA-Z0-9\s-]+$/, 'Invalid postal code format'),
   country: z.string().min(1, 'Country is required'),
 })
 
@@ -97,7 +102,7 @@ const billingAddressSchema = z.object({
     .string()
     .min(1, 'Postal code is required')
     .max(20, 'Postal code is too long')
-    .regex(/^[a-zA-Z0-9\s\-]+$/, 'Invalid postal code format'),
+    .regex(/^[a-zA-Z0-9\s-]+$/, 'Invalid postal code format'),
   country: z.string().min(1, 'Country is required'),
 })
 
@@ -123,6 +128,7 @@ const ACCORDION_SUMMARY_STYLES = {
 const ACCORDION_DETAILS_STYLES = { px: 3, py: 3, bgcolor: 'grey.50' }
 
 const CheckoutPage = () => {
+  const { isAuthenticated } = useAuthStore()
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: '',
     phone: '',
@@ -157,6 +163,41 @@ const CheckoutPage = () => {
     Partial<Record<keyof ContactInfo | keyof ShippingAddress | keyof BillingAddress, boolean>>
   >({})
 
+  // Fetch user profile and pre-fill contact info (only for empty/untouched fields)
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        const profile = await userService.getProfile()
+
+        // Only update state if component is still mounted
+        if (!isMounted) return
+
+        // Only update fields that are still empty and haven't been touched by the user
+        setContactInfo((prev) => ({
+          email: prev.email === '' && !touched.email ? profile.email || '' : prev.email,
+          phone: prev.phone === '' && !touched.phone ? profile.mobile || '' : prev.phone,
+          firstName:
+            prev.firstName === '' && !touched.firstName ? profile.first_name || '' : prev.firstName,
+          lastName:
+            prev.lastName === '' && !touched.lastName ? profile.last_name || '' : prev.lastName,
+        }))
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+        // Silently fail - user can still fill in the form manually
+      }
+    }
+
+    fetchUserProfile()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAuthenticated, touched.email, touched.phone, touched.firstName, touched.lastName])
+
   const createFieldValidator = useCallback(
     <T extends z.ZodTypeAny>(schema: z.ZodObject<Record<string, T>>) =>
       (field: string, value: string) => {
@@ -179,15 +220,13 @@ const CheckoutPage = () => {
     []
   )
 
-  const validateContactField = useCallback(
-    createFieldValidator(contactInfoSchema),
-    [createFieldValidator]
-  )
+  const validateContactField = useCallback(createFieldValidator(contactInfoSchema), [
+    createFieldValidator,
+  ])
 
-  const validateShippingField = useCallback(
-    createFieldValidator(shippingAddressSchema),
-    [createFieldValidator]
-  )
+  const validateShippingField = useCallback(createFieldValidator(shippingAddressSchema), [
+    createFieldValidator,
+  ])
 
   const validateBillingField = useCallback(
     createFieldValidator(billingAddressSchema),
@@ -234,10 +273,11 @@ const CheckoutPage = () => {
     []
   )
 
-  const handleContactBlur = useCallback(
-    createBlurHandler(contactInfo, validateContactField),
-    [contactInfo, validateContactField, createBlurHandler]
-  )
+  const handleContactBlur = useCallback(createBlurHandler(contactInfo, validateContactField), [
+    contactInfo,
+    validateContactField,
+    createBlurHandler,
+  ])
 
   const handleShippingBlur = useCallback(
     createBlurHandler(shippingAddress, validateShippingField),
@@ -350,6 +390,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="First Name"
                     value={contactInfo.firstName}
                     onChange={handleContactChange('firstName')}
@@ -364,6 +405,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Last Name"
                     value={contactInfo.lastName}
                     onChange={handleContactChange('lastName')}
@@ -378,6 +420,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Email Address"
                     type="email"
                     value={contactInfo.email}
@@ -385,7 +428,9 @@ const CheckoutPage = () => {
                     onBlur={handleContactBlur('email')}
                     error={touched.email && !!errors.email}
                     helperText={
-                      touched.email && errors.email ? errors.email : "We'll send your order confirmation here"
+                      touched.email && errors.email
+                        ? errors.email
+                        : "We'll send your order confirmation here"
                     }
                     required
                     variant="outlined"
@@ -395,6 +440,7 @@ const CheckoutPage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
+                    size="small"
                     label="Phone Number"
                     type="tel"
                     value={contactInfo.phone}
