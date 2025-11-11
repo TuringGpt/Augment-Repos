@@ -46,7 +46,7 @@ export interface CategoryAPIResponse {
   count: number
   next: string | null
   previous: string | null
-  results: Category[]
+  results: import('./api').ProductCategoryAPI[]
 }
 
 export interface ProductFilters {
