@@ -69,8 +69,8 @@ const PriceRangeFilter = ({ value, onChange }: PriceRangeFilterProps) => {
   }
 
   const sanitizeNumericInput = (value: string): string => {
-    // Remove invalid characters: e, E, +, -
-    // Allow only digits and decimal point
+    // Remove characters that are invalid for price inputs: e, E, +, -
+    // (scientific notation and sign characters)
     return value.replace(/[eE+-]/g, '')
   }
 
