@@ -2,8 +2,8 @@
 from django.urls import path
 from .views import ListContactInformationView
 
-app_name = "checkout"
+app_name = "checkout-contact-info"
 urlpatterns = [
-    path('contact-information/', ListContactInformationView.as_view(), name='list_contact_information'),
+    path('', ListContactInformationView.as_view(), name='list_contact_information'),
 ]
 
