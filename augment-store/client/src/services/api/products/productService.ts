@@ -27,6 +27,7 @@ export const productService = {
       }
 
       // Add category filter if provided (using slug)
+      // TEMPORARY: Using slug generated from category name until backend exposes slug field
       if (params?.categorySlug) {
         queryParams.category = params.categorySlug
       }

@@ -50,6 +50,7 @@ export interface CategoryAPIResponse {
 }
 
 export interface ProductFilters {
+  // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
   categorySlug?: string
   minPrice?: number
   maxPrice?: number
@@ -69,6 +70,7 @@ export interface ProductSearchParams {
   page?: number
   limit?: number
   search?: string
+  // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
   categorySlug?: string
   minPrice?: number
   maxPrice?: number
