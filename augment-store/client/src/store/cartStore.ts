@@ -92,10 +92,10 @@ export const useCartStore = create<CartState>()(
             updatedItems = [...currentCart.items]
             const existingItem = updatedItems[existingItemIndex]
 
-            // Cap quantity at available stock
+            // Cap quantity at available stock (use quantity if available, otherwise stock)
             const finalQuantity = Math.min(
               itemWithProduct.quantity,
-              existingItem.product.stock ?? itemWithProduct.product.stock
+              existingItem.product.quantity ?? existingItem.product.stock
             )
 
             updatedItems[existingItemIndex] = {
