@@ -107,10 +107,12 @@ const CheckoutPage = () => {
 
         // Only update fields that are still empty and haven't been touched by the user
         setContactInfo((prev) => ({
-          email: prev.email === '' ? profile.email || '' : prev.email,
-          phone: prev.phone === '' ? profile.mobile || '' : prev.phone,
-          firstName: prev.firstName === '' ? profile.first_name || '' : prev.firstName,
-          lastName: prev.lastName === '' ? profile.last_name || '' : prev.lastName,
+          email: prev.email === '' && !touched.email ? profile.email || '' : prev.email,
+          phone: prev.phone === '' && !touched.phone ? profile.mobile || '' : prev.phone,
+          firstName:
+            prev.firstName === '' && !touched.firstName ? profile.first_name || '' : prev.firstName,
+          lastName:
+            prev.lastName === '' && !touched.lastName ? profile.last_name || '' : prev.lastName,
         }))
       } catch (error) {
         console.error('Failed to fetch user profile:', error)
@@ -123,7 +125,7 @@ const CheckoutPage = () => {
     return () => {
       isMounted = false
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, touched.email, touched.phone, touched.firstName, touched.lastName])
 
   const validateField = useCallback((field: keyof ContactInfo, value: string) => {
     try {
