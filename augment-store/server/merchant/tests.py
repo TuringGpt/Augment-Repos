@@ -71,3 +71,49 @@ class MerchantProductListViewTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
+
+
+class MerchantOrdersListViewTests(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.merchant_id = uuid.uuid4()
+        self.merchant_id_no_orders = uuid.uuid4()
+        self.merchant = UserFactory(
+            id=self.merchant_id,
+            email="merchant@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
+        self.merchant_no_orders = UserFactory(
+            id=self.merchant_id_no_orders,
+            email="merchant_no_orders@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
+        self.brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
+        self.product = ProductFactory(created_by=self.merchant, name="Nike Shoe", brand=self.brand)
+        self.order = OrderFactory(created_by=self.merchant)
+        self.order_item = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
+        self.order_item_2 = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
+        self.order_item_3 = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
+        self.order_2 = OrderFactory(created_by=self.merchant)
+        self.order_item_4 = OrderItemFactory(order=self.order_2, cart_item__product=self.product, created_by=self.merchant)
+
+    def test_merchant_order_list_view(self):
+        url = reverse("v1:merchant:merchant_order_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+
+    def test_merchant_no_orders(self):
+        url = reverse("v1:merchant:merchant_order_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
+    def test_merchant_authentication(self):
+        url = reverse("v1:merchant:merchant_order_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
