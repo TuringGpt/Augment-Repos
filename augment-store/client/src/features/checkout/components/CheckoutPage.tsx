@@ -142,6 +142,41 @@ const CheckoutPage = () => {
     Partial<Record<keyof ContactInfo | keyof ShippingAddress, boolean>>
   >({})
 
+  // Fetch user profile and pre-fill contact info (only for empty/untouched fields)
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchUserProfile = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        const profile = await userService.getProfile()
+
+        // Only update state if component is still mounted
+        if (!isMounted) return
+
+        // Only update fields that are still empty and haven't been touched by the user
+        setContactInfo((prev) => ({
+          email: prev.email === '' && !touched.email ? profile.email || '' : prev.email,
+          phone: prev.phone === '' && !touched.phone ? profile.mobile || '' : prev.phone,
+          firstName:
+            prev.firstName === '' && !touched.firstName ? profile.first_name || '' : prev.firstName,
+          lastName:
+            prev.lastName === '' && !touched.lastName ? profile.last_name || '' : prev.lastName,
+        }))
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error)
+        // Silently fail - user can still fill in the form manually
+      }
+    }
+
+    fetchUserProfile()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAuthenticated, touched.email, touched.phone, touched.firstName, touched.lastName])
+
   const createFieldValidator = useCallback(
     <T extends z.ZodTypeAny>(schema: z.ZodObject<Record<string, T>>) =>
       (field: string, value: string) => {
