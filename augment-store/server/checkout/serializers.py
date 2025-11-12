@@ -288,16 +288,10 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
     
 
 class PaymentStatusSerializer(serializers.ModelSerializer):
-    payment_status = serializers.SerializerMethodField()
     class Meta:
         model = Payment
         fields = ["payment_status"]
         read_only_fields = ["payment_status"]
-
-    def get_payment_status(self, obj: Payment):
-        stripe_service = StripeService()
-        stripe_service.check_and_update_payment_status(obj)
-        return obj.payment_status
     
 
     
