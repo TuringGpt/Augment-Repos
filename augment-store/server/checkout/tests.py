@@ -1,16 +1,16 @@
+import unittest
+from unittest.mock import  patch
 from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
 from rest_framework import status
-from rest_framework.test import APIClient
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
-from carts.models import Cart
-from checkout.models import Order, OrderItem
-from checkout.factory import OrderFactory, OrderItemFactory
+from checkout.models import Order
+from checkout.factory import OrderFactory, OrderItemFactory, PaymentFactory
 from decimal import Decimal
-
+from checkout.services import StripeService
 
 class CreateOrderViewTests(BaseAPITestCase):
 
@@ -476,3 +476,65 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         self.assertIn("id", order_item)
         self.assertIn("cart_item", order_item)
         self.assertIn("created_at", order_item)
+
+class OrderPaymentTest(BaseAPITestCase):
+    
+    def setUp(self):
+        super().setUp()
+
+    # mock the create_payment_session method
+    @patch("checkout.services.StripeService.create_payment_session")
+    def test_payment_order(self, mock_create_payment_session):
+
+          # Mock the Stripe session object returned by the service
+        mock_create_payment_session.return_value = type(
+            "MockSession",
+            (object,),
+            {"id": "sess_test_123", "client_secret": "mocked_client_secret"}
+        )()
+
+        # GIVEN I have an order
+        order = OrderFactory(created_by=self.user)
+        cart_item = CartItemFactory(quantity=1)
+        OrderItemFactory(order=order, cart_item=cart_item)
+
+        # WHEN I make a payment for the order
+        url = reverse("v1:checkout_payments:payment_order")
+
+        payload = {
+            "order": str(order.id),
+            "payment_method": "stripe",
+        }
+        response = self.authenticated_client.post(url, payload)
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+class StripeServiceTests(BaseAPITestCase):
+
+    # skip this test for now only run it locally, remove the skip decorator to run it locally
+    @unittest.skip("Skipping StripeServiceTests for now. Uncomment to run it locally.")
+    @patch("stripe.checkout.Session.create")
+    def test_create_payment_session(self, mock_create_session):
+
+        mock_create_session.return_value = {
+            "client_secret": "mocked_client_secret",
+        }
+        
+        # GIVEN I have payment and order
+        order = OrderFactory()
+        cart_item = CartItemFactory(quantity=1)
+        OrderItemFactory(order=order, cart_item=cart_item)
+        payment = PaymentFactory(order=order)
+
+        # WHEN we create a payment session
+        stripe_service = StripeService()
+        session = stripe_service.create_payment_session(payment)
+
+        # THEN we should get a session object
+        self.assertIsNotNone(session)
+        self.assertIn("client_secret", session)
+
+

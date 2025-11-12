@@ -77,6 +77,8 @@ jobs:
           AWS_STORAGE_BUCKET_NAME: 'test-bucket'
           AWS_S3_REGION_NAME: 'us-east-1'
           AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
+          STRIPE_PUBLISHABLE_KEY: "public-key-here"
+          STRIPE_SECRET_KEY: "secret-key-here"
         run: |
           python manage.py migrate
 
@@ -97,6 +99,8 @@ jobs:
           AWS_STORAGE_BUCKET_NAME: 'test-bucket'
           AWS_S3_REGION_NAME: 'us-east-1'
           AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
+          STRIPE_PUBLISHABLE_KEY: "public-key-here"
+          STRIPE_SECRET_KEY: "secret-key-here"
 
         run: |
           python manage.py test --verbosity=2
@@ -118,6 +122,8 @@ jobs:
           AWS_STORAGE_BUCKET_NAME: 'test-bucket'
           AWS_S3_REGION_NAME: 'us-east-1'
           AWS_S3_CUSTOM_DOMAIN: 'test-domain.s3.amazonaws.com'
+          STRIPE_PUBLISHABLE_KEY: "public-key-here"
+          STRIPE_SECRET_KEY: "secret-key-here"
         run: |
           pip install coverage
           coverage run --source='.' manage.py test
