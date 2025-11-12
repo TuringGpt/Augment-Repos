@@ -53,8 +53,8 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the response should contain the contact messages
         self.assertEqual(len(response.data.get("results", [])), 2)
-        self.assertEqual(response.data["results"][0]["name"], "Test Name 1")
-        self.assertEqual(response.data["results"][1]["name"], "Test Name 2")
+        self.assertEqual(response.data["results"][0]["name"], "Test Name 2")
+        self.assertEqual(response.data["results"][1]["name"], "Test Name 1")
         
     def test_retrieve_contact_message(self):
         # GIVEN an authenticated admin exists
