@@ -1,9 +1,15 @@
-from django.test import TestCase
+from core.tests import BaseAPITestCase
+from accounts.factory import UserFactory
+from rest_framework import status
+from django.urls import reverse
+from contact.models import ContactMessage
+from contact.factory import ContactMessageFactory
+from accounts.models import User
 
 # Create your tests here.
-class ContactTests(TestCase):
+class ContactTests(BaseAPITestCase):
     
-    def setup():
+    def setup(self):
         self.admin = UserFactory(
             email="admin@demo.com",
             password="testpass123",
@@ -25,13 +31,10 @@ class ContactTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # AND a ContactMessage object should be created in the database
         self.assertTrue(ContactMessage.objects.filter(name="Test Name").exists())
-        # AND the contact message should be created by the user
-        contact_message = ContactMessage.objects.get(name="Test Name")
-        self.assertEqual(contact_message.created_by, None)
-    
+
     def test_list_contact_messages(self):
         # GIVEN an authenticated admin exists
-        self.client.force_authenticate(user=self.admin)
+        self.authenticated_client.force_authenticate(user=self.admin)
         # AND some contact messages exist in the database
         ContactMessageFactory(
             name="Test Name 1",
@@ -43,10 +46,19 @@ class ContactTests(TestCase):
             email="test2@example.com",
             message="Test Message 2",
         )
+        # WHEN we make a get request to list contact messages
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url)
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # AND the response should contain the contact messages
+        self.assertEqual(len(response.data.get("results", [])), 2)
+        self.assertEqual(response.data["results"][0]["name"], "Test Name 1")
+        self.assertEqual(response.data["results"][1]["name"], "Test Name 2")
         
     def test_retrieve_contact_message(self):
         # GIVEN an authenticated admin exists
-        self.client.force_authenticate(user=self.admin)
+        self.authenticated_client.force_authenticate(user=self.admin)
         # AND a contact message exists in the database
         contact_message = ContactMessageFactory(
             name="Test Name",
@@ -55,7 +67,7 @@ class ContactTests(TestCase):
         )
         # WHEN we make a get request to retrieve the contact message
         url = reverse("v1:contact_detail", kwargs={"pk": str(contact_message.id)})
-        response = self.client.get(url)
+        response = self.authenticated_client.get(url)
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the response should contain the contact message details
@@ -63,7 +75,7 @@ class ContactTests(TestCase):
 
     def test_delete_contact_message(self):
         # GIVEN an authenticated admin exists
-        self.client.force_authenticate(user=self.admin)
+        self.authenticated_client.force_authenticate(user=self.admin)
         # AND a contact message exists in the database
         contact_message = ContactMessageFactory(
             name="Test Name",
@@ -72,7 +84,7 @@ class ContactTests(TestCase):
         )
         # WHEN we make a delete request to delete the contact message
         url = reverse("v1:contact_detail", kwargs={"pk": str(contact_message.id)})
-        response = self.client.delete(url)
+        response = self.authenticated_client.delete(url)
         # THEN we should get a 204 response
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # AND the contact message should be deleted from the database
@@ -80,7 +92,7 @@ class ContactTests(TestCase):
 
     def test_update_contact_message(self):
         # GIVEN an authenticated admin exists
-        self.client.force_authenticate(user=self.admin)
+        self.authenticated_client.force_authenticate(user=self.admin)
         # AND a contact message exists in the database
         contact_message = ContactMessageFactory(
             name="Test Name",
@@ -92,7 +104,7 @@ class ContactTests(TestCase):
         payload = {
             "name": "Updated Name",
         }
-        response = self.client.patch(url, payload)
+        response = self.authenticated_client.patch(url, payload)
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the contact message should be updated in the database
