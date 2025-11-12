@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "merchant",
     'schema_viewer',
     'contact',
+    'newsletter',
 ]
 
 MIDDLEWARE = [
