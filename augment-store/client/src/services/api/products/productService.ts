@@ -26,6 +26,12 @@ export const productService = {
         page,
       }
 
+      // Add category filter if provided (using slug)
+      // TEMPORARY: Using slug generated from category name until backend exposes slug field
+      if (params?.categorySlug) {
+        queryParams.category = params.categorySlug
+      }
+
       // Add rating filters if provided
       if (params?.minRating !== undefined && params?.minRating !== null) {
         queryParams.rating_min = params.minRating
@@ -53,6 +59,7 @@ export const productService = {
         next: response.next,
         previous: response.previous,
         filters: {
+          categorySlug: params?.categorySlug,
           minRating: params?.minRating,
           maxRating: params?.maxRating,
           minPrice: params?.minPrice,

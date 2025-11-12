@@ -29,7 +29,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
 import { useAuthStore } from '@store/authStore'
 import { productService } from '@services/api/products/productService'
-import { buildCategoryTree } from '@utils/categoryUtils'
+import { buildCategoryTree, categoryNameToSlug } from '@utils/categoryUtils'
 import { authService } from '@services/api/auth/authService'
 import type { CategoryWithChildren } from '@features/products/types'
 
@@ -60,7 +60,7 @@ const Sidebar = () => {
     fetchCategories()
   }, [])
 
-  const handleCategoryClick = (categoryId: string, hasChildren: boolean) => {
+  const handleCategoryClick = (categoryId: string, categoryName: string, hasChildren: boolean) => {
     if (hasChildren) {
       // Toggle expansion for categories with children
       if (expandedCategory === categoryId) {
@@ -70,13 +70,17 @@ const Sidebar = () => {
       }
     } else {
       // Navigate directly for categories without children
-      navigate(`/products?category=${categoryId}`)
+      // TEMPORARY: Generate slug from name until backend exposes slug field
+      const slug = categoryNameToSlug(categoryName)
+      navigate(`/products?category=${encodeURIComponent(slug)}`)
       closeSidebar()
     }
   }
 
-  const handleSubcategoryClick = (subcategoryId: string) => {
-    navigate(`/products?category=${subcategoryId}`)
+  const handleSubcategoryClick = (categoryName: string) => {
+    // TEMPORARY: Generate slug from name until backend exposes slug field
+    const slug = categoryNameToSlug(categoryName)
+    navigate(`/products?category=${encodeURIComponent(slug)}`)
     closeSidebar()
   }
 
@@ -286,7 +290,7 @@ const Sidebar = () => {
                 <Box key={category.id}>
                   <ListItem disablePadding>
                     <ListItemButton
-                      onClick={() => handleCategoryClick(category.id, hasChildren)}
+                      onClick={() => handleCategoryClick(category.id, category.name, hasChildren)}
                       sx={{
                         py: 1.5,
                         '&:hover': {
@@ -313,7 +317,7 @@ const Sidebar = () => {
                         {category.children!.map((subcategory) => (
                           <ListItemButton
                             key={subcategory.id}
-                            onClick={() => handleSubcategoryClick(subcategory.id)}
+                            onClick={() => handleSubcategoryClick(subcategory.name)}
                             sx={{
                               pl: 7,
                               py: 1,
