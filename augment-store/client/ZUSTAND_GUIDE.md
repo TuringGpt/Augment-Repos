@@ -186,7 +186,62 @@ function ProductList() {
 
 ---
 
-### 4. UI Store (`useUIStore`)
+### 4. Order Store (`useOrderStore`)
+
+Manages order creation state.
+
+**State:**
+
+- `currentOrder` - Most recently created order
+- `isCreatingOrder` - Creating order loading state
+- `createOrderError` - Create order error message
+
+**Actions:**
+
+- `setCurrentOrder(order)` - Set current order
+- `createOrder(data)` - Create a new order
+- `clearCurrentOrder()` - Clear current order and error
+- `setCreateOrderError(error)` - Set create order error
+
+**Example Usage:**
+
+```typescript
+import { useOrderStore } from '@store/orderStore'
+
+function CheckoutPage() {
+  const { createOrder, isCreatingOrder, createOrderError, currentOrder } = useOrderStore()
+
+  const handlePlaceOrder = async () => {
+    try {
+      const order = await createOrder({
+        shippingAddressId: '123',
+        billingAddressId: '456',
+        paymentMethodId: '789',
+      })
+      console.log('Order created:', order)
+      // Navigate to order confirmation page
+    } catch (error) {
+      console.error('Failed to create order:', error)
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={handlePlaceOrder} disabled={isCreatingOrder}>
+        {isCreatingOrder ? 'Placing Order...' : 'Place Order'}
+      </button>
+      {createOrderError && <p style={{ color: 'red' }}>{createOrderError}</p>}
+    </div>
+  )
+}
+```
+
+**Persistence:**
+Current order is persisted to localStorage automatically (loading/error states are not persisted).
+
+---
+
+### 5. UI Store (`useUIStore`)
 
 Manages UI state like modals, notifications, etc.
 

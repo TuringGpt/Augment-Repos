@@ -27,9 +27,36 @@ export interface Order {
 }
 
 export interface CreateOrderRequest {
-  shippingAddressId: string
-  billingAddressId: string
-  paymentMethodId: string
+  cart_items: string[]
+  shipping_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  billing_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  contact_information: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+  }
+  shipping_address_id?: string
+  billing_address_id?: string
+  contact_information_id?: string
 }
 
 export interface OrderListResponse {

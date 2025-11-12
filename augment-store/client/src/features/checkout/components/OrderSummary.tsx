@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -18,23 +19,49 @@ import {
   Typography,
 } from '@mui/material'
 import { useCartStore } from '@/store/cartStore'
+import { useOrderStore } from '@/store/orderStore'
+import { useNavigate } from 'react-router-dom'
 
 import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material'
 
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 
+interface ContactInfo {
+  email: string
+  phone: string
+  firstName: string
+  lastName: string
+}
+
+interface AddressInfo {
+  address1: string
+  address2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+}
+
 interface OrderSummaryProps {
   isContactInfoComplete?: boolean
   isShippingAddressComplete?: boolean
   isBillingAddressComplete?: boolean
+  contactInfo: ContactInfo
+  shippingAddress: AddressInfo
+  billingAddress: AddressInfo
 }
 
 const OrderSummary = ({
   isContactInfoComplete = false,
   isShippingAddressComplete = false,
   isBillingAddressComplete = false,
+  contactInfo,
+  shippingAddress,
+  billingAddress,
 }: OrderSummaryProps) => {
   const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
+  const { createOrder, isCreatingOrder, createOrderError } = useOrderStore()
+  const navigate = useNavigate()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
@@ -85,8 +112,58 @@ const OrderSummary = ({
     setItemToRemove(null)
   }
 
-  const handlePlaceOrder = () => {
-    // TODO: Implement order placement logic
+  const handlePlaceOrder = async () => {
+    if (!cart || !cart.items || cart.items.length === 0) {
+      console.error('Cannot place order: cart is empty')
+      return
+    }
+
+    try {
+      // Extract cart item IDs
+      const cartItemIds = cart.items.map((item) => item.id)
+
+      // Create order request payload
+      const orderData = {
+        cart_items: cartItemIds,
+        shipping_address: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          address_line_1: shippingAddress.address1,
+          address_line_2: shippingAddress.address2 || '',
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country,
+        },
+        billing_address: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          address_line_1: billingAddress.address1,
+          address_line_2: billingAddress.address2 || '',
+          city: billingAddress.city,
+          state: billingAddress.state,
+          postal_code: billingAddress.postalCode,
+          country: billingAddress.country,
+        },
+        contact_information: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          email: contactInfo.email,
+          phone: contactInfo.phone,
+        },
+      }
+
+      // Create the order
+      const order = await createOrder(orderData)
+
+      console.log('Order created successfully:', order)
+
+      // Navigate to order confirmation page
+      navigate(`/orders/${order.id}/confirmation`)
+    } catch (error) {
+      console.error('Failed to place order:', error)
+      // Error is already set in the store as createOrderError
+    }
   }
 
   // Early return if cart data is not available
@@ -372,16 +449,24 @@ const OrderSummary = ({
             </a>
           </Typography>
         </Box>
+
+        {/* Error message */}
+        {createOrderError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {createOrderError}
+          </Alert>
+        )}
+
         <Box py={{ xs: 1.5, sm: 2 }}>
           <Button
             variant="contained"
             fullWidth
             size="large"
             onClick={handlePlaceOrder}
-            disabled={!isAllFormsComplete}
+            disabled={!isAllFormsComplete || isCreatingOrder}
             sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, py: { xs: 1, sm: 1.5 } }}
           >
-            Place Order
+            {isCreatingOrder ? 'Placing Order...' : 'Place Order'}
           </Button>
         </Box>
       </Card>
