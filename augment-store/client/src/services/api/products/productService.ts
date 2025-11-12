@@ -8,7 +8,7 @@ import type {
   CategoryAPIResponse,
 } from '@features/products/types'
 import type { PaginatedProductsAPI, ProductDetailAPI } from '@features/products/types/api'
-import { transformProductFromAPI } from '@features/products/types/api'
+import { transformProductFromAPI, transformCategoryFromAPI } from '@features/products/types/api'
 
 export const productService = {
   /**
@@ -144,7 +144,9 @@ export const productService = {
 
       while (nextUrl) {
         const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
-        allCategories = [...allCategories, ...(response.results || [])]
+        // Transform backend categories to frontend format
+        const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
+        allCategories = [...allCategories, ...transformedCategories]
         nextUrl = response.next
       }
 
