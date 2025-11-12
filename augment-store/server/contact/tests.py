@@ -9,7 +9,8 @@ from accounts.models import User
 # Create your tests here.
 class ContactTests(BaseAPITestCase):
     
-    def setup(self):
+    def setUp(self):
+        super().setUp()
         self.admin = UserFactory(
             email="admin@demo.com",
             password="testpass123",
