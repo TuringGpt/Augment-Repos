@@ -1,13 +1,15 @@
 import type { Product, ProductFilters, SortBy } from '@features/products/types'
-import { FilterList as FilterListIcon } from '@mui/icons-material'
+import { Close as CloseIcon, FilterList as FilterListIcon } from '@mui/icons-material'
 import {
   Box,
   Button,
   CircularProgress,
   Container,
+  Dialog,
+  DialogContent,
   Divider,
-  Drawer,
   Grid,
+  IconButton,
   Pagination,
   Paper,
   Typography,
@@ -155,15 +157,27 @@ const ShopPage = () => {
     })
   }
 
-  const FiltersContent = () => (
+  const FiltersContent = ({ showCloseButton = false }: { showCloseButton?: boolean }) => (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Filters
         </Typography>
-        <Button size="small" onClick={handleResetFilters}>
-          Reset
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button size="small" onClick={handleResetFilters}>
+            Reset
+          </Button>
+          {showCloseButton && (
+            <IconButton
+              onClick={() => setMobileFiltersOpen(false)}
+              size="small"
+              aria-label="Close filters"
+              sx={{ ml: 1 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
       <Divider sx={{ mb: 3 }} />
 
@@ -289,12 +303,23 @@ const ShopPage = () => {
         </Grid>
       </Grid>
 
-      {/* Mobile Filters Drawer */}
-      <Drawer anchor="left" open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}>
-        <Box sx={{ width: 300, p: 3 }}>
-          <FiltersContent />
-        </Box>
-      </Drawer>
+      {/* Mobile Filters Modal */}
+      <Dialog
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: 2,
+            maxHeight: 'calc(100vh - 64px)',
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 3 }}>
+          <FiltersContent showCloseButton={true} />
+        </DialogContent>
+      </Dialog>
     </Container>
   )
 }
