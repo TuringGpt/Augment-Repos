@@ -53,7 +53,7 @@ class ProductCategoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductCategory
-        fields = ["id", "name", "description", "parent", "image"]
+        fields = ["id", "name", "description", "parent", "image", "slug"]
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
