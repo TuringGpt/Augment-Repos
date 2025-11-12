@@ -159,7 +159,7 @@ const OrderSummary = ({
       console.log('Order created successfully:', order)
 
       // Navigate to order confirmation page
-      navigate(`/orders/${order.id}/confirmation`)
+      navigate(`/orders/${order.id}/confirmation`) // TODO: Replace with a confirmation model
     } catch (error) {
       console.error('Failed to place order:', error)
       // Error is already set in the store as createOrderError

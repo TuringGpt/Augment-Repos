@@ -214,9 +214,34 @@ function CheckoutPage() {
   const handlePlaceOrder = async () => {
     try {
       const order = await createOrder({
-        shippingAddressId: '123',
-        billingAddressId: '456',
-        paymentMethodId: '789',
+        cart_items: ['item1', 'item2'],
+        shipping_address: {
+          first_name: 'John',
+          last_name: 'Doe',
+          address_line_1: '123 Main St',
+          city: 'Anytown',
+          state: 'CA',
+          postal_code: '12345',
+          country: 'US',
+        },
+        billing_address: {
+          first_name: 'John',
+          last_name: 'Doe',
+          address_line_1: '123 Main St',
+          city: 'Anytown',
+          state: 'CA',
+          postal_code: '12345',
+          country: 'US',
+        },
+        contact_information: {
+          first_name: 'John',
+          last_name: 'Doe',
+          email: 'john.doe@example.com',
+          phone: '555-123-4567',
+        },
+        shipping_address_id: 'address1',
+        billing_address_id: 'address1',
+        contact_information_id: 'contact1',
       })
       console.log('Order created:', order)
       // Navigate to order confirmation page

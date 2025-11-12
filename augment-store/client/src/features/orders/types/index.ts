@@ -66,3 +66,35 @@ export interface OrderListResponse {
   limit: number
   totalPages: number
 }
+
+export interface CreateOrderResponse {
+  id: string
+  status: OrderStatus
+  created_at: string
+  shipping_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  billing_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  contact_information: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+  }
+}

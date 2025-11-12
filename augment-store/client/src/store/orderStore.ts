@@ -1,10 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Order, CreateOrderRequest } from '@features/orders/types'
+import type { Order, CreateOrderRequest, CreateOrderResponse } from '@features/orders/types'
 
 interface OrderState {
   // Current order (most recently created)
-  currentOrder: Order | null
+  currentOrder: CreateOrderResponse | null
 
   // Loading state
   isCreatingOrder: boolean
@@ -13,8 +13,8 @@ interface OrderState {
   createOrderError: string | null
 
   // Actions
-  setCurrentOrder: (order: Order | null) => void
-  createOrder: (data: CreateOrderRequest) => Promise<Order>
+  setCurrentOrder: (order: CreateOrderResponse | null) => void
+  createOrder: (data: CreateOrderRequest) => Promise<CreateOrderResponse>
   clearCurrentOrder: () => void
   setCreateOrderError: (error: string | null) => void
 }
