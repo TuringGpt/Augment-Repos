@@ -6,9 +6,15 @@ import type {
   ProductSearchParams,
   Category,
   CategoryAPIResponse,
+  Brand,
+  BrandAPIResponse,
 } from '@features/products/types'
 import type { PaginatedProductsAPI, ProductDetailAPI } from '@features/products/types/api'
-import { transformProductFromAPI, transformCategoryFromAPI } from '@features/products/types/api'
+import {
+  transformProductFromAPI,
+  transformCategoryFromAPI,
+  transformBrandFromAPI,
+} from '@features/products/types/api'
 
 export const productService = {
   /**
@@ -160,6 +166,26 @@ export const productService = {
       return allCategories
     } catch (error) {
       console.error('Failed to fetch categories:', error)
+      return []
+    }
+  },
+
+  getBrands: async (): Promise<Brand[]> => {
+    try {
+      let allBrands: Brand[] = []
+      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
+
+      while (nextUrl) {
+        const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
+        // Transform backend brands to frontend format
+        const transformedBrands = (response.results || []).map(transformBrandFromAPI)
+        allBrands = [...allBrands, ...transformedBrands]
+        nextUrl = response.next
+      }
+
+      return allBrands
+    } catch (error) {
+      console.error('Failed to fetch brands:', error)
       return []
     }
   },
