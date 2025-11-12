@@ -36,5 +36,28 @@ class StripeService:
             return_url=f"{settings.APP_DOMAIN}{redirect_url}?payment_id={payment.id}",
         )
 
+        # Update payment with Stripe payment intent ID
+        payment.stripe_payment_intent_id = session.payment_intent
+        payment.save()
+
         return session
 
+    def check_and_update_payment_status(self, payment: Payment):
+        from django.conf import settings
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        if not payment.stripe_payment_intent_id:
+            return Payment.PaymentStatus.PENDING
+        
+        payment_intent = stripe.PaymentIntent.retrieve(payment.stripe_payment_intent_id)
+    
+        if payment_intent.status == "succeeded":
+            payment.payment_status = Payment.PaymentStatus.PAID
+            payment.save()
+
+        if payment_intent.status == "canceled":
+            payment.payment_status = Payment.PaymentStatus.FAILED
+            payment.save()
+
+        return payment_intent.status

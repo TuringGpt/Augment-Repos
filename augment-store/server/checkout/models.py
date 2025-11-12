@@ -110,3 +110,4 @@ class Payment(BaseModel):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.CHOICES, default=PaymentMethod.STRIPE)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.CHOICES, default=PaymentStatus.PENDING)
+    stripe_payment_intent_id = models.CharField(max_length=1024, null=True, blank=True)
