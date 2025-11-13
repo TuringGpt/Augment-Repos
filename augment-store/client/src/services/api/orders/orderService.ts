@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Order, CreateOrderRequest, OrderListResponse } from '@features/orders/types'
+import type { Order, CreateOrderRequest, OrderListResponse, CreateOrderResponse } from '@features/orders/types'
 
 export const orderService = {
   getOrders: async (page = 1, limit = 10): Promise<OrderListResponse> => {
@@ -13,8 +13,8 @@ export const orderService = {
     return apiClient.get<Order>(API_ENDPOINTS.ORDERS.DETAIL(id))
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
-    return apiClient.post<Order>(API_ENDPOINTS.ORDERS.CREATE, data)
+  createOrder: async (data: CreateOrderRequest): Promise<CreateOrderResponse> => {
+    return apiClient.post<CreateOrderResponse>(API_ENDPOINTS.ORDERS.CREATE, data)
   },
 
   cancelOrder: async (id: string): Promise<Order> => {

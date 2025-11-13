@@ -154,7 +154,7 @@ const CheckoutPage = () => {
     country: '',
   })
 
-  const [sameAsShipping, setSameAsShipping] = useState(true)
+  const [sameAsShipping, setSameAsShipping] = useState(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
@@ -337,14 +337,9 @@ const CheckoutPage = () => {
         return !errors[errorKey as keyof typeof errors]
       })
 
-      const allTouched = requiredFields.every((field) => {
-        const touchedKey = prefix ? `${prefix}.${String(field)}` : String(field)
-        return touched[touchedKey as keyof typeof touched]
-      })
-
-      return allFieldsFilled && noErrors && allTouched
+      return allFieldsFilled && noErrors
     },
-    [errors, touched]
+    [errors]
   )
 
   const isContactInfoComplete = useMemo(
@@ -746,6 +741,9 @@ const CheckoutPage = () => {
           isContactInfoComplete={isContactInfoComplete}
           isShippingAddressComplete={isShippingAddressComplete}
           isBillingAddressComplete={isBillingAddressComplete}
+          contactInfo={contactInfo}
+          shippingAddress={shippingAddress}
+          billingAddress={billingAddress}
         />
       </Stack>
     </Container>
