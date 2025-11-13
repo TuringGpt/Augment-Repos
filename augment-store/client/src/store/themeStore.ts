@@ -94,4 +94,8 @@ if (typeof window !== 'undefined') {
       delete win.__themeStoreMediaQuery
     })
   }
+
+  // Initialize from system preference on first load
+  // This will only set the theme if user hasn't explicitly chosen one
+  useThemeStore.getState().initializeFromSystem()
 }
