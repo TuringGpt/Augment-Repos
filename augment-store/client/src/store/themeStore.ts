@@ -6,6 +6,7 @@ export type ThemeMode = 'light' | 'dark'
 // Extend Window interface for HMR listener tracking
 interface WindowWithThemeListener extends Window {
   __themeStoreMediaQueryListener?: (e: MediaQueryListEvent) => void
+  __themeStoreMediaQuery?: MediaQueryList
 }
 
 interface ThemeState {
@@ -62,9 +63,8 @@ if (typeof window !== 'undefined') {
   const win = window as WindowWithThemeListener
 
   // Clean up existing listener if it exists (HMR cleanup)
-  if (win.__themeStoreMediaQueryListener) {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.removeEventListener('change', win.__themeStoreMediaQueryListener)
+  if (win.__themeStoreMediaQueryListener && win.__themeStoreMediaQuery) {
+    win.__themeStoreMediaQuery.removeEventListener('change', win.__themeStoreMediaQueryListener)
   }
 
   // Create and register new listener
@@ -82,14 +82,16 @@ if (typeof window !== 'undefined') {
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   mediaQuery.addEventListener('change', handleSystemThemeChange)
 
-  // Store reference for cleanup during HMR
+  // Store references for cleanup during HMR
   win.__themeStoreMediaQueryListener = handleSystemThemeChange
+  win.__themeStoreMediaQuery = mediaQuery
 
   // Cleanup on module disposal (HMR)
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
       mediaQuery.removeEventListener('change', handleSystemThemeChange)
       delete win.__themeStoreMediaQueryListener
+      delete win.__themeStoreMediaQuery
     })
   }
 }
