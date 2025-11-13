@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView
 from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -22,9 +22,6 @@ class SubscribeNewsletterView(BaseNewsletterView, CreateAPIView):
     serializer_class = SubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save()
-
-class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateDestroyAPIView):
+class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateAPIView):
     serializer_class = UnsubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
