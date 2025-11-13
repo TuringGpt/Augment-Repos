@@ -32,8 +32,9 @@ const ShopPage = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Read category slug from URL query parameter
+  // Read category slug and brand name from URL query parameters
   const categorySlugFromUrl = searchParams.get('category')
+  const brandNameFromUrl = searchParams.get('brand')
 
   // API state
   const [products, setProducts] = useState<Product[]>([])
@@ -47,6 +48,7 @@ const ShopPage = () => {
   // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
     categorySlug: categorySlugFromUrl ?? undefined,
+    brandName: brandNameFromUrl ?? undefined,
     minPrice: undefined,
     maxPrice: undefined,
     minRating: undefined,
@@ -56,20 +58,22 @@ const ShopPage = () => {
   // Sort state
   const [sortBy, setSortBy] = useState<SortBy>('newest')
 
-  // Update filters when URL category parameter changes
+  // Update filters when URL category or brand parameters change
   useEffect(() => {
     setFilters((prev) => {
       const newCategorySlug = categorySlugFromUrl ?? undefined
-      // Only update if the value actually changed
-      if (prev.categorySlug !== newCategorySlug) {
+      const newBrandName = brandNameFromUrl ?? undefined
+      // Only update if the values actually changed
+      if (prev.categorySlug !== newCategorySlug || prev.brandName !== newBrandName) {
         return {
           ...prev,
           categorySlug: newCategorySlug,
+          brandName: newBrandName,
         }
       }
       return prev
     })
-  }, [categorySlugFromUrl])
+  }, [categorySlugFromUrl, brandNameFromUrl])
 
   // Fetch products from API (backend returns 100 items per page)
   useEffect(() => {
@@ -81,6 +85,7 @@ const ShopPage = () => {
         const response = await productService.getProducts({
           page: apiPage,
           categorySlug: filters.categorySlug,
+          brandName: filters.brandName,
           minRating: filters.minRating,
           maxRating: filters.maxRating,
           minPrice: filters.minPrice,
@@ -95,6 +100,7 @@ const ShopPage = () => {
           totalPages: response.totalPages,
           filters: {
             categorySlug: filters.categorySlug,
+            brandName: filters.brandName,
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             minRating: filters.minRating,
@@ -120,6 +126,7 @@ const ShopPage = () => {
   }, [
     apiPage,
     filters.categorySlug,
+    filters.brandName,
     filters.minPrice,
     filters.maxPrice,
     filters.minRating,
@@ -181,14 +188,16 @@ const ShopPage = () => {
   const handleResetFilters = () => {
     setFilters({
       categorySlug: undefined,
+      brandName: undefined,
       minPrice: undefined,
       maxPrice: undefined,
       minRating: undefined,
       maxRating: undefined,
     })
-    // Remove category query parameter from URL
+    // Remove category and brand query parameters from URL
     const newSearchParams = new URLSearchParams(searchParams)
     newSearchParams.delete('category')
+    newSearchParams.delete('brand')
     setSearchParams(newSearchParams)
   }
 
