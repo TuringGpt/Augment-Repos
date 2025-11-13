@@ -45,7 +45,19 @@ const OrderDetailPage = () => {
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!id) return
+      // Handle missing ID
+      if (!id) {
+        setError('Order ID is required')
+        setLoading(false)
+        return
+      }
+
+      // Validate ID format (basic validation)
+      if (id.trim() === '') {
+        setError('Invalid order ID')
+        setLoading(false)
+        return
+      }
 
       try {
         setLoading(true)
@@ -122,7 +134,14 @@ const OrderDetailPage = () => {
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/orders')} sx={{ mb: 3 }}>
             Back to Orders
           </Button>
-          <Alert severity="error">{error || 'Order not found'}</Alert>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error || 'Order not found'}
+          </Alert>
+          {!id && (
+            <Alert severity="info">
+              Please provide a valid order ID in the URL.
+            </Alert>
+          )}
         </Box>
       </Container>
     )
