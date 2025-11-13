@@ -38,6 +38,11 @@ export const productService = {
         queryParams.category = params.categorySlug
       }
 
+      // Add brand filter if provided (using brand name)
+      if (params?.brandName) {
+        queryParams.brand = params.brandName
+      }
+
       // Add rating filters if provided
       if (params?.minRating !== undefined && params?.minRating !== null) {
         queryParams.rating_min = params.minRating
@@ -66,6 +71,7 @@ export const productService = {
         previous: response.previous,
         filters: {
           categorySlug: params?.categorySlug,
+          brandName: params?.brandName,
           minRating: params?.minRating,
           maxRating: params?.maxRating,
           minPrice: params?.minPrice,

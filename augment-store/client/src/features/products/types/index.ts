@@ -66,6 +66,7 @@ export interface BrandAPIResponse {
 export interface ProductFilters {
   // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
   categorySlug?: string
+  brandName?: string
   minPrice?: number
   maxPrice?: number
   minRating?: number
@@ -86,6 +87,7 @@ export interface ProductSearchParams {
   search?: string
   // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
   categorySlug?: string
+  brandName?: string
   minPrice?: number
   maxPrice?: number
   minRating?: number

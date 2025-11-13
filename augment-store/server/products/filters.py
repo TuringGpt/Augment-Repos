@@ -7,7 +7,7 @@ class ProductFilter(filters.FilterSet):
     rating = filters.RangeFilter()
     price = filters.RangeFilter()
     category = filters.CharFilter(field_name="category__slug")
-    brand = filters.CharFilter(field_name="brand__name")
+    brand = filters.CharFilter(field_name="brand__name", lookup_expr='iexact')
     quantity = filters.RangeFilter()
     limit = filters.NumberFilter(field_name="limit", method="filter_limit", max_value=100, min_value=1)
 
