@@ -71,11 +71,17 @@ if (typeof window !== 'undefined' && window.matchMedia) {
 
   // Clean up existing listener if it exists (HMR cleanup)
   if (win.__themeStoreMediaQueryListener && win.__themeStoreMediaQuery) {
-    win.__themeStoreMediaQuery.removeEventListener('change', win.__themeStoreMediaQueryListener)
+    const mq = win.__themeStoreMediaQuery
+    // Feature detect: Safari < 14 only supports addListener/removeListener (deprecated but necessary)
+    if (mq.removeEventListener) {
+      mq.removeEventListener('change', win.__themeStoreMediaQueryListener)
+    } else if (mq.removeListener) {
+      mq.removeListener(win.__themeStoreMediaQueryListener)
+    }
   }
 
   // Create and register new listener
-  const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+  const handleSystemThemeChange = (e: MediaQueryListEvent | MediaQueryList) => {
     const state = useThemeStore.getState()
 
     // Only update if user hasn't explicitly set a preference
@@ -87,7 +93,13 @@ if (typeof window !== 'undefined' && window.matchMedia) {
   }
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  mediaQuery.addEventListener('change', handleSystemThemeChange)
+
+  // Feature detect: Safari < 14 only supports addListener/removeListener (deprecated but necessary)
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+  } else if (mediaQuery.addListener) {
+    mediaQuery.addListener(handleSystemThemeChange)
+  }
 
   // Store references for cleanup during HMR
   win.__themeStoreMediaQueryListener = handleSystemThemeChange
@@ -96,7 +108,12 @@ if (typeof window !== 'undefined' && window.matchMedia) {
   // Cleanup on module disposal (HMR)
   if (import.meta.hot) {
     import.meta.hot.dispose(() => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+      // Feature detect: Safari < 14 only supports addListener/removeListener (deprecated but necessary)
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleSystemThemeChange)
+      } else if (mediaQuery.removeListener) {
+        mediaQuery.removeListener(handleSystemThemeChange)
+      }
       delete win.__themeStoreMediaQueryListener
       delete win.__themeStoreMediaQuery
     })
