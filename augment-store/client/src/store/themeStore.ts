@@ -53,6 +53,13 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'theme-storage',
+      onRehydrateStorage: () => (state) => {
+        // After rehydration, initialize from system only if no user preference exists
+        // This ensures we don't flash the wrong theme before rehydration completes
+        if (state && !state.userPreference) {
+          state.initializeFromSystem()
+        }
+      },
     }
   )
 )
@@ -94,8 +101,4 @@ if (typeof window !== 'undefined' && window.matchMedia) {
       delete win.__themeStoreMediaQuery
     })
   }
-
-  // Initialize from system preference on first load
-  // This will only set the theme if user hasn't explicitly chosen one
-  useThemeStore.getState().initializeFromSystem()
 }
