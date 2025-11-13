@@ -241,7 +241,7 @@ const OrderDetailPage = () => {
                           <Typography variant="body2">{cartItem.quantity}</Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2">${price.toFixed(2)}</Typography>
+                          <Typography variant="body2">${product.price.toFixed(2)}</Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" fontWeight={600}>
