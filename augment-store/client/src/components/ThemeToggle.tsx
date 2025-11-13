@@ -12,7 +12,7 @@ const ThemeToggle = () => {
         onClick={toggleMode}
         role="switch"
         aria-checked={mode === 'dark'}
-        aria-label="Toggle dark mode"
+        aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
       >
         {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
       </IconButton>
