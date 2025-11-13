@@ -34,6 +34,7 @@ export const ORDER_STATUS_LABELS = {
   processing: 'Processing',
   shipped: 'Shipped',
   delivered: 'Delivered',
+  completed: 'Completed',
   cancelled: 'Cancelled',
 } as const
 

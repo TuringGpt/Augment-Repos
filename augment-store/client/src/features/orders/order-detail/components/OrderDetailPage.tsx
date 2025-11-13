@@ -77,6 +77,7 @@ const OrderDetailPage = () => {
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
       case 'delivered':
+      case 'completed':
         return 'success'
       case 'cancelled':
         return 'error'
@@ -107,6 +108,7 @@ const OrderDetailPage = () => {
   const getStatusIcon = (status: Order['status']) => {
     switch (status) {
       case 'delivered':
+      case 'completed':
         return <CheckCircleIcon />
       case 'cancelled':
         return <CancelIcon />

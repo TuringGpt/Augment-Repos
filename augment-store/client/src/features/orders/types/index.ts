@@ -6,6 +6,7 @@ export type OrderStatus =
   | 'processing'
   | 'shipped'
   | 'delivered'
+  | 'completed'
   | 'cancelled'
 
 // Address types matching backend snake_case format
