@@ -3,6 +3,11 @@ import { persist } from 'zustand/middleware'
 
 export type ThemeMode = 'light' | 'dark'
 
+// Extend Window interface for HMR listener tracking
+interface WindowWithThemeListener extends Window {
+  __themeStoreMediaQueryListener?: (e: MediaQueryListEvent) => void
+}
+
 interface ThemeState {
   mode: ThemeMode
   userPreference: boolean // Track if user has explicitly set a preference
@@ -35,10 +40,15 @@ export const useThemeStore = create<ThemeState>()(
           userPreference: true,
         })),
 
-      initializeFromSystem: () => {
-        const systemPreference = getSystemPreference()
-        set({ mode: systemPreference })
-      },
+      initializeFromSystem: () =>
+        set((state) => {
+          // Only initialize from system if user hasn't explicitly set a preference
+          if (state.userPreference) {
+            return state // No-op: user preference takes precedence
+          }
+          const systemPreference = getSystemPreference()
+          return { mode: systemPreference }
+        }),
     }),
     {
       name: 'theme-storage',
@@ -47,10 +57,18 @@ export const useThemeStore = create<ThemeState>()(
 )
 
 // Listen for system theme changes
+// Guard against duplicate listeners during HMR
 if (typeof window !== 'undefined') {
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  const win = window as WindowWithThemeListener
 
-  mediaQuery.addEventListener('change', (e) => {
+  // Clean up existing listener if it exists (HMR cleanup)
+  if (win.__themeStoreMediaQueryListener) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.removeEventListener('change', win.__themeStoreMediaQueryListener)
+  }
+
+  // Create and register new listener
+  const handleSystemThemeChange = (e: MediaQueryListEvent) => {
     const state = useThemeStore.getState()
 
     // Only update if user hasn't explicitly set a preference
@@ -59,5 +77,19 @@ if (typeof window !== 'undefined') {
       // Use internal set to avoid marking as user preference
       useThemeStore.setState({ mode: newMode })
     }
-  })
+  }
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  mediaQuery.addEventListener('change', handleSystemThemeChange)
+
+  // Store reference for cleanup during HMR
+  win.__themeStoreMediaQueryListener = handleSystemThemeChange
+
+  // Cleanup on module disposal (HMR)
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+      delete win.__themeStoreMediaQueryListener
+    })
+  }
 }
