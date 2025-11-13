@@ -1,12 +1,57 @@
+import factory
 from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 from accounts.factory import UserFactory
 from carts.factory import CartItemFactory
 
 
+class ShippingAddressFactory(DjangoModelFactory):
+    user = SubFactory(UserFactory)
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    address_line_1 = Faker("street_address")
+    address_line_2 = Faker("secondary_address")
+    city = Faker("city")
+    state = Faker("state")
+    postal_code = Faker("postcode")
+    country = Faker("country")
+
+    class Meta:
+        model = "checkout.ShippingAddress"
+
+
+class BillingAddressFactory(DjangoModelFactory):
+    user = SubFactory(UserFactory)
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    address_line_1 = Faker("street_address")
+    address_line_2 = Faker("secondary_address")
+    city = Faker("city")
+    state = Faker("state")
+    postal_code = Faker("postcode")
+    country = Faker("country")
+
+    class Meta:
+        model = "checkout.BillingAddress"
+
+
+class ContactInformationFactory(DjangoModelFactory):
+    user = SubFactory(UserFactory)
+    first_name = Faker("first_name")
+    last_name = Faker("last_name")
+    email = Faker("email")
+    phone = Faker("numerify", text="+1##########")  # Generates a 12-character phone number
+
+    class Meta:
+        model = "checkout.ContactInformation"
+
+
 class OrderFactory(DjangoModelFactory):
     created_by = SubFactory(UserFactory)
     status = "pending"
+    shipping_address = SubFactory(ShippingAddressFactory, user=factory.SelfAttribute('..created_by'))
+    billing_address = SubFactory(BillingAddressFactory, user=factory.SelfAttribute('..created_by'))
+    contact_information = SubFactory(ContactInformationFactory, user=factory.SelfAttribute('..created_by'))
 
     class Meta:
         model = "checkout.Order"
