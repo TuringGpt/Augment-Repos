@@ -215,8 +215,7 @@ const OrderDetailPage = () => {
                     const product = cartItem?.product
                     if (!product) return null
 
-                    const price = parseFloat(product.price)
-                    const subtotal = price * cartItem.quantity
+                    const subtotal = product.price * cartItem.quantity
 
                     return (
                       <TableRow key={orderItem.id}>
