@@ -21,7 +21,7 @@ interface ThemeState {
 
 // Detect system preference
 const getSystemPreference = (): ThemeMode => {
-  if (typeof window === 'undefined') return 'light'
+  if (typeof window === 'undefined' || !window.matchMedia) return 'light'
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   return mediaQuery.matches ? 'dark' : 'light'
@@ -58,8 +58,8 @@ export const useThemeStore = create<ThemeState>()(
 )
 
 // Listen for system theme changes
-// Guard against duplicate listeners during HMR
-if (typeof window !== 'undefined') {
+// Guard against duplicate listeners during HMR and feature-detect matchMedia
+if (typeof window !== 'undefined' && window.matchMedia) {
   const win = window as WindowWithThemeListener
 
   // Clean up existing listener if it exists (HMR cleanup)
