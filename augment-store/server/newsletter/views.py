@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.generics import ListAPIView
 from .models import Newsletter
 from .serializers import NewsletterSerializer
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class BaseNewsletterView:
@@ -12,5 +13,5 @@ class BaseNewsletterView:
 
 class NewsletterView(BaseNewsletterView, ListAPIView):
     serializer_class = NewsletterSerializer
+    permission_classes = [IsAuthenticated]
 
-    
