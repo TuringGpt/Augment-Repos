@@ -41,15 +41,15 @@ export const useThemeStore = create<ThemeState>()(
           userPreference: true,
         })),
 
-      initializeFromSystem: () =>
-        set((state) => {
-          // Only initialize from system if user hasn't explicitly set a preference
-          if (state.userPreference) {
-            return state // No-op: user preference takes precedence
-          }
-          const systemPreference = getSystemPreference()
-          return { mode: systemPreference }
-        }),
+      initializeFromSystem: () => {
+        const state = useThemeStore.getState()
+        // Only initialize from system if user hasn't explicitly set a preference
+        if (state.userPreference) {
+          return // Early exit: user preference takes precedence, no update needed
+        }
+        const systemPreference = getSystemPreference()
+        set({ mode: systemPreference })
+      },
     }),
     {
       name: 'theme-storage',
