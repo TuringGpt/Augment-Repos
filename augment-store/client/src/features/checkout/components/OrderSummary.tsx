@@ -22,9 +22,15 @@ import { useCartStore } from '@/store/cartStore'
 import { useOrderStore } from '@/store/orderStore'
 import { useNavigate } from 'react-router-dom'
 
-import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material'
+import {
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material'
 
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
+import type { CreateOrderResponse } from '@features/orders/types'
 
 interface ContactInfo {
   email: string
@@ -65,6 +71,8 @@ const OrderSummary = ({
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
+  const [confirmedOrder, setConfirmedOrder] = useState<CreateOrderResponse | null>(null)
 
   // Derived state: calculate total item count
   const itemCount = useMemo(() => {
@@ -158,11 +166,25 @@ const OrderSummary = ({
 
       console.log('Order created successfully:', order)
 
-      // Navigate to order confirmation page
-      navigate(`/orders/${order.id}/confirmation`) // TODO: Replace with a confirmation model
+      // Show confirmation modal
+      setConfirmedOrder(order)
+      setConfirmationDialogOpen(true)
     } catch (error) {
       console.error('Failed to place order:', error)
       // Error is already set in the store as createOrderError
+    }
+  }
+
+  const handleConfirmationClose = () => {
+    setConfirmationDialogOpen(false)
+    // Navigate to orders page after closing
+    navigate('/orders')
+  }
+
+  const handleViewOrderDetails = () => {
+    if (confirmedOrder) {
+      setConfirmationDialogOpen(false)
+      navigate(`/orders/${confirmedOrder.id}`)
     }
   }
 
@@ -495,6 +517,118 @@ const OrderSummary = ({
             disabled={isRemoving}
           >
             {isRemoving ? 'Removing...' : 'Remove'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Order Confirmation Dialog */}
+      <Dialog
+        open={confirmationDialogOpen}
+        onClose={handleConfirmationClose}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby="order-confirmation-dialog-title"
+        aria-describedby="order-confirmation-dialog-description"
+      >
+        <DialogTitle id="order-confirmation-dialog-title">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+            <Box>
+              <Typography variant="h5" fontWeight={600}>
+                Order Confirmed!
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Thank you for your purchase
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+              Your order has been successfully placed and is being processed.
+            </Typography>
+
+            {confirmedOrder && (
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Order ID
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {confirmedOrder.id}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Order Date
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {new Date(confirmedOrder.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
+                      {confirmedOrder.status}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Shipping Address
+                    </Typography>
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.first_name} {confirmedOrder.shipping_address.last_name}
+                    </Typography>
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.address_line_1}
+                    </Typography>
+                    {confirmedOrder.shipping_address.address_line_2 && (
+                      <Typography variant="body2">
+                        {confirmedOrder.shipping_address.address_line_2}
+                      </Typography>
+                    )}
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.city}, {confirmedOrder.shipping_address.state}{' '}
+                      {confirmedOrder.shipping_address.postal_code}
+                    </Typography>
+                    <Typography variant="body2">{confirmedOrder.shipping_address.country}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Contact Information
+                    </Typography>
+                    <Typography variant="body2">{confirmedOrder.contact_information.email}</Typography>
+                    <Typography variant="body2">{confirmedOrder.contact_information.phone}</Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+              A confirmation email has been sent to{' '}
+              <strong>{confirmedOrder?.contact_information.email}</strong>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleConfirmationClose} color="primary" variant="outlined">
+            Continue Shopping
+          </Button>
+          <Button onClick={handleViewOrderDetails} color="primary" variant="contained" autoFocus>
+            View Order Details
           </Button>
         </DialogActions>
       </Dialog>
