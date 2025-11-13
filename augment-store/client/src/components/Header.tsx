@@ -14,6 +14,7 @@ import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
+import ThemeToggle from '@components/ThemeToggle'
 import { authService } from '@services/api/auth/authService'
 
 const Header = () => {
@@ -78,6 +79,9 @@ const Header = () => {
                 <ShoppingCart />
               </Badge>
             </IconButton>
+
+            {/* Theme Toggle - Always Visible */}
+            <ThemeToggle />
 
             {/* Products Button - Hidden on mobile */}
             <Button
