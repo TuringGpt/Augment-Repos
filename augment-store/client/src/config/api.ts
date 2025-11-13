@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/products/${id}`,
     SEARCH: '/products/search',
     CATEGORIES: '/products/categories',
+    BRANDS: '/products/brands',
     FEATURED: '/products/featured',
   },
 

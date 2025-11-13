@@ -49,6 +49,20 @@ export interface CategoryAPIResponse {
   results: import('./api').ProductCategoryAPI[]
 }
 
+export interface Brand {
+  id: string
+  name: string
+  description?: string
+  image?: string
+}
+
+export interface BrandAPIResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: import('./api').ProductBrandAPI[]
+}
+
 export interface ProductFilters {
   // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
   categorySlug?: string

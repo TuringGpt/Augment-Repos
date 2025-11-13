@@ -121,3 +121,15 @@ export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
     parent: apiCategory.parent || undefined,
   }
 }
+
+/**
+ * Transform backend brand to frontend brand format
+ */
+export function transformBrandFromAPI(apiBrand: ProductBrandAPI) {
+  return {
+    id: apiBrand.id,
+    name: apiBrand.name,
+    description: apiBrand.description,
+    image: apiBrand.image?.file || undefined,
+  }
+}
