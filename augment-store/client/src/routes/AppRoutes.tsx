@@ -21,6 +21,7 @@ import ProfilePage from '@features/user/profile/components/ProfilePage'
 import WishlistPage from '@features/user/wishlist/components/WishlistPage'
 import SearchPage from '@features/products/search/components/SearchPage'
 import CategoriesPage from '@features/products/categories/components/CategoriesPage'
+import BrandsPage from '@features/products/brands/components/BrandsPage'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -38,6 +39,7 @@ const AppRoutes = () => {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/brands" element={<BrandsPage />} />
         <Route path="/products" element={<ShopPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/search" element={<SearchPage />} />
