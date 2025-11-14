@@ -24,6 +24,7 @@ import {
   Person,
   Logout,
   Login,
+  Receipt,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
@@ -91,6 +92,11 @@ const Sidebar = () => {
 
   const handleWishlistClick = () => {
     navigate('/wishlist')
+    closeSidebar()
+  }
+
+  const handleOrdersClick = () => {
+    navigate('/orders')
     closeSidebar()
   }
 
@@ -191,6 +197,27 @@ const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary="Wishlist"
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Orders */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleOrdersClick}
+                    sx={{
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                      <Receipt />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Orders"
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>

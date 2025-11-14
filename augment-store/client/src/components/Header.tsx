@@ -8,7 +8,7 @@ import {
   Box,
   Container,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout, Menu } from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
@@ -104,6 +104,16 @@ const Header = () => {
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
+                </IconButton>
+
+                {/* Orders - Hidden on mobile */}
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/orders')}
+                  aria-label="orders"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                >
+                  <Receipt />
                 </IconButton>
 
                 {/* Profile Icon - Hidden on mobile */}
