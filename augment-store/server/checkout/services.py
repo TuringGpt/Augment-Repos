@@ -40,7 +40,6 @@ class StripeService:
             return_url=f"{settings.APP_DOMAIN}{redirect_url}?payment_id={payment.id}",
         )
 
-        # Update payment with Stripe payment intent ID
         payment.stripe_session_id = strip_session.id
         payment.save()
 
