@@ -3,7 +3,7 @@ import { Card, CardContent, Skeleton, Box } from '@mui/material'
 interface ProductCardSkeletonProps {
   /**
    * Whether to animate the skeleton
-   * @default true
+   * @default "wave"
    */
   animation?: 'pulse' | 'wave' | false
 }
@@ -34,29 +34,11 @@ const ProductCardSkeleton = ({ animation = 'wave' }: ProductCardSkeletonProps) =
       {/* Product Details Skeleton */}
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Category */}
-        <Skeleton
-          variant="text"
-          width="40%"
-          height={16}
-          animation={animation}
-          sx={{ mb: 1 }}
-        />
+        <Skeleton variant="text" width="40%" height={16} animation={animation} sx={{ mb: 1 }} />
 
         {/* Product Name - 2 lines */}
-        <Skeleton
-          variant="text"
-          width="90%"
-          height={24}
-          animation={animation}
-          sx={{ mb: 0.5 }}
-        />
-        <Skeleton
-          variant="text"
-          width="70%"
-          height={24}
-          animation={animation}
-          sx={{ mb: 1.5 }}
-        />
+        <Skeleton variant="text" width="90%" height={24} animation={animation} sx={{ mb: 0.5 }} />
+        <Skeleton variant="text" width="70%" height={24} animation={animation} sx={{ mb: 1.5 }} />
 
         {/* Rating */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -66,12 +48,7 @@ const ProductCardSkeleton = ({ animation = 'wave' }: ProductCardSkeletonProps) =
 
         {/* Price */}
         <Box sx={{ mt: 'auto' }}>
-          <Skeleton
-            variant="text"
-            width="50%"
-            height={32}
-            animation={animation}
-          />
+          <Skeleton variant="text" width="50%" height={32} animation={animation} />
         </Box>
       </CardContent>
     </Card>
@@ -79,4 +56,3 @@ const ProductCardSkeleton = ({ animation = 'wave' }: ProductCardSkeletonProps) =
 }
 
 export default ProductCardSkeleton
-

@@ -1,9 +1,9 @@
-import { Card, CardContent, Skeleton, Box } from '@mui/material'
+import { Card, CardContent, Skeleton } from '@mui/material'
 
 interface CategoryCardSkeletonProps {
   /**
    * Whether to animate the skeleton
-   * @default true
+   * @default "wave"
    */
   animation?: 'pulse' | 'wave' | false
 }
@@ -63,4 +63,3 @@ const CategoryCardSkeleton = ({ animation = 'wave' }: CategoryCardSkeletonProps)
 }
 
 export default CategoryCardSkeleton
-
