@@ -177,8 +177,8 @@ const OrderSummary = ({
 
   const handleConfirmationClose = () => {
     setConfirmationDialogOpen(false)
-    // Navigate to orders page after closing
-    navigate('/orders')
+    // Navigate to the home page after closing
+    navigate('/')
   }
 
   const handleViewOrderDetails = () => {
@@ -545,7 +545,7 @@ const OrderSummary = ({
         </DialogTitle>
         <DialogContent>
           <Box sx={{ py: 2 }}>
-            <Typography variant="body1" color="text.secondary" gutterBottom>
+            <Typography id="order-confirmation-dialog-description" variant="body1" color="text.secondary" gutterBottom>
               Your order has been successfully placed and is being processed.
             </Typography>
 
@@ -565,7 +565,7 @@ const OrderSummary = ({
                       Order Date
                     </Typography>
                     <Typography variant="body1" fontWeight={600}>
-                      {new Date(confirmedOrder.created_at).toLocaleDateString('en-US', {
+                      {new Date(confirmedOrder.created_at).toLocaleString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
