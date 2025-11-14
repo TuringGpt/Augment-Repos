@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error details for debugging
     console.error('Error Boundary caught an error:', error, errorInfo)
-    
+
     this.setState({
       error,
       errorInfo,
@@ -83,17 +83,17 @@ class ErrorBoundary extends Component<Props, State> {
                   mb: 2,
                 }}
               />
-              
+
               <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
                 Oops! Something went wrong
               </Typography>
-              
+
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                We're sorry for the inconvenience. An unexpected error has occurred.
-                Please try refreshing the page or return to the home page.
+                We're sorry for the inconvenience. An unexpected error has occurred. Please try
+                refreshing the page or return to the home page.
               </Typography>
 
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <Paper
                   variant="outlined"
                   sx={{
@@ -139,7 +139,7 @@ class ErrorBoundary extends Component<Props, State> {
                 >
                   Reload Page
                 </Button>
-                
+
                 <Button
                   variant="outlined"
                   color="primary"
@@ -161,4 +161,3 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary
-
