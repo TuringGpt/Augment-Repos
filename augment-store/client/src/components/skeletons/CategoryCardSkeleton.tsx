@@ -1,4 +1,4 @@
-import { Card, CardContent, Skeleton, Box } from '@mui/material'
+import { Card, CardContent, Skeleton } from '@mui/material'
 
 interface CategoryCardSkeletonProps {
   /**
@@ -63,4 +63,3 @@ const CategoryCardSkeleton = ({ animation = 'wave' }: CategoryCardSkeletonProps)
 }
 
 export default CategoryCardSkeleton
-
