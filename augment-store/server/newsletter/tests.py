@@ -30,7 +30,7 @@ class NewsletterTests(BaseAPITestCase):
     def test_unsubscribe_newsletter(self):
         url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.newsletter_id)})
         self.authenticated_client.force_authenticate(user=self.user)
-        response = self.authenticated_client.path(url)
+        response = self.authenticated_client.patch(url)
         self.assertEqual(response.status_code, 200 )
         
     def test_list_newsletter_unauthenticated(self):
