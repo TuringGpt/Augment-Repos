@@ -67,6 +67,31 @@ export interface OrderListResponse {
   totalPages: number
 }
 
+export interface OrderListAPIResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: OrderAPI[]
+}
+
+export interface OrderAPI {
+  id: string
+  status: OrderStatus
+  items: OrderItemAPI[]
+  subtotal: number
+  tax: number
+  shipping: number
+  total: number
+  created_at: string
+  updated_at: string
+}
+
+export interface OrderItemAPI {
+  id: string
+  cart_item: CartItem
+  created_at: string
+}
+
 export interface CreateOrderResponse {
   id: string
   status: OrderStatus
