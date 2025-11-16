@@ -1,11 +1,12 @@
-from django.test import TestCase
+from core.tests import BaseAPITestCase
 from django.urls import reverse
+from accounts.factory import UserFactory
 
 # Create your tests here.
-class NewsletterTests(TestCase):
+class NewsletterTests(BaseAPITestCase):
 
     def setUp(self):
-        return super().setUp()
+        super().setUp()
         self.user = UserFactory(
             email="test@example.com",
             password="testpassword",
