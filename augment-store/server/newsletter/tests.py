@@ -8,6 +8,7 @@ class NewsletterTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
+        self.newsletter_id = uuid.uuid4()
         self.id = uuid.uuid4()
         self.user = UserFactory(
             id=self.id,
@@ -20,16 +21,15 @@ class NewsletterTests(BaseAPITestCase):
     def test_subscribe_newsletter(self):
         url = reverse("v1:create_newsletter")
         self.authenticated_client.force_authenticate(user=self.user)
-        response = self.authenticated_client.get(url)
+        response = self.authenticated_client.post(url)
         self.assertEqual(response.status_code, 201)
 
     def test_unsubscribe_newsletter(self):
-        url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.id)})
+        url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.newsletter_id)})
         self.authenticated_client.force_authenticate(user=self.user)
-        response = self.authenticated_client.get(url)
+        response = self.authenticated_client.post(url)
         self.assertEqual(response.status_code, 200 )
         
-    
     def test_list_newsletter_unauthenticated(self):
         url = reverse("v1:newsletter")
         response = self.client.get(url)
