@@ -21,13 +21,16 @@ class NewsletterTests(BaseAPITestCase):
     def test_subscribe_newsletter(self):
         url = reverse("v1:create_newsletter")
         self.authenticated_client.force_authenticate(user=self.user)
-        response = self.authenticated_client.post(url)
+        payload = {
+            "email": "test@example.com",
+        }
+        response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, 201)
 
     def test_unsubscribe_newsletter(self):
         url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.newsletter_id)})
         self.authenticated_client.force_authenticate(user=self.user)
-        response = self.authenticated_client.post(url)
+        response = self.authenticated_client.path(url)
         self.assertEqual(response.status_code, 200 )
         
     def test_list_newsletter_unauthenticated(self):
