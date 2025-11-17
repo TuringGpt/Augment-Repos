@@ -46,10 +46,10 @@ export const API_ENDPOINTS = {
 
   // Order endpoints
   ORDERS: {
-    LIST: '/orders',
-    DETAIL: (id: string) => `/orders/${id}`,
+    LIST: '/checkout/orders/',
+    DETAIL: (id: string) => `/checkout/orders/${id}/`,
     CREATE: '/checkout/orders/create/',
-    CANCEL: (id: string) => `/orders/${id}/cancel`,
+    CANCEL: (id: string) => `/checkout/orders/${id}/cancel/`,
   },
 
   // User endpoints

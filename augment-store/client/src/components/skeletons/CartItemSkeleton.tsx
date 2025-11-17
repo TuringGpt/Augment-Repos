@@ -3,7 +3,7 @@ import { Box, Skeleton, Divider } from '@mui/material'
 interface CartItemSkeletonProps {
   /**
    * Whether to animate the skeleton
-   * @default true
+   * @default "wave"
    */
   animation?: 'pulse' | 'wave' | false
   /**
@@ -35,10 +35,23 @@ const CartItemSkeleton = ({ animation = 'wave', showDivider = true }: CartItemSk
         />
 
         {/* Product Details */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
           {/* Product Name */}
           <Box>
-            <Skeleton variant="text" width="80%" height={20} animation={animation} sx={{ mb: 0.5 }} />
+            <Skeleton
+              variant="text"
+              width="80%"
+              height={20}
+              animation={animation}
+              sx={{ mb: 0.5 }}
+            />
             <Skeleton variant="text" width="40%" height={16} animation={animation} />
           </Box>
 
@@ -71,4 +84,3 @@ const CartItemSkeleton = ({ animation = 'wave', showDivider = true }: CartItemSk
 }
 
 export default CartItemSkeleton
-

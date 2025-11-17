@@ -3,7 +3,7 @@ import { Container, Paper, Box, Skeleton, Divider, Grid } from '@mui/material'
 interface ProfileSkeletonProps {
   /**
    * Whether to animate the skeleton
-   * @default true
+   * @default "wave"
    */
   animation?: 'pulse' | 'wave' | false
 }
@@ -38,7 +38,13 @@ const ProfileSkeleton = ({ animation = 'wave' }: ProfileSkeletonProps) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
           <Box sx={{ flex: 1 }}>
             <Skeleton variant="text" width="40%" height={32} animation={animation} sx={{ mb: 1 }} />
-            <Skeleton variant="text" width="60%" height={20} animation={animation} sx={{ mb: 0.5 }} />
+            <Skeleton
+              variant="text"
+              width="60%"
+              height={20}
+              animation={animation}
+              sx={{ mb: 0.5 }}
+            />
             <Skeleton variant="text" width="30%" height={16} animation={animation} />
           </Box>
           <Skeleton
@@ -120,4 +126,3 @@ const ProfileSkeleton = ({ animation = 'wave' }: ProfileSkeletonProps) => {
 }
 
 export default ProfileSkeleton
-

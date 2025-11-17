@@ -3,7 +3,7 @@ import { Container, Grid, Box, Skeleton, Paper, Divider } from '@mui/material'
 interface ProductDetailSkeletonProps {
   /**
    * Whether to animate the skeleton
-   * @default true
+   * @default "wave"
    */
   animation?: 'pulse' | 'wave' | false
 }
@@ -70,7 +70,13 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
             <Skeleton variant="text" width="40%" height={48} animation={animation} sx={{ mb: 3 }} />
 
             {/* Description */}
-            <Skeleton variant="text" width="100%" height={20} animation={animation} sx={{ mb: 1 }} />
+            <Skeleton
+              variant="text"
+              width="100%"
+              height={20}
+              animation={animation}
+              sx={{ mb: 1 }}
+            />
             <Skeleton variant="text" width="95%" height={20} animation={animation} sx={{ mb: 1 }} />
             <Skeleton variant="text" width="90%" height={20} animation={animation} sx={{ mb: 1 }} />
             <Skeleton variant="text" width="70%" height={20} animation={animation} sx={{ mb: 3 }} />
@@ -80,11 +86,23 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
             {/* Stock & Brand Info */}
             <Box sx={{ display: 'flex', gap: 4, mb: 3 }}>
               <Box sx={{ flex: 1 }}>
-                <Skeleton variant="text" width="60%" height={20} animation={animation} sx={{ mb: 1 }} />
+                <Skeleton
+                  variant="text"
+                  width="60%"
+                  height={20}
+                  animation={animation}
+                  sx={{ mb: 1 }}
+                />
                 <Skeleton variant="text" width="40%" height={24} animation={animation} />
               </Box>
               <Box sx={{ flex: 1 }}>
-                <Skeleton variant="text" width="60%" height={20} animation={animation} sx={{ mb: 1 }} />
+                <Skeleton
+                  variant="text"
+                  width="60%"
+                  height={20}
+                  animation={animation}
+                  sx={{ mb: 1 }}
+                />
                 <Skeleton variant="text" width="50%" height={24} animation={animation} />
               </Box>
             </Box>
@@ -122,7 +140,7 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
       {/* Reviews Section Skeleton */}
       <Paper sx={{ mt: 6, p: 4 }}>
         <Skeleton variant="text" width="30%" height={36} animation={animation} sx={{ mb: 3 }} />
-        
+
         {/* Review Items */}
         {[1, 2, 3].map((i) => (
           <Box key={i} sx={{ mb: 3 }}>
@@ -133,7 +151,13 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
                 <Skeleton variant="rectangular" width={100} height={16} animation={animation} />
               </Box>
             </Box>
-            <Skeleton variant="text" width="100%" height={16} animation={animation} sx={{ mb: 0.5 }} />
+            <Skeleton
+              variant="text"
+              width="100%"
+              height={16}
+              animation={animation}
+              sx={{ mb: 0.5 }}
+            />
             <Skeleton variant="text" width="90%" height={16} animation={animation} />
             {i < 3 && <Divider sx={{ mt: 3 }} />}
           </Box>
@@ -144,4 +168,3 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
 }
 
 export default ProductDetailSkeleton
-
