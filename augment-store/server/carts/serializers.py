@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Wishlist
 from products.models import Product
 from products.serializers import ProductListSerializer
 
@@ -81,3 +81,59 @@ class CartDetailSerializer(serializers.ModelSerializer):
         model = Cart
         fields = "__all__"
 
+
+class AddToWishlistSerializer(serializers.Serializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField())
+
+    def validate(self, attrs):
+        product_ids = attrs.get("product_ids")
+
+        try:
+            Product.objects.get(id__in=product_ids)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("Product does not exist")
+
+        return attrs
+    
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        wishlist = Wishlist.objects.get_user_wishlist(user)
+        product_ids = validated_data.get("product_ids")
+        wishlist.products.add(*product_ids)
+        return {
+            "wishlist": wishlist,
+            "products_ids": product_ids
+        }
+    
+
+class RemoveFromWishlistSerializer(serializers.Serializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField())
+
+    def validate(self, attrs):
+        product_ids = attrs.get("product_ids")
+
+        try:
+            Product.objects.get(id__in=product_ids)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("Product does not exist")
+
+        return attrs
+    
+
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        wishlist = Wishlist.objects.get_user_wishlist(user)
+        product_ids = validated_data.get("product_ids")
+        wishlist.products.remove(*product_ids)
+        return {
+            "wishlist": wishlist,
+            "products_ids": product_ids
+        }
+
+
+class WishlistDetailSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True)
+
+    class Meta:
+        model = Wishlist
+        fields = "__all__"
