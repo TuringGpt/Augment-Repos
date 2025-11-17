@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
 from django.conf import settings
+from core.models import BaseModel
 
 
 class UserManager(BaseUserManager):
@@ -117,3 +118,10 @@ class User(AbstractUser):
     @property
     def is_member(self):
         return self.role == self.Role.MEMBER
+
+
+class MerchantDetail(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='merchant_detail')
+    store_name = models.CharField(max_length=255)
+    store_description = models.TextField()
+    store_image = models.ForeignKey("storage.File", on_delete=models.SET_NULL, null=True, blank=True)
