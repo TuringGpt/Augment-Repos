@@ -288,10 +288,10 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
     
 
 class PaymentStatusSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Payment
         fields = ["payment_status"]
         read_only_fields = ["payment_status"]
+    
 
     
