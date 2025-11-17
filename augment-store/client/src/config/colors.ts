@@ -119,6 +119,25 @@ export class Colors {
     },
     divider: 'rgba(255, 255, 255, 0.12)',
     border: 'rgba(255, 255, 255, 0.23)',
+    brand: {
+      sidebar: {
+        gradient: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
+        text: '#ffffff',
+        hover: 'rgba(255, 255, 255, 0.08)',
+        subcategoryBg: 'rgba(0, 0, 0, 0.2)',
+        subcategoryHover: 'rgba(255, 255, 255, 0.12)',
+        divider: 'rgba(255, 255, 255, 0.15)',
+      },
+      header: {
+        background: '#1e1e1e',
+        text: '#ffffff',
+      },
+      footer: {
+        background: '#0a0a0a',
+        text: '#ffffff',
+        textSecondary: 'rgba(255, 255, 255, 0.6)',
+      },
+    },
   } as const
 
   // ============================================
