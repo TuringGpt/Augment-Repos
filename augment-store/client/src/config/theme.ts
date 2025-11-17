@@ -4,10 +4,10 @@ import type { ThemeMode } from '@store/themeStore'
 
 /**
  * Create MUI theme based on theme mode (light/dark)
- * @param mode - Theme mode ('light' or 'dark')
- * @returns MUI Theme object
  */
 export const createAppTheme = (mode: ThemeMode): Theme => {
+  const isDark = mode === 'dark'
+
   return createTheme({
     palette: {
       mode,
@@ -48,13 +48,13 @@ export const createAppTheme = (mode: ThemeMode): Theme => {
         contrastText: Colors.success.contrastText,
       },
       background: {
-        default: Colors.background.default,
-        paper: Colors.background.paper,
+        default: isDark ? Colors.dark.background.default : Colors.background.default,
+        paper: isDark ? Colors.dark.background.paper : Colors.background.paper,
       },
       text: {
-        primary: Colors.text.primary,
-        secondary: Colors.text.secondary,
-        disabled: Colors.text.disabled,
+        primary: isDark ? Colors.dark.text.primary : Colors.text.primary,
+        secondary: isDark ? Colors.dark.text.secondary : Colors.text.secondary,
+        disabled: isDark ? Colors.dark.text.disabled : Colors.text.disabled,
       },
     },
     typography: {

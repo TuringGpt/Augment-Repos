@@ -104,6 +104,22 @@ export class Colors {
   } as const
 
   // ============================================
+  // DARK MODE COLORS
+  // ============================================
+  static readonly dark = {
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+      elevated: '#2a2a2a',
+    },
+    text: {
+      primary: 'rgba(255, 255, 255, 0.87)',
+      secondary: 'rgba(255, 255, 255, 0.6)',
+      disabled: 'rgba(255, 255, 255, 0.38)',
+    },
+  } as const
+
+  // ============================================
   // GRADIENT COLORS
   // ============================================
   static readonly gradient = {
