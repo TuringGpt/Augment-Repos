@@ -140,6 +140,7 @@ const ProductDetailSkeleton = ({ animation = 'wave' }: ProductDetailSkeletonProp
       {/* Reviews Section Skeleton */}
       <Paper sx={{ mt: 6, p: 4 }}>
         <Skeleton variant="text" width="30%" height={36} animation={animation} sx={{ mb: 3 }} />
+
         {/* Review Items */}
         {[1, 2, 3].map((i) => (
           <Box key={i} sx={{ mb: 3 }}>
