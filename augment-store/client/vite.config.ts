@@ -23,6 +23,7 @@ export default defineConfig({
       '@config': path.resolve(__dirname, './src/config'),
       '@store': path.resolve(__dirname, './src/store'),
       '@data': path.resolve(__dirname, './src/data'),
+      '@locales': path.resolve(__dirname, './src/locales'),
     },
   },
   server: {
