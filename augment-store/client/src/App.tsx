@@ -6,6 +6,7 @@ import { createAppTheme } from '@config/theme'
 import { useThemeStore } from '@store/themeStore'
 import AppRoutes from '@routes/AppRoutes'
 import ErrorBoundary from '@components/ErrorBoundary'
+import ThemeTransitionStyles from '@components/ThemeTransitionStyles'
 
 function App() {
   const mode = useThemeStore((state) => state.mode)
@@ -16,6 +17,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <ThemeTransitionStyles />
       <BrowserRouter>
         <ErrorBoundary>
           <AppRoutes />
