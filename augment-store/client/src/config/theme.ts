@@ -56,6 +56,7 @@ export const createAppTheme = (mode: ThemeMode): Theme => {
         secondary: isDark ? Colors.dark.text.secondary : Colors.text.secondary,
         disabled: isDark ? Colors.dark.text.disabled : Colors.text.disabled,
       },
+      divider: isDark ? Colors.dark.divider : Colors.border.light,
     },
     typography: {
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
