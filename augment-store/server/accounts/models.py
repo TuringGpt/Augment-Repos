@@ -5,6 +5,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from django.conf import settings
 from core.models import BaseModel
 
@@ -125,3 +128,15 @@ class MerchantDetail(BaseModel):
     store_name = models.CharField(max_length=255)
     store_description = models.TextField()
     store_image = models.ForeignKey("storage.File", on_delete=models.SET_NULL, null=True, blank=True)
+
+
+# add post save signal to create merchant detail when user with role merchant is created
+
+@receiver(post_save, sender=User)
+def create_merchant_detail(sender, instance, created, **kwargs):
+    if instance.role == User.Role.MERCHANT:
+        MerchantDetail.objects.get_or_create(user=instance, defaults={
+            "store_name": instance.username or instance.email,
+            "store_description": "",
+            "store_image": None,
+        })
