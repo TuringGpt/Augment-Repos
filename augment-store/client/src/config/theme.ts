@@ -4,10 +4,11 @@ import type { ThemeMode } from '@store/themeStore'
 
 /**
  * Create MUI theme based on theme mode (light/dark)
- * @param mode - Theme mode ('light' or 'dark')
- * @returns MUI Theme object
+ * Includes brand-specific colors for sidebar, header, and footer
  */
 export const createAppTheme = (mode: ThemeMode): Theme => {
+  const isDark = mode === 'dark'
+
   return createTheme({
     palette: {
       mode,
@@ -48,14 +49,15 @@ export const createAppTheme = (mode: ThemeMode): Theme => {
         contrastText: Colors.success.contrastText,
       },
       background: {
-        default: Colors.background.default,
-        paper: Colors.background.paper,
+        default: isDark ? Colors.dark.background.default : Colors.background.default,
+        paper: isDark ? Colors.dark.background.paper : Colors.background.paper,
       },
       text: {
-        primary: Colors.text.primary,
-        secondary: Colors.text.secondary,
-        disabled: Colors.text.disabled,
+        primary: isDark ? Colors.dark.text.primary : Colors.text.primary,
+        secondary: isDark ? Colors.dark.text.secondary : Colors.text.secondary,
+        disabled: isDark ? Colors.dark.text.disabled : Colors.text.disabled,
       },
+      divider: isDark ? Colors.dark.divider : Colors.border.light,
     },
     typography: {
       fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -102,6 +104,14 @@ export const createAppTheme = (mode: ThemeMode): Theme => {
       },
     },
   })
+}
+
+/**
+ * Get brand colors based on theme mode
+ * Use this for sidebar, header, footer styling
+ */
+export const getBrandColors = (mode: ThemeMode) => {
+  return mode === 'dark' ? Colors.dark.brand : Colors.brand
 }
 
 // Default theme (light mode) for backward compatibility
