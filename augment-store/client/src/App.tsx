@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { createAppTheme } from '@config/theme'
 import { useThemeStore } from '@store/themeStore'
 import AppRoutes from '@routes/AppRoutes'
+import ErrorBoundary from '@components/ErrorBoundary'
 
 function App() {
   const mode = useThemeStore((state) => state.mode)
@@ -16,7 +17,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <AppRoutes />
+        <ErrorBoundary>
+          <AppRoutes />
+        </ErrorBoundary>
       </BrowserRouter>
     </ThemeProvider>
   )
