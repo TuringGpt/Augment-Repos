@@ -1,9 +1,13 @@
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
 from .models import Cart, CartItem, Wishlist
 
 from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
 from products.serializers import ProductListSerializer
+
 
 
 class BaseCartView:
@@ -34,9 +38,6 @@ class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
 class BaseWishlistView:
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Wishlist.objects.get_user_wishlist(self.request.user)
-    
 
 class ListWishListProductsView(BaseWishlistView, ListAPIView):
     serializer_class = ProductListSerializer
@@ -45,8 +46,38 @@ class ListWishListProductsView(BaseWishlistView, ListAPIView):
         return Wishlist.objects.get_user_wishlist(self.request.user).products.all()
     
 
-class AddToWishlistView(BaseWishlistView, CreateAPIView):
+class AddToWishlistView(BaseWishlistView, GenericAPIView):
     serializer_class = AddToWishlistSerializer
 
-class RemoveFromWishlistView(BaseWishlistView, CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                "detail": "Added to wishlist",
+                "product_ids": serializer.validated_data["product_ids"]
+            }, 
+            status=status.HTTP_200_OK
+        )
+
+class RemoveFromWishlistView(BaseWishlistView, GenericAPIView):
     serializer_class = RemoveFromWishlistSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        product_ids = serializer.validated_data["product_ids"]
+        user = self.request.user
+        wishlist = Wishlist.objects.get_user_wishlist(user)
+        wishlist.products.remove(*product_ids)
+
+        return Response(
+            {
+                "detail": "Removed from wishlist",
+                "product_ids": product_ids
+            }, 
+            status=status.HTTP_200_OK
+        )

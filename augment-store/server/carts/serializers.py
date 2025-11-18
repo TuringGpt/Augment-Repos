@@ -85,51 +85,27 @@ class CartDetailSerializer(serializers.ModelSerializer):
 class AddToWishlistSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.UUIDField())
 
-    def validate(self, attrs):
-        product_ids = attrs.get("product_ids")
+    def validate_product_ids(self, value):
+        for product_id in value:
+            try:
+                Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                raise serializers.ValidationError(f"Product {product_id} does not exist")
+        return value
 
-        try:
-            Product.objects.get(id__in=product_ids)
-        except Product.DoesNotExist:
-            raise serializers.ValidationError("Product does not exist")
-
-        return attrs
-    
-    def create(self, validated_data):
-        user = self.context.get("request").user
-        wishlist = Wishlist.objects.get_user_wishlist(user)
-        product_ids = validated_data.get("product_ids")
-        wishlist.products.add(*product_ids)
-        return {
-            "wishlist": wishlist,
-            "products_ids": product_ids
-        }
-    
+        
 
 class RemoveFromWishlistSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.UUIDField())
 
-    def validate(self, attrs):
-        product_ids = attrs.get("product_ids")
-
-        try:
-            Product.objects.get(id__in=product_ids)
-        except Product.DoesNotExist:
-            raise serializers.ValidationError("Product does not exist")
-
-        return attrs
+    def validate_product_ids(self, value):
+        for product_id in value:
+            try:
+                Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                raise serializers.ValidationError(f"Product {product_id} does not exist")
+        return value
     
-
-    def create(self, validated_data):
-        user = self.context.get("request").user
-        wishlist = Wishlist.objects.get_user_wishlist(user)
-        product_ids = validated_data.get("product_ids")
-        wishlist.products.remove(*product_ids)
-        return {
-            "wishlist": wishlist,
-            "products_ids": product_ids
-        }
-
 
 class WishlistDetailSerializer(serializers.ModelSerializer):
     products = ProductListSerializer(many=True)
