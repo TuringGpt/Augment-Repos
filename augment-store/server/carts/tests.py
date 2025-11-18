@@ -4,7 +4,7 @@ from accounts.models import User
 from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
-from carts.models import Cart
+from carts.models import Cart, Wishlist
 from carts.factory import CartItemFactory, CartFactory
 
 
@@ -200,3 +200,36 @@ class AddToCartViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
+
+class AddToWishlistViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        # Create a member user for authenticated tests
+        self.member_user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+
+        self.member_client = self.authenticated_client
+        self.member_client.force_authenticate(user=self.member_user)
+
+    def test_add_to_wishlist_success(self):
+        # GIVEN an authenticated user exists
+        # AND a product exists
+        product = ProductFactory()
+
+        # WHEN we make a POST request to add the product to wishlist
+        url = reverse("v1:wishlist:add_to_wishlist")
+        payload = {
+            "product_ids": [str(product.id)],
+        }
+
+        response = self.member_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # THEN the product should be in the wishlist
+        wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
+        self.assertEqual(wishlist.products.count(), 2)
+        self.assertEqual(wishlist.products.first().id, product.id)
