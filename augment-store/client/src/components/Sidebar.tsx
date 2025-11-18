@@ -121,6 +121,30 @@ const Sidebar = () => {
       anchor="left"
       open={isSidebarOpen}
       onClose={closeSidebar}
+      variant="temporary"
+      ModalProps={{
+        keepMounted: true, // Better mobile performance
+        BackdropProps: {
+          transitionDuration: {
+            enter: 350,
+            exit: 250,
+          },
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      }}
+      SlideProps={{
+        direction: 'right',
+        easing: {
+          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          exit: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        },
+      }}
+      transitionDuration={{
+        enter: 350,
+        exit: 250,
+      }}
       sx={{
         '& .MuiDrawer-paper': {
           width: 320,
@@ -128,6 +152,8 @@ const Sidebar = () => {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
           boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+          willChange: 'transform',
+          transform: 'translateZ(0)', // Force GPU acceleration
         },
       }}
     >

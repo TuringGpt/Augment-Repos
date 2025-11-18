@@ -35,12 +35,7 @@ const Header = () => {
   }
 
   return (
-    <AppBar
-      position="sticky"
-      sx={{
-        display: { xs: 'none', md: 'block' },
-      }}
-    >
+    <AppBar position="sticky">
       <Container maxWidth="xl">
         <Toolbar sx={{ gap: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 0.5, sm: 2 } }}>
           {/* Burger Menu Button */}
@@ -68,9 +63,13 @@ const Header = () => {
             Augment Store
           </Typography>
 
-          <Box sx={{ flexGrow: 1, mx: { xs: 1, md: 2 } }}>
+          {/* Search Bar - Hidden on mobile */}
+          <Box sx={{ flexGrow: 1, mx: { xs: 1, md: 2 }, display: { xs: 'none', md: 'block' } }}>
             <SearchBar />
           </Box>
+
+          {/* Spacer for mobile - pushes icons to the right */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'block', md: 'none' } }} />
 
           <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1, md: 2 }, alignItems: 'center' }}>
             {/* Cart Icon - Always Visible */}
