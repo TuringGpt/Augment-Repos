@@ -1,5 +1,6 @@
 import type { Product } from '@features/products/types'
-import { Box, CircularProgress, Container, Grid, Typography } from '@mui/material'
+import { Box, Container, Grid, Typography } from '@mui/material'
+import { ProductCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import { useEffect, useState } from 'react'
 import ProductCard from './ProductCard'
@@ -40,9 +41,13 @@ const HomePage = () => {
         </Typography>
 
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress />
-          </Box>
+          <Grid container spacing={3}>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <ProductCardSkeleton />
+              </Grid>
+            ))}
+          </Grid>
         ) : featuredProducts.length > 0 ? (
           <Grid container spacing={3}>
             {featuredProducts.map((product, index) => (

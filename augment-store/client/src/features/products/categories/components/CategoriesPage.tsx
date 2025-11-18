@@ -9,10 +9,10 @@ import {
   CardMedia,
   CardContent,
   Box,
-  CircularProgress,
   Fade,
 } from '@mui/material'
 import { Category as CategoryIcon } from '@mui/icons-material'
+import { CategoryCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import type { Category } from '@features/products/types'
 
@@ -61,15 +61,23 @@ const CategoriesPage = () => {
 
       {/* Loading State */}
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
+        <Grid container spacing={3}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <CategoryCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
       ) : categories.length > 0 ? (
         /* Categories Grid */
         <Grid container spacing={3}>
           {categories.map((category, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={category.id}>
-              <Fade in={true} timeout={300 + index * 50} style={{ transitionDelay: `${index * 30}ms` }}>
+              <Fade
+                in={true}
+                timeout={300 + index * 50}
+                style={{ transitionDelay: `${index * 30}ms` }}
+              >
                 <Card
                   sx={{
                     height: '100%',
@@ -164,4 +172,3 @@ const CategoriesPage = () => {
 }
 
 export default CategoriesPage
-

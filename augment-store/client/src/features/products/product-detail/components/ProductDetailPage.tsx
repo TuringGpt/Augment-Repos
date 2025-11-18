@@ -24,6 +24,7 @@ import {
   ArrowBack as ArrowBackIcon,
   LocalShipping as ShippingIcon,
 } from '@mui/icons-material'
+import { ProductDetailSkeleton } from '@components/skeletons'
 import { useCartStore } from '@store/cartStore'
 import { productService } from '@services/api/products/productService'
 import type { ProductDetailAPI } from '@features/products/types/api'
@@ -116,11 +117,7 @@ const ProductDetailPage = () => {
   }
 
   if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Container>
-    )
+    return <ProductDetailSkeleton />
   }
 
   if (error || !product) {

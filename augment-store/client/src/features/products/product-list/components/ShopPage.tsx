@@ -3,7 +3,6 @@ import { Close as CloseIcon, FilterList as FilterListIcon } from '@mui/icons-mat
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
+import { ProductCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -287,9 +287,13 @@ const ShopPage = () => {
 
           {/* Loading State */}
           {isLoading || !hasLoadedOnce ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress />
-            </Box>
+            <Grid container spacing={3}>
+              {Array.from({ length: 12 }).map((_, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <ProductCardSkeleton />
+                </Grid>
+              ))}
+            </Grid>
           ) : error ? (
             /* Error State */
             <Paper sx={{ p: 6, textAlign: 'center' }}>

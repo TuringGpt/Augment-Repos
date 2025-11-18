@@ -9,10 +9,10 @@ import {
   CardMedia,
   CardContent,
   Box,
-  CircularProgress,
   Fade,
 } from '@mui/material'
 import { Storefront as BrandIcon } from '@mui/icons-material'
+import { CategoryCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import type { Brand } from '@features/products/types'
 
@@ -61,15 +61,23 @@ const BrandsPage = () => {
 
       {/* Loading State */}
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
+        <Grid container spacing={3}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <CategoryCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
       ) : brands.length > 0 ? (
         /* Brands Grid */
         <Grid container spacing={3}>
           {brands.map((brand, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={brand.id}>
-              <Fade in={true} timeout={300 + index * 50} style={{ transitionDelay: `${index * 30}ms` }}>
+              <Fade
+                in={true}
+                timeout={300 + index * 50}
+                style={{ transitionDelay: `${index * 30}ms` }}
+              >
                 <Card
                   sx={{
                     height: '100%',
@@ -164,4 +172,3 @@ const BrandsPage = () => {
 }
 
 export default BrandsPage
-
