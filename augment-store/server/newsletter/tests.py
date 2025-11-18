@@ -1,6 +1,7 @@
 from core.tests import BaseAPITestCase
 from django.urls import reverse
 from accounts.factory import UserFactory
+from newsletter.factory import NewsletterFactory
 import uuid
 
 # Create your tests here.
@@ -16,6 +17,10 @@ class NewsletterTests(BaseAPITestCase):
             email="test@example.com",
             password="testpassword",
             is_active=True,
+        )
+        self.newsletter = NewsletterFactory(
+            id=self.newsletter_id,
+            email="test@example.com",
         )
     
     def test_subscribe_newsletter(self):
