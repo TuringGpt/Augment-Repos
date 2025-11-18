@@ -19,8 +19,16 @@ const ThemeToggle = () => {
     }
 
     // Get click position for circular reveal animation
-    const x = event.clientX
-    const y = event.clientY
+    // For keyboard events (Space/Enter), clientX and clientY are 0
+    // In that case, use the button's center position for a better animation
+    let x = event.clientX
+    let y = event.clientY
+
+    if (x === 0 && y === 0) {
+      const rect = event.currentTarget.getBoundingClientRect()
+      x = rect.left + rect.width / 2
+      y = rect.top + rect.height / 2
+    }
 
     // Calculate the maximum radius needed to cover the entire screen
     const endRadius = Math.hypot(
