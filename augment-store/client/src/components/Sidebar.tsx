@@ -125,9 +125,12 @@ const Sidebar = () => {
       ModalProps={{
         keepMounted: true, // Better mobile performance
         BackdropProps: {
+          transitionDuration: {
+            enter: 350,
+            exit: 250,
+          },
           sx: {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            transition: 'opacity 350ms cubic-bezier(0.4, 0, 0.2, 1) !important',
           },
         },
       }}
