@@ -130,7 +130,6 @@ class MerchantDetail(BaseModel):
     store_image = models.ForeignKey("storage.File", on_delete=models.SET_NULL, null=True, blank=True)
 
 
-# add post save signal to create merchant detail when user with role merchant is created
 
 @receiver(post_save, sender=User)
 def create_merchant_detail(sender, instance, created, **kwargs):
