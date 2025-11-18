@@ -4,13 +4,13 @@ from .models import Ticket, Comment
 class TicketListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ["title", "description", "status", "priority", "assignee"]
+        fields = ["title", "description", "status", "priority", "assignee", "reporter"]
 
 
 class TicketCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ["title", "description", "status", "priority", "assignee", "reporter"]
+        fields = ["title", "description", "status", "priority", "assignee"]
 
 
 class TicketUpdateSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ["ticket","content", "user"]
+        fields = ["ticket","content"]
 
 class CommentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
