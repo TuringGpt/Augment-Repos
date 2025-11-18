@@ -231,5 +231,5 @@ class AddToWishlistViewTests(BaseAPITestCase):
 
         # THEN the product should be in the wishlist
         wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
-        self.assertEqual(wishlist.products.count(), 2)
+        self.assertEqual(wishlist.products.count(), 1)
         self.assertEqual(wishlist.products.first().id, product.id)
