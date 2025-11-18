@@ -4,7 +4,7 @@ from .models import Ticket, Comment
 class TicketListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ["title", "description", "status", "priority", "assignee", "reporter"]
+        fields = "__all__"
 
 
 class TicketCreateSerializer(serializers.ModelSerializer):
