@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Wishlist
 from products.models import Product
 from products.serializers import ProductListSerializer
 
@@ -81,3 +81,35 @@ class CartDetailSerializer(serializers.ModelSerializer):
         model = Cart
         fields = "__all__"
 
+
+class AddToWishlistSerializer(serializers.Serializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField())
+
+    def validate_product_ids(self, value):
+        for product_id in value:
+            try:
+                Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                raise serializers.ValidationError(f"Product {product_id} does not exist")
+        return value
+
+        
+
+class RemoveFromWishlistSerializer(serializers.Serializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField())
+
+    def validate_product_ids(self, value):
+        for product_id in value:
+            try:
+                Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                raise serializers.ValidationError(f"Product {product_id} does not exist")
+        return value
+    
+
+class WishlistDetailSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True)
+
+    class Meta:
+        model = Wishlist
+        fields = "__all__"

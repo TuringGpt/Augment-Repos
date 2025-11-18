@@ -31,4 +31,5 @@ urlpatterns = [
     path('payments/', include('checkout.urls_payments')),
     path('newsletter/', include('newsletter.urls')),
     path('support/tickets/', include('ticket.urls')),
+    path('wishlist/', include('carts.urls_wishlist')),
 ]
