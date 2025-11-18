@@ -10,7 +10,7 @@ class TicketListSerializer(serializers.ModelSerializer):
 class TicketCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ["title", "description", "status", "priority", "assignee"]
+        fields = ["title", "description", "status", "priority", "assignee", "reporter"]
 
 
 class TicketUpdateSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ["content"]
+        fields = ["ticket","content", "user"]
 
 class CommentUpdateSerializer(serializers.ModelSerializer):
     class Meta:
