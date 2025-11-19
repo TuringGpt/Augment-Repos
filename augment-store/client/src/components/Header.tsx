@@ -8,12 +8,13 @@ import {
   Box,
   Container,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout, Menu } from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
+import ThemeToggle from '@components/ThemeToggle'
 import { authService } from '@services/api/auth/authService'
 
 const Header = () => {
@@ -34,12 +35,7 @@ const Header = () => {
   }
 
   return (
-    <AppBar
-      position="sticky"
-      sx={{
-        display: { xs: 'none', md: 'block' },
-      }}
-    >
+    <AppBar position="sticky">
       <Container maxWidth="xl">
         <Toolbar sx={{ gap: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 0.5, sm: 2 } }}>
           {/* Burger Menu Button */}
@@ -67,9 +63,13 @@ const Header = () => {
             Augment Store
           </Typography>
 
-          <Box sx={{ flexGrow: 1, mx: { xs: 1, md: 2 } }}>
+          {/* Search Bar - Hidden on mobile */}
+          <Box sx={{ flexGrow: 1, mx: { xs: 1, md: 2 }, display: { xs: 'none', md: 'block' } }}>
             <SearchBar />
           </Box>
+
+          {/* Spacer for mobile - pushes icons to the right */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'block', md: 'none' } }} />
 
           <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1, md: 2 }, alignItems: 'center' }}>
             {/* Cart Icon - Always Visible */}
@@ -78,6 +78,9 @@ const Header = () => {
                 <ShoppingCart />
               </Badge>
             </IconButton>
+
+            {/* Theme Toggle - Always Visible */}
+            <ThemeToggle />
 
             {/* Products Button - Hidden on mobile */}
             <Button
@@ -100,6 +103,16 @@ const Header = () => {
                   <Badge badgeContent={0} color="error">
                     <Favorite />
                   </Badge>
+                </IconButton>
+
+                {/* Orders - Hidden on mobile */}
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/orders')}
+                  aria-label="orders"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                >
+                  <Receipt />
                 </IconButton>
 
                 {/* Profile Icon - Hidden on mobile */}

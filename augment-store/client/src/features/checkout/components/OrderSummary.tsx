@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -18,24 +19,78 @@ import {
   Typography,
 } from '@mui/material'
 import { useCartStore } from '@/store/cartStore'
+import { useOrderStore } from '@/store/orderStore'
+import { useNavigate } from 'react-router-dom'
 
-import { Delete as DeleteIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material'
+import {
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material'
 
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
+import type { CreateOrderResponse } from '@features/orders/types'
 
-const OrderSummary = () => {
-  const { cart, updateItem, removeItem } = useCartStore()
+interface ContactInfo {
+  email: string
+  phone: string
+  firstName: string
+  lastName: string
+}
+
+interface AddressInfo {
+  address1: string
+  address2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+}
+
+interface OrderSummaryProps {
+  isContactInfoComplete?: boolean
+  isShippingAddressComplete?: boolean
+  isBillingAddressComplete?: boolean
+  contactInfo: ContactInfo
+  shippingAddress: AddressInfo
+  billingAddress: AddressInfo
+}
+
+const OrderSummary = ({
+  isContactInfoComplete = false,
+  isShippingAddressComplete = false,
+  isBillingAddressComplete = false,
+  contactInfo,
+  shippingAddress,
+  billingAddress,
+}: OrderSummaryProps) => {
+  const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
+  const { createOrder, isCreatingOrder, createOrderError } = useOrderStore()
+  const navigate = useNavigate()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
+  const [confirmedOrder, setConfirmedOrder] = useState<CreateOrderResponse | null>(null)
 
   // Derived state: calculate total item count
   const itemCount = useMemo(() => {
     return cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
   }, [cart?.items])
 
-  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+  // Check if all forms are complete
+  const isAllFormsComplete = useMemo(() => {
+    return isContactInfoComplete && isShippingAddressComplete && isBillingAddressComplete
+  }, [isContactInfoComplete, isShippingAddressComplete, isBillingAddressComplete])
+
+  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateItem(itemId, newQuantity)
+      try {
+        await updateItemInCart(itemId, newQuantity)
+      } catch (error) {
+        console.error('Failed to update cart item:', error)
+      }
     }
   }
 
@@ -44,11 +99,19 @@ const OrderSummary = () => {
     setRemoveDialogOpen(true)
   }
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (itemToRemove) {
-      removeItem(itemToRemove.id)
-      setRemoveDialogOpen(false)
-      setItemToRemove(null)
+      setIsRemoving(true)
+      try {
+        await removeItemFromCart(itemToRemove.id)
+        setRemoveDialogOpen(false)
+        setItemToRemove(null)
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+        // Dialog stays open on error so user can retry
+      } finally {
+        setIsRemoving(false)
+      }
     }
   }
 
@@ -57,14 +120,85 @@ const OrderSummary = () => {
     setItemToRemove(null)
   }
 
-  const handlePlaceOrder  = () => {
-    // TODO: Implement order placement logic
+  const handlePlaceOrder = async () => {
+    if (!cart || !cart.items || cart.items.length === 0) {
+      console.error('Cannot place order: cart is empty')
+      return
+    }
+
+    try {
+      // Extract cart item IDs
+      const cartItemIds = cart.items.map((item) => item.id)
+
+      // Create order request payload
+      const orderData = {
+        cart_items: cartItemIds,
+        shipping_address: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          address_line_1: shippingAddress.address1,
+          address_line_2: shippingAddress.address2 || '',
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postalCode,
+          country: shippingAddress.country,
+        },
+        billing_address: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          address_line_1: billingAddress.address1,
+          address_line_2: billingAddress.address2 || '',
+          city: billingAddress.city,
+          state: billingAddress.state,
+          postal_code: billingAddress.postalCode,
+          country: billingAddress.country,
+        },
+        contact_information: {
+          first_name: contactInfo.firstName,
+          last_name: contactInfo.lastName,
+          email: contactInfo.email,
+          phone: contactInfo.phone,
+        },
+      }
+
+      // Create the order
+      const order = await createOrder(orderData)
+
+      console.log('Order created successfully:', order)
+
+      // Show confirmation modal
+      setConfirmedOrder(order)
+      setConfirmationDialogOpen(true)
+    } catch (error) {
+      console.error('Failed to place order:', error)
+      // Error is already set in the store as createOrderError
+    }
+  }
+
+  const handleConfirmationClose = () => {
+    setConfirmationDialogOpen(false)
+    // Navigate to the home page after closing
+    navigate('/')
+  }
+
+  const handleViewOrderDetails = () => {
+    if (confirmedOrder) {
+      setConfirmationDialogOpen(false)
+      navigate(`/orders/${confirmedOrder.id}`)
+    }
   }
 
   // Early return if cart data is not available
   if (!cart || !cart.items || cart.items.length === 0) {
     return (
-      <Card sx={{ width: 500, position: 'sticky', top: 80, p: 2 }}>
+      <Card
+        sx={{
+          width: { xs: '100%', lg: 500 },
+          position: { xs: 'relative', lg: 'sticky' },
+          top: { lg: 80 },
+          p: { xs: 2, sm: 3 },
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -88,12 +222,28 @@ const OrderSummary = () => {
 
   return (
     <>
-      <Card sx={{ width: 500, position: 'sticky', top: 80, p: 2 }}>
+      <Card
+        sx={{
+          width: { xs: '100%', lg: 500 },
+          position: { xs: 'relative', lg: 'sticky' },
+          top: { lg: 80 },
+          p: { xs: 2, sm: 3 },
+        }}
+      >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" fontWeight={600}>
+          <Typography
+            variant="h4"
+            fontWeight={600}
+            sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+          >
             Order Summary
           </Typography>
-          <Typography color="text.secondary">{cart.itemCount || itemCount} item(s)</Typography>
+          <Typography
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+          >
+            {cart.itemCount || itemCount} item(s)
+          </Typography>
         </Box>
         <Divider />
 
@@ -104,19 +254,19 @@ const OrderSummary = () => {
               sx={{
                 flexDirection: 'column',
                 alignItems: 'stretch',
-                py: 2,
-                px: 2,
+                py: { xs: 1.5, sm: 2 },
+                px: { xs: 1, sm: 2 },
                 borderBottom: 1,
                 borderColor: 'divider',
               }}
             >
-              <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: { xs: 1.5, sm: 2 }, mb: 1.5 }}>
                 {/* Product Image */}
                 <Avatar
                   src={item.product.images[0]}
                   alt={item.product.name}
                   variant="rounded"
-                  sx={{ width: 80, height: 80 }}
+                  sx={{ width: { xs: 60, sm: 80 }, height: { xs: 60, sm: 80 } }}
                 />
 
                 {/* Product Info */}
@@ -131,14 +281,26 @@ const OrderSummary = () => {
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
+                      fontSize: { xs: '0.875rem', sm: '0.875rem' },
                     }}
                   >
                     {item.product.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  >
                     ${getItemPrice(item).toFixed(2)} each
                   </Typography>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: 600,
+                      color: 'primary.main',
+                      fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                    }}
+                  >
                     ${getItemSubtotal(item).toFixed(2)}
                   </Typography>
                 </Box>
@@ -156,14 +318,19 @@ const OrderSummary = () => {
               </Box>
 
               {/* Quantity Controls */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mr: { xs: 0.5, sm: 1 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Quantity:
                 </Typography>
                 <IconButton
                   size="small"
                   onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                   disabled={item.quantity <= 1}
+                  sx={{ p: { xs: 0.5, sm: 1 } }}
                 >
                   <RemoveIcon fontSize="small" />
                 </IconButton>
@@ -173,12 +340,12 @@ const OrderSummary = () => {
                   disabled
                   size="small"
                   sx={{
-                    width: 'fit-content',
-                    '& input': { textAlign: 'center', py: 0.5 },
+                    width: { xs: 50, sm: 'fit-content' },
+                    '& input': { textAlign: 'center', py: { xs: 0.25, sm: 0.5 }, fontSize: { xs: '0.75rem', sm: '0.875rem' } },
                   }}
                   inputProps={{
                     min: 1,
-                    max: item?.product?.quantity ?? item.product.stock,
+                    max: item.product.quantity ?? item.product.stock,
                     inputMode: 'numeric',
                   }}
                 />
@@ -186,11 +353,16 @@ const OrderSummary = () => {
                   size="small"
                   onClick={() => handleQuantityChange(item.id, Number(item.quantity || 0) + 1)}
                   disabled={item.quantity >= (item?.product?.quantity ?? item.product.stock)}
+                  sx={{ p: { xs: 0.5, sm: 1 } }}
                 >
                   <AddIcon fontSize="small" />
                 </IconButton>
                 {item.quantity >= (item?.product?.quantity ?? item.product.stock) && (
-                  <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    sx={{ ml: { xs: 0.5, sm: 1 }, fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+                  >
                     Max quantity
                   </Typography>
                 )}
@@ -201,34 +373,52 @@ const OrderSummary = () => {
 
         <Grid container spacing={1} py={2}>
           <Grid item xs={6}>
-            <Typography color="text.secondary">Subtotal</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              Subtotal
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">${(cart.subtotal ?? 0).toFixed(2)}</Typography>
+            <Typography align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              ${(cart.subtotal ?? 0).toFixed(2)}
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography color="text.secondary">Tax</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              Tax
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">${(cart.tax ?? 0).toFixed(2)}</Typography>
+            <Typography align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              ${(cart.tax ?? 0).toFixed(2)}
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography color="text.secondary">Delivery Fee</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              Delivery Fee
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">${(cart.shipping ?? 0).toFixed(2)}</Typography>
+            <Typography align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              ${(cart.shipping ?? 0).toFixed(2)}
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography color="text.secondary">Discount</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              Discount
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right">${(0).toFixed(2)}</Typography>
+            <Typography align="right" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              ${(0).toFixed(2)}
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography sx={{ fontWeight: 700 }}>Total</Typography>
+            <Typography sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
+              Total
+            </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography align="right" sx={{ fontWeight: 700 }}>
+            <Typography align="right" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
               ${(cart.total ?? 0).toFixed(2)}
             </Typography>
           </Grid>
@@ -237,9 +427,13 @@ const OrderSummary = () => {
         <Divider />
 
         {/* Discount input */}
-        <Grid container spacing={1} py={2} sx={{ alignItems: 'center' }}>
+        <Grid container spacing={{ xs: 1.5, sm: 1 }} py={{ xs: 1.5, sm: 2 }} sx={{ alignItems: 'center' }}>
           <Grid item xs={12} sm={6}>
-            <Typography component="label" htmlFor="discount-code-input">
+            <Typography
+              component="label"
+              htmlFor="discount-code-input"
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
               Discount Code
             </Typography>
           </Grid>
@@ -253,13 +447,20 @@ const OrderSummary = () => {
               inputProps={{
                 'aria-label': 'Discount code',
               }}
+              sx={{
+                '& input': { fontSize: { xs: '0.875rem', sm: '1rem' } },
+              }}
             />
           </Grid>
         </Grid>
 
         {/* Agreement */}
         <Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+          >
             By placing an order, you agree to our{' '}
             <a href="/terms" target="_blank" rel="noopener noreferrer">
               Terms and Conditions
@@ -270,9 +471,24 @@ const OrderSummary = () => {
             </a>
           </Typography>
         </Box>
-        <Box py={2}>
-          <Button variant="contained" fullWidth size="large" onClick={handlePlaceOrder}>
-            Place Order
+
+        {/* Error message */}
+        {createOrderError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {createOrderError}
+          </Alert>
+        )}
+
+        <Box py={{ xs: 1.5, sm: 2 }}>
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            onClick={handlePlaceOrder}
+            disabled={!isAllFormsComplete || isCreatingOrder}
+            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, py: { xs: 1, sm: 1.5 } }}
+          >
+            {isCreatingOrder ? 'Placing Order...' : 'Place Order'}
           </Button>
         </Box>
       </Card>
@@ -290,11 +506,129 @@ const OrderSummary = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleRemoveCancel} color="primary">
+          <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
             Cancel
           </Button>
-          <Button onClick={handleRemoveConfirm} color="error" variant="contained" autoFocus>
-            Remove
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isRemoving}
+          >
+            {isRemoving ? 'Removing...' : 'Remove'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Order Confirmation Dialog */}
+      <Dialog
+        open={confirmationDialogOpen}
+        onClose={handleConfirmationClose}
+        maxWidth="sm"
+        fullWidth
+        aria-labelledby="order-confirmation-dialog-title"
+        aria-describedby="order-confirmation-dialog-description"
+      >
+        <DialogTitle id="order-confirmation-dialog-title">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+            <Box>
+              <Typography variant="h5" fontWeight={600}>
+                Order Confirmed!
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Thank you for your purchase
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography id="order-confirmation-dialog-description" variant="body1" color="text.secondary" gutterBottom>
+              Your order has been successfully placed and is being processed.
+            </Typography>
+
+            {confirmedOrder && (
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Order ID
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {confirmedOrder.id}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Order Date
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {new Date(confirmedOrder.created_at).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
+                      {confirmedOrder.status}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Shipping Address
+                    </Typography>
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.first_name} {confirmedOrder.shipping_address.last_name}
+                    </Typography>
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.address_line_1}
+                    </Typography>
+                    {confirmedOrder.shipping_address.address_line_2 && (
+                      <Typography variant="body2">
+                        {confirmedOrder.shipping_address.address_line_2}
+                      </Typography>
+                    )}
+                    <Typography variant="body2">
+                      {confirmedOrder.shipping_address.city}, {confirmedOrder.shipping_address.state}{' '}
+                      {confirmedOrder.shipping_address.postal_code}
+                    </Typography>
+                    <Typography variant="body2">{confirmedOrder.shipping_address.country}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Contact Information
+                    </Typography>
+                    <Typography variant="body2">{confirmedOrder.contact_information.email}</Typography>
+                    <Typography variant="body2">{confirmedOrder.contact_information.phone}</Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+              A confirmation email has been sent to{' '}
+              <strong>{confirmedOrder?.contact_information.email}</strong>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleConfirmationClose} color="primary" variant="outlined">
+            Continue Shopping
+          </Button>
+          <Button onClick={handleViewOrderDetails} color="primary" variant="contained" autoFocus>
+            View Order Details
           </Button>
         </DialogActions>
       </Dialog>

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Order, OrderItem, Payment, ShippingAddress, BillingAddress, ContactInformation
 from carts.models import CartItem
 from carts.serializers import CartItemListSerializer
+from .services import StripeService
 
 
 class ShippingAddressListSerializer(serializers.ModelSerializer):
@@ -234,4 +235,63 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             return Payment.PaymentStatus.PENDING
        
 
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    order = serializers.UUIDField()
+    payment_method = serializers.ChoiceField(choices=Payment.PaymentMethod.CHOICES, default=Payment.PaymentMethod.STRIPE)
+    client_secret = serializers.CharField(read_only=True)
 
+    class Meta:
+        model = Payment
+        fields = ["order", "payment_method", "client_secret", "payment_status", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "payment_status"]
+
+    def validate_order(self, value):
+        user = self.context.get("request").user
+        try:
+            order = Order.objects.get(id=value, created_by=user)
+            return order
+        except Order.DoesNotExist:
+            raise serializers.ValidationError("Order does not exist")
+        
+        
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        order: Order = validated_data.get("order")
+        payment_method = validated_data.get("payment_method", Payment.PaymentMethod.STRIPE)
+        amount = order.total
+        
+        # if we already have a payment for this order, just update the payment
+        try:
+            payment = order.payment
+            Payment.objects.filter(id=payment.id).update(amount=amount, payment_method=payment_method)
+        except Payment.DoesNotExist:
+            payment = Payment.objects.create(
+                order=order, 
+                created_by=user, 
+                amount=amount, 
+                payment_method=payment_method
+            )
+  
+
+        stripe_service = StripeService()
+        session = stripe_service.create_payment_session(payment)
+        return {
+            "client_secret": session.client_secret,
+            "id": payment.id,
+            "order": order.id,
+            "payment_method": payment_method,
+            "payment_status": payment.payment_status,
+            "created_at": payment.created_at,
+            "updated_at": payment.updated_at,    
+        }
+        
+    
+
+class PaymentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ["payment_status"]
+        read_only_fields = ["payment_status"]
+    
+
+    

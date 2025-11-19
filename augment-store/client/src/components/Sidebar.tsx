@@ -24,12 +24,13 @@ import {
   Person,
   Logout,
   Login,
+  Receipt,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
 import { useAuthStore } from '@store/authStore'
 import { productService } from '@services/api/products/productService'
-import { buildCategoryTree } from '@utils/categoryUtils'
+import { buildCategoryTree, categoryNameToSlug } from '@utils/categoryUtils'
 import { authService } from '@services/api/auth/authService'
 import type { CategoryWithChildren } from '@features/products/types'
 
@@ -60,7 +61,7 @@ const Sidebar = () => {
     fetchCategories()
   }, [])
 
-  const handleCategoryClick = (categoryId: string, hasChildren: boolean) => {
+  const handleCategoryClick = (categoryId: string, categoryName: string, hasChildren: boolean) => {
     if (hasChildren) {
       // Toggle expansion for categories with children
       if (expandedCategory === categoryId) {
@@ -70,13 +71,17 @@ const Sidebar = () => {
       }
     } else {
       // Navigate directly for categories without children
-      navigate(`/products?category=${categoryId}`)
+      // TEMPORARY: Generate slug from name until backend exposes slug field
+      const slug = categoryNameToSlug(categoryName)
+      navigate(`/products?category=${encodeURIComponent(slug)}`)
       closeSidebar()
     }
   }
 
-  const handleSubcategoryClick = (subcategoryId: string) => {
-    navigate(`/products?category=${subcategoryId}`)
+  const handleSubcategoryClick = (categoryName: string) => {
+    // TEMPORARY: Generate slug from name until backend exposes slug field
+    const slug = categoryNameToSlug(categoryName)
+    navigate(`/products?category=${encodeURIComponent(slug)}`)
     closeSidebar()
   }
 
@@ -87,6 +92,11 @@ const Sidebar = () => {
 
   const handleWishlistClick = () => {
     navigate('/wishlist')
+    closeSidebar()
+  }
+
+  const handleOrdersClick = () => {
+    navigate('/orders')
     closeSidebar()
   }
 
@@ -111,6 +121,30 @@ const Sidebar = () => {
       anchor="left"
       open={isSidebarOpen}
       onClose={closeSidebar}
+      variant="temporary"
+      ModalProps={{
+        keepMounted: true, // Better mobile performance
+        BackdropProps: {
+          transitionDuration: {
+            enter: 350,
+            exit: 250,
+          },
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      }}
+      SlideProps={{
+        direction: 'right',
+        easing: {
+          enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          exit: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        },
+      }}
+      transitionDuration={{
+        enter: 350,
+        exit: 250,
+      }}
       sx={{
         '& .MuiDrawer-paper': {
           width: 320,
@@ -118,6 +152,8 @@ const Sidebar = () => {
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
           boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+          willChange: 'transform',
+          transform: 'translateZ(0)', // Force GPU acceleration
         },
       }}
     >
@@ -187,6 +223,27 @@ const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary="Wishlist"
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Orders */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleOrdersClick}
+                    sx={{
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                      <Receipt />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Orders"
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -286,7 +343,7 @@ const Sidebar = () => {
                 <Box key={category.id}>
                   <ListItem disablePadding>
                     <ListItemButton
-                      onClick={() => handleCategoryClick(category.id, hasChildren)}
+                      onClick={() => handleCategoryClick(category.id, category.name, hasChildren)}
                       sx={{
                         py: 1.5,
                         '&:hover': {
@@ -313,7 +370,7 @@ const Sidebar = () => {
                         {category.children!.map((subcategory) => (
                           <ListItemButton
                             key={subcategory.id}
-                            onClick={() => handleSubcategoryClick(subcategory.id)}
+                            onClick={() => handleSubcategoryClick(subcategory.name)}
                             sx={{
                               pl: 7,
                               py: 1,

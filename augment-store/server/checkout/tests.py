@@ -1,16 +1,16 @@
+import unittest
+from unittest.mock import  patch
 from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
 from rest_framework import status
-from rest_framework.test import APIClient
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
-from carts.models import Cart
-from checkout.models import Order, OrderItem
-from checkout.factory import OrderFactory, OrderItemFactory
+from checkout.models import Order
+from checkout.factory import OrderFactory, OrderItemFactory, PaymentFactory, ShippingAddressFactory, BillingAddressFactory, ContactInformationFactory
 from decimal import Decimal
-
+from checkout.services import StripeService
 
 class CreateOrderViewTests(BaseAPITestCase):
 
@@ -157,6 +157,229 @@ class CreateOrderViewTests(BaseAPITestCase):
 
         # AND no order should be created
         self.assertEqual(Order.objects.count(), 0)
+
+    def test_create_order_with_both_shipping_address_and_id(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has an existing shipping address
+        shipping_address = ShippingAddressFactory(user=self.member_user)
+
+        # WHEN we make a POST request with both shipping_address and shipping_address_id
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "shipping_address": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "address_line_1": "123 Main St",
+                "address_line_2": "",
+                "city": "New York",
+                "state": "NY",
+                "postal_code": "10001",
+                "country": "USA"
+            },
+            "shipping_address_id": str(shipping_address.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # AND the error message should indicate the conflict
+        self.assertIn("Cannot provide both shipping_address and shipping_address_id", str(response.data))
+
+        # AND no order should be created
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_create_order_with_both_billing_address_and_id(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has an existing billing address
+        billing_address = BillingAddressFactory(user=self.member_user)
+
+        # WHEN we make a POST request with both billing_address and billing_address_id
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "billing_address": {
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "address_line_1": "456 Oak Ave",
+                "address_line_2": "Apt 2B",
+                "city": "Los Angeles",
+                "state": "CA",
+                "postal_code": "90001",
+                "country": "USA"
+            },
+            "billing_address_id": str(billing_address.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # AND the error message should indicate the conflict
+        self.assertIn("Cannot provide both billing_address and billing_address_id", str(response.data))
+
+        # AND no order should be created
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_create_order_with_both_contact_information_and_id(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has existing contact information
+        contact_info = ContactInformationFactory(user=self.member_user)
+
+        # WHEN we make a POST request with both contact_information and contact_information_id
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "contact_information": {
+                "first_name": "Bob",
+                "last_name": "Johnson",
+                "email": "bob@example.com",
+                "phone": "+1234567890"
+            },
+            "contact_information_id": str(contact_info.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # AND the error message should indicate the conflict
+        self.assertIn("Cannot provide both contact_information and contact_information_id", str(response.data))
+
+        # AND no order should be created
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_create_order_with_shipping_address_only(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+
+        # WHEN we make a POST request with only shipping_address (no ID)
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "shipping_address": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "address_line_1": "123 Main St",
+                "address_line_2": "",
+                "city": "New York",
+                "state": "NY",
+                "postal_code": "10001",
+                "country": "USA"
+            }
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND an order should be created with the shipping address
+        order = Order.objects.first()
+        self.assertIsNotNone(order.shipping_address)
+        self.assertEqual(order.shipping_address.first_name, "John")
+        self.assertEqual(order.shipping_address.last_name, "Doe")
+
+    def test_create_order_with_shipping_address_id_only(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has an existing shipping address
+        shipping_address = ShippingAddressFactory(user=self.member_user)
+
+        # WHEN we make a POST request with only shipping_address_id (no nested object)
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "shipping_address_id": str(shipping_address.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND an order should be created with the existing shipping address
+        order = Order.objects.first()
+        self.assertEqual(order.shipping_address.id, shipping_address.id)
+
+    def test_create_order_with_billing_address_id_only(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has an existing billing address
+        billing_address = BillingAddressFactory(user=self.member_user)
+
+        # WHEN we make a POST request with only billing_address_id
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "billing_address_id": str(billing_address.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND an order should be created with the existing billing address
+        order = Order.objects.first()
+        self.assertEqual(order.billing_address.id, billing_address.id)
+
+    def test_create_order_with_contact_information_id_only(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a cart item
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        # AND the user has existing contact information
+        contact_info = ContactInformationFactory(user=self.member_user)
+
+        # WHEN we make a POST request with only contact_information_id
+        url = reverse("v1:checkout:create_order")
+        payload = {
+            "cart_items": [str(cart_item.id)],
+            "contact_information_id": str(contact_info.id)
+        }
+        response = self.member_client.post(url, payload, format='json')
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # AND an order should be created with the existing contact information
+        order = Order.objects.first()
+        self.assertEqual(order.contact_information.id, contact_info.id)
 
 
 class OrderListViewTests(BaseAPITestCase):
@@ -476,3 +699,65 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         self.assertIn("id", order_item)
         self.assertIn("cart_item", order_item)
         self.assertIn("created_at", order_item)
+
+class OrderPaymentTest(BaseAPITestCase):
+    
+    def setUp(self):
+        super().setUp()
+
+    # mock the create_payment_session method
+    @patch("checkout.services.StripeService.create_payment_session")
+    def test_payment_order(self, mock_create_payment_session):
+
+          # Mock the Stripe session object returned by the service
+        mock_create_payment_session.return_value = type(
+            "MockSession",
+            (object,),
+            {"id": "sess_test_123", "client_secret": "mocked_client_secret"}
+        )()
+
+        # GIVEN I have an order
+        order = OrderFactory(created_by=self.user)
+        cart_item = CartItemFactory(quantity=1)
+        OrderItemFactory(order=order, cart_item=cart_item)
+
+        # WHEN I make a payment for the order
+        url = reverse("v1:checkout_payments:payment_order")
+
+        payload = {
+            "order": str(order.id),
+            "payment_method": "stripe",
+        }
+        response = self.authenticated_client.post(url, payload)
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+class StripeServiceTests(BaseAPITestCase):
+
+    # skip this test for now only run it locally, remove the skip decorator to run it locally
+    @unittest.skip("Skipping StripeServiceTests for now. Uncomment to run it locally.")
+    @patch("stripe.checkout.Session.create")
+    def test_create_payment_session(self, mock_create_session):
+
+        mock_create_session.return_value = {
+            "client_secret": "mocked_client_secret",
+        }
+        
+        # GIVEN I have payment and order
+        order = OrderFactory()
+        cart_item = CartItemFactory(quantity=1)
+        OrderItemFactory(order=order, cart_item=cart_item)
+        payment = PaymentFactory(order=order)
+
+        # WHEN we create a payment session
+        stripe_service = StripeService()
+        session = stripe_service.create_payment_session(payment)
+
+        # THEN we should get a session object
+        self.assertIsNotNone(session)
+        self.assertIn("client_secret", session)
+
+

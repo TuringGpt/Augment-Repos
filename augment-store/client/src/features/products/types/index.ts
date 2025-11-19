@@ -46,11 +46,27 @@ export interface CategoryAPIResponse {
   count: number
   next: string | null
   previous: string | null
-  results: Category[]
+  results: import('./api').ProductCategoryAPI[]
+}
+
+export interface Brand {
+  id: string
+  name: string
+  description?: string
+  image?: string
+}
+
+export interface BrandAPIResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: import('./api').ProductBrandAPI[]
 }
 
 export interface ProductFilters {
-  categoryId?: string
+  // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
+  categorySlug?: string
+  brandName?: string
   minPrice?: number
   maxPrice?: number
   minRating?: number
@@ -69,7 +85,9 @@ export interface ProductSearchParams {
   page?: number
   limit?: number
   search?: string
-  categoryId?: string
+  // TEMPORARY: Using categorySlug generated from name until backend exposes slug field
+  categorySlug?: string
+  brandName?: string
   minPrice?: number
   maxPrice?: number
   minRating?: number

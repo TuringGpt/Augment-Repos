@@ -38,7 +38,8 @@
       "@context/*": ["src/context/*"],
       "@config/*": ["src/config/*"],
       "@store/*": ["src/store/*"],
-      "@data/*": ["src/data/*"]
+      "@data/*": ["src/data/*"],
+      "@locales/*": ["src/locales/*"]
     }
   },
   "include": ["src"],

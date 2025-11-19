@@ -78,3 +78,16 @@ class Cart(BaseModel):
     def total(self):
         return self.subtotal + self.tax + self.shipping
 
+
+class WishlistManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-created_at')
+    
+    def get_user_wishlist(self, user):
+        wishlist, _ = self.get_queryset().get_or_create(user=user)
+        return wishlist
+
+class Wishlist(BaseModel):
+    products = models.ManyToManyField(Product, related_name='wishlist')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    objects:WishlistManager = WishlistManager()

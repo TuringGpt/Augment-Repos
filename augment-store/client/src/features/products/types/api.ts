@@ -107,3 +107,29 @@ export function transformProductFromAPI(apiProduct: ProductAPI) {
     updatedAt: new Date().toISOString(), // Backend doesn't return this in list
   }
 }
+
+/**
+ * Transform backend category to frontend category format
+ */
+export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
+  return {
+    id: apiCategory.id,
+    name: apiCategory.name,
+    slug: apiCategory.name.toLowerCase().replace(/\s+/g, '-'),
+    description: apiCategory.description,
+    image: apiCategory.image?.file || undefined,
+    parent: apiCategory.parent || undefined,
+  }
+}
+
+/**
+ * Transform backend brand to frontend brand format
+ */
+export function transformBrandFromAPI(apiBrand: ProductBrandAPI) {
+  return {
+    id: apiBrand.id,
+    name: apiBrand.name,
+    description: apiBrand.description,
+    image: apiBrand.image?.file || undefined,
+  }
+}

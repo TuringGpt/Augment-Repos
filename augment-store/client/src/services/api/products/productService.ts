@@ -6,9 +6,15 @@ import type {
   ProductSearchParams,
   Category,
   CategoryAPIResponse,
+  Brand,
+  BrandAPIResponse,
 } from '@features/products/types'
 import type { PaginatedProductsAPI, ProductDetailAPI } from '@features/products/types/api'
-import { transformProductFromAPI } from '@features/products/types/api'
+import {
+  transformProductFromAPI,
+  transformCategoryFromAPI,
+  transformBrandFromAPI,
+} from '@features/products/types/api'
 
 export const productService = {
   /**
@@ -24,6 +30,17 @@ export const productService = {
       // Build query params for backend API
       const queryParams: Record<string, number | string> = {
         page,
+      }
+
+      // Add category filter if provided (using slug)
+      // TEMPORARY: Using slug generated from category name until backend exposes slug field
+      if (params?.categorySlug) {
+        queryParams.category = params.categorySlug
+      }
+
+      // Add brand filter if provided (using brand name)
+      if (params?.brandName) {
+        queryParams.brand = params.brandName
       }
 
       // Add rating filters if provided
@@ -53,6 +70,8 @@ export const productService = {
         next: response.next,
         previous: response.previous,
         filters: {
+          categorySlug: params?.categorySlug,
+          brandName: params?.brandName,
           minRating: params?.minRating,
           maxRating: params?.maxRating,
           minPrice: params?.minPrice,
@@ -144,13 +163,35 @@ export const productService = {
 
       while (nextUrl) {
         const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
-        allCategories = [...allCategories, ...(response.results || [])]
+        // Transform backend categories to frontend format
+        const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
+        allCategories = [...allCategories, ...transformedCategories]
         nextUrl = response.next
       }
 
       return allCategories
     } catch (error) {
       console.error('Failed to fetch categories:', error)
+      return []
+    }
+  },
+
+  getBrands: async (): Promise<Brand[]> => {
+    try {
+      let allBrands: Brand[] = []
+      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
+
+      while (nextUrl) {
+        const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
+        // Transform backend brands to frontend format
+        const transformedBrands = (response.results || []).map(transformBrandFromAPI)
+        allBrands = [...allBrands, ...transformedBrands]
+        nextUrl = response.next
+      }
+
+      return allBrands
+    } catch (error) {
+      console.error('Failed to fetch brands:', error)
       return []
     }
   },

@@ -21,7 +21,7 @@ SECRET_KEY = config.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config.get('DEBUG', False) == 'True'
 
-APP_DOMAIN = config.get('APP_DOMAIN', 'http://localhost:8000')
+APP_DOMAIN = config.get('BACKEND_URL', 'http://localhost:8000')
 ALLOWED_HOSTS = [
     config.get('ALLOWED_HOSTS', '*')
 ]
@@ -83,6 +83,9 @@ INSTALLED_APPS = [
     "checkout",
     "merchant",
     'schema_viewer',
+    'contact',
+    'newsletter',
+    'ticket'
 ]
 
 MIDDLEWARE = [
@@ -270,3 +273,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
 }
+
+# Stripe settings
+STRIPE_PUBLISHABLE_KEY = config.get("STRIPE_PUBLISHABLE_KEY")
+STRIPE_SECRET_KEY = config.get("STRIPE_SECRET_KEY")

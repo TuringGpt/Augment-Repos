@@ -1,21 +1,24 @@
 import type { Product, ProductFilters, SortBy } from '@features/products/types'
-import { FilterList as FilterListIcon } from '@mui/icons-material'
+import { Close as CloseIcon, FilterList as FilterListIcon } from '@mui/icons-material'
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
+  Dialog,
+  DialogContent,
   Divider,
-  Drawer,
   Grid,
+  IconButton,
   Pagination,
   Paper,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
+import { ProductCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import PriceRangeFilter from './PriceRangeFilter'
 import ProductCard from './ProductCard'
 import RatingFilter from './RatingFilter'
@@ -27,6 +30,11 @@ const ShopPage = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Read category slug and brand name from URL query parameters
+  const categorySlugFromUrl = searchParams.get('category')
+  const brandNameFromUrl = searchParams.get('brand')
 
   // API state
   const [products, setProducts] = useState<Product[]>([])
@@ -39,6 +47,8 @@ const ShopPage = () => {
 
   // Filter state - no filters applied by default
   const [filters, setFilters] = useState<ProductFilters>({
+    categorySlug: categorySlugFromUrl ?? undefined,
+    brandName: brandNameFromUrl ?? undefined,
     minPrice: undefined,
     maxPrice: undefined,
     minRating: undefined,
@@ -47,6 +57,23 @@ const ShopPage = () => {
 
   // Sort state
   const [sortBy, setSortBy] = useState<SortBy>('newest')
+
+  // Update filters when URL category or brand parameters change
+  useEffect(() => {
+    setFilters((prev) => {
+      const newCategorySlug = categorySlugFromUrl ?? undefined
+      const newBrandName = brandNameFromUrl ?? undefined
+      // Only update if the values actually changed
+      if (prev.categorySlug !== newCategorySlug || prev.brandName !== newBrandName) {
+        return {
+          ...prev,
+          categorySlug: newCategorySlug,
+          brandName: newBrandName,
+        }
+      }
+      return prev
+    })
+  }, [categorySlugFromUrl, brandNameFromUrl])
 
   // Fetch products from API (backend returns 100 items per page)
   useEffect(() => {
@@ -57,6 +84,8 @@ const ShopPage = () => {
       try {
         const response = await productService.getProducts({
           page: apiPage,
+          categorySlug: filters.categorySlug,
+          brandName: filters.brandName,
           minRating: filters.minRating,
           maxRating: filters.maxRating,
           minPrice: filters.minPrice,
@@ -70,6 +99,8 @@ const ShopPage = () => {
           limit: response.limit,
           totalPages: response.totalPages,
           filters: {
+            categorySlug: filters.categorySlug,
+            brandName: filters.brandName,
             minPrice: filters.minPrice,
             maxPrice: filters.maxPrice,
             minRating: filters.minRating,
@@ -92,7 +123,15 @@ const ShopPage = () => {
     }
 
     fetchProducts()
-  }, [apiPage, filters.minPrice, filters.maxPrice, filters.minRating, filters.maxRating])
+  }, [
+    apiPage,
+    filters.categorySlug,
+    filters.brandName,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.minRating,
+    filters.maxRating,
+  ])
 
   // Calculate client-side pagination (no filtering or sorting for now)
   const totalClientPages = Math.ceil(products.length / PRODUCTS_PER_PAGE)
@@ -148,22 +187,41 @@ const ShopPage = () => {
 
   const handleResetFilters = () => {
     setFilters({
+      categorySlug: undefined,
+      brandName: undefined,
       minPrice: undefined,
       maxPrice: undefined,
       minRating: undefined,
       maxRating: undefined,
     })
+    // Remove category and brand query parameters from URL
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.delete('category')
+    newSearchParams.delete('brand')
+    setSearchParams(newSearchParams)
   }
 
-  const FiltersContent = () => (
+  const FiltersContent = ({ showCloseButton = false }: { showCloseButton?: boolean }) => (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Filters
         </Typography>
-        <Button size="small" onClick={handleResetFilters}>
-          Reset
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button size="small" onClick={handleResetFilters}>
+            Reset
+          </Button>
+          {showCloseButton && (
+            <IconButton
+              onClick={() => setMobileFiltersOpen(false)}
+              size="small"
+              aria-label="Close filters"
+              sx={{ ml: 1 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
       <Divider sx={{ mb: 3 }} />
 
@@ -229,9 +287,13 @@ const ShopPage = () => {
 
           {/* Loading State */}
           {isLoading || !hasLoadedOnce ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress />
-            </Box>
+            <Grid container spacing={3}>
+              {Array.from({ length: 12 }).map((_, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <ProductCardSkeleton />
+                </Grid>
+              ))}
+            </Grid>
           ) : error ? (
             /* Error State */
             <Paper sx={{ p: 6, textAlign: 'center' }}>
@@ -289,12 +351,23 @@ const ShopPage = () => {
         </Grid>
       </Grid>
 
-      {/* Mobile Filters Drawer */}
-      <Drawer anchor="left" open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)}>
-        <Box sx={{ width: 300, p: 3 }}>
-          <FiltersContent />
-        </Box>
-      </Drawer>
+      {/* Mobile Filters Modal */}
+      <Dialog
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            m: 2,
+            maxHeight: 'calc(100vh - 64px)',
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 3 }}>
+          <FiltersContent showCloseButton={true} />
+        </DialogContent>
+      </Dialog>
     </Container>
   )
 }

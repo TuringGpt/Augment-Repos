@@ -15,6 +15,7 @@ import {
 import { Edit, Save, Cancel, Logout } from '@mui/icons-material'
 import delay from 'lodash/delay'
 import { useNavigate } from 'react-router-dom'
+import { ProfileSkeleton } from '@components/skeletons'
 import { userService } from '@services/api/user/userService'
 import { storageService } from '@services/api/storage/storageService'
 import { authService } from '@services/api/auth/authService'
@@ -217,11 +218,7 @@ const ProfilePage = () => {
   }
 
   if (isLoading) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Container>
-    )
+    return <ProfileSkeleton />
   }
 
   if (error && !profile) {

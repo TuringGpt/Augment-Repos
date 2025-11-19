@@ -1,4 +1,4 @@
-import { Box, Rating, Slider, Typography } from '@mui/material'
+import { Box, Slider, Typography } from '@mui/material'
 import { SyntheticEvent, useEffect, useState } from 'react'
 
 interface RatingFilterProps {
@@ -79,20 +79,6 @@ const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
             },
           }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Rating value={localValue[0] / 2} readOnly precision={0.25} size="small" max={5} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-              ({localValue[0]})
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Rating value={localValue[1] / 2} readOnly precision={0.25} size="small" max={5} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-              ({localValue[1]})
-            </Typography>
-          </Box>
-        </Box>
       </Box>
     </Box>
   )

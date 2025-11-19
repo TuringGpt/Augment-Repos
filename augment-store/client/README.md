@@ -10,6 +10,8 @@ A modern, scalable e-commerce frontend application built with React, TypeScript,
 - **Material-UI (MUI)** - Component library
 - **React Router** - Routing
 - **Axios** - HTTP client
+- **i18next** - Internationalization
+- **Zustand** - State management
 
 ## 📁 Project Structure
 
@@ -242,6 +244,28 @@ The application uses JWT-based authentication with automatic token refresh:
 - Access tokens are stored in localStorage
 - Refresh tokens are used to obtain new access tokens
 - Axios interceptors handle token injection and refresh
+
+## 🌍 Internationalization (i18n)
+
+The application supports multiple languages using react-i18next:
+
+- **Supported Languages**: English, Spanish, French, German
+- **Language Detection**: Automatic detection from browser/localStorage
+- **Language Switcher**: Available in the header
+- **Translation Files**: Located in `src/locales/`
+
+For detailed information, see [I18N_SETUP.md](./I18N_SETUP.md)
+
+### Quick Usage
+
+```typescript
+import { useTranslation } from '@hooks/useTranslation'
+
+function MyComponent() {
+  const { t } = useTranslation()
+  return <h1>{t('common.welcome')}</h1>
+}
+```
 
 ## 🤝 Working with Backend
 
