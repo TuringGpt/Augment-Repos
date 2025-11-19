@@ -27,7 +27,7 @@ class NewsletterTests(BaseAPITestCase):
         url = reverse("v1:create_newsletter")
         self.authenticated_client.force_authenticate(user=self.user)
         payload = {
-            "email": "test@example.com",
+            "email": "newsubscriber@example.com",
         }
         response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, 201)
