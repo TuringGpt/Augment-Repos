@@ -74,3 +74,6 @@ export interface WishlistItem {
   product: Product
   addedAt: string
 }
+
+// Export wishlist types
+export * from './wishlist'
