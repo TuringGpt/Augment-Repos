@@ -60,9 +60,13 @@ export const API_ENDPOINTS = {
     ADD_ADDRESS: '/user/addresses',
     UPDATE_ADDRESS: (id: string) => `/user/addresses/${id}`,
     DELETE_ADDRESS: (id: string) => `/user/addresses/${id}`,
-    WISHLIST: '/user/wishlist',
-    ADD_TO_WISHLIST: '/user/wishlist',
-    REMOVE_FROM_WISHLIST: (id: string) => `/user/wishlist/${id}`,
+  },
+
+  // Wishlist endpoints
+  WISHLIST: {
+    GET: '/wishlist/',
+    ADD: '/wishlist/add/',
+    REMOVE: '/wishlist/remove/',
   },
 
   // Storage endpoints
