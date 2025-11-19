@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 class TicketListView:
-    class_serializer = TicketListSerializer
+    serializer_class = TicketListSerializer
 
     def get_queryset(self):
         return Ticket.objects.all().order_by('-created_at')
