@@ -32,6 +32,7 @@ const LanguageSwitcher = () => {
         aria-controls={open ? 'language-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
+        id="language-button"
       >
         <LanguageIcon />
       </IconButton>
