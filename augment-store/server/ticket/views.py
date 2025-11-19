@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from .models import Ticket, Comment
+from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
 
 # Create your views here.
 class TicketListView:
