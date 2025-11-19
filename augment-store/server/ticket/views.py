@@ -39,7 +39,9 @@ class CommentListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Comment.objects.all().order_by('-created_at')
+        ticket_id = self.kwargs.get("pk")
+        ticket = Ticket.objects.get(id=ticket_id)
+        return Comment.objects.filter(ticket=ticket).order_by('-created_at')
     
 class CommentCreateView(CreateAPIView):
     serializer_class = CommentCreateSerializer
