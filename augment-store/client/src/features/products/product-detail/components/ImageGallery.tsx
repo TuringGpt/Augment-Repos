@@ -22,8 +22,8 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const [touchZoomPosition, setTouchZoomPosition] = useState({ x: 50, y: 50 })
   const [fullscreenZoomScale, setFullscreenZoomScale] = useState(1)
   const [fullscreenZoomPosition, setFullscreenZoomPosition] = useState({ x: 50, y: 50 })
-  const imageRef = useRef<HTMLDivElement>(null)
   const swiperRef = useRef<SwiperType | null>(null)
+  const fullscreenSwiperRef = useRef<SwiperType | null>(null)
   const swiperContainerRef = useRef<HTMLDivElement>(null)
   const fullscreenSwiperContainerRef = useRef<HTMLDivElement>(null)
   const initialPinchDistance = useRef<number | null>(null)
@@ -46,9 +46,9 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   }
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!imageRef.current) return
+    if (!swiperContainerRef.current) return
 
-    const rect = imageRef.current.getBoundingClientRect()
+    const rect = swiperContainerRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
 
@@ -158,8 +158,8 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
     const handleNativeTouchStart = (e: globalThis.TouchEvent) => {
       if (e.touches.length === 2) {
         e.preventDefault()
-        if (swiperRef.current) {
-          swiperRef.current.allowTouchMove = false
+        if (fullscreenSwiperRef.current) {
+          fullscreenSwiperRef.current.allowTouchMove = false
         }
         const distance = getTouchDistance(e.touches as unknown as React.TouchList)
         fullscreenInitialPinchDistance.current = distance
@@ -189,8 +189,8 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
     const handleNativeTouchEnd = (e: globalThis.TouchEvent) => {
       if (e.touches.length < 2) {
-        if (swiperRef.current) {
-          swiperRef.current.allowTouchMove = true
+        if (fullscreenSwiperRef.current) {
+          fullscreenSwiperRef.current.allowTouchMove = true
         }
         fullscreenInitialPinchDistance.current = null
         if (fullscreenZoomScale < 1.1) {
@@ -438,6 +438,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
             keyboard={{ enabled: true }}
             mousewheel={{ forceToAxis: true }}
             initialSlide={activeStep}
+            onSwiper={(swiper) => (fullscreenSwiperRef.current = swiper)}
             onSlideChange={handleSlideChange}
             spaceBetween={0}
             slidesPerView={1}
