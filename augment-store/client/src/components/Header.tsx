@@ -15,6 +15,7 @@ import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
 import ThemeToggle from '@components/ThemeToggle'
+import LanguageSwitcher from '@components/LanguageSwitcher'
 import { authService } from '@services/api/auth/authService'
 
 const Header = () => {
@@ -81,6 +82,9 @@ const Header = () => {
 
             {/* Theme Toggle - Always Visible */}
             <ThemeToggle />
+
+            {/* Language Switcher - Always Visible */}
+            <LanguageSwitcher />
 
             {/* Products Button - Hidden on mobile */}
             <Button
