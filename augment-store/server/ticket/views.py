@@ -48,7 +48,9 @@ class CommentCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        ticket_id = self.kwargs.get("pk")
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        serializer.save(user=self.request.user, ticket=ticket)
 
 class CommentUpdateView(RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
