@@ -30,6 +30,8 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
   const initialScale = useRef<number>(1)
   const fullscreenInitialPinchDistance = useRef<number | null>(null)
   const fullscreenInitialScale = useRef<number>(1)
+  const touchZoomScaleRef = useRef<number>(1)
+  const fullscreenZoomScaleRef = useRef<number>(1)
   const maxSteps = images.length
 
   const handleSlideChange = (swiper: SwiperType) => {
@@ -94,6 +96,11 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
     setFullscreenZoomScale(1) // Reset fullscreen zoom when closing
   }
 
+  // Keep touchZoomScaleRef in sync with touchZoomScale state
+  useEffect(() => {
+    touchZoomScaleRef.current = touchZoomScale
+  }, [touchZoomScale])
+
   // Attach native touch event listeners for main swiper
   useEffect(() => {
     const container = swiperContainerRef.current
@@ -101,14 +108,13 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
 
     const handleNativeTouchStart = (e: globalThis.TouchEvent) => {
       if (e.touches.length === 2) {
-        console.log('Pinch started on main image')
         e.preventDefault()
         if (swiperRef.current) {
           swiperRef.current.allowTouchMove = false
         }
         const distance = getTouchDistance(e.touches as unknown as React.TouchList)
         initialPinchDistance.current = distance
-        initialScale.current = touchZoomScale
+        initialScale.current = touchZoomScaleRef.current
       }
     }
 
@@ -133,22 +139,40 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           swiperRef.current.allowTouchMove = true
         }
         initialPinchDistance.current = null
-        if (touchZoomScale < 1.1) {
+        if (touchZoomScaleRef.current < 1.1) {
           setTouchZoomScale(1)
         }
+      }
+    }
+
+    const handleNativeTouchCancel = () => {
+      // Re-enable swiper and reset pinch state when gesture is canceled
+      if (swiperRef.current) {
+        swiperRef.current.allowTouchMove = true
+      }
+      initialPinchDistance.current = null
+      if (touchZoomScaleRef.current < 1.1) {
+        setTouchZoomScale(1)
       }
     }
 
     container.addEventListener('touchstart', handleNativeTouchStart, { passive: false })
     container.addEventListener('touchmove', handleNativeTouchMove, { passive: false })
     container.addEventListener('touchend', handleNativeTouchEnd)
+    container.addEventListener('touchcancel', handleNativeTouchCancel)
 
     return () => {
       container.removeEventListener('touchstart', handleNativeTouchStart)
       container.removeEventListener('touchmove', handleNativeTouchMove)
       container.removeEventListener('touchend', handleNativeTouchEnd)
+      container.removeEventListener('touchcancel', handleNativeTouchCancel)
     }
-  }, [touchZoomScale])
+  }, [])
+
+  // Keep fullscreenZoomScaleRef in sync with fullscreenZoomScale state
+  useEffect(() => {
+    fullscreenZoomScaleRef.current = fullscreenZoomScale
+  }, [fullscreenZoomScale])
 
   // Attach native touch event listeners for fullscreen swiper
   useEffect(() => {
@@ -163,7 +187,7 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
         }
         const distance = getTouchDistance(e.touches as unknown as React.TouchList)
         fullscreenInitialPinchDistance.current = distance
-        fullscreenInitialScale.current = fullscreenZoomScale
+        fullscreenInitialScale.current = fullscreenZoomScaleRef.current
       }
     }
 
@@ -193,22 +217,35 @@ const ImageGallery = ({ images, productName }: ImageGalleryProps) => {
           fullscreenSwiperRef.current.allowTouchMove = true
         }
         fullscreenInitialPinchDistance.current = null
-        if (fullscreenZoomScale < 1.1) {
+        if (fullscreenZoomScaleRef.current < 1.1) {
           setFullscreenZoomScale(1)
         }
+      }
+    }
+
+    const handleNativeTouchCancel = () => {
+      // Re-enable swiper and reset pinch state when gesture is canceled
+      if (fullscreenSwiperRef.current) {
+        fullscreenSwiperRef.current.allowTouchMove = true
+      }
+      fullscreenInitialPinchDistance.current = null
+      if (fullscreenZoomScaleRef.current < 1.1) {
+        setFullscreenZoomScale(1)
       }
     }
 
     container.addEventListener('touchstart', handleNativeTouchStart, { passive: false })
     container.addEventListener('touchmove', handleNativeTouchMove, { passive: false })
     container.addEventListener('touchend', handleNativeTouchEnd)
+    container.addEventListener('touchcancel', handleNativeTouchCancel)
 
     return () => {
       container.removeEventListener('touchstart', handleNativeTouchStart)
       container.removeEventListener('touchmove', handleNativeTouchMove)
       container.removeEventListener('touchend', handleNativeTouchEnd)
+      container.removeEventListener('touchcancel', handleNativeTouchCancel)
     }
-  }, [fullscreenZoomScale, isFullscreen])
+  }, [isFullscreen])
 
   return (
     <Box sx={{ width: '100%', position: 'relative' }}>
