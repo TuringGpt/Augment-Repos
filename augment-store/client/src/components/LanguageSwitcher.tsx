@@ -49,7 +49,7 @@ const LanguageSwitcher = () => {
           <MenuItem
             key={code}
             onClick={() => handleLanguageChange(code as LanguageCode)}
-            selected={i18n.language === code}
+            selected={i18n.resolvedLanguage === code}
           >
             {i18n.language === code && (
               <ListItemIcon>
