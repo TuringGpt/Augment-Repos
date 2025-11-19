@@ -82,8 +82,13 @@ class CartDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AddToWishlistSerializer(serializers.Serializer):
-    product_ids = serializers.ListField(child=serializers.UUIDField())
+class AddToWishlistSerializer(serializers.ModelSerializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField(), write_only=True)
+    products = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ["product_ids","products", "created_at", "updated_at"]
 
     def validate_product_ids(self, value):
         for product_id in value:
@@ -92,6 +97,14 @@ class AddToWishlistSerializer(serializers.Serializer):
             except Product.DoesNotExist:
                 raise serializers.ValidationError(f"Product {product_id} does not exist")
         return value
+    
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        wishlist = Wishlist.objects.get_user_wishlist(user)
+        wishlist.products.add(*validated_data.get("product_ids"))
+        return wishlist
+    
+
 
         
 

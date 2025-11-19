@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useWishlistStore } from '@store/wishlistStore'
 import { useAuthStore } from '@store/authStore'
 
@@ -10,7 +11,7 @@ export function useWishlistSync() {
   const { fetchWishlist: storeFetchWishlist } = useWishlistStore()
   const { isAuthenticated } = useAuthStore()
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     if (!isAuthenticated) {
       console.log('⏭️ Skipping wishlist sync - user not authenticated')
       return
@@ -18,8 +19,7 @@ export function useWishlistSync() {
 
     console.log('🔄 Fetching wishlist from API...')
     await storeFetchWishlist()
-  }
+  }, [isAuthenticated, storeFetchWishlist])
 
   return { fetchWishlist }
 }
-
