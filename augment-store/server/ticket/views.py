@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Ticket, Comment
 from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
@@ -40,7 +40,7 @@ class CommentListView(ListAPIView):
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        ticket = Ticket.objects.get(id=ticket_id)
+        ticket = get_object_or_404(Ticket, id=ticket_id)
         return Comment.objects.filter(ticket=ticket).order_by('-created_at')
     
 class CommentCreateView(CreateAPIView):
