@@ -83,7 +83,7 @@ class WishlistManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
     
-    def get_user_wishlist(self, user):
+    def get_user_wishlist(self, user)-> "Wishlist":
         wishlist, _ = self.get_queryset().get_or_create(user=user)
         return wishlist
 

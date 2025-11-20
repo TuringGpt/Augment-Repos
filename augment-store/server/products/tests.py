@@ -1234,3 +1234,18 @@ class ProductTests(BaseAPITestCase):
         # WHEN we request the product list ordered by category name ascending
         # THEN the products should be ordered by category name ascending
         self._create_products_and_test_ordering(products_data, "category__name", expected_order)
+
+
+class RecommendProductListViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+    
+    def test_recommend_product_list_authenticated(self):
+        # TODO: implement this test in next PR
+        # GIVEN an authenticated user exists
+        # AND the user has products in their wishlist, cart and order
+        # AND the products are in different categories
+        # WHEN we make a GET request to recommend products
+        # THEN we should get a 200 response
+        # AND the recommended products should be in the same category as the user's wishlist, cart and order
+        pass
