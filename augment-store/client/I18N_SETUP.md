@@ -143,7 +143,7 @@ To add a new language:
 
 3. Update `src/config/i18n.ts`:
    ```typescript
-   import newLangTranslation from '@/locales/[language-code]/translation.json'
+   import newLangTranslation from '@locales/[language-code]/translation.json'
 
    export const LANGUAGES = {
      // ... existing languages
