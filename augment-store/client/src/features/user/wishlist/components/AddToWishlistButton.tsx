@@ -56,12 +56,21 @@ const AddToWishlistButton = ({
       ? 'Already in wishlist'
       : 'Add to wishlist'
 
+  const isDisabled = isAdding || (isAuthenticated && inWishlist)
+
+  // Prevent click propagation to parent CardActionArea when disabled
+  const handleWrapperClick = (e: React.MouseEvent) => {
+    if (isDisabled) {
+      e.stopPropagation()
+    }
+  }
+
   return (
     <Tooltip title={tooltipTitle} arrow>
-      <span>
+      <span onClick={handleWrapperClick} style={{ display: 'inline-flex' }}>
         <IconButton
           onClick={handleClick}
-          disabled={isAdding || (isAuthenticated && inWishlist)}
+          disabled={isDisabled}
           color={color}
           size={size}
           aria-label={tooltipTitle}
