@@ -61,7 +61,7 @@ const AddToWishlistButton = ({
       <span>
         <IconButton
           onClick={handleClick}
-          disabled={isAdding || inWishlist}
+          disabled={isAdding || (isAuthenticated && inWishlist)}
           color={color}
           size={size}
           aria-label={tooltipTitle}
@@ -87,4 +87,3 @@ const AddToWishlistButton = ({
 }
 
 export default AddToWishlistButton
-
