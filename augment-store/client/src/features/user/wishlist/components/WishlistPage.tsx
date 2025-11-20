@@ -1,17 +1,18 @@
 import { useEffect } from 'react'
 import { Container, Typography, CircularProgress, Box, Alert } from '@mui/material'
 import { useWishlistStore } from '@store/wishlistStore'
+import { useAuthStore } from '@store/authStore'
 import { useWishlistSync } from '../hooks/useWishlistSync'
 
 const WishlistPage = () => {
   const { wishlist, isLoading, error } = useWishlistStore()
+  const { isAuthenticated } = useAuthStore()
   const { fetchWishlist } = useWishlistSync()
 
-  // Fetch wishlist on mount
+  // Fetch wishlist when component mounts or when authentication status changes
   useEffect(() => {
     fetchWishlist()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isAuthenticated, fetchWishlist])
 
   return (
     <Container maxWidth="xl">

@@ -4,8 +4,8 @@ from accounts.models import User
 from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
-from carts.models import Cart
-from carts.factory import CartItemFactory, CartFactory
+from carts.models import Cart, Wishlist
+from carts.factory import CartItemFactory
 
 
 class CartDetailViewTests(BaseAPITestCase):
@@ -200,3 +200,76 @@ class AddToCartViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
+
+class AddToWishlistViewTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Create a member user for authenticated tests
+        self.member_user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+
+        self.member_client = self.authenticated_client
+        self.member_client.force_authenticate(user=self.member_user)
+
+    def test_add_to_wishlist_success(self):
+        # GIVEN an authenticated user exists
+        # AND a product exists
+        product = ProductFactory()
+
+        # WHEN we make a POST request to add the product to wishlist
+        url = reverse("v1:wishlist:add_to_wishlist")
+        payload = {
+            "product_ids": [str(product.id)],
+        }
+
+        response = self.member_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # THEN the product should be in the wishlist
+        wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
+        self.assertEqual(wishlist.products.count(), 1)
+        self.assertEqual(wishlist.products.first().id, product.id)
+
+
+
+
+class RemoveFromWishlistViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        # Create a member user for authenticated tests
+        self.member_user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+
+        self.member_client = self.authenticated_client
+        self.member_client.force_authenticate(user=self.member_user)
+
+   
+    def test_remove_from_wishlist_success(self):
+        # GIVEN an authenticated user exists
+        # AND the user has a product in their wishlist
+        wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
+        product = ProductFactory()
+        wishlist.products.add(product)
+
+        # WHEN we make a POST request to remove the product from wishlist
+        url = reverse("v1:wishlist:remove_from_wishlist")
+        payload = {
+            "product_ids": [str(product.id)]
+        }
+        response = self.member_client.post(url, payload)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the product should be removed from the wishlist
+        wishlist.refresh_from_db()
+        self.assertEqual(wishlist.products.count(), 0)
