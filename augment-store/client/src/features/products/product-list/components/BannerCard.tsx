@@ -1,5 +1,6 @@
 import { Box, Typography, Button, Card, CardContent, CardMedia } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from '@hooks/useTranslation'
 import type { PromotionalBanner } from '@features/products/types/banner'
 
 interface BannerCardProps {
@@ -8,6 +9,7 @@ interface BannerCardProps {
 
 const BannerCard = ({ banner }: BannerCardProps) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleClick = () => {
     if (banner.ctaLink) {
@@ -103,10 +105,10 @@ const BannerCard = ({ banner }: BannerCardProps) => {
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
           }}
         >
-          {banner.title}
+          {banner.titleKey ? t(banner.titleKey) : banner.title}
         </Typography>
 
-        {banner.subtitle && (
+        {(banner.subtitle || banner.subtitleKey) && (
           <Typography
             variant={isLarge ? 'h5' : 'h6'}
             sx={{
@@ -114,11 +116,11 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
             }}
           >
-            {banner.subtitle}
+            {banner.subtitleKey ? t(banner.subtitleKey) : banner.subtitle}
           </Typography>
         )}
 
-        {banner.description && isLarge && (
+        {(banner.description || banner.descriptionKey) && isLarge && (
           <Typography
             variant="body1"
             sx={{
@@ -127,11 +129,11 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
             }}
           >
-            {banner.description}
+            {banner.descriptionKey ? t(banner.descriptionKey) : banner.description}
           </Typography>
         )}
 
-        {banner.ctaText && banner.ctaLink && (
+        {(banner.ctaText || banner.ctaTextKey) && banner.ctaLink && (
           <Button
             variant="contained"
             size={isLarge ? 'large' : 'medium'}
@@ -147,7 +149,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               },
             }}
           >
-            {banner.ctaText}
+            {banner.ctaTextKey ? t(banner.ctaTextKey) : banner.ctaText}
           </Button>
         )}
       </CardContent>
