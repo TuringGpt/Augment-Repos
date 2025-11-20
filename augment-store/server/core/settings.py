@@ -22,13 +22,15 @@ SECRET_KEY = config.get('SECRET_KEY')
 DEBUG = config.get('DEBUG', False) == 'True'
 
 APP_DOMAIN = config.get('BACKEND_URL', 'http://localhost:8000')
+FRONTEND_URL = config.get('FRONTEND_URL', 'http://localhost:3000')
 ALLOWED_HOSTS = [
     config.get('ALLOWED_HOSTS', '*')
 ]
 
 # CORS settings - Allow all localhost origins
 CORS_ALLOW_ALL_ORIGINS = config.get('CORS_ALLOW_ALL_ORIGINS', False) == 'True'
-CORS_ALLOWED_ORIGINS = [config.get('FRONTEND_URL', 'http://localhost:3000')]
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL, APP_DOMAIN]
+
 
 # Allow all localhost origins using regex pattern
 CORS_ALLOWED_ORIGIN_REGEXES = [
