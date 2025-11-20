@@ -91,6 +91,7 @@
   },
   "home": {
     "banners": {
+      "clickToViewDetails": "Click to view details",
       "summerSale": {
         "title": "Summer Sale",
         "subtitle": "Up to 50% Off",

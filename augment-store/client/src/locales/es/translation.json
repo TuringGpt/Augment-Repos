@@ -91,6 +91,7 @@
   },
   "home": {
     "banners": {
+      "clickToViewDetails": "Haga clic para ver detalles",
       "summerSale": {
         "title": "Venta de Verano",
         "subtitle": "Hasta 50% de Descuento",

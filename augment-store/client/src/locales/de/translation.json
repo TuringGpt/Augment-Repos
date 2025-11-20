@@ -91,6 +91,7 @@
   },
   "home": {
     "banners": {
+      "clickToViewDetails": "Klicken Sie, um Details anzuzeigen",
       "summerSale": {
         "title": "Sommerschlussverkauf",
         "subtitle": "Bis zu 50% Rabatt",

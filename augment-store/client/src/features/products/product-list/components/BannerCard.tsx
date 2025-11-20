@@ -25,7 +25,18 @@ const BannerCard = ({ banner }: BannerCardProps) => {
   }
 
   const isLarge = banner.size === 'large'
-  const isCardClickable = banner.ctaLink && !banner.ctaText
+  const isCardClickable = banner.ctaLink && !banner.ctaText && !banner.ctaTextKey
+
+  // Get translated content for accessibility
+  // Type assertion needed because banner keys are dynamic strings, not literal translation keys
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const displayTitle = banner.titleKey ? t(banner.titleKey as any) : banner.title
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const displaySubtitle = banner.subtitleKey ? t(banner.subtitleKey as any) : banner.subtitle
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const displayDescription = banner.descriptionKey ? t(banner.descriptionKey as any) : banner.description
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const displayCtaText = banner.ctaTextKey ? t(banner.ctaTextKey as any) : banner.ctaText
 
   return (
     <Card
@@ -53,13 +64,13 @@ const BannerCard = ({ banner }: BannerCardProps) => {
       onKeyDown={isCardClickable ? handleKeyDown : undefined}
       role={isCardClickable ? 'button' : undefined}
       tabIndex={isCardClickable ? 0 : undefined}
-      aria-label={isCardClickable ? `${banner.title}. Click to view details` : undefined}
+      aria-label={isCardClickable ? `${displayTitle}. ${t('home.banners.clickToViewDetails')}` : undefined}
     >
       {/* Background Image */}
       <CardMedia
         component="img"
         image={banner.imageUrl}
-        alt={banner.title}
+        alt={displayTitle}
         sx={{
           position: 'absolute',
           top: 0,
@@ -105,7 +116,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
           }}
         >
-          {banner.titleKey ? t(banner.titleKey) : banner.title}
+          {displayTitle}
         </Typography>
 
         {(banner.subtitle || banner.subtitleKey) && (
@@ -116,7 +127,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
             }}
           >
-            {banner.subtitleKey ? t(banner.subtitleKey) : banner.subtitle}
+            {displaySubtitle}
           </Typography>
         )}
 
@@ -129,7 +140,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               textShadow: '1px 1px 3px rgba(0,0,0,0.5)',
             }}
           >
-            {banner.descriptionKey ? t(banner.descriptionKey) : banner.description}
+            {displayDescription}
           </Typography>
         )}
 
@@ -149,7 +160,7 @@ const BannerCard = ({ banner }: BannerCardProps) => {
               },
             }}
           >
-            {banner.ctaTextKey ? t(banner.ctaTextKey) : banner.ctaText}
+            {displayCtaText}
           </Button>
         )}
       </CardContent>

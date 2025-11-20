@@ -91,6 +91,7 @@
   },
   "home": {
     "banners": {
+      "clickToViewDetails": "Cliquez pour voir les détails",
       "summerSale": {
         "title": "Soldes d'Été",
         "subtitle": "Jusqu'à 50% de Réduction",
