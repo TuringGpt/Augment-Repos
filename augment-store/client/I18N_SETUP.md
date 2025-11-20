@@ -108,10 +108,25 @@ t('nav.cart')              // "Cart"
 t('product.addToCart')     // "Add to Cart"
 t('product.price')         // "Price"
 
-// With pluralization
+// With pluralization (uses itemsInCart and itemsInCart_other keys)
 t('cart.itemsInCart', { count: 1 })    // "1 item in cart"
 t('cart.itemsInCart', { count: 5 })    // "5 items in cart"
 ```
+
+### Pluralization
+
+i18next uses the `_other` suffix pattern for pluralization:
+
+```json
+{
+  "cart": {
+    "itemsInCart": "{{count}} item in cart",      // Singular (count === 1)
+    "itemsInCart_other": "{{count}} items in cart" // Plural (count !== 1)
+  }
+}
+```
+
+When you call `t('cart.itemsInCart', { count: n })`, i18next automatically selects the correct form based on the count value.
 
 ## 🎨 Language Switcher Component
 

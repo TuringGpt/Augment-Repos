@@ -30,14 +30,26 @@ const { t } = useTranslation()
 
 ### With Pluralization
 
+i18next automatically handles pluralization using the `_other` suffix pattern:
+
+```json
+// In translation.json
+{
+  "cart": {
+    "itemsInCart": "{{count}} item in cart",
+    "itemsInCart_other": "{{count}} items in cart"
+  }
+}
+```
+
 ```typescript
 const { t } = useTranslation()
 
-// Automatically handles singular/plural
+// i18next automatically selects the correct form based on count
 <p>{t('cart.itemsInCart', { count: cartItems.length })}</p>
-// count: 0 → "0 items in cart"
-// count: 1 → "1 item in cart"
-// count: 5 → "5 items in cart"
+// count: 0 → "0 items in cart" (uses _other)
+// count: 1 → "1 item in cart"  (uses base key)
+// count: 5 → "5 items in cart" (uses _other)
 ```
 
 ### Changing Language Programmatically
@@ -80,7 +92,7 @@ const currentLang = i18n.language
 - `cart.shoppingCart` - "Shopping Cart"
 - `cart.emptyCart` - "Your cart is empty"
 - `cart.proceedToCheckout` - "Proceed to Checkout"
-- `cart.itemsInCart` - "{{count}} item(s) in cart"
+- `cart.itemsInCart` - Uses pluralization (singular: "{{count}} item in cart", plural: "{{count}} items in cart")
 
 ### Authentication
 - `auth.login` - "Login"
