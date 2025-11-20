@@ -1,6 +1,6 @@
 from factory.django import DjangoModelFactory
 from factory import Faker, SubFactory
-
+from accounts.factory import UserFactory
 
 class TicketFactory(DjangoModelFactory):
     title = Faker("sentence", nb_words=5)
