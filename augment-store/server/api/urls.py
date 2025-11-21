@@ -30,6 +30,6 @@ urlpatterns = [
     path('contact/', include('contact.urls')),
     path('payments/', include('checkout.urls_payments')),
     path('newsletter/', include('newsletter.urls')),
-    path('support/tickets/', include('ticket.urls')),
+    path('support/tickets/', include('ticket.urls', namespace='ticket')),
     path('wishlist/', include('carts.urls_wishlist')),
 ]
