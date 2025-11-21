@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom'
 interface AddToWishlistButtonProps {
   productId: string
   size?: 'small' | 'medium' | 'large'
-  color?: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+  color?: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'inherit'
   sx?: SxProps<Theme>
 }
 
