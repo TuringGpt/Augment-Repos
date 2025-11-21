@@ -11,6 +11,7 @@ interface WishlistState {
   setWishlist: (wishlist: Wishlist) => void
   fetchWishlist: () => Promise<void>
   addToWishlist: (productIds: string[]) => Promise<void>
+  removeFromWishlist: (productIds: string[]) => Promise<void>
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearWishlist: () => void
@@ -79,6 +80,34 @@ export const useWishlistStore = create<WishlistState>()(
         } catch (error) {
           console.error('Failed to add to wishlist:', error)
           set({ error: 'Failed to add to wishlist. Please try again.' })
+          throw error // Re-throw so UI can handle it
+        } finally {
+          set({ isLoading: false })
+        }
+      },
+
+      removeFromWishlist: async (productIds: string[]) => {
+        // Short-circuit if productIds is empty to avoid unnecessary API call
+        if (productIds.length === 0) {
+          console.warn('⚠️ removeFromWishlist called with empty array - skipping API call')
+          return
+        }
+        // Import wishlistService dynamically to avoid circular dependency
+        const { wishlistService } = await import('@services/api/wishlist/wishlistService')
+        try {
+          set({ isLoading: true, error: null })
+
+          // Call API to remove products from wishlist
+          await wishlistService.removeFromWishlist(productIds)
+
+          // Refetch wishlist to get updated data
+          const wishlist = await wishlistService.getWishlist()
+          set({ wishlist, error: null })
+
+          console.log(`✅ Removed ${productIds.length} product(s) from wishlist`)
+        } catch (error) {
+          console.error('Failed to remove from wishlist:', error)
+          set({ error: 'Failed to remove from wishlist. Please try again.' })
           throw error // Re-throw so UI can handle it
         } finally {
           set({ isLoading: false })
