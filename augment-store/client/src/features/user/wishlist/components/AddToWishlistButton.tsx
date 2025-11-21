@@ -77,6 +77,7 @@ const AddToWishlistButton = ({
           color={color}
           size={size}
           aria-label={tooltipTitle}
+          aria-pressed={inWishlist}
           sx={[
             {
               '&:hover': {
@@ -88,7 +89,10 @@ const AddToWishlistButton = ({
           ]}
         >
           {isLoading ? (
-            <CircularProgress size={size === 'small' ? 16 : size === 'large' ? 28 : 20} />
+            <CircularProgress
+              size={size === 'small' ? 16 : size === 'large' ? 28 : 20}
+              color="inherit"
+            />
           ) : inWishlist ? (
             <Favorite />
           ) : (
