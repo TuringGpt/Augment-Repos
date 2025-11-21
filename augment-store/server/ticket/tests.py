@@ -1,8 +1,8 @@
-from django.test import BaseAPITestCase
+from core.tests import BaseAPITestCase
 from django.urls import reverse
 from rest_framework import status
-from augment_store.server.ticket.tests.factories import TicketFactory, CommentFactory
-from augment_store.server.users.tests.factories import UserFactory
+from .factory import TicketFactory, CommentFactory
+from .factory import UserFactory
 
 # Create your tests here.
 class TicketTests(BaseAPITestCase):
