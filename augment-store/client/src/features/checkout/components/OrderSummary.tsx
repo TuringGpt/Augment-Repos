@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import {
   Alert,
   Avatar,
@@ -17,10 +17,13 @@ import {
   ListItem,
   TextField,
   Typography,
+  CircularProgress,
 } from '@mui/material'
 import { useCartStore } from '@/store/cartStore'
 import { useOrderStore } from '@/store/orderStore'
 import { useNavigate } from 'react-router-dom'
+import { loadStripe } from '@stripe/stripe-js'
+import type { Stripe, StripeEmbeddedCheckout } from '@stripe/stripe-js'
 
 import {
   Delete as DeleteIcon,
@@ -30,6 +33,8 @@ import {
 } from '@mui/icons-material'
 
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
+import { paymentService } from '@services/api/payment/paymentService'
+import { STRIPE_CONFIG } from '@config/api'
 import type { CreateOrderResponse } from '@features/orders/types'
 
 interface ContactInfo {
@@ -73,6 +78,12 @@ const OrderSummary = ({
   const [isRemoving, setIsRemoving] = useState(false)
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
   const [confirmedOrder, setConfirmedOrder] = useState<CreateOrderResponse | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [showCheckout, setShowCheckout] = useState(false)
+  const [stripe, setStripe] = useState<Stripe | null>(null)
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const checkoutRef = useRef<StripeEmbeddedCheckout | null>(null)
 
   // Derived state: calculate total item count
   const itemCount = useMemo(() => {
@@ -83,6 +94,15 @@ const OrderSummary = ({
   const isAllFormsComplete = useMemo(() => {
     return isContactInfoComplete && isShippingAddressComplete && isBillingAddressComplete
   }, [isContactInfoComplete, isShippingAddressComplete, isBillingAddressComplete])
+
+  // Initialize Stripe
+  useEffect(() => {
+    const initStripe = async () => {
+      const stripeInstance = await loadStripe(STRIPE_CONFIG.PUBLISHABLE_KEY)
+      setStripe(stripeInstance)
+    }
+    initStripe()
+  }, [])
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
     if (newQuantity >= 1) {
@@ -126,11 +146,17 @@ const OrderSummary = ({
       return
     }
 
-    try {
-      // Extract cart item IDs
-      const cartItemIds = cart.items.map((item) => item.id)
+    if (!stripe) {
+      setPaymentError('Payment system is not ready. Please refresh the page and try again.')
+      return
+    }
 
-      // Create order request payload
+    setIsProcessingPayment(true)
+    setPaymentError(null)
+
+    try {
+      // Step 1: Create order first
+      const cartItemIds = cart.items.map((item) => item.id)
       const orderData = {
         cart_items: cartItemIds,
         shipping_address: {
@@ -161,19 +187,59 @@ const OrderSummary = ({
         },
       }
 
-      // Create the order
+      console.log('Creating order...')
       const order = await createOrder(orderData)
-
       console.log('Order created successfully:', order)
 
-      // Show confirmation modal
-      setConfirmedOrder(order)
-      setConfirmationDialogOpen(true)
+      // Step 2: Create payment session with order ID
+      console.log('Creating payment session for order:', order.id)
+      const sessionResponse = await paymentService.createPaymentSession({
+        order: order.id,
+        payment_method: 'stripe',
+      })
+
+      // Step 3: Store client secret and show checkout container
+      setClientSecret(sessionResponse.client_secret)
+      setShowCheckout(true)
     } catch (error) {
-      console.error('Failed to place order:', error)
-      // Error is already set in the store as createOrderError
+      console.error('Failed to place order or initialize payment:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process order'
+      setPaymentError(errorMessage)
+      setShowCheckout(false)
+    } finally {
+      setIsProcessingPayment(false)
     }
   }
+
+  // Mount Stripe checkout when container is ready
+  useEffect(() => {
+    const mountCheckout = async () => {
+      if (showCheckout && clientSecret && stripe && !checkoutRef.current) {
+        try {
+          const checkout = await stripe.initEmbeddedCheckout({
+            clientSecret: clientSecret,
+          })
+          checkoutRef.current = checkout
+          checkout.mount('#checkout-container')
+        } catch (error) {
+          console.error('Failed to mount checkout:', error)
+          setPaymentError('Failed to load payment form. Please try again.')
+          setShowCheckout(false)
+        }
+      }
+    }
+
+    mountCheckout()
+  }, [showCheckout, clientSecret, stripe])
+
+  // Cleanup checkout on unmount
+  useEffect(() => {
+    return () => {
+      if (checkoutRef.current) {
+        checkoutRef.current.unmount()
+      }
+    }
+  }, [])
 
   const handleConfirmationClose = () => {
     setConfirmationDialogOpen(false)
@@ -455,7 +521,7 @@ const OrderSummary = ({
         </Grid>
 
         {/* Agreement */}
-        <Box>
+        <Box sx={{ mb: 2 }}>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -472,25 +538,52 @@ const OrderSummary = ({
           </Typography>
         </Box>
 
-        {/* Error message */}
+        {/* Error messages */}
+        {paymentError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {paymentError}
+          </Alert>
+        )}
         {createOrderError && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {createOrderError}
           </Alert>
         )}
 
-        <Box py={{ xs: 1.5, sm: 2 }}>
-          <Button
-            variant="contained"
-            fullWidth
-            size="large"
-            onClick={handlePlaceOrder}
-            disabled={!isAllFormsComplete || isCreatingOrder}
-            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, py: { xs: 1, sm: 1.5 } }}
-          >
-            {isCreatingOrder ? 'Placing Order...' : 'Place Order'}
-          </Button>
-        </Box>
+        {!showCheckout && (
+          <Box py={{ xs: 1.5, sm: 2 }}>
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              onClick={handlePlaceOrder}
+              disabled={!isAllFormsComplete || isCreatingOrder || isProcessingPayment || !stripe}
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, py: { xs: 1, sm: 1.5 } }}
+            >
+              {isProcessingPayment ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={20} color="inherit" />
+                  Initializing Payment...
+                </Box>
+              ) : isCreatingOrder ? (
+                'Placing Order...'
+              ) : (
+                'Proceed to Payment'
+              )}
+            </Button>
+          </Box>
+        )}
+
+        {/* Stripe Embedded Checkout Container */}
+        {showCheckout && (
+          <Box
+            id="checkout-container"
+            sx={{
+              minHeight: '400px',
+              mb: 2,
+            }}
+          />
+        )}
       </Card>
       {/* Remove Item Confirmation Dialog */}
       <Dialog

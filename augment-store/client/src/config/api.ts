@@ -77,8 +77,11 @@ export const API_ENDPOINTS = {
 
   // Payment endpoints
   PAYMENT: {
-    METHODS: '/payment/methods',
-    PROCESS: '/payment/process',
-    VERIFY: '/payment/verify',
+    CREATE_SESSION: '/payments/',
   },
+}
+
+// Stripe configuration
+export const STRIPE_CONFIG = {
+  PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
 }
