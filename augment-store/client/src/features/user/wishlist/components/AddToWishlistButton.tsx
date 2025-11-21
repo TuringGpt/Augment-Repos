@@ -27,9 +27,6 @@ const AddToWishlistButton = ({
   const isDisabled = isLoading || (isAuthenticated && inWishlist)
 
   const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
-    if (isDisabled) {
-      return
-    }
     e.stopPropagation() // Prevent card click when clicking button
 
     // Redirect to login if not authenticated
