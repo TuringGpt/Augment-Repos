@@ -1,10 +1,23 @@
 import { useEffect } from 'react'
-import { Container, Typography, CircularProgress, Box, Alert } from '@mui/material'
+import {
+  Container,
+  Typography,
+  CircularProgress,
+  Box,
+  Alert,
+  Paper,
+  Button,
+  Grid,
+} from '@mui/material'
+import { FavoriteBorder } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
 import { useWishlistStore } from '@store/wishlistStore'
 import { useAuthStore } from '@store/authStore'
 import { useWishlistSync } from '../hooks/useWishlistSync'
+import ProductCard from '@features/products/product-list/components/ProductCard'
 
 const WishlistPage = () => {
+  const navigate = useNavigate()
   const { wishlist, isLoading, error } = useWishlistStore()
   const { isAuthenticated } = useAuthStore()
   const { fetchWishlist } = useWishlistSync()
@@ -15,13 +28,13 @@ const WishlistPage = () => {
   }, [isAuthenticated, fetchWishlist])
 
   return (
-    <Container maxWidth="xl">
-      <Typography variant="h4" gutterBottom>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
         My Wishlist
       </Typography>
 
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
       )}
@@ -32,25 +45,43 @@ const WishlistPage = () => {
         </Alert>
       )}
 
-      {/* Only show wishlist contents when authenticated to prevent showing stale persisted data */}
-      {!isLoading && !error && isAuthenticated && (
+      {!isLoading && !error && wishlist.length === 0 && (
+        <Paper
+          sx={{
+            p: 8,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+          }}
+        >
+          <FavoriteBorder sx={{ fontSize: 80, color: 'text.secondary' }} />
+          <Typography variant="h5" color="text.secondary">
+            Your wishlist is empty
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Save your favorite items to your wishlist and shop them later!
+          </Typography>
+          <Button variant="contained" size="large" onClick={() => navigate('/products')}>
+            Browse Products
+          </Button>
+        </Paper>
+      )}
+
+      {!isLoading && !error && wishlist.length > 0 && (
         <>
-          <Typography color="text.secondary" gutterBottom>
-            {wishlist.length === 0
-              ? 'Your wishlist is empty'
-              : `You have ${wishlist.length} item${wishlist.length === 1 ? '' : 's'} in your wishlist`}
+          <Typography color="text.secondary" gutterBottom sx={{ mb: 3 }}>
+            {wishlist.length} item{wishlist.length === 1 ? '' : 's'} in your wishlist
           </Typography>
 
-          {/* Product grid will be implemented in Task 4 */}
-          {wishlist.length > 0 && (
-            <Box sx={{ mt: 3 }}>
-              {wishlist.map((product) => (
-                <Typography key={product.id} variant="body2">
-                  {product.name} - ${product.price}
-                </Typography>
-              ))}
-            </Box>
-          )}
+          <Grid container spacing={3}>
+            {wishlist.map((product, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+                <ProductCard product={product} index={index} />
+              </Grid>
+            ))}
+          </Grid>
         </>
       )}
     </Container>
