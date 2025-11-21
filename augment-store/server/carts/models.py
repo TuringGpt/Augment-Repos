@@ -28,6 +28,9 @@ class CartManager(models.Manager):
         cart, _ = self.get_queryset().get_or_create(user=user)
         return cart
     
+    def get_user_cart_safe(self, user):
+        return self.filter(user=user).first()
+    
     def get_user_cart_items(self, user):
         cart = self.get_user_cart(user)
         return cart.items.all()
@@ -83,9 +86,12 @@ class WishlistManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
     
-    def get_user_wishlist(self, user):
+    def get_user_wishlist(self, user)-> "Wishlist":
         wishlist, _ = self.get_queryset().get_or_create(user=user)
         return wishlist
+    
+    def get_user_wishlist_safe(self, user):
+        return self.filter(user=user).first()
 
 class Wishlist(BaseModel):
     products = models.ManyToManyField(Product, related_name='wishlist')

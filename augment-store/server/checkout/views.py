@@ -1,3 +1,4 @@
+from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +9,7 @@ from .models import BillingAddress, ContactInformation, Order, ShippingAddress
 from .serializers import BillingAddressListSerializer, ContactInformationListSerializer, CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, ShippingAddressListSerializer
 from .models import Order, Payment
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, OrderPaymentSerializer, PaymentStatusSerializer
-
+from django.conf import settings
 
 class BaseOrderView:
     permission_classes = [IsAuthenticated]
@@ -105,3 +106,15 @@ class StripePaymentCallback(APIView):
     
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
+
+class CheckoutConfirmationView(TemplateView):
+    template_name = "checkout/order-confirmation.html"
+
+    def get(self, request, *args, **kwargs):
+        return Response({"message": "Order confirmed!"})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["order_id"] = self.kwargs["order_id"]
+        context["return_url"] = settings.FRONTEND_URL
+        return super().get_context_data(**kwargs)
