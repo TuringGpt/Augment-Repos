@@ -24,12 +24,9 @@ const AddToWishlistButton = ({
   const [isLoading, setIsLoading] = useState(false)
 
   const inWishlist = isInWishlist(productId)
+  const isDisabled = isLoading || (isAuthenticated && inWishlist)
 
   const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
-    const isDisabled = isLoading || (isAuthenticated && inWishlist)
-    if (isDisabled) {
-      return
-    }
     e.stopPropagation() // Prevent card click when clicking button
 
     // Redirect to login if not authenticated
@@ -62,9 +59,16 @@ const AddToWishlistButton = ({
       ? 'Remove from wishlist'
       : 'Add to wishlist'
 
+  // Prevent click propagation to parent CardActionArea when disabled
+  const handleWrapperClick = (e: React.MouseEvent) => {
+    if (isDisabled) {
+      e.stopPropagation()
+    }
+  }
+
   return (
     <Tooltip title={tooltipTitle} arrow>
-      <span>
+      <span onClick={handleWrapperClick} style={{ display: 'inline-flex' }}>
         <IconButton
           onClick={handleClick}
           disabled={isLoading}
