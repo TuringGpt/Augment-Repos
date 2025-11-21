@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import type { Product } from '@features/products/types'
+import AddToWishlistButton from '@features/user/wishlist/components/AddToWishlistButton'
 
 interface ProductCardProps {
   product: Product
@@ -42,6 +43,21 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           },
         }}
       >
+        {/* Wishlist Button - Top Left */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            borderRadius: '50%',
+            boxShadow: 1,
+          }}
+        >
+          <AddToWishlistButton productId={product.id} size="small" />
+        </Box>
+
         <CardActionArea
           onClick={handleClick}
           sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
@@ -70,7 +86,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
               size="small"
               sx={{
                 position: 'absolute',
-                top: 8,
+                top: 48,
                 left: 8,
                 zIndex: 1,
                 bgcolor: 'rgba(0, 0, 0, 0.6)',
