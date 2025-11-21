@@ -155,7 +155,6 @@ const OrderSummary = ({
     setPaymentError(null)
 
     try {
-      // Step 1: Create order first
       const cartItemIds = cart.items.map((item) => item.id)
       const orderData = {
         cart_items: cartItemIds,
@@ -187,18 +186,13 @@ const OrderSummary = ({
         },
       }
 
-      console.log('Creating order...')
       const order = await createOrder(orderData)
-      console.log('Order created successfully:', order)
 
-      // Step 2: Create payment session with order ID
-      console.log('Creating payment session for order:', order.id)
       const sessionResponse = await paymentService.createPaymentSession({
         order: order.id,
         payment_method: 'stripe',
       })
 
-      // Step 3: Store client secret and show checkout container
       setClientSecret(sessionResponse.client_secret)
       setShowCheckout(true)
     } catch (error) {
