@@ -55,7 +55,10 @@ class CommentCreateView(CreateAPIView):
 class CommentUpdateView(RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
     permission_classes = [IsAuthenticated]
-    
+    lookup_url_kwarg = 'comment_pk'
+
     def get_queryset(self):
-        return Comment.objects.all()
+        ticket_id = self.kwargs.get("pk")
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        return Comment.objects.filter(ticket=ticket)
     

@@ -10,6 +10,7 @@ interface WishlistState {
   // Actions
   setWishlist: (wishlist: Wishlist) => void
   fetchWishlist: () => Promise<void>
+  addToWishlist: (productIds: string[]) => Promise<void>
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearWishlist: () => void
@@ -55,6 +56,35 @@ export const useWishlistStore = create<WishlistState>()(
         }
       },
 
+      addToWishlist: async (productIds: string[]) => {
+        // Short-circuit if productIds is empty to avoid unnecessary API call
+        if (productIds.length === 0) {
+          console.warn('⚠️ addToWishlist called with empty array - skipping API call')
+          return
+        }
+
+        // Import wishlistService dynamically to avoid circular dependency
+        const { wishlistService } = await import('@services/api/wishlist/wishlistService')
+        try {
+          set({ isLoading: true, error: null })
+
+          // Call API to add products to wishlist
+          await wishlistService.addToWishlist(productIds)
+
+          // Refetch wishlist to get updated data
+          const wishlist = await wishlistService.getWishlist()
+          set({ wishlist, error: null })
+
+          console.log(`✅ Added ${productIds.length} product(s) to wishlist`)
+        } catch (error) {
+          console.error('Failed to add to wishlist:', error)
+          set({ error: 'Failed to add to wishlist. Please try again.' })
+          throw error // Re-throw so UI can handle it
+        } finally {
+          set({ isLoading: false })
+        }
+      },
+
       setLoading: (isLoading) => set({ isLoading }),
 
       setError: (error) => set({ error }),
@@ -79,4 +109,3 @@ export const useWishlistStore = create<WishlistState>()(
     }
   )
 )
-
