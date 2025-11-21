@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import { IconButton, CircularProgress, Tooltip } from '@mui/material'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
-import type { SxProps, Theme } from '@mui/system'
 import { useWishlistStore } from '@store/wishlistStore'
 import { useAuthStore } from '@store/authStore'
 import { useNavigate } from 'react-router-dom'
@@ -9,31 +8,29 @@ import { useNavigate } from 'react-router-dom'
 interface AddToWishlistButtonProps {
   productId: string
   size?: 'small' | 'medium' | 'large'
-  color?: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'inherit'
-  sx?: SxProps<Theme>
+  color?: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+  sx?: object
 }
 
 const AddToWishlistButton = ({
   productId,
   size = 'medium',
   color = 'error',
-  sx,
+  sx = {},
 }: AddToWishlistButtonProps) => {
   const navigate = useNavigate()
-  const { isAuthenticated, hasHydrated } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistStore()
   const [isLoading, setIsLoading] = useState(false)
 
   const inWishlist = isInWishlist(productId)
+  const isDisabled = isLoading || (isAuthenticated && inWishlist)
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent card click when clicking button
-
-    // Wait for auth store to hydrate before checking authentication
-    // This prevents incorrectly redirecting authenticated users on initial load
-    if (!hasHydrated) {
+  const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
+    if (isDisabled) {
       return
     }
+    e.stopPropagation() // Prevent card click when clicking button
 
     // Redirect to login if not authenticated
     if (!isAuthenticated) {
@@ -59,40 +56,38 @@ const AddToWishlistButton = ({
     }
   }
 
-  // Wait for hydration to show correct tooltip
-  const tooltipTitle = !hasHydrated
-    ? 'Loading...'
-    : !isAuthenticated
-      ? 'Login to add to wishlist'
-      : inWishlist
-        ? 'Remove from wishlist'
-        : 'Add to wishlist'
+  const tooltipTitle = !isAuthenticated
+    ? 'Login to add to wishlist'
+    : inWishlist
+      ? 'Remove from wishlist'
+      : 'Add to wishlist'
+
+  // Prevent click propagation to parent CardActionArea when disabled
+  const handleWrapperClick = (e: React.MouseEvent) => {
+    if (isDisabled) {
+      e.stopPropagation()
+    }
+  }
 
   return (
     <Tooltip title={tooltipTitle} arrow>
-      <span>
+      <span onClick={handleWrapperClick} style={{ display: 'inline-flex' }}>
         <IconButton
           onClick={handleClick}
-          disabled={isLoading || !hasHydrated}
+          disabled={isLoading}
           color={color}
           size={size}
           aria-label={tooltipTitle}
-          aria-pressed={inWishlist}
-          sx={[
-            {
-              '&:hover': {
-                transform: 'scale(1.1)',
-                transition: 'transform 0.2s',
-              },
+          sx={{
+            ...sx,
+            '&:hover': {
+              transform: 'scale(1.1)',
+              transition: 'transform 0.2s',
             },
-            ...(Array.isArray(sx) ? sx : [sx]),
-          ]}
+          }}
         >
           {isLoading ? (
-            <CircularProgress
-              size={size === 'small' ? 16 : size === 'large' ? 28 : 20}
-              color="inherit"
-            />
+            <CircularProgress size={size === 'small' ? 16 : size === 'large' ? 28 : 20} />
           ) : inWishlist ? (
             <Favorite />
           ) : (
