@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import { IconButton, CircularProgress, Tooltip } from '@mui/material'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import { useWishlistStore } from '@store/wishlistStore'
@@ -20,12 +20,13 @@ const AddToWishlistButton = ({
 }: AddToWishlistButtonProps) => {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
-  const { isInWishlist, addToWishlist } = useWishlistStore()
-  const [isAdding, setIsAdding] = useState(false)
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistStore()
+  const [isLoading, setIsLoading] = useState(false)
 
   const inWishlist = isInWishlist(productId)
+  const isDisabled = isLoading || (isAuthenticated && inWishlist)
 
-  const handleClick = async (e: React.MouseEvent) => {
+  const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation() // Prevent card click when clicking button
 
     // Redirect to login if not authenticated
@@ -34,29 +35,29 @@ const AddToWishlistButton = ({
       return
     }
 
-    // Don't add if already in wishlist
-    if (inWishlist) {
-      return
-    }
-
     try {
-      setIsAdding(true)
-      await addToWishlist([productId])
+      setIsLoading(true)
+
+      if (inWishlist) {
+        // Remove from wishlist
+        await removeFromWishlist([productId])
+      } else {
+        // Add to wishlist
+        await addToWishlist([productId])
+      }
     } catch (error) {
-      console.error('Failed to add to wishlist:', error)
+      console.error('Failed to update wishlist:', error)
       // Error is already handled in the store
     } finally {
-      setIsAdding(false)
+      setIsLoading(false)
     }
   }
 
   const tooltipTitle = !isAuthenticated
     ? 'Login to add to wishlist'
     : inWishlist
-      ? 'Already in wishlist'
+      ? 'Remove from wishlist'
       : 'Add to wishlist'
-
-  const isDisabled = isAdding || (isAuthenticated && inWishlist)
 
   // Prevent click propagation to parent CardActionArea when disabled
   const handleWrapperClick = (e: React.MouseEvent) => {
@@ -70,7 +71,7 @@ const AddToWishlistButton = ({
       <span onClick={handleWrapperClick} style={{ display: 'inline-flex' }}>
         <IconButton
           onClick={handleClick}
-          disabled={isDisabled}
+          disabled={isLoading}
           color={color}
           size={size}
           aria-label={tooltipTitle}
@@ -82,7 +83,7 @@ const AddToWishlistButton = ({
             },
           }}
         >
-          {isAdding ? (
+          {isLoading ? (
             <CircularProgress size={size === 'small' ? 16 : size === 'large' ? 28 : 20} />
           ) : inWishlist ? (
             <Favorite />
