@@ -89,6 +89,49 @@
     "onSale": "On Sale",
     "discount": "Discount"
   },
+  "home": {
+    "banners": {
+      "clickToViewDetails": "Click to view details",
+      "summerSale": {
+        "title": "Summer Sale",
+        "subtitle": "Up to 50% Off",
+        "cta": "Shop Now"
+      },
+      "newArrivals": {
+        "title": "New Arrivals",
+        "subtitle": "Fresh Styles",
+        "cta": "Explore"
+      },
+      "megaSale": {
+        "title": "Mega Sale Event",
+        "subtitle": "Limited Time Offer",
+        "description": "Get amazing deals on all categories. Don't miss out!",
+        "cta": "Shop All Deals"
+      },
+      "winterCollection": {
+        "title": "Winter Collection",
+        "subtitle": "New Season Arrivals",
+        "description": "Discover the latest trends for the winter season",
+        "cta": "Explore Now"
+      },
+      "techDeals": {
+        "title": "Tech Deals",
+        "subtitle": "Up to 40% Off",
+        "description": "Latest gadgets and electronics at unbeatable prices",
+        "cta": "Shop Tech"
+      },
+      "electronics": {
+        "title": "Electronics",
+        "subtitle": "20% Off",
+        "cta": "View Deals"
+      },
+      "fashionWeek": {
+        "title": "Fashion Week",
+        "subtitle": "Trending Now",
+        "cta": "Discover"
+      }
+    }
+  },
   "cart": {
     "cart": "Cart",
     "shoppingCart": "Shopping Cart",

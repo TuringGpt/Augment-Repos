@@ -89,6 +89,49 @@
     "onSale": "En Oferta",
     "discount": "Descuento"
   },
+  "home": {
+    "banners": {
+      "clickToViewDetails": "Haga clic para ver detalles",
+      "summerSale": {
+        "title": "Venta de Verano",
+        "subtitle": "Hasta 50% de Descuento",
+        "cta": "Comprar Ahora"
+      },
+      "newArrivals": {
+        "title": "Nuevos Productos",
+        "subtitle": "Estilos Frescos",
+        "cta": "Explorar"
+      },
+      "megaSale": {
+        "title": "Mega Venta",
+        "subtitle": "Oferta por Tiempo Limitado",
+        "description": "Obtén ofertas increíbles en todas las categorías. ¡No te lo pierdas!",
+        "cta": "Ver Todas las Ofertas"
+      },
+      "winterCollection": {
+        "title": "Colección de Invierno",
+        "subtitle": "Nuevos Productos de Temporada",
+        "description": "Descubre las últimas tendencias para la temporada de invierno",
+        "cta": "Explorar Ahora"
+      },
+      "techDeals": {
+        "title": "Ofertas de Tecnología",
+        "subtitle": "Hasta 40% de Descuento",
+        "description": "Los últimos gadgets y electrónicos a precios inmejorables",
+        "cta": "Comprar Tecnología"
+      },
+      "electronics": {
+        "title": "Electrónica",
+        "subtitle": "20% de Descuento",
+        "cta": "Ver Ofertas"
+      },
+      "fashionWeek": {
+        "title": "Semana de la Moda",
+        "subtitle": "Tendencia Ahora",
+        "cta": "Descubrir"
+      }
+    }
+  },
   "cart": {
     "cart": "Carrito",
     "shoppingCart": "Carrito de Compras",
