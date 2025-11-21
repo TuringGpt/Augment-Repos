@@ -87,6 +87,11 @@ export const useWishlistStore = create<WishlistState>()(
       },
 
       removeFromWishlist: async (productIds: string[]) => {
+        // Short-circuit if productIds is empty to avoid unnecessary API call
+        if (productIds.length === 0) {
+          console.warn('⚠️ removeFromWishlist called with empty array - skipping API call')
+          return
+        }
         // Import wishlistService dynamically to avoid circular dependency
         const { wishlistService } = await import('@services/api/wishlist/wishlistService')
         try {
