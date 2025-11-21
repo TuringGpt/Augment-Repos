@@ -18,7 +18,9 @@ export const wishlistService = {
 
   /**
    * Add products to wishlist
-   * Backend expects { product_ids: string[] } and returns { detail: string, product_ids: string[] }
+   * Backend expects { product_ids: string[] } (write-only)
+   * Backend returns { detail: string, products: string[], created_at: string, updated_at: string }
+   * Note: product_ids is write-only in the serializer, response contains products (read-only)
    */
   addToWishlist: async (productIds: string[]): Promise<AddToWishlistResponse> => {
     const request: AddToWishlistRequest = { product_ids: productIds }

@@ -32,7 +32,8 @@ const WishlistPage = () => {
         </Alert>
       )}
 
-      {!isLoading && !error && (
+      {/* Only show wishlist contents when authenticated to prevent showing stale persisted data */}
+      {!isLoading && !error && isAuthenticated && (
         <>
           <Typography color="text.secondary" gutterBottom>
             {wishlist.length === 0
