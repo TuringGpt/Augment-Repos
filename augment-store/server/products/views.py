@@ -89,6 +89,11 @@ class ProductListView(BaseProductView, ListAPIView):
     ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+class FeaturedProductListView(ProductListView):
+
+    def get_queryset(self):
+        return Product.objects.filter(is_featured=True)
+
 class ProductSearchView(BaseProductView, ListAPIView):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_class = ProductSearchFilter
