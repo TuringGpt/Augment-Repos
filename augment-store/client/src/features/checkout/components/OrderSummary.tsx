@@ -232,6 +232,7 @@ const OrderSummary = ({
     return () => {
       if (checkoutRef.current) {
         checkoutRef.current.unmount()
+        checkoutRef.current = null
       }
     }
   }, [])
