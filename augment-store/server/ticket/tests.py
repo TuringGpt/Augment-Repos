@@ -2,7 +2,7 @@ from core.tests import BaseAPITestCase
 from django.urls import reverse
 from rest_framework import status
 from .factory import TicketFactory, CommentFactory
-from .factory import UserFactory
+from accounts.factory import UserFactory
 
 # Create your tests here.
 class TicketTests(BaseAPITestCase):
