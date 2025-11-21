@@ -71,7 +71,7 @@ const OrderSummary = ({
   billingAddress,
 }: OrderSummaryProps) => {
   const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
-  const { createOrder, isCreatingOrder, createOrderError } = useOrderStore()
+  const { createOrder, isCreatingOrder, setCreateOrderError } = useOrderStore()
   const navigate = useNavigate()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
@@ -153,6 +153,7 @@ const OrderSummary = ({
 
     setIsProcessingPayment(true)
     setPaymentError(null)
+    setCreateOrderError(null)
 
     try {
       const cartItemIds = cart.items.map((item) => item.id)
@@ -532,15 +533,10 @@ const OrderSummary = ({
           </Typography>
         </Box>
 
-        {/* Error messages */}
+        {/* Error message */}
         {paymentError && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {paymentError}
-          </Alert>
-        )}
-        {createOrderError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {createOrderError}
           </Alert>
         )}
 
