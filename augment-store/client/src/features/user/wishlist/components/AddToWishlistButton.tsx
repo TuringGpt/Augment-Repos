@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import { IconButton, CircularProgress, Tooltip } from '@mui/material'
 import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import { useWishlistStore } from '@store/wishlistStore'
@@ -25,7 +25,7 @@ const AddToWishlistButton = ({
 
   const inWishlist = isInWishlist(productId)
 
-  const handleClick = async (e: React.MouseEvent) => {
+  const handleClick = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation() // Prevent card click when clicking button
 
     // Redirect to login if not authenticated
@@ -36,7 +36,7 @@ const AddToWishlistButton = ({
 
     try {
       setIsLoading(true)
-      
+
       if (inWishlist) {
         // Remove from wishlist
         await removeFromWishlist([productId])
@@ -89,4 +89,3 @@ const AddToWishlistButton = ({
 }
 
 export default AddToWishlistButton
-
