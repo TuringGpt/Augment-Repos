@@ -45,6 +45,7 @@ class Product(BaseModel):
     quantity = models.IntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     images = models.ManyToManyField(File, related_name='products', blank=True)
+    is_featured = models.BooleanField(default=False)
     objects:ProductManager = ProductManager()
 
 
