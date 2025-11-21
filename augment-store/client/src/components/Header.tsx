@@ -144,7 +144,7 @@ const Header = () => {
                   color="inherit"
                   onClick={handleLogout}
                   title={t('nav.logout')}
-                  aria-label="logout"
+                  aria-label={t('nav.logout')}
                   sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Logout />
