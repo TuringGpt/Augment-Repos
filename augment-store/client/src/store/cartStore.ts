@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, subscribeWithSelector } from 'zustand/middleware'
 import type { Cart, CartItem, EnrichedCart, CartItemWithProduct } from '@features/cart/types'
 import { createEmptyCart, calculateCartTotals, enrichCart } from '@utils/cartUtils'
 
@@ -34,330 +34,355 @@ interface CartState {
 const initialCart: EnrichedCart = createEmptyCart()
 
 export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
-      cart: initialCart,
-      isLoading: false,
-      error: null,
-      updatingItemIds: new Set<string>(),
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
+        cart: initialCart,
+        isLoading: false,
+        error: null,
+        updatingItemIds: new Set<string>(),
 
-      setCart: (cart) => set({ cart }),
+        setCart: (cart) => set({ cart }),
 
-      refetchCart: async () => {
-        // Import cartService dynamically to avoid circular dependency
-        const { cartService } = await import('@services/api/cart/cartService')
-        try {
-          const rawCart = await cartService.getCart()
-          const cart = enrichCart(rawCart)
-          set({ cart, error: null })
-        } catch (error) {
-          console.error('Failed to refetch cart:', error)
+        refetchCart: async () => {
+          // Import cartService dynamically to avoid circular dependency
+          const { cartService } = await import('@services/api/cart/cartService')
+          try {
+            const rawCart = await cartService.getCart()
+            const cart = enrichCart(rawCart)
+            set({ cart, error: null })
+          } catch (error) {
+            console.error('Failed to refetch cart:', error)
 
-          // Only create empty cart for 404 (user has no cart yet)
-          // For other errors (network, 5xx), preserve existing cart
-          const isNotFound = (error as { response?: { status?: number } })?.response?.status === 404
+            // Only create empty cart for 404 (user has no cart yet)
+            // For other errors (network, 5xx), preserve existing cart
+            const isNotFound =
+              (error as { response?: { status?: number } })?.response?.status === 404
 
-          if (isNotFound) {
-            console.log('No cart found for user - creating empty cart')
-            set({ cart: createEmptyCart(), error: null })
-          } else {
-            // Preserve existing cart on transient failures
-            console.warn('Preserving existing cart due to transient error')
-            set({ error: 'Failed to load cart. Please try again.' })
-          }
-        }
-      },
-
-      addItem: (item) => {
-        set((state) => {
-          // Initialize cart if it's null
-          const currentCart = state.cart || createEmptyCart()
-
-          // Skip if product is null
-          if (!item.product) {
-            return state
-          }
-
-          // Type-safe item with non-null product
-          const itemWithProduct = item as CartItemWithProduct
-
-          let updatedItems: CartItemWithProduct[]
-
-          const existingItemIndex = currentCart.items.findIndex(
-            (i) => i.product.id === itemWithProduct.product.id
-          )
-
-          if (existingItemIndex >= 0) {
-            // Replace quantity for existing item (don't add to it)
-            updatedItems = [...currentCart.items]
-            const existingItem = updatedItems[existingItemIndex]
-
-            // Cap quantity at available stock (use quantity if available, otherwise stock)
-            const finalQuantity = Math.min(
-              itemWithProduct.quantity,
-              existingItem.product.quantity ?? existingItem.product.stock
-            )
-
-            updatedItems[existingItemIndex] = {
-              ...existingItem,
-              quantity: finalQuantity,
+            if (isNotFound) {
+              console.log('No cart found for user - creating empty cart')
+              set({ cart: createEmptyCart(), error: null })
+            } else {
+              // Preserve existing cart on transient failures
+              console.warn('Preserving existing cart due to transient error')
+              set({ error: 'Failed to load cart. Please try again.' })
             }
-          } else {
-            // Add new item with stock validation
-            const finalQuantity = Math.min(
-              itemWithProduct.quantity,
-              itemWithProduct.product.quantity ?? itemWithProduct.product.stock
-            )
-            updatedItems = [
-              ...currentCart.items,
-              {
-                ...itemWithProduct,
-                quantity: finalQuantity,
-              },
-            ]
           }
+        },
 
-          // Calculate totals
-          const totals = calculateCartTotals(updatedItems)
-
-          return {
-            cart: {
-              ...currentCart,
-              items: updatedItems,
-              ...totals,
-            },
-          }
-        })
-      },
-
-      addItemToCart: async (productId: string, quantity: number) => {
-        // Import cartService dynamically to avoid circular dependency
-        const { cartService } = await import('@services/api/cart/cartService')
-        try {
-          set({ isLoading: true, error: null })
-          // Call API to add item to cart
-          await cartService.addToCart({ product_id: productId, quantity })
-          // Refetch cart to get updated data from backend
-          await get().refetchCart()
-        } catch (error) {
-          console.error('Failed to add item to cart:', error)
-          set({ error: 'Failed to add item to cart. Please try again.' })
-          throw error
-        } finally {
-          set({ isLoading: false })
-        }
-      },
-
-      updateItem: (itemId, quantity) => {
-        set((state) => {
-          // Initialize cart if it's null
-          const currentCart = state.cart || createEmptyCart()
-
-          const updatedItems = currentCart.items.map((item) => {
-            if (item.id === itemId && item.product) {
-              // Cap quantity at available stock
-              const finalQuantity = Math.min(
-                Math.max(1, quantity),
-                item.product.quantity ?? item.product.stock
-              )
-              return { ...item, quantity: finalQuantity }
-            }
-            return item
-          })
-
-          // Calculate totals
-          const totals = calculateCartTotals(updatedItems)
-
-          return {
-            cart: {
-              ...currentCart,
-              items: updatedItems,
-              ...totals,
-            },
-          }
-        })
-      },
-
-      updateItemInCart: async (itemId: string, quantity: number) => {
-        // Import cartService dynamically to avoid circular dependency
-        const { cartService } = await import('@services/api/cart/cartService')
-        const { calculateCartTotals } = await import('@utils/cartUtils')
-
-        // Add item to updating set
-        set((state) => ({
-          updatingItemIds: new Set(state.updatingItemIds).add(itemId),
-          error: null,
-        }))
-
-        try {
-          // Call API to update item quantity with 'set' operation
-          // API returns just { quantity: number }, not the full cart
-          const response = await cartService.updateCartItem(itemId, {
-            quantity,
-            operation: 'set',
-          })
-
-          // Update the specific item's quantity in the cart and recalculate totals
+        addItem: (item) => {
           set((state) => {
-            const newSet = new Set(state.updatingItemIds)
-            newSet.delete(itemId)
+            // Initialize cart if it's null
+            const currentCart = state.cart || createEmptyCart()
 
-            if (!state.cart) {
-              return { updatingItemIds: newSet }
+            // Skip if product is null
+            if (!item.product) {
+              return state
             }
 
-            // Update the quantity of the specific item
-            const updatedItems = state.cart.items.map((item) =>
-              item.id === itemId ? { ...item, quantity: response.quantity } : item
+            // Type-safe item with non-null product
+            const itemWithProduct = item as CartItemWithProduct
+
+            let updatedItems: CartItemWithProduct[]
+
+            const existingItemIndex = currentCart.items.findIndex(
+              (i) => i.product.id === itemWithProduct.product.id
             )
 
-            // Recalculate totals with the updated items
+            if (existingItemIndex >= 0) {
+              // Replace quantity for existing item (don't add to it)
+              updatedItems = [...currentCart.items]
+              const existingItem = updatedItems[existingItemIndex]
+
+              // Cap quantity at available stock (use quantity if available, otherwise stock)
+              const finalQuantity = Math.min(
+                itemWithProduct.quantity,
+                existingItem.product.quantity ?? existingItem.product.stock
+              )
+
+              updatedItems[existingItemIndex] = {
+                ...existingItem,
+                quantity: finalQuantity,
+              }
+            } else {
+              // Add new item with stock validation
+              const finalQuantity = Math.min(
+                itemWithProduct.quantity,
+                itemWithProduct.product.quantity ?? itemWithProduct.product.stock
+              )
+              updatedItems = [
+                ...currentCart.items,
+                {
+                  ...itemWithProduct,
+                  quantity: finalQuantity,
+                },
+              ]
+            }
+
+            // Calculate totals
             const totals = calculateCartTotals(updatedItems)
 
             return {
               cart: {
-                ...state.cart,
+                ...currentCart,
                 items: updatedItems,
                 ...totals,
               },
-              error: null,
-              updatingItemIds: newSet,
             }
           })
-        } catch (error) {
-          console.error('Failed to update cart item:', error)
+        },
 
-          // Remove from updating set and set error
+        addItemToCart: async (productId: string, quantity: number) => {
+          // Import cartService dynamically to avoid circular dependency
+          const { cartService } = await import('@services/api/cart/cartService')
+          try {
+            set({ isLoading: true, error: null })
+            // Call API to add item to cart
+            await cartService.addToCart({ product_id: productId, quantity })
+            // Refetch cart to get updated data from backend
+            await get().refetchCart()
+          } catch (error) {
+            console.error('Failed to add item to cart:', error)
+            set({ error: 'Failed to add item to cart. Please try again.' })
+            throw error
+          } finally {
+            set({ isLoading: false })
+          }
+        },
+
+        updateItem: (itemId, quantity) => {
           set((state) => {
-            const newSet = new Set(state.updatingItemIds)
-            newSet.delete(itemId)
+            // Initialize cart if it's null
+            const currentCart = state.cart || createEmptyCart()
+
+            const updatedItems = currentCart.items.map((item) => {
+              if (item.id === itemId && item.product) {
+                // Cap quantity at available stock
+                const finalQuantity = Math.min(
+                  Math.max(1, quantity),
+                  item.product.quantity ?? item.product.stock
+                )
+                return { ...item, quantity: finalQuantity }
+              }
+              return item
+            })
+
+            // Calculate totals
+            const totals = calculateCartTotals(updatedItems)
+
             return {
-              error: 'Failed to update item quantity. Please try again.',
-              updatingItemIds: newSet,
+              cart: {
+                ...currentCart,
+                items: updatedItems,
+                ...totals,
+              },
             }
           })
-          throw error
-        }
-      },
+        },
 
-      removeItem: (itemId) => {
-        set((state) => {
-          // Initialize cart if it's null
-          const currentCart = state.cart || createEmptyCart()
+        updateItemInCart: async (itemId: string, quantity: number) => {
+          // Import cartService dynamically to avoid circular dependency
+          const { cartService } = await import('@services/api/cart/cartService')
+          const { calculateCartTotals } = await import('@utils/cartUtils')
 
-          const updatedItems = currentCart.items.filter((item) => item.id !== itemId)
+          // Add item to updating set
+          set((state) => ({
+            updatingItemIds: new Set(state.updatingItemIds).add(itemId),
+            error: null,
+          }))
 
-          // Calculate totals
-          const totals = calculateCartTotals(updatedItems)
+          try {
+            // Call API to update item quantity with 'set' operation
+            // API returns just { quantity: number }, not the full cart
+            const response = await cartService.updateCartItem(itemId, {
+              quantity,
+              operation: 'set',
+            })
 
-          return {
-            cart: {
-              ...currentCart,
-              items: updatedItems,
-              ...totals,
-            },
+            // Update the specific item's quantity in the cart and recalculate totals
+            set((state) => {
+              const newSet = new Set(state.updatingItemIds)
+              newSet.delete(itemId)
+
+              if (!state.cart) {
+                return { updatingItemIds: newSet }
+              }
+
+              // Update the quantity of the specific item
+              const updatedItems = state.cart.items.map((item) =>
+                item.id === itemId ? { ...item, quantity: response.quantity } : item
+              )
+
+              // Recalculate totals with the updated items
+              const totals = calculateCartTotals(updatedItems)
+
+              return {
+                cart: {
+                  ...state.cart,
+                  items: updatedItems,
+                  ...totals,
+                },
+                error: null,
+                updatingItemIds: newSet,
+              }
+            })
+          } catch (error) {
+            console.error('Failed to update cart item:', error)
+
+            // Remove from updating set and set error
+            set((state) => {
+              const newSet = new Set(state.updatingItemIds)
+              newSet.delete(itemId)
+              return {
+                error: 'Failed to update item quantity. Please try again.',
+                updatingItemIds: newSet,
+              }
+            })
+            throw error
           }
-        })
-      },
+        },
 
-      removeItemFromCart: async (itemId: string) => {
-        // Import cartService dynamically to avoid circular dependency
-        const { cartService } = await import('@services/api/cart/cartService')
-        try {
-          set({ isLoading: true, error: null })
-          // Call API to remove item from cart
-          await cartService.removeFromCart(itemId)
-          // Refetch cart to get updated data from backend
-          await get().refetchCart()
-        } catch (error) {
-          console.error('Failed to remove item from cart:', error)
-          set({ error: 'Failed to remove item from cart. Please try again.' })
-          throw error
-        } finally {
-          set({ isLoading: false })
-        }
-      },
+        removeItem: (itemId) => {
+          set((state) => {
+            // Initialize cart if it's null
+            const currentCart = state.cart || createEmptyCart()
 
-      removeItems: (itemIds) => {
-        set((state) => {
-          // Initialize cart if it's null
-          const currentCart = state.cart || createEmptyCart()
+            const updatedItems = currentCart.items.filter((item) => item.id !== itemId)
 
-          const updatedItems = currentCart.items.filter((item) => !itemIds.includes(item.id))
+            // Calculate totals
+            const totals = calculateCartTotals(updatedItems)
 
-          // Calculate totals
-          const totals = calculateCartTotals(updatedItems)
+            return {
+              cart: {
+                ...currentCart,
+                items: updatedItems,
+                ...totals,
+              },
+            }
+          })
+        },
 
-          return {
-            cart: {
-              ...currentCart,
-              items: updatedItems,
-              ...totals,
-            },
+        removeItemFromCart: async (itemId: string) => {
+          // Import cartService dynamically to avoid circular dependency
+          const { cartService } = await import('@services/api/cart/cartService')
+          try {
+            set({ isLoading: true, error: null })
+            // Call API to remove item from cart
+            await cartService.removeFromCart(itemId)
+            // Refetch cart to get updated data from backend
+            await get().refetchCart()
+          } catch (error) {
+            console.error('Failed to remove item from cart:', error)
+            set({ error: 'Failed to remove item from cart. Please try again.' })
+            throw error
+          } finally {
+            set({ isLoading: false })
           }
-        })
-      },
+        },
 
-      clearCart: () => {
-        set({ cart: createEmptyCart() })
-      },
+        removeItems: (itemIds) => {
+          set((state) => {
+            // Initialize cart if it's null
+            const currentCart = state.cart || createEmptyCart()
 
-      setLoading: (isLoading) => set({ isLoading }),
+            const updatedItems = currentCart.items.filter((item) => !itemIds.includes(item.id))
 
-      setError: (error) => set({ error }),
+            // Calculate totals
+            const totals = calculateCartTotals(updatedItems)
 
-      getItemCount: () => {
-        const { cart } = get()
-        return cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
-      },
+            return {
+              cart: {
+                ...currentCart,
+                items: updatedItems,
+                ...totals,
+              },
+            }
+          })
+        },
 
-      getTotal: () => {
-        const { cart } = get()
-        return cart?.total || 0
-      },
+        clearCart: () => {
+          set({ cart: createEmptyCart() })
+        },
 
-      isInCart: (productId) => {
-        const { cart } = get()
-        return cart?.items.some((item) => item.product.id === productId) || false
-      },
+        setLoading: (isLoading) => set({ isLoading }),
 
-      getCartItem: (productId) => {
-        const { cart } = get()
-        return cart?.items.find((item) => item.product.id === productId)
-      },
+        setError: (error) => set({ error }),
 
-      isItemUpdating: (itemId) => {
-        const { updatingItemIds } = get()
-        return updatingItemIds.has(itemId)
-      },
-    }),
-    {
-      name: 'cart-storage',
-      partialize: (state) => ({
-        cart: state.cart,
+        getItemCount: () => {
+          const { cart } = get()
+          return cart?.items.reduce((total, item) => total + item.quantity, 0) || 0
+        },
+
+        getTotal: () => {
+          const { cart } = get()
+          return cart?.total || 0
+        },
+
+        isInCart: (productId) => {
+          const { cart } = get()
+          return cart?.items.some((item) => item.product.id === productId) || false
+        },
+
+        getCartItem: (productId) => {
+          const { cart } = get()
+          return cart?.items.find((item) => item.product.id === productId)
+        },
+
+        isItemUpdating: (itemId) => {
+          const { updatingItemIds } = get()
+          return updatingItemIds.has(itemId)
+        },
       }),
-      // Migration function to handle rehydration of old cart data
-      // Filters out items with null products to ensure EnrichedCart type safety
-      onRehydrateStorage: () => (state) => {
-        if (state?.cart) {
-          // Cast to Cart type to handle old persisted data that may have null products
-          const persistedCart = state.cart as unknown as Cart
+      {
+        name: 'cart-storage',
+        partialize: (state) => ({
+          cart: state.cart,
+        }),
+        // Migration function to handle rehydration of old cart data
+        // Filters out items with null products to ensure EnrichedCart type safety
+        onRehydrateStorage: () => (state) => {
+          if (state?.cart) {
+            // Cast to Cart type to handle old persisted data that may have null products
+            const persistedCart = state.cart as unknown as Cart
 
-          // Use enrichCart to filter out items with null products and recalculate totals
-          // This ensures consistency with how API responses are handled
-          const enrichedCart = enrichCart(persistedCart)
+            // Use enrichCart to filter out items with null products and recalculate totals
+            // This ensures consistency with how API responses are handled
+            const enrichedCart = enrichCart(persistedCart)
 
-          // Update state with enriched cart
-          state.cart = enrichedCart
+            // Update state with enriched cart
+            state.cart = enrichedCart
 
-          // Log if any items were filtered out during migration
-          if (enrichedCart.items.length !== persistedCart.items.length) {
-            console.log(
-              `Cart migration: Filtered out ${persistedCart.items.length - enrichedCart.items.length} item(s) with deleted products`
-            )
+            // Log if any items were filtered out during migration
+            if (enrichedCart.items.length !== persistedCart.items.length) {
+              console.log(
+                `Cart migration: Filtered out ${persistedCart.items.length - enrichedCart.items.length} item(s) with deleted products`
+              )
+            }
           }
-        }
-      },
-    }
+        },
+      }
+    )
   )
 )
+
+// Subscribe to auth state changes and clear cart when user logs out
+// This prevents showing persisted cart items to logged-out users
+// (e.g., after token expiry without explicit logout)
+import('@store/authStore').then(({ useAuthStore }) => {
+  let previousAuthState = useAuthStore.getState().isAuthenticated
+
+  useAuthStore.subscribe((state) => {
+    const currentAuthState = state.isAuthenticated
+
+    // Detect transition from authenticated to unauthenticated
+    if (previousAuthState === true && currentAuthState === false) {
+      const currentCart = useCartStore.getState().cart
+      if (currentCart && currentCart.items.length > 0) {
+        console.log('🔒 User logged out - clearing persisted cart')
+        useCartStore.getState().clearCart()
+      }
+    }
+
+    previousAuthState = currentAuthState
+  })
+})
