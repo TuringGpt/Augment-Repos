@@ -225,7 +225,7 @@ const TicketsPage = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   <TableCell>
-                    <Typography fontWeight="bold">Title</TableCell>
+                    <Typography fontWeight="bold">Title</Typography>
                   </TableCell>
                   <TableCell>
                     <Typography fontWeight="bold">Status</Typography>
@@ -290,7 +290,12 @@ const TicketsPage = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+              />
             </Box>
           )}
         </>
@@ -300,4 +305,3 @@ const TicketsPage = () => {
 }
 
 export default TicketsPage
-
