@@ -45,7 +45,7 @@ const WishlistPage = () => {
         </Alert>
       )}
 
-      {!isLoading && !error && (wishlist.length === 0 || !isAuthenticated) && (
+      {!isLoading && !error && wishlist.length === 0 && (
         <Paper
           sx={{
             p: 8,
@@ -69,7 +69,7 @@ const WishlistPage = () => {
         </Paper>
       )}
 
-      {!isLoading && !error && wishlist.length > 0 && isAuthenticated && (
+      {!isLoading && !error && wishlist.length > 0 && (
         <>
           <Typography color="text.secondary" gutterBottom sx={{ mb: 3 }}>
             {wishlist.length} item{wishlist.length === 1 ? '' : 's'} in your wishlist
