@@ -67,7 +67,7 @@ class TicketTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], self.ticket.id)  
+        self.assertEqual(response.data["id"], str(self.ticket.id))  
         self.assertEqual(response.data["title"], "Test Title")  
         self.assertEqual(response.data["description"], "Test Description")  
         self.assertEqual(response.data["status"], "Test Status")  
