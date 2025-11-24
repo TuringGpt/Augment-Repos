@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Chip,
@@ -43,11 +43,12 @@ const TicketsPage = () => {
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Reset page to 1 when filters or search query changes
   useEffect(() => {
-    loadTickets()
-  }, [page, statusFilter, priorityFilter, searchQuery])
+    setPage(1)
+  }, [statusFilter, priorityFilter, searchQuery])
 
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -60,15 +61,20 @@ const TicketsPage = () => {
       })
 
       setTickets(response.results)
-      // Calculate total pages (assuming 10 items per page)
-      setTotalPages(Math.ceil(response.count / 10))
+      // Calculate total pages using backend page size (configured in Django REST_FRAMEWORK settings)
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+      setTotalPages(Math.ceil(response.count / backendPageSize))
     } catch (err) {
       console.error('Failed to load tickets:', err)
       setError('Failed to load tickets. Please try again.')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [page, statusFilter, priorityFilter, searchQuery])
+
+  useEffect(() => {
+    loadTickets()
+  }, [loadTickets])
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
