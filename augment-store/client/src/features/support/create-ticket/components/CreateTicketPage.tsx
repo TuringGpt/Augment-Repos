@@ -21,6 +21,7 @@ import { z } from 'zod'
 import { ticketService } from '@services/api'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
+import { parseApiError } from '@utils/errorUtils'
 
 // Validation schema
 const createTicketSchema = z.object({
@@ -72,12 +73,12 @@ const CreateTicketPage = () => {
       }, 1500)
     } catch (err) {
       console.error('Failed to create ticket:', err)
-      const errorMessage =
-        (err as { response?: { data?: { details?: string; message?: string } } }).response?.data
-          ?.details ||
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        (err as { message?: string }).message ||
-        'Failed to create ticket. Please try again.'
+
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['title', 'description', 'priority', 'status'],
+        defaultMessage: 'Failed to create ticket. Please try again.',
+      })
+
       setError(errorMessage)
       setIsSubmitting(false)
     }
