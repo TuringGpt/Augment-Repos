@@ -745,7 +745,7 @@ class StripeServiceTests(BaseAPITestCase):
         mock_create_session.return_value = {
             "client_secret": "mocked_client_secret",
         }
-        
+
         # GIVEN I have payment and order
         order = OrderFactory()
         cart_item = CartItemFactory(quantity=1)
@@ -759,5 +759,151 @@ class StripeServiceTests(BaseAPITestCase):
         # THEN we should get a session object
         self.assertIsNotNone(session)
         self.assertIn("client_secret", session)
+
+
+class CheckoutPaymentConfirmationViewTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Create a member user for testing
+        self.member_user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.member_client = self.authenticated_client
+        self.member_client.force_authenticate(user=self.member_user)
+
+        # Create test products
+        self.product = ProductFactory(quantity=100, price=Decimal("25.00"))
+
+    def test_payment_confirmation_page_renders_successfully(self):
+        # GIVEN an order exists with a payment
+        cart_item = CartItemFactory(
+            product=self.product,
+            quantity=1,
+            created_by=self.member_user
+        )
+        order = OrderFactory(created_by=self.member_user)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user)
+        payment = PaymentFactory(order=order, created_by=self.member_user)
+
+        # WHEN we make a GET request to the payment confirmation page
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": str(order.id)})
+        response = self.client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should be HTML content
+        self.assertIn("text/html", response["Content-Type"])
+
+        # AND the page should contain confirmation text
+        self.assertContains(response, "Order Confirmed")
+        self.assertContains(response, "Thank you for your purchase")
+
+    def test_payment_confirmation_page_contains_return_url(self):
+        # GIVEN an order exists with a payment
+        cart_item = CartItemFactory(
+            product=self.product,
+            quantity=1,
+            created_by=self.member_user
+        )
+        order = OrderFactory(created_by=self.member_user)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user)
+        payment = PaymentFactory(order=order, created_by=self.member_user)
+
+        # WHEN we make a GET request to the payment confirmation page
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": str(order.id)})
+        response = self.client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the page should contain the return URL button
+        self.assertContains(response, "Return to Homepage")
+
+    def test_payment_confirmation_page_accessible_without_authentication(self):
+        # GIVEN an order exists with a payment
+        cart_item = CartItemFactory(
+            product=self.product,
+            quantity=1,
+            created_by=self.member_user
+        )
+        order = OrderFactory(created_by=self.member_user)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user)
+        payment = PaymentFactory(order=order, created_by=self.member_user)
+
+        # WHEN an unauthenticated user makes a GET request to the payment confirmation page
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": str(order.id)})
+        response = self.client.get(url)
+
+        # THEN we should get a 200 response (no authentication required)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the page should render successfully
+        self.assertContains(response, "Order Confirmed")
+
+    def test_payment_confirmation_page_with_invalid_order_id(self):
+        # GIVEN no order exists with the given ID
+        non_existent_order_id = "00000000-0000-0000-0000-000000000000"
+
+        # WHEN we make a GET request to the payment confirmation page with invalid ID
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": non_existent_order_id})
+        response = self.client.get(url)
+
+        # THEN we should still get a 200 response (template view doesn't validate order existence)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the page should render the confirmation template
+        self.assertContains(response, "Order Confirmed")
+
+    def test_payment_confirmation_page_template_structure(self):
+        # GIVEN an order exists with a payment
+        cart_item = CartItemFactory(
+            product=self.product,
+            quantity=1,
+            created_by=self.member_user
+        )
+        order = OrderFactory(created_by=self.member_user)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user)
+        payment = PaymentFactory(order=order, created_by=self.member_user)
+
+        # WHEN we make a GET request to the payment confirmation page
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": str(order.id)})
+        response = self.client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the page should contain expected HTML elements
+        self.assertContains(response, "<!DOCTYPE html>")
+        self.assertContains(response, "<title>Order Confirmed - Augment Store</title>")
+        self.assertContains(response, "success-icon")
+        self.assertContains(response, "<button")
+
+    def test_payment_confirmation_page_authenticated_user(self):
+        # GIVEN an authenticated user exists
+        # AND the user has an order with a payment
+        cart_item = CartItemFactory(
+            product=self.product,
+            quantity=1,
+            created_by=self.member_user
+        )
+        order = OrderFactory(created_by=self.member_user)
+        OrderItemFactory(order=order, cart_item=cart_item, created_by=self.member_user)
+        payment = PaymentFactory(order=order, created_by=self.member_user)
+
+        # WHEN the authenticated user makes a GET request to the payment confirmation page
+        url = reverse("v1:checkout:order_confirmation", kwargs={"pk": str(order.id)})
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the page should render successfully
+        self.assertContains(response, "Order Confirmed")
+        self.assertContains(response, "Thank you for your purchase")
 
 
