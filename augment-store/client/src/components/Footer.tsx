@@ -1,8 +1,11 @@
 import { Box, Container, Typography, Link, Grid } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Colors } from '@config/colors'
+import { useTranslation } from '@hooks/useTranslation'
 
 const Footer = () => {
+  const { t } = useTranslation()
+
   return (
     <Box
       component="footer"
@@ -17,43 +20,43 @@ const Footer = () => {
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
-              Augment Store
+              {t('common.appName')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Your one-stop shop for all your needs.
+              {t('footer.tagline')}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
-              Quick Links
+              {t('footer.quickLinks')}
             </Typography>
             <Link component={RouterLink} to="/products" color="inherit" display="block">
-              Products
+              {t('nav.products')}
             </Link>
             <Link component={RouterLink} to="/about" color="inherit" display="block">
-              About Us
+              {t('footer.aboutUs')}
             </Link>
             <Link component={RouterLink} to="/contact" color="inherit" display="block">
-              Contact
+              {t('footer.contact')}
             </Link>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Typography variant="h6" gutterBottom>
-              Customer Service
+              {t('footer.customerService')}
             </Typography>
             <Link component={RouterLink} to="/help" color="inherit" display="block">
-              Help Center
+              {t('footer.helpCenter')}
             </Link>
             <Link component={RouterLink} to="/returns" color="inherit" display="block">
-              Returns
+              {t('footer.returns')}
             </Link>
             <Link component={RouterLink} to="/shipping" color="inherit" display="block">
-              Shipping Info
+              {t('footer.shippingInfo')}
             </Link>
           </Grid>
         </Grid>
         <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 3 }}>
-          © {new Date().getFullYear()} Augment Store. All rights reserved.
+          © {new Date().getFullYear()} {t('common.appName')}. {t('footer.allRightsReserved')}.
         </Typography>
       </Container>
     </Box>
