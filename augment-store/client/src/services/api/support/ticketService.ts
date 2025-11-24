@@ -76,7 +76,12 @@ export const ticketService = {
    * Create a new comment on a ticket
    */
   createComment: async (ticketId: string, data: CreateCommentRequest): Promise<Comment> => {
-    return apiClient.post<Comment>(API_ENDPOINTS.SUPPORT.COMMENTS.CREATE(ticketId), data)
+    // Backend CommentCreateSerializer expects ticket field in payload
+    // (even though the view's perform_create overrides it)
+    return apiClient.post<Comment>(API_ENDPOINTS.SUPPORT.COMMENTS.CREATE(ticketId), {
+      ...data,
+      ticket: ticketId,
+    })
   },
 
   /**
@@ -100,4 +105,3 @@ export const ticketService = {
     return apiClient.delete(API_ENDPOINTS.SUPPORT.COMMENTS.DELETE(ticketId, commentId))
   },
 }
-
