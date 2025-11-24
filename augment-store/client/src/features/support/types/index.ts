@@ -28,7 +28,7 @@ export interface CreateTicketRequest {
   description: string
   status: TicketStatus
   priority: TicketPriority
-  assignee?: string // Optional - can be null for unassigned tickets
+  assignee?: string | null // Optional - can be null for unassigned tickets
 }
 
 // Update ticket request
@@ -90,4 +90,3 @@ export interface TicketFilterParams {
   page?: number
   search?: string
 }
-
