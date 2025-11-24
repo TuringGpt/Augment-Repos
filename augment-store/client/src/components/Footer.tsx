@@ -37,7 +37,7 @@ const Footer = () => {
               {t('footer.aboutUs')}
             </Link>
             <Link component={RouterLink} to="/contact" color="inherit" display="block">
-              {t('footer.contact')}
+              {t('footer.contactUs')}
             </Link>
           </Grid>
           <Grid item xs={12} sm={4}>
