@@ -173,9 +173,11 @@ const TicketDetailPage = () => {
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Chip label={formatStatus(ticket.status)} color={getStatusColor(ticket.status)} />
           <Chip label={formatPriority(ticket.priority)} color={getPriorityColor(ticket.priority)} />
-          <Typography variant="body2" color="text.secondary">
-            Created {formatDate(ticket.created_at)}
-          </Typography>
+          {ticket.created_at && (
+            <Typography variant="body2" color="text.secondary">
+              Created {formatDate(ticket.created_at)}
+            </Typography>
+          )}
         </Box>
       </Box>
 
@@ -210,7 +212,9 @@ const TicketDetailPage = () => {
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Last Updated
             </Typography>
-            <Typography variant="body1">{formatDate(ticket.updated_at)}</Typography>
+            <Typography variant="body1">
+              {ticket.updated_at ? formatDate(ticket.updated_at) : 'N/A'}
+            </Typography>
           </Box>
         </Box>
       </Paper>
@@ -240,9 +244,11 @@ const TicketDetailPage = () => {
                     <Typography variant="body2" fontWeight="medium">
                       User
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDate(comment.created_at)}
-                    </Typography>
+                    {comment.created_at && (
+                      <Typography variant="caption" color="text.secondary">
+                        {formatDate(comment.created_at)}
+                      </Typography>
+                    )}
                   </Box>
                   <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', ml: 5 }}>
                     {comment.content}

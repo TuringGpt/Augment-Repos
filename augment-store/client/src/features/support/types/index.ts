@@ -11,9 +11,9 @@ export interface Ticket {
   priority: TicketPriority
   assignee: string | null // User ID
   reporter: string // User ID
-  created_at: string
-  updated_at: string
-  is_deleted: boolean
+  created_at?: string // Optional - may not be included in serializer
+  updated_at?: string // Optional - may not be included in serializer
+  is_deleted?: boolean // Optional - may not be included in serializer
 }
 
 // Ticket with populated user details (for display)
@@ -46,9 +46,9 @@ export interface Comment {
   ticket: string // Ticket ID
   user: string // User ID
   content: string
-  created_at: string
-  updated_at: string
-  is_deleted: boolean
+  created_at?: string // Optional - may not be included in serializer
+  updated_at?: string // Optional - may not be included in serializer
+  is_deleted?: boolean // Optional - may not be included in serializer
 }
 
 // Comment with user details (for display)
@@ -90,4 +90,3 @@ export interface TicketFilterParams {
   page?: number
   search?: string
 }
-
