@@ -72,8 +72,8 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["description"], "Test Description")  
         self.assertEqual(response.data["status"], "Test Status")  
         self.assertEqual(response.data["priority"], "Test Priority")  
-        self.assertEqual(str(response.data["assignee"]), self.user.id)  
-        self.assertEqual(str(response.data["reporter"]), self.user.id)  
+        self.assertEqual(response.data["assignee"], self.user.id)  
+        self.assertEqual(response.data["reporter"], self.user.id)  
 
     def test_update_ticket(self):
         # GIVEN an authenticated user exists
@@ -94,4 +94,4 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["description"], "Updated Description")  
         self.assertEqual(response.data["status"], "Updated Status")  
         self.assertEqual(response.data["priority"], "Updated Priority")  
-        self.assertEqual(str(response.data["assignee"]), self.user2.id)
+        self.assertEqual(response.data["assignee"], self.user2.id)
