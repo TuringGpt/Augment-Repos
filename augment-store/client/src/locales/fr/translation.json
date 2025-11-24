@@ -1,0 +1,212 @@
+{
+  "common": {
+    "appName": "Augment Store",
+    "welcome": "Bienvenue",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "clear": "Effacer",
+    "apply": "Appliquer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "viewAll": "Voir Tout",
+    "learnMore": "En Savoir Plus",
+    "readMore": "Lire Plus",
+    "showMore": "Afficher Plus",
+    "showLess": "Afficher Moins"
+  },
+  "nav": {
+    "home": "Accueil",
+    "shop": "Boutique",
+    "categories": "Catégories",
+    "brands": "Marques",
+    "products": "Produits",
+    "cart": "Panier",
+    "checkout": "Paiement",
+    "orders": "Commandes",
+    "profile": "Profil",
+    "wishlist": "Liste de Souhaits",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "account": "Compte",
+    "settings": "Paramètres"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "forgotPassword": "Mot de Passe Oublié?",
+    "resetPassword": "Réinitialiser le Mot de Passe",
+    "rememberMe": "Se Souvenir de Moi",
+    "dontHaveAccount": "Vous n'avez pas de compte?",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "signUp": "S'inscrire",
+    "signIn": "Se Connecter",
+    "verifyEmail": "Vérifier l'Email",
+    "emailVerification": "Vérification de l'Email",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "fullName": "Nom Complet"
+  },
+  "product": {
+    "products": "Produits",
+    "product": "Produit",
+    "price": "Prix",
+    "description": "Description",
+    "details": "Détails",
+    "specifications": "Spécifications",
+    "reviews": "Avis",
+    "rating": "Évaluation",
+    "inStock": "En Stock",
+    "outOfStock": "Rupture de Stock",
+    "addToCart": "Ajouter au Panier",
+    "addToWishlist": "Ajouter à la Liste de Souhaits",
+    "removeFromWishlist": "Retirer de la Liste de Souhaits",
+    "quantity": "Quantité",
+    "sku": "SKU",
+    "category": "Catégorie",
+    "brand": "Marque",
+    "tags": "Étiquettes",
+    "relatedProducts": "Produits Connexes",
+    "newArrivals": "Nouveautés",
+    "bestSellers": "Meilleures Ventes",
+    "featured": "En Vedette",
+    "onSale": "En Solde",
+    "discount": "Réduction"
+  },
+  "home": {
+    "banners": {
+      "clickToViewDetails": "Cliquez pour voir les détails",
+      "summerSale": {
+        "title": "Soldes d'Été",
+        "subtitle": "Jusqu'à 50% de Réduction",
+        "cta": "Acheter Maintenant"
+      },
+      "newArrivals": {
+        "title": "Nouveautés",
+        "subtitle": "Styles Frais",
+        "cta": "Explorer"
+      },
+      "megaSale": {
+        "title": "Méga Soldes",
+        "subtitle": "Offre à Durée Limitée",
+        "description": "Obtenez des offres incroyables sur toutes les catégories. Ne manquez pas!",
+        "cta": "Voir Toutes les Offres"
+      },
+      "winterCollection": {
+        "title": "Collection d'Hiver",
+        "subtitle": "Nouveautés de Saison",
+        "description": "Découvrez les dernières tendances pour la saison hivernale",
+        "cta": "Explorer Maintenant"
+      },
+      "techDeals": {
+        "title": "Offres Tech",
+        "subtitle": "Jusqu'à 40% de Réduction",
+        "description": "Les derniers gadgets et électroniques à des prix imbattables",
+        "cta": "Acheter Tech"
+      },
+      "electronics": {
+        "title": "Électronique",
+        "subtitle": "20% de Réduction",
+        "cta": "Voir les Offres"
+      },
+      "fashionWeek": {
+        "title": "Semaine de la Mode",
+        "subtitle": "Tendance Actuelle",
+        "cta": "Découvrir"
+      }
+    }
+  },
+  "cart": {
+    "cart": "Panier",
+    "shoppingCart": "Panier d'Achat",
+    "emptyCart": "Votre panier est vide",
+    "continueShopping": "Continuer les Achats",
+    "proceedToCheckout": "Procéder au Paiement",
+    "subtotal": "Sous-total",
+    "total": "Total",
+    "tax": "Taxe",
+    "shipping": "Livraison",
+    "remove": "Supprimer",
+    "update": "Mettre à Jour",
+    "itemsInCart": "{{count}} article dans le panier",
+    "itemsInCart_other": "{{count}} articles dans le panier"
+  },
+  "checkout": {
+    "checkout": "Paiement",
+    "shippingAddress": "Adresse de Livraison",
+    "billingAddress": "Adresse de Facturation",
+    "paymentMethod": "Méthode de Paiement",
+    "orderSummary": "Résumé de la Commande",
+    "placeOrder": "Passer la Commande",
+    "address": "Adresse",
+    "city": "Ville",
+    "state": "État",
+    "zipCode": "Code Postal",
+    "country": "Pays",
+    "phone": "Téléphone",
+    "sameAsShipping": "Identique à l'adresse de livraison"
+  },
+  "order": {
+    "orders": "Commandes",
+    "order": "Commande",
+    "orderNumber": "Numéro de Commande",
+    "orderDate": "Date de Commande",
+    "orderStatus": "État de la Commande",
+    "orderTotal": "Total de la Commande",
+    "orderDetails": "Détails de la Commande",
+    "trackOrder": "Suivre la Commande",
+    "viewOrder": "Voir la Commande",
+    "cancelOrder": "Annuler la Commande",
+    "status": {
+      "pending": "En Attente",
+      "processing": "En Traitement",
+      "shipped": "Expédié",
+      "delivered": "Livré",
+      "cancelled": "Annulé"
+    }
+  },
+  "user": {
+    "profile": "Profil",
+    "account": "Compte",
+    "personalInfo": "Informations Personnelles",
+    "addresses": "Adresses",
+    "orderHistory": "Historique des Commandes",
+    "wishlist": "Liste de Souhaits",
+    "settings": "Paramètres",
+    "changePassword": "Changer le Mot de Passe",
+    "updateProfile": "Mettre à Jour le Profil",
+    "currentPassword": "Mot de Passe Actuel",
+    "newPassword": "Nouveau Mot de Passe"
+  },
+  "footer": {
+    "aboutUs": "À Propos",
+    "contactUs": "Nous Contacter",
+    "termsOfService": "Conditions d'Utilisation",
+    "privacyPolicy": "Politique de Confidentialité",
+    "faq": "FAQ",
+    "support": "Support",
+    "followUs": "Suivez-Nous",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Abonnez-vous à notre newsletter",
+    "enterEmail": "Entrez votre email",
+    "subscribe": "S'abonner",
+    "allRightsReserved": "Tous droits réservés"
+  }
+}
+

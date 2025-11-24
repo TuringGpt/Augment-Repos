@@ -1,0 +1,212 @@
+{
+  "common": {
+    "appName": "Augment Store",
+    "welcome": "Willkommen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "clear": "Löschen",
+    "apply": "Anwenden",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "submit": "Absenden",
+    "viewAll": "Alle Anzeigen",
+    "learnMore": "Mehr Erfahren",
+    "readMore": "Mehr Lesen",
+    "showMore": "Mehr Anzeigen",
+    "showLess": "Weniger Anzeigen"
+  },
+  "nav": {
+    "home": "Startseite",
+    "shop": "Shop",
+    "categories": "Kategorien",
+    "brands": "Marken",
+    "products": "Produkte",
+    "cart": "Warenkorb",
+    "checkout": "Kasse",
+    "orders": "Bestellungen",
+    "profile": "Profil",
+    "wishlist": "Wunschliste",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "account": "Konto",
+    "settings": "Einstellungen"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort Bestätigen",
+    "forgotPassword": "Passwort Vergessen?",
+    "resetPassword": "Passwort Zurücksetzen",
+    "rememberMe": "Angemeldet Bleiben",
+    "dontHaveAccount": "Noch kein Konto?",
+    "alreadyHaveAccount": "Bereits ein Konto?",
+    "signUp": "Registrieren",
+    "signIn": "Anmelden",
+    "verifyEmail": "E-Mail Verifizieren",
+    "emailVerification": "E-Mail-Verifizierung",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "fullName": "Vollständiger Name"
+  },
+  "product": {
+    "products": "Produkte",
+    "product": "Produkt",
+    "price": "Preis",
+    "description": "Beschreibung",
+    "details": "Details",
+    "specifications": "Spezifikationen",
+    "reviews": "Bewertungen",
+    "rating": "Bewertung",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht Auf Lager",
+    "addToCart": "In den Warenkorb",
+    "addToWishlist": "Zur Wunschliste Hinzufügen",
+    "removeFromWishlist": "Von Wunschliste Entfernen",
+    "quantity": "Menge",
+    "sku": "SKU",
+    "category": "Kategorie",
+    "brand": "Marke",
+    "tags": "Tags",
+    "relatedProducts": "Ähnliche Produkte",
+    "newArrivals": "Neuankömmlinge",
+    "bestSellers": "Bestseller",
+    "featured": "Empfohlen",
+    "onSale": "Im Angebot",
+    "discount": "Rabatt"
+  },
+  "home": {
+    "banners": {
+      "clickToViewDetails": "Klicken Sie, um Details anzuzeigen",
+      "summerSale": {
+        "title": "Sommerschlussverkauf",
+        "subtitle": "Bis zu 50% Rabatt",
+        "cta": "Jetzt Einkaufen"
+      },
+      "newArrivals": {
+        "title": "Neuankömmlinge",
+        "subtitle": "Frische Styles",
+        "cta": "Erkunden"
+      },
+      "megaSale": {
+        "title": "Mega-Sale-Event",
+        "subtitle": "Zeitlich Begrenztes Angebot",
+        "description": "Erhalten Sie tolle Angebote in allen Kategorien. Verpassen Sie es nicht!",
+        "cta": "Alle Angebote Ansehen"
+      },
+      "winterCollection": {
+        "title": "Winterkollektion",
+        "subtitle": "Neue Saison-Neuheiten",
+        "description": "Entdecken Sie die neuesten Trends für die Wintersaison",
+        "cta": "Jetzt Erkunden"
+      },
+      "techDeals": {
+        "title": "Tech-Angebote",
+        "subtitle": "Bis zu 40% Rabatt",
+        "description": "Neueste Gadgets und Elektronik zu unschlagbaren Preisen",
+        "cta": "Tech Einkaufen"
+      },
+      "electronics": {
+        "title": "Elektronik",
+        "subtitle": "20% Rabatt",
+        "cta": "Angebote Ansehen"
+      },
+      "fashionWeek": {
+        "title": "Fashion Week",
+        "subtitle": "Jetzt im Trend",
+        "cta": "Entdecken"
+      }
+    }
+  },
+  "cart": {
+    "cart": "Warenkorb",
+    "shoppingCart": "Einkaufswagen",
+    "emptyCart": "Ihr Warenkorb ist leer",
+    "continueShopping": "Weiter Einkaufen",
+    "proceedToCheckout": "Zur Kasse Gehen",
+    "subtotal": "Zwischensumme",
+    "total": "Gesamt",
+    "tax": "Steuer",
+    "shipping": "Versand",
+    "remove": "Entfernen",
+    "update": "Aktualisieren",
+    "itemsInCart": "{{count}} Artikel im Warenkorb",
+    "itemsInCart_other": "{{count}} Artikel im Warenkorb"
+  },
+  "checkout": {
+    "checkout": "Kasse",
+    "shippingAddress": "Lieferadresse",
+    "billingAddress": "Rechnungsadresse",
+    "paymentMethod": "Zahlungsmethode",
+    "orderSummary": "Bestellübersicht",
+    "placeOrder": "Bestellung Aufgeben",
+    "address": "Adresse",
+    "city": "Stadt",
+    "state": "Bundesland",
+    "zipCode": "Postleitzahl",
+    "country": "Land",
+    "phone": "Telefon",
+    "sameAsShipping": "Gleich wie Lieferadresse"
+  },
+  "order": {
+    "orders": "Bestellungen",
+    "order": "Bestellung",
+    "orderNumber": "Bestellnummer",
+    "orderDate": "Bestelldatum",
+    "orderStatus": "Bestellstatus",
+    "orderTotal": "Bestellsumme",
+    "orderDetails": "Bestelldetails",
+    "trackOrder": "Bestellung Verfolgen",
+    "viewOrder": "Bestellung Anzeigen",
+    "cancelOrder": "Bestellung Stornieren",
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versandt",
+      "delivered": "Geliefert",
+      "cancelled": "Storniert"
+    }
+  },
+  "user": {
+    "profile": "Profil",
+    "account": "Konto",
+    "personalInfo": "Persönliche Informationen",
+    "addresses": "Adressen",
+    "orderHistory": "Bestellverlauf",
+    "wishlist": "Wunschliste",
+    "settings": "Einstellungen",
+    "changePassword": "Passwort Ändern",
+    "updateProfile": "Profil Aktualisieren",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort"
+  },
+  "footer": {
+    "aboutUs": "Über Uns",
+    "contactUs": "Kontaktieren Sie Uns",
+    "termsOfService": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "faq": "FAQ",
+    "support": "Support",
+    "followUs": "Folgen Sie Uns",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Abonnieren Sie unseren Newsletter",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
+    "subscribe": "Abonnieren",
+    "allRightsReserved": "Alle Rechte vorbehalten"
+  }
+}
+

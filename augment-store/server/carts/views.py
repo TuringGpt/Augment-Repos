@@ -57,7 +57,7 @@ class AddToWishlistView(BaseWishlistView, GenericAPIView):
         return Response(
             {
                 "detail": "Added to wishlist",
-                "product_ids": serializer.validated_data["product_ids"]
+                **serializer.data
             }, 
             status=status.HTTP_200_OK
         )

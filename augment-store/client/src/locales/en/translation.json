@@ -1,0 +1,212 @@
+{
+  "common": {
+    "appName": "Augment Store",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "clear": "Clear",
+    "apply": "Apply",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "viewAll": "View All",
+    "learnMore": "Learn More",
+    "readMore": "Read More",
+    "showMore": "Show More",
+    "showLess": "Show Less"
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "categories": "Categories",
+    "brands": "Brands",
+    "products": "Products",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "orders": "Orders",
+    "profile": "Profile",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "account": "Account",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "rememberMe": "Remember Me",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "verifyEmail": "Verify Email",
+    "emailVerification": "Email Verification",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "fullName": "Full Name"
+  },
+  "product": {
+    "products": "Products",
+    "product": "Product",
+    "price": "Price",
+    "description": "Description",
+    "details": "Details",
+    "specifications": "Specifications",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "quantity": "Quantity",
+    "sku": "SKU",
+    "category": "Category",
+    "brand": "Brand",
+    "tags": "Tags",
+    "relatedProducts": "Related Products",
+    "newArrivals": "New Arrivals",
+    "bestSellers": "Best Sellers",
+    "featured": "Featured",
+    "onSale": "On Sale",
+    "discount": "Discount"
+  },
+  "home": {
+    "banners": {
+      "clickToViewDetails": "Click to view details",
+      "summerSale": {
+        "title": "Summer Sale",
+        "subtitle": "Up to 50% Off",
+        "cta": "Shop Now"
+      },
+      "newArrivals": {
+        "title": "New Arrivals",
+        "subtitle": "Fresh Styles",
+        "cta": "Explore"
+      },
+      "megaSale": {
+        "title": "Mega Sale Event",
+        "subtitle": "Limited Time Offer",
+        "description": "Get amazing deals on all categories. Don't miss out!",
+        "cta": "Shop All Deals"
+      },
+      "winterCollection": {
+        "title": "Winter Collection",
+        "subtitle": "New Season Arrivals",
+        "description": "Discover the latest trends for the winter season",
+        "cta": "Explore Now"
+      },
+      "techDeals": {
+        "title": "Tech Deals",
+        "subtitle": "Up to 40% Off",
+        "description": "Latest gadgets and electronics at unbeatable prices",
+        "cta": "Shop Tech"
+      },
+      "electronics": {
+        "title": "Electronics",
+        "subtitle": "20% Off",
+        "cta": "View Deals"
+      },
+      "fashionWeek": {
+        "title": "Fashion Week",
+        "subtitle": "Trending Now",
+        "cta": "Discover"
+      }
+    }
+  },
+  "cart": {
+    "cart": "Cart",
+    "shoppingCart": "Shopping Cart",
+    "emptyCart": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "proceedToCheckout": "Proceed to Checkout",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "tax": "Tax",
+    "shipping": "Shipping",
+    "remove": "Remove",
+    "update": "Update",
+    "itemsInCart": "{{count}} item in cart",
+    "itemsInCart_other": "{{count}} items in cart"
+  },
+  "checkout": {
+    "checkout": "Checkout",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "zipCode": "Zip Code",
+    "country": "Country",
+    "phone": "Phone",
+    "sameAsShipping": "Same as shipping address"
+  },
+  "order": {
+    "orders": "Orders",
+    "order": "Order",
+    "orderNumber": "Order Number",
+    "orderDate": "Order Date",
+    "orderStatus": "Order Status",
+    "orderTotal": "Order Total",
+    "orderDetails": "Order Details",
+    "trackOrder": "Track Order",
+    "viewOrder": "View Order",
+    "cancelOrder": "Cancel Order",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "user": {
+    "profile": "Profile",
+    "account": "Account",
+    "personalInfo": "Personal Information",
+    "addresses": "Addresses",
+    "orderHistory": "Order History",
+    "wishlist": "Wishlist",
+    "settings": "Settings",
+    "changePassword": "Change Password",
+    "updateProfile": "Update Profile",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password"
+  },
+  "footer": {
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "faq": "FAQ",
+    "support": "Support",
+    "followUs": "Follow Us",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Subscribe to our newsletter",
+    "enterEmail": "Enter your email",
+    "subscribe": "Subscribe",
+    "allRightsReserved": "All rights reserved"
+  }
+}
+

@@ -102,6 +102,19 @@ export const authService = {
       // Always clear auth state from Zustand store (which automatically syncs to localStorage)
       // This ensures users can reliably log out even if the backend endpoint fails
       useAuthStore.getState().logout()
+
+      // Clear wishlist and cart to prevent showing previous user's data
+      // Wrapped in try/catch to prevent chunk-load failures from breaking logout
+      try {
+        const { useWishlistStore } = await import('@store/wishlistStore')
+        useWishlistStore.getState().clearWishlist()
+
+        const { useCartStore } = await import('@store/cartStore')
+        useCartStore.getState().clearCart()
+      } catch (error) {
+        // Ignore chunk-load errors - auth state is already cleared
+        console.warn('Failed to clear wishlist/cart during logout:', error)
+      }
     }
   },
 

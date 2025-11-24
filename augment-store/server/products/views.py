@@ -11,6 +11,7 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
+from .services import ProductService
 
 
 
@@ -89,6 +90,11 @@ class ProductListView(BaseProductView, ListAPIView):
     ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+class FeaturedProductListView(ProductListView):
+
+    def get_queryset(self):
+        return Product.objects.filter(is_featured=True)
+
 class ProductSearchView(BaseProductView, ListAPIView):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_class = ProductSearchFilter
@@ -113,7 +119,11 @@ class ProductUpdateDeleteView(BaseProductView, RetrieveUpdateDestroyAPIView):
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
 
-
+class RecommendProductListView(BaseProductView, ListAPIView):
+    def get_queryset(self):
+        user: "User" = self.request.user
+        product_service = ProductService()
+        return product_service.recommend_products_for_user(user)
 
 
 

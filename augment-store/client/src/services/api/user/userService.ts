@@ -5,7 +5,6 @@ import type {
   UpdateProfileRequest,
   Address,
   CreateAddressRequest,
-  WishlistItem,
 } from '@features/user/types'
 
 export const userService = {
@@ -31,17 +30,5 @@ export const userService = {
 
   deleteAddress: async (id: string): Promise<void> => {
     return apiClient.delete(API_ENDPOINTS.USER.DELETE_ADDRESS(id))
-  },
-
-  getWishlist: async (): Promise<WishlistItem[]> => {
-    return apiClient.get<WishlistItem[]>(API_ENDPOINTS.USER.WISHLIST)
-  },
-
-  addToWishlist: async (productId: string): Promise<WishlistItem> => {
-    return apiClient.post<WishlistItem>(API_ENDPOINTS.USER.ADD_TO_WISHLIST, { productId })
-  },
-
-  removeFromWishlist: async (id: string): Promise<void> => {
-    return apiClient.delete(API_ENDPOINTS.USER.REMOVE_FROM_WISHLIST(id))
   },
 }
