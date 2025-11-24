@@ -371,7 +371,7 @@ export const useCartStore = create<CartState>()(
 import('@store/authStore').then(({ useAuthStore }) => {
   let previousAuthState = useAuthStore.getState().isAuthenticated
 
-  useAuthStore.subscribe((state) => {
+  const unsubscribe = useAuthStore.subscribe((state) => {
     const currentAuthState = state.isAuthenticated
 
     // Detect transition from authenticated to unauthenticated
@@ -385,4 +385,11 @@ import('@store/authStore').then(({ useAuthStore }) => {
 
     previousAuthState = currentAuthState
   })
+
+  // Clean up subscription on HMR module disposal to prevent memory leaks
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      unsubscribe()
+    })
+  }
 })
