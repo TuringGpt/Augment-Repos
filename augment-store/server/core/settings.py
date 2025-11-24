@@ -87,7 +87,8 @@ INSTALLED_APPS = [
     'schema_viewer',
     'contact',
     'newsletter',
-    'ticket'
+    'ticket',
+    "notification",
 ]
 
 MIDDLEWARE = [
