@@ -74,6 +74,7 @@
     "rating": "Rating",
     "inStock": "In Stock",
     "outOfStock": "Out of Stock",
+    "lowStock": "Only {{count}} left in stock",
     "addToCart": "Add to Cart",
     "addToWishlist": "Add to Wishlist",
     "removeFromWishlist": "Remove from Wishlist",
@@ -90,6 +91,8 @@
     "discount": "Discount"
   },
   "home": {
+    "featuredProducts": "Featured Products",
+    "noFeaturedProducts": "No featured products available at the moment.",
     "banners": {
       "clickToViewDetails": "Click to view details",
       "summerSale": {
