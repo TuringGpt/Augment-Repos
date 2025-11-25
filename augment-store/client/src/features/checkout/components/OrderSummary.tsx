@@ -36,6 +36,7 @@ import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 import { paymentService } from '@services/api/payment/paymentService'
 import { STRIPE_CONFIG } from '@config/api'
 import type { CreateOrderResponse } from '@features/orders/types'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface ContactInfo {
   email: string
@@ -70,6 +71,7 @@ const OrderSummary = ({
   shippingAddress,
   billingAddress,
 }: OrderSummaryProps) => {
+  const { t } = useTranslation()
   const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
   const { createOrder, isCreatingOrder, setCreateOrderError } = useOrderStore()
   const navigate = useNavigate()
@@ -272,10 +274,10 @@ const OrderSummary = ({
           }}
         >
           <Typography variant="h5" fontWeight={600}>
-            Order Summary
+            {t('checkout.orderSummary')}
           </Typography>
           <Typography variant="body1" color="text.secondary" textAlign="center">
-            Your cart is empty
+            {t('cart.emptyCart')}
           </Typography>
         </Box>
       </Card>
@@ -298,13 +300,13 @@ const OrderSummary = ({
             fontWeight={600}
             sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
           >
-            Order Summary
+            {t('checkout.orderSummary')}
           </Typography>
           <Typography
             color="text.secondary"
             sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
           >
-            {cart.itemCount || itemCount} item(s)
+            {t('cart.items', { count: cart.itemCount || itemCount })}
           </Typography>
         </Box>
         <Divider />
@@ -353,7 +355,7 @@ const OrderSummary = ({
                     color="text.secondary"
                     sx={{ mb: 1, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
-                    ${getItemPrice(item).toFixed(2)} each
+                    ${getItemPrice(item).toFixed(2)} {t('cart.each')}
                   </Typography>
                   <Typography
                     variant="subtitle2"
@@ -436,7 +438,7 @@ const OrderSummary = ({
         <Grid container spacing={1} py={2}>
           <Grid item xs={6}>
             <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Subtotal
+              {t('cart.subtotal')}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -446,7 +448,7 @@ const OrderSummary = ({
           </Grid>
           <Grid item xs={6}>
             <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Tax
+              {t('cart.tax')}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -456,7 +458,7 @@ const OrderSummary = ({
           </Grid>
           <Grid item xs={6}>
             <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Delivery Fee
+              {t('cart.deliveryFee')}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -466,7 +468,7 @@ const OrderSummary = ({
           </Grid>
           <Grid item xs={6}>
             <Typography color="text.secondary" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-              Discount
+              {t('cart.discount')}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -476,7 +478,7 @@ const OrderSummary = ({
           </Grid>
           <Grid item xs={6}>
             <Typography sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
-              Total
+              {t('cart.total')}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -496,18 +498,18 @@ const OrderSummary = ({
               htmlFor="discount-code-input"
               sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
             >
-              Discount Code
+              {t('checkout.discountCode')}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               id="discount-code-input"
               type="text"
-              placeholder="Enter discount code"
+              placeholder={t('checkout.enterDiscountCode')}
               size="small"
               fullWidth
               inputProps={{
-                'aria-label': 'Discount code',
+                'aria-label': t('checkout.discountCode'),
               }}
               sx={{
                 '& input': { fontSize: { xs: '0.875rem', sm: '1rem' } },
@@ -523,13 +525,13 @@ const OrderSummary = ({
             color="text.secondary"
             sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
           >
-            By placing an order, you agree to our{' '}
+            {t('checkout.agreement')}{' '}
             <a href="/terms" target="_blank" rel="noopener noreferrer">
-              Terms and Conditions
+              {t('checkout.termsAndConditions')}
             </a>{' '}
-            and{' '}
+            {t('checkout.and')}{' '}
             <a href="/privacy" target="_blank" rel="noopener noreferrer">
-              Privacy Policy
+              {t('checkout.privacyPolicy')}
             </a>
           </Typography>
         </Box>
@@ -554,12 +556,12 @@ const OrderSummary = ({
               {isProcessingPayment ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CircularProgress size={20} color="inherit" />
-                  Initializing Payment...
+                  {t('checkout.initializingPayment')}
                 </Box>
               ) : isCreatingOrder ? (
-                'Placing Order...'
+                t('checkout.placingOrder')
               ) : (
-                'Proceed to Payment'
+                t('checkout.proceedToPayment')
               )}
             </Button>
           </Box>
@@ -583,15 +585,18 @@ const OrderSummary = ({
         aria-labelledby="remove-item-dialog-title"
         aria-describedby="remove-item-dialog-description"
       >
-        <DialogTitle id="remove-item-dialog-title">Remove Item?</DialogTitle>
+        <DialogTitle id="remove-item-dialog-title">{t('checkout.removeItem')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="remove-item-dialog-description">
-            Are you sure you want to remove <strong>{itemToRemove?.name}</strong> from your cart?
-          </DialogContentText>
+          <DialogContentText
+            id="remove-item-dialog-description"
+            dangerouslySetInnerHTML={{
+              __html: t('checkout.removeItemConfirmation', { name: itemToRemove?.name || '' }),
+            }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleRemoveConfirm}
@@ -600,7 +605,7 @@ const OrderSummary = ({
             autoFocus
             disabled={isRemoving}
           >
-            {isRemoving ? 'Removing...' : 'Remove'}
+            {isRemoving ? t('checkout.removing') : t('cart.remove')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -619,10 +624,10 @@ const OrderSummary = ({
             <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
             <Box>
               <Typography variant="h5" fontWeight={600}>
-                Order Confirmed!
+                {t('checkout.orderConfirmed')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Thank you for your purchase
+                {t('checkout.thankYou')}
               </Typography>
             </Box>
           </Box>
@@ -630,7 +635,7 @@ const OrderSummary = ({
         <DialogContent>
           <Box sx={{ py: 2 }}>
             <Typography id="order-confirmation-dialog-description" variant="body1" color="text.secondary" gutterBottom>
-              Your order has been successfully placed and is being processed.
+              {t('checkout.orderSuccessMessage')}
             </Typography>
 
             {confirmedOrder && (
@@ -638,7 +643,7 @@ const OrderSummary = ({
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Order ID
+                      {t('checkout.orderId')}
                     </Typography>
                     <Typography variant="body1" fontWeight={600}>
                       {confirmedOrder.id}
@@ -646,7 +651,7 @@ const OrderSummary = ({
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Order Date
+                      {t('checkout.orderDate')}
                     </Typography>
                     <Typography variant="body1" fontWeight={600}>
                       {new Date(confirmedOrder.created_at).toLocaleString('en-US', {
@@ -660,7 +665,7 @@ const OrderSummary = ({
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary">
-                      Status
+                      {t('checkout.status')}
                     </Typography>
                     <Typography variant="body1" fontWeight={600} sx={{ textTransform: 'capitalize' }}>
                       {confirmedOrder.status}
@@ -671,7 +676,7 @@ const OrderSummary = ({
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Shipping Address
+                      {t('checkout.shippingAddress')}
                     </Typography>
                     <Typography variant="body2">
                       {confirmedOrder.shipping_address.first_name} {confirmedOrder.shipping_address.last_name}
@@ -692,7 +697,7 @@ const OrderSummary = ({
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Contact Information
+                      {t('checkout.contactInformation')}
                     </Typography>
                     <Typography variant="body2">{confirmedOrder.contact_information.email}</Typography>
                     <Typography variant="body2">{confirmedOrder.contact_information.phone}</Typography>
@@ -702,17 +707,17 @@ const OrderSummary = ({
             )}
 
             <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
-              A confirmation email has been sent to{' '}
+              {t('checkout.confirmationEmailSent')}{' '}
               <strong>{confirmedOrder?.contact_information.email}</strong>
             </Typography>
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button onClick={handleConfirmationClose} color="primary" variant="outlined">
-            Continue Shopping
+            {t('checkout.continueShopping')}
           </Button>
           <Button onClick={handleViewOrderDetails} color="primary" variant="contained" autoFocus>
-            View Order Details
+            {t('checkout.viewOrderDetails')}
           </Button>
         </DialogActions>
       </Dialog>
