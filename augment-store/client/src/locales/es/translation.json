@@ -209,7 +209,13 @@
     "subscribeNewsletter": "Suscríbete a nuestro boletín",
     "enterEmail": "Ingresa tu correo",
     "subscribe": "Suscribirse",
-    "allRightsReserved": "Todos los derechos reservados"
+    "allRightsReserved": "Todos los derechos reservados",
+    "tagline": "Tu tienda única para todas tus necesidades.",
+    "quickLinks": "Enlaces Rápidos",
+    "customerService": "Servicio al Cliente",
+    "helpCenter": "Centro de Ayuda",
+    "returns": "Devoluciones",
+    "shippingInfo": "Información de Envío"
   }
 }
 

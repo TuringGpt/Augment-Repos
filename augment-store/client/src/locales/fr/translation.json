@@ -209,7 +209,13 @@
     "subscribeNewsletter": "Abonnez-vous à notre newsletter",
     "enterEmail": "Entrez votre email",
     "subscribe": "S'abonner",
-    "allRightsReserved": "Tous droits réservés"
+    "allRightsReserved": "Tous droits réservés",
+    "tagline": "Votre guichet unique pour tous vos besoins.",
+    "quickLinks": "Liens Rapides",
+    "customerService": "Service Client",
+    "helpCenter": "Centre d'Aide",
+    "returns": "Retours",
+    "shippingInfo": "Informations d'Expédition"
   }
 }
 
