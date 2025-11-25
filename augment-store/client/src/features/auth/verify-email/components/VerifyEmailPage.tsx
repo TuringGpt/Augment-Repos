@@ -14,6 +14,7 @@ import { Email, CheckCircle, ArrowBack } from '@mui/icons-material'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
+import { parseApiError } from '@utils/errorUtils'
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams()
@@ -39,11 +40,9 @@ const VerifyEmailPage = () => {
       await authService.verifyEmail(token)
       setSuccessMessage('Your email has been verified successfully! You can now log in.')
     } catch (error) {
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (error as { message?: string }).message ||
-        'Failed to verify email. The link may be invalid or expired.'
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to verify email. The link may be invalid or expired.',
+      })
       setApiError(errorMessage)
     } finally {
       setIsVerifying(false)
@@ -86,7 +85,9 @@ const VerifyEmailPage = () => {
               Verify Your Email
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              {email ? `We've sent a verification link to ${email}` : 'Check your email for verification'}
+              {email
+                ? `We've sent a verification link to ${email}`
+                : 'Check your email for verification'}
             </Typography>
           </Box>
 
@@ -133,8 +134,8 @@ const VerifyEmailPage = () => {
                   Check Your Email
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  We've sent a verification link to your email address. Please click the link to verify
-                  your account and complete the registration process.
+                  We've sent a verification link to your email address. Please click the link to
+                  verify your account and complete the registration process.
                 </Typography>
 
                 <Box
@@ -205,4 +206,3 @@ const VerifyEmailPage = () => {
 }
 
 export default VerifyEmailPage
-

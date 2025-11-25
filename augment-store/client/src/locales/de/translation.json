@@ -74,6 +74,7 @@
     "rating": "Bewertung",
     "inStock": "Auf Lager",
     "outOfStock": "Nicht Auf Lager",
+    "lowStock": "Nur noch {{count}} auf Lager",
     "addToCart": "In den Warenkorb",
     "addToWishlist": "Zur Wunschliste Hinzufügen",
     "removeFromWishlist": "Von Wunschliste Entfernen",
@@ -90,6 +91,8 @@
     "discount": "Rabatt"
   },
   "home": {
+    "featuredProducts": "Empfohlene Produkte",
+    "noFeaturedProducts": "Derzeit sind keine empfohlenen Produkte verfügbar.",
     "banners": {
       "clickToViewDetails": "Klicken Sie, um Details anzuzeigen",
       "summerSale": {
@@ -206,7 +209,13 @@
     "subscribeNewsletter": "Abonnieren Sie unseren Newsletter",
     "enterEmail": "Geben Sie Ihre E-Mail ein",
     "subscribe": "Abonnieren",
-    "allRightsReserved": "Alle Rechte vorbehalten"
+    "allRightsReserved": "Alle Rechte vorbehalten",
+    "tagline": "Ihr One-Stop-Shop für alle Ihre Bedürfnisse.",
+    "quickLinks": "Schnelllinks",
+    "customerService": "Kundenservice",
+    "helpCenter": "Hilfezentrum",
+    "returns": "Rücksendungen",
+    "shippingInfo": "Versandinformationen"
   }
 }
 
