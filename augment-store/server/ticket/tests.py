@@ -114,7 +114,7 @@ class TicketTests(BaseAPITestCase):
     def test_list_comments(self):
         # GIVEN an authenticated user exists
         # WHEN we make a get request to list comments for a ticket
-        url = reverse("v1:ticket:list_comments", args=[self.ticket.id])
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
         response = self.authenticated_client.get(url)
 
         # THEN we should get a 200 response
@@ -146,7 +146,7 @@ class TicketTests(BaseAPITestCase):
         # THEN we should get a 204 response
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # AND the comment should no longer exist
-        url = reverse("v1:ticket:list_comments", args=[self.ticket.id])
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         comments = response.data.get("results", [])
