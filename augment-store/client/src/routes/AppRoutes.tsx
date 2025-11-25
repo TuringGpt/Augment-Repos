@@ -25,6 +25,7 @@ import BrandsPage from '@features/products/brands/components/BrandsPage'
 
 // Support pages
 import CreateTicketPage from '@features/support/create-ticket/components/CreateTicketPage'
+import TicketsPage from '@features/support/ticket-list/components/TicketsPage'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -78,6 +79,7 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
+          <Route path="/support/tickets" element={<TicketsPage />} />
         </Route>
       </Route>
 
