@@ -17,6 +17,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ResetPasswordRequest } from '@features/auth/types'
+import { parseApiError } from '@utils/errorUtils'
 
 interface ResetPasswordFormData {
   newPassword: string
@@ -117,11 +118,10 @@ const ResetPasswordPage = () => {
       setSuccessMessage('Your password has been reset successfully!')
       // Redirect handled by useEffect with cleanup
     } catch (error) {
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (error as { message?: string }).message ||
-        'Failed to reset password. Please try again or request a new reset link.'
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['password', 'confirm_password'],
+        defaultMessage: 'Failed to reset password. Please try again or request a new reset link.',
+      })
       setApiError(errorMessage)
     } finally {
       setIsSubmitting(false)
