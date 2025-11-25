@@ -12,6 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import type { Product } from '@features/products/types'
 import AddToWishlistButton from '@features/user/wishlist/components/AddToWishlistButton'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface ProductCardProps {
   product: Product
@@ -20,6 +21,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleClick = () => {
     navigate(`/products/${product.id}`)
@@ -81,7 +83,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {/* Stock Badge */}
           {product.stock === 0 && (
             <Chip
-              label="Out of Stock"
+              label={t('product.outOfStock')}
               color="default"
               size="small"
               sx={{
@@ -166,7 +168,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             {/* Stock Info */}
             {product.stock > 0 && product.stock < 20 && (
               <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
-                Only {product.stock} left in stock
+                {t('product.lowStock', { count: product.stock })}
               </Typography>
             )}
           </CardContent>

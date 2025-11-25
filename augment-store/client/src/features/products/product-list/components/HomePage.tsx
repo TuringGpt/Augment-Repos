@@ -3,10 +3,12 @@ import { Box, Container, Grid, Typography } from '@mui/material'
 import { ProductCardSkeleton } from '@components/skeletons'
 import { productService } from '@services/api/products/productService'
 import { useEffect, useState } from 'react'
+import { useTranslation } from '@hooks/useTranslation'
 import ProductCard from './ProductCard'
 import PromotionalBanners from './PromotionalBanners'
 
 const HomePage = () => {
+  const { t } = useTranslation()
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -37,7 +39,7 @@ const HomePage = () => {
       {/* Featured Products */}
       <Box sx={{ py: 6 }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 4 }}>
-          Featured Products
+          {t('home.featuredProducts')}
         </Typography>
 
         {isLoading ? (
@@ -58,7 +60,7 @@ const HomePage = () => {
           </Grid>
         ) : (
           <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-            No featured products available at the moment.
+            {t('home.noFeaturedProducts')}
           </Typography>
         )}
       </Box>
