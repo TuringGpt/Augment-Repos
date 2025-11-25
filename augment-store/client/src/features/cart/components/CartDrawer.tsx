@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Drawer,
   Box,
@@ -336,12 +337,13 @@ const CartDrawer = () => {
       >
         <DialogTitle id="remove-item-dialog-title">{t('cart.removeItemTitle')}</DialogTitle>
         <DialogContent>
-          <DialogContentText
-            id="remove-item-dialog-description"
-            dangerouslySetInnerHTML={{
-              __html: t('cart.removeItemConfirm', { name: itemToRemove?.name || '' }),
-            }}
-          />
+          <DialogContentText id="remove-item-dialog-description">
+            <Trans
+              i18nKey="cart.removeItemConfirm"
+              values={{ name: itemToRemove?.name || '' }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
