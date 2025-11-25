@@ -587,12 +587,10 @@ const OrderSummary = ({
       >
         <DialogTitle id="remove-item-dialog-title">{t('checkout.removeItem')}</DialogTitle>
         <DialogContent>
-          <DialogContentText
-            id="remove-item-dialog-description"
-            dangerouslySetInnerHTML={{
-              __html: t('checkout.removeItemConfirmation', { name: itemToRemove?.name || '' }),
-            }}
-          />
+          <DialogContentText id="remove-item-dialog-description">
+            {t('checkout.removeItemBefore')} <strong>{itemToRemove?.name}</strong>{' '}
+            {t('checkout.removeItemAfter')}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
