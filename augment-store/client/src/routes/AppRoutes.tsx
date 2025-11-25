@@ -24,6 +24,7 @@ import CategoriesPage from '@features/products/categories/components/CategoriesP
 import BrandsPage from '@features/products/brands/components/BrandsPage'
 
 // Support pages
+import TicketDetailPage from '@features/support/ticket-detail/components/TicketDetailPage'
 import CreateTicketPage from '@features/support/create-ticket/components/CreateTicketPage'
 import TicketsPage from '@features/support/ticket-list/components/TicketsPage'
 
@@ -78,6 +79,7 @@ const AppRoutes = () => {
           <Route path="/orders/:id" element={<OrderDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
         </Route>
