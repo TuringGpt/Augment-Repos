@@ -10,6 +10,8 @@ from .serializers import BillingAddressListSerializer, ContactInformationListSer
 from .models import Order, Payment
 from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, OrderPaymentSerializer, PaymentStatusSerializer
 from django.conf import settings
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class BaseOrderView:
     permission_classes = [IsAuthenticated]
@@ -94,7 +96,7 @@ class StripePaymentCallback(APIView):
 
             stripe_service.check_and_update_payment_status(payment)
          
-            return Response({"status": payment.payment_status})
+            return redirect(reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
         
         except Payment.DoesNotExist:
             return Response(
@@ -107,14 +109,11 @@ class StripePaymentCallback(APIView):
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
-class CheckoutConfirmationView(TemplateView):
-    template_name = "checkout/order-confirmation.html"
+class CheckoutPaymentConfirmationView(TemplateView):
+    template_name = "checkout/payment-confirmation.html"
 
-    def get(self, request, *args, **kwargs):
-        return Response({"message": "Order confirmed!"})
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["order_id"] = self.kwargs["order_id"]
         context["return_url"] = settings.FRONTEND_URL
-        return super().get_context_data(**kwargs)
+        return context
