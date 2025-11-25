@@ -24,6 +24,7 @@ import { Colors } from '@config/colors'
 import { useProfileForm } from '../hooks/useProfileForm'
 import { getChangedFields } from '../utils/profileValidation'
 import { AvatarUpload } from './AvatarUpload'
+import { parseApiError } from '@utils/errorUtils'
 
 const ProfilePage = () => {
   const navigate = useNavigate()
@@ -70,11 +71,9 @@ const ProfilePage = () => {
       setProfile(profileData)
       setProfileValues(profileData)
     } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (err as { message?: string }).message ||
-        'Failed to load profile'
+      const errorMessage = parseApiError(err, {
+        defaultMessage: 'Failed to load profile',
+      })
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -127,11 +126,10 @@ const ProfilePage = () => {
       // Auto-hide success message after 3 seconds
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (err as { message?: string }).message ||
-        'Failed to update profile'
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['first_name', 'last_name', 'phone'],
+        defaultMessage: 'Failed to update profile',
+      })
       setError(errorMessage)
     } finally {
       setIsSaving(false)
@@ -169,11 +167,10 @@ const ProfilePage = () => {
       setSuccessMessage('Avatar updated successfully!')
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (err as { message?: string }).message ||
-        'Failed to upload avatar'
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['profile_image'],
+        defaultMessage: 'Failed to upload avatar',
+      })
       setAvatarState((prev) => ({ ...prev, error: errorMessage }))
     } finally {
       setAvatarState((prev) => ({ ...prev, isUploading: false }))
@@ -201,11 +198,10 @@ const ProfilePage = () => {
       setSuccessMessage('Avatar removed successfully!')
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (err as { message?: string }).message ||
-        'Failed to remove avatar'
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['profile_image'],
+        defaultMessage: 'Failed to remove avatar',
+      })
       setAvatarState((prev) => ({ ...prev, error: errorMessage }))
     } finally {
       setAvatarState((prev) => ({ ...prev, isUploading: false }))

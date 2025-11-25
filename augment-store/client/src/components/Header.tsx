@@ -25,9 +25,11 @@ import SearchBar from '@components/common/SearchBar'
 import ThemeToggle from '@components/ThemeToggle'
 import LanguageSwitcher from '@components/LanguageSwitcher'
 import { authService } from '@services/api/auth/authService'
+import { useTranslation } from '@hooks/useTranslation'
 
 const Header = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isAuthenticated, user } = useAuthStore()
   const { getItemCount } = useCartStore()
   const { toggleSidebar, toggleCartDrawer } = useUIStore()
@@ -69,7 +71,7 @@ const Header = () => {
             }}
             onClick={() => navigate('/')}
           >
-            Augment Store
+            {t('common.appName')}
           </Typography>
 
           {/* Search Bar - Hidden on mobile */}
@@ -100,7 +102,7 @@ const Header = () => {
               onClick={() => navigate('/products')}
               sx={{ display: { xs: 'none', md: 'inline-flex' } }}
             >
-              Products
+              {t('nav.products')}
             </Button>
 
             {isAuthenticated && (
@@ -159,8 +161,8 @@ const Header = () => {
                 <IconButton
                   color="inherit"
                   onClick={handleLogout}
-                  title="Logout"
-                  aria-label="logout"
+                  title={t('nav.logout')}
+                  aria-label={t('nav.logout')}
                   sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Logout />
@@ -174,7 +176,7 @@ const Header = () => {
                 onClick={() => navigate('/login')}
                 sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
               >
-                Login
+                {t('nav.login')}
               </Button>
             )}
           </Box>

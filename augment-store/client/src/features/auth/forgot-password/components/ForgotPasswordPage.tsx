@@ -17,6 +17,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ForgotPasswordRequest } from '@features/auth/types'
+import { parseApiError } from '@utils/errorUtils'
 
 const ForgotPasswordPage = () => {
   const [formData, setFormData] = useState<ForgotPasswordRequest>({
@@ -76,11 +77,10 @@ const ForgotPasswordPage = () => {
       // Clear the form
       setFormData({ email: '' })
     } catch (error) {
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } }; message?: string }).response?.data
-          ?.message ||
-        (error as { message?: string }).message ||
-        'Failed to send reset instructions. Please try again.'
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'Failed to send reset instructions. Please try again.',
+      })
       setApiError(errorMessage)
     } finally {
       setIsSubmitting(false)
