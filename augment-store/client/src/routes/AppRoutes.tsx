@@ -23,6 +23,9 @@ import SearchPage from '@features/products/search/components/SearchPage'
 import CategoriesPage from '@features/products/categories/components/CategoriesPage'
 import BrandsPage from '@features/products/brands/components/BrandsPage'
 
+// Support pages
+import TicketsPage from '@features/support/ticket-list/components/TicketsPage'
+
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
 import ContactPage from '@features/info/contact/components/ContactPage'
@@ -74,6 +77,7 @@ const AppRoutes = () => {
           <Route path="/orders/:id" element={<OrderDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/support/tickets" element={<TicketsPage />} />
         </Route>
       </Route>
 
