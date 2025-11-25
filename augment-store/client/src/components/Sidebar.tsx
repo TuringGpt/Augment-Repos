@@ -25,6 +25,7 @@ import {
   Logout,
   Login,
   Receipt,
+  HelpOutline,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '@store/uiStore'
@@ -102,6 +103,11 @@ const Sidebar = () => {
 
   const handleProfileClick = () => {
     navigate('/profile')
+    closeSidebar()
+  }
+
+  const handleSupportClick = () => {
+    navigate('/support/tickets')
     closeSidebar()
   }
 
@@ -265,6 +271,27 @@ const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={user?.firstName ? `Profile (${user.firstName})` : 'Profile'}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Support */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleSupportClick}
+                    sx={{
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                      <HelpOutline />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Support"
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>

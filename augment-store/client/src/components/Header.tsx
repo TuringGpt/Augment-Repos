@@ -8,7 +8,15 @@ import {
   Box,
   Container,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt } from '@mui/icons-material'
+import {
+  ShoppingCart,
+  Person,
+  Favorite,
+  Logout,
+  Menu,
+  Receipt,
+  HelpOutline,
+} from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
@@ -119,6 +127,16 @@ const Header = () => {
                   sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Receipt />
+                </IconButton>
+
+                {/* Support - Hidden on mobile */}
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate('/support/tickets')}
+                  aria-label="support"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                >
+                  <HelpOutline />
                 </IconButton>
 
                 {/* Profile Icon - Hidden on mobile */}

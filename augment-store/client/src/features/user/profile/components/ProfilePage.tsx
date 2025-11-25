@@ -12,7 +12,7 @@ import {
   Grid,
   MenuItem,
 } from '@mui/material'
-import { Edit, Save, Cancel, Logout } from '@mui/icons-material'
+import { Edit, Save, Cancel, Logout, HelpOutline } from '@mui/icons-material'
 import delay from 'lodash/delay'
 import { useNavigate } from 'react-router-dom'
 import { ProfileSkeleton } from '@components/skeletons'
@@ -434,8 +434,30 @@ const ProfilePage = () => {
         </form>
       </Paper>
 
-      {/* Logout Button - Visible on mobile */}
+      {/* Support Button - Visible on mobile */}
       <Box sx={{ mt: 3, display: { xs: 'block', md: 'none' } }}>
+        <Button
+          fullWidth
+          variant="outlined"
+          color="primary"
+          startIcon={<HelpOutline />}
+          onClick={() => navigate('/support/tickets')}
+          sx={{
+            py: 1.5,
+            borderWidth: 2,
+            '&:hover': {
+              borderWidth: 2,
+              backgroundColor: 'primary.main',
+              color: 'white',
+            },
+          }}
+        >
+          Support & Help
+        </Button>
+      </Box>
+
+      {/* Logout Button - Visible on mobile */}
+      <Box sx={{ mt: 2, display: { xs: 'block', md: 'none' } }}>
         <Button
           fullWidth
           variant="outlined"
