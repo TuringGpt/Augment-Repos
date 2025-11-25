@@ -71,7 +71,7 @@ const OrderSummary = ({
   shippingAddress,
   billingAddress,
 }: OrderSummaryProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
   const { createOrder, isCreatingOrder, setCreateOrderError } = useOrderStore()
   const navigate = useNavigate()
@@ -652,7 +652,7 @@ const OrderSummary = ({
                       {t('checkout.orderDate')}
                     </Typography>
                     <Typography variant="body1" fontWeight={600}>
-                      {new Date(confirmedOrder.created_at).toLocaleString('en-US', {
+                      {new Date(confirmedOrder.created_at).toLocaleString(i18n.language, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
