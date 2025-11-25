@@ -145,10 +145,21 @@
     "total": "Total",
     "tax": "Taxe",
     "shipping": "Livraison",
+    "shippingFree": "GRATUIT",
     "remove": "Supprimer",
     "update": "Mettre à Jour",
     "itemsInCart": "{{count}} article dans le panier",
-    "itemsInCart_other": "{{count}} articles dans le panier"
+    "itemsInCart_other": "{{count}} articles dans le panier",
+    "quantity": "Quantité",
+    "each": "chacun",
+    "maxStock": "Stock maximum",
+    "viewFullCart": "Voir le Panier Complet",
+    "emptyCartMessage": "Ajoutez des produits pour commencer !",
+    "closeCart": "fermer le panier",
+    "removeItem": "Supprimer l'article",
+    "removeItemTitle": "Supprimer l'Article ?",
+    "removeItemConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{name}}</strong> de votre panier ?",
+    "removing": "Suppression..."
   },
   "checkout": {
     "checkout": "Paiement",

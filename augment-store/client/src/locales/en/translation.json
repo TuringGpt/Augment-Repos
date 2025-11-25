@@ -145,10 +145,21 @@
     "total": "Total",
     "tax": "Tax",
     "shipping": "Shipping",
+    "shippingFree": "FREE",
     "remove": "Remove",
     "update": "Update",
     "itemsInCart": "{{count}} item in cart",
-    "itemsInCart_other": "{{count}} items in cart"
+    "itemsInCart_other": "{{count}} items in cart",
+    "quantity": "Quantity",
+    "each": "each",
+    "maxStock": "Max stock",
+    "viewFullCart": "View Full Cart",
+    "emptyCartMessage": "Add some products to get started!",
+    "closeCart": "close cart",
+    "removeItem": "Remove item",
+    "removeItemTitle": "Remove Item?",
+    "removeItemConfirm": "Are you sure you want to remove <strong>{{name}}</strong> from your cart?",
+    "removing": "Removing..."
   },
   "checkout": {
     "checkout": "Checkout",
