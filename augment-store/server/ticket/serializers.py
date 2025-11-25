@@ -32,6 +32,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ["ticket","content"]
+        read_only_fields = ["ticket"]
 
 class CommentUpdateSerializer(serializers.ModelSerializer):
     class Meta:

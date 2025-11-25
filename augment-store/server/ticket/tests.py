@@ -108,7 +108,7 @@ class TicketTests(BaseAPITestCase):
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["content"], "New Comment Content")  
-        self.assertEqual(response.data["ticket"], str(self.ticket.id))
+        self.assertEqual(response.data["ticket"], self.ticket.id)
     
     def test_list_comments(self):
         # GIVEN an authenticated user exists
