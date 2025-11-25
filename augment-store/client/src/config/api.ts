@@ -77,9 +77,7 @@ export const API_ENDPOINTS = {
 
   // Payment endpoints
   PAYMENT: {
-    METHODS: '/payment/methods',
-    PROCESS: '/payment/process',
-    VERIFY: '/payment/verify',
+    CREATE_SESSION: '/payments/',
   },
 
   // Support Ticket endpoints
@@ -100,4 +98,28 @@ export const API_ENDPOINTS = {
         `/support/tickets/${ticketId}/comments/${commentId}/update/`,
     },
   },
+
+  // Support Ticket endpoints
+  SUPPORT: {
+    TICKETS: {
+      LIST: '/support/tickets/',
+      CREATE: '/support/tickets/create/',
+      DETAIL: (id: string) => `/support/tickets/${id}/`,
+      UPDATE: (id: string) => `/support/tickets/${id}/update/`,
+      DELETE: (id: string) => `/support/tickets/${id}/update/`,
+    },
+    COMMENTS: {
+      LIST: (ticketId: string) => `/support/tickets/${ticketId}/comments/`,
+      CREATE: (ticketId: string) => `/support/tickets/${ticketId}/comments/create/`,
+      UPDATE: (ticketId: string, commentId: string) =>
+        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
+      DELETE: (ticketId: string, commentId: string) =>
+        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
+    },
+  },
+}
+
+// Stripe configuration
+export const STRIPE_CONFIG = {
+  PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
 }
