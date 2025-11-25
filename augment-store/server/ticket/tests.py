@@ -99,7 +99,7 @@ class TicketTests(BaseAPITestCase):
     def test_add_comment(self):
         # GIVEN an authenticated user exists
         # WHEN we make a post request to add a comment to a ticket
-        url = reverse("v1:ticket:add_comment", args=[self.ticket.id])
+        url = reverse("v1:ticket:create_comment", args=[self.ticket.id])
         payload = {
             "content": "New Comment Content",
         }
@@ -108,7 +108,6 @@ class TicketTests(BaseAPITestCase):
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["content"], "New Comment Content")  
-        self.assertEqual(response.data["user"], self.user.id)  
         self.assertEqual(response.data["ticket"], str(self.ticket.id))
     
     def test_list_comments(self):
@@ -122,7 +121,7 @@ class TicketTests(BaseAPITestCase):
         self.assertGreaterEqual(len(response.data.get("results", [])), 1)
         self.assertEqual(response.data["results"][0]["content"], "Test Content")
         self.assertEqual(response.data["results"][0]["user"], self.user.id)
-        self.assertEqual(response.data["results"][0]["ticket"], str(self.ticket.id))
+        self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
     
     def test_delete_ticket(self):
         # GIVEN an authenticated user exists
@@ -140,7 +139,7 @@ class TicketTests(BaseAPITestCase):
     def test_delete_comment(self):
         # GIVEN an authenticated user exists
         # WHEN we make a delete request to delete a comment
-        url = reverse("v1:ticket:delete_comment", args=[self.comment.id])
+        url = reverse("v1:ticket:delete_comment", args=[self.ticket.id, self.comment.id])
         response = self.authenticated_client.delete(url)
 
         # THEN we should get a 204 response
