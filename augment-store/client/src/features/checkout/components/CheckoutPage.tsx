@@ -111,12 +111,8 @@ const billingAddressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
 })
 
-type ContactInfo = {
-  email: string
-  phone: string
-  firstName: string
-  lastName: string
-}
+// Derive ContactInfo type from the schema factory's return type
+type ContactInfo = z.infer<ReturnType<typeof createContactInfoSchema>>
 type ShippingAddress = z.infer<typeof shippingAddressSchema>
 type BillingAddress = z.infer<typeof billingAddressSchema>
 
