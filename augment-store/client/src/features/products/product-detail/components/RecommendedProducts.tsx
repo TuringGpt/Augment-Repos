@@ -77,6 +77,7 @@ const RecommendedProducts = () => {
               onClick={handlePrevPage}
               disabled={currentPage === 1}
               size="small"
+              aria-label="Previous page"
               sx={{
                 border: 1,
                 borderColor: 'divider',
@@ -91,6 +92,7 @@ const RecommendedProducts = () => {
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
               size="small"
+              aria-label="Next page"
               sx={{
                 border: 1,
                 borderColor: 'divider',
@@ -118,4 +120,3 @@ const RecommendedProducts = () => {
 }
 
 export default RecommendedProducts
-
