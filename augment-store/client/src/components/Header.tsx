@@ -7,6 +7,7 @@ import {
   Badge,
   Box,
   Container,
+  Tooltip,
 } from '@mui/material'
 import {
   ShoppingCart,
@@ -50,15 +51,17 @@ const Header = () => {
       <Container maxWidth="xl">
         <Toolbar sx={{ gap: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 0.5, sm: 2 } }}>
           {/* Burger Menu Button */}
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={toggleSidebar}
-            sx={{ mr: { xs: 0.5, sm: 1 } }}
-            aria-label="menu"
-          >
-            <Menu />
-          </IconButton>
+          <Tooltip title={t('tooltip.menu')}>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={toggleSidebar}
+              sx={{ mr: { xs: 0.5, sm: 1 } }}
+              aria-label={t('tooltip.menu')}
+            >
+              <Menu />
+            </IconButton>
+          </Tooltip>
 
           <Typography
             variant="h6"
@@ -84,11 +87,13 @@ const Header = () => {
 
           <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1, md: 2 }, alignItems: 'center' }}>
             {/* Cart Icon - Always Visible */}
-            <IconButton color="inherit" onClick={handleCartClick} aria-label="open cart">
-              <Badge badgeContent={cartItemCount} color="error">
-                <ShoppingCart />
-              </Badge>
-            </IconButton>
+            <Tooltip title={t('tooltip.cart')}>
+              <IconButton color="inherit" onClick={handleCartClick} aria-label={t('tooltip.cart')}>
+                <Badge badgeContent={cartItemCount} color="error">
+                  <ShoppingCart />
+                </Badge>
+              </IconButton>
+            </Tooltip>
 
             {/* Theme Toggle - Always Visible */}
             <ThemeToggle />
@@ -97,57 +102,67 @@ const Header = () => {
             <LanguageSwitcher />
 
             {/* Products Button - Hidden on mobile */}
-            <Button
-              color="inherit"
-              onClick={() => navigate('/products')}
-              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
-            >
-              {t('nav.products')}
-            </Button>
+            <Tooltip title={t('tooltip.products')}>
+              <Button
+                color="inherit"
+                onClick={() => navigate('/products')}
+                sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+              >
+                {t('nav.products')}
+              </Button>
+            </Tooltip>
 
             {isAuthenticated && (
               <>
                 {/* Wishlist - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/wishlist')}
-                  aria-label="wishlist"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <Badge badgeContent={0} color="error">
-                    <Favorite />
-                  </Badge>
-                </IconButton>
+                <Tooltip title={t('tooltip.wishlist')}>
+                  <IconButton
+                    color="inherit"
+                    onClick={() => navigate('/wishlist')}
+                    aria-label={t('tooltip.wishlist')}
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                  >
+                    <Badge badgeContent={0} color="error">
+                      <Favorite />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
 
                 {/* Orders - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/orders')}
-                  aria-label="orders"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <Receipt />
-                </IconButton>
+                <Tooltip title={t('tooltip.orders')}>
+                  <IconButton
+                    color="inherit"
+                    onClick={() => navigate('/orders')}
+                    aria-label={t('tooltip.orders')}
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                  >
+                    <Receipt />
+                  </IconButton>
+                </Tooltip>
 
                 {/* Support - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/support/tickets')}
-                  aria-label="support"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <HelpOutline />
-                </IconButton>
+                <Tooltip title={t('tooltip.support')}>
+                  <IconButton
+                    color="inherit"
+                    onClick={() => navigate('/support/tickets')}
+                    aria-label={t('tooltip.support')}
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                  >
+                    <HelpOutline />
+                  </IconButton>
+                </Tooltip>
 
                 {/* Profile Icon - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/profile')}
-                  aria-label="profile"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <Person />
-                </IconButton>
+                <Tooltip title={t('tooltip.profile')}>
+                  <IconButton
+                    color="inherit"
+                    onClick={() => navigate('/profile')}
+                    aria-label={t('tooltip.profile')}
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                  >
+                    <Person />
+                  </IconButton>
+                </Tooltip>
 
                 {/* User Name - Hidden on mobile */}
                 <Typography
@@ -158,26 +173,29 @@ const Header = () => {
                 </Typography>
 
                 {/* Logout - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={handleLogout}
-                  title={t('nav.logout')}
-                  aria-label={t('nav.logout')}
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <Logout />
-                </IconButton>
+                <Tooltip title={t('tooltip.logout')}>
+                  <IconButton
+                    color="inherit"
+                    onClick={handleLogout}
+                    aria-label={t('tooltip.logout')}
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                  >
+                    <Logout />
+                  </IconButton>
+                </Tooltip>
               </>
             )}
 
             {!isAuthenticated && (
-              <Button
-                color="inherit"
-                onClick={() => navigate('/login')}
-                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
-              >
-                {t('nav.login')}
-              </Button>
+              <Tooltip title={t('tooltip.login')}>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate('/login')}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
+                  {t('nav.login')}
+                </Button>
+              </Tooltip>
             )}
           </Box>
         </Toolbar>

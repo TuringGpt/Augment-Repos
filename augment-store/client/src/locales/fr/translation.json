@@ -41,7 +41,21 @@
     "register": "S'inscrire",
     "logout": "Déconnexion",
     "account": "Compte",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "menu": "Menu",
+    "support": "Support"
+  },
+  "tooltip": {
+    "menu": "Ouvrir le menu",
+    "cart": "Ouvrir le panier",
+    "wishlist": "Voir la liste de souhaits",
+    "orders": "Voir les commandes",
+    "support": "Obtenir de l'aide",
+    "profile": "Voir le profil",
+    "logout": "Déconnexion",
+    "products": "Parcourir les produits",
+    "login": "Se connecter à votre compte",
+    "changeLanguage": "Changer de langue"
   },
   "auth": {
     "login": "Connexion",
@@ -218,4 +232,3 @@
     "shippingInfo": "Informations d'Expédition"
   }
 }
-

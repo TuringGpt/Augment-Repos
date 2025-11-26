@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material'
+import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import LanguageIcon from '@mui/icons-material/Language'
 import CheckIcon from '@mui/icons-material/Check'
 import { useTranslation } from '@hooks/useTranslation'
 import { LANGUAGES, LanguageCode } from '@config/i18n'
 
 const LanguageSwitcher = () => {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -25,17 +25,19 @@ const LanguageSwitcher = () => {
 
   return (
     <>
-      <IconButton
-        onClick={handleClick}
-        color="inherit"
-        aria-label="change language"
-        aria-controls={open ? 'language-menu' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-        id="language-button"
-      >
-        <LanguageIcon />
-      </IconButton>
+      <Tooltip title={t('tooltip.changeLanguage')}>
+        <IconButton
+          onClick={handleClick}
+          color="inherit"
+          aria-label={t('tooltip.changeLanguage')}
+          aria-controls={open ? 'language-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? 'true' : undefined}
+          id="language-button"
+        >
+          <LanguageIcon />
+        </IconButton>
+      </Tooltip>
       <Menu
         id="language-menu"
         anchorEl={anchorEl}
@@ -56,9 +58,7 @@ const LanguageSwitcher = () => {
                 <CheckIcon fontSize="small" />
               </ListItemIcon>
             )}
-            <ListItemText inset={i18n.language !== code}>
-              {nativeName}
-            </ListItemText>
+            <ListItemText inset={i18n.language !== code}>{nativeName}</ListItemText>
           </MenuItem>
         ))}
       </Menu>
@@ -67,4 +67,3 @@ const LanguageSwitcher = () => {
 }
 
 export default LanguageSwitcher
-
