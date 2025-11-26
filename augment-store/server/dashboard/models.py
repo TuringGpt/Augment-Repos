@@ -45,12 +45,11 @@ class CartAbandonment(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='abandonments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='abandoned_products')
     quantity = models.IntegerField(default=1)
-    abandoned_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [
-            models.Index(fields=['product', '-abandoned_at']),
-            models.Index(fields=['user', '-abandoned_at']),
+            models.Index(fields=['product', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
         ]
 
     def __str__(self):
