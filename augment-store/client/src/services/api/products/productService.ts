@@ -9,11 +9,16 @@ import type {
   Brand,
   BrandAPIResponse,
 } from '@features/products/types'
-import type { PaginatedProductsAPI, ProductDetailAPI } from '@features/products/types/api'
+import type {
+  PaginatedProductsAPI,
+  ProductDetailAPI,
+  RecommendedProductsAPI,
+} from '@features/products/types/api'
 import {
   transformProductFromAPI,
   transformCategoryFromAPI,
   transformBrandFromAPI,
+  transformRecommendedProductFromAPI,
 } from '@features/products/types/api'
 
 export const productService = {
@@ -205,6 +210,52 @@ export const productService = {
     } catch (error) {
       console.error('Failed to fetch featured products:', error)
       return []
+    }
+  },
+
+  /**
+   * Get recommended products from backend API
+   * Backend returns paginated response with expanded brand and category objects
+   */
+  getRecommendedProducts: async (page: number = 1): Promise<ProductListResponse> => {
+    try {
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
+      // Fetch recommended products from backend
+      const response = await apiClient.get<RecommendedProductsAPI>(
+        API_ENDPOINTS.PRODUCTS.RECOMMEND,
+        {
+          params: { page },
+        }
+      )
+
+      console.log('🔍 Recommended Products API Response:', {
+        count: response.count,
+        resultsLength: response.results.length,
+        next: response.next,
+        previous: response.previous,
+      })
+
+      // Transform backend products to frontend format
+      const products: Product[] = response.results.map(transformRecommendedProductFromAPI)
+
+      return {
+        products,
+        total: response.count,
+        page,
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
+      }
+    } catch (error) {
+      console.error('Failed to fetch recommended products:', error)
+      // Return empty response on error
+      return {
+        products: [],
+        total: 0,
+        page: 1,
+        limit: 100,
+        totalPages: 0,
+      }
     }
   },
 }
