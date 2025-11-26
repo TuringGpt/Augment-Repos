@@ -3,7 +3,7 @@ from .models import ProductStatistics, ProductView, CartAbandonment
 
 
 class ProductStatisticsSerializer(serializers.ModelSerializer):
-    product_id = serializers.CharField(source='product.id', read_only=True)
+    product_id = serializers.UUIDField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(
         source='product.price', 
@@ -26,9 +26,9 @@ class ProductStatisticsSerializer(serializers.ModelSerializer):
 
 
 class ProductViewSerializer(serializers.ModelSerializer):
-    product_id = serializers.CharField(source='product.id', read_only=True)
+    product_id = serializers.UUIDField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
-    user_email = serializers.CharField(source='user.email', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True, allow_null=True)
     
     class Meta:
         model = ProductView
@@ -36,7 +36,7 @@ class ProductViewSerializer(serializers.ModelSerializer):
 
 
 class CartAbandonmentSerializer(serializers.ModelSerializer):
-    product_id = serializers.CharField(source='product.id', read_only=True)
+    product_id = serializers.UUIDField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(
         source='product.price',
@@ -60,7 +60,7 @@ class CartAbandonmentSerializer(serializers.ModelSerializer):
 
 class ProductStatisticsSummarySerializer(serializers.Serializer):
     """Serializer for product statistics summary with ranking."""
-    product_id = serializers.CharField()
+    product_id = serializers.UUIDField()
     product_name = serializers.CharField()
     product_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     metric_value = serializers.IntegerField()
