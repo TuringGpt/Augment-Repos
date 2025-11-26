@@ -5,7 +5,7 @@ from .models import ProductStatistics, ProductView, CartAbandonment
 
 class ProductStatisticsSerializer(serializers.ModelSerializer):
     product_id = serializers.CharField(source='product.id', read_only=True)
-    product_name = serializers.CharField(source='product.name')
+    product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(
         source='product.price', 
         max_digits=10, 
@@ -29,7 +29,7 @@ class ProductStatisticsSerializer(serializers.ModelSerializer):
 class ProductViewSerializer(serializers.ModelSerializer):
     product_id = serializers.CharField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
-    user_email = serializers.InputField(source='user.email', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
     
     class Meta:
         model = ProductView
