@@ -188,12 +188,12 @@ const SettingsMenu = () => {
             onClick={() => handleLanguageChange(code as LanguageCode)}
             selected={i18n.resolvedLanguage === code}
           >
-            {i18n.language === code && (
+            {i18n.resolvedLanguage === code && (
               <ListItemIcon>
                 <CheckIcon fontSize="small" />
               </ListItemIcon>
             )}
-            <ListItemText inset={i18n.language !== code}>{nativeName}</ListItemText>
+            <ListItemText inset={i18n.resolvedLanguage !== code}>{nativeName}</ListItemText>
           </MenuItem>
         ))}
       </Menu>
