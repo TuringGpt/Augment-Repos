@@ -6,7 +6,7 @@ from accounts.models import User
 
 class ProductStatistics(BaseModel):
     """
-    Track product statistics including views, cart additions.
+    Track product statistics including views, cart additions, removals, and purchases.
     """
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='statistics')
     view_count = models.IntegerField(default=0)
