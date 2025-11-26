@@ -1,7 +1,10 @@
 import { Container, Typography, Box, Paper, Grid, TextField, Button } from '@mui/material'
 import { Email, Phone, LocationOn } from '@mui/icons-material'
+import { useTranslation } from '@hooks/useTranslation'
 
 const ContactPage = () => {
+  const { t } = useTranslation()
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO: Implement contact form submission
@@ -11,27 +14,26 @@ const ContactPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h3" component="h1" gutterBottom>
-        Contact Us
+        {t('contact.title')}
       </Typography>
 
       <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Get in Touch
+              {t('contact.getInTouch')}
             </Typography>
             <Typography variant="body1" paragraph>
-              Have a question or need assistance? We're here to help! Fill out the form and we'll
-              get back to you as soon as possible.
+              {t('contact.description')}
             </Typography>
 
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-              <TextField fullWidth label="Name" margin="normal" required />
-              <TextField fullWidth label="Email" type="email" margin="normal" required />
-              <TextField fullWidth label="Subject" margin="normal" required />
-              <TextField fullWidth label="Message" multiline rows={4} margin="normal" required />
+              <TextField fullWidth label={t('contact.name')} margin="normal" required />
+              <TextField fullWidth label={t('contact.email')} type="email" margin="normal" required />
+              <TextField fullWidth label={t('contact.subject')} margin="normal" required />
+              <TextField fullWidth label={t('contact.message')} multiline rows={4} margin="normal" required />
               <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-                Send Message
+                {t('contact.sendMessage')}
               </Button>
             </Box>
           </Paper>
@@ -40,14 +42,14 @@ const ContactPage = () => {
         <Grid item xs={12} md={6}>
           <Paper elevation={2} sx={{ p: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Contact Information
+              {t('contact.contactInformation')}
             </Typography>
 
             <Box sx={{ mt: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Email sx={{ mr: 2, color: 'primary.main' }} />
                 <Box>
-                  <Typography variant="subtitle2">Email</Typography>
+                  <Typography variant="subtitle2">{t('contact.email')}</Typography>
                   <Typography variant="body2">support@augmentstore.com</Typography>
                 </Box>
               </Box>
@@ -55,7 +57,7 @@ const ContactPage = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Phone sx={{ mr: 2, color: 'primary.main' }} />
                 <Box>
-                  <Typography variant="subtitle2">Phone</Typography>
+                  <Typography variant="subtitle2">{t('contact.phone')}</Typography>
                   <Typography variant="body2">+1 (555) 123-4567</Typography>
                 </Box>
               </Box>
@@ -63,7 +65,7 @@ const ContactPage = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <LocationOn sx={{ mr: 2, color: 'primary.main' }} />
                 <Box>
-                  <Typography variant="subtitle2">Address</Typography>
+                  <Typography variant="subtitle2">{t('contact.address')}</Typography>
                   <Typography variant="body2">
                     123 Commerce Street
                     <br />
@@ -77,11 +79,11 @@ const ContactPage = () => {
 
             <Box sx={{ mt: 4 }}>
               <Typography variant="h6" gutterBottom>
-                Business Hours
+                {t('contact.businessHours')}
               </Typography>
-              <Typography variant="body2">Monday - Friday: 9:00 AM - 6:00 PM PST</Typography>
-              <Typography variant="body2">Saturday: 10:00 AM - 4:00 PM PST</Typography>
-              <Typography variant="body2">Sunday: Closed</Typography>
+              <Typography variant="body2">{t('contact.mondayFriday')}</Typography>
+              <Typography variant="body2">{t('contact.saturday')}</Typography>
+              <Typography variant="body2">{t('contact.sunday')}</Typography>
             </Box>
           </Paper>
         </Grid>

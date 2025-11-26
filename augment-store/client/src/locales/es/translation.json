@@ -258,5 +258,22 @@
     "helpCenter": "Centro de Ayuda",
     "returns": "Devoluciones",
     "shippingInfo": "Información de Envío"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "getInTouch": "Ponte en Contacto",
+    "description": "¿Tienes alguna pregunta o necesitas ayuda? ¡Estamos aquí para ayudarte! Completa el formulario y te responderemos lo antes posible.",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "subject": "Asunto",
+    "message": "Mensaje",
+    "sendMessage": "Enviar Mensaje",
+    "contactInformation": "Información de Contacto",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "businessHours": "Horario de Atención",
+    "mondayFriday": "Lunes - Viernes: 9:00 AM - 6:00 PM PST",
+    "saturday": "Sábado: 10:00 AM - 4:00 PM PST",
+    "sunday": "Domingo: Cerrado"
   }
 }
