@@ -219,7 +219,33 @@
     "orderDate": "Order Date",
     "status": "Status",
     "contactInformation": "Contact Information",
-    "confirmationEmailSent": "A confirmation email has been sent to"
+    "confirmationEmailSent": "A confirmation email has been sent to",
+    "contactForm": {
+      "title": "Contact Information",
+      "subtitle": "We'll use this to contact you about your order",
+      "complete": "Complete",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "emailHelper": "We'll send your order confirmation here",
+      "phoneHelper": "Enter 10-15 digits. Format: +1 (555) 123-4567 or 5551234567",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "phoneRequired": "Phone number is required",
+        "phoneInvalidChars": "Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix",
+        "phoneInvalidLength": "Phone number must be between 10 and 15 digits",
+        "phoneInvalidFormat": "Invalid phone number format",
+        "firstNameRequired": "First name is required",
+        "firstNameTooLong": "First name is too long",
+        "firstNameInvalidChars": "First name can only contain letters, spaces, hyphens, and apostrophes",
+        "lastNameRequired": "Last name is required",
+        "lastNameTooLong": "Last name is too long",
+        "lastNameInvalidChars": "Last name can only contain letters, spaces, hyphens, and apostrophes"
+      }
+    }
   },
   "order": {
     "orders": "Orders",

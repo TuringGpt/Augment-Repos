@@ -219,7 +219,33 @@
     "orderDate": "Bestelldatum",
     "status": "Status",
     "contactInformation": "Kontaktinformationen",
-    "confirmationEmailSent": "Eine Bestätigungs-E-Mail wurde gesendet an"
+    "confirmationEmailSent": "Eine Bestätigungs-E-Mail wurde gesendet an",
+    "contactForm": {
+      "title": "Kontaktinformationen",
+      "subtitle": "Wir verwenden diese, um Sie über Ihre Bestellung zu kontaktieren",
+      "complete": "Vollständig",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "emailAddress": "E-Mail-Adresse",
+      "phoneNumber": "Telefonnummer",
+      "emailHelper": "Wir senden Ihre Bestellbestätigung hierher",
+      "phoneHelper": "Geben Sie 10-15 Ziffern ein. Format: +1 (555) 123-4567 oder 5551234567",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "errors": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Ungültige E-Mail-Adresse",
+        "phoneRequired": "Telefonnummer ist erforderlich",
+        "phoneInvalidChars": "Telefonnummer darf nur Ziffern, Leerzeichen, Bindestriche, Klammern und ein optionales + Präfix enthalten",
+        "phoneInvalidLength": "Telefonnummer muss zwischen 10 und 15 Ziffern lang sein",
+        "phoneInvalidFormat": "Ungültiges Telefonnummernformat",
+        "firstNameRequired": "Vorname ist erforderlich",
+        "firstNameTooLong": "Vorname ist zu lang",
+        "firstNameInvalidChars": "Vorname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
+        "lastNameRequired": "Nachname ist erforderlich",
+        "lastNameTooLong": "Nachname ist zu lang",
+        "lastNameInvalidChars": "Nachname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten"
+      }
+    }
   },
   "order": {
     "orders": "Bestellungen",

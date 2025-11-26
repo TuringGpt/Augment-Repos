@@ -26,51 +26,56 @@ import OrderSummary from '@/features/checkout/components/OrderSummary'
 import { COUNTRIES } from '@constants/index'
 import { userService } from '@services/api/user/userService'
 import { useAuthStore } from '@store/authStore'
+import { useTranslation } from '@hooks/useTranslation'
 
 const nameRegex = /^[a-zA-Z\s\-']+$/
 const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
 
-const contactInfoSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email address'),
-  phone: z
-    .string()
-    .min(1, 'Phone number is required')
-    .transform((val) => val.replace(/[\s\-()]/g, ''))
-    .refine(
-      (val) => {
-        const digitsOnly = val.replace(/^\+/, '')
-        return /^\d+$/.test(digitsOnly)
-      },
-      {
-        message:
-          'Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix',
-      }
-    )
-    .refine(
-      (val) => {
-        const digitsOnly = val.replace(/^\+/, '')
-        return digitsOnly.length >= 10 && digitsOnly.length <= 15
-      },
-      { message: 'Phone number must be between 10 and 15 digits' }
-    )
-    .refine(
-      (val) => {
-        const patterns = [/^\+?1?\d{10}$/, /^\+?\d{10,15}$/]
-        return patterns.some((pattern) => pattern.test(val))
-      },
-      { message: 'Invalid phone number format' }
-    ),
-  firstName: z
-    .string()
-    .min(1, 'First name is required')
-    .max(50, 'First name is too long')
-    .regex(nameRegex, `First name ${nameErrorMessage}`),
-  lastName: z
-    .string()
-    .min(1, 'Last name is required')
-    .max(50, 'Last name is too long')
-    .regex(nameRegex, `Last name ${nameErrorMessage}`),
-})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createContactInfoSchema = (t: any) =>
+  z.object({
+    email: z
+      .string()
+      .min(1, t('checkout.contactForm.errors.emailRequired'))
+      .email(t('checkout.contactForm.errors.emailInvalid')),
+    phone: z
+      .string()
+      .min(1, t('checkout.contactForm.errors.phoneRequired'))
+      .transform((val) => val.replace(/[\s\-()]/g, ''))
+      .refine(
+        (val) => {
+          const digitsOnly = val.replace(/^\+/, '')
+          return /^\d+$/.test(digitsOnly)
+        },
+        {
+          message: t('checkout.contactForm.errors.phoneInvalidChars'),
+        }
+      )
+      .refine(
+        (val) => {
+          const digitsOnly = val.replace(/^\+/, '')
+          return digitsOnly.length >= 10 && digitsOnly.length <= 15
+        },
+        { message: t('checkout.contactForm.errors.phoneInvalidLength') }
+      )
+      .refine(
+        (val) => {
+          const patterns = [/^\+?1?\d{10}$/, /^\+?\d{10,15}$/]
+          return patterns.some((pattern) => pattern.test(val))
+        },
+        { message: t('checkout.contactForm.errors.phoneInvalidFormat') }
+      ),
+    firstName: z
+      .string()
+      .min(1, t('checkout.contactForm.errors.firstNameRequired'))
+      .max(50, t('checkout.contactForm.errors.firstNameTooLong'))
+      .regex(nameRegex, t('checkout.contactForm.errors.firstNameInvalidChars')),
+    lastName: z
+      .string()
+      .min(1, t('checkout.contactForm.errors.lastNameRequired'))
+      .max(50, t('checkout.contactForm.errors.lastNameTooLong'))
+      .regex(nameRegex, t('checkout.contactForm.errors.lastNameInvalidChars')),
+  })
 
 const shippingAddressSchema = z.object({
   address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
@@ -106,7 +111,8 @@ const billingAddressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
 })
 
-type ContactInfo = z.infer<typeof contactInfoSchema>
+// Derive ContactInfo type from the schema factory's return type
+type ContactInfo = z.infer<ReturnType<typeof createContactInfoSchema>>
 type ShippingAddress = z.infer<typeof shippingAddressSchema>
 type BillingAddress = z.infer<typeof billingAddressSchema>
 
@@ -129,6 +135,11 @@ const ACCORDION_DETAILS_STYLES = { px: 3, py: 3, bgcolor: 'grey.50' }
 
 const CheckoutPage = () => {
   const { isAuthenticated } = useAuthStore()
+  const { t } = useTranslation()
+
+  // Create schema with translations
+  const contactInfoSchema = useMemo(() => createContactInfoSchema(t), [t])
+
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: '',
     phone: '',
@@ -219,6 +230,7 @@ const CheckoutPage = () => {
 
   const validateContactField = useCallback(createFieldValidator(contactInfoSchema, ''), [
     createFieldValidator,
+    contactInfoSchema,
   ])
 
   const validateShippingField = useCallback(createFieldValidator(shippingAddressSchema, 'shipping'), [
@@ -381,16 +393,16 @@ const CheckoutPage = () => {
                 <ContactMailIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
-                    Contact Information
+                    {t('checkout.contactForm.title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    We'll use this to contact you about your order
+                    {t('checkout.contactForm.subtitle')}
                   </Typography>
                 </Box>
                 {isContactInfoComplete && (
                   <Chip
                     icon={<CheckCircleIcon />}
-                    label="Complete"
+                    label={t('checkout.contactForm.complete')}
                     color="success"
                     size="small"
                     sx={{ mr: 2 }}
@@ -404,7 +416,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="First Name"
+                    label={t('checkout.contactForm.firstName')}
                     value={contactInfo.firstName}
                     onChange={handleContactChange('firstName')}
                     onBlur={handleContactBlur('firstName')}
@@ -419,7 +431,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Last Name"
+                    label={t('checkout.contactForm.lastName')}
                     value={contactInfo.lastName}
                     onChange={handleContactChange('lastName')}
                     onBlur={handleContactBlur('lastName')}
@@ -434,7 +446,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Email Address"
+                    label={t('checkout.contactForm.emailAddress')}
                     type="email"
                     value={contactInfo.email}
                     onChange={handleContactChange('email')}
@@ -443,7 +455,7 @@ const CheckoutPage = () => {
                     helperText={
                       touched.email && errors.email
                         ? errors.email
-                        : "We'll send your order confirmation here"
+                        : t('checkout.contactForm.emailHelper')
                     }
                     required
                     variant="outlined"
@@ -454,7 +466,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Phone Number"
+                    label={t('checkout.contactForm.phoneNumber')}
                     type="tel"
                     value={contactInfo.phone}
                     onChange={handleContactChange('phone')}
@@ -463,9 +475,9 @@ const CheckoutPage = () => {
                     helperText={
                       touched.phone && errors.phone
                         ? errors.phone
-                        : 'Enter 10-15 digits. Format: +1 (555) 123-4567 or 5551234567'
+                        : t('checkout.contactForm.phoneHelper')
                     }
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t('checkout.contactForm.phonePlaceholder')}
                     required
                     variant="outlined"
                     sx={{ bgcolor: 'background.paper' }}
