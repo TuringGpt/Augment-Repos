@@ -12,6 +12,7 @@ from accounts.models import User
 
 class Command(BaseCommand):
     help = "Generate dummy products from images in static folder, storing files locally with duplicate prevention"
+    featured = False
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -37,11 +38,18 @@ class Command(BaseCommand):
             help='Delete existing products for the merchant before creating new ones'
         )
 
+        parser.add_argument(
+            '--featured',
+            action="store_true",
+            help='Mark products as featured'
+        )
+
     def handle(self, *_args, **options):
         static_path = options['static_path']
         merchant_email = options['merchant_email']
         dry_run = options['dry_run']
         delete_existing = options['delete_existing']
+        self.featured = options.get('featured', False)
 
         # Check if FILE_UPLOAD_STORAGE is set to local
         if hasattr(settings, 'FILE_UPLOAD_STORAGE') and settings.FILE_UPLOAD_STORAGE != 'local':
@@ -267,7 +275,8 @@ class Command(BaseCommand):
             category=category,
             created_by=merchant_user,
             quantity=random.randint(10, 100),
-            rating=round(random.uniform(3.5, 5.0), 2)
+            rating=round(random.uniform(3.5, 5.0), 2),
+            is_featured=self.featured,
         )
 
         # Add image to product
