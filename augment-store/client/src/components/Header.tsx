@@ -128,18 +128,6 @@ const Header = () => {
                   </IconButton>
                 </Tooltip>
 
-                {/* Support - Hidden on mobile */}
-                <Tooltip title={t('tooltip.support')}>
-                  <IconButton
-                    color="inherit"
-                    onClick={() => navigate('/support/tickets')}
-                    aria-label={t('tooltip.support')}
-                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                  >
-                    <HelpOutline />
-                  </IconButton>
-                </Tooltip>
-
                 {/* Profile Icon - Hidden on mobile */}
                 <Tooltip title={t('tooltip.profile')}>
                   <IconButton
