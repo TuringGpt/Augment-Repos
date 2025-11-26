@@ -41,7 +41,21 @@
     "register": "S'inscrire",
     "logout": "Déconnexion",
     "account": "Compte",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "menu": "Menu",
+    "support": "Support"
+  },
+  "tooltip": {
+    "menu": "Ouvrir le menu",
+    "cart": "Ouvrir le panier",
+    "wishlist": "Voir la liste de souhaits",
+    "orders": "Voir les commandes",
+    "support": "Obtenir de l'aide",
+    "profile": "Voir le profil",
+    "logout": "Déconnexion",
+    "products": "Parcourir les produits",
+    "login": "Se connecter à votre compte",
+    "changeLanguage": "Changer de langue"
   },
   "auth": {
     "login": "Connexion",
@@ -146,12 +160,14 @@
     "tax": "Taxe",
     "shipping": "Livraison",
     "shippingFree": "GRATUIT",
+    "deliveryFee": "Frais de Livraison",
+    "discount": "Réduction",
+    "each": "chacun",
     "remove": "Supprimer",
     "update": "Mettre à Jour",
     "itemsInCart": "{{count}} article dans le panier",
     "itemsInCart_other": "{{count}} articles dans le panier",
     "quantity": "Quantité",
-    "each": "chacun",
     "maxStock": "Stock maximum",
     "viewFullCart": "Voir le Panier Complet",
     "emptyCartMessage": "Ajoutez des produits pour commencer !",
@@ -159,7 +175,8 @@
     "removeItem": "Supprimer l'article",
     "removeItemTitle": "Supprimer l'Article ?",
     "removeItemConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{name}}</strong> de votre panier ?",
-    "removing": "Suppression..."
+    "removing": "Suppression...",
+    "items": "{{count}} article(s)"
   },
   "checkout": {
     "checkout": "Paiement",
@@ -174,7 +191,31 @@
     "zipCode": "Code Postal",
     "country": "Pays",
     "phone": "Téléphone",
-    "sameAsShipping": "Identique à l'adresse de livraison"
+    "sameAsShipping": "Identique à l'adresse de livraison",
+    "discountCode": "Code de Réduction",
+    "enterDiscountCode": "Entrez le code de réduction",
+    "proceedToPayment": "Procéder au Paiement",
+    "placingOrder": "Passage de la Commande...",
+    "initializingPayment": "Initialisation du Paiement...",
+    "agreement": "En passant une commande, vous acceptez nos",
+    "termsAndConditions": "Conditions Générales",
+    "and": "et",
+    "privacyPolicy": "Politique de Confidentialité",
+    "removeItem": "Supprimer l'Article?",
+    "removeItemBefore": "Êtes-vous sûr de vouloir supprimer",
+    "removeItemAfter": "de votre panier?",
+    "removing": "Suppression...",
+    "orderConfirmed": "Commande Confirmée!",
+    "thankYou": "Merci pour votre achat",
+    "orderSuccessMessage": "Votre commande a été passée avec succès et est en cours de traitement.",
+    "orderId": "ID de Commande",
+    "totalAmount": "Montant Total",
+    "viewOrderDetails": "Voir les Détails de la Commande",
+    "continueShopping": "Continuer les Achats",
+    "orderDate": "Date de Commande",
+    "status": "Statut",
+    "contactInformation": "Informations de Contact",
+    "confirmationEmailSent": "Un e-mail de confirmation a été envoyé à"
   },
   "order": {
     "orders": "Commandes",
@@ -229,4 +270,3 @@
     "shippingInfo": "Informations d'Expédition"
   }
 }
-

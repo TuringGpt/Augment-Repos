@@ -41,7 +41,21 @@
     "register": "Register",
     "logout": "Logout",
     "account": "Account",
-    "settings": "Settings"
+    "settings": "Settings",
+    "menu": "Menu",
+    "support": "Support"
+  },
+  "tooltip": {
+    "menu": "Open menu",
+    "cart": "Open cart",
+    "wishlist": "View wishlist",
+    "orders": "View orders",
+    "support": "Get support",
+    "profile": "View profile",
+    "logout": "Logout",
+    "products": "Browse products",
+    "login": "Login to your account",
+    "changeLanguage": "Change language"
   },
   "auth": {
     "login": "Login",
@@ -146,12 +160,14 @@
     "tax": "Tax",
     "shipping": "Shipping",
     "shippingFree": "FREE",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
+    "each": "each",
     "remove": "Remove",
     "update": "Update",
     "itemsInCart": "{{count}} item in cart",
     "itemsInCart_other": "{{count}} items in cart",
     "quantity": "Quantity",
-    "each": "each",
     "maxStock": "Max stock",
     "viewFullCart": "View Full Cart",
     "emptyCartMessage": "Add some products to get started!",
@@ -159,7 +175,8 @@
     "removeItem": "Remove item",
     "removeItemTitle": "Remove Item?",
     "removeItemConfirm": "Are you sure you want to remove <strong>{{name}}</strong> from your cart?",
-    "removing": "Removing..."
+    "removing": "Removing...",
+    "items": "{{count}} item(s)"
   },
   "checkout": {
     "checkout": "Checkout",
@@ -174,7 +191,31 @@
     "zipCode": "Zip Code",
     "country": "Country",
     "phone": "Phone",
-    "sameAsShipping": "Same as shipping address"
+    "sameAsShipping": "Same as shipping address",
+    "discountCode": "Discount Code",
+    "enterDiscountCode": "Enter discount code",
+    "proceedToPayment": "Proceed to Payment",
+    "placingOrder": "Placing Order...",
+    "initializingPayment": "Initializing Payment...",
+    "agreement": "By placing an order, you agree to our",
+    "termsAndConditions": "Terms and Conditions",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "removeItem": "Remove Item?",
+    "removeItemBefore": "Are you sure you want to remove",
+    "removeItemAfter": "from your cart?",
+    "removing": "Removing...",
+    "orderConfirmed": "Order Confirmed!",
+    "thankYou": "Thank you for your purchase",
+    "orderSuccessMessage": "Your order has been successfully placed and is being processed.",
+    "orderId": "Order ID",
+    "totalAmount": "Total Amount",
+    "viewOrderDetails": "View Order Details",
+    "continueShopping": "Continue Shopping",
+    "orderDate": "Order Date",
+    "status": "Status",
+    "contactInformation": "Contact Information",
+    "confirmationEmailSent": "A confirmation email has been sent to"
   },
   "order": {
     "orders": "Orders",
@@ -229,4 +270,3 @@
     "shippingInfo": "Shipping Info"
   }
 }
-
