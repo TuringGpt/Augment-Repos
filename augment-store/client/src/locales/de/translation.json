@@ -41,7 +41,21 @@
     "register": "Registrieren",
     "logout": "Abmelden",
     "account": "Konto",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "menu": "Menü",
+    "support": "Support"
+  },
+  "tooltip": {
+    "menu": "Menü öffnen",
+    "cart": "Warenkorb öffnen",
+    "wishlist": "Wunschliste anzeigen",
+    "orders": "Bestellungen anzeigen",
+    "support": "Support erhalten",
+    "profile": "Profil anzeigen",
+    "logout": "Abmelden",
+    "products": "Produkte durchsuchen",
+    "login": "Bei Ihrem Konto anmelden",
+    "changeLanguage": "Sprache ändern"
   },
   "auth": {
     "login": "Anmelden",
@@ -246,4 +260,3 @@
     "shippingInfo": "Versandinformationen"
   }
 }
-
