@@ -25,7 +25,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/products/search',
     CATEGORIES: '/products/categories',
     BRANDS: '/products/brands',
-    FEATURED: '/products/featured',
+    FEATURED: '/products/featured/',
   },
 
   // Cart endpoints
