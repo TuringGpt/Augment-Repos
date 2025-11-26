@@ -24,7 +24,9 @@
     "learnMore": "En Savoir Plus",
     "readMore": "Lire Plus",
     "showMore": "Afficher Plus",
-    "showLess": "Afficher Moins"
+    "showLess": "Afficher Moins",
+    "darkMode": "Mode Sombre",
+    "lightMode": "Mode Clair"
   },
   "nav": {
     "home": "Accueil",
@@ -41,7 +43,10 @@
     "register": "S'inscrire",
     "logout": "Déconnexion",
     "account": "Compte",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "support": "Support",
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la Langue"
   },
   "auth": {
     "login": "Connexion",
@@ -218,4 +223,3 @@
     "shippingInfo": "Informations d'Expédition"
   }
 }
-

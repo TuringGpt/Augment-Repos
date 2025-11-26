@@ -24,7 +24,9 @@
     "learnMore": "Learn More",
     "readMore": "Read More",
     "showMore": "Show More",
-    "showLess": "Show Less"
+    "showLess": "Show Less",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "nav": {
     "home": "Home",
@@ -41,7 +43,10 @@
     "register": "Register",
     "logout": "Logout",
     "account": "Account",
-    "settings": "Settings"
+    "settings": "Settings",
+    "support": "Support",
+    "language": "Language",
+    "selectLanguage": "Select Language"
   },
   "auth": {
     "login": "Login",
@@ -218,4 +223,3 @@
     "shippingInfo": "Shipping Info"
   }
 }
-

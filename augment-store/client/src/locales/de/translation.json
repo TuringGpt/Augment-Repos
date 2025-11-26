@@ -24,7 +24,9 @@
     "learnMore": "Mehr Erfahren",
     "readMore": "Mehr Lesen",
     "showMore": "Mehr Anzeigen",
-    "showLess": "Weniger Anzeigen"
+    "showLess": "Weniger Anzeigen",
+    "darkMode": "Dunkler Modus",
+    "lightMode": "Heller Modus"
   },
   "nav": {
     "home": "Startseite",
@@ -41,7 +43,10 @@
     "register": "Registrieren",
     "logout": "Abmelden",
     "account": "Konto",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "support": "Support",
+    "language": "Sprache",
+    "selectLanguage": "Sprache Auswählen"
   },
   "auth": {
     "login": "Anmelden",
@@ -218,4 +223,3 @@
     "shippingInfo": "Versandinformationen"
   }
 }
-

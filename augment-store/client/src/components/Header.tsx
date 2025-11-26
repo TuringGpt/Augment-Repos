@@ -8,22 +8,13 @@ import {
   Box,
   Container,
 } from '@mui/material'
-import {
-  ShoppingCart,
-  Person,
-  Favorite,
-  Logout,
-  Menu,
-  Receipt,
-  HelpOutline,
-} from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
-import ThemeToggle from '@components/ThemeToggle'
-import LanguageSwitcher from '@components/LanguageSwitcher'
+import SettingsMenu from '@components/SettingsMenu'
 import { authService } from '@services/api/auth/authService'
 import { useTranslation } from '@hooks/useTranslation'
 
@@ -90,11 +81,8 @@ const Header = () => {
               </Badge>
             </IconButton>
 
-            {/* Theme Toggle - Always Visible */}
-            <ThemeToggle />
-
-            {/* Language Switcher - Always Visible */}
-            <LanguageSwitcher />
+            {/* Settings Menu - Always Visible */}
+            <SettingsMenu />
 
             {/* Products Button - Hidden on mobile */}
             <Button
@@ -127,16 +115,6 @@ const Header = () => {
                   sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                 >
                   <Receipt />
-                </IconButton>
-
-                {/* Support - Hidden on mobile */}
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate('/support/tickets')}
-                  aria-label="support"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <HelpOutline />
                 </IconButton>
 
                 {/* Profile Icon - Hidden on mobile */}
