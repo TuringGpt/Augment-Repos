@@ -159,6 +159,7 @@
     "total": "Total",
     "tax": "Impuesto",
     "shipping": "Envío",
+    "shippingFree": "GRATIS",
     "deliveryFee": "Tarifa de Envío",
     "discount": "Descuento",
     "each": "cada uno",
@@ -166,6 +167,15 @@
     "update": "Actualizar",
     "itemsInCart": "{{count}} artículo en el carrito",
     "itemsInCart_other": "{{count}} artículos en el carrito",
+    "quantity": "Cantidad",
+    "maxStock": "Stock máximo",
+    "viewFullCart": "Ver Carrito Completo",
+    "emptyCartMessage": "¡Agrega algunos productos para comenzar!",
+    "closeCart": "cerrar carrito",
+    "removeItem": "Eliminar artículo",
+    "removeItemTitle": "¿Eliminar Artículo?",
+    "removeItemConfirm": "¿Estás seguro de que deseas eliminar <strong>{{name}}</strong> de tu carrito?",
+    "removing": "Eliminando...",
     "items": "{{count}} artículo(s)"
   },
   "checkout": {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Drawer,
   Box,
@@ -29,11 +30,13 @@ import { useUIStore } from '@store/uiStore'
 import { useCartStore } from '@store/cartStore'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
+import { useTranslation } from '@hooks/useTranslation'
 
 const CartDrawer = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { isCartDrawerOpen, setCartDrawerOpen } = useUIStore()
-  const { cart, updateItemInCart, removeItem, isItemUpdating, removeItemFromCart } = useCartStore()
+  const { cart, updateItemInCart, isItemUpdating, removeItemFromCart } = useCartStore()
   const { refetchCart } = useCartSync()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
@@ -126,9 +129,9 @@ const CartDrawer = () => {
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Shopping Cart ({itemCount})
+            {t('cart.shoppingCart')} ({itemCount})
           </Typography>
-          <IconButton onClick={handleClose} aria-label="close cart">
+          <IconButton onClick={handleClose} aria-label={t('cart.closeCart')}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -175,7 +178,7 @@ const CartDrawer = () => {
                         {item.product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        ${getItemPrice(item).toFixed(2)} each
+                        ${getItemPrice(item).toFixed(2)} {t('cart.each')}
                       </Typography>
                       <Typography
                         variant="subtitle2"
@@ -190,7 +193,7 @@ const CartDrawer = () => {
                       size="small"
                       color="error"
                       onClick={() => handleRemoveClick(item.id, item.product.name)}
-                      aria-label="Remove item"
+                      aria-label={t('cart.removeItem')}
                       sx={{ alignSelf: 'flex-start' }}
                     >
                       <DeleteIcon fontSize="small" />
@@ -200,7 +203,7 @@ const CartDrawer = () => {
                   {/* Quantity Controls */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-                      Quantity:
+                      {t('cart.quantity')}:
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
                       <IconButton
@@ -247,7 +250,7 @@ const CartDrawer = () => {
                     </Box>
                     {item.quantity >= item.product.stock && !isItemUpdating(item.id) && (
                       <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
-                        Max stock
+                        {t('cart.maxStock')}
                       </Typography>
                     )}
                   </Box>
@@ -260,27 +263,27 @@ const CartDrawer = () => {
               {/* Totals */}
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Subtotal:</Typography>
+                  <Typography variant="body2">{t('cart.subtotal')}:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     ${(cart.subtotal ?? 0).toFixed(2)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Tax:</Typography>
+                  <Typography variant="body2">{t('cart.tax')}:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     ${(cart.tax ?? 0).toFixed(2)}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Shipping:</Typography>
+                  <Typography variant="body2">{t('cart.shipping')}:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {(cart.shipping ?? 0) === 0 ? 'FREE' : `$${(cart.shipping ?? 0).toFixed(2)}`}
+                    {(cart.shipping ?? 0) === 0 ? t('cart.shippingFree') : `$${(cart.shipping ?? 0).toFixed(2)}`}
                   </Typography>
                 </Box>
                 <Divider sx={{ my: 1.5 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Total:
+                    {t('cart.total')}:
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
                     ${(cart.total ?? 0).toFixed(2)}
@@ -291,10 +294,10 @@ const CartDrawer = () => {
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Button variant="contained" size="large" fullWidth onClick={handleCheckout}>
-                  Proceed to Checkout
+                  {t('cart.proceedToCheckout')}
                 </Button>
                 <Button variant="outlined" size="large" fullWidth onClick={handleViewCart}>
-                  View Full Cart
+                  {t('cart.viewFullCart')}
                 </Button>
               </Box>
             </Box>
@@ -313,13 +316,13 @@ const CartDrawer = () => {
           >
             <ShoppingCartIcon sx={{ fontSize: 64, color: 'text.secondary' }} />
             <Typography variant="h6" color="text.secondary">
-              Your cart is empty
+              {t('cart.emptyCart')}
             </Typography>
             <Typography variant="body2" color="text.secondary" textAlign="center">
-              Add some products to get started!
+              {t('cart.emptyCartMessage')}
             </Typography>
             <Button variant="contained" onClick={handleClose} sx={{ mt: 2 }}>
-              Continue Shopping
+              {t('cart.continueShopping')}
             </Button>
           </Box>
         )}
@@ -332,15 +335,19 @@ const CartDrawer = () => {
         aria-labelledby="remove-item-dialog-title"
         aria-describedby="remove-item-dialog-description"
       >
-        <DialogTitle id="remove-item-dialog-title">Remove Item?</DialogTitle>
+        <DialogTitle id="remove-item-dialog-title">{t('cart.removeItemTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText id="remove-item-dialog-description">
-            Are you sure you want to remove <strong>{itemToRemove?.name}</strong> from your cart?
+            <Trans
+              i18nKey="cart.removeItemConfirm"
+              values={{ name: itemToRemove?.name || '' }}
+              components={{ strong: <strong /> }}
+            />
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRemoveCancel} color="primary" disabled={isRemoving}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleRemoveConfirm}
@@ -349,7 +356,7 @@ const CartDrawer = () => {
             autoFocus
             disabled={isRemoving}
           >
-            {isRemoving ? 'Removing...' : 'Remove'}
+            {isRemoving ? t('cart.removing') : t('cart.remove')}
           </Button>
         </DialogActions>
       </Dialog>
