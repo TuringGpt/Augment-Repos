@@ -95,3 +95,58 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["status"], "Updated Status")  
         self.assertEqual(response.data["priority"], "Updated Priority")  
         self.assertEqual(response.data["assignee"], self.user2.id)
+
+    def test_add_comment(self):
+        # GIVEN an authenticated user exists
+        # WHEN we make a post request to add a comment to a ticket
+        url = reverse("v1:ticket:create_comment", args=[self.ticket.id])
+        payload = {
+            "content": "New Comment Content",
+        }
+        response = self.authenticated_client.post(url, payload)
+
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], "New Comment Content")  
+        self.assertEqual(response.data["ticket"], self.ticket.id)
+    
+    def test_list_comments(self):
+        # GIVEN an authenticated user exists
+        # WHEN we make a get request to list comments for a ticket
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data.get("results", [])), 1)
+        self.assertEqual(response.data["results"][0]["content"], "Test Content")
+        self.assertEqual(response.data["results"][0]["user"], self.user.id)
+        self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
+    
+    def test_delete_ticket(self):
+        # GIVEN an authenticated user exists
+        # WHEN we make a delete request to delete a ticket
+        url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
+        response = self.authenticated_client.delete(url)
+
+        # THEN we should get a 204 response
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # AND the ticket should no longer exist
+        url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_comment(self):
+        # GIVEN an authenticated user exists
+        # WHEN we make a delete request to delete a comment
+        url = reverse("v1:ticket:delete_comment", args=[self.ticket.id, self.comment.id])
+        response = self.authenticated_client.delete(url)
+
+        # THEN we should get a 204 response
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # AND the comment should no longer exist
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        comments = response.data.get("results", [])
+        self.assertFalse(any(c["id"] == str(self.comment.id) for c in comments))

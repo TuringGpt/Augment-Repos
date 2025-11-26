@@ -62,3 +62,12 @@ class CommentUpdateView(RetrieveUpdateDestroyAPIView):
         ticket = get_object_or_404(Ticket, id=ticket_id)
         return Comment.objects.filter(ticket=ticket)
     
+class CommentDeleteView(RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_url_kwarg = 'comment_pk'
+
+    def get_queryset(self):
+        ticket_id = self.kwargs.get("pk")
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        return Comment.objects.filter(ticket=ticket)
