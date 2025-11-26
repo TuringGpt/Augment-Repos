@@ -272,5 +272,22 @@
     "helpCenter": "Help Center",
     "returns": "Returns",
     "shippingInfo": "Shipping Info"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "getInTouch": "Get in Touch",
+    "description": "Have a question or need assistance? We're here to help! Fill out the form and we'll get back to you as soon as possible.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "sendMessage": "Send Message",
+    "contactInformation": "Contact Information",
+    "phone": "Phone",
+    "address": "Address",
+    "businessHours": "Business Hours",
+    "mondayFriday": "Monday - Friday: 9:00 AM - 6:00 PM PST",
+    "saturday": "Saturday: 10:00 AM - 4:00 PM PST",
+    "sunday": "Sunday: Closed"
   }
 }

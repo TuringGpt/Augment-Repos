@@ -272,5 +272,22 @@
     "helpCenter": "Centre d'Aide",
     "returns": "Retours",
     "shippingInfo": "Informations d'Expédition"
+  },
+  "contact": {
+    "title": "Nous Contacter",
+    "getInTouch": "Entrer en Contact",
+    "description": "Vous avez une question ou besoin d'aide? Nous sommes là pour vous aider! Remplissez le formulaire et nous vous répondrons dans les plus brefs délais.",
+    "name": "Nom",
+    "email": "Email",
+    "subject": "Sujet",
+    "message": "Message",
+    "sendMessage": "Envoyer le message",
+    "contactInformation": "Informations de Contact",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "businessHours": "Heures d'Ouverture",
+    "mondayFriday": "Lundi - Vendredi: 9h00 - 18h00 PST",
+    "saturday": "Samedi: 10h00 - 16h00 PST",
+    "sunday": "Dimanche: Fermé"
   }
 }
