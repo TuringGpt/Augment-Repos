@@ -205,7 +205,33 @@
     "orderDate": "Fecha del Pedido",
     "status": "Estado",
     "contactInformation": "Información de Contacto",
-    "confirmationEmailSent": "Se ha enviado un correo de confirmación a"
+    "confirmationEmailSent": "Se ha enviado un correo de confirmación a",
+    "contactForm": {
+      "title": "Información de contacto",
+      "subtitle": "Usaremos esto para contactarte sobre tu pedido",
+      "complete": "Completo",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "emailAddress": "Dirección de correo electrónico",
+      "phoneNumber": "Número de teléfono",
+      "emailHelper": "Enviaremos tu confirmación de pedido aquí",
+      "phoneHelper": "Ingresa 10-15 dígitos. Formato: +1 (555) 123-4567 o 5551234567",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "errors": {
+        "emailRequired": "El correo electrónico es requerido",
+        "emailInvalid": "Dirección de correo electrónico inválida",
+        "phoneRequired": "El número de teléfono es requerido",
+        "phoneInvalidChars": "El número de teléfono solo puede contener dígitos, espacios, guiones, paréntesis y un prefijo + opcional",
+        "phoneInvalidLength": "El número de teléfono debe tener entre 10 y 15 dígitos",
+        "phoneInvalidFormat": "Formato de número de teléfono inválido",
+        "firstNameRequired": "El nombre es requerido",
+        "firstNameTooLong": "El nombre es demasiado largo",
+        "firstNameInvalidChars": "El nombre solo puede contener letras, espacios, guiones y apóstrofes",
+        "lastNameRequired": "El apellido es requerido",
+        "lastNameTooLong": "El apellido es demasiado largo",
+        "lastNameInvalidChars": "El apellido solo puede contener letras, espacios, guiones y apóstrofes"
+      }
+    }
   },
   "order": {
     "orders": "Pedidos",
