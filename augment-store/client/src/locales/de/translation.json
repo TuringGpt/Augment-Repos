@@ -24,7 +24,9 @@
     "learnMore": "Mehr Erfahren",
     "readMore": "Mehr Lesen",
     "showMore": "Mehr Anzeigen",
-    "showLess": "Weniger Anzeigen"
+    "showLess": "Weniger Anzeigen",
+    "darkMode": "Dunkler Modus",
+    "lightMode": "Heller Modus"
   },
   "nav": {
     "home": "Startseite",
@@ -43,7 +45,9 @@
     "account": "Konto",
     "settings": "Einstellungen",
     "menu": "Menü",
-    "support": "Support"
+    "support": "Support",
+    "language": "Sprache",
+    "selectLanguage": "Sprache Auswählen"
   },
   "tooltip": {
     "menu": "Menü öffnen",

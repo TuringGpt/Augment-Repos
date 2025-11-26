@@ -24,7 +24,9 @@
     "learnMore": "Saber Más",
     "readMore": "Leer Más",
     "showMore": "Mostrar Más",
-    "showLess": "Mostrar Menos"
+    "showLess": "Mostrar Menos",
+    "darkMode": "Modo Oscuro",
+    "lightMode": "Modo Claro"
   },
   "nav": {
     "home": "Inicio",
@@ -43,7 +45,9 @@
     "account": "Cuenta",
     "settings": "Configuración",
     "menu": "Menú",
-    "support": "Soporte"
+    "support": "Soporte",
+    "language": "Idioma",
+    "selectLanguage": "Seleccionar Idioma"
   },
   "tooltip": {
     "menu": "Abrir menú",
