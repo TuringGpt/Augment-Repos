@@ -29,7 +29,6 @@ import { useAuthStore } from '@store/authStore'
 import { useTranslation } from '@hooks/useTranslation'
 
 const nameRegex = /^[a-zA-Z\s\-']+$/
-const nameErrorMessage = 'can only contain letters, spaces, hyphens, and apostrophes'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createContactInfoSchema = (t: any) =>
@@ -77,44 +76,60 @@ const createContactInfoSchema = (t: any) =>
       .regex(nameRegex, t('checkout.contactForm.errors.lastNameInvalidChars')),
   })
 
-const shippingAddressSchema = z.object({
-  address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
-  address2: z.string().max(100, 'Address is too long').optional(),
-  city: z
-    .string()
-    .min(1, 'City is required')
-    .max(50, 'City name is too long')
-    .regex(nameRegex, `City ${nameErrorMessage}`),
-  state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
-  postalCode: z
-    .string()
-    .min(1, 'Postal code is required')
-    .max(20, 'Postal code is too long')
-    .regex(/^[a-zA-Z0-9\s-]+$/, 'Invalid postal code format'),
-  country: z.string().min(1, 'Country is required'),
-})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createShippingAddressSchema = (t: any) =>
+  z.object({
+    address1: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.streetAddressRequired'))
+      .max(100, t('checkout.shippingForm.errors.streetAddressTooLong')),
+    address2: z.string().max(100, t('checkout.shippingForm.errors.streetAddressTooLong')).optional(),
+    city: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.cityRequired'))
+      .max(50, t('checkout.shippingForm.errors.cityTooLong'))
+      .regex(nameRegex, t('checkout.shippingForm.errors.cityInvalidChars')),
+    state: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.stateProvinceRequired'))
+      .max(50, t('checkout.shippingForm.errors.stateProvinceTooLong')),
+    postalCode: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.postalCodeRequired'))
+      .max(20, t('checkout.shippingForm.errors.postalCodeTooLong'))
+      .regex(/^[a-zA-Z0-9\s-]+$/, t('checkout.shippingForm.errors.postalCodeInvalid')),
+    country: z.string().min(1, t('checkout.shippingForm.errors.countryRequired')),
+  })
 
-const billingAddressSchema = z.object({
-  address1: z.string().min(1, 'Street address is required').max(100, 'Address is too long'),
-  address2: z.string().max(100, 'Address is too long').optional(),
-  city: z
-    .string()
-    .min(1, 'City is required')
-    .max(50, 'City name is too long')
-    .regex(nameRegex, `City ${nameErrorMessage}`),
-  state: z.string().min(1, 'State/Province is required').max(50, 'State/Province is too long'),
-  postalCode: z
-    .string()
-    .min(1, 'Postal code is required')
-    .max(20, 'Postal code is too long')
-    .regex(/^[a-zA-Z0-9\s-]+$/, 'Invalid postal code format'),
-  country: z.string().min(1, 'Country is required'),
-})
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createBillingAddressSchema = (t: any) =>
+  z.object({
+    address1: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.streetAddressRequired'))
+      .max(100, t('checkout.shippingForm.errors.streetAddressTooLong')),
+    address2: z.string().max(100, t('checkout.shippingForm.errors.streetAddressTooLong')).optional(),
+    city: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.cityRequired'))
+      .max(50, t('checkout.shippingForm.errors.cityTooLong'))
+      .regex(nameRegex, t('checkout.shippingForm.errors.cityInvalidChars')),
+    state: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.stateProvinceRequired'))
+      .max(50, t('checkout.shippingForm.errors.stateProvinceTooLong')),
+    postalCode: z
+      .string()
+      .min(1, t('checkout.shippingForm.errors.postalCodeRequired'))
+      .max(20, t('checkout.shippingForm.errors.postalCodeTooLong'))
+      .regex(/^[a-zA-Z0-9\s-]+$/, t('checkout.shippingForm.errors.postalCodeInvalid')),
+    country: z.string().min(1, t('checkout.shippingForm.errors.countryRequired')),
+  })
 
-// Derive ContactInfo type from the schema factory's return type
+// Derive types from the schema factories' return types
 type ContactInfo = z.infer<ReturnType<typeof createContactInfoSchema>>
-type ShippingAddress = z.infer<typeof shippingAddressSchema>
-type BillingAddress = z.infer<typeof billingAddressSchema>
+type ShippingAddress = z.infer<ReturnType<typeof createShippingAddressSchema>>
+type BillingAddress = z.infer<ReturnType<typeof createBillingAddressSchema>>
 
 const ACCORDION_STYLES = {
   mb: 2,
@@ -137,8 +152,10 @@ const CheckoutPage = () => {
   const { isAuthenticated } = useAuthStore()
   const { t } = useTranslation()
 
-  // Create schema with translations
+  // Create schemas with translations
   const contactInfoSchema = useMemo(() => createContactInfoSchema(t), [t])
+  const shippingAddressSchema = useMemo(() => createShippingAddressSchema(t), [t])
+  const billingAddressSchema = useMemo(() => createBillingAddressSchema(t), [t])
 
   const [contactInfo, setContactInfo] = useState<ContactInfo>({
     email: '',
@@ -235,11 +252,12 @@ const CheckoutPage = () => {
 
   const validateShippingField = useCallback(createFieldValidator(shippingAddressSchema, 'shipping'), [
     createFieldValidator,
+    shippingAddressSchema,
   ])
 
   const validateBillingField = useCallback(
     createFieldValidator(billingAddressSchema, 'billing'),
-    [createFieldValidator]
+    [createFieldValidator, billingAddressSchema]
   )
 
   const createChangeHandler = useCallback(
@@ -377,10 +395,10 @@ const CheckoutPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h3" fontWeight={700} gutterBottom>
-          Checkout
+          {t('checkout.checkout')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Complete your order by filling out the information below
+          {t('checkout.checkoutDescription')}
         </Typography>
       </Box>
 
@@ -494,16 +512,16 @@ const CheckoutPage = () => {
                 <LocalShippingIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
-                    Shipping Address
+                    {t('checkout.shippingForm.title')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Where should we deliver your order?
+                    {t('checkout.shippingForm.subtitle')}
                   </Typography>
                 </Box>
                 {isShippingAddressComplete && (
                   <Chip
                     icon={<CheckCircleIcon />}
-                    label="Complete"
+                    label={t('checkout.shippingForm.complete')}
                     color="success"
                     size="small"
                     sx={{ mr: 2 }}
@@ -517,7 +535,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Street Address"
+                    label={t('checkout.shippingForm.streetAddress')}
                     value={shippingAddress.address1}
                     onChange={handleShippingChange('address1')}
                     onBlur={handleShippingBlur('address1')}
@@ -532,7 +550,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Apartment, suite, etc. (optional)"
+                    label={t('checkout.shippingForm.apartmentSuite')}
                     value={shippingAddress.address2}
                     onChange={handleShippingChange('address2')}
                     onBlur={handleShippingBlur('address2')}
@@ -546,7 +564,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="City"
+                    label={t('checkout.shippingForm.city')}
                     value={shippingAddress.city}
                     onChange={handleShippingChange('city')}
                     onBlur={handleShippingBlur('city')}
@@ -561,7 +579,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="State/Province"
+                    label={t('checkout.shippingForm.stateProvince')}
                     value={shippingAddress.state}
                     onChange={handleShippingChange('state')}
                     onBlur={handleShippingBlur('state')}
@@ -576,7 +594,7 @@ const CheckoutPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Postal Code"
+                    label={t('checkout.shippingForm.postalCode')}
                     value={shippingAddress.postalCode}
                     onChange={handleShippingChange('postalCode')}
                     onBlur={handleShippingBlur('postalCode')}
@@ -592,7 +610,7 @@ const CheckoutPage = () => {
                     fullWidth
                     size="small"
                     select
-                    label="Country"
+                    label={t('checkout.shippingForm.country')}
                     value={shippingAddress.country}
                     onChange={handleShippingChange('country')}
                     onBlur={handleShippingBlur('country')}
@@ -620,16 +638,16 @@ const CheckoutPage = () => {
                 <ReceiptIcon color="primary" sx={{ fontSize: 28 }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h6" fontWeight={600}>
-                    Billing Address
+                    {t('checkout.billingAddress')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Where should we send the invoice?
+                    {t('checkout.billingAddressSubtitle')}
                   </Typography>
                 </Box>
                 {isBillingAddressComplete && (
                   <Chip
                     icon={<CheckCircleIcon />}
-                    label="Complete"
+                    label={t('checkout.shippingForm.complete')}
                     color="success"
                     size="small"
                     sx={{ mr: 2 }}
@@ -641,7 +659,7 @@ const CheckoutPage = () => {
               <Box sx={{ mb: 3 }}>
                 <FormControlLabel
                   control={<Checkbox checked={sameAsShipping} onChange={handleSameAsShippingChange} />}
-                  label="Same as shipping address"
+                  label={t('checkout.sameAsShipping')}
                 />
               </Box>
 
@@ -651,7 +669,7 @@ const CheckoutPage = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Street Address"
+                      label={t('checkout.shippingForm.streetAddress')}
                       value={billingAddress.address1}
                       onChange={handleBillingChange('address1')}
                       onBlur={handleBillingBlur('address1')}
@@ -666,7 +684,7 @@ const CheckoutPage = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Apartment, suite, etc. (optional)"
+                      label={t('checkout.shippingForm.apartmentSuite')}
                       value={billingAddress.address2}
                       onChange={handleBillingChange('address2')}
                       onBlur={handleBillingBlur('address2')}
@@ -680,7 +698,7 @@ const CheckoutPage = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="City"
+                      label={t('checkout.shippingForm.city')}
                       value={billingAddress.city}
                       onChange={handleBillingChange('city')}
                       onBlur={handleBillingBlur('city')}
@@ -695,7 +713,7 @@ const CheckoutPage = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="State / Province"
+                      label={t('checkout.shippingForm.stateProvince')}
                       value={billingAddress.state}
                       onChange={handleBillingChange('state')}
                       onBlur={handleBillingBlur('state')}
@@ -710,7 +728,7 @@ const CheckoutPage = () => {
                     <TextField
                       fullWidth
                       size="small"
-                      label="Postal Code"
+                      label={t('checkout.shippingForm.postalCode')}
                       value={billingAddress.postalCode}
                       onChange={handleBillingChange('postalCode')}
                       onBlur={handleBillingBlur('postalCode')}
@@ -726,7 +744,7 @@ const CheckoutPage = () => {
                       fullWidth
                       size="small"
                       select
-                      label="Country"
+                      label={t('checkout.shippingForm.country')}
                       value={billingAddress.country}
                       onChange={handleBillingChange('country')}
                       onBlur={handleBillingBlur('country')}
