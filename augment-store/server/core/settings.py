@@ -139,6 +139,26 @@ DATABASES = {
     }
 }
 
+CACHE_SERVER_URL = config.get("REDIS_SERVER_URL", None)
+# if no CACHE_SERVER_URL log warning, notify that we will use dummy cache
+if not CACHE_SERVER_URL:
+    print("WARNING: REDIS_SERVER_URL not set, using dummy cache")
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
+else:
+    CACHES = {
+            "default": {
+                "BACKEND": "django_redis.cache.RedisCache",
+                "LOCATION": CACHE_SERVER_URL,
+                "OPTIONS": {
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                }
+            }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -16,3 +16,4 @@ django-storages==1.14.6
 django-cors-headers==4.9.0
 django-schema-viewer==0.5.3
 stripe==12.4.0
+django-redis==6.0.0

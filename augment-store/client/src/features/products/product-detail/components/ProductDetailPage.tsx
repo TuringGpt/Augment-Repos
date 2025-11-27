@@ -31,6 +31,7 @@ import type { ProductDetailAPI } from '@features/products/types/api'
 import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
 import ImageGallery from './ImageGallery'
 import ReviewSection from './ReviewSection'
+import RecommendedProducts from './RecommendedProducts'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -423,6 +424,11 @@ const ProductDetailPage = () => {
       {/* Reviews Section */}
       <Box sx={{ mt: 6 }}>
         <ReviewSection reviews={[]} rating={ratingNumber} />
+      </Box>
+
+      {/* Recommended Products Section */}
+      <Box sx={{ mt: 6 }}>
+        <RecommendedProducts />
       </Box>
 
       {/* Remove Confirmation Dialog */}

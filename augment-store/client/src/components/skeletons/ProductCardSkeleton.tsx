@@ -24,7 +24,7 @@ const ProductCardSkeleton = ({ animation = 'wave' }: ProductCardSkeletonProps) =
       {/* Product Image Skeleton */}
       <Skeleton
         variant="rectangular"
-        height={200}
+        height={280}
         animation={animation}
         sx={{
           bgcolor: 'action.hover',
@@ -38,7 +38,7 @@ const ProductCardSkeleton = ({ animation = 'wave' }: ProductCardSkeletonProps) =
 
         {/* Product Name - 2 lines */}
         <Skeleton variant="text" width="90%" height={24} animation={animation} sx={{ mb: 0.5 }} />
-        <Skeleton variant="text" width="70%" height={24} animation={animation} sx={{ mb: 1.5 }} />
+        <Skeleton variant="text" width="70%" height={24} animation={animation} sx={{ mb: 0.5 }} />
 
         {/* Rating */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>

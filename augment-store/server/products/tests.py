@@ -7,6 +7,9 @@ from products.models import Product, ProductBrand, ProductCategory
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
 from decimal import Decimal
 from storage.factory import FileFactory
+from products.services import ProductBrandCacheService
+from django.test.utils import CaptureQueriesContext
+from django.db import connection
 
 
 class ProductBrandTests(BaseAPITestCase):
@@ -181,6 +184,53 @@ class ProductBrandTests(BaseAPITestCase):
         # AND the brand should be deleted from the database
         self.assertFalse(ProductBrand.objects.filter(id=brand.id).exists())
 
+    def test_list_brands_uses_cache(self):
+        # Given that I have clear all caches related to product brands
+        ProductBrandCacheService().clear_namespace()
+        # GIVEN some brands exist in the database
+        ProductBrandFactory(name="Brand A", created_by=self.merchant_user)
+        ProductBrandFactory(name="Brand B", created_by=self.merchant_user)
+
+        url = reverse("v1:product_brand_list")
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.client.get(url)
+
+        # THEN the first request must hit the database
+        self.assertGreater(len(ctx1), 0)
+
+        # WHEN we make the request again
+        # THEN it should return cached data without hitting the DB
+        with self.assertNumQueries(0):
+            response_2 = self.client.get(url)
+
+        # AND the cached response should be identical
+        self.assertEqual(response_1.data, response_2.data)
+
+    def test_list_brands_cache_with_query_params(self):
+        # Given that I have clear all caches related to product brands
+        ProductBrandCacheService().clear_namespace()
+        # GIVEN some brands exist in the database
+        ProductBrandFactory(name="Brand A", created_by=self.merchant_user)
+        ProductBrandFactory(name="Brand B", created_by=self.merchant_user)
+
+        url = reverse("v1:product_brand_list")
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.client.get(url, data={"name": "Brand A"})
+
+        # THEN the first request must hit the database
+        self.assertGreater(len(ctx1), 0)
+
+        # WHEN we make the request again
+        # THEN it should return cached data without hitting the DB
+        with self.assertNumQueries(0):
+            response_2 = self.client.get(url, data={"name": "Brand A"})
+
+        # AND the cached response should be identical
+        self.assertEqual(response_1.data, response_2.data)
 
 class ProductCategoryTests(BaseAPITestCase):
 
