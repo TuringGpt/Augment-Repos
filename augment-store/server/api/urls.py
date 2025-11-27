@@ -32,4 +32,5 @@ urlpatterns = [
     path('newsletter/', include('newsletter.urls')),
     path('support/tickets/', include('ticket.urls', namespace='ticket')),
     path('wishlist/', include('carts.urls_wishlist')),
+    path('notifications/', include('notifications.urls')),
 ]
