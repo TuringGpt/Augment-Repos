@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from products.models import Product
-from carts.models import CartItemList
+from carts.models import CartItem
 from checkout.models import OrderItem
 from .models import ProductStatistics, ProductView, CartAbandonment
 
@@ -15,10 +15,10 @@ def create_product_statistics(sender, instance, created, **kwargs):
         ProductStatistics.objects.get_or_create(product=instance)
 
 
-@receiver(post_save, sender=CartItemList)
+@receiver(post_save, sender=CartItem)
 def track_cart_addition(sender, instance, created, **kwargs):
     """
-    Track when a product is added or removed to cart and update statistics.
+    Track when a product is added to cart and update statistics.
     """
     if created and instance.product:
         stats, _ = ProductStatistics.objects.get_or_create(product=instance.product)
@@ -26,7 +26,7 @@ def track_cart_addition(sender, instance, created, **kwargs):
         stats.save(update_fields=['cart_add_count'])
 
 
-@receiver(post_delete, sender=CartItemList)
+@receiver(post_delete, sender=CartItem)
 def track_cart_removal(sender, instance, **kwargs):
     """
     Track when a product is removed from cart.
