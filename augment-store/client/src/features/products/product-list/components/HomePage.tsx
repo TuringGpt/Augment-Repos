@@ -30,7 +30,7 @@ const HomePage = () => {
   }, [])
 
   return (
-    <Container maxWidth="xl" disableGutters>
+    <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
         {/* Promotional Banners Section */}
         <PromotionalBanners />

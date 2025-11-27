@@ -100,12 +100,13 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
           {/* Product Image */}
           <CardMedia
             component="img"
-            height="200"
+            height="280"
             image={product.images[0]}
             alt={product.name}
             sx={{
-              objectFit: 'cover',
+              objectFit: 'contain',
               opacity: product.stock === 0 ? 0.5 : 1,
+              bgcolor: 'background.default',
             }}
           />
 
@@ -120,7 +121,6 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
             <Typography
               variant="h6"
               component="h3"
-              gutterBottom
               sx={{
                 fontSize: '1rem',
                 fontWeight: 600,
@@ -130,6 +130,7 @@ const ProductCard = ({ product, index = 0 }: ProductCardProps) => {
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
                 minHeight: '3em',
+                mb: 0.5,
               }}
             >
               {product.name}

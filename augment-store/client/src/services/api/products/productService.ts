@@ -216,10 +216,18 @@ export const productService = {
 
   getFeaturedProducts: async (): Promise<Product[]> => {
     try {
-      // Backend doesn't have featured endpoint yet
-      // Return first 6 products from page 1 (backend returns 100 per page)
-      const response = await productService.getProducts({ page: 1 })
-      return response.products.slice(0, 6)
+      // Fetch featured products from backend API
+      // Backend returns paginated response with products where is_featured=True
+      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.FEATURED, {
+        params: {
+          page: 1,
+        },
+      })
+
+      // Transform backend products to frontend format
+      const products: Product[] = response.results.map(transformProductFromAPI)
+
+      return products
     } catch (error) {
       console.error('Failed to fetch featured products:', error)
       return []

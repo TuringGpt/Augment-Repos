@@ -3,6 +3,7 @@ from accounts.models import User
 from carts.models import Wishlist, Cart
 from checkout.models import OrderItem
 from products.models import Product
+from core.service import BaseCacheService
 
 class ProductService:
 
@@ -63,3 +64,13 @@ class ProductService:
         )
 
         return recommended
+
+
+class ProductBrandCacheService(BaseCacheService):
+    OBJECT_NAME = "product_brands"
+    VERSION = 1
+
+
+class ProductCategoryCacheService(BaseCacheService):
+    OBJECT_NAME = "product_categories"
+    VERSION = 1
