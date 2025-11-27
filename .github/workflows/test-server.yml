@@ -87,13 +87,6 @@ jobs:
             sleep 1
           done
 
-      - name: Wait for Redis
-        run: |
-          until redis-cli -h localhost -p 6379 ping | grep PONG; do
-            echo "Waiting for Redis..."
-            sleep 1
-          done
-
       - name: Run migrations
         working-directory: augment-store/server
         run: |

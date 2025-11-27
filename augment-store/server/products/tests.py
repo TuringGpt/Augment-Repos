@@ -195,7 +195,7 @@ class ProductBrandTests(BaseAPITestCase):
 
         # WHEN we make the first request
         with CaptureQueriesContext(connection) as ctx1:
-            response_1 = self.client.get(url, data={"name": "Brand A"})
+            response_1 = self.client.get(url)
 
         # THEN the first request must hit the database
         self.assertGreater(len(ctx1), 0)
@@ -203,7 +203,7 @@ class ProductBrandTests(BaseAPITestCase):
         # WHEN we make the request again
         # THEN it should return cached data without hitting the DB
         with self.assertNumQueries(0):
-            response_2 = self.client.get(url, data={"name": "Brand A"})
+            response_2 = self.client.get(url)
 
         # AND the cached response should be identical
         self.assertEqual(response_1.data, response_2.data)
