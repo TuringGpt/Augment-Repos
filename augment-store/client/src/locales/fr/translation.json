@@ -245,6 +245,55 @@
         "lastNameTooLong": "Le nom est trop long",
         "lastNameInvalidChars": "Le nom ne peut contenir que des lettres, des espaces, des tirets et des apostrophes"
       }
+    },
+    "shippingForm": {
+      "title": "Adresse de livraison",
+      "subtitle": "Où devons-nous livrer votre commande?",
+      "complete": "Complet",
+      "streetAddress": "Adresse",
+      "apartmentSuite": "Appartement, suite, etc. (optionnel)",
+      "city": "Ville",
+      "stateProvince": "État/Province",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "errors": {
+        "addressRequired": "L'adresse est requise",
+        "addressTooLong": "L'adresse est trop longue",
+        "cityRequired": "La ville est requise",
+        "cityTooLong": "Le nom de la ville est trop long",
+        "cityInvalidChars": "La ville ne peut contenir que des lettres, des espaces, des tirets et des apostrophes",
+        "stateRequired": "L'état/province est requis",
+        "stateTooLong": "L'état/province est trop long",
+        "postalCodeRequired": "Le code postal est requis",
+        "postalCodeTooLong": "Le code postal est trop long",
+        "postalCodeInvalid": "Format de code postal invalide",
+        "countryRequired": "Le pays est requis"
+      }
+    },
+    "billingForm": {
+      "title": "Adresse de facturation",
+      "subtitle": "Où devons-nous envoyer la facture?",
+      "complete": "Complet",
+      "sameAsShipping": "Identique à l'adresse de livraison",
+      "streetAddress": "Adresse",
+      "apartmentSuite": "Appartement, suite, etc. (optionnel)",
+      "city": "Ville",
+      "stateProvince": "État / Province",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "errors": {
+        "addressRequired": "L'adresse est requise",
+        "addressTooLong": "L'adresse est trop longue",
+        "cityRequired": "La ville est requise",
+        "cityTooLong": "Le nom de la ville est trop long",
+        "cityInvalidChars": "La ville ne peut contenir que des lettres, des espaces, des tirets et des apostrophes",
+        "stateRequired": "L'état/province est requis",
+        "stateTooLong": "L'état/province est trop long",
+        "postalCodeRequired": "Le code postal est requis",
+        "postalCodeTooLong": "Le code postal est trop long",
+        "postalCodeInvalid": "Format de code postal invalide",
+        "countryRequired": "Le pays est requis"
+      }
     }
   },
   "order": {
