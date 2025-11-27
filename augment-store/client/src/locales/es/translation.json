@@ -315,5 +315,11 @@
     "mondayFriday": "Lunes - Viernes: 9:00 AM - 6:00 PM PST",
     "saturday": "Sábado: 10:00 AM - 4:00 PM PST",
     "sunday": "Domingo: Cerrado"
+  },
+  "sidebar": {
+    "menu": "Menú",
+    "categories": "CATEGORÍAS",
+    "noCategoriesAvailable": "No hay categorías disponibles",
+    "profileWithName": "Perfil ({{name}})"
   }
 }

@@ -28,6 +28,7 @@ import {
   HelpOutline,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '@store/uiStore'
 import { useAuthStore } from '@store/authStore'
 import { productService } from '@services/api/products/productService'
@@ -37,6 +38,7 @@ import type { CategoryWithChildren } from '@features/products/types'
 
 const Sidebar = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isSidebarOpen, closeSidebar } = useUIStore()
   const { isAuthenticated, user } = useAuthStore()
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
@@ -177,7 +179,7 @@ const Sidebar = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CategoryIcon sx={{ fontSize: 28 }} />
             <Typography variant="h6" fontWeight="bold">
-              Menu
+              {t('sidebar.menu')}
             </Typography>
           </Box>
           <IconButton onClick={closeSidebar} sx={{ color: 'white' }}>
@@ -205,7 +207,7 @@ const Sidebar = () => {
                   <ShoppingBag />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Products"
+                  primary={t('nav.products')}
                   primaryTypographyProps={{ fontWeight: 'medium' }}
                 />
               </ListItemButton>
@@ -228,7 +230,7 @@ const Sidebar = () => {
                       <Favorite />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Wishlist"
+                      primary={t('nav.wishlist')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -249,7 +251,7 @@ const Sidebar = () => {
                       <Receipt />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Orders"
+                      primary={t('nav.orders')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -270,7 +272,11 @@ const Sidebar = () => {
                       <Person />
                     </ListItemIcon>
                     <ListItemText
-                      primary={user?.firstName ? `Profile (${user.firstName})` : 'Profile'}
+                      primary={
+                        user?.firstName
+                          ? t('sidebar.profileWithName', { name: user.firstName })
+                          : t('nav.profile')
+                      }
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -291,7 +297,7 @@ const Sidebar = () => {
                       <HelpOutline />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Support"
+                      primary={t('nav.support')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -312,7 +318,7 @@ const Sidebar = () => {
                       <Logout />
                     </ListItemIcon>
                     <ListItemText
-                      primary="Logout"
+                      primary={t('nav.logout')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
@@ -334,7 +340,10 @@ const Sidebar = () => {
                   <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
                     <Login />
                   </ListItemIcon>
-                  <ListItemText primary="Login" primaryTypographyProps={{ fontWeight: 'medium' }} />
+                  <ListItemText
+                    primary={t('nav.login')}
+                    primaryTypographyProps={{ fontWeight: 'medium' }}
+                  />
                 </ListItemButton>
               </ListItem>
             )}
@@ -346,7 +355,7 @@ const Sidebar = () => {
         {/* Categories Section Header */}
         <Box sx={{ px: 2, py: 1.5, background: 'rgba(0,0,0,0.05)' }}>
           <Typography variant="subtitle2" fontWeight="bold" sx={{ opacity: 0.9 }}>
-            CATEGORIES
+            {t('sidebar.categories')}
           </Typography>
         </Box>
 
@@ -359,7 +368,7 @@ const Sidebar = () => {
           ) : categories.length === 0 ? (
             <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                No categories available
+                {t('sidebar.noCategoriesAvailable')}
               </Typography>
             </Box>
           ) : (
