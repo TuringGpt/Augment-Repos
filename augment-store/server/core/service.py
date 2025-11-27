@@ -1,6 +1,7 @@
 import json
 import hashlib
 from django.core.cache import cache
+from rest_framework.response import Response
 
 
 class BaseCacheService:
@@ -84,3 +85,29 @@ class BaseCacheService:
         except Exception:
             pass
 
+
+class CachedListMixin:
+    cache_service_class = BaseCacheService  # override this per view
+    cache_ttl = None  # default TTL or override
+
+    def get_cache_service(self):
+        return self.cache_service_class()
+
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        return service.get_cache_key(
+            user_id=getattr(self.request.user, "id", None),
+            query_params=self.request.query_params
+        )
+
+    def list(self, request, *args, **kwargs):
+        service = self.get_cache_service()
+        cache_key = self.generate_cache_key()
+
+        cached = service.get(cache_key)
+        if cached:
+            return Response(cached)
+
+        response = super().list(request, *args, **kwargs)
+        service.set(cache_key, response.data, ttl=self.cache_ttl)
+        return response

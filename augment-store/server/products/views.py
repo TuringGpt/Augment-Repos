@@ -11,7 +11,9 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductService
+from .services import ProductService, ProductBrandCacheService
+from core.service import CachedListMixin
+
 
 
 
@@ -27,10 +29,13 @@ class BaseBrandView:
     serializer_class = ProductBrandListSerializer
 
     def get_queryset(self):
-        return ProductBrand.objects.all().order_by('name')
+        return ProductBrand.objects.all().order_by('name').select_related('image', 'created_by',)
     
-class ProductBrandListView(BaseBrandView, ListAPIView):
-    pass
+class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
+    cache_service_class = ProductBrandCacheService
+    cache_ttl = 60 * 60  * 24
+
+
 
 class CreateProductBrandView(BaseBrandView, CreateAPIView):
     serializer_class = CreateProductBrandSerializer
