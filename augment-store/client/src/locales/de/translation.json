@@ -184,8 +184,10 @@
   },
   "checkout": {
     "checkout": "Kasse",
+    "checkoutDescription": "Vervollständigen Sie Ihre Bestellung, indem Sie die folgenden Informationen ausfüllen",
     "shippingAddress": "Lieferadresse",
     "billingAddress": "Rechnungsadresse",
+    "billingAddressSubtitle": "Wohin sollen wir die Rechnung senden?",
     "paymentMethod": "Zahlungsmethode",
     "orderSummary": "Bestellübersicht",
     "placeOrder": "Bestellung Aufgeben",
@@ -244,6 +246,30 @@
         "lastNameRequired": "Nachname ist erforderlich",
         "lastNameTooLong": "Nachname ist zu lang",
         "lastNameInvalidChars": "Nachname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten"
+      }
+    },
+    "shippingForm": {
+      "title": "Lieferadresse",
+      "subtitle": "Wohin sollen wir Ihre Bestellung liefern?",
+      "complete": "Vollständig",
+      "streetAddress": "Straße und Hausnummer",
+      "apartmentSuite": "Wohnung, Büro usw. (optional)",
+      "city": "Stadt",
+      "stateProvince": "Bundesland/Provinz",
+      "postalCode": "Postleitzahl",
+      "country": "Land",
+      "errors": {
+        "streetAddressRequired": "Straße und Hausnummer sind erforderlich",
+        "streetAddressTooLong": "Die Adresse ist zu lang",
+        "cityRequired": "Stadt ist erforderlich",
+        "cityTooLong": "Der Stadtname ist zu lang",
+        "cityInvalidChars": "Stadt darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
+        "stateProvinceRequired": "Bundesland/Provinz ist erforderlich",
+        "stateProvinceTooLong": "Bundesland/Provinz ist zu lang",
+        "postalCodeRequired": "Postleitzahl ist erforderlich",
+        "postalCodeTooLong": "Postleitzahl ist zu lang",
+        "postalCodeInvalid": "Ungültiges Postleitzahlformat",
+        "countryRequired": "Land ist erforderlich"
       }
     }
   },
