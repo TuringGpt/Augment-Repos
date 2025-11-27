@@ -124,7 +124,7 @@ jobs:
           DEBUG: 'False'
           SECRET_KEY: 'test-secret-key-for-ci'
           DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test_db'
-          REDIS_URL: 'redis://localhost:6379/0'
+          REDIS_SERVER_URL: 'redis://localhost:6379/0'
           DATABASE_NAME: 'test_db'
           DATABASE_USER: 'postgres'
           DATABASE_PASSWORD: 'postgres'
