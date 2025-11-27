@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from datetime import timedelta
 
@@ -31,7 +31,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def most_viewed(self, request):
         """
-        Get products sorted by view count (most viewed first).
+        Get products sorted by view count within a time window (most viewed first).
         Query params:
         - limit: Number of products to return (default: 10)
         - days: Number of days to look back (default: 30)
@@ -41,9 +41,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        stats = ProductStatistics.objects.filter(
-            view_count__gt=0
+        # Count views from ProductView records within the time window
+        viewed_products = ProductView.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(
+            view_count=Count('id')
         ).order_by('-view_count')[:limit]
+
+        product_ids = [item['product_id'] for item in viewed_products]
+        stats = ProductStatistics.objects.filter(
+            product_id__in=product_ids
+        ).order_by('-view_count')
 
         serializer = ProductStatisticsSerializer(stats, many=True)
         return Response({
@@ -125,27 +133,18 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         Get general statistics for all products.
         Returns aggregated metrics.
         """
-        total_stats = ProductStatistics.objects.aggregate(
-            total_views=Count('view_count'),
-            total_cart_additions=Count('cart_add_count'),
-            total_purchases=Count('purchase_count'),
-            avg_views=Count('view_count'),
-            avg_cart_additions=Count('cart_add_count'),
-            avg_purchases=Count('purchase_count'),
-        )
-
         stats_count = ProductStatistics.objects.count()
 
         return Response({
             'total_products_tracked': stats_count,
             'total_views': ProductStatistics.objects.aggregate(
-                total=Count('view_count')
+                total=Sum('view_count')
             )['total'] or 0,
             'total_cart_additions': ProductStatistics.objects.aggregate(
-                total=Count('cart_add_count')
+                total=Sum('cart_add_count')
             )['total'] or 0,
             'total_purchases': ProductStatistics.objects.aggregate(
-                total=Count('purchase_count')
+                total=Sum('purchase_count')
             )['total'] or 0,
         })
  
