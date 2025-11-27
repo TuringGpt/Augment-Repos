@@ -5,10 +5,7 @@ from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
-from checkout.factory import OrderItemFactory
-from dashboard.models import ProductStatistics, ProductView, CartAbandonment
-from django.utils import timezone
-from datetime import timedelta
+from dashboard.models import ProductStatistics, ProductView
 
 
 class ProductStatisticsModelTests(BaseAPITestCase):
