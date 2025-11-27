@@ -18,6 +18,24 @@ import {
 
 export const productService = {
   /**
+   * Get recommended products
+   * TODO: This is a stub implementation. Will be replaced by PR #200
+   * @param page - Page number (default: 1)
+   * @returns Promise with product list response
+   */
+  getRecommendedProducts: async (page: number = 1): Promise<ProductListResponse> => {
+    // Stub implementation - returns empty results
+    // This will be replaced when PR #200 (API integration) is merged
+    return {
+      products: [],
+      total: 0,
+      page,
+      limit: 100,
+      totalPages: 0,
+    }
+  },
+
+  /**
    * Get products from backend API
    * Backend returns paginated response with count, next, previous, results
    * Note: Backend has fixed page_size of 100 (configured in settings.py)
