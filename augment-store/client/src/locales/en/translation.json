@@ -245,55 +245,6 @@
         "lastNameTooLong": "Last name is too long",
         "lastNameInvalidChars": "Last name can only contain letters, spaces, hyphens, and apostrophes"
       }
-    },
-    "shippingForm": {
-      "title": "Shipping Address",
-      "subtitle": "Where should we deliver your order?",
-      "complete": "Complete",
-      "streetAddress": "Street Address",
-      "apartmentSuite": "Apartment, suite, etc. (optional)",
-      "city": "City",
-      "stateProvince": "State/Province",
-      "postalCode": "Postal Code",
-      "country": "Country",
-      "errors": {
-        "addressRequired": "Street address is required",
-        "addressTooLong": "Address is too long",
-        "cityRequired": "City is required",
-        "cityTooLong": "City name is too long",
-        "cityInvalidChars": "City can only contain letters, spaces, hyphens, and apostrophes",
-        "stateRequired": "State/Province is required",
-        "stateTooLong": "State/Province is too long",
-        "postalCodeRequired": "Postal code is required",
-        "postalCodeTooLong": "Postal code is too long",
-        "postalCodeInvalid": "Invalid postal code format",
-        "countryRequired": "Country is required"
-      }
-    },
-    "billingForm": {
-      "title": "Billing Address",
-      "subtitle": "Where should we send the invoice?",
-      "complete": "Complete",
-      "sameAsShipping": "Same as shipping address",
-      "streetAddress": "Street Address",
-      "apartmentSuite": "Apartment, suite, etc. (optional)",
-      "city": "City",
-      "stateProvince": "State / Province",
-      "postalCode": "Postal Code",
-      "country": "Country",
-      "errors": {
-        "addressRequired": "Street address is required",
-        "addressTooLong": "Address is too long",
-        "cityRequired": "City is required",
-        "cityTooLong": "City name is too long",
-        "cityInvalidChars": "City can only contain letters, spaces, hyphens, and apostrophes",
-        "stateRequired": "State/Province is required",
-        "stateTooLong": "State/Province is too long",
-        "postalCodeRequired": "Postal code is required",
-        "postalCodeTooLong": "Postal code is too long",
-        "postalCodeInvalid": "Invalid postal code format",
-        "countryRequired": "Country is required"
-      }
     }
   },
   "order": {

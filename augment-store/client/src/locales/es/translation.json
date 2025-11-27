@@ -245,55 +245,6 @@
         "lastNameTooLong": "El apellido es demasiado largo",
         "lastNameInvalidChars": "El apellido solo puede contener letras, espacios, guiones y apóstrofes"
       }
-    },
-    "shippingForm": {
-      "title": "Dirección de envío",
-      "subtitle": "¿Dónde debemos entregar tu pedido?",
-      "complete": "Completo",
-      "streetAddress": "Dirección",
-      "apartmentSuite": "Apartamento, suite, etc. (opcional)",
-      "city": "Ciudad",
-      "stateProvince": "Estado/Provincia",
-      "postalCode": "Código postal",
-      "country": "País",
-      "errors": {
-        "addressRequired": "La dirección es requerida",
-        "addressTooLong": "La dirección es demasiado larga",
-        "cityRequired": "La ciudad es requerida",
-        "cityTooLong": "El nombre de la ciudad es demasiado largo",
-        "cityInvalidChars": "La ciudad solo puede contener letras, espacios, guiones y apóstrofes",
-        "stateRequired": "El estado/provincia es requerido",
-        "stateTooLong": "El estado/provincia es demasiado largo",
-        "postalCodeRequired": "El código postal es requerido",
-        "postalCodeTooLong": "El código postal es demasiado largo",
-        "postalCodeInvalid": "Formato de código postal inválido",
-        "countryRequired": "El país es requerido"
-      }
-    },
-    "billingForm": {
-      "title": "Dirección de facturación",
-      "subtitle": "¿Dónde debemos enviar la factura?",
-      "complete": "Completo",
-      "sameAsShipping": "Igual que la dirección de envío",
-      "streetAddress": "Dirección",
-      "apartmentSuite": "Apartamento, suite, etc. (opcional)",
-      "city": "Ciudad",
-      "stateProvince": "Estado / Provincia",
-      "postalCode": "Código postal",
-      "country": "País",
-      "errors": {
-        "addressRequired": "La dirección es requerida",
-        "addressTooLong": "La dirección es demasiado larga",
-        "cityRequired": "La ciudad es requerida",
-        "cityTooLong": "El nombre de la ciudad es demasiado largo",
-        "cityInvalidChars": "La ciudad solo puede contener letras, espacios, guiones y apóstrofes",
-        "stateRequired": "El estado/provincia es requerido",
-        "stateTooLong": "El estado/provincia es demasiado largo",
-        "postalCodeRequired": "El código postal es requerido",
-        "postalCodeTooLong": "El código postal es demasiado largo",
-        "postalCodeInvalid": "Formato de código postal inválido",
-        "countryRequired": "El país es requerido"
-      }
     }
   },
   "order": {

@@ -245,55 +245,6 @@
         "lastNameTooLong": "Nachname ist zu lang",
         "lastNameInvalidChars": "Nachname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten"
       }
-    },
-    "shippingForm": {
-      "title": "Lieferadresse",
-      "subtitle": "Wohin sollen wir Ihre Bestellung liefern?",
-      "complete": "Vollständig",
-      "streetAddress": "Straße und Hausnummer",
-      "apartmentSuite": "Wohnung, Suite usw. (optional)",
-      "city": "Stadt",
-      "stateProvince": "Bundesland/Provinz",
-      "postalCode": "Postleitzahl",
-      "country": "Land",
-      "errors": {
-        "addressRequired": "Straße und Hausnummer sind erforderlich",
-        "addressTooLong": "Adresse ist zu lang",
-        "cityRequired": "Stadt ist erforderlich",
-        "cityTooLong": "Stadtname ist zu lang",
-        "cityInvalidChars": "Stadt darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
-        "stateRequired": "Bundesland/Provinz ist erforderlich",
-        "stateTooLong": "Bundesland/Provinz ist zu lang",
-        "postalCodeRequired": "Postleitzahl ist erforderlich",
-        "postalCodeTooLong": "Postleitzahl ist zu lang",
-        "postalCodeInvalid": "Ungültiges Postleitzahlformat",
-        "countryRequired": "Land ist erforderlich"
-      }
-    },
-    "billingForm": {
-      "title": "Rechnungsadresse",
-      "subtitle": "Wohin sollen wir die Rechnung senden?",
-      "complete": "Vollständig",
-      "sameAsShipping": "Gleich wie Lieferadresse",
-      "streetAddress": "Straße und Hausnummer",
-      "apartmentSuite": "Wohnung, Suite usw. (optional)",
-      "city": "Stadt",
-      "stateProvince": "Bundesland / Provinz",
-      "postalCode": "Postleitzahl",
-      "country": "Land",
-      "errors": {
-        "addressRequired": "Straße und Hausnummer sind erforderlich",
-        "addressTooLong": "Adresse ist zu lang",
-        "cityRequired": "Stadt ist erforderlich",
-        "cityTooLong": "Stadtname ist zu lang",
-        "cityInvalidChars": "Stadt darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
-        "stateRequired": "Bundesland/Provinz ist erforderlich",
-        "stateTooLong": "Bundesland/Provinz ist zu lang",
-        "postalCodeRequired": "Postleitzahl ist erforderlich",
-        "postalCodeTooLong": "Postleitzahl ist zu lang",
-        "postalCodeInvalid": "Ungültiges Postleitzahlformat",
-        "countryRequired": "Land ist erforderlich"
-      }
     }
   },
   "order": {
