@@ -20,3 +20,21 @@ class NotificationTests(BaseAPITestCase):
 
         # AND the response should contain the notifications
         self.assertEqual(len(response.data.get("results", [])), 2)
+
+    def test_mark_notification_as_read(self):
+        # GIVEN an authenticated user exists 
+        self.authenticated_client.force_authenticate(user=self.user)
+
+        # AND the user has an unread notification
+        notification = NotificationFactory(user=self.user, is_read=False)
+
+        # WHEN we make a patch request to mark the notification as read
+        url = reverse("v1:notifications:update_notification", kwargs={"pk": str(notification.id)})
+        response = self.authenticated_client.patch(url, {"is_read": True})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the notification should be marked as read
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)
