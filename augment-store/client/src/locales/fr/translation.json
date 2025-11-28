@@ -342,5 +342,11 @@
     "mondayFriday": "Lundi - Vendredi: 9h00 - 18h00 PST",
     "saturday": "Samedi: 10h00 - 16h00 PST",
     "sunday": "Dimanche: Fermé"
+  },
+  "sidebar": {
+    "menu": "Menu",
+    "categories": "CATÉGORIES",
+    "noCategoriesAvailable": "Aucune catégorie disponible",
+    "profileWithName": "Profil ({{name}})"
   }
 }

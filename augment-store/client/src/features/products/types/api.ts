@@ -70,6 +70,32 @@ export interface PaginatedProductsAPI {
 }
 
 /**
+ * Recommended Products API Response
+ * Same structure as PaginatedProductsAPI but with expanded brand and category objects
+ */
+export interface RecommendedProductsAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: RecommendedProductAPI[]
+}
+
+/**
+ * Recommended Product with expanded brand and category
+ */
+export interface RecommendedProductAPI {
+  id: string
+  name: string
+  description: string
+  price: string // Django returns Decimal as string
+  brand: ProductBrandAPI
+  category: ProductCategoryAPI
+  quantity: number
+  rating: string // Django returns Decimal as string
+  images: FileAPI[]
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
@@ -131,5 +157,38 @@ export function transformBrandFromAPI(apiBrand: ProductBrandAPI) {
     name: apiBrand.name,
     description: apiBrand.description,
     image: apiBrand.image?.file || undefined,
+  }
+}
+
+/**
+ * Transform recommended product from API to frontend format
+ * Same as transformProductFromAPI but uses RecommendedProductAPI type
+ */
+export function transformRecommendedProductFromAPI(apiProduct: RecommendedProductAPI) {
+  // Extract image URLs from FileAPI objects
+  const imageUrls = apiProduct.images
+    .map((fileObj) => fileObj.file)
+    .filter((url): url is string => url !== null)
+
+  return {
+    id: apiProduct.id,
+    name: apiProduct.name,
+    description: apiProduct.description,
+    price: parseFloat(apiProduct.price),
+    discountPrice: undefined, // Backend doesn't have discount price yet
+    images: imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE],
+    category: {
+      id: apiProduct.category.id,
+      name: apiProduct.category.name,
+      slug: apiProduct.category.name.toLowerCase().replace(/\s+/g, '-'),
+      description: apiProduct.category.description,
+      image: apiProduct.category.image?.file || undefined,
+      parent: apiProduct.category.parent || undefined,
+    },
+    stock: apiProduct.quantity,
+    rating: parseFloat(apiProduct.rating),
+    reviewCount: 0, // Backend doesn't have review count yet
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }
 }
