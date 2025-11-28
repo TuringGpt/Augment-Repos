@@ -11,6 +11,7 @@ export const ROUTES = {
   ORDER_DETAIL: '/orders/:id',
   PROFILE: '/profile',
   WISHLIST: '/wishlist',
+  NOTIFICATIONS: '/notifications',
   SUPPORT: '/support',
   SUPPORT_TICKETS: '/support/tickets',
   SUPPORT_TICKET_DETAIL: '/support/tickets/:id',

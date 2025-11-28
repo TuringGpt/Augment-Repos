@@ -26,6 +26,7 @@ import {
   Login,
   Receipt,
   HelpOutline,
+  Notifications,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -100,6 +101,11 @@ const Sidebar = () => {
 
   const handleOrdersClick = () => {
     navigate('/orders')
+    closeSidebar()
+  }
+
+  const handleNotificationsClick = () => {
+    navigate('/notifications')
     closeSidebar()
   }
 
@@ -252,6 +258,27 @@ const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={t('nav.orders')}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Notifications */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleNotificationsClick}
+                    sx={{
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                      <Notifications />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t('notifications.title')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
