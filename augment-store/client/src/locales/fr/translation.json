@@ -67,7 +67,8 @@
     "empty": "Aucune notification pour le moment",
     "emptyDescription": "Vous verrez les notifications ici lorsque vous aurez des mises à jour",
     "viewAll": "Voir toutes les notifications",
-    "unreadCount": "{{count}} non lu(s)"
+    "unreadCount": "{{count}} notification non lue",
+    "unreadCount_other": "{{count}} notifications non lues"
   },
   "auth": {
     "login": "Connexion",

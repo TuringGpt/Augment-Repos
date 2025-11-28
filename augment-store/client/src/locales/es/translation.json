@@ -67,7 +67,8 @@
     "empty": "No hay notificaciones aún",
     "emptyDescription": "Verás notificaciones aquí cuando tengas actualizaciones",
     "viewAll": "Ver todas las notificaciones",
-    "unreadCount": "{{count}} sin leer"
+    "unreadCount": "{{count}} notificación sin leer",
+    "unreadCount_other": "{{count}} notificaciones sin leer"
   },
   "auth": {
     "login": "Iniciar Sesión",

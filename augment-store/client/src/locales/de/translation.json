@@ -67,7 +67,8 @@
     "empty": "Noch keine Benachrichtigungen",
     "emptyDescription": "Sie sehen hier Benachrichtigungen, wenn Sie Updates haben",
     "viewAll": "Alle Benachrichtigungen anzeigen",
-    "unreadCount": "{{count}} ungelesen"
+    "unreadCount": "{{count}} ungelesene Benachrichtigung",
+    "unreadCount_other": "{{count}} ungelesene Benachrichtigungen"
   },
   "auth": {
     "login": "Anmelden",
