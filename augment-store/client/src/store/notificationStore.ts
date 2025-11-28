@@ -18,6 +18,10 @@ interface NotificationState {
   setPage: (page: number) => void
 }
 
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let fetchRequestCounter = 0
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -28,24 +32,40 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchNotifications: async (page = 1, limit = 10) => {
+  fetchNotifications: async (page?: number, limit?: number) => {
+    const state = get()
+    const currentPage = page ?? state.page
+    const currentLimit = limit ?? state.limit
+
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
     set({ isLoading: true, error: null })
     try {
-      const response = await notificationService.getNotifications(page, limit)
-      set({
-        notifications: response.notifications,
-        unreadCount: response.unreadCount,
-        total: response.total,
-        page: response.page,
-        limit: response.limit,
-        totalPages: response.totalPages,
-        isLoading: false,
-      })
+      const response = await notificationService.getNotifications(currentPage, currentLimit)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchRequestCounter) {
+        set({
+          notifications: response.notifications,
+          unreadCount: response.unreadCount,
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+          isLoading: false,
+        })
+      }
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch notifications',
-        isLoading: false,
-      })
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch notifications',
+          isLoading: false,
+        })
+      }
     }
   },
 
