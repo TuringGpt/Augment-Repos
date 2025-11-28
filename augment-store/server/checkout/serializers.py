@@ -63,10 +63,6 @@ class OrderItemListSerializer(serializers.ModelSerializer):
         fields = ["id", "cart_item", "product", "quantity", "created_at"]
 
 
-class ProductQuantitySerializer(serializers.Serializer):
-    product_id = serializers.UUIDField()
-    quantity = serializers.IntegerField(min_value=1)
-
 class CreateOrderSerializer(serializers.ModelSerializer):
     cart_items = serializers.ListField(child=serializers.UUIDField(), write_only=True)
     shipping_address = ShippingAddressCreateSerializer(required=False)

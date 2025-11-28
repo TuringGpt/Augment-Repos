@@ -60,7 +60,7 @@ class Order(BaseModel):
 
     @property
     def subtotal(self):
-        return sum(item.product.price * item.quantity for item in self.items.all())
+        return sum(item.product.price * item.quantity for item in self.items.all() if item.product and item.quantity)
 
     @property
     def tax(self):
@@ -83,7 +83,7 @@ class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     cart_item = models.ForeignKey(CartItem, on_delete=models.SET_NULL, null=True, related_name='order_items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='order_items')
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_items')
 
 
