@@ -36,6 +36,7 @@ import { productService } from '@services/api/products/productService'
 import { buildCategoryTree, categoryNameToSlug } from '@utils/categoryUtils'
 import { authService } from '@services/api/auth/authService'
 import type { CategoryWithChildren } from '@features/products/types'
+import { ROUTES } from '@constants/index'
 
 const Sidebar = () => {
   const navigate = useNavigate()
@@ -90,44 +91,44 @@ const Sidebar = () => {
   }
 
   const handleAllProductsClick = () => {
-    navigate('/products')
+    navigate(ROUTES.PRODUCTS)
     closeSidebar()
   }
 
   const handleWishlistClick = () => {
-    navigate('/wishlist')
+    navigate(ROUTES.WISHLIST)
     closeSidebar()
   }
 
   const handleOrdersClick = () => {
-    navigate('/orders')
+    navigate(ROUTES.ORDERS)
     closeSidebar()
   }
 
   const handleNotificationsClick = () => {
-    navigate('/notifications')
+    navigate(ROUTES.NOTIFICATIONS)
     closeSidebar()
   }
 
   const handleProfileClick = () => {
-    navigate('/profile')
+    navigate(ROUTES.PROFILE)
     closeSidebar()
   }
 
   const handleSupportClick = () => {
-    navigate('/support/tickets')
+    navigate(ROUTES.SUPPORT_TICKETS)
     closeSidebar()
   }
 
   const handleLoginClick = () => {
-    navigate('/login')
+    navigate(ROUTES.LOGIN)
     closeSidebar()
   }
 
   const handleLogout = async () => {
     await authService.logout()
     closeSidebar()
-    navigate('/login')
+    navigate(ROUTES.LOGIN)
   }
 
   return (

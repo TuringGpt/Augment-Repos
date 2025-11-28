@@ -50,6 +50,8 @@ export const PAYMENT_STATUS_LABELS = {
   refunded: 'Refunded',
 } as const
 
+export const POLLING_INTERVAL = 30000 // 30 seconds in milliseconds
+
 export const COUNTRIES = [
   { value: 'AF', label: 'Afghanistan' },
   { value: 'AX', label: 'Åland Islands' },

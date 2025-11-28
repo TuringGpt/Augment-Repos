@@ -13,6 +13,7 @@ import { useNotificationStore } from '@store/notificationStore'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDistanceToNow } from 'date-fns'
+import { ROUTES } from '@constants/index'
 
 interface NotificationListProps {
   anchorEl: null | HTMLElement
@@ -30,7 +31,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   }
 
   const handleViewAll = () => {
-    navigate('/notifications')
+    navigate(ROUTES.NOTIFICATIONS)
     onClose()
   }
 

@@ -4,6 +4,7 @@ import { Notifications as NotificationsIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useAuthStore } from '@store/authStore'
 import { useTranslation } from '@hooks/useTranslation'
+import { POLLING_INTERVAL } from '@constants/index'
 import NotificationList from './NotificationList'
 
 const NotificationBell = () => {
@@ -26,7 +27,7 @@ const NotificationBell = () => {
 
     const interval = setInterval(() => {
       fetchNotifications(1, 10)
-    }, 30000) // 30 seconds
+    }, POLLING_INTERVAL)
 
     return () => clearInterval(interval)
   }, [isAuthenticated, fetchNotifications])
@@ -67,4 +68,3 @@ const NotificationBell = () => {
 }
 
 export default NotificationBell
-
