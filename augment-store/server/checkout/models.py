@@ -1,8 +1,10 @@
 from decimal import Decimal
 from django.db import models
+from django.db.models import QuerySet
 from accounts.models import User
 from core.models import BaseModel
 from carts.models import CartItem
+from products.models import Product
 
 
 class ShippingAddress(BaseModel):
@@ -49,6 +51,7 @@ class Order(BaseModel):
         )
 
     payment: "Payment"
+    items: QuerySet["OrderItem"]
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=20, choices=OrderStatus.CHOICES, default=OrderStatus.PENDING)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
@@ -57,7 +60,7 @@ class Order(BaseModel):
 
     @property
     def subtotal(self):
-        return sum(item.cart_item.product.price * item.cart_item.quantity for item in self.items.all())
+        return sum(item.product.price * item.quantity for item in self.items.all() if item.product and item.quantity)
 
     @property
     def tax(self):
@@ -79,6 +82,8 @@ class Order(BaseModel):
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     cart_item = models.ForeignKey(CartItem, on_delete=models.SET_NULL, null=True, related_name='order_items')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='order_items')
+    quantity = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_items')
 
 

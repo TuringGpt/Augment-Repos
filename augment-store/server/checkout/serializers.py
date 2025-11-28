@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from .models import Order, OrderItem, Payment, ShippingAddress, BillingAddress, ContactInformation
 from carts.models import CartItem
-from carts.serializers import CartItemListSerializer
+from products.serializers import ProductListSerializer
 from .services import StripeService
 
 
@@ -56,11 +56,11 @@ class ContactInformationCreateSerializer(serializers.ModelSerializer):
         fields = ["first_name", "last_name", "email", "phone"]
 
 class OrderItemListSerializer(serializers.ModelSerializer):
-    cart_item = CartItemListSerializer(read_only=True)
+    product = ProductListSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ["id", "cart_item", "created_at"]
+        fields = ["id", "cart_item", "product", "quantity", "created_at"]
 
 
 class CreateOrderSerializer(serializers.ModelSerializer):
@@ -195,7 +195,9 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         for cart_item in validated_data.get("cart_items"):
             OrderItem.objects.create(
                 order=order, 
-                cart_item=cart_item, 
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                cart_item=cart_item,
                 created_by=user,
             )
 
