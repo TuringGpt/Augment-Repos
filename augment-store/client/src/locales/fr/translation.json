@@ -59,7 +59,15 @@
     "logout": "Déconnexion",
     "products": "Parcourir les produits",
     "login": "Se connecter à votre compte",
-    "changeLanguage": "Changer de langue"
+    "changeLanguage": "Changer de langue",
+    "notifications": "Notifications"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification pour le moment",
+    "emptyDescription": "Vous verrez les notifications ici lorsque vous aurez des mises à jour",
+    "viewAll": "Voir toutes les notifications",
+    "unreadCount": "{{count}} non lu(s)"
   },
   "auth": {
     "login": "Connexion",
