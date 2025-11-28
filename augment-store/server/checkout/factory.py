@@ -3,6 +3,7 @@ from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 from accounts.factory import UserFactory
 from carts.factory import CartItemFactory
+from products.factory import ProductFactory
 
 
 class ShippingAddressFactory(DjangoModelFactory):
@@ -74,6 +75,26 @@ class OrderItemFactory(DjangoModelFactory):
 
     class Meta:
         model = "checkout.OrderItem"
+
+    @post_generation
+    def product(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.product = self.cart_item.product
+        else:
+            self.product = ProductFactory()
+
+    @post_generation
+    def quantity(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.quantity = self.cart_item.quantity
+        else:
+            self.quantity = 1
 
 
 class PaymentFactory(DjangoModelFactory):

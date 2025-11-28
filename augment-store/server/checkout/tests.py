@@ -468,7 +468,7 @@ class OrderListViewTests(BaseAPITestCase):
         # AND the order items should contain cart item data
         order_item = order_data["items"][0]
         self.assertIn("cart_item", order_item)
-        self.assertIn("product", order_item["cart_item"])
+        self.assertIn("product", order_item)
 
         # AND the response should contain calculated fields
         self.assertIn("subtotal", order_data)
@@ -585,10 +585,11 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         self.assertEqual(response.data["status"], order.status)
         self.assertEqual(len(response.data["items"]), 2)
 
-        # AND the order items should be included with cart item details
+        # AND the order items should be included with product details
         order_items = response.data["items"]
-        self.assertIn("cart_item", order_items[0])
-        self.assertIn("product", order_items[0]["cart_item"])
+        item = order_items[0]
+        self.assertIn("cart_item", item)
+        self.assertIn("product", item)
 
     def test_retrieve_order_with_payment_status(self):
         # GIVEN an authenticated user exists
