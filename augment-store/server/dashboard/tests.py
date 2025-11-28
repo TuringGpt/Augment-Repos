@@ -163,7 +163,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         ProductView.objects.create(product=self.product2, user=self.member_user)
 
         # WHEN we call the most_viewed endpoint
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("product-statistics-most_viewed")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
