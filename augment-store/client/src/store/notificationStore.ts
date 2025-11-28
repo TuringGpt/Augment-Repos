@@ -70,6 +70,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   clearNotifications: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchRequestCounter += 1
+
     set({
       notifications: [],
       unreadCount: 0,
