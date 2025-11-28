@@ -26,6 +26,7 @@ import {
   Login,
   Receipt,
   HelpOutline,
+  Notifications,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -35,6 +36,7 @@ import { productService } from '@services/api/products/productService'
 import { buildCategoryTree, categoryNameToSlug } from '@utils/categoryUtils'
 import { authService } from '@services/api/auth/authService'
 import type { CategoryWithChildren } from '@features/products/types'
+import { ROUTES } from '@constants/index'
 
 const Sidebar = () => {
   const navigate = useNavigate()
@@ -89,39 +91,44 @@ const Sidebar = () => {
   }
 
   const handleAllProductsClick = () => {
-    navigate('/products')
+    navigate(ROUTES.PRODUCTS)
     closeSidebar()
   }
 
   const handleWishlistClick = () => {
-    navigate('/wishlist')
+    navigate(ROUTES.WISHLIST)
     closeSidebar()
   }
 
   const handleOrdersClick = () => {
-    navigate('/orders')
+    navigate(ROUTES.ORDERS)
+    closeSidebar()
+  }
+
+  const handleNotificationsClick = () => {
+    navigate(ROUTES.NOTIFICATIONS)
     closeSidebar()
   }
 
   const handleProfileClick = () => {
-    navigate('/profile')
+    navigate(ROUTES.PROFILE)
     closeSidebar()
   }
 
   const handleSupportClick = () => {
-    navigate('/support/tickets')
+    navigate(ROUTES.SUPPORT_TICKETS)
     closeSidebar()
   }
 
   const handleLoginClick = () => {
-    navigate('/login')
+    navigate(ROUTES.LOGIN)
     closeSidebar()
   }
 
   const handleLogout = async () => {
     await authService.logout()
     closeSidebar()
-    navigate('/login')
+    navigate(ROUTES.LOGIN)
   }
 
   return (
@@ -252,6 +259,27 @@ const Sidebar = () => {
                     </ListItemIcon>
                     <ListItemText
                       primary={t('nav.orders')}
+                      primaryTypographyProps={{ fontWeight: 'medium' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+
+                {/* Notifications */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={handleNotificationsClick}
+                    sx={{
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.1)',
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                      <Notifications />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t('notifications.title')}
                       primaryTypographyProps={{ fontWeight: 'medium' }}
                     />
                   </ListItemButton>
