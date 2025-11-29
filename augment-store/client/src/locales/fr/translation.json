@@ -308,7 +308,7 @@
   },
   "footer": {
     "aboutUs": "À Propos",
-    "contactUs": "Nous Contacter",
+    "contactUs": "Nous contacter",
     "termsOfService": "Conditions d'Utilisation",
     "privacyPolicy": "Politique de Confidentialité",
     "faq": "FAQ",
@@ -316,6 +316,7 @@
     "followUs": "Suivez-Nous",
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Abonnez-vous à notre newsletter",
+    "emailLabel": "Adresse e-mail",
     "enterEmail": "Entrez votre email",
     "subscribe": "S'abonner",
     "subscribeError": "Échec de l'abonnement. Veuillez réessayer.",

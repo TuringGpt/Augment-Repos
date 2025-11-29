@@ -316,6 +316,7 @@
     "followUs": "Follow Us",
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Subscribe to our newsletter",
+    "emailLabel": "Email address",
     "enterEmail": "Enter your email",
     "subscribe": "Subscribe",
     "subscribeError": "Failed to subscribe. Please try again.",

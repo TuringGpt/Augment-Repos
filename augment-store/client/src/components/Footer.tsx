@@ -130,6 +130,7 @@ const Footer = () => {
                 fullWidth
                 size="small"
                 type="email"
+                label={t('footer.emailLabel')}
                 placeholder={t('footer.enterEmail')}
                 value={email}
                 onChange={handleEmailChange}
