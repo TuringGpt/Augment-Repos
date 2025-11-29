@@ -49,7 +49,7 @@ const Footer = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      setError('Failed to subscribe. Please try again.')
+      setError(t('footer.subscribeError'))
     } finally {
       setIsSubmitting(false)
     }

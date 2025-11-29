@@ -318,6 +318,7 @@
     "subscribeNewsletter": "Subscribe to our newsletter",
     "enterEmail": "Enter your email",
     "subscribe": "Subscribe",
+    "subscribeError": "Failed to subscribe. Please try again.",
     "allRightsReserved": "All rights reserved",
     "tagline": "Your one-stop shop for all your needs.",
     "quickLinks": "Quick Links",

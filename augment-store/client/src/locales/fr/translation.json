@@ -318,6 +318,7 @@
     "subscribeNewsletter": "Abonnez-vous à notre newsletter",
     "enterEmail": "Entrez votre email",
     "subscribe": "S'abonner",
+    "subscribeError": "Échec de l'abonnement. Veuillez réessayer.",
     "allRightsReserved": "Tous droits réservés",
     "tagline": "Votre guichet unique pour tous vos besoins.",
     "quickLinks": "Liens Rapides",
