@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Container, Typography, Link, Grid, TextField, Button, Alert } from '@mui/material'
+import { Box, Container, Typography, Link, Grid, TextField, Button, Alert, InputAdornment } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Email as EmailIcon } from '@mui/icons-material'
 import { Colors } from '@config/colors'
@@ -144,7 +144,11 @@ const Footer = () => {
                   },
                 }}
                 InputProps={{
-                  startAdornment: <EmailIcon fontSize="small" sx={{ mr: 1, color: 'action.active' }} />,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <Button
