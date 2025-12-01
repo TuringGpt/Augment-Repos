@@ -16,6 +16,7 @@ import { useCartStore } from '@store/cartStore'
 import { useUIStore } from '@store/uiStore'
 import SearchBar from '@components/common/SearchBar'
 import SettingsMenu from '@components/SettingsMenu'
+import NotificationBell from '@features/notifications/components/NotificationBell'
 import { authService } from '@services/api/auth/authService'
 import { useTranslation } from '@hooks/useTranslation'
 
@@ -85,6 +86,9 @@ const Header = () => {
                 </Badge>
               </IconButton>
             </Tooltip>
+
+            {/* Notification Bell - Only visible when authenticated */}
+            <NotificationBell />
 
             {/* Settings Menu - Always Visible */}
             <SettingsMenu />

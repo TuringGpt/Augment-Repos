@@ -59,7 +59,16 @@
     "logout": "Cerrar sesión",
     "products": "Explorar productos",
     "login": "Iniciar sesión en tu cuenta",
-    "changeLanguage": "Cambiar idioma"
+    "changeLanguage": "Cambiar idioma",
+    "notifications": "Notificaciones"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "No hay notificaciones aún",
+    "emptyDescription": "Verás notificaciones aquí cuando tengas actualizaciones",
+    "viewAll": "Ver todas las notificaciones",
+    "unreadCount": "{{count}} notificación sin leer",
+    "unreadCount_other": "{{count}} notificaciones sin leer"
   },
   "auth": {
     "login": "Iniciar Sesión",

@@ -100,42 +100,9 @@ export const API_ENDPOINTS = {
     },
   },
 
-  // Support Ticket endpoints
-  SUPPORT: {
-    TICKETS: {
-      LIST: '/support/tickets/',
-      CREATE: '/support/tickets/create/',
-      DETAIL: (id: string) => `/support/tickets/${id}/`,
-      UPDATE: (id: string) => `/support/tickets/${id}/update/`,
-      DELETE: (id: string) => `/support/tickets/${id}/update/`,
-    },
-    COMMENTS: {
-      LIST: (ticketId: string) => `/support/tickets/${ticketId}/comments/`,
-      CREATE: (ticketId: string) => `/support/tickets/${ticketId}/comments/create/`,
-      UPDATE: (ticketId: string, commentId: string) =>
-        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
-      DELETE: (ticketId: string, commentId: string) =>
-        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
-    },
-  },
-
-  // Support Ticket endpoints
-  SUPPORT: {
-    TICKETS: {
-      LIST: '/support/tickets/',
-      CREATE: '/support/tickets/create/',
-      DETAIL: (id: string) => `/support/tickets/${id}/`,
-      UPDATE: (id: string) => `/support/tickets/${id}/update/`,
-      DELETE: (id: string) => `/support/tickets/${id}/update/`,
-    },
-    COMMENTS: {
-      LIST: (ticketId: string) => `/support/tickets/${ticketId}/comments/`,
-      CREATE: (ticketId: string) => `/support/tickets/${ticketId}/comments/create/`,
-      UPDATE: (ticketId: string, commentId: string) =>
-        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
-      DELETE: (ticketId: string, commentId: string) =>
-        `/support/tickets/${ticketId}/comments/${commentId}/update/`,
-    },
+  // Notification endpoints
+  NOTIFICATIONS: {
+    LIST: '/notifications/',
   },
 }
 

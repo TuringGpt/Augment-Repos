@@ -28,6 +28,9 @@ import TicketDetailPage from '@features/support/ticket-detail/components/TicketD
 import CreateTicketPage from '@features/support/create-ticket/components/CreateTicketPage'
 import TicketsPage from '@features/support/ticket-list/components/TicketsPage'
 
+// Notification pages
+import NotificationsPage from '@features/notifications/pages/NotificationsPage'
+
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
 import ContactPage from '@features/info/contact/components/ContactPage'
@@ -79,6 +82,7 @@ const AppRoutes = () => {
           <Route path="/orders/:id" element={<OrderDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />

@@ -59,7 +59,16 @@
     "logout": "Logout",
     "products": "Browse products",
     "login": "Login to your account",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "notifications": "Notifications"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "emptyDescription": "You'll see notifications here when you have updates",
+    "viewAll": "View all notifications",
+    "unreadCount": "{{count}} unread notification",
+    "unreadCount_other": "{{count}} unread notifications"
   },
   "auth": {
     "login": "Login",
