@@ -7,8 +7,9 @@ import {
   Divider,
   Button,
   CircularProgress,
+  Alert,
 } from '@mui/material'
-import { CheckCircle, Circle } from '@mui/icons-material'
+import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@hooks/useTranslation'
@@ -24,7 +25,8 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { notifications, isLoading, markAsRead, markingAsRead } = useNotificationStore()
+  const { notifications, isLoading, error, fetchNotifications, markAsRead, markingAsRead } =
+    useNotificationStore()
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
@@ -37,6 +39,10 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   const handleViewAll = () => {
     navigate(ROUTES.NOTIFICATIONS)
     onClose()
+  }
+
+  const handleRetry = () => {
+    fetchNotifications(1, 10)
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -73,6 +79,27 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       </Box>
       <Divider />
 
+      {/* Error State */}
+      {error && !isLoading && (
+        <Box sx={{ p: 2 }}>
+          <Alert
+            severity="error"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<RefreshIcon />}
+                onClick={handleRetry}
+              >
+                {t('common.retry')}
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        </Box>
+      )}
+
       {/* Loading State */}
       {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -81,7 +108,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       )}
 
       {/* Empty State */}
-      {!isLoading && notifications.length === 0 && (
+      {!isLoading && !error && notifications.length === 0 && (
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             {t('notifications.empty')}
