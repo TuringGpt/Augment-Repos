@@ -60,7 +60,8 @@ export const notificationService = {
   /**
    * Mark a notification as read
    * @param notificationId - The ID of the notification to mark as read
-   * @returns The updated notification data from the backend
+   * @returns Minimal response containing only id and is_read fields
+   * @note Backend only returns {id, is_read}, not the full notification object
    */
   markAsRead: async (notificationId: string): Promise<MarkAsReadResponse> => {
     try {
