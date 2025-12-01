@@ -73,15 +73,15 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   markAsRead: async (notificationId: string) => {
-    const state = get()
+    const initialState = get()
 
     // Don't mark if already being marked
-    if (state.markingAsRead.has(notificationId)) {
+    if (initialState.markingAsRead.has(notificationId)) {
       return
     }
 
     // Add to marking set
-    const newMarkingAsRead = new Set(state.markingAsRead)
+    const newMarkingAsRead = new Set(initialState.markingAsRead)
     newMarkingAsRead.add(notificationId)
     set({ markingAsRead: newMarkingAsRead })
 
@@ -89,16 +89,19 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Call API to mark as read
       await notificationService.markAsRead(notificationId)
 
-      // Optimistically update local state
-      const updatedNotifications = state.notifications.map((notification) =>
+      // Read latest state after await to avoid stale data and race conditions
+      const latestState = get()
+
+      // Update local state with latest notifications
+      const updatedNotifications = latestState.notifications.map((notification) =>
         notification.id === notificationId ? { ...notification, isRead: true } : notification
       )
 
       // Recalculate unread count
       const newUnreadCount = updatedNotifications.filter((n) => !n.isRead).length
 
-      // Remove from marking set
-      const finalMarkingAsRead = new Set(state.markingAsRead)
+      // Remove from marking set using latest state
+      const finalMarkingAsRead = new Set(latestState.markingAsRead)
       finalMarkingAsRead.delete(notificationId)
 
       set({
@@ -107,8 +110,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         markingAsRead: finalMarkingAsRead,
       })
     } catch (error) {
-      // Remove from marking set on error
-      const finalMarkingAsRead = new Set(state.markingAsRead)
+      // Read latest state in catch block to avoid stale data
+      const latestState = get()
+
+      // Remove from marking set on error using latest state
+      const finalMarkingAsRead = new Set(latestState.markingAsRead)
       finalMarkingAsRead.delete(notificationId)
 
       set({
