@@ -104,6 +104,11 @@ export const API_ENDPOINTS = {
   NOTIFICATIONS: {
     LIST: '/notifications/',
   },
+
+  // Newsletter endpoints
+  NEWSLETTER: {
+    SUBSCRIBE: '/newsletter/subscribe/',
+  },
 }
 
 // Stripe configuration
