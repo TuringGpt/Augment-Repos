@@ -5,6 +5,8 @@ import type {
   PaginatedNotificationsAPI,
   Notification,
   NotificationListResponse,
+  MarkAsReadRequest,
+  MarkAsReadResponse,
 } from '@features/notifications/types'
 
 /**
@@ -51,6 +53,25 @@ export const notificationService = {
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Mark a notification as read
+   * @param notificationId - The ID of the notification to mark as read
+   * @returns The updated notification data from the backend
+   */
+  markAsRead: async (notificationId: string): Promise<MarkAsReadResponse> => {
+    try {
+      const requestData: MarkAsReadRequest = { is_read: true }
+      const response = await apiClient.patch<MarkAsReadResponse>(
+        API_ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(notificationId),
+        requestData
+      )
+      return response
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
       throw error
     }
   },
