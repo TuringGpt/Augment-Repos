@@ -207,7 +207,7 @@ const OrdersPage = () => {
                 <TableCell>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {(() => {
-                      const validItems = order.items.filter((item) => item.cart_item?.product !== null)
+                      const validItems = order.items.filter((item) => item.cart_item.product != null)
                       return (
                         <>
                           {validItems.slice(0, 2).map((item) => (
