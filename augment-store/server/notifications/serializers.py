@@ -19,9 +19,14 @@ class UpdateNotificationSerializer(serializers.ModelSerializer):
     
 
 class MarkAsReadSerializer(serializers.Serializer):
-    mark_all_as_read = serializers.BooleanField(default=False)
+    mark_all_as_read = serializers.BooleanField(default=False, required=False, write_only=True)
     notification_ids = serializers.ListField(child=serializers.UUIDField(), required=False)
 
+    class TempSerializer(serializers.ModelSerializer):
+        
+        class Meta:
+            model = Notification
+            fields = ["id", "is_read"]
 
     def validate_notification_ids(self, value):
         user = self.context.get("request").user
@@ -36,6 +41,9 @@ class MarkAsReadSerializer(serializers.Serializer):
 
         if mark_all_as_read and notification_ids:
             raise serializers.ValidationError("Cannot provide both mark_all_as_read and notification_ids")
+        
+        if not mark_all_as_read and not notification_ids:
+            raise serializers.ValidationError("Must provide either mark_all_as_read or notification_ids")
 
         return attrs
 
@@ -53,6 +61,9 @@ class MarkAsReadSerializer(serializers.Serializer):
             notification.is_read = True
         
         Notification.objects.bulk_update(notifications, ["is_read"], batch_size=100)
-        
-        return notifications
+
+        return {
+            "count": notifications.count(),
+            "notifications": self.TempSerializer(notifications, many=True).data
+        }
 

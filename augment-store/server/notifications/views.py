@@ -23,10 +23,7 @@ class MarkAllAsReadView(BaseNotificationView, GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         notifications = serializer.update(None, serializer.validated_data)
-
-        return Response({
-            "notifications_ids": notifications.values_list("id", flat=True)
-        }, status=status.HTTP_200_OK)
+        return Response(notifications, status=status.HTTP_200_OK)
 
 class ListNotificationView(BaseNotificationView, ListAPIView):
     serializer_class = NotificationListSerializer

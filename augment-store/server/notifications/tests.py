@@ -77,5 +77,4 @@ class NotificationTests(BaseAPITestCase):
         self.assertEqual(Notification.objects.get_user_notifications(self.user).filter(is_read=True).count(), 2)
 
         # AND the response should contain the notifications
-        print(response.data)
-        self.assertEqual(len(response.data.get("results", [])), 2)
+        self.assertEqual(len(response.data.get("notifications", [])), 2)
