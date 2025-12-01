@@ -1,7 +1,9 @@
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Notification
-from .serializers import NotificationListSerializer, UpdateNotificationSerializer
+from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer
 
 
 class BaseNotificationView:
@@ -19,3 +21,17 @@ class UpdateNotificationView(BaseNotificationView, RetrieveUpdateDestroyAPIView)
     serializer_class = UpdateNotificationSerializer
     permission_classes = [IsAuthenticated]
 
+
+class MarkAllAsReadView(BaseNotificationView, GenericAPIView):
+    serializer_class = MarkAsReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        notifications = serializer.update(None, serializer.validated_data)
+
+        return Response({
+            "notifications_ids": notifications.values_list("id", flat=True)
+        }, status=status.HTTP_200_OK)
