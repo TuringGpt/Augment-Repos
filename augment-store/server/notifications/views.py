@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationListSerializer, UpdateNotificationSerializer
@@ -15,7 +15,7 @@ class ListNotificationView(BaseNotificationView, ListAPIView):
     serializer_class = NotificationListSerializer
     
 
-class UpdateNotificationView(BaseNotificationView, UpdateAPIView):
+class UpdateNotificationView(BaseNotificationView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateNotificationSerializer
     permission_classes = [IsAuthenticated]
-    
+
