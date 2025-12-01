@@ -31,8 +31,15 @@ class MarkAsReadSerializer(serializers.Serializer):
     def validate_notification_ids(self, value):
         user = self.context.get("request").user
         notifications = Notification.objects.get_user_notifications(user).filter(id__in=value)
-        if notifications.count() != len(value):
-            raise serializers.ValidationError("One or more notifications do not exist")
+        
+        invalid_ids = []
+        for id in value:
+            if not notifications.filter(id=id).exists():
+                invalid_ids.append(id)
+        
+        if len(invalid_ids):
+            raise serializers.ValidationError(f"Notification {invalid_ids} does not exist")
+        
         return notifications
 
     def validate(self, attrs):
@@ -60,10 +67,10 @@ class MarkAsReadSerializer(serializers.Serializer):
         for notification in notifications:
             notification.is_read = True
         
-        Notification.objects.bulk_update(notifications, ["is_read"], batch_size=100)
+        count = Notification.objects.bulk_update(notifications, ["is_read"], batch_size=100)
 
         return {
-            "count": notifications.count(),
+            "count": count,
             "notifications": self.TempSerializer(notifications, many=True).data
         }
 

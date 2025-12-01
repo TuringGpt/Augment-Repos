@@ -62,8 +62,8 @@ class NotificationTests(BaseAPITestCase):
         self.authenticated_client.force_authenticate(user=self.user)
 
         # AND the user has an unread notification
-        notification = NotificationFactory(user=self.user, is_read=False)
-        notification2 = NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=False)
 
         # WHEN we make a patch request to mark the notification as read
         url = reverse("v1:notifications:mark_all_as_read")
