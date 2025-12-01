@@ -12,12 +12,23 @@ import {
 import { CheckCircle, Circle } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
 
 const NotificationsPage = () => {
   const { t } = useTranslation()
-  const { notifications, isLoading, page, totalPages, unreadCount, fetchNotifications, setPage } =
-    useNotificationStore()
+  const toast = useToast()
+  const {
+    notifications,
+    isLoading,
+    page,
+    totalPages,
+    unreadCount,
+    fetchNotifications,
+    setPage,
+    markAsRead,
+    markingAsRead,
+  } = useNotificationStore()
 
   useEffect(() => {
     fetchNotifications(page, 10)
@@ -25,6 +36,20 @@ const NotificationsPage = () => {
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
+  }
+
+  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+    // Mark as read if not already read
+    if (!isRead) {
+      try {
+        await markAsRead(notificationId)
+        toast.success(t('notifications.markedAsRead'))
+      } catch (error) {
+        // Error is already set in store and displayed via optimistic update rollback
+        // Toast notification for error is shown by the store's error handling
+        toast.error(t('notifications.markAsReadError'))
+      }
+    }
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -77,45 +102,52 @@ const NotificationsPage = () => {
       {/* Notification List */}
       {!isLoading && notifications.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              sx={{
-                backgroundColor: notification.isRead ? 'background.paper' : 'action.hover',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  boxShadow: 4,
-                },
-              }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box sx={{ pt: 0.5 }}>
-                    {notification.isRead ? (
-                      <CheckCircle color="action" />
-                    ) : (
-                      <Circle color="primary" />
-                    )}
+          {notifications.map((notification) => {
+            const isMarking = markingAsRead.has(notification.id)
+            return (
+              <Card
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                sx={{
+                  backgroundColor: notification.isRead ? 'background.paper' : 'action.hover',
+                  transition: 'all 0.2s',
+                  cursor: notification.isRead ? 'default' : 'pointer',
+                  opacity: isMarking ? 0.6 : 1,
+                  pointerEvents: isMarking ? 'none' : 'auto',
+                  '&:hover': {
+                    boxShadow: notification.isRead ? 1 : 4,
+                  },
+                }}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <Box sx={{ pt: 0.5 }}>
+                      {notification.isRead ? (
+                        <CheckCircle color="action" />
+                      ) : (
+                        <Circle color="primary" />
+                      )}
+                    </Box>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={notification.isRead ? 'normal' : 'bold'}
+                        gutterBottom
+                      >
+                        {notification.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        {notification.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatNotificationTime(notification.createdAt)}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight={notification.isRead ? 'normal' : 'bold'}
-                      gutterBottom
-                    >
-                      {notification.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {notification.description}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatNotificationTime(notification.createdAt)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </Box>
       )}
 

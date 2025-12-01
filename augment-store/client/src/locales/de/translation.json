@@ -68,7 +68,9 @@
     "emptyDescription": "Sie sehen hier Benachrichtigungen, wenn Sie Updates haben",
     "viewAll": "Alle Benachrichtigungen anzeigen",
     "unreadCount": "{{count}} ungelesene Benachrichtigung",
-    "unreadCount_other": "{{count}} ungelesene Benachrichtigungen"
+    "unreadCount_other": "{{count}} ungelesene Benachrichtigungen",
+    "markedAsRead": "Benachrichtigung als gelesen markiert",
+    "markAsReadError": "Fehler beim Markieren der Benachrichtigung als gelesen"
   },
   "auth": {
     "login": "Anmelden",

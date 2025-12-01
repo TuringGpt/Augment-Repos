@@ -68,7 +68,9 @@
     "emptyDescription": "You'll see notifications here when you have updates",
     "viewAll": "View all notifications",
     "unreadCount": "{{count}} unread notification",
-    "unreadCount_other": "{{count}} unread notifications"
+    "unreadCount_other": "{{count}} unread notifications",
+    "markedAsRead": "Notification marked as read",
+    "markAsReadError": "Failed to mark notification as read"
   },
   "auth": {
     "login": "Login",

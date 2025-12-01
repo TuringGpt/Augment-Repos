@@ -68,7 +68,9 @@
     "emptyDescription": "Verás notificaciones aquí cuando tengas actualizaciones",
     "viewAll": "Ver todas las notificaciones",
     "unreadCount": "{{count}} notificación sin leer",
-    "unreadCount_other": "{{count}} notificaciones sin leer"
+    "unreadCount_other": "{{count}} notificaciones sin leer",
+    "markedAsRead": "Notificación marcada como leída",
+    "markAsReadError": "Error al marcar la notificación como leída"
   },
   "auth": {
     "login": "Iniciar Sesión",
