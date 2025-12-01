@@ -206,19 +206,23 @@ const OrdersPage = () => {
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    {order.items
-                      .filter((item) => item.cart_item?.product !== null)
-                      .slice(0, 2)
-                      .map((item) => (
-                        <Typography key={item.id} variant="body2" color="text.secondary">
-                          {item.cart_item.product!.name} (x{item.cart_item.quantity})
-                        </Typography>
-                      ))}
-                    {order.items.length > 2 && (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                        +{order.items.length - 2} more
-                      </Typography>
-                    )}
+                    {(() => {
+                      const validItems = order.items.filter((item) => item.cart_item?.product !== null)
+                      return (
+                        <>
+                          {validItems.slice(0, 2).map((item) => (
+                            <Typography key={item.id} variant="body2" color="text.secondary">
+                              {item.cart_item.product!.name} (x{item.cart_item.quantity})
+                            </Typography>
+                          ))}
+                          {validItems.length > 2 && (
+                            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                              +{validItems.length - 2} more
+                            </Typography>
+                          )}
+                        </>
+                      )
+                    })()}
                   </Box>
                 </TableCell>
                 <TableCell>
