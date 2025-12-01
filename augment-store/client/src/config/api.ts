@@ -103,6 +103,7 @@ export const API_ENDPOINTS = {
   // Notification endpoints
   NOTIFICATIONS: {
     LIST: '/notifications/',
+    MARK_AS_READ: (id: string) => `/notifications/${id}/`,
   },
 
   // Newsletter endpoints
