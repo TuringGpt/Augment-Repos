@@ -14,6 +14,11 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDistanceToNow } from 'date-fns'
 import { ROUTES } from '@constants/index'
+import {
+  getNotificationNavigationPath,
+  isNotificationClickable,
+} from '../utils/notificationNavigation'
+import type { Notification } from '../types'
 
 interface NotificationListProps {
   anchorEl: null | HTMLElement
@@ -24,9 +29,20 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { notifications, isLoading } = useNotificationStore()
+  const { notifications, isLoading, markAsRead } = useNotificationStore()
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read if unread
+    if (!notification.isRead) {
+      markAsRead(notification.id)
+    }
+
+    // Navigate to the related page if available
+    const navigationPath = getNotificationNavigationPath(notification.model, notification.objectId)
+    if (navigationPath) {
+      navigate(navigationPath)
+    }
+
     onClose()
   }
 
@@ -91,7 +107,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
           {notifications.slice(0, 5).map((notification) => (
             <MenuItem
               key={notification.id}
-              onClick={handleNotificationClick}
+              onClick={() => handleNotificationClick(notification)}
               sx={{
                 py: 1.5,
                 px: 2,
@@ -99,6 +115,9 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
                 '&:hover': {
                   backgroundColor: notification.isRead ? 'action.hover' : 'action.selected',
                 },
+                cursor: isNotificationClickable(notification.model, notification.objectId)
+                  ? 'pointer'
+                  : 'default',
               }}
             >
               <Box sx={{ mr: 1.5, display: 'flex', alignItems: 'flex-start', pt: 0.5 }}>

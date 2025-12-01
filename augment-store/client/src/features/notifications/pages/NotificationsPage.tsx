@@ -13,11 +13,26 @@ import { CheckCircle, Circle } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDistanceToNow } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
+import {
+  getNotificationNavigationPath,
+  isNotificationClickable,
+} from '../utils/notificationNavigation'
+import type { Notification } from '../types'
 
 const NotificationsPage = () => {
   const { t } = useTranslation()
-  const { notifications, isLoading, page, totalPages, unreadCount, fetchNotifications, setPage } =
-    useNotificationStore()
+  const navigate = useNavigate()
+  const {
+    notifications,
+    isLoading,
+    page,
+    totalPages,
+    unreadCount,
+    fetchNotifications,
+    setPage,
+    markAsRead,
+  } = useNotificationStore()
 
   useEffect(() => {
     fetchNotifications(page, 10)
@@ -25,6 +40,19 @@ const NotificationsPage = () => {
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
+  }
+
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read if unread
+    if (!notification.isRead) {
+      markAsRead(notification.id)
+    }
+
+    // Navigate to the related page if available
+    const navigationPath = getNotificationNavigationPath(notification.model, notification.objectId)
+    if (navigationPath) {
+      navigate(navigationPath)
+    }
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -77,45 +105,50 @@ const NotificationsPage = () => {
       {/* Notification List */}
       {!isLoading && notifications.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              sx={{
-                backgroundColor: notification.isRead ? 'background.paper' : 'action.hover',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  boxShadow: 4,
-                },
-              }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box sx={{ pt: 0.5 }}>
-                    {notification.isRead ? (
-                      <CheckCircle color="action" />
-                    ) : (
-                      <Circle color="primary" />
-                    )}
+          {notifications.map((notification) => {
+            const isClickable = isNotificationClickable(notification.model, notification.objectId)
+            return (
+              <Card
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification)}
+                sx={{
+                  backgroundColor: notification.isRead ? 'background.paper' : 'action.hover',
+                  transition: 'all 0.2s',
+                  cursor: isClickable ? 'pointer' : 'default',
+                  '&:hover': {
+                    boxShadow: isClickable ? 4 : 1,
+                  },
+                }}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <Box sx={{ pt: 0.5 }}>
+                      {notification.isRead ? (
+                        <CheckCircle color="action" />
+                      ) : (
+                        <Circle color="primary" />
+                      )}
+                    </Box>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={notification.isRead ? 'normal' : 'bold'}
+                        gutterBottom
+                      >
+                        {notification.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" paragraph>
+                        {notification.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatNotificationTime(notification.createdAt)}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight={notification.isRead ? 'normal' : 'bold'}
-                      gutterBottom
-                    >
-                      {notification.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {notification.description}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatNotificationTime(notification.createdAt)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </Box>
       )}
 
