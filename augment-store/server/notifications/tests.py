@@ -51,7 +51,7 @@ class NotificationTests(BaseAPITestCase):
         url = reverse("v1:notifications:update_notification", kwargs={"pk": str(notification.id)})
         response = self.authenticated_client.delete(url)
 
-        # THEN we should get a 200 response
+        # THEN we should get a 204 response
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # THEN the notification should be delete
