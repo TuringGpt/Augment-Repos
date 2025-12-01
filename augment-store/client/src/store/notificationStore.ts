@@ -11,9 +11,11 @@ interface NotificationState {
   totalPages: number
   isLoading: boolean
   error: string | null
+  markingAsRead: Set<string> // Track which notifications are being marked as read
 
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
+  markAsRead: (notificationId: string) => Promise<void>
   clearNotifications: () => void
   setPage: (page: number) => void
 }
@@ -31,6 +33,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   totalPages: 0,
   isLoading: false,
   error: null,
+  markingAsRead: new Set<string>(),
 
   fetchNotifications: async (page?: number, limit?: number) => {
     const state = get()
@@ -69,6 +72,55 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
+  markAsRead: async (notificationId: string) => {
+    const state = get()
+
+    // Don't mark if already being marked
+    if (state.markingAsRead.has(notificationId)) {
+      return
+    }
+
+    // Add to marking set
+    const newMarkingAsRead = new Set(state.markingAsRead)
+    newMarkingAsRead.add(notificationId)
+    set({ markingAsRead: newMarkingAsRead })
+
+    try {
+      // Call API to mark as read
+      await notificationService.markAsRead(notificationId)
+
+      // Optimistically update local state
+      const updatedNotifications = state.notifications.map((notification) =>
+        notification.id === notificationId ? { ...notification, isRead: true } : notification
+      )
+
+      // Recalculate unread count
+      const newUnreadCount = updatedNotifications.filter((n) => !n.isRead).length
+
+      // Remove from marking set
+      const finalMarkingAsRead = new Set(state.markingAsRead)
+      finalMarkingAsRead.delete(notificationId)
+
+      set({
+        notifications: updatedNotifications,
+        unreadCount: newUnreadCount,
+        markingAsRead: finalMarkingAsRead,
+      })
+    } catch (error) {
+      // Remove from marking set on error
+      const finalMarkingAsRead = new Set(state.markingAsRead)
+      finalMarkingAsRead.delete(notificationId)
+
+      set({
+        markingAsRead: finalMarkingAsRead,
+        error: error instanceof Error ? error.message : 'Failed to mark notification as read',
+      })
+
+      // Re-throw to allow UI to handle error
+      throw error
+    }
+  },
+
   clearNotifications: () => {
     // Increment counter to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
@@ -82,6 +134,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       totalPages: 0,
       isLoading: false,
       error: null,
+      markingAsRead: new Set<string>(),
     })
   },
 
