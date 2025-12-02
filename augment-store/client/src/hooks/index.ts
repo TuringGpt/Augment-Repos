@@ -2,3 +2,4 @@
 export { useLocalStorage } from './useLocalStorage'
 export { useDebounce } from './useDebounce'
 export { useTranslation } from './useTranslation'
+export { useSearchHistory } from './useSearchHistory'
