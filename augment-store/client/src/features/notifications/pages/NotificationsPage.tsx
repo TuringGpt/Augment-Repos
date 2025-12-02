@@ -52,8 +52,7 @@ const NotificationsPage = () => {
         await markAsRead(notificationId)
         toast.success(t('notifications.markedAsRead'))
       } catch (error) {
-        // Error is already set in store and displayed via optimistic update rollback
-        // Toast notification for error is shown by the store's error handling
+        // Store handles optimistic update rollback; show user-friendly error toast
         toast.error(t('notifications.markAsReadError'))
       }
     }
