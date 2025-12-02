@@ -40,6 +40,10 @@ const NotificationsPage = () => {
     fetchNotifications(page, 10)
   }
 
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    useNotificationStore.setState({ page: value })
+  }
+
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
     if (!isRead) {

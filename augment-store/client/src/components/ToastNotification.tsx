@@ -27,12 +27,21 @@ const ToastNotification = () => {
   // Track timers per notification to avoid resetting existing timers when new ones are added
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
+  // Clean up all timers only on unmount
+  useEffect(() => {
+    const timers = timersRef.current
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer))
+      timers.clear()
+    }
+  }, [])
+
   // Manage per-notification timers without resetting existing ones
   useEffect(() => {
     const currentTimers = timersRef.current
     const currentNotificationIds = new Set(notifications.map((n) => n.id))
 
-    // Clean up timers for removed notifications
+    // Clean up timers for removed notifications only
     currentTimers.forEach((timer, id) => {
       if (!currentNotificationIds.has(id)) {
         clearTimeout(timer)
@@ -51,12 +60,6 @@ const ToastNotification = () => {
         currentTimers.set(notification.id, timer)
       }
     })
-
-    // Cleanup on unmount
-    return () => {
-      currentTimers.forEach((timer) => clearTimeout(timer))
-      currentTimers.clear()
-    }
   }, [notifications, removeNotification])
 
   const handleClose = (id: string) => {
