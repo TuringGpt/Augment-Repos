@@ -6,6 +6,7 @@ from django.db.models import Count, Sum
 from django.db.models.functions import TruncDate, TruncHour
 from django.utils import timezone
 from datetime import timedelta
+import uuid
 
 from carts.models import CartItem
 from checkout.models import OrderItem
@@ -215,18 +216,14 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Validate product_id if provided
+        # Validate product_id if provided (should be a valid UUID)
         if product_id is not None:
             try:
-                product_id = int(product_id)
-                if product_id < 1:
-                    return Response(
-                        {'error': 'Invalid product_id. Must be a positive integer.'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            except (ValueError, TypeError):
+                # Attempt to parse as UUID to validate format
+                uuid.UUID(product_id)
+            except (ValueError, TypeError, AttributeError):
                 return Response(
-                    {'error': 'Invalid product_id. Must be a valid integer.'},
+                    {'error': 'Invalid product_id. Must be a valid UUID.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
