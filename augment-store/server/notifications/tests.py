@@ -57,3 +57,24 @@ class NotificationTests(BaseAPITestCase):
         # THEN the notification should be delete
         self.assertEqual(Notification.objects.get_user_notifications(self.user).count(), 0)
 
+    def test_mark_all_notifications_as_read(self):
+        # GIVEN an authenticated user exists 
+        self.authenticated_client.force_authenticate(user=self.user)
+
+        # AND the user has an unread notification
+        NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=False)
+
+        # WHEN we make a patch request to mark the notification as read
+        url = reverse("v1:notifications:mark_all_as_read")
+        response = self.authenticated_client.patch(url, {"mark_all_as_read": True})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND all notifications should be marked as read
+        self.assertEqual(Notification.objects.get_user_notifications(self.user).filter(is_read=False).count(), 0)
+        self.assertEqual(Notification.objects.get_user_notifications(self.user).filter(is_read=True).count(), 2)
+
+        # AND the response should contain the notifications
+        self.assertEqual(len(response.data.get("notifications", [])), 2)
