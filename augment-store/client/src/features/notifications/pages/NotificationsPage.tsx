@@ -14,6 +14,7 @@ import {
 import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
 
 const NotificationsPage = () => {
@@ -26,27 +27,34 @@ const NotificationsPage = () => {
     totalPages,
     unreadCount,
     fetchNotifications,
-    setPage,
     markAsRead,
     markingAsRead,
+    setPage,
   } = useNotificationStore()
+  const toast = useToast()
 
   useEffect(() => {
     fetchNotifications(page, 10)
   }, [page, fetchNotifications])
 
-  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
-  }
-
   const handleRetry = () => {
     fetchNotifications(page, 10)
+  }
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
   }
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
     if (!isRead) {
-      await markAsRead(notificationId)
+      try {
+        await markAsRead(notificationId)
+        toast.success(t('notifications.markedAsRead'))
+      } catch (error) {
+        // Store handles optimistic update rollback; show user-friendly error toast
+        toast.error(t('notifications.markAsReadError'))
+      }
     }
   }
 
