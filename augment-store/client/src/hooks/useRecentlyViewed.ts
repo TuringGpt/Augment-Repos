@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import type { Product } from '@features/products/types'
 
 const STORAGE_KEY = 'recently-viewed-products'
 const MAX_ITEMS = 12 // Maximum number of recently viewed products to store
+const RECENTLY_VIEWED_CHANGE_EVENT = 'recently-viewed-change'
 
 interface RecentlyViewedProduct {
   id: string
@@ -22,20 +23,20 @@ interface RecentlyViewedProduct {
 
 /**
  * Custom hook for managing recently viewed products
- * 
+ *
  * Tracks products viewed by the user and stores them in localStorage.
  * Automatically removes duplicates and maintains a maximum of 12 items.
- * 
+ *
  * @example
  * ```tsx
  * const { addRecentlyViewed, getRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed()
- * 
+ *
  * // Add a product when user views it
  * addRecentlyViewed(product)
- * 
+ *
  * // Get all recently viewed products
  * const recentProducts = getRecentlyViewed()
- * 
+ *
  * // Clear all recently viewed products
  * clearRecentlyViewed()
  * ```
@@ -48,11 +49,11 @@ export const useRecentlyViewed = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (!stored) return []
-      
+
       const products = JSON.parse(stored) as RecentlyViewedProduct[]
       // Sort by viewedAt descending (most recent first)
-      return products.sort((a, b) => 
-        new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime()
+      return products.sort(
+        (a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime()
       )
     } catch (error) {
       console.error('Failed to get recently viewed products:', error)
@@ -64,38 +65,45 @@ export const useRecentlyViewed = () => {
    * Add a product to recently viewed list
    * Removes duplicates and maintains max items limit
    */
-  const addRecentlyViewed = useCallback((product: Product) => {
-    try {
-      const current = getRecentlyViewed()
-      
-      // Remove existing entry if product was already viewed
-      const filtered = current.filter(p => p.id !== product.id)
-      
-      // Create new entry with current timestamp
-      const newEntry: RecentlyViewedProduct = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        discountPrice: product.discountPrice,
-        images: product.images,
-        category: {
-          id: product.category.id,
-          name: product.category.name,
-          slug: product.category.slug,
-        },
-        stock: product.stock,
-        rating: product.rating,
-        viewedAt: new Date().toISOString(),
+  const addRecentlyViewed = useCallback(
+    (product: Product) => {
+      try {
+        const current = getRecentlyViewed()
+
+        // Remove existing entry if product was already viewed
+        const filtered = current.filter((p) => p.id !== product.id)
+
+        // Create new entry with current timestamp
+        const newEntry: RecentlyViewedProduct = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          discountPrice: product.discountPrice,
+          images: product.images,
+          category: {
+            id: product.category.id,
+            name: product.category.name,
+            slug: product.category.slug,
+          },
+          stock: product.stock,
+          rating: product.rating,
+          viewedAt: new Date().toISOString(),
+        }
+
+        // Add to beginning of array (most recent first)
+        const updated = [newEntry, ...filtered].slice(0, MAX_ITEMS)
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+
+        // Dispatch custom event to notify same-tab listeners
+        // (storage event only fires in other tabs)
+        window.dispatchEvent(new CustomEvent(RECENTLY_VIEWED_CHANGE_EVENT))
+      } catch (error) {
+        console.error('Failed to add recently viewed product:', error)
       }
-      
-      // Add to beginning of array (most recent first)
-      const updated = [newEntry, ...filtered].slice(0, MAX_ITEMS)
-      
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    } catch (error) {
-      console.error('Failed to add recently viewed product:', error)
-    }
-  }, [getRecentlyViewed])
+    },
+    [getRecentlyViewed]
+  )
 
   /**
    * Clear all recently viewed products
@@ -103,6 +111,9 @@ export const useRecentlyViewed = () => {
   const clearRecentlyViewed = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY)
+
+      // Dispatch custom event to notify same-tab listeners
+      window.dispatchEvent(new CustomEvent(RECENTLY_VIEWED_CHANGE_EVENT))
     } catch (error) {
       console.error('Failed to clear recently viewed products:', error)
     }
@@ -111,15 +122,21 @@ export const useRecentlyViewed = () => {
   /**
    * Remove a specific product from recently viewed
    */
-  const removeRecentlyViewed = useCallback((productId: string) => {
-    try {
-      const current = getRecentlyViewed()
-      const filtered = current.filter(p => p.id !== productId)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
-    } catch (error) {
-      console.error('Failed to remove recently viewed product:', error)
-    }
-  }, [getRecentlyViewed])
+  const removeRecentlyViewed = useCallback(
+    (productId: string) => {
+      try {
+        const current = getRecentlyViewed()
+        const filtered = current.filter((p) => p.id !== productId)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered))
+
+        // Dispatch custom event to notify same-tab listeners
+        window.dispatchEvent(new CustomEvent(RECENTLY_VIEWED_CHANGE_EVENT))
+      } catch (error) {
+        console.error('Failed to remove recently viewed product:', error)
+      }
+    },
+    [getRecentlyViewed]
+  )
 
   return {
     getRecentlyViewed,
@@ -128,4 +145,3 @@ export const useRecentlyViewed = () => {
     removeRecentlyViewed,
   }
 }
-
