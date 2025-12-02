@@ -25,7 +25,7 @@ import { useUIStore } from '@store/uiStore'
 const ToastNotification = () => {
   const { notifications, removeNotification } = useUIStore()
   // Track timers per notification to avoid resetting existing timers when new ones are added
-  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const timersRef = useRef<Map<string, TimeoutId>>(new Map())
 
   // Clean up all timers only on unmount
   useEffect(() => {
