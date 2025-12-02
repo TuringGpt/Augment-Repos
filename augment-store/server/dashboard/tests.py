@@ -181,7 +181,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # GIVEN products with different cart add counts
 
         # WHEN we call the most_added_to_cart endpoint
-        url = reverse("product-statistics-most-added-to-cart")
+        url = reverse("v1:product-statistics-most-added-to-cart")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
@@ -198,7 +198,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # GIVEN products with different purchase counts
 
         # WHEN we call the best_selling endpoint
-        url = reverse("product-statistics-best-selling")
+        url = reverse("v1:product-statistics-best-selling")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
@@ -215,7 +215,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # GIVEN multiple products with statistics
 
         # WHEN we call the general_statistics endpoint
-        url = reverse("product-statistics-general-statistics")
+        url = reverse("v1:product-statistics-general-statistics")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
@@ -236,7 +236,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Expected totals: 240 views, 120 cart adds, 60 purchases
 
         # WHEN we call the general_statistics endpoint
-        url = reverse("product-statistics-general-statistics")
+        url = reverse("v1:product-statistics-general-statistics")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
@@ -261,7 +261,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         old_view.save()
 
         # WHEN we call most_viewed with days=5
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
         response = self.member_client.get(url, {'days': 5})
 
         # THEN we should get a 200 response
@@ -278,7 +278,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         unauthenticated_client = self.client
 
         # WHEN we try to access the most_viewed endpoint
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
         response = unauthenticated_client.get(url)
 
         # THEN we should get a 401 response
@@ -287,7 +287,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_most_viewed_invalid_limit_parameter(self):
         """Test that most_viewed handles invalid limit parameter gracefully."""
         # GIVEN invalid limit parameters
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with non-integer limit
         response = self.member_client.get(url, {'limit': 'invalid'})
@@ -298,7 +298,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_most_viewed_invalid_days_parameter(self):
         """Test that most_viewed handles invalid days parameter gracefully."""
         # GIVEN invalid days parameters
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with non-integer days
         response = self.member_client.get(url, {'days': 'invalid'})
@@ -309,7 +309,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_most_viewed_negative_limit_uses_default(self):
         """Test that negative limit values are rejected and default is used."""
         # GIVEN a negative limit
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with negative limit
         response = self.member_client.get(url, {'limit': '-5'})
@@ -323,7 +323,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         for _ in range(150):
             ProductFactory()
 
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with limit > 100
         response = self.member_client.get(url, {'limit': '500'})
@@ -335,7 +335,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
     def test_most_viewed_days_capped_at_max(self):
         """Test that days values above max are capped."""
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with days > 365
         response = self.member_client.get(url, {'days': '1000'})
@@ -366,7 +366,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
             ProductView.objects.create(product=self.product2, user=self.member_user)
 
         # WHEN we call most_viewed with days=5
-        url = reverse("product-statistics-most-viewed")
+        url = reverse("v1:product-statistics-most-viewed")
         response = self.member_client.get(url, {'days': 5})
 
         # THEN we should get a 200 response
