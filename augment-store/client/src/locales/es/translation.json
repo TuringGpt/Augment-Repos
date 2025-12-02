@@ -27,7 +27,8 @@
     "showMore": "Mostrar Más",
     "showLess": "Mostrar Menos",
     "darkMode": "Modo Oscuro",
-    "lightMode": "Modo Claro"
+    "lightMode": "Modo Claro",
+    "clearAll": "Limpiar Todo"
   },
   "nav": {
     "home": "Inicio",
@@ -119,7 +120,8 @@
     "bestSellers": "Más Vendidos",
     "featured": "Destacados",
     "onSale": "En Oferta",
-    "discount": "Descuento"
+    "discount": "Descuento",
+    "recentlyViewed": "Vistos recientemente"
   },
   "home": {
     "featuredProducts": "Productos Destacados",
