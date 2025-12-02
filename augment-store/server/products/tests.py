@@ -7,7 +7,7 @@ from products.models import Product, ProductBrand, ProductCategory
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
 from decimal import Decimal
 from storage.factory import FileFactory
-from products.services import ProductBrandCacheService
+from products.services import ProductBrandCacheService, ProductCategoryCacheService
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
 
@@ -440,6 +440,90 @@ class ProductCategoryTests(BaseAPITestCase):
 
         # AND the category should be deleted from the database
         self.assertFalse(ProductCategory.objects.filter(id=category.id).exists())
+
+    def test_list_categories_uses_cache(self):
+        # Given that I have clear all caches related to product categories
+        ProductCategoryCacheService().clear_namespace()
+
+        # GIVEN some categories exist in the database
+        ProductCategoryFactory(
+            name="Test Category 1",
+            slug="test-category-1",
+            description="Test Description 1",
+            created_by=self.merchant_user
+        )
+        ProductCategoryFactory(
+            name="Test Category 2",
+            slug="test-category-2",
+            description="Test Description 2",
+            created_by=self.merchant_user
+        )
+
+        url = reverse("v1:product_category_list")
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.client.get(url)
+
+            # THEN the first request must hit the database
+            self.assertGreater(len(ctx1), 0)
+
+        # WHEN we make the request again
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.client.get(url)
+
+            # THEN the second request should not hit the database
+            self.assertEqual(len(ctx2), 0)
+
+        # AND the cached response should be identical
+        self.assertEqual(response_1.data, response_2.data)
+
+    def test_list_categories_cache_invalidated_on_create(self):
+        # Given that I have clear all caches related to product categories
+        ProductCategoryCacheService().clear_namespace()
+
+        # GIVEN some categories exist in the database
+        category_1 = ProductCategoryFactory(
+            name="Test Category 1",
+            slug="test-category-1",
+            description="Test Description 1",
+            created_by=self.merchant_user
+        )
+
+        url = reverse("v1:product_category_list")
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.client.get(url)
+
+            # THEN the first request must hit the database
+            self.assertGreater(len(ctx1), 0)
+
+            # AND the response should contain the category
+            self.assertEqual(response_1.data["results"][0]["name"], "Test Category 1")
+
+        # WHEN we create a new category
+        create_url = reverse("v1:create_product_category")
+        payload = {
+            "name": "New Category",
+            "slug": "new-category",
+            "description": "New Category Description",
+        }
+
+        self.merchant_client.post(create_url, payload)
+
+        # WHEN we make the request again
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.client.get(url)
+
+            # THEN the second request should hit the database
+            self.assertGreater(len(ctx2), 0)
+
+        # AND the response should contain the new category (items are ordered by name)
+        self.assertEqual(response_2.data["results"][0]["name"], "New Category")
+
+        # AND the count of items should be 2
+        self.assertEqual(response_2.data["count"], 2)
 
 
 class ProductTests(BaseAPITestCase):
