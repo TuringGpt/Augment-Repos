@@ -424,7 +424,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
             is_active=True,
             role=User.Role.MEMBER
         )
-        self.member_client = self.get_authenticated_client(self.member_user)
+        self.authenticated_client.force_authenticate(user=self.member_user)
 
         # Create time-series data
         now = timezone.now()
@@ -448,7 +448,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint for views metric."""
         # WHEN we call the time_series_trends endpoint for views
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {'metric': 'views', 'days': 7})
+        response = self.authenticated_client.get(url, {'metric': 'views', 'days': 7})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -468,7 +468,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint for all metrics."""
         # WHEN we call the time_series_trends endpoint for all metrics
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {'metric': 'all', 'days': 30})
+        response = self.authenticated_client.get(url, {'metric': 'all', 'days': 30})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -483,7 +483,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint with invalid metric."""
         # WHEN we call with invalid metric
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {'metric': 'invalid_metric'})
+        response = self.authenticated_client.get(url, {'metric': 'invalid_metric'})
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -493,7 +493,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint with invalid granularity."""
         # WHEN we call with invalid granularity
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {'granularity': 'monthly'})
+        response = self.authenticated_client.get(url, {'granularity': 'monthly'})
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -503,7 +503,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint with hourly granularity."""
         # WHEN we call with hourly granularity
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {'metric': 'views', 'days': 1, 'granularity': 'hourly'})
+        response = self.authenticated_client.get(url, {'metric': 'views', 'days': 1, 'granularity': 'hourly'})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -513,7 +513,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test time_series_trends endpoint with product filter."""
         # WHEN we call with a specific product_id
         url = reverse("v1:product-statistics-time-series-trends")
-        response = self.member_client.get(url, {
+        response = self.authenticated_client.get(url, {
             'metric': 'views',
             'days': 7,
             'product_id': str(self.product1.id)
@@ -528,7 +528,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
         """Test trends_comparison endpoint."""
         # WHEN we call the trends_comparison endpoint
         url = reverse("v1:product-statistics-trends-comparison")
-        response = self.member_client.get(url, {'days': 7})
+        response = self.authenticated_client.get(url, {'days': 7})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -560,7 +560,7 @@ class TimeSeriesTrendsTests(BaseAPITestCase):
 
         # WHEN we call the trends_comparison endpoint
         url = reverse("v1:product-statistics-trends-comparison")
-        response = self.member_client.get(url, {'days': 7})
+        response = self.authenticated_client.get(url, {'days': 7})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
