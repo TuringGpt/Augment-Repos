@@ -29,6 +29,7 @@ const NotificationsPage = () => {
     fetchNotifications,
     markAsRead,
     markingAsRead,
+    setPage,
   } = useNotificationStore()
   const toast = useToast()
 
@@ -41,7 +42,7 @@ const NotificationsPage = () => {
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    useNotificationStore.setState({ page: value })
+    setPage(value)
   }
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
