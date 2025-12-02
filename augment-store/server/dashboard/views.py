@@ -185,10 +185,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def time_series_trends(self, request):
         """
-                Get time-series trends for various metrics.
+        Get time-series trends for various metrics.
         Query params:
-        - me.  tric: Metric to track (views, cart_additions, purchases, abandonments, all)
-        - days: Number of days to look back (default: 30, max: 700)
+        - metric: Metric to track (views, cart_additions, purchases, abandonments, all)
+        - days: Number of days to look back (default: 30, max: 365)
         - granularity: Time granularity (daily, hourly) (default: daily)
         - product_id: Optional product ID to filter by specific product
 
@@ -254,7 +254,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         if metric in ['purchases', 'all']:
             result['purchases'] = get_time_series(
-                OrderItem.objects.filters(is_deleted=False)
+                OrderItem.objects.filter(is_deleted=False)
             )
 
         if metric in ['abandonments', 'all']:
@@ -320,7 +320,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         def calculate_change(current, previous):
             if previous == 0:
                 return 100.0 if current > 0 else 0.0
-            return round(((current) / previous) * 100, 2)
+            return round(((current - previous) / previous) * 100, 2)
 
         comparison = {}
         for metric in current_counts.keys():
@@ -336,7 +336,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({
             'period_days': days,
-            'current_period': 
+            'current_period': {
                 'start': current_period_start.isoformat(),
                 'end': now.isoformat(),
             },
