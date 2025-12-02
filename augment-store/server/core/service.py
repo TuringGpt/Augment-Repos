@@ -111,3 +111,22 @@ class CachedListMixin:
         response = super().list(request, *args, **kwargs)
         service.set(cache_key, response.data, ttl=self.cache_ttl)
         return response
+    
+
+class CacheInvalidatorMixin:
+    cache_service_class = BaseCacheService  # override this per view
+
+    def get_cache_service(self):
+        return self.cache_service_class()
+
+    def invalidate_cache(self):
+        service = self.get_cache_service()
+        service.clear_namespace()
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self.invalidate_cache()
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.invalidate_cache()
