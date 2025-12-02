@@ -56,13 +56,17 @@ export const newsletterService = {
   /**
    * Get newsletters from backend API
    * Backend returns paginated response with count, next, previous, results
+   * Note: Backend has fixed page_size of 100 (configured in settings.py)
+   * The limit parameter is ignored by the backend's PageNumberPagination
    */
-  getNewsletters: async (page = 1, limit = 10): Promise<NewsletterListResponse> => {
+  getNewsletters: async (page = 1): Promise<NewsletterListResponse> => {
     try {
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
       const response = await apiClient.get<PaginatedNewslettersAPI>(
         API_ENDPOINTS.NEWSLETTER.LIST,
         {
-          params: { page, limit },
+          params: { page },
         }
       )
 
@@ -70,8 +74,8 @@ export const newsletterService = {
         newsletters: response.results,
         total: response.count,
         page,
-        limit,
-        totalPages: Math.ceil(response.count / limit),
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
       console.error('Failed to fetch newsletters:', error)
