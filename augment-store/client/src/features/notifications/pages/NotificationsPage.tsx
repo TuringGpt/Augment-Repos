@@ -8,8 +8,10 @@ import {
   Pagination,
   CircularProgress,
   Chip,
+  Alert,
+  Button,
 } from '@mui/material'
-import { CheckCircle, Circle } from '@mui/icons-material'
+import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
@@ -17,25 +19,25 @@ import { formatDistanceToNow } from 'date-fns'
 
 const NotificationsPage = () => {
   const { t } = useTranslation()
-  const toast = useToast()
   const {
     notifications,
     isLoading,
+    error,
     page,
     totalPages,
     unreadCount,
     fetchNotifications,
-    setPage,
     markAsRead,
     markingAsRead,
   } = useNotificationStore()
+  const toast = useToast()
 
   useEffect(() => {
     fetchNotifications(page, 10)
   }, [page, fetchNotifications])
 
-  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
+  const handleRetry = () => {
+    fetchNotifications(page, 10)
   }
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
@@ -76,6 +78,21 @@ const NotificationsPage = () => {
         )}
       </Box>
 
+      {/* Error State */}
+      {error && !isLoading && (
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" startIcon={<RefreshIcon />} onClick={handleRetry}>
+              {t('common.retry')}
+            </Button>
+          }
+          sx={{ mb: 2 }}
+        >
+          {error}
+        </Alert>
+      )}
+
       {/* Loading State */}
       {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -84,7 +101,7 @@ const NotificationsPage = () => {
       )}
 
       {/* Empty State */}
-      {!isLoading && notifications.length === 0 && (
+      {!isLoading && !error && notifications.length === 0 && (
         <Card>
           <CardContent>
             <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -122,7 +139,9 @@ const NotificationsPage = () => {
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <Box sx={{ pt: 0.5 }}>
-                      {notification.isRead ? (
+                      {isMarking ? (
+                        <CircularProgress size={24} />
+                      ) : notification.isRead ? (
                         <CheckCircle color="action" />
                       ) : (
                         <Circle color="primary" />

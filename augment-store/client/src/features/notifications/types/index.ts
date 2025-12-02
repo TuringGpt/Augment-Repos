@@ -49,3 +49,18 @@ export interface NotificationListResponse {
   totalPages: number
   unreadCount: number
 }
+
+/**
+ * Mark Notification as Read Request
+ */
+export interface MarkAsReadRequest {
+  is_read: boolean
+}
+
+/**
+ * Mark Notification as Read Response
+ */
+export interface MarkAsReadResponse {
+  id: string
+  is_read: boolean
+}

@@ -7,8 +7,9 @@ import {
   Divider,
   Button,
   CircularProgress,
+  Alert,
 } from '@mui/material'
-import { CheckCircle, Circle } from '@mui/icons-material'
+import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@hooks/useTranslation'
@@ -24,15 +25,24 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { notifications, isLoading } = useNotificationStore()
+  const { notifications, isLoading, error, fetchNotifications, markAsRead, markingAsRead } =
+    useNotificationStore()
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+    // Mark as read if not already read
+    if (!isRead) {
+      await markAsRead(notificationId)
+    }
     onClose()
   }
 
   const handleViewAll = () => {
     navigate(ROUTES.NOTIFICATIONS)
     onClose()
+  }
+
+  const handleRetry = () => {
+    fetchNotifications(1, 10)
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -69,6 +79,27 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       </Box>
       <Divider />
 
+      {/* Error State */}
+      {error && !isLoading && (
+        <Box sx={{ p: 2 }}>
+          <Alert
+            severity="error"
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<RefreshIcon />}
+                onClick={handleRetry}
+              >
+                {t('common.retry')}
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        </Box>
+      )}
+
       {/* Loading State */}
       {isLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -77,7 +108,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       )}
 
       {/* Empty State */}
-      {!isLoading && notifications.length === 0 && (
+      {!isLoading && !error && notifications.length === 0 && (
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             {t('notifications.empty')}
@@ -88,49 +119,55 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       {/* Notification Items */}
       {!isLoading && notifications.length > 0 && (
         <>
-          {notifications.slice(0, 5).map((notification) => (
-            <MenuItem
-              key={notification.id}
-              onClick={handleNotificationClick}
-              sx={{
-                py: 1.5,
-                px: 2,
-                backgroundColor: notification.isRead ? 'transparent' : 'action.hover',
-                '&:hover': {
-                  backgroundColor: notification.isRead ? 'action.hover' : 'action.selected',
-                },
-              }}
-            >
-              <Box sx={{ mr: 1.5, display: 'flex', alignItems: 'flex-start', pt: 0.5 }}>
-                {notification.isRead ? (
-                  <CheckCircle fontSize="small" color="action" />
-                ) : (
-                  <Circle fontSize="small" color="primary" />
-                )}
-              </Box>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    fontWeight={notification.isRead ? 'normal' : 'bold'}
-                    sx={{ mb: 0.5 }}
-                  >
-                    {notification.title}
-                  </Typography>
-                }
-                secondary={
-                  <>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                      {notification.description}
+          {notifications.slice(0, 5).map((notification) => {
+            const isMarking = markingAsRead.has(notification.id)
+            return (
+              <MenuItem
+                key={notification.id}
+                onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                disabled={isMarking}
+                sx={{
+                  py: 1.5,
+                  px: 2,
+                  backgroundColor: notification.isRead ? 'transparent' : 'action.hover',
+                  '&:hover': {
+                    backgroundColor: notification.isRead ? 'action.hover' : 'action.selected',
+                  },
+                }}
+              >
+                <Box sx={{ mr: 1.5, display: 'flex', alignItems: 'flex-start', pt: 0.5 }}>
+                  {isMarking ? (
+                    <CircularProgress size={20} />
+                  ) : notification.isRead ? (
+                    <CheckCircle fontSize="small" color="action" />
+                  ) : (
+                    <Circle fontSize="small" color="primary" />
+                  )}
+                </Box>
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body2"
+                      fontWeight={notification.isRead ? 'normal' : 'bold'}
+                      sx={{ mb: 0.5 }}
+                    >
+                      {notification.title}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formatNotificationTime(notification.createdAt)}
-                    </Typography>
-                  </>
-                }
-              />
-            </MenuItem>
-          ))}
+                  }
+                  secondary={
+                    <>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        {notification.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatNotificationTime(notification.createdAt)}
+                      </Typography>
+                    </>
+                  }
+                />
+              </MenuItem>
+            )
+          })}
           <Divider />
           <Box sx={{ p: 1, textAlign: 'center' }}>
             <Button fullWidth onClick={handleViewAll}>
