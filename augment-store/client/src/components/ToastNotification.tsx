@@ -1,46 +1,61 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Snackbar, Alert, AlertColor } from '@mui/material'
 import { useUIStore } from '@store/uiStore'
 
 /**
  * Global Toast Notification Component
- * 
+ *
  * Displays toast/snackbar notifications from the UI store.
  * Automatically dismisses after the specified duration (default: 5 seconds).
- * 
+ *
  * Usage:
  * ```tsx
  * const { addNotification } = useUIStore()
- * 
+ *
  * // Success notification
  * addNotification({ type: 'success', message: 'Item added to cart!' })
- * 
+ *
  * // Error notification
  * addNotification({ type: 'error', message: 'Failed to save changes' })
- * 
+ *
  * // Custom duration (in milliseconds)
  * addNotification({ type: 'info', message: 'Processing...', duration: 3000 })
  * ```
  */
 const ToastNotification = () => {
   const { notifications, removeNotification } = useUIStore()
+  // Track timers per notification to avoid resetting existing timers when new ones are added
+  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
-  // Auto-dismiss notifications after their duration
+  // Manage per-notification timers without resetting existing ones
   useEffect(() => {
-    if (notifications.length === 0) return
+    const currentTimers = timersRef.current
+    const currentNotificationIds = new Set(notifications.map((n) => n.id))
 
-    const timers: NodeJS.Timeout[] = []
-
-    notifications.forEach((notification) => {
-      const duration = notification.duration ?? 5000 // Default 5 seconds
-      const timer = setTimeout(() => {
-        removeNotification(notification.id)
-      }, duration)
-      timers.push(timer)
+    // Clean up timers for removed notifications
+    currentTimers.forEach((timer, id) => {
+      if (!currentNotificationIds.has(id)) {
+        clearTimeout(timer)
+        currentTimers.delete(id)
+      }
     })
 
+    // Set up timers for new notifications only
+    notifications.forEach((notification) => {
+      if (!currentTimers.has(notification.id)) {
+        const duration = notification.duration ?? 5000 // Default 5 seconds
+        const timer = setTimeout(() => {
+          removeNotification(notification.id)
+          currentTimers.delete(notification.id)
+        }, duration)
+        currentTimers.set(notification.id, timer)
+      }
+    })
+
+    // Cleanup on unmount
     return () => {
-      timers.forEach((timer) => clearTimeout(timer))
+      currentTimers.forEach((timer) => clearTimeout(timer))
+      currentTimers.clear()
     }
   }, [notifications, removeNotification])
 
@@ -79,4 +94,3 @@ const ToastNotification = () => {
 }
 
 export default ToastNotification
-
