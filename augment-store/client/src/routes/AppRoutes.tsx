@@ -31,6 +31,9 @@ import TicketsPage from '@features/support/ticket-list/components/TicketsPage'
 // Notification pages
 import NotificationsPage from '@features/notifications/pages/NotificationsPage'
 
+// Newsletter pages
+import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
+
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
 import ContactPage from '@features/info/contact/components/ContactPage'
@@ -83,6 +86,7 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/newsletters" element={<NewslettersPage />} />
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
