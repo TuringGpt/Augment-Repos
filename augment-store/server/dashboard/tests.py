@@ -5,8 +5,8 @@ from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
-from dashboard.models import ProductStatistics, ProductView
-
+from dashboard.models import ProductStatistics, ProductView, CartAbandonment
+from datetime import timedelta, timezone
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
@@ -174,7 +174,8 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertGreater(len(results), 0)
         self.assertEqual(results[0]['product_name'], 'Product 1')
         self.assertEqual(results[0]['view_count'], 100)
-  def test_most_added_to_cart_endpoint(self):
+
+    def test_most_added_to_cart_endpoint(self):
         """Test most_added_to_cart endpoint returns products sorted by cart additions."""
         # GIVEN products with different cart add counts
 
@@ -394,7 +395,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
             CartAbandonment.objects.create(product=self.product2, user=self.member_user)
 
         # WHEN we call frequently_abandoned endpoint
-        url = reverse("product-statistics-frequently-abandoned")
+        url = reverse("v1:product-statistics-frequently-abandoned")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
