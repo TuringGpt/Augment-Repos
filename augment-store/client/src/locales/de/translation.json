@@ -191,7 +191,15 @@
     "removeItemTitle": "Artikel Entfernen?",
     "removeItemConfirm": "Sind Sie sicher, dass Sie <strong>{{name}}</strong> aus Ihrem Warenkorb entfernen möchten?",
     "removing": "Wird entfernt...",
-    "items": "{{count}} Artikel"
+    "items": "{{count}} Artikel",
+    "saveForLater": "Für Später Speichern",
+    "savedItems": "Gespeicherte Artikel",
+    "moveToCart": "In den Warenkorb",
+    "movedToCart": "Artikel in den Warenkorb verschoben",
+    "savedForLater": "Artikel für später gespeichert",
+    "removedFromSaved": "Artikel aus gespeicherten entfernt",
+    "emptySavedItems": "Keine gespeicherten Artikel",
+    "emptySavedItemsMessage": "Artikel, die Sie für später speichern, werden hier angezeigt"
   },
   "checkout": {
     "checkout": "Kasse",

@@ -191,7 +191,15 @@
     "removeItemTitle": "¿Eliminar Artículo?",
     "removeItemConfirm": "¿Estás seguro de que deseas eliminar <strong>{{name}}</strong> de tu carrito?",
     "removing": "Eliminando...",
-    "items": "{{count}} artículo(s)"
+    "items": "{{count}} artículo(s)",
+    "saveForLater": "Guardar para Después",
+    "savedItems": "Artículos Guardados",
+    "moveToCart": "Mover al Carrito",
+    "movedToCart": "Artículo movido al carrito",
+    "savedForLater": "Artículo guardado para después",
+    "removedFromSaved": "Artículo eliminado de guardados",
+    "emptySavedItems": "No hay artículos guardados",
+    "emptySavedItemsMessage": "Los artículos que guardes para después aparecerán aquí"
   },
   "checkout": {
     "checkout": "Pagar",
