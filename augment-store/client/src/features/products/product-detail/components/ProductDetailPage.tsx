@@ -29,9 +29,12 @@ import { useCartStore } from '@store/cartStore'
 import { productService } from '@services/api/products/productService'
 import type { ProductDetailAPI } from '@features/products/types/api'
 import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
+import { useRecentlyViewed } from '@hooks/useRecentlyViewed'
+import type { Product } from '@features/products/types'
 import ImageGallery from './ImageGallery'
 import ReviewSection from './ReviewSection'
 import RecommendedProducts from './RecommendedProducts'
+import RecentlyViewed from '@components/RecentlyViewed'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -45,6 +48,7 @@ const ProductDetailPage = () => {
   const [isRemoving, setIsRemoving] = useState(false)
 
   const { addItemToCart, removeItemFromCart, isInCart, getCartItem } = useCartStore()
+  const { addRecentlyViewed } = useRecentlyViewed()
   const productInCart = id ? isInCart(id) : false
   const cartItem = id ? getCartItem(id) : undefined
 
@@ -66,6 +70,40 @@ const ProductDetailPage = () => {
 
     fetchProduct()
   }, [id])
+
+  // Track product as recently viewed when loaded
+  useEffect(() => {
+    if (product) {
+      // Convert ProductDetailAPI to Product format for tracking
+      const imageUrls = product.images
+        .map((fileObj) => fileObj.file)
+        .filter((url): url is string => url !== null)
+
+      const productForTracking: Product = {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: parseFloat(product.price),
+        discountPrice: undefined,
+        images: imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE],
+        category: {
+          id: product.category.id,
+          name: product.category.name,
+          slug: product.category.name.toLowerCase().replace(/\s+/g, '-'),
+          description: product.category.description,
+          image: product.category.image?.file || undefined,
+          parent: product.category.parent || undefined,
+        },
+        stock: product.quantity,
+        rating: parseFloat(product.rating),
+        reviewCount: 0,
+        createdAt: product.created_at,
+        updatedAt: product.updated_at,
+      }
+
+      addRecentlyViewed(productForTracking)
+    }
+  }, [product, addRecentlyViewed])
 
   // Sync quantity with cart item when product is in cart
   useEffect(() => {
@@ -429,6 +467,11 @@ const ProductDetailPage = () => {
       {/* Recommended Products Section */}
       <Box sx={{ mt: 6 }}>
         <RecommendedProducts />
+      </Box>
+
+      {/* Recently Viewed Products Section */}
+      <Box sx={{ mt: 6 }}>
+        <RecentlyViewed maxItems={6} excludeProductId={id} />
       </Box>
 
       {/* Remove Confirmation Dialog */}

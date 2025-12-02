@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '@hooks/useTranslation'
 import ProductCard from './ProductCard'
 import PromotionalBanners from './PromotionalBanners'
+import RecentlyViewed from '@components/RecentlyViewed'
 
 const HomePage = () => {
   const { t } = useTranslation()
@@ -64,6 +65,9 @@ const HomePage = () => {
           </Typography>
         )}
       </Box>
+
+      {/* Recently Viewed Products */}
+      <RecentlyViewed maxItems={6} />
     </Container>
   )
 }

@@ -27,7 +27,8 @@
     "showMore": "Mehr Anzeigen",
     "showLess": "Weniger Anzeigen",
     "darkMode": "Dunkler Modus",
-    "lightMode": "Heller Modus"
+    "lightMode": "Heller Modus",
+    "clearAll": "Alles Löschen"
   },
   "nav": {
     "home": "Startseite",
@@ -117,7 +118,8 @@
     "bestSellers": "Bestseller",
     "featured": "Empfohlen",
     "onSale": "Im Angebot",
-    "discount": "Rabatt"
+    "discount": "Rabatt",
+    "recentlyViewed": "Kürzlich Angesehen"
   },
   "home": {
     "featuredProducts": "Empfohlene Produkte",

@@ -27,7 +27,8 @@
     "showMore": "Show More",
     "showLess": "Show Less",
     "darkMode": "Dark Mode",
-    "lightMode": "Light Mode"
+    "lightMode": "Light Mode",
+    "clearAll": "Clear All"
   },
   "nav": {
     "home": "Home",
@@ -117,7 +118,8 @@
     "bestSellers": "Best Sellers",
     "featured": "Featured",
     "onSale": "On Sale",
-    "discount": "Discount"
+    "discount": "Discount",
+    "recentlyViewed": "Recently Viewed"
   },
   "home": {
     "featuredProducts": "Featured Products",
