@@ -130,3 +130,7 @@ class CacheInvalidatorMixin:
     def perform_update(self, serializer):
         super().perform_update(serializer)
         self.invalidate_cache()
+
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
+        self.invalidate_cache()
