@@ -25,23 +25,23 @@ interface RecentlyViewedProps {
 
 /**
  * RecentlyViewed Component
- * 
+ *
  * Displays a grid of recently viewed products.
  * Automatically excludes the current product if on a product detail page.
- * 
+ *
  * @example
  * ```tsx
  * // On homepage - show 6 most recent
  * <RecentlyViewed maxItems={6} />
- * 
+ *
  * // On product detail page - exclude current product
  * <RecentlyViewed maxItems={4} excludeProductId={currentProductId} />
  * ```
  */
-const RecentlyViewed = ({ 
-  maxItems = 6, 
+const RecentlyViewed = ({
+  maxItems = 6,
   excludeProductId,
-  showClearButton = true 
+  showClearButton = true,
 }: RecentlyViewedProps) => {
   const { t } = useTranslation()
   const { getRecentlyViewed, clearRecentlyViewed } = useRecentlyViewed()
@@ -50,18 +50,19 @@ const RecentlyViewed = ({
   useEffect(() => {
     const loadRecentlyViewed = () => {
       let recentProducts = getRecentlyViewed()
-      
+
       // Exclude current product if specified
       if (excludeProductId) {
-        recentProducts = recentProducts.filter(p => p.id !== excludeProductId)
+        recentProducts = recentProducts.filter((p) => p.id !== excludeProductId)
       }
-      
+
       // Limit to maxItems
       const limitedProducts = recentProducts.slice(0, maxItems)
-      
+
       // Convert to Product type (add missing fields with defaults)
-      const convertedProducts: Product[] = limitedProducts.map(p => ({
+      const convertedProducts: Product[] = limitedProducts.map((p) => ({
         ...p,
+        description: '', // Recently viewed products don't store description
         reviewCount: 0,
         specifications: undefined,
         reviews: undefined,
@@ -69,23 +70,30 @@ const RecentlyViewed = ({
         updatedAt: p.viewedAt,
         quantity: p.stock,
       }))
-      
+
       setProducts(convertedProducts)
     }
 
     loadRecentlyViewed()
-    
-    // Listen for storage changes (e.g., from other tabs)
+
+    // Listen for storage changes from other tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'recently-viewed-products') {
         loadRecentlyViewed()
       }
     }
-    
+
+    // Listen for custom event from same tab
+    const handleCustomChange = () => {
+      loadRecentlyViewed()
+    }
+
     window.addEventListener('storage', handleStorageChange)
-    
+    window.addEventListener('recently-viewed-change', handleCustomChange)
+
     return () => {
       window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('recently-viewed-change', handleCustomChange)
     }
   }, [getRecentlyViewed, maxItems, excludeProductId])
 
@@ -131,4 +139,3 @@ const RecentlyViewed = ({
 }
 
 export default RecentlyViewed
-
