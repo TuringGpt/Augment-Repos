@@ -215,6 +215,21 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Validate product_id if provided
+        if product_id is not None:
+            try:
+                product_id = int(product_id)
+                if product_id < 1:
+                    return Response(
+                        {'error': 'Invalid product_id. Must be a positive integer.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except (ValueError, TypeError):
+                return Response(
+                    {'error': 'Invalid product_id. Must be a valid integer.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         # Calculate date range
         cutoff_date = timezone.now() - timedelta(days=days)
 
