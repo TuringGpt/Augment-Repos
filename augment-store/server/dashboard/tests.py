@@ -6,7 +6,8 @@ from django.urls import reverse
 from products.factory import ProductFactory
 from carts.factory import CartItemFactory
 from dashboard.models import ProductStatistics, ProductView, CartAbandonment
-from datetime import timedelta, timezone
+from datetime import timedelta
+from django.utils import timezone
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
