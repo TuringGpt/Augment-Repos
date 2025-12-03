@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 const STORAGE_KEY = 'search-history'
 const MAX_HISTORY_ITEMS = 10 // Maximum search history items to store
 
 export const useSearchHistory = () => {
   const [history, setHistory] = useState<string[]>([])
+  const hasLoadedRef = useRef(false)
 
   // Load history from localStorage on mount
   useEffect(() => {
@@ -17,11 +18,15 @@ export const useSearchHistory = () => {
     } catch (error) {
       console.error('Failed to load search history:', error)
       setHistory([])
+    } finally {
+      hasLoadedRef.current = true
     }
   }, [])
 
-  // Save history to localStorage whenever it changes
+  // Save history to localStorage whenever it changes (after initial load)
   useEffect(() => {
+    if (!hasLoadedRef.current) return
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
     } catch (error) {
@@ -32,12 +37,17 @@ export const useSearchHistory = () => {
   // Listen for storage events to sync across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue) as string[]
-          setHistory(parsed)
-        } catch (error) {
-          console.error('Failed to parse storage event:', error)
+      if (e.key === STORAGE_KEY) {
+        if (e.newValue) {
+          try {
+            const parsed = JSON.parse(e.newValue) as string[]
+            setHistory(parsed)
+          } catch (error) {
+            console.error('Failed to parse storage event:', error)
+          }
+        } else {
+          // Key was removed, clear history
+          setHistory([])
         }
       }
     }
@@ -88,4 +98,3 @@ export const useSearchHistory = () => {
     clearHistory,
   }
 }
-

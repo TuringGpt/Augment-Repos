@@ -58,6 +58,7 @@ const SearchBar = ({
   // Generate unique IDs for this instance to avoid collisions with multiple SearchBars
   const descriptionId = useId()
   const resultsListId = useId()
+  const historyListId = useId()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
@@ -332,7 +333,13 @@ const SearchBar = ({
             'aria-label': 'Search products',
             'aria-describedby': descriptionId,
             'aria-autocomplete': 'list',
-            'aria-controls': isOpen && searchResults.length > 0 ? resultsListId : undefined,
+            'aria-controls': isOpen
+              ? showHistory
+                ? historyListId
+                : searchResults.length > 0
+                  ? resultsListId
+                  : undefined
+              : undefined,
             'aria-expanded': isOpen,
           }}
           sx={{
@@ -394,9 +401,9 @@ const SearchBar = ({
                       <CloseIcon fontSize="small" />
                     </IconButton>
                   </Box>
-                  <List disablePadding>
+                  <List disablePadding id={historyListId} role="listbox">
                     {history.map((term) => (
-                      <ListItem key={term} disablePadding>
+                      <ListItem key={term} disablePadding role="option">
                         <ListItemButton
                           onClick={() => handleHistoryClick(term)}
                           sx={{
