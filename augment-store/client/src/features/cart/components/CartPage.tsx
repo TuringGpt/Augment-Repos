@@ -33,12 +33,19 @@ import {
 import { useCartStore } from '@store/cartStore'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
+import { useSaveForLater } from '@hooks/useSaveForLater'
+import { useUIStore } from '@store/uiStore'
+import { useTranslation } from '@hooks/useTranslation'
+import SavedItems from './SavedItems'
 
 const CartPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { cart, removeItemFromCart, updateItemInCart, removeItems, clearCart, isItemUpdating } =
     useCartStore()
   const { refetchCart } = useCartSync()
+  const { addItem: addToSaved } = useSaveForLater()
+  const { addNotification } = useUIStore()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [clearCartDialogOpen, setClearCartDialogOpen] = useState(false)
   const [removeItemDialogOpen, setRemoveItemDialogOpen] = useState(false)
@@ -140,6 +147,32 @@ const CartPage = () => {
 
   const handleCheckout = () => {
     navigate('/checkout')
+  }
+
+  const handleSaveForLater = async (itemId: string) => {
+    const item = cart?.items.find((i) => i.id === itemId)
+    if (!item) return
+
+    try {
+      // Remove from cart first
+      await removeItemFromCart(itemId)
+      // Only add to saved items after successful removal
+      addToSaved(item.product, item.quantity)
+      // Remove from selected items if it was selected
+      setSelectedItems((prev) => prev.filter((id) => id !== itemId))
+      // Show success notification
+      addNotification({
+        type: 'success',
+        message: t('cart.savedForLater'),
+        duration: 3000,
+      })
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        message: error instanceof Error ? error.message : t('cart.failedToSaveItem'),
+        duration: 5000,
+      })
+    }
   }
 
   // Empty cart state
@@ -334,13 +367,22 @@ const CartPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton
-                        color="error"
-                        onClick={() => handleRemoveItemClick(item.id, item.product.name)}
-                        aria-label="Remove item"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleSaveForLater(item.id)}
+                        >
+                          {t('cart.saveForLater')}
+                        </Button>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleRemoveItemClick(item.id, item.product.name)}
+                          aria-label="Remove item"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -495,6 +537,9 @@ const CartPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Saved Items Section */}
+      <SavedItems />
     </Container>
   )
 }
