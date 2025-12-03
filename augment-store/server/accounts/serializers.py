@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User
 from storage.serializers import FileSerializer, FileListSerializer
+from currencies.serializers import ListCurrencySerializer
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -26,6 +27,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_active",
             "is_registration_completed",
             "date_joined",
+            "preferred_currency",
         ]
         read_only_fields = ["id", "email", "role", "is_active", "date_joined"]
 
@@ -58,6 +60,7 @@ class UserListSerializer(serializers.ModelSerializer):
     """Serializer for retrieving list of users"""
     full_name = serializers.CharField(read_only=True)
     profile_image = FileListSerializer(read_only=True)
+    preferred_currency = ListCurrencySerializer(read_only=True)
     
     class Meta:
         model = User
@@ -69,4 +72,8 @@ class UserListSerializer(serializers.ModelSerializer):
             "last_name",
             "full_name",
             "profile_image",
+            "role",
+            "preferred_currency",
+            "is_active",
+            "date_joined",
         ]

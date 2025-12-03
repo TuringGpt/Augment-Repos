@@ -10,6 +10,7 @@ from django.dispatch import receiver
 
 from django.conf import settings
 from core.models import BaseModel
+from currencies.models import Currency
 
 
 class UserManager(BaseUserManager):
@@ -92,6 +93,7 @@ class User(AbstractUser):
         "storage.File", null=True, blank=True, on_delete=models.SET_NULL
     )
     role = models.CharField(max_length=20, choices=Role.CHOICES, default=Role.MEMBER)
+    preferred_currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, null=True, blank=True)
     objects: UserManager = UserManager()
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
