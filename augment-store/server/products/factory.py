@@ -60,10 +60,10 @@ class ProductFactory(DjangoModelFactory):
 
 
 class SimpleProductFactory(DjangoModelFactory):
-    """Lightweight product factory for tests that don't need images or full dependencies.
+    """Lightweight product factory for tests that don't need images.
 
-    This factory creates products without images and reuses brands/categories to reduce
-    database overhead. Use this for tests that only need basic product data.
+    This factory creates products without images to reduce database overhead.
+    Use this for tests that only need basic product data without image relationships.
     """
     name = Faker("catch_phrase")
     description = Faker("text", max_nb_chars=200)

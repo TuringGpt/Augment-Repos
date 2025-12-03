@@ -354,7 +354,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
             for _ in range(95)
         ]
         created_old_views = ProductView.objects.bulk_create(old_views)
-        # Update created_at for old views using raw SQL to bypass auto_now_add
+        # Update created_at for old views using ORM update() to bypass auto_now_add
         ProductView.objects.filter(
             id__in=[v.id for v in created_old_views]
         ).update(created_at=old_time, updated_at=old_time)
