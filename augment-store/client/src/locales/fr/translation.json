@@ -201,6 +201,7 @@
     "moveToCart": "Déplacer vers le Panier",
     "movedToCart": "Article déplacé vers le panier",
     "savedForLater": "Article enregistré pour plus tard",
+    "failedToSaveItem": "Échec de l'enregistrement de l'article",
     "removedFromSaved": "Article supprimé des enregistrés",
     "emptySavedItems": "Aucun article enregistré",
     "emptySavedItemsMessage": "Les articles que vous enregistrez pour plus tard apparaîtront ici"

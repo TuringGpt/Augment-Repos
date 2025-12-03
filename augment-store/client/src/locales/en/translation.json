@@ -201,6 +201,7 @@
     "moveToCart": "Move to Cart",
     "movedToCart": "Item moved to cart",
     "savedForLater": "Item saved for later",
+    "failedToSaveItem": "Failed to save item",
     "removedFromSaved": "Item removed from saved items",
     "emptySavedItems": "No saved items",
     "emptySavedItemsMessage": "Items you save for later will appear here"

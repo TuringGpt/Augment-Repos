@@ -35,9 +35,11 @@ import { useCartSync } from '@features/cart/hooks/useCartSync'
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 import { useSaveForLater } from '@hooks/useSaveForLater'
 import { useUIStore } from '@store/uiStore'
+import { useTranslation } from '@hooks/useTranslation'
 import SavedItems from './SavedItems'
 
 const CartPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { cart, removeItemFromCart, updateItemInCart, removeItems, clearCart, isItemUpdating } =
     useCartStore()
@@ -161,13 +163,13 @@ const CartPage = () => {
       // Show success notification
       addNotification({
         type: 'success',
-        message: 'Item saved for later',
+        message: t('cart.savedForLater'),
         duration: 3000,
       })
     } catch (error) {
       addNotification({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Failed to save item',
+        message: error instanceof Error ? error.message : t('cart.failedToSaveItem'),
         duration: 5000,
       })
     }
@@ -371,7 +373,7 @@ const CartPage = () => {
                           variant="outlined"
                           onClick={() => handleSaveForLater(item.id)}
                         >
-                          Save for Later
+                          {t('cart.saveForLater')}
                         </Button>
                         <IconButton
                           color="error"
