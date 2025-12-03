@@ -86,12 +86,12 @@ class BaseProductView:
     def get_queryset(self):
         user: "User" = self.request.user
         
-        if self.request.method in SAFE_METHODS or user.is_admin:
+        if (self.request.method in SAFE_METHODS) or user.is_admin:
             return Product.objects.all()
     
         return Product.objects.get_user_products(user)
 
-class ProductListView(BaseProductView, ListAPIView):
+class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = ProductFilter
 
@@ -111,11 +111,11 @@ class ProductSearchView(BaseProductView, ListAPIView):
     def get_queryset(self):
         return Product.objects.all()
 
-class CreateProductView(BaseProductView, CreateAPIView):
+class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
-class ProductUpdateDeleteView(BaseProductView, RetrieveUpdateDestroyAPIView):
+class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
