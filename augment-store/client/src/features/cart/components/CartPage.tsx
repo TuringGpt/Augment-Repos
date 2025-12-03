@@ -154,10 +154,10 @@ const CartPage = () => {
     if (!item) return
 
     try {
-      // Add to saved items
-      addToSaved(item.product, item.quantity)
-      // Remove from cart
+      // Remove from cart first
       await removeItemFromCart(itemId)
+      // Only add to saved items after successful removal
+      addToSaved(item.product, item.quantity)
       // Remove from selected items if it was selected
       setSelectedItems((prev) => prev.filter((id) => id !== itemId))
       // Show success notification
