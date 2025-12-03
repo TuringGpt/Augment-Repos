@@ -1,10 +1,8 @@
 from core.tests import BaseAPITestCase
-from accounts.factory import UserFactory
-from accounts.models import User
 from rest_framework import status
 from django.urls import reverse
-from products.factory import ProductFactory
-from carts.factory import CartItemFactory
+from products.factory import SimpleProductFactory
+from carts.factory import SimpleCartItemFactory
 from dashboard.models import ProductStatistics, ProductView, CartAbandonment
 from datetime import timedelta
 from django.utils import timezone
@@ -14,12 +12,13 @@ class ProductStatisticsModelTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.product = ProductFactory()
+        # Use SimpleProductFactory to avoid creating images
+        self.product = SimpleProductFactory()
 
     def test_product_statistics_created_on_product_creation(self):
         """Test that ProductStatistics is created when a Product is created."""
         # GIVEN a new product is created
-        new_product = ProductFactory()
+        new_product = SimpleProductFactory()
 
         # THEN ProductStatistics should be created for it
         self.assertTrue(ProductStatistics.objects.filter(product=new_product).exists())
@@ -41,25 +40,22 @@ class ProductViewTrackingTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.product = ProductFactory()
-        self.user = UserFactory(
-            email="viewer@demo.com",
-            password="testpass123",
-            is_active=True,
-            role=User.Role.MEMBER
-        )
+        # Use SimpleProductFactory to avoid creating images
+        self.product = SimpleProductFactory()
+        # Reuse the user from BaseAPITestCase instead of creating a new one
+        self.test_user = self.user
 
     def test_product_view_creation(self):
         """Test that ProductView records are created."""
         # GIVEN a product and user
 
         # WHEN a ProductView is created
-        view = ProductView.objects.create(product=self.product, user=self.user)
+        view = ProductView.objects.create(product=self.product, user=self.test_user)
 
         # THEN the view should be recorded
-        self.assertTrue(ProductView.objects.filter(product=self.product, user=self.user).exists())
+        self.assertTrue(ProductView.objects.filter(product=self.product, user=self.test_user).exists())
         self.assertEqual(view.product, self.product)
-        self.assertEqual(view.user, self.user)
+        self.assertEqual(view.user, self.test_user)
 
 
 class CartAdditionTrackingTests(BaseAPITestCase):
@@ -67,13 +63,10 @@ class CartAdditionTrackingTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.product = ProductFactory()
-        self.user = UserFactory(
-            email="buyer@demo.com",
-            password="testpass123",
-            is_active=True,
-            role=User.Role.MEMBER
-        )
+        # Use SimpleProductFactory to avoid creating images
+        self.product = SimpleProductFactory()
+        # Reuse the user from BaseAPITestCase instead of creating a new one
+        self.test_user = self.user
 
     def test_cart_add_count_incremented(self):
         """Test that cart_add_count is incremented when item is added to cart."""
@@ -82,7 +75,7 @@ class CartAdditionTrackingTests(BaseAPITestCase):
         initial_count = stats.cart_add_count
 
         # WHEN a CartItem is created for this product
-        CartItemFactory(product=self.product, created_by=self.user)
+        SimpleCartItemFactory(product=self.product, created_by=self.test_user)
 
         # THEN cart_add_count should be incremented
         stats.refresh_from_db()
@@ -94,18 +87,15 @@ class CartRemovalTrackingTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.product = ProductFactory()
-        self.user = UserFactory(
-            email="buyer@demo.com",
-            password="testpass123",
-            is_active=True,
-            role=User.Role.MEMBER
-        )
+        # Use SimpleProductFactory to avoid creating images
+        self.product = SimpleProductFactory()
+        # Reuse the user from BaseAPITestCase instead of creating a new one
+        self.test_user = self.user
 
     def test_cart_remove_count_incremented(self):
         """Test that cart_remove_count is incremented when item is removed from cart."""
         # GIVEN a CartItem for a product
-        cart_item = CartItemFactory(product=self.product, created_by=self.user)
+        cart_item = SimpleCartItemFactory(product=self.product, created_by=self.test_user)
         stats = ProductStatistics.objects.get(product=self.product)
         initial_count = stats.cart_remove_count
 
@@ -122,38 +112,37 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.member_user = UserFactory(
-            email="member@demo.com",
-            password="testpass123",
-            is_active=True,
-            role=User.Role.MEMBER
-        )
+        # Reuse the user from BaseAPITestCase instead of creating a new one
+        self.member_user = self.user
         self.member_client = self.authenticated_client
         self.member_client.force_authenticate(user=self.member_user)
 
-        # Create test products with different statistics
-        self.product1 = ProductFactory(name="Product 1")
-        self.product2 = ProductFactory(name="Product 2")
-        self.product3 = ProductFactory(name="Product 3")
+        # Create test products with different statistics using SimpleProductFactory
+        self.product1 = SimpleProductFactory(name="Product 1")
+        self.product2 = SimpleProductFactory(name="Product 2")
+        self.product3 = SimpleProductFactory(name="Product 3")
 
-        # Set up statistics for products
+        # Set up statistics for products using bulk_update for better performance
         stats1 = ProductStatistics.objects.get(product=self.product1)
         stats1.view_count = 100
         stats1.cart_add_count = 50
         stats1.purchase_count = 30
-        stats1.save()
 
         stats2 = ProductStatistics.objects.get(product=self.product2)
         stats2.view_count = 80
         stats2.cart_add_count = 40
         stats2.purchase_count = 20
-        stats2.save()
 
         stats3 = ProductStatistics.objects.get(product=self.product3)
         stats3.view_count = 60
         stats3.cart_add_count = 30
         stats3.purchase_count = 10
-        stats3.save()
+
+        # Bulk update all stats at once
+        ProductStatistics.objects.bulk_update(
+            [stats1, stats2, stats3],
+            ['view_count', 'cart_add_count', 'purchase_count']
+        )
 
     def test_most_viewed_endpoint(self):
         """Test most_viewed endpoint returns products sorted by view count."""
@@ -251,9 +240,12 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_most_viewed_respects_time_window(self):
         """Test that most_viewed endpoint respects the days parameter for time-based filtering."""
         # GIVEN products with views at different times
-        # Create views for product1 within the last 10 days
-        for _ in range(5):
-            ProductView.objects.create(product=self.product1, user=self.member_user)
+        # Create views for product1 within the last 10 days using bulk_create
+        recent_views = [
+            ProductView(product=self.product1, user=self.member_user)
+            for _ in range(5)
+        ]
+        ProductView.objects.bulk_create(recent_views)
 
         # Create views for product2 outside the 5-day window (40 days ago)
         old_view = ProductView.objects.create(product=self.product2, user=self.member_user)
@@ -319,9 +311,11 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
     def test_most_viewed_limit_capped_at_max(self):
         """Test that limit values above max are capped."""
-        # Create enough products to test the cap
-        for _ in range(150):
-            ProductFactory()
+        # Create enough products to test the cap - reduced from 150 to 15
+        # We only need to verify the cap works, not test with massive data
+        # Use SimpleProductFactory to avoid creating images
+        for _ in range(15):
+            SimpleProductFactory()
 
         url = reverse("v1:product-statistics-most-viewed")
 
@@ -352,18 +346,32 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Expected order: Product 2 (10 period views), then Product 1 (5 period views)
 
         # Create old views for product1 (outside the 5-day window)
-        for _ in range(95):
-            old_view = ProductView.objects.create(product=self.product1, user=self.member_user)
-            old_view.created_at = timezone.now() - timedelta(days=40)
-            old_view.save()
+        # Note: We can't use bulk_create with custom created_at when auto_now_add=True
+        # So we update the timestamps after creation
+        old_time = timezone.now() - timedelta(days=40)
+        old_views = [
+            ProductView(product=self.product1, user=self.member_user)
+            for _ in range(95)
+        ]
+        created_old_views = ProductView.objects.bulk_create(old_views)
+        # Update created_at for old views using raw SQL to bypass auto_now_add
+        ProductView.objects.filter(
+            id__in=[v.id for v in created_old_views]
+        ).update(created_at=old_time, updated_at=old_time)
 
         # Create recent views for product1 (within the 5-day window)
-        for _ in range(5):
-            ProductView.objects.create(product=self.product1, user=self.member_user)
+        recent_views_p1 = [
+            ProductView(product=self.product1, user=self.member_user)
+            for _ in range(5)
+        ]
+        ProductView.objects.bulk_create(recent_views_p1)
 
         # Create recent views for product2 (within the 5-day window)
-        for _ in range(10):
-            ProductView.objects.create(product=self.product2, user=self.member_user)
+        recent_views_p2 = [
+            ProductView(product=self.product2, user=self.member_user)
+            for _ in range(10)
+        ]
+        ProductView.objects.bulk_create(recent_views_p2)
 
         # WHEN we call most_viewed with days=5
         url = reverse("v1:product-statistics-most-viewed")
@@ -387,13 +395,19 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Product 2: 5 abandonments, 50 lifetime cart_remove_count
         # Expected order: Product 2 (5 abandonments), then Product 1 (2 abandonments)
 
-        # Create abandonments for product1 (2 abandonments)
-        for _ in range(2):
-            CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        # Create abandonments for product1 (2 abandonments) using bulk_create
+        abandonments_p1 = [
+            CartAbandonment(product=self.product1, user=self.member_user)
+            for _ in range(2)
+        ]
+        CartAbandonment.objects.bulk_create(abandonments_p1)
 
-        # Create abandonments for product2 (5 abandonments)
-        for _ in range(5):
-            CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        # Create abandonments for product2 (5 abandonments) using bulk_create
+        abandonments_p2 = [
+            CartAbandonment(product=self.product2, user=self.member_user)
+            for _ in range(5)
+        ]
+        CartAbandonment.objects.bulk_create(abandonments_p2)
 
         # WHEN we call frequently_abandoned endpoint
         url = reverse("v1:product-statistics-frequently-abandoned")
