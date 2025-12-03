@@ -66,3 +66,8 @@ class ProductStatisticsSummarySerializer(serializers.Serializer):
     metric_value = serializers.IntegerField()
     ranking = serializers.IntegerField()
 
+
+class TimeSeriesDataPointSerializer(serializers.Serializer):
+    """Serializer for time-series data points."""
+    date = serializers.DateTimeField()
+    count = serializers.IntegerField()

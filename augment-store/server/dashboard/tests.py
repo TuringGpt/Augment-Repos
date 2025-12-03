@@ -409,3 +409,175 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(results[0]['product_name'], 'Product 2')
         # Product 1 should be second (2 abandonments)
         self.assertEqual(results[1]['product_name'], 'Product 1')
+
+
+class TimeSeriesTrendsTests(BaseAPITestCase):
+    """Test time-series trends endpoints."""
+
+    def setUp(self):
+        super().setUp()
+        self.product1 = ProductFactory(name='Product 1')
+        self.product2 = ProductFactory(name='Product 2')
+        self.member_user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.authenticated_client.force_authenticate(user=self.member_user)
+
+        # Create time-series data
+        now = timezone.now()
+
+        # Create views over the last 7 days
+        for i in range(7):
+            view_date = now - timedelta(days=i)
+            for _ in range(i + 1):  # More views on recent days
+                view = ProductView.objects.create(product=self.product1, user=self.member_user)
+                view.created_at = view_date
+                view.save()
+
+        # Create cart items over the last 5 days
+        for i in range(5):
+            cart_date = now - timedelta(days=i)
+            cart_item = CartItemFactory(product=self.product1, created_by=self.member_user)
+            cart_item.created_at = cart_date
+            cart_item.save()
+
+    def test_time_series_trends_views(self):
+        """Test time_series_trends endpoint for views metric."""
+        # WHEN we call the time_series_trends endpoint for views
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {'metric': 'views', 'days': 7})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND response should contain time-series data
+        self.assertIn('data', response.data)
+        self.assertIn('views', response.data['data'])
+        self.assertEqual(response.data['metric'], 'views')
+        self.assertEqual(response.data['period_days'], 7)
+        self.assertEqual(response.data['granularity'], 'daily')
+
+        # AND views data should have entries
+        views_data = response.data['data']['views']
+        self.assertGreater(len(views_data), 0)
+
+    def test_time_series_trends_all_metrics(self):
+        """Test time_series_trends endpoint for all metrics."""
+        # WHEN we call the time_series_trends endpoint for all metrics
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {'metric': 'all', 'days': 30})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND response should contain all metric types
+        self.assertIn('views', response.data['data'])
+        self.assertIn('cart_additions', response.data['data'])
+        self.assertIn('purchases', response.data['data'])
+        self.assertIn('abandonments', response.data['data'])
+
+    def test_time_series_trends_invalid_metric(self):
+        """Test time_series_trends endpoint with invalid metric."""
+        # WHEN we call with invalid metric
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {'metric': 'invalid_metric'})
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+    def test_time_series_trends_invalid_granularity(self):
+        """Test time_series_trends endpoint with invalid granularity."""
+        # WHEN we call with invalid granularity
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {'granularity': 'monthly'})
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+    def test_time_series_trends_hourly_granularity(self):
+        """Test time_series_trends endpoint with hourly granularity."""
+        # WHEN we call with hourly granularity
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {'metric': 'views', 'days': 1, 'granularity': 'hourly'})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['granularity'], 'hourly')
+
+    def test_time_series_trends_product_filter(self):
+        """Test time_series_trends endpoint with product filter."""
+        # WHEN we call with a specific product_id
+        url = reverse("v1:product-statistics-time-series-trends")
+        response = self.authenticated_client.get(url, {
+            'metric': 'views',
+            'days': 7,
+            'product_id': str(self.product1.id)
+        })
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('product_id', response.data)
+        self.assertEqual(response.data['product_id'], str(self.product1.id))
+
+    def test_trends_comparison_endpoint(self):
+        """Test trends_comparison endpoint."""
+        # WHEN we call the trends_comparison endpoint
+        url = reverse("v1:product-statistics-trends-comparison")
+        response = self.authenticated_client.get(url, {'days': 7})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND response should contain comparison data
+        self.assertIn('comparison', response.data)
+        self.assertIn('current_period', response.data)
+        self.assertIn('previous_period', response.data)
+        self.assertEqual(response.data['period_days'], 7)
+
+        # AND comparison should have all metrics
+        comparison = response.data['comparison']
+        self.assertIn('views', comparison)
+        self.assertIn('cart_additions', comparison)
+        self.assertIn('purchases', comparison)
+        self.assertIn('abandonments', comparison)
+
+        # AND each metric should have current, previous, change, and change_percentage
+        for metric in ['views', 'cart_additions', 'purchases', 'abandonments']:
+            self.assertIn('current', comparison[metric])
+            self.assertIn('previous', comparison[metric])
+            self.assertIn('change', comparison[metric])
+            self.assertIn('change_percentage', comparison[metric])
+
+    def test_trends_comparison_calculates_percentage_correctly(self):
+        """Test that trends_comparison calculates percentage change correctly."""
+        # GIVEN we have data in current period but not previous
+        # (from setUp, we have views in the last 7 days)
+
+        # WHEN we call the trends_comparison endpoint
+        url = reverse("v1:product-statistics-trends-comparison")
+        response = self.authenticated_client.get(url, {'days': 7})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND views should show positive change
+        views_comparison = response.data['comparison']['views']
+        self.assertGreaterEqual(views_comparison['current'], 0)
+        self.assertIsInstance(views_comparison['change_percentage'], float)
+
+    def test_trends_comparison_unauthenticated(self):
+        """Test that unauthenticated users cannot access trends_comparison."""
+        # GIVEN an unauthenticated client
+        unauthenticated_client = self.client
+
+        # WHEN we try to access the trends_comparison endpoint
+        url = reverse("v1:product-statistics-trends-comparison")
+        response = unauthenticated_client.get(url)
+
+        # THEN we should get a 401 response
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -2,17 +2,16 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate, TruncHour
 from django.utils import timezone
 from datetime import timedelta
+import uuid
 
-from products.models import Product
+from carts.models import CartItem
+from checkout.models import OrderItem
 from .models import ProductStatistics, ProductView, CartAbandonment
-from .serializers import (
-    ProductStatisticsSerializer,
-    ProductStatisticsSummarySerializer,
-    CartAbandonmentSerializer,
-)
+from .serializers import ProductStatisticsSerializer
 
 
 def parse_int_param(value, default, min_value=1, max_value=None):
@@ -183,4 +182,179 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 total=Sum('purchase_count')
             )['total'] or 0,
         })
- 
+
+    @action(detail=False, methods=['get'])
+    def time_series_trends(self, request):
+        """
+        Get time-series trends for various metrics.
+        Query params:
+        - metric: Metric to track (views, cart_additions, purchases, abandonments, all)
+        - days: Number of days to look back (default: 30, max: 365)
+        - granularity: Time granularity (daily, hourly) (default: daily)
+        - product_id: Optional product ID to filter by specific product
+
+        Returns time-series data with counts for each time period.
+        """
+        # Parse parameters
+        metric = request.query_params.get('metric', 'all')
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
+        granularity = request.query_params.get('granularity', 'daily')
+        product_id = request.query_params.get('product_id')
+
+        # Validate granularity
+        if granularity not in ['daily', 'hourly']:
+            return Response(
+                {'error': 'Invalid granularity. Must be "daily" or "hourly".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate metric
+        valid_metrics = ['views', 'cart_additions', 'purchases', 'abandonments', 'all']
+        if metric not in valid_metrics:
+            return Response(
+                {'error': f'Invalid metric. Must be one of: {", ".join(valid_metrics)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate product_id if provided (should be a valid UUID)
+        if product_id is not None:
+            try:
+                # Attempt to parse as UUID to validate format
+                uuid.UUID(product_id)
+            except (ValueError, TypeError, AttributeError):
+                return Response(
+                    {'error': 'Invalid product_id. Must be a valid UUID.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Calculate date range
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Choose truncation function based on granularity
+        trunc_func = TruncDate if granularity == 'daily' else TruncHour
+
+        result = {}
+
+        # Helper function to get time series data
+        def get_time_series(queryset, date_field='created_at'):
+            qs = queryset.filter(**{f'{date_field}__gte': cutoff_date})
+            if product_id:
+                qs = qs.filter(product_id=product_id)
+
+            data = qs.annotate(
+                period=trunc_func(date_field)
+            ).values('period').annotate(
+                count=Count('id')
+            ).order_by('period')
+
+            return [
+                {
+                    'date': item['period'].isoformat() if hasattr(item['period'], 'isoformat') else str(item['period']),
+                    'count': item['count']
+                }
+                for item in data
+            ]
+
+        # Get data for requested metrics
+        if metric in ['views', 'all']:
+            result['views'] = get_time_series(ProductView.objects.all())
+
+        if metric in ['cart_additions', 'all']:
+            result['cart_additions'] = get_time_series(
+                CartItem.objects.filter(is_deleted=False)
+            )
+
+        if metric in ['purchases', 'all']:
+            result['purchases'] = get_time_series(
+                OrderItem.objects.filter(is_deleted=False)
+            )
+
+        if metric in ['abandonments', 'all']:
+            result['abandonments'] = get_time_series(CartAbandonment.objects.all())
+
+        # Add metadata
+        response_data = {
+            'metric': metric,
+            'period_days': days,
+            'granularity': granularity,
+            'data': result,
+        }
+
+        if product_id:
+            response_data['product_id'] = product_id
+
+        return Response(response_data)
+
+    @action(detail=False, methods=['get'])
+    def trends_comparison(self, request):
+        """
+        Compare current period trends with previous period.
+        Query params:
+        - days: Number of days for current period (default: 7, max: 90)
+
+        Returns comparison of key metrics between current and previous period.
+        """
+        days = parse_int_param(request.query_params.get('days'), default=7, max_value=90)
+
+        # Calculate date ranges
+        now = timezone.now()
+        current_period_start = now - timedelta(days=days)
+        previous_period_start = current_period_start - timedelta(days=days)
+
+        # Helper function to get counts for a period
+        def get_period_counts(start_date, end_date):
+            return {
+                'views': ProductView.objects.filter(
+                    created_at__gte=start_date,
+                    created_at__lt=end_date
+                ).count(),
+                'cart_additions': CartItem.objects.filter(
+                    created_at__gte=start_date,
+                    created_at__lt=end_date,
+                    is_deleted=False
+                ).count(),
+                'purchases': OrderItem.objects.filter(
+                    created_at__gte=start_date,
+                    created_at__lt=end_date,
+                    is_deleted=False
+                ).count(),
+                'abandonments': CartAbandonment.objects.filter(
+                    created_at__gte=start_date,
+                    created_at__lt=end_date
+                ).count(),
+            }
+
+        # Get counts for both periods
+        current_counts = get_period_counts(current_period_start, now)
+        previous_counts = get_period_counts(previous_period_start, current_period_start)
+
+        # Calculate percentage changes
+        def calculate_change(current, previous):
+            if previous == 0:
+                return 100.0 if current > 0 else 0.0
+            return round(((current - previous) / previous) * 100, 2)
+
+        comparison = {}
+        for metric in current_counts.keys():
+            comparison[metric] = {
+                'current': current_counts[metric],
+                'previous': previous_counts[metric],
+                'change': current_counts[metric] - previous_counts[metric],
+                'change_percentage': calculate_change(
+                    current_counts[metric],
+                    previous_counts[metric]
+                ),
+            }
+
+        return Response({
+            'period_days': days,
+            'current_period': {
+                'start': current_period_start.isoformat(),
+                'end': now.isoformat(),
+            },
+            'previous_period': {
+                'start': previous_period_start.isoformat(),
+                'end': current_period_start.isoformat(),
+            },
+            'comparison': comparison,
+        })
