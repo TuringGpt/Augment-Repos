@@ -10,12 +10,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migration.RenameIndex(
+        migrations.RenameIndex(
             model_name='cartabandonment',
             new_name='dashboard_c_product_a63ee3_idx',
             old_name='dashboard_c_product_created_idx',
         ),
-        migration.RenameIndex(
+        migrations.RenameIndex(
             model_name='cartabandonment',
             new_name='dashboard_c_user_id_17a56b_idx',
             old_name='dashboard_c_user_created_idx',
