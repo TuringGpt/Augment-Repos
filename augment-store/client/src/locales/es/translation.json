@@ -202,6 +202,7 @@
     "movedToCart": "Artículo movido al carrito",
     "savedForLater": "Artículo guardado para después",
     "failedToSaveItem": "Error al guardar el artículo",
+    "failedToMoveItem": "Error al mover el artículo al carrito",
     "removedFromSaved": "Artículo eliminado de guardados",
     "emptySavedItems": "No hay artículos guardados",
     "emptySavedItemsMessage": "Los artículos que guardes para después aparecerán aquí"

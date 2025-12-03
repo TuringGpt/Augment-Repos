@@ -38,7 +38,7 @@ const SavedItems = () => {
     } catch (error) {
       addNotification({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Failed to move item to cart',
+        message: error instanceof Error ? error.message : t('cart.failedToMoveItem'),
         duration: 5000,
       })
     } finally {

@@ -202,6 +202,7 @@
     "movedToCart": "Artikel in den Warenkorb verschoben",
     "savedForLater": "Artikel für später gespeichert",
     "failedToSaveItem": "Fehler beim Speichern des Artikels",
+    "failedToMoveItem": "Fehler beim Verschieben des Artikels in den Warenkorb",
     "removedFromSaved": "Artikel aus gespeicherten entfernt",
     "emptySavedItems": "Keine gespeicherten Artikel",
     "emptySavedItemsMessage": "Artikel, die Sie für später speichern, werden hier angezeigt"
