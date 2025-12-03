@@ -79,6 +79,9 @@ class SimpleProductFactory(DjangoModelFactory):
 
     @post_generation
     def images(self, create, extracted, **kwargs):
+        if not create:
+            return
+
         # Don't create any images by default for simple factory
         if extracted:
             for image in extracted:

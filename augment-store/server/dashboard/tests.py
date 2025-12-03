@@ -240,7 +240,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_most_viewed_respects_time_window(self):
         """Test that most_viewed endpoint respects the days parameter for time-based filtering."""
         # GIVEN products with views at different times
-        # Create views for product1 within the last 10 days using bulk_create
+        # Create views for product1 within the last 5 days using bulk_create
         recent_views = [
             ProductView(product=self.product1, user=self.member_user)
             for _ in range(5)
