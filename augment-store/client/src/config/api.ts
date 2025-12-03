@@ -109,6 +109,7 @@ export const API_ENDPOINTS = {
   // Newsletter endpoints
   NEWSLETTER: {
     SUBSCRIBE: '/newsletter/subscribe/',
+    LIST: '/newsletter/',
   },
 }
 
