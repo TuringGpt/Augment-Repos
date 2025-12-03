@@ -5,6 +5,7 @@ import { Email as EmailIcon } from '@mui/icons-material'
 import { Colors } from '@config/colors'
 import { useTranslation } from '@hooks/useTranslation'
 import { isValidEmail } from '@utils/validators'
+import { newsletterService } from '@services/api/newsletter/newsletterService'
 
 const Footer = () => {
   const { t } = useTranslation()
@@ -37,11 +38,8 @@ const Footer = () => {
     setError('')
 
     try {
-      // TODO: Implement newsletter subscription API call
-      // await newsletterService.subscribe({ email })
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Subscribe to newsletter via API
+      await newsletterService.subscribe({ email })
 
       setSuccessMessage(t('common.success'))
       setEmail('')

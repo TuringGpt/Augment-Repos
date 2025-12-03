@@ -11,8 +11,8 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductService, ProductBrandCacheService
-from core.service import CachedListMixin
+from .services import ProductCategoryCacheService, ProductService, ProductBrandCacheService
+from core.service import CacheInvalidatorMixin, CachedListMixin
 
 
 
@@ -55,16 +55,19 @@ class BaseCategoryView:
     def get_queryset(self):
         return ProductCategory.objects.all().order_by('name')
     
-class ProductCategoryListView(BaseCategoryView, ListAPIView):
-    pass
+class ProductCategoryListView(CachedListMixin, BaseCategoryView, ListAPIView):
+    cache_service_class = ProductCategoryCacheService
+    cache_ttl = 60 * 60  * 24
 
 
-class CreateProductCategoryView(BaseCategoryView, CreateAPIView):
+class CreateProductCategoryView(CacheInvalidatorMixin, BaseCategoryView, CreateAPIView):
     serializer_class = CreateProductCategorySerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductCategoryCacheService
 
-class ProductCategoryDetailView(BaseCategoryView, RetrieveUpdateDestroyAPIView):
+class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductCategoryDetailSerializer
+    cache_service_class = ProductCategoryCacheService
 
     def get_permissions(self):
         super().get_permissions()

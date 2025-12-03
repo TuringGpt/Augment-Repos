@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'ticket',
     "notifications",
     'dashboard',
+    "currencies",
 ]
 
 MIDDLEWARE = [
