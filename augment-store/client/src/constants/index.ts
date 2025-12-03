@@ -12,6 +12,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   WISHLIST: '/wishlist',
   NOTIFICATIONS: '/notifications',
+  NEWSLETTERS: '/newsletters',
   SUPPORT: '/support',
   SUPPORT_TICKETS: '/support/tickets',
   SUPPORT_TICKET_DETAIL: '/support/tickets/:id',

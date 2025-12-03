@@ -195,7 +195,17 @@
     "removeItemTitle": "Supprimer l'Article ?",
     "removeItemConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{name}}</strong> de votre panier ?",
     "removing": "Suppression...",
-    "items": "{{count}} article(s)"
+    "items": "{{count}} article(s)",
+    "saveForLater": "Enregistrer pour Plus Tard",
+    "savedItems": "Articles Enregistrés",
+    "moveToCart": "Déplacer vers le Panier",
+    "movedToCart": "Article déplacé vers le panier",
+    "savedForLater": "Article enregistré pour plus tard",
+    "failedToSaveItem": "Échec de l'enregistrement de l'article",
+    "failedToMoveItem": "Échec du déplacement de l'article vers le panier",
+    "removedFromSaved": "Article supprimé des enregistrés",
+    "emptySavedItems": "Aucun article enregistré",
+    "emptySavedItemsMessage": "Les articles que vous enregistrez pour plus tard apparaîtront ici"
   },
   "checkout": {
     "checkout": "Paiement",

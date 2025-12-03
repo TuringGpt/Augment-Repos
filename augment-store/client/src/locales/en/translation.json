@@ -195,7 +195,17 @@
     "removeItemTitle": "Remove Item?",
     "removeItemConfirm": "Are you sure you want to remove <strong>{{name}}</strong> from your cart?",
     "removing": "Removing...",
-    "items": "{{count}} item(s)"
+    "items": "{{count}} item(s)",
+    "saveForLater": "Save for Later",
+    "savedItems": "Saved Items",
+    "moveToCart": "Move to Cart",
+    "movedToCart": "Item moved to cart",
+    "savedForLater": "Item saved for later",
+    "failedToSaveItem": "Failed to save item",
+    "failedToMoveItem": "Failed to move item to cart",
+    "removedFromSaved": "Item removed from saved items",
+    "emptySavedItems": "No saved items",
+    "emptySavedItemsMessage": "Items you save for later will appear here"
   },
   "checkout": {
     "checkout": "Checkout",
