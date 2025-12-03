@@ -21,3 +21,7 @@ interface ViewTransition {
 interface Document {
   startViewTransition(callback: () => void | Promise<void>): ViewTransition
 }
+
+// Browser-compatible timeout type
+// In browsers, setTimeout returns a number, not NodeJS.Timeout
+type TimeoutId = ReturnType<typeof setTimeout>

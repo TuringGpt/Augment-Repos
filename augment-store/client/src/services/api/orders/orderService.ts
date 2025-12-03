@@ -1,22 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Order, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse } from '@features/orders/types'
-import type { Address } from '@features/user/types'
-
-const createEmptyAddress = (): Address => ({
-  id: '',
-  type: 'shipping',
-  firstName: '',
-  lastName: '',
-  addressLine1: '',
-  addressLine2: '',
-  city: '',
-  state: '',
-  postalCode: '',
-  country: '',
-  phone: '',
-  isDefault: false,
-})
+import type { Order, OrderItem, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse } from '@features/orders/types'
 
 export const orderService = {
   getOrders: async (page = 1, limit = 10): Promise<OrderListResponse> => {
@@ -24,22 +8,38 @@ export const orderService = {
       params: { page, limit },
     })
 
-    const orders: Order[] = response.results.map((orderAPI) => ({
-      id: orderAPI.id,
-      orderNumber: `ORD-${orderAPI.id.slice(0, 8).toUpperCase()}`,
-      items: orderAPI.items.map((item) => item.cart_item),
-      subtotal: orderAPI.subtotal,
-      tax: orderAPI.tax,
-      shipping: orderAPI.shipping,
-      total: orderAPI.total,
-      status: orderAPI.status,
-      shippingAddress: createEmptyAddress(),
-      billingAddress: createEmptyAddress(),
-      paymentMethod: '',
-      paymentStatus: 'pending',
-      createdAt: orderAPI.created_at,
-      updatedAt: orderAPI.updated_at,
-    }))
+    const orders: Order[] = response.results.map((orderAPI) => {
+      // Transform OrderItemAPI[] to OrderItem[]
+      // Backend returns: { id, cart_item, product, quantity, created_at }
+      // Frontend expects: { id, cart_item: { ...cart_item, product, quantity }, created_at }
+      const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
+        id: itemAPI.id,
+        cart_item: {
+          ...itemAPI.cart_item,
+          product: itemAPI.product,
+          quantity: itemAPI.quantity,
+        },
+        created_at: itemAPI.created_at,
+      }))
+
+      return {
+        id: orderAPI.id,
+        items,
+        subtotal: orderAPI.subtotal,
+        tax: orderAPI.tax,
+        shipping: orderAPI.shipping,
+        total: orderAPI.total,
+        status: orderAPI.status,
+        shipping_address: null,
+        billing_address: null,
+        payment_status: 'pending',
+        payment: undefined,
+        created_at: orderAPI.created_at,
+        updated_at: orderAPI.updated_at,
+        created_by: '',
+        is_deleted: false,
+      }
+    })
 
     return {
       orders,
@@ -51,7 +51,38 @@ export const orderService = {
   },
 
   getOrderById: async (id: string): Promise<Order> => {
-    return apiClient.get<Order>(API_ENDPOINTS.ORDERS.DETAIL(id))
+    const orderAPI = await apiClient.get<OrderListAPIResponse['results'][0]>(API_ENDPOINTS.ORDERS.DETAIL(id))
+
+    // Transform OrderItemAPI[] to OrderItem[] - same as getOrders
+    // Backend returns: { id, cart_item, product, quantity, created_at }
+    // Frontend expects: { id, cart_item: { ...cart_item, product, quantity }, created_at }
+    const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
+      id: itemAPI.id,
+      cart_item: {
+        ...itemAPI.cart_item,
+        product: itemAPI.product,
+        quantity: itemAPI.quantity,
+      },
+      created_at: itemAPI.created_at,
+    }))
+
+    return {
+      id: orderAPI.id,
+      items,
+      subtotal: orderAPI.subtotal,
+      tax: orderAPI.tax,
+      shipping: orderAPI.shipping,
+      total: orderAPI.total,
+      status: orderAPI.status,
+      shipping_address: null,
+      billing_address: null,
+      payment_status: 'pending',
+      payment: undefined,
+      created_at: orderAPI.created_at,
+      updated_at: orderAPI.updated_at,
+      created_by: '',
+      is_deleted: false,
+    }
   },
 
   createOrder: async (data: CreateOrderRequest): Promise<CreateOrderResponse> => {

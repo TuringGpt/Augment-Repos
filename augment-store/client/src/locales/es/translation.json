@@ -27,7 +27,8 @@
     "showMore": "Mostrar Más",
     "showLess": "Mostrar Menos",
     "darkMode": "Modo Oscuro",
-    "lightMode": "Modo Claro"
+    "lightMode": "Modo Claro",
+    "clearAll": "Limpiar Todo"
   },
   "nav": {
     "home": "Inicio",
@@ -69,7 +70,9 @@
     "emptyDescription": "Verás notificaciones aquí cuando tengas actualizaciones",
     "viewAll": "Ver todas las notificaciones",
     "unreadCount": "{{count}} notificación sin leer",
-    "unreadCount_other": "{{count}} notificaciones sin leer"
+    "unreadCount_other": "{{count}} notificaciones sin leer",
+    "markedAsRead": "Notificación marcada como leída",
+    "markAsReadError": "Error al marcar la notificación como leída"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -117,7 +120,8 @@
     "bestSellers": "Más Vendidos",
     "featured": "Destacados",
     "onSale": "En Oferta",
-    "discount": "Descuento"
+    "discount": "Descuento",
+    "recentlyViewed": "Vistos recientemente"
   },
   "home": {
     "featuredProducts": "Productos Destacados",

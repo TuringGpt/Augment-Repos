@@ -1,4 +1,5 @@
 import type { CartItem } from '@features/cart/types'
+import type { Product } from '@features/products/types'
 
 export type OrderStatus =
   | 'pending'
@@ -124,6 +125,8 @@ export interface OrderAPI {
 export interface OrderItemAPI {
   id: string
   cart_item: CartItem
+  product: Product | null
+  quantity: number
   created_at: string
 }
 

@@ -7,6 +7,7 @@ import { useThemeStore } from '@store/themeStore'
 import AppRoutes from '@routes/AppRoutes'
 import ErrorBoundary from '@components/ErrorBoundary'
 import ThemeTransitionStyles from '@components/ThemeTransitionStyles'
+import ToastNotification from '@components/ToastNotification'
 
 function App() {
   const mode = useThemeStore((state) => state.mode)
@@ -23,6 +24,7 @@ function App() {
           <AppRoutes />
         </ErrorBoundary>
       </BrowserRouter>
+      <ToastNotification />
     </ThemeProvider>
   )
 }
