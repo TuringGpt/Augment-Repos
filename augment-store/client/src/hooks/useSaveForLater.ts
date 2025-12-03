@@ -39,12 +39,17 @@ export const useSaveForLater = () => {
   // Listen for storage events to sync across tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue) as SaveForLaterItem[]
-          setItems(parsed)
-        } catch (error) {
-          console.error('Failed to parse storage event:', error)
+      if (e.key === STORAGE_KEY) {
+        // Handle storage key removal (e.newValue is null when key is removed)
+        if (e.newValue === null) {
+          setItems([])
+        } else {
+          try {
+            const parsed = JSON.parse(e.newValue) as SaveForLaterItem[]
+            setItems(parsed)
+          } catch (error) {
+            console.error('Failed to parse storage event:', error)
+          }
         }
       }
     }
@@ -57,42 +62,39 @@ export const useSaveForLater = () => {
     return items
   }, [items])
 
-  const addItem = useCallback(
-    (product: Product, quantity: number = 1) => {
-      setItems((prevItems) => {
-        // Check if item already exists
-        const existingIndex = prevItems.findIndex((item) => item.product.id === product.id)
+  const addItem = useCallback((product: Product, quantity: number = 1) => {
+    setItems((prevItems) => {
+      // Check if item already exists
+      const existingIndex = prevItems.findIndex((item) => item.product.id === product.id)
 
-        if (existingIndex !== -1) {
-          // Update existing item
-          const updated = [...prevItems]
-          updated[existingIndex] = {
-            product,
-            quantity,
-            savedAt: new Date().toISOString(),
-          }
-          return updated
-        }
-
-        // Add new item at the beginning
-        const newItem: SaveForLaterItem = {
+      if (existingIndex !== -1) {
+        // Update existing item
+        const updated = [...prevItems]
+        updated[existingIndex] = {
           product,
           quantity,
           savedAt: new Date().toISOString(),
         }
-
-        const updated = [newItem, ...prevItems]
-
-        // Limit to MAX_ITEMS
-        if (updated.length > MAX_ITEMS) {
-          return updated.slice(0, MAX_ITEMS)
-        }
-
         return updated
-      })
-    },
-    []
-  )
+      }
+
+      // Add new item at the beginning
+      const newItem: SaveForLaterItem = {
+        product,
+        quantity,
+        savedAt: new Date().toISOString(),
+      }
+
+      const updated = [newItem, ...prevItems]
+
+      // Limit to MAX_ITEMS
+      if (updated.length > MAX_ITEMS) {
+        return updated.slice(0, MAX_ITEMS)
+      }
+
+      return updated
+    })
+  }, [])
 
   const removeItem = useCallback((productId: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId))
@@ -148,4 +150,3 @@ export const useSaveForLater = () => {
     getTotalItems,
   }
 }
-
