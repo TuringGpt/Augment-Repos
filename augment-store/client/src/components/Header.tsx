@@ -149,7 +149,7 @@ const Header = () => {
                         fontSize: '0.875rem',
                       }}
                     >
-                      {user?.firstName?.charAt(0).toUpperCase() || 'U'}
+                      {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                     </Avatar>
                   </IconButton>
                 </Tooltip>
