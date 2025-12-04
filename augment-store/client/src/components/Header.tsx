@@ -132,6 +132,7 @@ const Header = () => {
                 {/* Profile Dropdown - Hidden on mobile */}
                 <Tooltip title={t('tooltip.profile')}>
                   <IconButton
+                    id="profile-button"
                     color="inherit"
                     onClick={handleProfileMenuOpen}
                     aria-label={t('tooltip.profile')}
