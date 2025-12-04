@@ -36,6 +36,7 @@ class UserProfileTests(BaseAPITestCase):
         self.assertEqual(response.data["full_name"], "John Doe")
         self.assertIn("id", response.data)
         self.assertIn("date_joined", response.data)
+        self.assertIn("preferred_currency", response.data)
 
     def test_get_user_profile_unauthenticated(self):
         # GIVEN an unauthenticated user
