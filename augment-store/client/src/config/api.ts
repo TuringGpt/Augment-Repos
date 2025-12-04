@@ -110,6 +110,7 @@ export const API_ENDPOINTS = {
   NEWSLETTER: {
     SUBSCRIBE: '/newsletter/subscribe/',
     LIST: '/newsletter/',
+    UNSUBSCRIBE: (id: string) => `/newsletter/unsubscribe/${id}`,
   },
 }
 
