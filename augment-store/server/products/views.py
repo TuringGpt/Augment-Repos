@@ -11,7 +11,7 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCategoryCacheService, ProductService, ProductBrandCacheService
+from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 
 
@@ -92,6 +92,7 @@ class BaseProductView:
         return Product.objects.get_user_products(user)
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
+    cache_service_class = ProductCacheService
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = ProductFilter
 
@@ -112,12 +113,14 @@ class ProductSearchView(BaseProductView, ListAPIView):
         return Product.objects.all()
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
+    cache_service_class = ProductCacheService
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
 class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductCacheService
 
     def get_permissions(self):
         super().get_permissions()
