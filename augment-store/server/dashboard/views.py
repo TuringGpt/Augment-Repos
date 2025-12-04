@@ -204,7 +204,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         - Category performance
         - Recent trends
         """
-        days = parse_int_param(request.query_params.post('days'), default=30, max_value=365)
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
         # ===== OVERVIEW METRICS =====
@@ -219,7 +219,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Revenue calculation (from completed orders)
         completed_order_items = OrderItem.objects.filter(
-            order_created_at__gte=cutoff_date,
+            order__created_at__gte=cutoff_date,
             order__status=Order.OrderStatus.COMPLETED,
             product__isnull=False
         ).select_related('product')
@@ -234,7 +234,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # ===== CONVERSION FUNNEL =====
         total_views = ProductView.objects.filter(created_at__gte=cutoff_date).count()
         total_cart_adds = CartItem.objects.filter(created_at__gte=cutoff_date).count()
-        total_purchases = ProductStatistic.objects.aggregate(
+        total_purchases = ProductStatistics.objects.aggregate(
             total=Sum('purchase_count')
         )['total'] or 0
 
@@ -279,7 +279,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'product_name': p['product_name'],
                 'revenue': float(p['revenue']),
                 'units_sold': p['units_sold'],
-                'price': int(p['price'])
+                'price': float(p['price'])
             }
             for p in sorted_products
         ]
@@ -299,11 +299,11 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'category_name': category_name,
                     'revenue': revenue,
                     'units_sold': item.quantity,
-                    'orders': [1]
+                    'orders': 1
                 }
 
         # Sort by revenue
-        sorted_categories = sort(
+        sorted_categories = sorted(
             category_stats.values(),
             key=lambda x: x['revenue'],
             reverse=True
