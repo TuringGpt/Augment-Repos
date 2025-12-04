@@ -531,7 +531,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         )
 
         # WHEN we call the analytics_overview endpoint
-        url = reverse("v1product-statistics-analytics-overview")
+        url = reverse("v1:product-statistics-analytics-overview")
         response = self.member_client.get(url)
 
         # THEN revenue should be 0 (pending orders excluded)
