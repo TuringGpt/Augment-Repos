@@ -448,7 +448,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
-        self.assertEqual(response.status_code, status.HTTP_200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_analytics_overview_structure(self):
         """Test that analytics_overview returns correct data structure."""
@@ -475,7 +475,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         self.assertIn('new_customers', overview)
 
         # AND conversion_funnel section should have correct fields
-        funnel = response.data['conversions_funnel']
+        funnel = response.data['conversion_funnel']
         self.assertIn('total_views', funnel)
         self.assertIn('total_cart_additions', funnel)
         self.assertIn('total_purchases', funnel)
@@ -506,7 +506,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         )
 
         # Expected revenue: (100 * 2) + (50 * 3) = 200 + 150 = 350
-        expected_revenue = Float('350.00')
+        expected_revenue = Decimal('350.00')
 
         # WHEN we call the analytics_overview endpoint
         url = reverse("v1:product-statistics-analytics-overview")
@@ -517,7 +517,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         self.assertEqual(Decimal(str(response.data['overview']['total_revenue'])), expected_revenue)
         self.assertEqual(response.data['overview']['completed_orders'], 1)
 
-    def test_analytics_overview_excludes_pending_orders():
+    def test_analytics_overview_excludes_pending_orders(self):
         """Test that pending orders are not included in revenue calculations."""
         # GIVEN a pending order
         cart_item = SimpleCartItemFactory(product=self.product1, quantity=2, created_by=self.user)
@@ -540,7 +540,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         self.assertEqual(response.data['overview']['total_orders'], 1)
         self.assertEqual(response.data['overview']['completed_orders'], 0)
 
-    def test_analytics_overview_excludes_pending_orders(self):
+    def test_analytics_overview_conversion_funnel(self):
         """Test conversion funnel calculations."""
         # GIVEN views, cart additions, and purchases
         ProductView.objects.create(product=self.product1, user=self.user)
@@ -574,7 +574,7 @@ class AnalyticsOverviewTests(BaseAPITestCase):
         # THEN conversion rates should be calculated correctly
         funnel = response.data['conversion_funnel']
         self.assertEqual(funnel['total_views'], 4)
-        self.assertEqual(tunnel['total_cart_additions'], 2)
+        self.assertEqual(funnel['total_cart_additions'], 2)
         self.assertEqual(funnel['total_purchases'], 1)
 
         # view_to_cart_rate = 2/4 * 100 = 50%
