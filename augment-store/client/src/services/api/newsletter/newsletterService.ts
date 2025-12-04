@@ -17,9 +17,10 @@ export interface SubscribeNewsletterResponse {
 
 /**
  * Newsletter unsubscribe request
+ * Note: Backend doesn't require email in body - ID in URL is sufficient
  */
 export interface UnsubscribeNewsletterRequest {
-  email: string
+  email?: string
 }
 
 /**
@@ -99,11 +100,12 @@ export const newsletterService = {
 
   /**
    * Unsubscribe from newsletter
-   * Backend expects PATCH/PUT to /newsletter/unsubscribe/<id> with { email: string }
+   * Backend expects PATCH to /newsletter/unsubscribe/<id>
+   * Body is optional - ID in URL is sufficient to identify the subscription
    * Backend returns { email: string }
    * Note: This sets is_active=False on the newsletter subscription
    */
-  unsubscribe: async (id: string, data: UnsubscribeNewsletterRequest): Promise<UnsubscribeNewsletterResponse> => {
+  unsubscribe: async (id: string, data?: UnsubscribeNewsletterRequest): Promise<UnsubscribeNewsletterResponse> => {
     return apiClient.patch<UnsubscribeNewsletterResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE(id), data)
   },
 }
