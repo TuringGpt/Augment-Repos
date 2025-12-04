@@ -58,3 +58,32 @@ class ProductFactory(DjangoModelFactory):
             for _ in range(3):
                 self.images.add(FileFactory())
 
+
+class SimpleProductFactory(DjangoModelFactory):
+    """Lightweight product factory for tests that don't need images.
+
+    This factory creates products without images to reduce database overhead.
+    Use this for tests that only need basic product data without image relationships.
+    """
+    name = Faker("catch_phrase")
+    description = Faker("text", max_nb_chars=200)
+    price = Faker("pydecimal", left_digits=4, right_digits=2, positive=True)
+    brand = SubFactory(ProductBrandFactory)
+    category = SubFactory(ProductCategoryFactory)
+    created_by = SubFactory(UserFactory)
+    quantity = Faker("random_int", min=0, max=100)
+    rating = Faker("pydecimal", left_digits=1, right_digits=2, positive=True)
+
+    class Meta:
+        model = Product
+
+    @post_generation
+    def images(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        # Don't create any images by default for simple factory
+        if extracted:
+            for image in extracted:
+                self.images.add(image)
+

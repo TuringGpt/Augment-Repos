@@ -191,6 +191,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Use faster password hasher for tests
+import sys
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
