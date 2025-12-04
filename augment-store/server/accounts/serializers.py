@@ -9,6 +9,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     is_registration_completed = serializers.BooleanField(read_only=True)
     profile_image = FileSerializer(read_only=True)
+    preferred_currency = ListCurrencySerializer(read_only=True)
     
     class Meta:
         model = User
