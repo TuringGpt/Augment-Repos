@@ -1,11 +1,14 @@
 from core.tests import BaseAPITestCase
 from rest_framework import status
 from django.urls import reverse
-from products.factory import SimpleProductFactory
+from products.factory import SimpleProductFactory, ProductCategoryFactory
 from carts.factory import SimpleCartItemFactory
+from checkout.factory import OrderFactory, OrderItemFactory
+from checkout.models import Order
 from dashboard.models import ProductStatistics, ProductView, CartAbandonment
 from datetime import timedelta
 from django.utils import timezone
+from decimal import Decimal
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
@@ -423,3 +426,198 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(results[0]['product_name'], 'Product 2')
         # Product 1 should be second (2 abandonments)
         self.assertEqual(results[1]['product_name'], 'Product 1')
+
+
+class AnalyticsOverviewTests(BaseAPITestCase):
+    """Test analytics_overview endpoint."""
+
+    def setUp(self):
+        super().setUp()
+        # Set up authenticated client
+        self.member_client = self.authenticated_client
+
+        # Create test products with specific prices
+        self.product1 = SimpleProductFactory(name='Product 1', price=Decimal('100.00'))
+        self.product2 = SimpleProductFactory(name='Product 2', price=Decimal('50.00'))
+        self.product3 = SimpleProductFactory(name='Product 3', price=Decimal('25.00'))
+
+    def test_analytics_overview_endpoint_exists(self):
+        """Test that analytics_overview endpoint is accessible."""
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1:product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200)
+
+    def test_analytics_overview_structure(self):
+        """Test that analytics_overview returns correct data structure."""
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1:product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN response should contain all expected sections
+        self.assertIn('period_days', response.data)
+        self.assertIn('overview', response.data)
+        self.assertIn('conversion_funnel', response.data)
+        self.assertIn('cart_abandonment', response.data)
+        self.assertIn('top_products_by_revenue', response.data)
+        self.assertIn('category_performance', response.data)
+
+        # AND overview section should have correct fields
+        overview = response.data['overview']
+        self.assertIn('total_revenue', overview)
+        self.assertIn('total_orders', overview)
+        self.assertIn('completed_orders', overview)
+        self.assertIn('average_order_value', overview)
+        self.assertIn('total_products', overview)
+        self.assertIn('total_categories', overview)
+        self.assertIn('new_customers', overview)
+
+        # AND conversion_funnel section should have correct fields
+        funnel = response.data['conversions_funnel']
+        self.assertIn('total_views', funnel)
+        self.assertIn('total_cart_additions', funnel)
+        self.assertIn('total_purchases', funnel)
+        self.assertIn('view_to_cart_rate', funnel)
+        self.assertIn('cart_to_purchase_rate', funnel)
+        self.assertIn('overall_conversion_rate', funnel)
+
+    def test_analytics_overview_with_orders(self):
+        """Test analytics_overview calculates revenue correctly from completed orders."""
+        # GIVEN completed orders with known products and quantities
+        cart_item1 = SimpleCartItemFactory(product=self.product1, quantity=2, created_by=self.user)
+        cart_item2 = SimpleCartItemFactory(product=self.product2, quantity=3, created_by=self.user)
+
+        order1 = OrderFactory(created_by=self.user, status=Order.OrderStatus.COMPLETED)
+        order_item1 = OrderItemFactory(
+            order=order1,
+            cart_item=cart_item1,
+            product=self.product1,
+            quantity=2,
+            created_by=self.user
+        )
+        order_item2 = OrderItemFactory(
+            order=order1,
+            cart_item=cart_item2,
+            product=self.product2,
+            quantity=3,
+            created_by=self.user
+        )
+
+        # Expected revenue: (100 * 2) + (50 * 3) = 200 + 150 = 350
+        expected_revenue = Float('350.00')
+
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1:product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN total_revenue should match expected
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Decimal(str(response.data['overview']['total_revenue'])), expected_revenue)
+        self.assertEqual(response.data['overview']['completed_orders'], 1)
+
+    def test_analytics_overview_excludes_pending_orders():
+        """Test that pending orders are not included in revenue calculations."""
+        # GIVEN a pending order
+        cart_item = SimpleCartItemFactory(product=self.product1, quantity=2, created_by=self.user)
+        order = OrderFactory(created_by=self.user, status=Order.OrderStatus.PENDING)
+        OrderItemFactory(
+            order=order,
+            cart_item=cart_item,
+            product=self.product1,
+            quantity=2,
+            created_by=self.user
+        )
+
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN revenue should be 0 (pending orders excluded)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['overview']['total_revenue'], 0.0)
+        self.assertEqual(response.data['overview']['total_orders'], 1)
+        self.assertEqual(response.data['overview']['completed_orders'], 0)
+
+    def test_analytics_overview_excludes_pending_orders(self):
+        """Test conversion funnel calculations."""
+        # GIVEN views, cart additions, and purchases
+        ProductView.objects.create(product=self.product1, user=self.user)
+        ProductView.objects.create(product=self.product2, user=self.user)
+        ProductView.objects.create(product=self.product3, user=self.user)
+        ProductView.objects.create(product=self.product1, user=self.user)
+        # 4 total views
+
+        SimpleCartItemFactory(product=self.product1, created_by=self.user)
+        SimpleCartItemFactory(product=self.product2, created_by=self.user)
+        # 2 cart additions
+
+        # Create a completed order with 1 item (1 purchase)
+        order = OrderFactory(created_by=self.user, status=Order.OrderStatus.COMPLETED)
+        # Create order item manually to avoid factory creating extra cart items
+        order_item = OrderItemFactory(
+            order=order,
+            created_by=self.user,
+            cart_item=None
+        )
+        # Set product and quantity after creation to avoid factory hooks
+        order_item.product = self.product1
+        order_item.quantity = 1
+        order_item.save()
+        # 1 purchase (1 unit)
+
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1:product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN conversion rates should be calculated correctly
+        funnel = response.data['conversion_funnel']
+        self.assertEqual(funnel['total_views'], 4)
+        self.assertEqual(tunnel['total_cart_additions'], 2)
+        self.assertEqual(funnel['total_purchases'], 1)
+
+        # view_to_cart_rate = 2/4 * 100 = 50%
+        self.assertEqual(funnel['view_to_cart_rate'], 50.0)
+        # cart_to_purchase_rate = 1/2 * 100 = 50%
+        self.assertEqual(funnel['cart_to_purchase_rate'], 50.0)
+        # overall_conversion_rate = 1/4 * 100 = 25%
+        self.assertEqual(funnel['overall_conversion_rate'], 25.0)
+
+    def test_category_performance_counts_distinct_orders(self):
+        """
+        Test that category performance counts distinct orders, not order items.
+        If a single order has multiple items from the same category, it should count as 1 order.
+        """
+        # GIVEN a category with products
+        category = ProductCategoryFactory(name="Electronics")
+        product1 = SimpleProductFactory(name="Laptop", price=Decimal('1000.00'), category=category)
+        product2 = SimpleProductFactory(name="Mouse", price=Decimal('50.00'), category=category)
+
+        # AND a completed order with 2 items from the same category
+        order = OrderFactory(created_by=self.user, status=Order.OrderStatus.COMPLETED)
+
+        # Create first order item
+        order_item1 = OrderItemFactory(order=order, created_by=self.user, cart_item=None)
+        order_item1.product = product1
+        order_item1.quantity = 1
+        order_item1.save()
+
+        # Create second order item from the same order but different product in same category
+        order_item2 = OrderItemFactory(order=order, created_by=self.user, cart_item=None)
+        order_item2.product = product2
+        order_item2.quantity = 2
+        order_item2.save()
+
+        # WHEN we call the analytics_overview endpoint
+        url = reverse("v1:product-statistics-analytics-overview")
+        response = self.member_client.get(url)
+
+        # THEN the category should show 1 order (not 2), even though there are 2 order items
+        category_performance = response.data['category_performance']
+        electronics_category = next((c for c in category_performance if c['category_name'] == 'Electronics'), None)
+
+        self.assertIsNotNone(electronics_category)
+        self.assertEqual(electronics_category['orders'], 1)  # Should be 1, not 2
+        self.assertEqual(electronics_category['units_sold'], 3)  # 1 laptop + 2 mice
+        self.assertEqual(electronics_category['revenue'], 1100.0)  # 1000 + (50 * 2)
