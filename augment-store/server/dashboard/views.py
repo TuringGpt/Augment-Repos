@@ -193,16 +193,22 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     def analytics_overview(self, request):
         """
         Get comprehensive analytics overview for the dashboard.
+
         Query params:
         - days: Number of days to look back (default: 30, max: 365)
 
-        Returns:
-        - Overview metrics (total revenue, orders, customers, products)
-        - Conversion funnel (views -> cart -> purchases)
-        - Revenue analytics
-        - Top performing products
-        - Category performance
-        - Recent trends
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - overview: Overview metrics (total_revenue, total_orders, completed_orders,
+                    average_order_value, total_products, total_categories, new_customers)
+        - conversion_funnel: Conversion metrics (total_views, total_cart_additions,
+                             total_purchases, view_to_cart_rate, cart_to_purchase_rate,
+                             overall_conversion_rate)
+        - cart_abandonment: Abandonment metrics (total_abandonments, abandonment_rate)
+        - top_products_by_revenue: List of top 5 products by revenue (product_id,
+                                    product_name, revenue, units_sold, price)
+        - category_performance: List of top 5 categories by revenue (category_name,
+                                revenue, units_sold, orders)
         """
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
@@ -234,13 +240,16 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # ===== CONVERSION FUNNEL =====
         total_views = ProductView.objects.filter(created_at__gte=cutoff_date).count()
         total_cart_adds = CartItem.objects.filter(created_at__gte=cutoff_date).count()
-        total_purchases = ProductStatistics.objects.aggregate(
-            total=Sum('purchase_count')
-        )['total'] or 0
+        # Count actual purchases (order items) in the time period from completed orders
+        total_purchases = OrderItem.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            product__isnull=False
+        ).aggregate(total=Sum('quantity'))['total'] or 0
 
         # Conversion rates
         view_to_cart_rate = (total_cart_adds / total_views * 100) if total_views > 0 else 0
-        cart_to_purchase_rate = (total_purchases / total_cart_adds * 1000) if total_cart_adds > 0 else 0
+        cart_to_purchase_rate = (total_purchases / total_cart_adds * 100) if total_cart_adds > 0 else 0
         overall_conversion_rate = (total_purchases / total_views * 100) if total_views > 0 else 0
 
         # ===== CART ABANDONMENT =====
