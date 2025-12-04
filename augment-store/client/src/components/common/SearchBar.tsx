@@ -16,12 +16,18 @@ import {
   ClickAwayListener,
   IconButton,
 } from '@mui/material'
-import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material'
+import {
+  Search as SearchIcon,
+  Close as CloseIcon,
+  History as HistoryIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { debounce } from 'lodash'
 import { productService } from '@services/api/products/productService'
 import type { Product } from '@features/products/types'
 import { Colors } from '@config/colors'
+import { useSearchHistory } from '@hooks/useSearchHistory'
 
 interface SearchBarProps {
   placeholder?: string
@@ -47,10 +53,12 @@ const SearchBar = ({
   onResultClick,
 }: SearchBarProps) => {
   const navigate = useNavigate()
+  const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory()
 
   // Generate unique IDs for this instance to avoid collisions with multiple SearchBars
   const descriptionId = useId()
   const resultsListId = useId()
+  const historyListId = useId()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
@@ -58,6 +66,7 @@ const SearchBar = ({
   const [isOpen, setIsOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showClearButton, setShowClearButton] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const latestQueryRef = useRef<string>('')
   const isMountedRef = useRef<boolean>(true)
@@ -145,7 +154,49 @@ const SearchBar = ({
       setShowClearButton(shouldShow)
     }
 
-    debouncedSearch(query)
+    // Show history if query is empty, otherwise search
+    if (query.trim() === '') {
+      setShowHistory(history.length > 0)
+      setSearchResults([])
+      setIsOpen(history.length > 0)
+    } else {
+      setShowHistory(false)
+      debouncedSearch(query)
+    }
+  }
+
+  // Handle input focus
+  const handleFocus = () => {
+    if (searchQuery.trim() === '' && history.length > 0) {
+      setShowHistory(true)
+      setIsOpen(true)
+    }
+  }
+
+  // Handle history item click
+  const handleHistoryClick = (term: string) => {
+    setSearchQuery(term)
+    setShowHistory(false)
+    userDismissedRef.current = false
+    debouncedSearch(term)
+  }
+
+  // Handle remove history item
+  const handleRemoveHistory = (term: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    removeFromHistory(term)
+    // If no more history, close the dropdown
+    if (history.length <= 1) {
+      setShowHistory(false)
+      setIsOpen(false)
+    }
+  }
+
+  // Handle clear all history
+  const handleClearHistory = () => {
+    clearHistory()
+    setShowHistory(false)
+    setIsOpen(false)
   }
 
   // Handle result click
@@ -155,6 +206,11 @@ const SearchBar = ({
     // Reset latest query to prevent in-flight requests from updating state
     latestQueryRef.current = ''
 
+    // Save search query to history
+    if (searchQuery.trim()) {
+      addToHistory(searchQuery.trim())
+    }
+
     if (onResultClick) {
       onResultClick(product)
     } else {
@@ -163,6 +219,7 @@ const SearchBar = ({
     setSearchQuery('')
     setSearchResults([])
     setIsOpen(false)
+    setShowHistory(false)
   }
 
   // Handle clear search - useCallback to prevent re-creating on every render
@@ -173,6 +230,7 @@ const SearchBar = ({
     setShowClearButton(false)
     setSearchResults([])
     setIsOpen(false)
+    setShowHistory(false)
     setError(null)
     latestQueryRef.current = ''
     userDismissedRef.current = false
@@ -182,6 +240,7 @@ const SearchBar = ({
   // Handle click away
   const handleClickAway = () => {
     setIsOpen(false)
+    setShowHistory(false)
     // Mark that user explicitly dismissed the dropdown
     userDismissedRef.current = true
   }
@@ -261,6 +320,7 @@ const SearchBar = ({
           placeholder={placeholder}
           value={searchQuery}
           onChange={handleSearchChange}
+          onFocus={handleFocus}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -273,7 +333,13 @@ const SearchBar = ({
             'aria-label': 'Search products',
             'aria-describedby': descriptionId,
             'aria-autocomplete': 'list',
-            'aria-controls': isOpen && searchResults.length > 0 ? resultsListId : undefined,
+            'aria-controls': isOpen
+              ? showHistory
+                ? historyListId
+                : searchResults.length > 0
+                  ? resultsListId
+                  : undefined
+              : undefined,
             'aria-expanded': isOpen,
           }}
           sx={{
@@ -310,7 +376,68 @@ const SearchBar = ({
                 borderRadius: 2,
               }}
             >
-              {error ? (
+              {showHistory ? (
+                // Show search history
+                <Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      px: 2,
+                      py: 1,
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                      Recent Searches
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={handleClearHistory}
+                      aria-label="Clear history"
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <List disablePadding id={historyListId} role="listbox">
+                    {history.map((term) => (
+                      <ListItem key={term} disablePadding role="option">
+                        <ListItemButton
+                          onClick={() => handleHistoryClick(term)}
+                          sx={{
+                            py: 1,
+                            px: 2,
+                            '&:hover': {
+                              bgcolor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <ListItemAvatar sx={{ minWidth: 'auto', mr: 2 }}>
+                            <HistoryIcon sx={{ color: 'text.secondary' }} />
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Typography variant="body2" sx={{ color: 'text.primary' }}>
+                                {term}
+                              </Typography>
+                            }
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleRemoveHistory(term, e)}
+                            aria-label={`Remove ${term} from history`}
+                            sx={{ ml: 1 }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              ) : error ? (
                 <Box sx={{ p: 2, textAlign: 'center' }}>
                   <Typography variant="body2" color="error">
                     {error}
