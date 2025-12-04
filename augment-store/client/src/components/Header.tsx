@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   AppBar,
   Toolbar,
@@ -8,8 +9,14 @@ import {
   Box,
   Container,
   Tooltip,
+  Menu as MuiMenu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Avatar,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt } from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt, Email } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
@@ -26,16 +33,32 @@ const Header = () => {
   const { isAuthenticated, user } = useAuthStore()
   const { getItemCount } = useCartStore()
   const { toggleSidebar, toggleCartDrawer } = useUIStore()
+  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
+  const profileMenuOpen = Boolean(profileAnchorEl)
 
   const cartItemCount = getItemCount()
 
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileAnchorEl(event.currentTarget)
+  }
+
+  const handleProfileMenuClose = () => {
+    setProfileAnchorEl(null)
+  }
+
   const handleLogout = async () => {
+    handleProfileMenuClose()
     await authService.logout()
     navigate('/login')
   }
 
   const handleCartClick = () => {
     toggleCartDrawer()
+  }
+
+  const handleProfileNavigation = (path: string) => {
+    handleProfileMenuClose()
+    navigate(path)
   }
 
   return (
@@ -106,63 +129,102 @@ const Header = () => {
 
             {isAuthenticated && (
               <>
-                {/* Wishlist - Hidden on mobile */}
-                <Tooltip title={t('tooltip.wishlist')}>
-                  <IconButton
-                    color="inherit"
-                    onClick={() => navigate('/wishlist')}
-                    aria-label={t('tooltip.wishlist')}
-                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                  >
-                    <Badge badgeContent={0} color="error">
-                      <Favorite />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-
-                {/* Orders - Hidden on mobile */}
-                <Tooltip title={t('tooltip.orders')}>
-                  <IconButton
-                    color="inherit"
-                    onClick={() => navigate('/orders')}
-                    aria-label={t('tooltip.orders')}
-                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                  >
-                    <Receipt />
-                  </IconButton>
-                </Tooltip>
-
-                {/* Profile Icon - Hidden on mobile */}
+                {/* Profile Dropdown - Hidden on mobile */}
                 <Tooltip title={t('tooltip.profile')}>
                   <IconButton
                     color="inherit"
-                    onClick={() => navigate('/profile')}
+                    onClick={handleProfileMenuOpen}
                     aria-label={t('tooltip.profile')}
+                    aria-controls={profileMenuOpen ? 'profile-menu' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={profileMenuOpen ? 'true' : undefined}
                     sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                   >
-                    <Person />
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: 'secondary.main',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {user?.firstName?.charAt(0).toUpperCase() || 'U'}
+                    </Avatar>
                   </IconButton>
                 </Tooltip>
 
-                {/* User Name - Hidden on mobile */}
-                <Typography
-                  variant="body2"
-                  sx={{ mr: { xs: 0, sm: 1 }, display: { xs: 'none', md: 'block' } }}
+                {/* Profile Dropdown Menu */}
+                <MuiMenu
+                  id="profile-menu"
+                  anchorEl={profileAnchorEl}
+                  open={profileMenuOpen}
+                  onClose={handleProfileMenuClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'profile-button',
+                  }}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  PaperProps={{
+                    sx: {
+                      minWidth: 200,
+                    },
+                  }}
                 >
-                  {user?.firstName}
-                </Typography>
+                  {/* User Info Header */}
+                  <Box sx={{ px: 2, py: 1.5 }}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {user?.firstName} {user?.lastName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {user?.email}
+                    </Typography>
+                  </Box>
+                  <Divider />
 
-                {/* Logout - Hidden on mobile */}
-                <Tooltip title={t('tooltip.logout')}>
-                  <IconButton
-                    color="inherit"
-                    onClick={handleLogout}
-                    aria-label={t('tooltip.logout')}
-                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                  >
-                    <Logout />
-                  </IconButton>
-                </Tooltip>
+                  {/* Profile */}
+                  <MenuItem onClick={() => handleProfileNavigation('/profile')}>
+                    <ListItemIcon>
+                      <Person fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t('nav.profile')}</ListItemText>
+                  </MenuItem>
+
+                  {/* Orders */}
+                  <MenuItem onClick={() => handleProfileNavigation('/orders')}>
+                    <ListItemIcon>
+                      <Receipt fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t('nav.orders')}</ListItemText>
+                  </MenuItem>
+
+                  {/* Wishlist */}
+                  <MenuItem onClick={() => handleProfileNavigation('/wishlist')}>
+                    <ListItemIcon>
+                      <Badge badgeContent={0} color="error">
+                        <Favorite fontSize="small" />
+                      </Badge>
+                    </ListItemIcon>
+                    <ListItemText>{t('nav.wishlist')}</ListItemText>
+                  </MenuItem>
+
+                  {/* Newsletter */}
+                  <MenuItem onClick={() => handleProfileNavigation('/newsletters')}>
+                    <ListItemIcon>
+                      <Email fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t('footer.newsletter')}</ListItemText>
+                  </MenuItem>
+
+                  <Divider />
+
+                  {/* Logout */}
+                  <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                      <Logout fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t('nav.logout')}</ListItemText>
+                  </MenuItem>
+                </MuiMenu>
               </>
             )}
 
