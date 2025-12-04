@@ -302,13 +302,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             if category_name in category_stats:
                 category_stats[category_name]['revenue'] += revenue
                 category_stats[category_name]['units_sold'] += item.quantity
-                category_stats[category_name]['orders'] += 1
+                category_stats[category_name]['order_ids'].add(item.order_id)
             else:
                 category_stats[category_name] = {
                     'category_name': category_name,
                     'revenue': revenue,
                     'units_sold': item.quantity,
-                    'orders': 1
+                    'order_ids': {item.order_id}  # Track unique order IDs
                 }
 
         # Sort by revenue
@@ -323,7 +323,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'category_name': c['category_name'],
                 'revenue': float(c['revenue']),
                 'units_sold': c['units_sold'],
-                'orders': c['orders']
+                'orders': len(c['order_ids'])  # Count distinct orders
             }
             for c in sorted_categories
         ]
