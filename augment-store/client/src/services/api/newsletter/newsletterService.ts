@@ -16,6 +16,20 @@ export interface SubscribeNewsletterResponse {
 }
 
 /**
+ * Newsletter unsubscribe request
+ */
+export interface UnsubscribeNewsletterRequest {
+  email: string
+}
+
+/**
+ * Newsletter unsubscribe response
+ */
+export interface UnsubscribeNewsletterResponse {
+  email: string
+}
+
+/**
  * Newsletter item from API
  */
 export interface NewsletterAPI {
@@ -81,6 +95,16 @@ export const newsletterService = {
       console.error('Failed to fetch newsletters:', error)
       throw error
     }
+  },
+
+  /**
+   * Unsubscribe from newsletter
+   * Backend expects PATCH/PUT to /newsletter/unsubscribe/<id> with { email: string }
+   * Backend returns { email: string }
+   * Note: This sets is_active=False on the newsletter subscription
+   */
+  unsubscribe: async (id: string, data: UnsubscribeNewsletterRequest): Promise<UnsubscribeNewsletterResponse> => {
+    return apiClient.patch<UnsubscribeNewsletterResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE(id), data)
   },
 }
 
