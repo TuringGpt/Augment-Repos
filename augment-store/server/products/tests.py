@@ -7,7 +7,7 @@ from products.models import Product, ProductBrand, ProductCategory
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
 from decimal import Decimal
 from storage.factory import FileFactory
-from products.services import ProductBrandCacheService, ProductCategoryCacheService
+from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
 
@@ -1369,6 +1369,110 @@ class ProductTests(BaseAPITestCase):
         # THEN the products should be ordered by category name ascending
         self._create_products_and_test_ordering(products_data, "category__name", expected_order)
 
+    def test_list_products_cached(self):
+        # Given that I have clear all caches related to products
+        ProductCacheService().clear_namespace()
+
+        # GIVEN some products exist in the database
+        ProductFactory(
+            name="Test Product 1",
+            description="Test Description 1",
+            price=99.99,
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Test Product 2",
+            description="Test Description 2",
+            price=149.99,
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_list")
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.client.get(url)
+
+        # THEN the first request must hit the database
+        self.assertGreater(len(ctx1), 0)
+
+        # WHEN we make the request again
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.client.get(url)
+
+        # THEN the second request should not hit the database
+        self.assertEqual(len(ctx2), 0)
+
+        # AND the cached response should be identical
+        self.assertEqual(response_1.data, response_2.data)
+
+    def test_cache_invalidated_on_create(self):
+        # Given that I have clear all caches related to products
+        ProductCacheService().clear_namespace()
+
+        # GIVEN some products exist in the database
+        ProductFactory(
+            name="Test Product 1",
+            description="Test Description 1",
+            price=99.99,
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="Test Product 2",
+            description="Test Description 2",
+            price=149.99,
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            created_by=self.merchant_user
+        )
+
+        user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.client.force_authenticate(user=user)
+        url = reverse("v1:product_list")
+
+
+        # WHEN we make the first request
+        with CaptureQueriesContext(connection) as ctx1:
+            self.client.get(url)
+            # THEN the first request must hit the database
+            self.assertGreater(len(ctx1), 0)
+
+        # WHEN we create a new product
+        create_url = reverse("v1:create_product")
+        payload = {
+            "name": "New Product",
+            "description": "New Product Description",
+            "price": "199.99",
+            "brand": str(self.brand.id),
+            "category": str(self.category.id),
+            "quantity": 20,
+        }
+        self.merchant_client.post(create_url, payload)
+
+        # WHEN we make the request again
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.client.get(url)
+            # THEN the second request should hit the database
+            self.assertGreater(len(ctx2), 0)
+
+            # AND the response should contain the new product (items are ordered by name)
+            self.assertEqual(response_2.data["results"][0]["name"], "New Product")
+
+        
 
 class RecommendProductListViewTests(BaseAPITestCase):
     def setUp(self):
