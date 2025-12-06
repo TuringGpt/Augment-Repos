@@ -73,7 +73,7 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom>
               {t('common.appName')}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={brandColors.footer.textSecondary}>
               {t('footer.tagline')}
             </Typography>
           </Grid>
@@ -112,7 +112,7 @@ const Footer = () => {
           <Typography variant="h6" gutterBottom align="center">
             {t('footer.newsletter')}
           </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+          <Typography variant="body2" color={brandColors.footer.textSecondary} align="center" sx={{ mb: 2 }}>
             {t('footer.subscribeNewsletter')}
           </Typography>
 
@@ -181,7 +181,7 @@ const Footer = () => {
           </Box>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 3 }}>
+        <Typography variant="body2" color={brandColors.footer.textSecondary} align="center" sx={{ mt: 3 }}>
           © {new Date().getFullYear()} {t('common.appName')}. {t('footer.allRightsReserved')}.
         </Typography>
       </Container>
