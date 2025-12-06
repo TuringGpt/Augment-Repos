@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { Box, Container, Typography, Link, Grid, TextField, Button, Alert, InputAdornment } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Email as EmailIcon } from '@mui/icons-material'
-import { Colors } from '@config/colors'
+import { getBrandColors } from '@config/theme'
+import { useThemeStore } from '@store/themeStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { isValidEmail } from '@utils/validators'
 import { newsletterService } from '@services/api/newsletter/newsletterService'
 
 const Footer = () => {
   const { t } = useTranslation()
+  const mode = useThemeStore((state) => state.mode)
+  const brandColors = getBrandColors(mode)
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,7 +63,8 @@ const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: Colors.neutral.gray200,
+        backgroundColor: brandColors.footer.background,
+        color: brandColors.footer.text,
       }}
     >
       <Container maxWidth="xl">
