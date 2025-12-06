@@ -13,6 +13,7 @@ import {
   MenuItem,
   FormControlLabel,
   Checkbox,
+  useTheme,
 } from '@mui/material'
 import {
   ExpandMore as ExpandMoreIcon,
@@ -146,11 +147,20 @@ const ACCORDION_SUMMARY_STYLES = {
   py: 1.5,
 }
 
-const ACCORDION_DETAILS_STYLES = { px: 3, py: 3, bgcolor: 'grey.50' }
-
 const CheckoutPage = () => {
   const { isAuthenticated } = useAuthStore()
   const { t } = useTranslation()
+  const theme = useTheme()
+
+  // Theme-aware accordion details styles
+  const ACCORDION_DETAILS_STYLES = useMemo(
+    () => ({
+      px: 3,
+      py: 3,
+      bgcolor: theme.palette.mode === 'dark' ? 'background.default' : 'grey.50',
+    }),
+    [theme.palette.mode]
+  )
 
   // Create schemas with translations
   const contactInfoSchema = useMemo(() => createContactInfoSchema(t), [t])
