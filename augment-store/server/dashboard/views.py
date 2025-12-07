@@ -365,20 +365,20 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         All metrics are calculated based on data from the last N days (specified by the 'days' parameter).
 
         Query params:
-        - limit: Number of products to return per category (default: 10, max: 100)
+        - limit: Maximum number of products to return for each metric (default: 10, max: 100)
         - days: Number of days to look back (default: 30, max: 365)
 
         Returns a dictionary with the following keys:
         - period_days: Number of days included in the analysis
-        - low_performing_products: Products with lowest purchase count within period (product_id,
+        - low_performing_products: Top products with lowest purchase count within period (product_id,
                                    product_name, view_count, cart_add_count, purchase_count,
                                    view_to_purchase_ratio, cart_to_purchase_ratio)
-        - high_abandonment_products: Products with highest cart abandonment rate within period (product_id,
+        - high_abandonment_products: Top products with highest cart abandonment rate within period (product_id,
                                      product_name, cart_add_count, abandonment_count,
                                      abandonment_rate)
-        - low_conversion_products: Products with lowest conversion rate within period (product_id,
+        - low_conversion_products: Top products with lowest conversion rate within period (product_id,
                                    product_name, view_count, purchase_count, conversion_rate)
-        - high_engagement_products: Products with high view-to-purchase ratio within period (product_id,
+        - high_engagement_products: Top products with highest view-to-purchase ratio within period (product_id,
                                     product_name, view_count, purchase_count, engagement_ratio)
         """
         limit = parse_int_param(request.query_params.get('limit'), default=10, max_value=100)
@@ -414,13 +414,36 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         for product_id in set(list(purchases_by_product.keys()) + list(abandonments_by_product.keys())):
             cart_adds_by_product[product_id] = purchases_by_product.get(product_id, 0) + abandonments_by_product.get(product_id, 0)
 
-        # Build low performing products list (sorted by lowest purchase count)
+        # Build low performing products list including products with zero purchases
+        # Include all products that have views or cart additions in the period
+        products_with_activity = set(list(views_by_product.keys()) + list(cart_adds_by_product.keys()))
+
+        low_performing_list = []
+        for product_id in products_with_activity:
+            purchase_count = purchases_by_product.get(product_id, 0)
+            view_count = views_by_product.get(product_id, 0)
+            cart_add_count = cart_adds_by_product.get(product_id, 0)
+
+            # Only include products with some activity (views or cart additions)
+            if view_count > 0 or cart_add_count > 0:
+                low_performing_list.append({
+                    'product_id': product_id,
+                    'view_count': view_count,
+                    'cart_add_count': cart_add_count,
+                    'purchase_count': purchase_count,
+                })
+
+        # Sort by purchase count (ascending) to get lowest performing first
+        low_performing_list.sort(key=lambda x: x['purchase_count'])
+
+        # Build response data for top limit items
         low_performing_data = []
-        for product_id, purchase_count in sorted(purchases_by_product.items(), key=lambda x: x[1])[:limit]:
+        for item in low_performing_list[:limit]:
             try:
-                product = Product.objects.get(id=product_id)
-                view_count = views_by_product.get(product_id, 0)
-                cart_add_count = cart_adds_by_product.get(product_id, 0)
+                product = Product.objects.get(id=item['product_id'])
+                view_count = item['view_count']
+                cart_add_count = item['cart_add_count']
+                purchase_count = item['purchase_count']
 
                 view_to_purchase = (view_count / purchase_count) if purchase_count > 0 else 0
                 cart_to_purchase = (cart_add_count / purchase_count) if purchase_count > 0 else 0
