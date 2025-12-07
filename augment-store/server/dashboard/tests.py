@@ -423,3 +423,246 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(results[0]['product_name'], 'Product 2')
         # Product 1 should be second (2 abandonments)
         self.assertEqual(results[1]['product_name'], 'Product 1')
+
+
+    def test_product_performance_endpoint(self):
+        """Test product_performance endpoint returns all performance metrics."""
+        # GIVEN products with different statistics
+        # Create some abandonments for testing
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND response should contain all performance metrics
+        self.assertIn('period_days', response.data)
+        self.assertIn('low_performing_products', response.data)
+        self.assertIn('high_abandonment_products', response.data)
+        self.assertIn('low_conversion_products', response.data)
+        self.assertIn('high_engagement_products', response.data)
+
+    def test_product_performance_low_performing_products(self):
+        """Test that low_performing_products returns products with lowest purchase count within period."""
+        # GIVEN products with different purchase counts within the period
+        # Product 1: 100 views, 0 purchases
+        # Product 2: 80 views, 0 purchases
+        # Product 3: 60 views, 0 purchases
+        # All have 0 purchases in period, so all should be included with purchase_count=0
+
+        # Create views for all products to ensure they appear in results
+        for _ in range(100):
+            ProductView.objects.create(product=self.product1, user=self.member_user)
+        for _ in range(80):
+            ProductView.objects.create(product=self.product2, user=self.member_user)
+        for _ in range(60):
+            ProductView.objects.create(product=self.product3, user=self.member_user)
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND low_performing_products should include all products with 0 purchases
+        low_performing = response.data.get('low_performing_products', [])
+        self.assertEqual(len(low_performing), 3)
+        # All products should have purchase_count=0 (no OrderItem records created)
+        product_names = {p['product_name'] for p in low_performing}
+        self.assertEqual(product_names, {'Product 1', 'Product 2', 'Product 3'})
+        for product in low_performing:
+            self.assertEqual(product['purchase_count'], 0)
+
+    def test_product_performance_low_performing_includes_zero_purchases(self):
+        """Test that low_performing_products includes products with zero purchases but with views/cart adds."""
+        # GIVEN a product with views and cart additions but zero purchases
+        ProductView.objects.create(product=self.product1, user=self.member_user)
+        ProductView.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+
+        # AND other products with no period activity (no views, no cart adds, no purchases)
+        # Product 2 and 3 have lifetime stats from setUp but no period activity
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND low_performing_products should include only Product 1 (only product with period activity)
+        low_performing = response.data.get('low_performing_products', [])
+        self.assertEqual(len(low_performing), 1)
+        self.assertEqual(low_performing[0]['product_name'], 'Product 1')
+        self.assertEqual(low_performing[0]['purchase_count'], 0)
+        self.assertEqual(low_performing[0]['view_count'], 2)
+        self.assertEqual(low_performing[0]['cart_add_count'], 1)
+
+    def test_product_performance_high_abandonment_products(self):
+        """Test that high_abandonment_products returns products with highest abandonment count within period."""
+        # GIVEN products with different abandonment counts within the period
+        # Note: abandonment_rate = abandonment_count / (purchases_in_period + abandonment_count) * 100
+        # Since we don't create OrderItem records, purchases_in_period = 0
+        # Product 1: 2 abandonments in period, 0 purchases = 2/(0+2) = 100% abandonment rate
+        # Product 2: 3 abandonments in period, 0 purchases = 3/(0+3) = 100% abandonment rate
+        # Product 3: 1 old abandonment (outside period) = should not appear in results
+
+        # Create abandonments for product1 (2 abandonments in period)
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+
+        # Create abandonments for product2 (3 abandonments in period)
+        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+
+        # Create an old abandonment for product3 (outside the default 30-day window)
+        old_abandonment = CartAbandonment.objects.create(product=self.product3, user=self.member_user)
+        old_abandonment.created_at = timezone.now() - timedelta(days=31)
+        old_abandonment.save()
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND high_abandonment_products should only include products with abandonments in the period
+        high_abandonment = response.data.get('high_abandonment_products', [])
+        self.assertEqual(len(high_abandonment), 2)
+
+        # Find Product 2 in results (highest abandonment count of 3)
+        product_2 = next((p for p in high_abandonment if p['product_name'] == 'Product 2'), None)
+        self.assertIsNotNone(product_2)
+        self.assertEqual(product_2['abandonment_count'], 3)
+        # Verify abandonment_rate is calculated correctly: 3/(0+3) = 100%
+        self.assertEqual(product_2['abandonment_rate'], 100.0)
+
+        # Find Product 1 in results (lower abandonment count of 2)
+        product_1 = next((p for p in high_abandonment if p['product_name'] == 'Product 1'), None)
+        self.assertIsNotNone(product_1)
+        self.assertEqual(product_1['abandonment_count'], 2)
+        self.assertEqual(product_1['abandonment_rate'], 100.0)
+
+        # Verify Product 3 is NOT in results (its abandonment is outside the period)
+        product_3 = next((p for p in high_abandonment if p['product_name'] == 'Product 3'), None)
+        self.assertIsNone(product_3)
+
+    def test_product_performance_low_conversion_products(self):
+        """Test that low_conversion_products returns products with lowest conversion rate within period."""
+        # GIVEN products with different conversion rates within the period
+        # Product 1: 100 views, 0 purchases = 0% conversion
+        # Product 2: 80 views, 0 purchases = 0% conversion
+        # Product 3: 60 views, 0 purchases = 0% conversion
+        # Note: low_conversion_products only includes products with views in the period
+
+        # Create views for all products (no OrderItem records = 0 purchases in period)
+        for _ in range(100):
+            ProductView.objects.create(product=self.product1, user=self.member_user)
+        for _ in range(80):
+            ProductView.objects.create(product=self.product2, user=self.member_user)
+        for _ in range(60):
+            ProductView.objects.create(product=self.product3, user=self.member_user)
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND low_conversion_products should be ordered by conversion rate ascending
+        low_conversion = response.data.get('low_conversion_products', [])
+        # All products have 0% conversion rate (0 purchases / views * 100)
+        self.assertEqual(len(low_conversion), 3)
+        # All should have 0% conversion rate
+        for product in low_conversion:
+            self.assertEqual(product['conversion_rate'], 0.0)
+
+    def test_product_performance_high_engagement_products(self):
+        """Test that high_engagement_products returns products with highest view-to-purchase ratio within period."""
+        # GIVEN products with different view-to-purchase ratios within the period
+        # Note: high_engagement only includes products with purchases in the period
+        # Since we don't create OrderItem records, no products will have purchases
+
+        # Create views for all products (but no OrderItem records = 0 purchases in period)
+        for _ in range(100):
+            ProductView.objects.create(product=self.product1, user=self.member_user)
+        for _ in range(80):
+            ProductView.objects.create(product=self.product2, user=self.member_user)
+        for _ in range(60):
+            ProductView.objects.create(product=self.product3, user=self.member_user)
+
+        # WHEN we call the product_performance endpoint
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND high_engagement_products should be empty because the endpoint only includes
+        # products that have purchases in the period
+        high_engagement = response.data.get('high_engagement_products', [])
+        self.assertEqual(len(high_engagement), 0)
+
+    def test_product_performance_respects_limit_parameter(self):
+        """Test that product_performance respects the limit parameter for all categories."""
+        # GIVEN multiple products with period activity
+        for i in range(15):
+            product = SimpleProductFactory(name=f"Product {i+4}")
+            # Create period activity for each product so they appear in results
+            ProductView.objects.create(product=product, user=self.member_user)
+            CartAbandonment.objects.create(product=product, user=self.member_user)
+
+        # WHEN we call the product_performance endpoint with limit=5
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url, {'limit': 5})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND each category should have at most 5 products (respecting the limit parameter)
+        low_performing = response.data.get('low_performing_products', [])
+        low_conversion = response.data.get('low_conversion_products', [])
+        high_abandonment = response.data.get('high_abandonment_products', [])
+        high_engagement = response.data.get('high_engagement_products', [])
+
+        self.assertLessEqual(len(low_performing), 5)
+        self.assertLessEqual(len(low_conversion), 5)
+        self.assertLessEqual(len(high_abandonment), 5)
+        self.assertLessEqual(len(high_engagement), 5)
+
+    def test_product_performance_respects_days_parameter(self):
+        """Test that product_performance respects the days parameter for abandonment filtering."""
+        # GIVEN abandonments at different times
+        # Create recent abandonment
+        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+
+        # Create old abandonment (40 days ago)
+        old_abandonment = CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        old_abandonment.created_at = timezone.now() - timedelta(days=40)
+        old_abandonment.save()
+
+        # WHEN we call the product_performance endpoint with days=5
+        url = reverse("v1:product-statistics-product-performance")
+        response = self.member_client.get(url, {'days': 5})
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND high_abandonment_products should only include recent abandonments
+        high_abandonment = response.data.get('high_abandonment_products', [])
+        # Only product1 should be in the results (product2's abandonment is outside the window)
+        product_names = [p['product_name'] for p in high_abandonment]
+        self.assertIn('Product 1', product_names)
+        # Product 2 might still appear if it has other recent abandonments, but the count should be 1
+        for product in high_abandonment:
+            if product['product_name'] == 'Product 2':
+                self.assertEqual(product['abandonment_count'], 1)
