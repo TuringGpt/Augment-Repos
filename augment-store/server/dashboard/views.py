@@ -360,7 +360,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def product_performance(self, request):
         """
-        Get detailed product performance metrics for all products.
+        Get detailed product performance metrics for all products within a specified time period.
+
+        All metrics are calculated based on data from the last N days (specified by the 'days' parameter).
 
         Query params:
         - limit: Number of products to return per category (default: 10, max: 100)
@@ -368,41 +370,72 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         Returns a dictionary with the following keys:
         - period_days: Number of days included in the analysis
-        - low_performing_products: Products with lowest purchase count (product_id,
+        - low_performing_products: Products with lowest purchase count within period (product_id,
                                    product_name, view_count, cart_add_count, purchase_count,
                                    view_to_purchase_ratio, cart_to_purchase_ratio)
-        - high_abandonment_products: Products with highest cart abandonment rate (product_id,
+        - high_abandonment_products: Products with highest cart abandonment rate within period (product_id,
                                      product_name, cart_add_count, abandonment_count,
                                      abandonment_rate)
-        - low_conversion_products: Products with lowest conversion rate (product_id,
+        - low_conversion_products: Products with lowest conversion rate within period (product_id,
                                    product_name, view_count, purchase_count, conversion_rate)
-        - high_engagement_products: Products with high view-to-purchase ratio (product_id,
+        - high_engagement_products: Products with high view-to-purchase ratio within period (product_id,
                                     product_name, view_count, purchase_count, engagement_ratio)
         """
         limit = parse_int_param(request.query_params.get('limit'), default=10, max_value=100)
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # ===== LOW PERFORMING PRODUCTS (lowest purchase count) =====
-        low_performing = ProductStatistics.objects.filter(
-            purchase_count__gt=0
-        ).order_by('purchase_count')[:limit]
+        # ===== LOW PERFORMING PRODUCTS (lowest purchase count within period) =====
+        # Get purchase data within the time window
+        low_performing_stats = {}
+        purchases_in_period = OrderItem.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(
+            purchase_count=Count('id')
+        )
 
+        for item in purchases_in_period:
+            low_performing_stats[item['product_id']] = item['purchase_count']
+
+        # Get view and cart data within the time window
+        views_in_period = ProductView.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(
+            view_count=Count('id')
+        )
+
+        cart_adds_in_period = ProductStatistics.objects.values('product_id').annotate(
+            cart_add_count=Sum('cart_add_count')
+        )
+
+        # Build low performing products list
         low_performing_data = []
-        for stat in low_performing:
-            view_to_purchase = (stat.view_count / stat.purchase_count) if stat.purchase_count > 0 else 0
-            cart_to_purchase = (stat.cart_add_count / stat.purchase_count) if stat.purchase_count > 0 else 0
-            low_performing_data.append({
-                'product_id': str(stat.product.id),
-                'product_name': stat.product.name,
-                'view_count': stat.view_count,
-                'cart_add_count': stat.cart_add_count,
-                'purchase_count': stat.purchase_count,
-                'view_to_purchase_ratio': round(view_to_purchase, 2),
-                'cart_to_purchase_ratio': round(cart_to_purchase, 2),
-            })
+        for product_id, purchase_count in sorted(low_performing_stats.items(), key=lambda x: x[1])[:limit]:
+            try:
+                product = Product.objects.get(id=product_id)
+                view_count = next((v['view_count'] for v in views_in_period if v['product_id'] == product_id), 0)
+                cart_add_count = next((c['cart_add_count'] for c in cart_adds_in_period if c['product_id'] == product_id), 0)
 
-        # ===== HIGH ABANDONMENT PRODUCTS =====
+                view_to_purchase = (view_count / purchase_count) if purchase_count > 0 else 0
+                cart_to_purchase = (cart_add_count / purchase_count) if purchase_count > 0 else 0
+
+                low_performing_data.append({
+                    'product_id': str(product.id),
+                    'product_name': product.name,
+                    'view_count': view_count,
+                    'cart_add_count': cart_add_count,
+                    'purchase_count': purchase_count,
+                    'view_to_purchase_ratio': round(view_to_purchase, 2),
+                    'cart_to_purchase_ratio': round(cart_to_purchase, 2),
+                })
+            except Product.DoesNotExist:
+                continue
+
+        # ===== HIGH ABANDONMENT PRODUCTS (within period) =====
+        # Get abandonments and cart additions within the time window
+        # Note: We calculate cart additions in period as: purchases + abandonments
+        # (since every cart addition either results in a purchase or abandonment)
+
         abandonment_stats = CartAbandonment.objects.filter(
             created_at__gte=cutoff_date
         ).values('product_id').annotate(
@@ -414,31 +447,50 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             product_id = item['product_id']
             abandonment_count = item['abandonment_count']
 
+            # Get purchases within the same period for this product
+            purchases_in_period_for_product = purchases_by_product.get(product_id, 0)
+
+            # Calculate period-specific cart additions: purchases + abandonments
+            # (every cart addition either results in a purchase or abandonment)
+            period_cart_adds = purchases_in_period_for_product + abandonment_count
+
             try:
-                stat = ProductStatistics.objects.get(product_id=product_id)
-                abandonment_rate = (abandonment_count / stat.cart_add_count * 100) if stat.cart_add_count > 0 else 0
+                product = Product.objects.get(id=product_id)
+                # Calculate abandonment rate based on period-specific cart additions
+                abandonment_rate = (abandonment_count / period_cart_adds * 100) if period_cart_adds > 0 else 0
                 high_abandonment_data.append({
-                    'product_id': str(stat.product.id),
-                    'product_name': stat.product.name,
-                    'cart_add_count': stat.cart_add_count,
+                    'product_id': str(product.id),
+                    'product_name': product.name,
+                    'cart_add_count': period_cart_adds,
                     'abandonment_count': abandonment_count,
                     'abandonment_rate': round(abandonment_rate, 2),
                 })
-            except ProductStatistics.DoesNotExist:
+            except Product.DoesNotExist:
                 continue
 
-        # ===== LOW CONVERSION PRODUCTS =====
-        # Get all products with views and calculate conversion rate
-        all_products_with_views = ProductStatistics.objects.filter(
-            view_count__gt=0
-        )
+        # ===== LOW CONVERSION PRODUCTS (within period) =====
+        # Get view and purchase data within the time window
+        views_by_product = {}
+        for item in ProductView.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(view_count=Count('id')):
+            views_by_product[item['product_id']] = item['view_count']
 
-        # Calculate conversion rates and sort by lowest conversion rate
+        purchases_by_product = {}
+        for item in OrderItem.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(purchase_count=Count('id')):
+            purchases_by_product[item['product_id']] = item['purchase_count']
+
+        # Calculate conversion rates for products with views
         products_with_conversion = []
-        for stat in all_products_with_views:
-            conversion_rate = (stat.purchase_count / stat.view_count * 100) if stat.view_count > 0 else 0
+        for product_id, view_count in views_by_product.items():
+            purchase_count = purchases_by_product.get(product_id, 0)
+            conversion_rate = (purchase_count / view_count * 100) if view_count > 0 else 0
             products_with_conversion.append({
-                'stat': stat,
+                'product_id': product_id,
+                'view_count': view_count,
+                'purchase_count': purchase_count,
                 'conversion_rate': conversion_rate,
             })
 
@@ -448,31 +500,31 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         low_conversion_data = []
         for item in low_conversion:
-            stat = item['stat']
-            conversion_rate = item['conversion_rate']
-            low_conversion_data.append({
-                'product_id': str(stat.product.id),
-                'product_name': stat.product.name,
-                'view_count': stat.view_count,
-                'purchase_count': stat.purchase_count,
-                'conversion_rate': round(conversion_rate, 2),
-            })
+            try:
+                product = Product.objects.get(id=item['product_id'])
+                low_conversion_data.append({
+                    'product_id': str(product.id),
+                    'product_name': product.name,
+                    'view_count': item['view_count'],
+                    'purchase_count': item['purchase_count'],
+                    'conversion_rate': round(item['conversion_rate'], 2),
+                })
+            except Product.DoesNotExist:
+                continue
 
-        # ===== HIGH ENGAGEMENT PRODUCTS (high view-to-purchase ratio) =====
-        # Get all products with both views and purchases
-        all_products_with_engagement = ProductStatistics.objects.filter(
-            view_count__gt=0,
-            purchase_count__gt=0
-        )
-
-        # Calculate engagement ratio and sort by highest ratio
+        # ===== HIGH ENGAGEMENT PRODUCTS (high view-to-purchase ratio within period) =====
+        # Reuse views and purchases from previous sections
         products_with_engagement = []
-        for stat in all_products_with_engagement:
-            engagement_ratio = (stat.view_count / stat.purchase_count) if stat.purchase_count > 0 else 0
-            products_with_engagement.append({
-                'stat': stat,
-                'engagement_ratio': engagement_ratio,
-            })
+        for product_id, view_count in views_by_product.items():
+            purchase_count = purchases_by_product.get(product_id, 0)
+            if purchase_count > 0:  # Only include products with purchases
+                engagement_ratio = (view_count / purchase_count) if purchase_count > 0 else 0
+                products_with_engagement.append({
+                    'product_id': product_id,
+                    'view_count': view_count,
+                    'purchase_count': purchase_count,
+                    'engagement_ratio': engagement_ratio,
+                })
 
         # Sort by engagement ratio (descending) and take top limit
         products_with_engagement.sort(key=lambda x: x['engagement_ratio'], reverse=True)
@@ -480,15 +532,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         high_engagement_data = []
         for item in high_engagement:
-            stat = item['stat']
-            engagement_ratio = item['engagement_ratio']
-            high_engagement_data.append({
-                'product_id': str(stat.product.id),
-                'product_name': stat.product.name,
-                'view_count': stat.view_count,
-                'purchase_count': stat.purchase_count,
-                'engagement_ratio': round(engagement_ratio, 2),
-            })
+            try:
+                product = Product.objects.get(id=item['product_id'])
+                high_engagement_data.append({
+                    'product_id': str(product.id),
+                    'product_name': product.name,
+                    'view_count': item['view_count'],
+                    'purchase_count': item['purchase_count'],
+                    'engagement_ratio': round(item['engagement_ratio'], 2),
+                })
+            except Product.DoesNotExist:
+                continue
 
         # ===== RESPONSE =====
         return Response({
