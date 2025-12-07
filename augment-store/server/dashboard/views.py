@@ -385,36 +385,42 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
+        # ===== COMPUTE PERIOD-SPECIFIC DATA UPFRONT =====
+        # Get all views within the time window
+        views_by_product = {}
+        for item in ProductView.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(view_count=Count('id')):
+            views_by_product[item['product_id']] = item['view_count']
+
+        # Get all purchases within the time window
+        purchases_by_product = {}
+        for item in OrderItem.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(purchase_count=Count('id')):
+            purchases_by_product[item['product_id']] = item['purchase_count']
+
+        # Get all abandonments within the time window
+        abandonments_by_product = {}
+        for item in CartAbandonment.objects.filter(
+            created_at__gte=cutoff_date
+        ).values('product_id').annotate(abandonment_count=Count('id')):
+            abandonments_by_product[item['product_id']] = item['abandonment_count']
+
         # ===== LOW PERFORMING PRODUCTS (lowest purchase count within period) =====
-        # Get purchase data within the time window
-        low_performing_stats = {}
-        purchases_in_period = OrderItem.objects.filter(
-            created_at__gte=cutoff_date
-        ).values('product_id').annotate(
-            purchase_count=Count('id')
-        )
+        # Get cart additions within the time window
+        # Note: We calculate cart additions in period as: purchases + abandonments
+        cart_adds_by_product = {}
+        for product_id in set(list(purchases_by_product.keys()) + list(abandonments_by_product.keys())):
+            cart_adds_by_product[product_id] = purchases_by_product.get(product_id, 0) + abandonments_by_product.get(product_id, 0)
 
-        for item in purchases_in_period:
-            low_performing_stats[item['product_id']] = item['purchase_count']
-
-        # Get view and cart data within the time window
-        views_in_period = ProductView.objects.filter(
-            created_at__gte=cutoff_date
-        ).values('product_id').annotate(
-            view_count=Count('id')
-        )
-
-        cart_adds_in_period = ProductStatistics.objects.values('product_id').annotate(
-            cart_add_count=Sum('cart_add_count')
-        )
-
-        # Build low performing products list
+        # Build low performing products list (sorted by lowest purchase count)
         low_performing_data = []
-        for product_id, purchase_count in sorted(low_performing_stats.items(), key=lambda x: x[1])[:limit]:
+        for product_id, purchase_count in sorted(purchases_by_product.items(), key=lambda x: x[1])[:limit]:
             try:
                 product = Product.objects.get(id=product_id)
-                view_count = next((v['view_count'] for v in views_in_period if v['product_id'] == product_id), 0)
-                cart_add_count = next((c['cart_add_count'] for c in cart_adds_in_period if c['product_id'] == product_id), 0)
+                view_count = views_by_product.get(product_id, 0)
+                cart_add_count = cart_adds_by_product.get(product_id, 0)
 
                 view_to_purchase = (view_count / purchase_count) if purchase_count > 0 else 0
                 cart_to_purchase = (cart_add_count / purchase_count) if purchase_count > 0 else 0
@@ -432,32 +438,20 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 continue
 
         # ===== HIGH ABANDONMENT PRODUCTS (within period) =====
-        # Get abandonments and cart additions within the time window
-        # Note: We calculate cart additions in period as: purchases + abandonments
-        # (since every cart addition either results in a purchase or abandonment)
-
-        abandonment_stats = CartAbandonment.objects.filter(
-            created_at__gte=cutoff_date
-        ).values('product_id').annotate(
-            abandonment_count=Count('id')
-        ).order_by('-abandonment_count')[:limit]
-
+        # Sort abandonments by count (descending) and take top limit
         high_abandonment_data = []
-        for item in abandonment_stats:
-            product_id = item['product_id']
-            abandonment_count = item['abandonment_count']
-
-            # Get purchases within the same period for this product
-            purchases_in_period_for_product = purchases_by_product.get(product_id, 0)
-
-            # Calculate period-specific cart additions: purchases + abandonments
-            # (every cart addition either results in a purchase or abandonment)
-            period_cart_adds = purchases_in_period_for_product + abandonment_count
-
+        for product_id, abandonment_count in sorted(abandonments_by_product.items(), key=lambda x: x[1], reverse=True)[:limit]:
             try:
                 product = Product.objects.get(id=product_id)
+
+                # Get period-specific cart additions: purchases + abandonments
+                # (every cart addition either results in a purchase or abandonment)
+                purchases_in_period = purchases_by_product.get(product_id, 0)
+                period_cart_adds = purchases_in_period + abandonment_count
+
                 # Calculate abandonment rate based on period-specific cart additions
                 abandonment_rate = (abandonment_count / period_cart_adds * 100) if period_cart_adds > 0 else 0
+
                 high_abandonment_data.append({
                     'product_id': str(product.id),
                     'product_name': product.name,
@@ -469,19 +463,6 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 continue
 
         # ===== LOW CONVERSION PRODUCTS (within period) =====
-        # Get view and purchase data within the time window
-        views_by_product = {}
-        for item in ProductView.objects.filter(
-            created_at__gte=cutoff_date
-        ).values('product_id').annotate(view_count=Count('id')):
-            views_by_product[item['product_id']] = item['view_count']
-
-        purchases_by_product = {}
-        for item in OrderItem.objects.filter(
-            created_at__gte=cutoff_date
-        ).values('product_id').annotate(purchase_count=Count('id')):
-            purchases_by_product[item['product_id']] = item['purchase_count']
-
         # Calculate conversion rates for products with views
         products_with_conversion = []
         for product_id, view_count in views_by_product.items():
