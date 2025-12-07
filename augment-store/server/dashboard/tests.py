@@ -453,7 +453,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Product 1: 30 purchases, Product 2: 20 purchases, Product 3: 10 purchases
 
         # WHEN we call the product_performance endpoint
-        url = reverse("v1:product-statistics-product-rformance")
+        url = reverse("v1:product-statistics-product-performance")
         response = self.member_client.get(url)
 
         # THEN we should get a 200 response
@@ -545,7 +545,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(low_conversion[0]['product_name'], 'Product 3')
         self.assertEqual(low_conversion[0]['conversion_rate'], 16.67)
 
-    def test_product_performance_high_engagement_products():
+    def test_product_performance_high_engagement_products(self):
         """Test that high_engagement_products returns products with highest view-to-purchase ratio."""
         # GIVEN products with different view-to-purchase ratios
         # Product 1: 100 views, 30 purchases = 3.33 ratio
@@ -614,4 +614,4 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Product 2 might still appear if it has other recent abandonments, but the count should be 1
         for product in high_abandonment:
             if product['product_name'] == 'Product 2':
-                self.assertEqualproduct['abandonment_count'], 1)
+                self.assertEqual(product['abandonment_count'], 1)
