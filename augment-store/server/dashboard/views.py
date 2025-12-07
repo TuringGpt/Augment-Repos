@@ -380,7 +380,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                                     product_name, view_count, purchase_count, engagement_ratio)
         """
         limit = parse_int_param(request.query_params.get('limit'), default=10, max_value=100)
-        days = parse_int_param(request.query_params.get('days'), default=30, max_value=700)
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
         # ===== LOW PERFORMING PRODUCTS (lowest purchase count) =====
@@ -407,7 +407,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             created_at__gte=cutoff_date
         ).values('product_id').annotate(
             abandonment_count=Count('id')
-        ).sort_by('-abandonment_count')[:limit]
+        ).order_by('-abandonment_count')[:limit]
 
         high_abandonment_data = []
         for item in abandonment_stats:
@@ -428,30 +428,60 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 continue
 
         # ===== LOW CONVERSION PRODUCTS =====
-        low_conversion = ProductStatistics.objects.filter(
+        # Get all products with views and calculate conversion rate
+        all_products_with_views = ProductStatistics.objects.filter(
             view_count__gt=0
-        ).order_by('purchase_count')[:limit]
+        )
+
+        # Calculate conversion rates and sort by lowest conversion rate
+        products_with_conversion = []
+        for stat in all_products_with_views:
+            conversion_rate = (stat.purchase_count / stat.view_count * 100) if stat.view_count > 0 else 0
+            products_with_conversion.append({
+                'stat': stat,
+                'conversion_rate': conversion_rate,
+            })
+
+        # Sort by conversion rate (ascending) and take top limit
+        products_with_conversion.sort(key=lambda x: x['conversion_rate'])
+        low_conversion = products_with_conversion[:limit]
 
         low_conversion_data = []
-        for stat in low_conversion:
-            conversion_rate = (stat.purchase_count / stat.view_count * 100) if stat.view_count > 0 else 0
+        for item in low_conversion:
+            stat = item['stat']
+            conversion_rate = item['conversion_rate']
             low_conversion_data.append({
                 'product_id': str(stat.product.id),
                 'product_name': stat.product.name,
                 'view_count': stat.view_count,
                 'purchase_count': stat.purchase_count,
-                'conversion_rates': floor(conversion_rate, 2),
+                'conversion_rate': round(conversion_rate, 2),
             })
 
-        # ===== HIGH ENGAGEMENT PRODUCTS (high view count with low purchases) =====
-        high_engagement = ProductStatistics.objects.filter(
+        # ===== HIGH ENGAGEMENT PRODUCTS (high view-to-purchase ratio) =====
+        # Get all products with both views and purchases
+        all_products_with_engagement = ProductStatistics.objects.filter(
             view_count__gt=0,
             purchase_count__gt=0
-        ).order_by('-view_count')[:limit]
+        )
+
+        # Calculate engagement ratio and sort by highest ratio
+        products_with_engagement = []
+        for stat in all_products_with_engagement:
+            engagement_ratio = (stat.view_count / stat.purchase_count) if stat.purchase_count > 0 else 0
+            products_with_engagement.append({
+                'stat': stat,
+                'engagement_ratio': engagement_ratio,
+            })
+
+        # Sort by engagement ratio (descending) and take top limit
+        products_with_engagement.sort(key=lambda x: x['engagement_ratio'], reverse=True)
+        high_engagement = products_with_engagement[:limit]
 
         high_engagement_data = []
-        for stat in high_engagement:
-            engagement_ratio = (stat.view_count / stat.purchase_count) if stat.purchase_count > 0 else 0
+        for item in high_engagement:
+            stat = item['stat']
+            engagement_ratio = item['engagement_ratio']
             high_engagement_data.append({
                 'product_id': str(stat.product.id),
                 'product_name': stat.product.name,
@@ -461,10 +491,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             })
 
         # ===== RESPONSE =====
-        return Response([
+        return Response({
             'period_days': days,
             'low_performing_products': low_performing_data,
             'high_abandonment_products': high_abandonment_data,
             'low_conversion_products': low_conversion_data,
             'high_engagement_products': high_engagement_data,
-        ])
+        })
