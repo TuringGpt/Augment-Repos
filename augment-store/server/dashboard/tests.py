@@ -509,17 +509,23 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # GIVEN products with different abandonment counts within the period
         # Note: abandonment_rate = abandonment_count / (purchases_in_period + abandonment_count) * 100
         # Since we don't create OrderItem records, purchases_in_period = 0
-        # Product 1: 2 abandonments, 0 purchases = 2/(0+2) = 100% abandonment rate
-        # Product 2: 3 abandonments, 0 purchases = 3/(0+3) = 100% abandonment rate
+        # Product 1: 2 abandonments in period, 0 purchases = 2/(0+2) = 100% abandonment rate
+        # Product 2: 3 abandonments in period, 0 purchases = 3/(0+3) = 100% abandonment rate
+        # Product 3: 1 old abandonment (outside period) = should not appear in results
 
-        # Create abandonments for product1 (2 abandonments)
+        # Create abandonments for product1 (2 abandonments in period)
         CartAbandonment.objects.create(product=self.product1, user=self.member_user)
         CartAbandonment.objects.create(product=self.product1, user=self.member_user)
 
-        # Create abandonments for product2 (3 abandonments)
+        # Create abandonments for product2 (3 abandonments in period)
         CartAbandonment.objects.create(product=self.product2, user=self.member_user)
         CartAbandonment.objects.create(product=self.product2, user=self.member_user)
         CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+
+        # Create an old abandonment for product3 (outside the default 30-day window)
+        old_abandonment = CartAbandonment.objects.create(product=self.product3, user=self.member_user)
+        old_abandonment.created_at = timezone.now() - timedelta(days=31)
+        old_abandonment.save()
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
@@ -528,7 +534,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # AND high_abandonment_products should be ordered by abandonment count descending
+        # AND high_abandonment_products should only include products with abandonments in the period
         high_abandonment = response.data.get('high_abandonment_products', [])
         self.assertEqual(len(high_abandonment), 2)
 
@@ -544,6 +550,10 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertIsNotNone(product_1)
         self.assertEqual(product_1['abandonment_count'], 2)
         self.assertEqual(product_1['abandonment_rate'], 100.0)
+
+        # Verify Product 3 is NOT in results (its abandonment is outside the period)
+        product_3 = next((p for p in high_abandonment if p['product_name'] == 'Product 3'), None)
+        self.assertIsNone(product_3)
 
     def test_product_performance_low_conversion_products(self):
         """Test that low_conversion_products returns products with lowest conversion rate within period."""
@@ -603,10 +613,13 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(len(high_engagement), 0)
 
     def test_product_performance_respects_limit_parameter(self):
-        """Test that product_performance respects the limit parameter."""
-        # GIVEN multiple products
+        """Test that product_performance respects the limit parameter for all categories."""
+        # GIVEN multiple products with period activity
         for i in range(15):
-            SimpleProductFactory(name=f"Product {i+4}")
+            product = SimpleProductFactory(name=f"Product {i+4}")
+            # Create period activity for each product so they appear in results
+            ProductView.objects.create(product=product, user=self.member_user)
+            CartAbandonment.objects.create(product=product, user=self.member_user)
 
         # WHEN we call the product_performance endpoint with limit=5
         url = reverse("v1:product-statistics-product-performance")
@@ -615,13 +628,15 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # AND each category should have at most 5 products
+        # AND each category should have at most 5 products (respecting the limit parameter)
         low_performing = response.data.get('low_performing_products', [])
         low_conversion = response.data.get('low_conversion_products', [])
+        high_abandonment = response.data.get('high_abandonment_products', [])
         high_engagement = response.data.get('high_engagement_products', [])
 
         self.assertLessEqual(len(low_performing), 5)
         self.assertLessEqual(len(low_conversion), 5)
+        self.assertLessEqual(len(high_abandonment), 5)
         self.assertLessEqual(len(high_engagement), 5)
 
     def test_product_performance_respects_days_parameter(self):
