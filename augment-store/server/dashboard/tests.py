@@ -549,7 +549,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         product_1 = next((p for p in high_abandonment if p['product_name'] == 'Product 1'), None)
         self.assertIsNotNone(product_1)
         self.assertEqual(product_1['abandonment_count'], 2)
-        self.assertEqual(product_1['abandonment_rate'], 100.0)
+        self.assertEqual(product_1['abandonment_rate'],   100.0)
 
         # Verify Product 3 is NOT in results (its abandonment is outside the period)
         product_3 = next((p for p in high_abandonment if p['product_name'] == 'Product 3'), None)
