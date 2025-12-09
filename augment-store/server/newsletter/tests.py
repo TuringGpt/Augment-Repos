@@ -39,7 +39,7 @@ class NewsletterTests(BaseAPITestCase):
         self.assertEqual(response.status_code, 200 )
 
     def test_unsubscribe_newsletter_by_email(self):
-        url = reverse("v1:unsubscribe_newsletter/email")
+        url = reverse("v1:unsubscribe_newsletter_by_email")
         self.authenticated_client.force_authenticate(user=self.user)
         payload = {
             "email": "test@example.com",
@@ -57,7 +57,7 @@ class NewsletterTests(BaseAPITestCase):
         response = self.authenticated_client.patch(url, payload)
         self.assertEqual(response.status_code, 400)
 
-    def test_unsubscribe_newsletter_by_email_missing_email(self):
+    def test_unsubscribe_newsletter_by_email_not_found(self):
         url = reverse("v1:unsubscribe_newsletter_by_email")
         self.authenticated_client.force_authenticate(user=self.user)
         payload = {

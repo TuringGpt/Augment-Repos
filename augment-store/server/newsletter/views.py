@@ -28,7 +28,7 @@ class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateAPIView):
 
 class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
     """
-    Unsubscribe from newsletter using email address and uuid.
+    Unsubscribe from newsletter using email address.
 
     PATCH/PUT: Unsubscribe by providing email in request body
     """
@@ -39,6 +39,7 @@ class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
         """Get newsletter subscription by email from request data"""
         email = self.request.data.get('email')
         if not email:
+            from rest_framework.exceptions import ValidationError
             raise ValidationError({'email': 'Email is required'})
 
         newsletter = get_object_or_404(Newsletter, email=email)
