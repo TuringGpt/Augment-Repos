@@ -13,6 +13,7 @@ const Footer = () => {
   const mode = useThemeStore((state) => state.mode)
   const brandColors = getBrandColors(mode)
   const [email, setEmail] = useState('')
+  const [validationError, setValidationError] = useState('')
 
   const {
     subscribe,
@@ -22,12 +23,29 @@ const Footer = () => {
     clearSubscribeState
   } = useNewsletterStore()
 
-  // Clear subscribe state when email changes
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_SUBSCRIBE_ERROR') {
+      return t('newsletter.errors.subscribeFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
+
+  // Clear subscribe state and validation error when email changes
   useEffect(() => {
     if (subscribeError || subscribeSuccess) {
       clearSubscribeState()
     }
-  }, [email, subscribeError, subscribeSuccess, clearSubscribeState])
+    if (validationError) {
+      setValidationError('')
+    }
+  }, [email, clearSubscribeState, subscribeError, subscribeSuccess, validationError])
 
   // Clear email and subscribe state after successful subscription
   useEffect(() => {
@@ -48,12 +66,17 @@ const Footer = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Clear any previous validation error
+    setValidationError('')
+
     // Validate email
     if (!email.trim()) {
+      setValidationError(t('checkout.contactForm.errors.emailRequired'))
       return
     }
 
     if (!isValidEmail(email)) {
+      setValidationError(t('checkout.contactForm.errors.emailInvalid'))
       return
     }
 
@@ -146,12 +169,12 @@ const Footer = () => {
                 value={email}
                 onChange={handleEmailChange}
                 disabled={isSubscribing}
-                error={!!subscribeError}
+                error={!!(subscribeError || validationError)}
                 sx={{
                   backgroundColor: 'background.paper',
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
-                      borderColor: subscribeError ? 'error.main' : 'divider',
+                      borderColor: (subscribeError || validationError) ? 'error.main' : 'divider',
                     },
                   },
                 }}
@@ -176,9 +199,15 @@ const Footer = () => {
               </Button>
             </Box>
 
+            {validationError && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {validationError}
+              </Alert>
+            )}
+
             {subscribeError && (
               <Alert severity="error" sx={{ mt: 1 }}>
-                {subscribeError}
+                {getErrorMessage(subscribeError)}
               </Alert>
             )}
 

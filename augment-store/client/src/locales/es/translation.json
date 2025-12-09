@@ -352,6 +352,12 @@
     "returns": "Devoluciones",
     "shippingInfo": "Información de Envío"
   },
+  "newsletter": {
+    "errors": {
+      "subscribeFailed": "Error al suscribirse. Por favor, inténtalo de nuevo.",
+      "fetchFailed": "Error al cargar las suscripciones al boletín. Por favor, inténtalo de nuevo."
+    }
+  },
   "contact": {
     "title": "Contáctanos",
     "getInTouch": "Ponte en Contacto",

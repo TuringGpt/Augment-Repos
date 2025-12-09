@@ -352,6 +352,12 @@
     "returns": "Rücksendungen",
     "shippingInfo": "Versandinformationen"
   },
+  "newsletter": {
+    "errors": {
+      "subscribeFailed": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut."
+    }
+  },
   "contact": {
     "title": "Kontaktieren Sie uns",
     "getInTouch": "Kontakt aufnehmen",

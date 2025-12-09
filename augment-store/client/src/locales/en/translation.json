@@ -352,6 +352,12 @@
     "returns": "Returns",
     "shippingInfo": "Shipping Info"
   },
+  "newsletter": {
+    "errors": {
+      "subscribeFailed": "Failed to subscribe. Please try again.",
+      "fetchFailed": "Failed to load newsletter subscriptions. Please try again."
+    }
+  },
   "contact": {
     "title": "Contact Us",
     "getInTouch": "Get in Touch",
