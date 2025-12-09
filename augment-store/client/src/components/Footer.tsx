@@ -1,26 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Container, Typography, Link, Grid, TextField, Button, Alert, InputAdornment } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Email as EmailIcon } from '@mui/icons-material'
 import { getBrandColors } from '@config/theme'
 import { useThemeStore } from '@store/themeStore'
+import { useNewsletterStore } from '@store/newsletterStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { isValidEmail } from '@utils/validators'
-import { newsletterService } from '@services/api/newsletter/newsletterService'
 
 const Footer = () => {
   const { t } = useTranslation()
   const mode = useThemeStore((state) => state.mode)
   const brandColors = getBrandColors(mode)
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+
+  const {
+    subscribe,
+    isSubscribing,
+    subscribeError,
+    subscribeSuccess,
+    clearSubscribeState
+  } = useNewsletterStore()
+
+  // Clear subscribe state when email changes
+  useEffect(() => {
+    if (subscribeError || subscribeSuccess) {
+      clearSubscribeState()
+    }
+  }, [email, subscribeError, subscribeSuccess, clearSubscribeState])
+
+  // Clear email and subscribe state after successful subscription
+  useEffect(() => {
+    if (subscribeSuccess) {
+      setEmail('')
+      // Clear success message after 3 seconds
+      const timer = setTimeout(() => {
+        clearSubscribeState()
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [subscribeSuccess, clearSubscribeState])
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
-    if (error) setError('')
-    if (successMessage) setSuccessMessage('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,31 +50,18 @@ const Footer = () => {
 
     // Validate email
     if (!email.trim()) {
-      setError(t('checkout.contactForm.errors.emailRequired'))
       return
     }
 
     if (!isValidEmail(email)) {
-      setError(t('checkout.contactForm.errors.emailInvalid'))
       return
     }
 
-    setIsSubmitting(true)
-    setError('')
-
     try {
-      // Subscribe to newsletter via API
-      await newsletterService.subscribe({ email })
-
-      setSuccessMessage(t('common.success'))
-      setEmail('')
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(''), 3000)
+      // Subscribe to newsletter via store
+      await subscribe({ email })
     } catch (err) {
-      setError(t('footer.subscribeError'))
-    } finally {
-      setIsSubmitting(false)
+      // Error is handled by the store
     }
   }
 
@@ -136,13 +145,13 @@ const Footer = () => {
                 placeholder={t('footer.enterEmail')}
                 value={email}
                 onChange={handleEmailChange}
-                disabled={isSubmitting}
-                error={!!error}
+                disabled={isSubscribing}
+                error={!!subscribeError}
                 sx={{
                   backgroundColor: 'background.paper',
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
-                      borderColor: error ? 'error.main' : 'divider',
+                      borderColor: subscribeError ? 'error.main' : 'divider',
                     },
                   },
                 }}
@@ -157,25 +166,25 @@ const Footer = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting}
+                disabled={isSubscribing}
                 sx={{
                   minWidth: { xs: '100%', sm: 120 },
                   whiteSpace: 'nowrap',
                 }}
               >
-                {isSubmitting ? t('common.loading') : t('footer.subscribe')}
+                {isSubscribing ? t('common.loading') : t('footer.subscribe')}
               </Button>
             </Box>
 
-            {error && (
+            {subscribeError && (
               <Alert severity="error" sx={{ mt: 1 }}>
-                {error}
+                {subscribeError}
               </Alert>
             )}
 
-            {successMessage && (
+            {subscribeSuccess && (
               <Alert severity="success" sx={{ mt: 1 }}>
-                {successMessage}
+                {t('common.success')}
               </Alert>
             )}
           </Box>
