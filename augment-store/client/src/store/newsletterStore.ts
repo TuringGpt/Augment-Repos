@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
-import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
+import type { NewsletterAPI, SubscribeNewsletterRequest } from '@services/api/newsletter/newsletterService'
+import { parseApiError } from '@utils/errorUtils'
 
 interface NewsletterState {
   newsletters: NewsletterAPI[]
@@ -10,11 +11,16 @@ interface NewsletterState {
   totalPages: number
   isLoading: boolean
   error: string | null
+  isSubscribing: boolean
+  subscribeError: string | null
+  subscribeSuccess: boolean
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
   clearNewsletters: () => void
   setPage: (page: number) => void
+  subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
+  clearSubscribeState: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -29,6 +35,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   totalPages: 0,
   isLoading: false,
   error: null,
+  isSubscribing: false,
+  subscribeError: null,
+  subscribeSuccess: false,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -55,10 +64,19 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         })
       }
     } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to fetch newsletters:', error)
+
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'NEWSLETTER_FETCH_ERROR', // Error key for component to translate
+        })
+
         set({
-          error: error instanceof Error ? error.message : 'Failed to fetch newsletters',
+          error: errorMessage,
           isLoading: false,
         })
       }
@@ -83,6 +101,42 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   setPage: (page: number) => {
     set({ page })
     get().fetchNewsletters(page)
+  },
+
+  subscribe: async (data: SubscribeNewsletterRequest) => {
+    set({ isSubscribing: true, subscribeError: null, subscribeSuccess: false })
+    try {
+      await newsletterService.subscribe(data)
+      set({
+        isSubscribing: false,
+        subscribeSuccess: true,
+      })
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to subscribe to newsletter:', error)
+
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'NEWSLETTER_SUBSCRIBE_ERROR', // Error key for component to translate
+      })
+
+      set({
+        subscribeError: errorMessage,
+        isSubscribing: false,
+        subscribeSuccess: false,
+      })
+      throw error
+    }
+  },
+
+  clearSubscribeState: () => {
+    set({
+      isSubscribing: false,
+      subscribeError: null,
+      subscribeSuccess: false,
+    })
   },
 }))
 
