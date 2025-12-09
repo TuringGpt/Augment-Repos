@@ -662,7 +662,5 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # Only product1 should be in the results (product2's abandonment is outside the window)
         product_names = [p['product_name'] for p in high_abandonment]
         self.assertIn('Product 1', product_names)
-        # Product 2 might still appear if it has other recent abandonments, but the count should be 1
-        for product in high_abandonment:
-            if product['product_name'] == 'Product 2':
-                self.assertEqual(product['abandonment_count'], 1)
+        # Product 2 should NOT be in the results since its only abandonment is 40 days old (outside the 5-day window)
+        self.assertNotIn('Product 2', product_names)
