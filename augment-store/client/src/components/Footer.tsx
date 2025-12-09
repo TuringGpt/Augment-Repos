@@ -1,55 +1,92 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Container, Typography, Link, Grid, TextField, Button, Alert, InputAdornment } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import { Email as EmailIcon } from '@mui/icons-material'
-import { Colors } from '@config/colors'
+import { getBrandColors } from '@config/theme'
+import { useThemeStore } from '@store/themeStore'
+import { useNewsletterStore } from '@store/newsletterStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { isValidEmail } from '@utils/validators'
-import { newsletterService } from '@services/api/newsletter/newsletterService'
 
 const Footer = () => {
   const { t } = useTranslation()
+  const mode = useThemeStore((state) => state.mode)
+  const brandColors = getBrandColors(mode)
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+  const [validationError, setValidationError] = useState('')
+
+  const {
+    subscribe,
+    isSubscribing,
+    subscribeError,
+    subscribeSuccess,
+    clearSubscribeState
+  } = useNewsletterStore()
+
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_SUBSCRIBE_ERROR') {
+      return t('newsletter.errors.subscribeFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
+
+  // Clear subscribe state and validation error when email changes
+  useEffect(() => {
+    if (subscribeError || subscribeSuccess) {
+      clearSubscribeState()
+    }
+    if (validationError) {
+      setValidationError('')
+    }
+    // Only run when email changes, not when error/success states change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email])
+
+  // Clear email and subscribe state after successful subscription
+  useEffect(() => {
+    if (subscribeSuccess) {
+      setEmail('')
+      // Clear success message after 3 seconds
+      const timer = setTimeout(() => {
+        clearSubscribeState()
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [subscribeSuccess, clearSubscribeState])
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
-    if (error) setError('')
-    if (successMessage) setSuccessMessage('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Clear any previous validation error
+    setValidationError('')
+
     // Validate email
     if (!email.trim()) {
-      setError(t('checkout.contactForm.errors.emailRequired'))
+      setValidationError(t('checkout.contactForm.errors.emailRequired'))
       return
     }
 
     if (!isValidEmail(email)) {
-      setError(t('checkout.contactForm.errors.emailInvalid'))
+      setValidationError(t('checkout.contactForm.errors.emailInvalid'))
       return
     }
 
-    setIsSubmitting(true)
-    setError('')
-
     try {
-      // Subscribe to newsletter via API
-      await newsletterService.subscribe({ email })
-
-      setSuccessMessage(t('common.success'))
-      setEmail('')
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(''), 3000)
+      // Subscribe to newsletter via store
+      await subscribe({ email })
     } catch (err) {
-      setError(t('footer.subscribeError'))
-    } finally {
-      setIsSubmitting(false)
+      // Error is handled by the store
     }
   }
 
@@ -60,7 +97,8 @@ const Footer = () => {
         py: 3,
         px: 2,
         mt: 'auto',
-        backgroundColor: Colors.neutral.gray200,
+        backgroundColor: brandColors.footer.background,
+        color: brandColors.footer.text,
       }}
     >
       <Container maxWidth="xl">
@@ -69,7 +107,7 @@ const Footer = () => {
             <Typography variant="h6" gutterBottom>
               {t('common.appName')}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={brandColors.footer.textSecondary}>
               {t('footer.tagline')}
             </Typography>
           </Grid>
@@ -108,7 +146,7 @@ const Footer = () => {
           <Typography variant="h6" gutterBottom align="center">
             {t('footer.newsletter')}
           </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+          <Typography variant="body2" color={brandColors.footer.textSecondary} align="center" sx={{ mb: 2 }}>
             {t('footer.subscribeNewsletter')}
           </Typography>
 
@@ -132,13 +170,13 @@ const Footer = () => {
                 placeholder={t('footer.enterEmail')}
                 value={email}
                 onChange={handleEmailChange}
-                disabled={isSubmitting}
-                error={!!error}
+                disabled={isSubscribing}
+                error={!!(subscribeError || validationError)}
                 sx={{
                   backgroundColor: 'background.paper',
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
-                      borderColor: error ? 'error.main' : 'divider',
+                      borderColor: (subscribeError || validationError) ? 'error.main' : 'divider',
                     },
                   },
                 }}
@@ -153,31 +191,37 @@ const Footer = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting}
+                disabled={isSubscribing}
                 sx={{
                   minWidth: { xs: '100%', sm: 120 },
                   whiteSpace: 'nowrap',
                 }}
               >
-                {isSubmitting ? t('common.loading') : t('footer.subscribe')}
+                {isSubscribing ? t('common.loading') : t('footer.subscribe')}
               </Button>
             </Box>
 
-            {error && (
+            {validationError && (
               <Alert severity="error" sx={{ mt: 1 }}>
-                {error}
+                {validationError}
               </Alert>
             )}
 
-            {successMessage && (
+            {subscribeError && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {getErrorMessage(subscribeError)}
+              </Alert>
+            )}
+
+            {subscribeSuccess && (
               <Alert severity="success" sx={{ mt: 1 }}>
-                {successMessage}
+                {t('common.success')}
               </Alert>
             )}
           </Box>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 3 }}>
+        <Typography variant="body2" color={brandColors.footer.textSecondary} align="center" sx={{ mt: 3 }}>
           © {new Date().getFullYear()} {t('common.appName')}. {t('footer.allRightsReserved')}.
         </Typography>
       </Container>

@@ -18,6 +18,7 @@ import {
   TextField,
   Typography,
   CircularProgress,
+  useTheme,
 } from '@mui/material'
 import { useCartStore } from '@/store/cartStore'
 import { useOrderStore } from '@/store/orderStore'
@@ -75,6 +76,7 @@ const OrderSummary = ({
   const { cart, updateItemInCart, removeItemFromCart } = useCartStore()
   const { createOrder, isCreatingOrder, setCreateOrderError } = useOrderStore()
   const navigate = useNavigate()
+  const theme = useTheme()
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
@@ -208,13 +210,33 @@ const OrderSummary = ({
     }
   }
 
-  // Mount Stripe checkout when container is ready
+  // Mount Stripe checkout when container is ready, and remount on theme change
   useEffect(() => {
     const mountCheckout = async () => {
-      if (showCheckout && clientSecret && stripe && !checkoutRef.current) {
+      if (showCheckout && clientSecret && stripe) {
         try {
+          // Unmount existing checkout if theme changed
+          if (checkoutRef.current) {
+            checkoutRef.current.unmount()
+            checkoutRef.current = null
+          }
+
+          // Configure appearance based on current theme
+          const appearance = {
+            theme: theme.palette.mode === 'dark' ? ('night' as const) : ('stripe' as const),
+            variables: {
+              colorPrimary: theme.palette.primary.main,
+              colorBackground: theme.palette.background.paper,
+              colorText: theme.palette.text.primary,
+              colorDanger: theme.palette.error.main,
+              fontFamily: theme.typography.fontFamily,
+              borderRadius: '8px',
+            },
+          }
+
           const checkout = await stripe.initEmbeddedCheckout({
             clientSecret: clientSecret,
+            appearance: appearance,
           })
           checkoutRef.current = checkout
           checkout.mount('#checkout-container')
@@ -227,7 +249,7 @@ const OrderSummary = ({
     }
 
     mountCheckout()
-  }, [showCheckout, clientSecret, stripe])
+  }, [showCheckout, clientSecret, stripe, theme.palette.mode, theme.palette.primary.main, theme.palette.background.paper, theme.palette.text.primary, theme.palette.error.main, theme.typography.fontFamily])
 
   // Cleanup checkout on unmount
   useEffect(() => {

@@ -15,8 +15,10 @@ import {
   Pagination,
 } from '@mui/material'
 import { useNewsletterStore } from '@store/newsletterStore'
+import { useTranslation } from '@hooks/useTranslation'
 
 const NewslettersPage = () => {
+  const { t } = useTranslation()
   const { newsletters, page, totalPages, isLoading, error, fetchNewsletters, setPage } =
     useNewsletterStore()
 
@@ -28,6 +30,20 @@ const NewslettersPage = () => {
     setPage(value)
   }
 
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_FETCH_ERROR') {
+      return t('newsletter.errors.fetchFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
@@ -36,7 +52,7 @@ const NewslettersPage = () => {
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {getErrorMessage(error)}
         </Alert>
       )}
 
