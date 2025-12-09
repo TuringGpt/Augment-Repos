@@ -461,20 +461,21 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 continue
 
         # ===== HIGH ABANDONMENT PRODUCTS (within period) =====
-        # Sort abandonments by count (descending) and take top limit
+        # Calculate abandonment rates and sort by rate (descending)
+        products_with_abandonment = []
+        for product_id, abandonment_count in abandonments_by_product.items():
+            purchases_in_period = purchases_by_product.get(product_id, 0)
+            period_cart_adds = purchases_in_period + abandonment_count
+            abandonment_rate = (abandonment_count / period_cart_adds * 100) if period_cart_adds > 0 else 0
+            products_with_abandonment.append((product_id, abandonment_count, period_cart_adds, abandonment_rate))
+
+        # Sort by abandonment_rate (descending), then by abandonment_count (descending) as tiebreaker
+        products_with_abandonment.sort(key=lambda x: (x[3], x[1]), reverse=True)
+
         high_abandonment_data = []
-        for product_id, abandonment_count in sorted(abandonments_by_product.items(), key=lambda x: x[1], reverse=True)[:limit]:
+        for product_id, abandonment_count, period_cart_adds, abandonment_rate in products_with_abandonment[:limit]:
             try:
                 product = Product.objects.get(id=product_id)
-
-                # Get period-specific cart additions: purchases + abandonments
-                # (every cart addition either results in a purchase or abandonment)
-                purchases_in_period = purchases_by_product.get(product_id, 0)
-                period_cart_adds = purchases_in_period + abandonment_count
-
-                # Calculate abandonment rate based on period-specific cart additions
-                abandonment_rate = (abandonment_count / period_cart_adds * 100) if period_cart_adds > 0 else 0
-
                 high_abandonment_data.append({
                     'product_id': str(product.id),
                     'product_name': product.name,

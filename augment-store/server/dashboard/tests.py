@@ -505,13 +505,14 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertEqual(low_performing[0]['cart_add_count'], 1)
 
     def test_product_performance_high_abandonment_products(self):
-        """Test that high_abandonment_products returns products with highest abandonment count within period."""
+        """Test that high_abandonment_products returns products with highest abandonment rate within period."""
         # GIVEN products with different abandonment counts within the period
         # Note: abandonment_rate = abandonment_count / (purchases_in_period + abandonment_count) * 100
         # Since we don't create OrderItem records, purchases_in_period = 0
         # Product 1: 2 abandonments in period, 0 purchases = 2/(0+2) = 100% abandonment rate
         # Product 2: 3 abandonments in period, 0 purchases = 3/(0+3) = 100% abandonment rate
         # Product 3: 1 old abandonment (outside period) = should not appear in results
+        # When rates are equal, products are sorted by abandonment_count (Product 2 before Product 1)
 
         # Create abandonments for product1 (2 abandonments in period)
         CartAbandonment.objects.create(product=self.product1, user=self.member_user)
