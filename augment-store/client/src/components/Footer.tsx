@@ -45,7 +45,9 @@ const Footer = () => {
     if (validationError) {
       setValidationError('')
     }
-  }, [email, clearSubscribeState, subscribeError, subscribeSuccess, validationError])
+    // Only run when email changes, not when error/success states change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email])
 
   // Clear email and subscribe state after successful subscription
   useEffect(() => {
