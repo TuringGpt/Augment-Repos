@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView
+from django.shortcuts import render, get_object_or_404
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
 from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -25,3 +25,21 @@ class SubscribeNewsletterView(BaseNewsletterView, CreateAPIView):
 class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateAPIView):
     serializer_class = UnsubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
+
+class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
+    """
+    Unsubscribe from newsletter using email address and uuid.
+
+    PATCH/PUT: Unsubscribe by providing email in request body
+    """
+    serializer_class = UnsubscribeNewsletterSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """Get newsletter subscription by email from request data"""
+        email = self.request.data.get('email')
+        if not email:
+            raise ValidationError({'email': 'Email is required'})
+
+        newsletter = get_object_or_404(Newsletter, email=email)
+        return newsletter
