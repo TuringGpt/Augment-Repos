@@ -15,10 +15,12 @@ interface OrderState {
   // Loading states
   isCreatingOrder: boolean
   isFetchingOrders: boolean
+  isCancelingOrder: boolean
 
   // Error states
   createOrderError: string | null
   fetchOrdersError: string | null
+  cancelOrderError: string | null
 
   // Actions
   setCurrentOrder: (order: CreateOrderResponse | null) => void
@@ -27,11 +29,12 @@ interface OrderState {
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
   clearOrders: () => void
+  cancelOrder: (id: string) => Promise<Order>
 }
 
 export const useOrderStore = create<OrderState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       currentOrder: null,
       orders: [],
@@ -40,8 +43,10 @@ export const useOrderStore = create<OrderState>()(
       totalPages: 1,
       isCreatingOrder: false,
       isFetchingOrders: false,
+      isCancelingOrder: false,
       createOrderError: null,
       fetchOrdersError: null,
+      cancelOrderError: null,
 
       // Actions
       setCurrentOrder: (order) => set({ currentOrder: order }),
@@ -105,6 +110,31 @@ export const useOrderStore = create<OrderState>()(
         }),
 
       setCreateOrderError: (error) => set({ createOrderError: error }),
+
+      cancelOrder: async (id: string) => {
+        // Import orderService dynamically to avoid circular dependency
+        const { orderService } = await import('@services/api/orders/orderService')
+        try {
+          set({ isCancelingOrder: true, cancelOrderError: null })
+          const canceledOrder = await orderService.cancelOrder(id)
+
+          // Update the order in the orders list if it exists
+          const currentOrders = get().orders
+          const updatedOrders = currentOrders.map((order) =>
+            order.id === id ? canceledOrder : order
+          )
+          set({ orders: updatedOrders })
+
+          return canceledOrder
+        } catch (error) {
+          console.error('Failed to cancel order:', error)
+          const errorMessage = 'Failed to cancel order. Please try again.'
+          set({ cancelOrderError: errorMessage })
+          throw error
+        } finally {
+          set({ isCancelingOrder: false })
+        }
+      },
     }),
     {
       name: 'order-storage',
