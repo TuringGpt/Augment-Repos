@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
-import type { NewsletterAPI, SubscribeNewsletterRequest } from '@services/api/newsletter/newsletterService'
+import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest } from '@services/api/newsletter/newsletterService'
 import { parseApiError } from '@utils/errorUtils'
 
 interface NewsletterState {
@@ -14,6 +14,9 @@ interface NewsletterState {
   isSubscribing: boolean
   subscribeError: string | null
   subscribeSuccess: boolean
+  isUnsubscribing: boolean
+  unsubscribeError: string | null
+  unsubscribeSuccess: boolean
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
@@ -21,6 +24,8 @@ interface NewsletterState {
   setPage: (page: number) => void
   subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
   clearSubscribeState: () => void
+  unsubscribe: (id: string, data?: UnsubscribeNewsletterRequest) => Promise<void>
+  clearUnsubscribeState: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -38,6 +43,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   isSubscribing: false,
   subscribeError: null,
   subscribeSuccess: false,
+  isUnsubscribing: false,
+  unsubscribeError: null,
+  unsubscribeSuccess: false,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -136,6 +144,42 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       isSubscribing: false,
       subscribeError: null,
       subscribeSuccess: false,
+    })
+  },
+
+  unsubscribe: async (id: string, data?: UnsubscribeNewsletterRequest) => {
+    set({ isUnsubscribing: true, unsubscribeError: null, unsubscribeSuccess: false })
+    try {
+      await newsletterService.unsubscribe(id, data)
+      set({
+        isUnsubscribing: false,
+        unsubscribeSuccess: true,
+      })
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to unsubscribe from newsletter:', error)
+
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'NEWSLETTER_UNSUBSCRIBE_ERROR', // Error key for component to translate
+      })
+
+      set({
+        unsubscribeError: errorMessage,
+        isUnsubscribing: false,
+        unsubscribeSuccess: false,
+      })
+      throw error
+    }
+  },
+
+  clearUnsubscribeState: () => {
+    set({
+      isUnsubscribing: false,
+      unsubscribeError: null,
+      unsubscribeSuccess: false,
     })
   },
 }))
