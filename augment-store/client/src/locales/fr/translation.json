@@ -380,5 +380,11 @@
     "categories": "CATÉGORIES",
     "noCategoriesAvailable": "Aucune catégorie disponible",
     "profileWithName": "Profil ({{name}})"
+  },
+  "notFound": {
+    "title": "Page non trouvée",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée. Veuillez vérifier l'URL ou retourner à la page d'accueil.",
+    "goHome": "Aller à l'accueil",
+    "browseProducts": "Parcourir les produits"
   }
 }

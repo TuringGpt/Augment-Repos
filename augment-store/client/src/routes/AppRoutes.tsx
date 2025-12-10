@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import MainLayout from '@layouts/MainLayout'
 import AuthLayout from '@layouts/AuthLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
@@ -42,6 +42,7 @@ import ReturnsPage from '@features/info/returns/components/ReturnsPage'
 import ShippingPage from '@features/info/shipping/components/ShippingPage'
 import TermsPage from '@features/info/terms/components/TermsPage'
 import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
+import NotFoundPage from '@features/info/not-found/components/NotFoundPage'
 
 const AppRoutes = () => {
   return (
@@ -93,8 +94,10 @@ const AppRoutes = () => {
         </Route>
       </Route>
 
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch all - 404 Not Found */}
+      <Route element={<MainLayout />}>
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   )
 }
