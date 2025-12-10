@@ -29,7 +29,7 @@ def parse_int_param(value, default, min_value=1, max_value=None):
         value: The value to parse (typically from request.query_params)
         default: Default value if parsing fails or value is None
         min_value: Minimum allowed value (default: 1)
-        max_value: Maximum allowed value (de    fault: None for no limit)
+        max_value: Maximum allowed value (default: None for no limit)
 
     Returns:
         A validated integer value
@@ -574,6 +574,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         Query params:
         - limit: Number of customers to return (default: 20, max: 100)
         - min_orders: Minimum number of orders to include customer (default: 1)
+        - days: Number of days to look back (default: 365 for all-time analysis)
 
         Returns a dictionary with the following keys:
         - period_days: Number of days included in the analysis
@@ -639,7 +640,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'customer_id': str(data['user'].id),
                     'customer_name': data['user'].full_name,
                     'customer_email': data['user'].email,
-                    'total_revenue': float(data['total_revenue']),
+                    'total_revenue': Decimal(data['total_revenue']),
                     'total_orders': data['order_count'],
                     'average_order_value': float(avg_order_value),
                     'first_purchase_date': first_purchase.date().isoformat(),
