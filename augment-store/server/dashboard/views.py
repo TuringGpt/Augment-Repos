@@ -642,7 +642,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'customer_email': data['user'].email,
                     'total_revenue': Decimal(data['total_revenue']),
                     'total_orders': data['order_count'],
-                    'average_order_value': float(avg_order_value),
+                    'average_order_value': Decimal(avg_order_value),
                     'first_purchase_date': first_purchase.date().isoformat(),
                     'last_purchase_date': last_purchase.date().isoformat(),
                     'days_since_last_purchase': days_since_last,
