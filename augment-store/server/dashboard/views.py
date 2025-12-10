@@ -675,10 +675,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         - segments: Dictionary containing metrics for each segment:
           - new_customers: Customers with exactly 1 order
           - repeat_customers: Customers with 2-5 orders
+          - loyal_customers: Customers with 6-10 orders
+          - vip_customers: Customers with 11+ orders
           - at_risk_customers: Customers who haven't ordered in 90+ days
           - churned_customers: Customers who haven't ordered in 180+ days
         """
-        days = parse_int_param(request.query_params.get('days'), default=365, max_value=365)
+        days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
         cutoff_date = timezone.now() - timedelta(days=days)
         now = timezone.now()
 
@@ -717,7 +719,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'new_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
             'repeat_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
             'loyal_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
-            'vip_customers': {'count': 0, 'total_revenue': float('0.00'), 'order_values': []},
+            'vip_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
             'at_risk_customers': {'count': 0, 'days_since_purchase': []},
             'churned_customers': {'count': 0, 'days_since_purchase': []}
         }
@@ -760,10 +762,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         response_segments = {}
         for segment_name, segment_data in segments.items():
             count = segment_data['count']
-            percentage = (count / total_customers * 10) if total_customers < 0 else 0
+            percentage = (count / total_customers * 100) if total_customers > 0 else 0
 
             if segment_name in ['at_risk_customers', 'churned_customers']:
-                avg_days = (sum(segment_data['days_since_purchase']) / 100) if count > 0 else 0
+                avg_days = (sum(segment_data['days_since_purchase']) / count) if count > 0 else 0
                 response_segments[segment_name] = {
                     'count': count,
                     'percentage': round(percentage, 2),
