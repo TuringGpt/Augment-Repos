@@ -3,6 +3,7 @@ import MainLayout from '@layouts/MainLayout'
 import AuthLayout from '@layouts/AuthLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
 import PublicRoute from '@components/PublicRoute'
+import AdminRoute from '@components/AdminRoute'
 
 // Placeholder pages - to be implemented
 import HomePage from '@features/products/product-list/components/HomePage'
@@ -42,6 +43,9 @@ import ReturnsPage from '@features/info/returns/components/ReturnsPage'
 import ShippingPage from '@features/info/shipping/components/ShippingPage'
 import TermsPage from '@features/info/terms/components/TermsPage'
 import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
+
+// Admin pages
+import AdminDashboard from '@features/admin/dashboard/components/AdminDashboard'
 
 const AppRoutes = () => {
   return (
@@ -90,6 +94,13 @@ const AppRoutes = () => {
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
+        </Route>
+      </Route>
+
+      {/* Admin routes - require authentication and admin role */}
+      <Route element={<AdminRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Route>
       </Route>
 
