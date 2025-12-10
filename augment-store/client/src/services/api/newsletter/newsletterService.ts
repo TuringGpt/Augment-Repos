@@ -31,6 +31,20 @@ export interface UnsubscribeNewsletterResponse {
 }
 
 /**
+ * Newsletter unsubscribe by email request
+ */
+export interface UnsubscribeNewsletterByEmailRequest {
+  email: string
+}
+
+/**
+ * Newsletter unsubscribe by email response
+ */
+export interface UnsubscribeNewsletterByEmailResponse {
+  email: string
+}
+
+/**
  * Newsletter item from API
  */
 export interface NewsletterAPI {
@@ -107,6 +121,28 @@ export const newsletterService = {
    */
   unsubscribe: async (id: string, data?: UnsubscribeNewsletterRequest): Promise<UnsubscribeNewsletterResponse> => {
     return apiClient.patch<UnsubscribeNewsletterResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE(id), data)
+  },
+
+  /**
+   * Unsubscribe from newsletter using email address (PATCH method)
+   * Backend expects PATCH to /newsletter/unsubscribe-by-email/
+   * Body must contain { email: string }
+   * Backend returns { email: string }
+   * Note: This sets is_active=False on the newsletter subscription
+   */
+  unsubscribeByEmailPatch: async (data: UnsubscribeNewsletterByEmailRequest): Promise<UnsubscribeNewsletterByEmailResponse> => {
+    return apiClient.patch<UnsubscribeNewsletterByEmailResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE_BY_EMAIL, data)
+  },
+
+  /**
+   * Unsubscribe from newsletter using email address (PUT method)
+   * Backend expects PUT to /newsletter/unsubscribe-by-email/
+   * Body must contain { email: string }
+   * Backend returns { email: string }
+   * Note: This sets is_active=False on the newsletter subscription
+   */
+  unsubscribeByEmailPut: async (data: UnsubscribeNewsletterByEmailRequest): Promise<UnsubscribeNewsletterByEmailResponse> => {
+    return apiClient.put<UnsubscribeNewsletterByEmailResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE_BY_EMAIL, data)
   },
 }
 
