@@ -578,6 +578,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         Returns a dictionary with the following keys:
         - period_days: Number of days included in the analysis
+        - total_customers: Total number of customers meeting the criteria
         - customers: List of top customers with metrics (customer_id, customer_name,
                      customer_email, total_revenue, total_orders, average_order_value,
                      first_purchase_date, last_purchase_date, days_since_last_purchase,
