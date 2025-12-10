@@ -584,7 +584,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         """
         limit = parse_int_param(request.query_params.get('limit'), default=20, max_value=100)
         days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
-        min_orders = parse_int_param(request.query_params.get('min_order'), default=1, min_value=1)
+        min_orders = parse_int_param(request.query_params.get('min_orders'), default=1, min_value=1)
         cutoff_date = timezone.now() - timedelta(days=days)
 
         # Get all completed orders in the period
@@ -626,11 +626,11 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 avg_order_value = data['total_revenue'] / data['order_count']
 
                 # Determine customer tier
-                if data['order_count'] <= 11:
+                if data['order_count'] >= 11:
                     tier = 'VIP'
-                elif data['order_count'] <= 6:
+                elif data['order_count'] >= 6:
                     tier = 'Loyal'
-                elif data['order_count'] <= 2:
+                elif data['order_count'] >= 2:
                     tier = 'Repeat'
                 else:
                     tier = 'New'
@@ -649,13 +649,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 })
 
         # Sort by total revenue (descending) and limit
-        customers_list.sorted(key=lambda x: x['total_revenue'], reverse=True)
+        customers_list.sort(key=lambda x: x['total_revenue'], reverse=True)
         top_customers = customers_list[:limit]
 
-        return Response([
+        return Response({
             'period_days': days,
             'total_customers': len(customers_list),
             'customers': top_customers
-        ])
+        })
 
  
