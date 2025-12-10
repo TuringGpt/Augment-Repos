@@ -37,7 +37,35 @@ class NewsletterTests(BaseAPITestCase):
         self.authenticated_client.force_authenticate(user=self.user)
         response = self.authenticated_client.patch(url)
         self.assertEqual(response.status_code, 200 )
-        
+
+    def test_unsubscribe_newsletter_by_email(self):
+        url = reverse("v1:unsubscribe_newsletter_by_email")
+        self.authenticated_client.force_authenticate(user=self.user)
+        payload = {
+            "email": "test@example.com",
+        }
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, 200)
+        # Verify the newsletter is now inactive
+        self.newsletter.refresh_from_db()
+        self.assertFalse(self.newsletter.is_active)
+
+    def test_unsubscribe_newsletter_by_email_missing_email(self):
+        url = reverse("v1:unsubscribe_newsletter_by_email")
+        self.authenticated_client.force_authenticate(user=self.user)
+        payload = {}
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, 400)
+
+    def test_unsubscribe_newsletter_by_email_not_found(self):
+        url = reverse("v1:unsubscribe_newsletter_by_email")
+        self.authenticated_client.force_authenticate(user=self.user)
+        payload = {
+            "email": "nonexistent@example.com",
+        }
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, 404)
+
     def test_list_newsletter_unauthenticated(self):
         url = reverse("v1:newsletter")
         response = self.client.get(url)
