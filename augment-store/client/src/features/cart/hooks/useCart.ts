@@ -119,7 +119,7 @@ export function useCart() {
   const itemCount = useMemo(() => getItemCount(), [cart?.items, getItemCount])
   const total = useMemo(() => getTotal(), [cart?.total, getTotal])
   const isEmpty = useMemo(() => !cart || cart.items.length === 0, [cart])
-  const hasItems = useMemo(() => cart && cart.items.length > 0, [cart])
+  const hasItems = useMemo(() => Boolean(cart && cart.items.length > 0), [cart])
 
   // Check if a product is in the cart
   const checkInCart = useCallback(
