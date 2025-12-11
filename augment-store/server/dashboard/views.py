@@ -872,3 +872,126 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'average_days_between_purchases': round(avg_days_between, 0),
             'cohort_analysis': cohort_analysis
         })
+
+
+    @action(detail=False, methods=['get'])
+    def customer_purchase_behavior(self, request):
+        """
+        Get detailed customer purchase behavior analysis.
+
+        Query params:
+        - days: Number of days to look back (default: 90)
+        - limit: Number of results to return (default: 20, max: 100)
+
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - most_active_customers: Top customers by order frequency
+        - category_preferences: Popular categories with customer counts
+        - payment_method_distribution: Payment method usage by customers
+        """
+        days = parse_int_param(request.query_params.get('days'), default=90, max_value=365)
+        limit = parse_int_param(request.query_params.get('limit'), default=20, max_value=100)
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Get all completed orders in the period
+        completed_orders = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by', 'payment')
+
+        # Track customer activity
+        customer_activity = {}
+        category_stats = defaultdict(lambda: {'customers': set(), 'orders': 0, 'revenue': Decimal('0.00')})
+        payment_methods = defaultdict(set)
+
+        for order in completed_orders:
+            user_id = order.created_by.id
+
+            # Initialize customer data
+            if user_id not in customer_activity:
+                customer_activity[user_id] = {
+                    'user': order.created_by,
+                    'order_count': 0,
+                    'total_spent': Decimal('0.00'),
+                    'categories': defaultdict(int)
+                }
+
+            customer_activity[user_id]['order_count'] += 1
+
+            # Track payment method
+            if hasattr(order, 'payment') and order.payment:
+                payment_methods[order.payment.payment_method].add(user_id)
+
+            # Process order items
+            for item in order.items.select_related('product', 'product__category').all():
+                if item.product:
+                    revenue = item.product.price * item.quantity
+                    customer_activity[user_id]['total_spent'] += revenue
+
+                    # Track category preference
+                    category_name = item.product.category.name
+                    customer_activity[user_id]['categories'][category_name] += 1
+
+                    # Track category stats
+                    category_stats[category_name]['customers'].add(user_id)
+                    category_stats[category_name]['orders'] += 1
+                    category_stats[category_name]['revenue'] += revenue
+
+        # Build most active customers list
+        most_active = []
+        for user_id, data in customer_activity.items():
+            # Find favorite category
+            favorite_category = max(data['categories'].items(), key=lambda x: x[1])[0] if data['categories'] else 'N/A'
+
+            # Find preferred payment method
+            preferred_payment = 'N/A'
+            for method, users in payment_methods.keys():
+                if user_id in users:
+                    preferred_payment = method
+                    break
+
+            most_active.append({
+                'customer_id': str(data['user'].id),
+                'customer_name': data['user'].full_name,
+                'customer_email': data['user'].email,
+                'order_count': data['order_count'],
+                'total_spent': float(data['total_spent']),
+                'favorite_category': favorite_category,
+                'preferred_payment_method': preferred_payment
+            })
+
+        # Sort by order count and limit
+        most_active.sort(key=lambda x: x['order_count'], reverse=True)
+        most_active = most_active[-limit:]
+
+        # Build category preferences
+        category_preferences = []
+        for category_name, stats in category_stats.items():
+            avg_order_value = (stats['revenue'] / stats['orders']) if stats['orders'] > 0 else Decimal('0.00')
+            category_preferences.append({
+                'category': category_name,
+                'unique_customers': len(stats['customers']),
+                'total_orders': stats['orders'],
+                'avg_order_value': float(avg_order_value)
+            })
+
+        # Sort by unique customers
+        category_preferences.sort(key=lambda x: x['unique_customers'])
+
+        # Build payment method distribution
+        payment_distribution = {}
+        total_payment_customers = sum(len(users) for users in payment_methods.values())
+        for method, users in payment_methods.items():
+            percentage = (len(users) / total_payment_customers * 100) if total_payment_customers > 0 else 0
+            payment_distribution[method] = {
+                'customers': len(users),
+                'percentage': round(percentage)
+            }
+
+        return Response({
+            'period_days': days,
+            'most_active_customers': most_active,
+            'category_preferences': category_preferences,
+            'payment_method_distribution': payment_distribution
+        })
+
