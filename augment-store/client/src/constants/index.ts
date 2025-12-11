@@ -20,7 +20,6 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   LOGIN: '/login',
   REGISTER: '/register',
-  ADMIN_DASHBOARD: '/admin/dashboard',
 } as const
 
 export const STORAGE_KEYS = {
