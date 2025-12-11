@@ -353,7 +353,7 @@ const Sidebar = () => {
                         <Dashboard />
                       </ListItemIcon>
                       <ListItemText
-                        primary="Admin Dashboard"
+                        primary={t('nav.adminDashboard')}
                         primaryTypographyProps={{ fontWeight: 'medium' }}
                       />
                     </ListItemButton>

@@ -225,7 +225,7 @@ const Header = () => {
                         <ListItemIcon>
                           <Dashboard fontSize="small" />
                         </ListItemIcon>
-                        <ListItemText>Admin Dashboard</ListItemText>
+                        <ListItemText>{t('nav.adminDashboard')}</ListItemText>
                       </MenuItem>
                     </>
                   )}
