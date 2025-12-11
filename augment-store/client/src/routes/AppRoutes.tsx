@@ -3,6 +3,7 @@ import MainLayout from '@layouts/MainLayout'
 import AuthLayout from '@layouts/AuthLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
 import PublicRoute from '@components/PublicRoute'
+import AdminRoute from '@components/AdminRoute'
 
 // Placeholder pages - to be implemented
 import HomePage from '@features/products/product-list/components/HomePage'
@@ -43,6 +44,9 @@ import ShippingPage from '@features/info/shipping/components/ShippingPage'
 import TermsPage from '@features/info/terms/components/TermsPage'
 import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
 import NotFoundPage from '@features/info/not-found/components/NotFoundPage'
+
+// Admin pages
+import AdminDashboard from '@features/admin/dashboard/components/AdminDashboard'
 
 const AppRoutes = () => {
   return (
@@ -94,6 +98,13 @@ const AppRoutes = () => {
         </Route>
       </Route>
 
+      {/* Admin routes - require authentication and admin role */}
+      <Route element={<AdminRoute />}>
+        <Route element={<MainLayout />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Route>
+      </Route>
+      
       {/* Catch all - 404 Not Found */}
       <Route element={<MainLayout />}>
         <Route path="*" element={<NotFoundPage />} />
