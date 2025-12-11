@@ -945,7 +945,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
             # Find preferred payment method
             preferred_payment = 'N/A'
-            for method, users in payment_methods.keys():
+            for method, users in payment_methods.items():
                 if user_id in users:
                     preferred_payment = method
                     break
@@ -962,7 +962,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Sort by order count and limit
         most_active.sort(key=lambda x: x['order_count'], reverse=True)
-        most_active = most_active[-limit:]
+        most_active = most_active[:limit]
 
         # Build category preferences
         category_preferences = []
@@ -976,7 +976,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             })
 
         # Sort by unique customers
-        category_preferences.sort(key=lambda x: x['unique_customers'])
+        category_preferences.sort(key=lambda x: x['unique_customers'], reverse=True)
 
         # Build payment method distribution
         payment_distribution = {}
@@ -985,7 +985,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             percentage = (len(users) / total_payment_customers * 100) if total_payment_customers > 0 else 0
             payment_distribution[method] = {
                 'customers': len(users),
-                'percentage': round(percentage)
+                'percentage': round(percentage, 2)
             }
 
         return Response({
