@@ -113,6 +113,11 @@ export const API_ENDPOINTS = {
     UNSUBSCRIBE: (id: string) => `/newsletter/unsubscribe/${id}`,
     UNSUBSCRIBE_BY_EMAIL: '/newsletter/unsubscribe-by-email/',
   },
+
+  // Admin Dashboard endpoints
+  ADMIN_DASHBOARD: {
+    ANALYTICS_OVERVIEW: '/dashboard/statistics/analytics_overview/',
+  },
 }
 
 // Stripe configuration
