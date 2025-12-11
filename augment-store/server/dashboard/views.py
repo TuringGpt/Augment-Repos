@@ -2,11 +2,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q, Sum, Avg, F, DecimalField
-from django.db.models.functions import Coalesce
+from django.db.models import Count, Q, Sum, Avg, F, DecimalField, Min, Max
+from django.db.models.functions import Coalesce, TruncMonth
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
+from collections import defaultdict
 
 from products.models import Product, ProductCategory
 from checkout.models import Order, OrderItem, Payment
@@ -50,12 +51,19 @@ def parse_int_param(value, default, min_value=1, max_value=None):
 
 class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    ViewSet for product statistics with multiple endpoints:
+    ViewSet for product and customer analytics with multiple endpoints:
+
+    Product Analytics:
     - most_viewed: Products with highest view count within a time window
     - most_added_to_cart: Products most frequently added to cart
     - best_selling: Products with highest purchase count
     - frequently_abandoned: Products frequently abandoned in cart
     - general_statistics: Aggregated statistics across all products
+    - analytics_overview: Comprehensive dashboard overview
+    - product_performance: Detailed product performance metrics
+
+    Customer Analytics:
+    - customer_lifetime_value: Top customers by revenue and value tier
     """
     queryset = ProductStatistics.objects.all()
     serializer_class = ProductStatisticsSerializer
@@ -557,3 +565,99 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'low_conversion_products': low_conversion_data,
             'high_engagement_products': high_engagement_data,
         })
+
+    @action(detail=False, methods=['get'])
+    def customer_lifetime_value(self, request):
+        """
+        Get top customers by lifetime value with detailed metrics.
+
+        Query params:
+        - limit: Number of customers to return (default: 20, max: 100)
+        - min_orders: Minimum number of orders to include customer (default: 1)
+        - days: Number of days to look back (default: 365 for all-time analysis)
+
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - total_customers: Total number of customers meeting the criteria
+        - customers: List of top customers with metrics (customer_id, customer_name,
+                     customer_email, total_revenue, total_orders, average_order_value,
+                     first_purchase_date, last_purchase_date, days_since_last_purchase,
+                     customer_tier)
+        """
+        limit = parse_int_param(request.query_params.get('limit'), default=20, max_value=100)
+        days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
+        min_orders = parse_int_param(request.query_params.get('min_orders'), default=1, min_value=1)
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Get all completed orders in the period
+        completed_orders = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by')
+
+        # Calculate customer metrics
+        customer_data = {}
+        for order in completed_orders:
+            user_id = order.created_by.id
+            if user_id not in customer_data:
+                customer_data[user_id] = {
+                    'user': order.created_by,
+                    'total_revenue': Decimal('0.00'),
+                    'order_count': 0,
+                    'order_dates': []
+                }
+
+            # Calculate order revenue
+            order_revenue = sum(
+                (item.product.price * item.quantity)
+                for item in order.items.select_related('product').all()
+                if item.product
+            )
+            customer_data[user_id]['total_revenue'] += order_revenue
+            customer_data[user_id]['order_count'] += 1
+            customer_data[user_id]['order_dates'].append(order.created_at)
+
+        # Filter by minimum orders and build response
+        customers_list = []
+        for user_id, data in customer_data.items():
+            if data['order_count'] >= min_orders:
+                order_dates = sorted(data['order_dates'])
+                first_purchase = order_dates[0]
+                last_purchase = order_dates[-1]
+                days_since_last = (timezone.now() - last_purchase).days
+                avg_order_value = data['total_revenue'] / data['order_count']
+
+                # Determine customer tier
+                if data['order_count'] >= 11:
+                    tier = 'VIP'
+                elif data['order_count'] >= 6:
+                    tier = 'Loyal'
+                elif data['order_count'] >= 2:
+                    tier = 'Repeat'
+                else:
+                    tier = 'New'
+
+                customers_list.append({
+                    'customer_id': str(data['user'].id),
+                    'customer_name': data['user'].full_name,
+                    'customer_email': data['user'].email,
+                    'total_revenue': Decimal(data['total_revenue']),
+                    'total_orders': data['order_count'],
+                    'average_order_value': Decimal(avg_order_value),
+                    'first_purchase_date': first_purchase.date().isoformat(),
+                    'last_purchase_date': last_purchase.date().isoformat(),
+                    'days_since_last_purchase': days_since_last,
+                    'customer_tier': tier
+                })
+
+        # Sort by total revenue (descending) and limit
+        customers_list.sort(key=lambda x: x['total_revenue'], reverse=True)
+        top_customers = customers_list[:limit]
+
+        return Response({
+            'period_days': days,
+            'total_customers': len(customers_list),
+            'customers': top_customers
+        })
+
+ 
