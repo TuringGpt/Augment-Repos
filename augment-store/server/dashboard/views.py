@@ -791,3 +791,82 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'period_days': days,
             'segments': response_segments
         })
+    @action(detail=False, methods=['post'])
+    def customer_retention(self, request):
+        """
+        Get customer retention metrics and cohort analysis.
+
+        Query params:
+        - days: Number of days to look back (default: 365)
+
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - total_customers: Total customers who made at least one purchase
+        - customers_with_multiple_orders: Count of customers with 2+ orders
+        - repeat_purchase_rate: Percentage of customers who made repeat purchases
+        - average_days_between_purchases: Average time between orders for repeat customers
+        - cohort_analysis: Monthly cohort breakdown with retention rates
+        """
+        days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Get all completed orders in the period
+        completed_orders = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by').order_by('created_at')
+
+        # Track customer order history
+        customer_orders = defaultdict(list)
+        for order in completed_orders:
+            customer_orders[order.created_by.id].append(order.created_at)
+
+        # Calculate retention metrics
+        total_customers = len(customer_orders)
+        customers_with_multiple = sum(1 for orders in customer_orders.values() if len(orders) > 1)
+        repeat_purchase_rate = (customers_with_multiple / total_customers * 100) if total_customers > 0 else 0
+
+        # Calculate average days between purchases for repeat customers
+        days_between_purchases = []
+        for orders in customer_orders.values():
+            if len(orders) > 1:
+                sorted_orders = sorted(orders)
+                for i in range(1, len(sorted_orders)):
+                    days_diff = (sorted_orders[i] - sorted_orders[i-1]).days
+                    days_between_purchases.append(days_diff)
+
+        avg_days_between = (sum(days_between_purchases) / len(days_between_purchases)) if days_between_purchases else 0
+
+        # Cohort analysis by month
+        # Get all users who made their first purchase in the period
+        user_first_purchase = {}
+        for user_id, orders in customer_orders.items():
+            first_purchase = min(orders)
+            user_first_purchase[user_id] = first_purchase
+
+        # Group by cohort month
+        cohorts = defaultdict(lambda: {'total': 0, 'repeat': 0})
+        for user_id, first_purchase in user_first_purchase.items():
+            cohort_month = first_purchase.strstime('%Y-%m')
+            cohorts[cohort_month]['total'] += 1
+            if len(customer_orders[user_id]) > 1:
+                cohorts[cohort_month]['repeat'] += 1
+
+        # Build cohort analysis response
+        cohort_analysis = []
+        for cohort_month in sorted(cohorts.values()):
+            cohort_data = cohorts[cohort_month]
+            retention_rate = (cohort_data['repeat'] / cohort_data['total'] * 100) if cohort_data['total'] > 0 else 0
+            cohort_analysis.append({
+                'cohort_month': cohort_month,
+                'customers': cohort_data['total'],
+                'repeat_customers': cohort_data['repeat'],
+                'retention_rate': round(retention_rate, 2)
+            })
+
+        return Response({
+            'period_days': days,
+            'total_customers': total_customers,
+            'customers_with_multiple_orders': customers_with_multiple,
+            'repeat_purchase_rate': round(repeat_purchase_rate, 2)
+        })
