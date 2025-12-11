@@ -11,8 +11,8 @@ export const adminDashboardService = {
    */
   getAnalyticsOverview: async (days: number = 30): Promise<AdminAnalyticsOverviewResponse> => {
     try {
-      // Validate days parameter
-      const validDays = Math.max(1, Math.min(365, days))
+      // Validate days parameter - ensure it's a finite number before clamping
+      const validDays = Number.isFinite(days) ? Math.max(1, Math.min(365, days)) : 30
 
       const response = await apiClient.get<AdminAnalyticsOverviewResponse>(
         API_ENDPOINTS.ADMIN_DASHBOARD.ANALYTICS_OVERVIEW,
