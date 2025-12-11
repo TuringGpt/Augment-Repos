@@ -847,14 +847,14 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Group by cohort month
         cohorts = defaultdict(lambda: {'total': 0, 'repeat': 0})
         for user_id, first_purchase in user_first_purchase.items():
-            cohort_month = first_purchase.strstime('%Y-%m')
+            cohort_month = first_purchase.strftime('%Y-%m')
             cohorts[cohort_month]['total'] += 1
             if len(customer_orders[user_id]) > 1:
                 cohorts[cohort_month]['repeat'] += 1
 
         # Build cohort analysis response
         cohort_analysis = []
-        for cohort_month in sorted(cohorts.values()):
+        for cohort_month in sorted(cohorts.keys()):
             cohort_data = cohorts[cohort_month]
             retention_rate = (cohort_data['repeat'] / cohort_data['total'] * 100) if cohort_data['total'] > 0 else 0
             cohort_analysis.append({
@@ -868,5 +868,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'period_days': days,
             'total_customers': total_customers,
             'customers_with_multiple_orders': customers_with_multiple,
-            'repeat_purchase_rate': round(repeat_purchase_rate, 2)
+            'repeat_purchase_rate': round(repeat_purchase_rate, 2),
+            'average_days_between_purchases': round(avg_days_between, 0),
+            'cohort_analysis': cohort_analysis
         })
