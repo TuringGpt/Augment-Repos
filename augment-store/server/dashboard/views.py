@@ -901,7 +901,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Track customer activity
         customer_activity = {}
-        category_stats = defaultdict(lambda: {'customers': set(), 'orders': 0, 'revenue': Decimal('0.00')})
+        category_stats = defaultdict(lambda: {'customers': set(), 'order_ids': set(), 'revenue': Decimal('0.00')})
         payment_methods = defaultdict(set)
 
         for order in completed_orders:
@@ -934,7 +934,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
                     # Track category stats
                     category_stats[category_name]['customers'].add(user_id)
-                    category_stats[category_name]['orders'] += 1
+                    category_stats[category_name]['order_ids'].add(order.id)  # Track distinct orders
                     category_stats[category_name]['revenue'] += revenue
 
         # Build most active customers list
@@ -967,11 +967,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Build category preferences
         category_preferences = []
         for category_name, stats in category_stats.items():
-            avg_order_value = (stats['revenue'] / stats['orders']) if stats['orders'] > 0 else Decimal('0.00')
+            total_orders = len(stats['order_ids'])  # Count distinct orders
+            avg_order_value = (stats['revenue'] / total_orders) if total_orders > 0 else Decimal('0.00')
             category_preferences.append({
                 'category': category_name,
                 'unique_customers': len(stats['customers']),
-                'total_orders': stats['orders'],
+                'total_orders': total_orders,
                 'avg_order_value': float(avg_order_value)
             })
 
