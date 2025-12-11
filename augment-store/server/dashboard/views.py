@@ -919,8 +919,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             customer_activity[user_id]['order_count'] += 1
 
             # Track payment method
-            if hasattr(order, 'payment') and order.payment:
+            try:
                 payment_methods[order.payment.payment_method].add(user_id)
+            except Payment.DoesNotExist:
+                pass
 
             # Process order items
             for item in order.items.select_related('product', 'product__category').all():
@@ -981,7 +983,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Build payment method distribution
         payment_distribution = {}
-        total_payment_customers = sum(len(users) for users in payment_methods.values())
+        # Use union of all customers to avoid double-counting customers who used multiple payment methods
+        all_payment_customers = set().union(*payment_methods.values()) if payment_methods else set()
+        total_payment_customers = len(all_payment_customers)
         for method, users in payment_methods.items():
             percentage = (len(users) / total_payment_customers * 100) if total_payment_customers > 0 else 0
             payment_distribution[method] = {
