@@ -661,3 +661,127 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
  
+ 
+    @action(detail=False, methods=['get'])
+    def customer_segments(self, request):
+        """
+        Get customer segmentation by behavior patterns.
+
+        Query params:
+        - days: Number of days to look back (default: 365)
+
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - segments: Dictionary containing metrics for each segment:
+          - new_customers: Customers with exactly 1 order
+          - repeat_customers: Customers with 2-5 orders
+          - loyal_customers: Customers with 6-10 orders
+          - vip_customers: Customers with 11+ orders
+          - at_risk_customers: Customers who haven't ordered in 90+ days
+          - churned_customers: Customers who haven't ordered in 180+ days
+        """
+        days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
+        cutoff_date = timezone.now() - timedelta(days=days)
+        now = timezone.now()
+
+        # Get all completed orders in the period
+        completed_orders = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by')
+
+        # Calculate customer metrics
+        customer_data = {}
+        for order in completed_orders:
+            user_id = order.created_by.id
+            if user_id not in customer_data:
+                customer_data[user_id] = {
+                    'order_count': 0,
+                    'total_revenue': Decimal('0.00'),
+                    'last_order_date': None
+                }
+
+            # Calculate order revenue
+            order_revenue = sum(
+                (item.product.price * item.quantity)
+                for item in order.items.select_related('product').all()
+                if item.product
+            )
+            customer_data[user_id]['total_revenue'] += order_revenue
+            customer_data[user_id]['order_count'] += 1
+
+            # Track most recent order
+            if customer_data[user_id]['last_order_date'] is None or order.created_at > customer_data[user_id]['last_order_date']:
+                customer_data[user_id]['last_order_date'] = order.created_at
+
+        # Segment customers
+        segments = {
+            'new_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
+            'repeat_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
+            'loyal_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
+            'vip_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'order_values': []},
+            'at_risk_customers': {'count': 0, 'days_since_purchase': []},
+            'churned_customers': {'count': 0, 'days_since_purchase': []}
+        }
+
+        for user_id, data in customer_data.items():
+            order_count = data['order_count']
+            revenue = data['total_revenue']
+            avg_order_value = revenue / order_count
+            days_since_last = (now - data['last_order_date']).days
+
+            # Categorize by order count
+            if order_count == 1:
+                segments['new_customers']['count'] += 1
+                segments['new_customers']['total_revenue'] += revenue
+                segments['new_customers']['order_values'].append(avg_order_value)
+            elif 2 <= order_count <= 5:
+                segments['repeat_customers']['count'] += 1
+                segments['repeat_customers']['total_revenue'] += revenue
+                segments['repeat_customers']['order_values'].append(avg_order_value)
+            elif 6 <= order_count <= 10:
+                segments['loyal_customers']['count'] += 1
+                segments['loyal_customers']['total_revenue'] += revenue
+                segments['loyal_customers']['order_values'].append(avg_order_value)
+            else:  # 11+
+                segments['vip_customers']['count'] += 1
+                segments['vip_customers']['total_revenue'] += revenue
+                segments['vip_customers']['order_values'].append(avg_order_value)
+
+            # Check for at-risk and churned
+            if days_since_last >= 180:
+                segments['churned_customers']['count'] += 1
+                segments['churned_customers']['days_since_purchase'].append(days_since_last)
+            elif days_since_last >= 90:
+                segments['at_risk_customers']['count'] += 1
+                segments['at_risk_customers']['days_since_purchase'].append(days_since_last)
+
+        # Calculate percentages and averages
+        total_customers = len(customer_data)
+
+        response_segments = {}
+        for segment_name, segment_data in segments.items():
+            count = segment_data['count']
+            percentage = (count / total_customers * 100) if total_customers > 0 else 0
+
+            if segment_name in ['at_risk_customers', 'churned_customers']:
+                avg_days = (sum(segment_data['days_since_purchase']) / count) if count > 0 else 0
+                response_segments[segment_name] = {
+                    'count': count,
+                    'percentage': round(percentage, 2),
+                    'last_purchase_avg_days': round(avg_days, 0)
+                }
+            else:
+                total_rev = segment_data['total_revenue']
+                avg_order_val = (sum(segment_data['order_values']) / count) if count > 0 else Decimal('0.00')
+                response_segments[segment_name] = {
+                    'count': count,
+                    'percentage': round(percentage, 2),
+                    'total_revenue': float(total_rev),
+                    'avg_order_value': float(avg_order_val)
+                }
+
+        return Response({
+            'period_days': days,
+            'segments': response_segments
+        })
