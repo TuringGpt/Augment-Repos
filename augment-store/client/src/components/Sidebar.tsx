@@ -27,6 +27,7 @@ import {
   Receipt,
   HelpOutline,
   Notifications,
+  Dashboard,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -117,6 +118,11 @@ const Sidebar = () => {
 
   const handleSupportClick = () => {
     navigate(ROUTES.SUPPORT_TICKETS)
+    closeSidebar()
+  }
+
+  const handleAdminDashboardClick = () => {
+    navigate(ROUTES.ADMIN_DASHBOARD)
     closeSidebar()
   }
 
@@ -330,6 +336,29 @@ const Sidebar = () => {
                     />
                   </ListItemButton>
                 </ListItem>
+
+                {/* Admin Dashboard - Only visible for admin users */}
+                {user?.role === 'admin' && (
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      onClick={handleAdminDashboardClick}
+                      sx={{
+                        py: 1.5,
+                        '&:hover': {
+                          background: 'rgba(255,255,255,0.1)',
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+                        <Dashboard />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Admin Dashboard"
+                        primaryTypographyProps={{ fontWeight: 'medium' }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                )}
 
                 {/* Logout */}
                 <ListItem disablePadding>

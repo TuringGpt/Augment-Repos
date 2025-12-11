@@ -17,6 +17,7 @@ export const ROUTES = {
   SUPPORT_TICKETS: '/support/tickets',
   SUPPORT_TICKET_DETAIL: '/support/tickets/:id',
   SUPPORT_CREATE: '/support/create',
+  ADMIN_DASHBOARD: '/admin/dashboard',
   LOGIN: '/login',
   REGISTER: '/register',
   ADMIN_DASHBOARD: '/admin/dashboard',
