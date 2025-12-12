@@ -983,22 +983,34 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         category_preferences.sort(key=lambda x: x['unique_customers'], reverse=True)
 
         # Build payment method distribution
-        # Reconstruct payment_methods dict from user_payment_methods for distribution calculation
-        payment_methods = defaultdict(set)
+        # Assign each customer to their most-used payment method for a mutually-exclusive distribution
+        customer_preferred_methods = {}
         for user_id, methods in user_payment_methods.items():
-            for method in methods.keys():
-                payment_methods[method].add(user_id)
+            if methods:
+                # Get the method with the highest count for this customer
+                preferred_method = max(methods.items(), key=lambda x: x[1])[0]
+                customer_preferred_methods[user_id] = preferred_method
 
+        # Count customers by their preferred (most-used) method
         payment_distribution = {}
-        # Use union of all customers to avoid double-counting customers who used multiple payment methods
-        all_payment_customers = set().union(*payment_methods.values()) if payment_methods else set()
-        total_payment_customers = len(all_payment_customers)
-        for method, users in payment_methods.items():
-            percentage = (len(users) / total_payment_customers * 100) if total_payment_customers > 0 else 0
+        total_customers_with_payments = len(customer_preferred_methods)
+
+        # Initialize distribution for all methods found
+        for method in set(customer_preferred_methods.values()):
             payment_distribution[method] = {
-                'customers': len(users),
-                'percentage': round(percentage, 2)
+                'customers': 0,
+                'percentage': 0.0
             }
+
+        # Count customers assigned to each method
+        for preferred_method in customer_preferred_methods.values():
+            payment_distribution[preferred_method]['customers'] += 1
+
+        # Calculate percentages based on total customers with payments
+        for method in payment_distribution:
+            if total_customers_with_payments > 0:
+                percentage = (payment_distribution[method]['customers'] / total_customers_with_payments * 100)
+                payment_distribution[method]['percentage'] = round(percentage, 2)
 
         return Response({
             'period_days': days,
