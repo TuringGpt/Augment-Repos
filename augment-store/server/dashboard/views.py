@@ -278,18 +278,19 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             if not order_items.exists():
                 continue
 
-            # Distribute payment amount proportionally across items based on quantity
-            # Only count items with products (items without products are skipped in allocation)
+            # Distribute payment amount proportionally across items based on their value
+            # (unit price × quantity), not just quantity. This ensures products are credited
+            # with revenue proportional to their actual value contribution.
             items_with_products = [item for item in order_items if item.product]
-            total_quantity = sum(item.quantity for item in items_with_products)
-            if total_quantity == 0:
+            total_value = sum(item.product.price * item.quantity for item in items_with_products)
+            if total_value == 0:
                 continue
 
-            amount_per_unit = payment.amount / total_quantity
-
+            # Allocate payment amount proportionally by each item's value
             for item in items_with_products:
                 product_id = str(item.product.id)
-                item_revenue = amount_per_unit * item.quantity
+                item_value = item.product.price * item.quantity
+                item_revenue = (item_value / total_value) * payment.amount
 
                 if product_id in product_revenue:
                     product_revenue[product_id]['revenue'] += item_revenue
@@ -330,18 +331,19 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             if not order_items.exists():
                 continue
 
-            # Distribute payment amount proportionally across items based on quantity
-            # Only count items with products and categories (items without are skipped in allocation)
+            # Distribute payment amount proportionally across items based on their value
+            # (unit price × quantity), not just quantity. This ensures categories are credited
+            # with revenue proportional to their actual value contribution.
             items_with_categories = [item for item in order_items if item.product and item.product.category]
-            total_quantity = sum(item.quantity for item in items_with_categories)
-            if total_quantity == 0:
+            total_value = sum(item.product.price * item.quantity for item in items_with_categories)
+            if total_value == 0:
                 continue
 
-            amount_per_unit = payment.amount / total_quantity
-
+            # Allocate payment amount proportionally by each item's value
             for item in items_with_categories:
                 category_name = item.product.category.name
-                item_revenue = amount_per_unit * item.quantity
+                item_value = item.product.price * item.quantity
+                item_revenue = (item_value / total_value) * payment.amount
 
                 if category_name in category_stats:
                     category_stats[category_name]['revenue'] += item_revenue
@@ -975,12 +977,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             if order_items.exists():
                 # Only count items with products (items without products are skipped in allocation)
                 items_with_products = [item for item in order_items if item.product]
-                total_quantity = sum(item.quantity for item in items_with_products)
-                if total_quantity > 0:
-                    amount_per_unit = payment.amount / total_quantity
-
+                total_value = sum(item.product.price * item.quantity for item in items_with_products)
+                if total_value > 0:
+                    # Allocate payment amount proportionally by each item's value
+                    # (unit price × quantity), not just quantity
                     for item in items_with_products:
-                        item_revenue = amount_per_unit * item.quantity
+                        item_value = item.product.price * item.quantity
+                        item_revenue = (item_value / total_value) * payment.amount
                         customer_activity[user_id]['total_spent'] += item_revenue
 
                         # Track category preference
