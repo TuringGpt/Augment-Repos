@@ -16,7 +16,7 @@ import {
   Divider,
   Avatar,
 } from '@mui/material'
-import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt, Email } from '@mui/icons-material'
+import { ShoppingCart, Person, Favorite, Logout, Menu, Receipt, Email, Dashboard } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useCartStore } from '@store/cartStore'
@@ -26,6 +26,7 @@ import SettingsMenu from '@components/SettingsMenu'
 import NotificationBell from '@features/notifications/components/NotificationBell'
 import { authService } from '@services/api/auth/authService'
 import { useTranslation } from '@hooks/useTranslation'
+import { ROUTES } from '@constants/index'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -215,6 +216,19 @@ const Header = () => {
                     </ListItemIcon>
                     <ListItemText>{t('footer.newsletter')}</ListItemText>
                   </MenuItem>
+
+                  {/* Admin Dashboard - Only visible for admin users */}
+                  {user?.role === 'admin' && (
+                    <>
+                      <Divider />
+                      <MenuItem onClick={() => handleProfileNavigation(ROUTES.ADMIN_DASHBOARD)}>
+                        <ListItemIcon>
+                          <Dashboard fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText>{t('nav.adminDashboard')}</ListItemText>
+                      </MenuItem>
+                    </>
+                  )}
 
                   <Divider />
 

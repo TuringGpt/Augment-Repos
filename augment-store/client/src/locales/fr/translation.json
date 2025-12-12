@@ -49,7 +49,8 @@
     "menu": "Menu",
     "support": "Support",
     "language": "Langue",
-    "selectLanguage": "Sélectionner la Langue"
+    "selectLanguage": "Sélectionner la Langue",
+    "adminDashboard": "Tableau de Bord Admin"
   },
   "tooltip": {
     "menu": "Ouvrir le menu",
