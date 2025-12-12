@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { adminDashboardService } from '@services/api'
 import type { AdminAnalyticsOverviewResponse } from '@features/admin-dashboard/types'
 
@@ -40,9 +40,6 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
   const [isLoading, setIsLoading] = useState(autoFetch)
   const [error, setError] = useState<string | null>(null)
 
-  // Track mounted state to prevent setState on unmounted component
-  const isMountedRef = useRef(true)
-
   const fetchAnalytics = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -50,22 +47,33 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
 
       const data = await adminDashboardService.getAnalyticsOverview(days)
 
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        setAnalytics(data)
+      setAnalytics(data)
+    } catch (err: any) {
+      // Extract meaningful error message
+      let errorMessage = 'Failed to fetch admin analytics data'
+
+      if (err?.response?.status === 404) {
+        errorMessage =
+          'Analytics endpoint not found. Please ensure the backend API is running and the endpoint exists.'
+      } else if (err?.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to view analytics.'
+      } else if (err?.response?.status === 401) {
+        errorMessage = 'Authentication required. Please log in again.'
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message
+      } else if (err?.message) {
+        errorMessage = err.message
       }
-    } catch (err) {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch admin analytics data'
-        setError(errorMessage)
-        console.error('Error fetching admin dashboard analytics:', err)
-      }
+
+      setError(errorMessage)
+      console.error('Error fetching admin dashboard analytics:', {
+        error: err,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        message: errorMessage,
+      })
     } finally {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        setIsLoading(false)
-      }
+      setIsLoading(false)
     }
   }, [days])
 
@@ -73,14 +81,8 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
     if (autoFetch) {
       fetchAnalytics()
     }
-  }, [autoFetch, fetchAnalytics])
-
-  // Cleanup: mark component as unmounted
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch, days])
 
   return {
     analytics,
@@ -89,4 +91,3 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
     refetch: fetchAnalytics,
   }
 }
-

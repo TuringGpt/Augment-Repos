@@ -35,6 +35,9 @@ import NotificationsPage from '@features/notifications/pages/NotificationsPage'
 // Newsletter pages
 import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
 
+// Admin Dashboard pages
+import AdminDashboardPage from '@features/admin-dashboard/pages/AdminDashboardPage'
+
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
 import ContactPage from '@features/info/contact/components/ContactPage'
@@ -95,6 +98,7 @@ const AppRoutes = () => {
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Route>
 
