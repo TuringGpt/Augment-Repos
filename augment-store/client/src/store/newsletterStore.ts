@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
-import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest } from '@services/api/newsletter/newsletterService'
+import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest } from '@services/api/newsletter/newsletterService'
 import { parseApiError } from '@utils/errorUtils'
 
 interface NewsletterState {
@@ -25,6 +25,8 @@ interface NewsletterState {
   subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
   clearSubscribeState: () => void
   unsubscribe: (id: string, data?: UnsubscribeNewsletterRequest) => Promise<void>
+  unsubscribeByEmailPatch: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
+  unsubscribeByEmailPut: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
   clearUnsubscribeState: () => void
 }
 
@@ -158,6 +160,62 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     } catch (error) {
       // Log the error for debugging
       console.error('Failed to unsubscribe from newsletter:', error)
+
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'NEWSLETTER_UNSUBSCRIBE_ERROR', // Error key for component to translate
+      })
+
+      set({
+        unsubscribeError: errorMessage,
+        isUnsubscribing: false,
+        unsubscribeSuccess: false,
+      })
+      throw error
+    }
+  },
+
+  unsubscribeByEmailPatch: async (data: UnsubscribeNewsletterByEmailRequest) => {
+    set({ isUnsubscribing: true, unsubscribeError: null, unsubscribeSuccess: false })
+    try {
+      await newsletterService.unsubscribeByEmailPatch(data)
+      set({
+        isUnsubscribing: false,
+        unsubscribeSuccess: true,
+      })
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to unsubscribe from newsletter by email (PATCH):', error)
+
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'NEWSLETTER_UNSUBSCRIBE_ERROR', // Error key for component to translate
+      })
+
+      set({
+        unsubscribeError: errorMessage,
+        isUnsubscribing: false,
+        unsubscribeSuccess: false,
+      })
+      throw error
+    }
+  },
+
+  unsubscribeByEmailPut: async (data: UnsubscribeNewsletterByEmailRequest) => {
+    set({ isUnsubscribing: true, unsubscribeError: null, unsubscribeSuccess: false })
+    try {
+      await newsletterService.unsubscribeByEmailPut(data)
+      set({
+        isUnsubscribing: false,
+        unsubscribeSuccess: true,
+      })
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to unsubscribe from newsletter by email (PUT):', error)
 
       // Use parseApiError to get a user-friendly message
       // Note: The actual user-facing message will be translated in the component

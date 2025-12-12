@@ -111,6 +111,12 @@ export const API_ENDPOINTS = {
     SUBSCRIBE: '/newsletter/subscribe/',
     LIST: '/newsletter/',
     UNSUBSCRIBE: (id: string) => `/newsletter/unsubscribe/${id}`,
+    UNSUBSCRIBE_BY_EMAIL: '/newsletter/unsubscribe-by-email/',
+  },
+
+  // Admin Dashboard endpoints
+  ADMIN_DASHBOARD: {
+    ANALYTICS_OVERVIEW: '/dashboard/statistics/analytics_overview/',
   },
 }
 
