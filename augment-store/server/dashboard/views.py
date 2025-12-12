@@ -739,6 +739,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'order_count': 0,
                     'total_revenue': Decimal('0.00'),
                     'period_revenue': Decimal('0.00'),  # Revenue within the time period
+                    'period_order_count': 0,  # Order count within the time period
                     'last_order_date': None
                 }
 
@@ -746,9 +747,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             customer_data[user_id]['total_revenue'] += payment.amount
             customer_data[user_id]['order_count'] += 1
 
-            # Only count revenue within the period for period-specific metrics
+            # Only count revenue and orders within the period for period-specific metrics
             if payment.order.created_at >= cutoff_date:
                 customer_data[user_id]['period_revenue'] += payment.amount
+                customer_data[user_id]['period_order_count'] += 1
 
             # Track most recent order
             if customer_data[user_id]['last_order_date'] is None or payment.order.created_at > customer_data[user_id]['last_order_date']:
@@ -756,36 +758,37 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Segment customers
         segments = {
-            'new_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'total_order_count': 0},
-            'repeat_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'total_order_count': 0},
-            'loyal_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'total_order_count': 0},
-            'vip_customers': {'count': 0, 'total_revenue': Decimal('0.00'), 'total_order_count': 0},
+            'new_customers': {'count': 0, 'period_revenue': Decimal('0.00'), 'period_order_count': 0},
+            'repeat_customers': {'count': 0, 'period_revenue': Decimal('0.00'), 'period_order_count': 0},
+            'loyal_customers': {'count': 0, 'period_revenue': Decimal('0.00'), 'period_order_count': 0},
+            'vip_customers': {'count': 0, 'period_revenue': Decimal('0.00'), 'period_order_count': 0},
             'at_risk_customers': {'count': 0, 'days_since_purchase': []},
             'churned_customers': {'count': 0, 'days_since_purchase': []}
         }
 
         for user_id, data in customer_data.items():
             order_count = data['order_count']
-            period_revenue = data['period_revenue']  # Use period-specific revenue
+            period_revenue = data['period_revenue']  # Revenue within the time period
+            period_order_count = data['period_order_count']  # Order count within the time period
             days_since_last = (now - data['last_order_date']).days
 
             # Categorize by order count (all-time)
             if order_count == 1:
                 segments['new_customers']['count'] += 1
-                segments['new_customers']['total_revenue'] += period_revenue
-                segments['new_customers']['total_order_count'] += order_count
+                segments['new_customers']['period_revenue'] += period_revenue
+                segments['new_customers']['period_order_count'] += period_order_count
             elif 2 <= order_count <= 5:
                 segments['repeat_customers']['count'] += 1
-                segments['repeat_customers']['total_revenue'] += period_revenue
-                segments['repeat_customers']['total_order_count'] += order_count
+                segments['repeat_customers']['period_revenue'] += period_revenue
+                segments['repeat_customers']['period_order_count'] += period_order_count
             elif 6 <= order_count <= 10:
                 segments['loyal_customers']['count'] += 1
-                segments['loyal_customers']['total_revenue'] += period_revenue
-                segments['loyal_customers']['total_order_count'] += order_count
+                segments['loyal_customers']['period_revenue'] += period_revenue
+                segments['loyal_customers']['period_order_count'] += period_order_count
             else:  # 11+
                 segments['vip_customers']['count'] += 1
-                segments['vip_customers']['total_revenue'] += period_revenue
-                segments['vip_customers']['total_order_count'] += order_count
+                segments['vip_customers']['period_revenue'] += period_revenue
+                segments['vip_customers']['period_order_count'] += period_order_count
 
             # Check for at-risk and churned (based on recency, not period)
             if days_since_last >= 180:
@@ -811,14 +814,15 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'last_purchase_avg_days': round(avg_days, 0)
                 }
             else:
-                total_rev = segment_data['total_revenue']
-                total_orders = segment_data['total_order_count']
-                # Calculate segment-level avg_order_value as total_revenue / total_order_count
-                avg_order_val = (total_rev / total_orders) if total_orders > 0 else Decimal('0.00')
+                period_rev = segment_data['period_revenue']
+                period_orders = segment_data['period_order_count']
+                # Calculate segment-level avg_order_value as period_revenue / period_order_count
+                # This ensures numerator and denominator are from the same time window
+                avg_order_val = (period_rev / period_orders) if period_orders > 0 else Decimal('0.00')
                 response_segments[segment_name] = {
                     'count': count,
                     'percentage': round(percentage, 2),
-                    'total_revenue': float(total_rev),
+                    'total_revenue': float(period_rev),
                     'avg_order_value': float(avg_order_val)
                 }
 
