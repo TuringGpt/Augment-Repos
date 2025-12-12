@@ -1072,4 +1072,116 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'category_preferences': category_preferences,
             'payment_method_distribution': payment_distribution
         })
+    
+    @action(detail=False, methods=['get'])
+    def churn_risk(self, request):
+        """
+        Identify customers at risk of churning based on inactivity.
 
+        Query params:
+        - limit: Number of at-risk customers to return (default: 50, max: 100)
+        - inactive_days: Days since last purchase to consider 'at risk' (default: 60)
+
+        Returns a dictionary with the following keys:
+        - at_risk_customers: List of customers at risk with detailed metrics
+        - summary: Overall summary of churn risk (total_at_risk, high_risk, medium_risk,
+                   potential_revenue_at_risk)
+        """
+        limit = parse_int_param(request.query_params.get('limit'), default=50, max_value=100)
+        inactive_days = parse_int_param(request.query_params.get('inactive_days'), default=0, max_value=365)
+
+        now = timezone.now()
+
+        # Get all completed orders
+        completed_orders = Order.objects.filter(
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by').order_by('created_at')
+
+        # Track customer order history
+        customer_data = {}
+        for order in completed_orders:
+            user_id = order.created_by.id
+            if user_id not in customer_data:
+                customer_data[user_id] = {
+                    'user': order.created_by,
+                    'order_dates': [],
+                    'total_revenue': Decimal('0.00')
+                }
+
+            customer_data[user_id]['order_dates'].append(order.created_at)
+
+            # Calculate order revenue
+            order_revenue = sum(
+                (item.product.price * item.quantity)
+                for item in order.items.select_related('product').all()
+                if item.product
+            )
+            customer_data[user_id]['total_revenue'] += order_revenue
+
+        # Identify at-risk customers
+        at_risk_list = []
+        high_risk_count = 0
+        medium_risk_count = 0
+        potential_revenue = Decimal('0.00')
+
+        for user_id, data in customer_data.items():
+            order_dates = sorted(data['order_dates'])
+            last_purchase = order_dates[-1]
+            days_since_last = (now - last_purchase).days
+
+            # Only include customers who are inactive
+            if days_since_last >= inactive_days:
+                order_count = len(order_dates)
+
+                # Calculate average days between orders (for customers with multiple orders)
+                avg_days_between = 0
+                if order_count > 1:
+                    total_days = (order_dates[-1] + order_dates[0]).days
+                    avg_days_between = total_days / (order_count - 1)
+
+                # Determine risk level
+                # High risk: inactive longer than 2x their average purchase cycle
+                # Medium risk: inactive longer than their average purchase cycle
+                if order_count > 1 and avg_days_between > 0:
+                    if days_since_last > avg_days_between * 2:
+                        risk_level = 'high'
+                        high_risk_count += 1
+                    else:
+                        risk_level = 'medium'
+                        medium_risk_count += 1
+                else:
+                    # Single purchase customers
+                    if days_since_last < 120:
+                        risk_level = 'high'
+                        high_risk_count += 1
+                    else:
+                        risk_level = 'medium'
+                        medium_risk_count += 1
+
+                potential_revenue += data['total_revenue']
+
+                at_risk_list.append({
+                    'customer_id': str(data['user'].id),
+                    'customer_name': data['user'].full_name,
+                    'customer_email': data['user'].email,
+                    'last_purchase_date': last_purchase.date().isoformat(),
+                    'days_since_last_purchase': days_since_last,
+                    'total_lifetime_orders': order_count,
+                    'total_lifetime_revenue': float(data['total_revenue']),
+                    'risk_level': risk_level,
+                    'previous_avg_days_between_orders': round(avg_days_between, 0) if avg_days_between > 0 else 0
+                })
+
+        # Sort by risk level (high first) then by days since last purchase
+        at_risk_list.sort(key=lambda x: (100 if x['risk_level'] == 'high' else 1, -x['days_since_last_purchase']))
+        at_risk_list = at_risk_list[:limit]
+
+        return Response({
+            'at_risk_customers': at_risk_list,
+            'summary': {
+                'total_at_risk': len(at_risk_list),
+                'high_risk': high_risk_count,
+                'medium_risk': medium_risk_count,
+                'potential_revenue_at_risk': float(potential_revenue)
+            }
+        })
