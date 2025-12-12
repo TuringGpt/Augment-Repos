@@ -902,7 +902,8 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Track customer activity
         customer_activity = {}
         category_stats = defaultdict(lambda: {'customers': set(), 'order_ids': set(), 'revenue': Decimal('0.00')})
-        payment_methods = defaultdict(set)
+        # Track per-user payment method counts to find most-used method
+        user_payment_methods = defaultdict(lambda: defaultdict(int))
 
         for order in completed_orders:
             user_id = order.created_by.id
@@ -918,9 +919,10 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
             customer_activity[user_id]['order_count'] += 1
 
-            # Track payment method
+            # Track payment method usage per user
             try:
-                payment_methods[order.payment.payment_method].add(user_id)
+                payment_method = order.payment.payment_method
+                user_payment_methods[user_id][payment_method] += 1
             except Payment.DoesNotExist:
                 pass
 
@@ -945,12 +947,11 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             # Find favorite category
             favorite_category = max(data['categories'].items(), key=lambda x: x[1])[0] if data['categories'] else 'N/A'
 
-            # Find preferred payment method
+            # Find preferred payment method (most-used method for this user)
             preferred_payment = 'N/A'
-            for method, users in payment_methods.items():
-                if user_id in users:
-                    preferred_payment = method
-                    break
+            if user_id in user_payment_methods and user_payment_methods[user_id]:
+                # Get the payment method with the highest count
+                preferred_payment = max(user_payment_methods[user_id].items(), key=lambda x: x[1])[0]
 
             most_active.append({
                 'customer_id': str(data['user'].id),
@@ -982,6 +983,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         category_preferences.sort(key=lambda x: x['unique_customers'], reverse=True)
 
         # Build payment method distribution
+        # Reconstruct payment_methods dict from user_payment_methods for distribution calculation
+        payment_methods = defaultdict(set)
+        for user_id, methods in user_payment_methods.items():
+            for method in methods.keys():
+                payment_methods[method].add(user_id)
+
         payment_distribution = {}
         # Use union of all customers to avoid double-counting customers who used multiple payment methods
         all_payment_customers = set().union(*payment_methods.values()) if payment_methods else set()
