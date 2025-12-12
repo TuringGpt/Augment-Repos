@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from collections import defaultdict
+from accounts.permissions import hasAdminOrMerchantRole
 
 from products.models import Product, ProductCategory
 from checkout.models import Order, OrderItem, Payment
@@ -231,16 +232,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         total_orders = orders_in_period.count()
         completed_orders = orders_in_period.filter(status=Order.OrderStatus.COMPLETED).count()
 
-        # Revenue calculation (from completed orders)
-        completed_order_items = OrderItem.objects.filter(
+        # Revenue calculation (from completed orders using actual charged amounts)
+        # Use Payment.amount as the source of truth for actual charged amounts
+        completed_payments = Payment.objects.filter(
             order__created_at__gte=cutoff_date,
             order__status=Order.OrderStatus.COMPLETED,
-            product__isnull=False
-        ).select_related('product')
+            payment_status=Payment.PaymentStatus.PAID
+        )
 
         total_revenue = sum(
-            (item.product.price * item.quantity) for item in completed_order_items
-        ) if completed_order_items.exists() else Decimal('0.00')
+            payment.amount for payment in completed_payments
+        ) if completed_payments.exists() else Decimal('0.00')
 
         # Average order value
         avg_order_value = (total_revenue / completed_orders) if completed_orders > 0 else Decimal('0.00')
@@ -268,20 +270,38 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         top_products_by_revenue = []
         product_revenue = {}
 
-        for item in completed_order_items:
-            product_id = str(item.product.id)
-            revenue = item.product.price * item.quantity
-            if product_id in product_revenue:
-                product_revenue[product_id]['revenue'] += revenue
-                product_revenue[product_id]['units_sold'] += item.quantity
-            else:
-                product_revenue[product_id] = {
-                    'product_id': product_id,
-                    'product_name': item.product.name,
-                    'revenue': revenue,
-                    'units_sold': item.quantity,
-                    'price': item.product.price
-                }
+        # Calculate revenue per product using Payment.amount distributed across items
+        for payment in completed_payments:
+            order = payment.order
+            order_items = order.items.select_related('product').all()
+
+            if not order_items.exists():
+                continue
+
+            # Distribute payment amount proportionally across items based on quantity
+            total_quantity = sum(item.quantity for item in order_items)
+            if total_quantity == 0:
+                continue
+
+            amount_per_unit = payment.amount / total_quantity
+
+            for item in order_items:
+                if not item.product:
+                    continue
+                product_id = str(item.product.id)
+                item_revenue = amount_per_unit * item.quantity
+
+                if product_id in product_revenue:
+                    product_revenue[product_id]['revenue'] += item_revenue
+                    product_revenue[product_id]['units_sold'] += item.quantity
+                else:
+                    product_revenue[product_id] = {
+                        'product_id': product_id,
+                        'product_name': item.product.name,
+                        'revenue': item_revenue,
+                        'units_sold': item.quantity,
+                        'price': item.product.price
+                    }
 
         # Sort by revenue and get top 5
         sorted_products = sorted(
@@ -303,21 +323,37 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # ===== CATEGORY PERFORMANCE =====
         category_stats = {}
-        for item in completed_order_items:
-            category_name = item.product.category.name
-            revenue = item.product.price * item.quantity
+        for payment in completed_payments:
+            order = payment.order
+            order_items = order.items.select_related('product', 'product__category').all()
 
-            if category_name in category_stats:
-                category_stats[category_name]['revenue'] += revenue
-                category_stats[category_name]['units_sold'] += item.quantity
-                category_stats[category_name]['order_ids'].add(item.order_id)
-            else:
-                category_stats[category_name] = {
-                    'category_name': category_name,
-                    'revenue': revenue,
-                    'units_sold': item.quantity,
-                    'order_ids': {item.order_id}  # Track unique order IDs
-                }
+            if not order_items.exists():
+                continue
+
+            # Distribute payment amount proportionally across items based on quantity
+            total_quantity = sum(item.quantity for item in order_items)
+            if total_quantity == 0:
+                continue
+
+            amount_per_unit = payment.amount / total_quantity
+
+            for item in order_items:
+                if not item.product or not item.product.category:
+                    continue
+                category_name = item.product.category.name
+                item_revenue = amount_per_unit * item.quantity
+
+                if category_name in category_stats:
+                    category_stats[category_name]['revenue'] += item_revenue
+                    category_stats[category_name]['units_sold'] += item.quantity
+                    category_stats[category_name]['order_ids'].add(item.order_id)
+                else:
+                    category_stats[category_name] = {
+                        'category_name': category_name,
+                        'revenue': item_revenue,
+                        'units_sold': item.quantity,
+                        'order_ids': {item.order_id}  # Track unique order IDs
+                    }
 
         # Sort by revenue
         sorted_categories = sorted(
@@ -566,10 +602,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'high_engagement_products': high_engagement_data,
         })
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_lifetime_value(self, request):
         """
         Get top customers by lifetime value with detailed metrics.
+
+        RESTRICTED: Admin and Merchant users only. This endpoint exposes sensitive customer data
+        including email addresses and purchase history.
 
         Query params:
         - limit: Number of customers to return (default: 20, max: 100)
@@ -589,33 +628,29 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         min_orders = parse_int_param(request.query_params.get('min_orders'), default=1, min_value=1)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Get all completed orders in the period
-        completed_orders = Order.objects.filter(
-            created_at__gte=cutoff_date,
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by')
+        # Get all completed payments in the period (source of truth for actual charged amounts)
+        completed_payments = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by')
 
         # Calculate customer metrics
         customer_data = {}
-        for order in completed_orders:
-            user_id = order.created_by.id
+        for payment in completed_payments:
+            user_id = payment.order.created_by.id
             if user_id not in customer_data:
                 customer_data[user_id] = {
-                    'user': order.created_by,
+                    'user': payment.order.created_by,
                     'total_revenue': Decimal('0.00'),
                     'order_count': 0,
                     'order_dates': []
                 }
 
-            # Calculate order revenue
-            order_revenue = sum(
-                (item.product.price * item.quantity)
-                for item in order.items.select_related('product').all()
-                if item.product
-            )
-            customer_data[user_id]['total_revenue'] += order_revenue
+            # Use actual charged amount from payment
+            customer_data[user_id]['total_revenue'] += payment.amount
             customer_data[user_id]['order_count'] += 1
-            customer_data[user_id]['order_dates'].append(order.created_at)
+            customer_data[user_id]['order_dates'].append(payment.order.created_at)
 
         # Filter by minimum orders and build response
         customers_list = []
@@ -662,10 +697,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
  
  
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_segments(self, request):
         """
         Get customer segmentation by behavior patterns.
+
+        RESTRICTED: Admin and Merchant users only. This endpoint exposes sensitive customer data
+        including behavioral patterns and purchase history.
 
         Query params:
         - days: Number of days to look back for revenue calculations (default: 365)
@@ -684,16 +722,18 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         cutoff_date = timezone.now() - timedelta(days=days)
         now = timezone.now()
 
-        # Get ALL completed orders (not filtered by date) to properly identify all customers
+        # Get ALL completed payments (not filtered by date) to properly identify all customers
         # and their recency, including those at risk or churned
-        completed_orders = Order.objects.filter(
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by')
+        # Use actual charged amounts from Payment as source of truth
+        all_payments = Payment.objects.filter(
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by')
 
         # Calculate customer metrics
         customer_data = {}
-        for order in completed_orders:
-            user_id = order.created_by.id
+        for payment in all_payments:
+            user_id = payment.order.created_by.id
             if user_id not in customer_data:
                 customer_data[user_id] = {
                     'order_count': 0,
@@ -702,22 +742,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                     'last_order_date': None
                 }
 
-            # Calculate order revenue
-            order_revenue = sum(
-                (item.product.price * item.quantity)
-                for item in order.items.select_related('product').all()
-                if item.product
-            )
-            customer_data[user_id]['total_revenue'] += order_revenue
+            # Use actual charged amount from payment
+            customer_data[user_id]['total_revenue'] += payment.amount
             customer_data[user_id]['order_count'] += 1
 
             # Only count revenue within the period for period-specific metrics
-            if order.created_at >= cutoff_date:
-                customer_data[user_id]['period_revenue'] += order_revenue
+            if payment.order.created_at >= cutoff_date:
+                customer_data[user_id]['period_revenue'] += payment.amount
 
             # Track most recent order
-            if customer_data[user_id]['last_order_date'] is None or order.created_at > customer_data[user_id]['last_order_date']:
-                customer_data[user_id]['last_order_date'] = order.created_at
+            if customer_data[user_id]['last_order_date'] is None or payment.order.created_at > customer_data[user_id]['last_order_date']:
+                customer_data[user_id]['last_order_date'] = payment.order.created_at
 
         # Segment customers
         segments = {
@@ -791,10 +826,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'period_days': days,
             'segments': response_segments
         })
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_retention(self, request):
         """
         Get customer retention metrics and cohort analysis.
+
+        RESTRICTED: Admin and Merchant users only. This endpoint exposes sensitive customer data
+        including behavioral patterns and purchase history.
 
         Query params:
         - days: Number of days to look back (default: 365)
@@ -874,10 +912,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_purchase_behavior(self, request):
         """
         Get detailed customer purchase behavior analysis.
+
+        RESTRICTED: Admin and Merchant users only. This endpoint exposes sensitive customer data
+        including email addresses, payment methods, and behavioral patterns.
 
         Query params:
         - days: Number of days to look back (default: 90)
@@ -893,11 +934,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         limit = parse_int_param(request.query_params.get('limit'), default=20, max_value=100)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Get all completed orders in the period
-        completed_orders = Order.objects.filter(
-            created_at__gte=cutoff_date,
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by', 'payment')
+        # Get all completed payments in the period (source of truth for actual charged amounts)
+        completed_payments = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by')
 
         # Track customer activity
         customer_activity = {}
@@ -905,7 +947,8 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Track per-user payment method counts to find most-used method
         user_payment_methods = defaultdict(lambda: defaultdict(int))
 
-        for order in completed_orders:
+        for payment in completed_payments:
+            order = payment.order
             user_id = order.created_by.id
 
             # Initialize customer data
@@ -920,26 +963,29 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             customer_activity[user_id]['order_count'] += 1
 
             # Track payment method usage per user
-            try:
-                payment_method = order.payment.payment_method
-                user_payment_methods[user_id][payment_method] += 1
-            except Payment.DoesNotExist:
-                pass
+            payment_method = payment.payment_method
+            user_payment_methods[user_id][payment_method] += 1
 
-            # Process order items
-            for item in order.items.select_related('product', 'product__category').all():
-                if item.product:
-                    revenue = item.product.price * item.quantity
-                    customer_activity[user_id]['total_spent'] += revenue
+            # Process order items and distribute payment amount proportionally
+            order_items = order.items.select_related('product', 'product__category').all()
+            if order_items.exists():
+                total_quantity = sum(item.quantity for item in order_items)
+                if total_quantity > 0:
+                    amount_per_unit = payment.amount / total_quantity
 
-                    # Track category preference
-                    category_name = item.product.category.name
-                    customer_activity[user_id]['categories'][category_name] += 1
+                    for item in order_items:
+                        if item.product:
+                            item_revenue = amount_per_unit * item.quantity
+                            customer_activity[user_id]['total_spent'] += item_revenue
 
-                    # Track category stats
-                    category_stats[category_name]['customers'].add(user_id)
-                    category_stats[category_name]['order_ids'].add(order.id)  # Track distinct orders
-                    category_stats[category_name]['revenue'] += revenue
+                            # Track category preference
+                            category_name = item.product.category.name
+                            customer_activity[user_id]['categories'][category_name] += 1
+
+                            # Track category stats
+                            category_stats[category_name]['customers'].add(user_id)
+                            category_stats[category_name]['order_ids'].add(order.id)  # Track distinct orders
+                            category_stats[category_name]['revenue'] += item_revenue
 
         # Build most active customers list
         most_active = []
