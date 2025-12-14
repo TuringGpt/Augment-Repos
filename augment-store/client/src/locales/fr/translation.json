@@ -356,7 +356,8 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Échec de l'abonnement. Veuillez réessayer.",
-      "fetchFailed": "Échec du chargement des abonnements à la newsletter. Veuillez réessayer."
+      "fetchFailed": "Échec du chargement des abonnements à la newsletter. Veuillez réessayer.",
+      "unsubscribeFailed": "Échec de la désinscription. Veuillez réessayer."
     }
   },
   "contact": {

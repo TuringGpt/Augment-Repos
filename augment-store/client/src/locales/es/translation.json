@@ -356,7 +356,8 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Error al suscribirse. Por favor, inténtalo de nuevo.",
-      "fetchFailed": "Error al cargar las suscripciones al boletín. Por favor, inténtalo de nuevo."
+      "fetchFailed": "Error al cargar las suscripciones al boletín. Por favor, inténtalo de nuevo.",
+      "unsubscribeFailed": "Error al cancelar la suscripción. Por favor, inténtalo de nuevo."
     }
   },
   "contact": {

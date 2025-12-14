@@ -356,7 +356,8 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Failed to subscribe. Please try again.",
-      "fetchFailed": "Failed to load newsletter subscriptions. Please try again."
+      "fetchFailed": "Failed to load newsletter subscriptions. Please try again.",
+      "unsubscribeFailed": "Failed to unsubscribe. Please try again."
     }
   },
   "contact": {

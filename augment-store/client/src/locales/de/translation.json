@@ -356,7 +356,8 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut."
+      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut.",
+      "unsubscribeFailed": "Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
     }
   },
   "contact": {
