@@ -48,9 +48,6 @@ import TermsPage from '@features/info/terms/components/TermsPage'
 import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
 import NotFoundPage from '@features/info/not-found/components/NotFoundPage'
 
-// Admin pages
-import AdminDashboard from '@features/admin/dashboard/components/AdminDashboard'
-
 const AppRoutes = () => {
   return (
     <Routes>
@@ -98,14 +95,13 @@ const AppRoutes = () => {
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Route>
 
       {/* Admin routes - require authentication and admin role */}
       <Route element={<AdminRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Route>
       
