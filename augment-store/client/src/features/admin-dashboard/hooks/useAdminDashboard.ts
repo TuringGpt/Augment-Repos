@@ -113,23 +113,28 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
     }
   }, [days])
 
+  // Fetch analytics when autoFetch or days changes
   useEffect(() => {
     if (autoFetch) {
       fetchAnalytics()
     }
 
-    // Cleanup function to handle unmount
+    // Cleanup: abort in-flight requests when dependencies change
     return () => {
-      // Mark component as unmounted
-      isMountedRef.current = false
-
-      // Cancel any in-flight requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch, days])
+
+  // Track mounted state - only runs on mount and unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   return {
     analytics,
