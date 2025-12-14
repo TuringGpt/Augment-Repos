@@ -1073,10 +1073,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'payment_method_distribution': payment_distribution
         })
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def churn_risk(self, request):
         """
         Identify customers at risk of churning based on inactivity.
+
+        RESTRICTED: Admin and Merchant users only. This endpoint exposes sensitive customer data
+        including email addresses, names, and purchase history.
 
         Query params:
         - limit: Number of at-risk customers to return (default: 50, max: 100)
@@ -1092,14 +1095,16 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         now = timezone.now()
 
-        # Get all completed orders
-        completed_orders = Order.objects.filter(
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by').order_by('created_at')
+        # Get all completed payments (source of truth for actual charged amounts)
+        completed_payments = Payment.objects.filter(
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by')
 
         # Track customer order history
         customer_data = {}
-        for order in completed_orders:
+        for payment in completed_payments:
+            order = payment.order
             user_id = order.created_by.id
             if user_id not in customer_data:
                 customer_data[user_id] = {
@@ -1110,13 +1115,8 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
             customer_data[user_id]['order_dates'].append(order.created_at)
 
-            # Calculate order revenue
-            order_revenue = sum(
-                (item.product.price * item.quantity)
-                for item in order.items.select_related('product').all()
-                if item.product
-            )
-            customer_data[user_id]['total_revenue'] += order_revenue
+            # Use actual charged amount from payment (source of truth)
+            customer_data[user_id]['total_revenue'] += payment.amount
 
         # Identify at-risk customers
         at_risk_list = []
