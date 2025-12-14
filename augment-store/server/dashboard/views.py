@@ -1088,7 +1088,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                    potential_revenue_at_risk)
         """
         limit = parse_int_param(request.query_params.get('limit'), default=50, max_value=100)
-        inactive_days = parse_int_param(request.query_params.get('inactive_days'), default=0, max_value=365)
+        inactive_days = parse_int_param(request.query_params.get('inactive_days'), default=60, max_value=365)
 
         now = timezone.now()
 
@@ -1136,7 +1136,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 # Calculate average days between orders (for customers with multiple orders)
                 avg_days_between = 0
                 if order_count > 1:
-                    total_days = (order_dates[-1] + order_dates[0]).days
+                    total_days = (order_dates[-1] - order_dates[0]).days
                     avg_days_between = total_days / (order_count - 1)
 
                 # Determine risk level
@@ -1151,7 +1151,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                         medium_risk_count += 1
                 else:
                     # Single purchase customers
-                    if days_since_last < 120:
+                    if days_since_last > 120:
                         risk_level = 'high'
                         high_risk_count += 1
                     else:
@@ -1173,7 +1173,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 })
 
         # Sort by risk level (high first) then by days since last purchase
-        at_risk_list.sort(key=lambda x: (100 if x['risk_level'] == 'high' else 1, -x['days_since_last_purchase']))
+        at_risk_list.sort(key=lambda x: (0 if x['risk_level'] == 'high' else 1, -x['days_since_last_purchase']))
         at_risk_list = at_risk_list[:limit]
 
         return Response({
