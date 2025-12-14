@@ -244,16 +244,20 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             payment.amount for payment in completed_payments
         ) if completed_payments.exists() else Decimal('0.00')
 
-        # Average order value
-        avg_order_value = (total_revenue / completed_orders) if completed_orders > 0 else Decimal('0.00')
+        # Average order value (based on paid orders only)
+        # Use count of paid orders to match the revenue calculation
+        paid_orders_count = completed_payments.count()
+        avg_order_value = (total_revenue / paid_orders_count) if paid_orders_count > 0 else Decimal('0.00')
 
         # ===== CONVERSION FUNNEL =====
         total_views = ProductView.objects.filter(created_at__gte=cutoff_date).count()
         total_cart_adds = CartItem.objects.filter(created_at__gte=cutoff_date).count()
-        # Count actual purchases (order items) in the time period from completed orders
+        # Count actual purchases (order items) in the time period from paid orders
+        # Use payment_status=PAID to match revenue calculation logic
         total_purchases = OrderItem.objects.filter(
             order__created_at__gte=cutoff_date,
             order__status=Order.OrderStatus.COMPLETED,
+            order__payment__payment_status=Payment.PaymentStatus.PAID,
             product__isnull=False
         ).aggregate(total=Sum('quantity'))['total'] or 0
 
@@ -439,10 +443,13 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         ).values('product_id').annotate(view_count=Count('id')):
             views_by_product[item['product_id']] = item['view_count']
 
-        # Get all purchases within the time window
+        # Get all purchases within the time window (only from paid orders)
+        # Use payment_status=PAID to match revenue calculation logic
         purchases_by_product = {}
         for item in OrderItem.objects.filter(
-            created_at__gte=cutoff_date
+            created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            order__payment__payment_status=Payment.PaymentStatus.PAID
         ).values('product_id').annotate(purchase_count=Count('id')):
             purchases_by_product[item['product_id']] = item['purchase_count']
 
@@ -854,16 +861,18 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         days = parse_int_param(request.query_params.get('days'), default=365, max_value=3650)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Get all completed orders in the period
-        completed_orders = Order.objects.filter(
-            created_at__gte=cutoff_date,
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by').order_by('created_at')
+        # Get all completed payments in the period (source of truth for actual paid orders)
+        # Use payment_status=PAID to match other analytics endpoints
+        completed_payments = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by').order_by('order__created_at')
 
         # Track customer order history
         customer_orders = defaultdict(list)
-        for order in completed_orders:
-            customer_orders[order.created_by.id].append(order.created_at)
+        for payment in completed_payments:
+            customer_orders[payment.order.created_by.id].append(payment.order.created_at)
 
         # Calculate retention metrics
         total_customers = len(customer_orders)
@@ -1210,12 +1219,14 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             payment_status=Payment.PaymentStatus.PAID
         ).select_related('order', 'order__created_by')
 
-        # Get all completed orders before the period (to identify returning customers)
+        # Get all customers with paid orders before the period (to identify returning customers)
+        # Use payment_status=PAID to match the period revenue calculation logic
         historical_customers = set(
-            Order.objects.filter(
-                created_at__lt=cutoff_date,
-                status=Order.OrderStatus.COMPLETED
-            ).values_list('created_by_id', flat=True).distinct()
+            Payment.objects.filter(
+                order__created_at__lt=cutoff_date,
+                order__status=Order.OrderStatus.COMPLETED,
+                payment_status=Payment.PaymentStatus.PAID
+            ).values_list('order__created_by_id', flat=True).distinct()
         )
 
         # Categorize orders and calculate metrics
