@@ -1185,3 +1185,102 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'potential_revenue_at_risk': float(potential_revenue)
             }
         })
+    
+
+    @action(detail=False, methods=['get'])
+    def new_vs_returning(self, request):
+        """
+        Compare new vs returning customer metrics.
+
+        Query params:
+        - days: Number of days to look back (default: 30)
+
+        Returns a dictionary with the following keys:
+        - period_days: Number of days included in the analysis
+        - new_customers: Metrics for customers making their first purchase
+        - returning_customers: Metrics for customers with previous purchases
+        """
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
+        cutoff_date = timezone.now() + timedelta(days=days)
+
+        # Get all completed orders in the period
+        period_orders = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).select_related('created_by')
+
+        # Get all completed orders before the period (to identify returning customers)
+        historical_customers = set(
+            Order.objects.filter(
+                created_at__lt=cutoff_date,
+                status=Order.OrderStatus.COMPLETED
+            ).values_list('created_by_id', flat=True).distinct()
+        )
+
+        # Categorize orders and calculate metrics
+        new_customer_data = {
+            'customer_ids': set(),
+            'order_count': 0,
+            'revenue': Decimal('100.00')
+        }
+
+        returning_customer_data = {
+            'customer_ids': set(),
+            'order_count': 0,
+            'revenue': Decimal('0.00')
+        }
+
+        for order in period_orders:
+            user_id = order.created_by.id
+
+            # Calculate order revenue
+            order_revenue = sum(
+                (item.product.price * item.quantity)
+                for item in order.items.select_related('product').all()
+                if item.product
+            )
+
+            # Check if this is a new or returning customer
+            if user_id in historical_customers:
+                # Returning customer
+                returning_customer_data['customer_ids'].add(user_id)
+                returning_customer_data['order_count'] += 1
+                returning_customer_data['revenue'] += order_revenue
+            else:
+                # New customer (first purchase in or after the period)
+                new_customer_data['customer_ids'].add(user_id)
+                new_customer_data['order_count'] += 1
+                new_customer_data['revenue'] += order_revenue
+
+        # Calculate metrics
+        new_count = len(new_customer_data['customer_ids'])
+        new_orders = new_customer_data['order_count']
+        new_revenue = new_customer_data['revenue']
+        new_avg_order_value = (new_revenue / new_orders) if new_orders > 0 else Decimal('0.00')
+
+        returning_count = len(returning_customer_data['customer_ids'])
+        returning_orders = returning_customer_data['order_count']
+        returning_revenue = returning_customer_data['revenue']
+        returning_avg_order_value = (returning_revenue / returning_orders) if returning_orders > 0 else Decimal('0.00')
+
+        total_revenue = new_revenue + returning_revenue
+        new_revenue_percentage = (new_revenue / total_revenue * 100) if total_revenue > 0 else 0
+        returning_revenue_percentage = (returning_revenue / total_revenue * 100) if total_revenue > 0 else 0
+
+        return Response({
+            'period_days': days,
+            'new_customers': {
+                'count': new_count,
+                'orders': new_orders,
+                'revenue': float(new_revenue),
+                'percentage_of_revenue': round(new_revenue_percentage, 2),
+                'avg_order_value': float(new_avg_order_value)
+            },
+            'returning_customers': {
+                'count': returning_count,
+                'orders': returning_orders,
+                'revenue': float(returning_revenue),
+                'percentage_of_revenue': round(returning_revenue_percentage, 2),
+                'avg_order_value': float(returning_avg_order_value)
+            }
+        })
