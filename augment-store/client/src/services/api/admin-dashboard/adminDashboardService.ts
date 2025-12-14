@@ -5,11 +5,15 @@ import type { AdminAnalyticsOverviewResponse } from '@features/admin-dashboard/t
 export const adminDashboardService = {
   /**
    * Get analytics overview for the admin dashboard
-   * 
+   *
    * @param days - Number of days to look back (default: 30, max: 365)
+   * @param signal - Optional AbortSignal for request cancellation
    * @returns Promise with analytics overview data
    */
-  getAnalyticsOverview: async (days: number = 30): Promise<AdminAnalyticsOverviewResponse> => {
+  getAnalyticsOverview: async (
+    days: number = 30,
+    signal?: AbortSignal
+  ): Promise<AdminAnalyticsOverviewResponse> => {
     try {
       // Validate days parameter - ensure it's a finite number before clamping
       const validDays = Number.isFinite(days) ? Math.max(1, Math.min(365, days)) : 30
@@ -18,6 +22,7 @@ export const adminDashboardService = {
         API_ENDPOINTS.ADMIN_DASHBOARD.ANALYTICS_OVERVIEW,
         {
           params: { days: validDays },
+          signal,
         }
       )
 
