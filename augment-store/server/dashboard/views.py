@@ -1203,11 +1203,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Get all completed orders in the period
-        period_orders = Order.objects.filter(
-            created_at__gte=cutoff_date,
-            status=Order.OrderStatus.COMPLETED
-        ).select_related('created_by')
+        # Get all completed payments in the period (source of truth for actual charged amounts)
+        period_payments = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).select_related('order', 'order__created_by')
 
         # Get all completed orders before the period (to identify returning customers)
         historical_customers = set(
@@ -1230,15 +1231,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'revenue': Decimal('0.00')
         }
 
-        for order in period_orders:
+        for payment in period_payments:
+            order = payment.order
             user_id = order.created_by.id
 
-            # Calculate order revenue
-            order_revenue = sum(
-                (item.product.price * item.quantity)
-                for item in order.items.select_related('product').all()
-                if item.product
-            )
+            # Use actual charged amount from payment (source of truth)
+            order_revenue = payment.amount
 
             # Check if this is a new or returning customer
             if user_id in historical_customers:
