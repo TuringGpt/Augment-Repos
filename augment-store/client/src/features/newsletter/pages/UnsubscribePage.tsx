@@ -28,19 +28,25 @@ const UnsubscribePage = () => {
     clearUnsubscribeState,
   } = useNewsletterStore()
 
-  // Clear state when component unmounts
+  // Clear unsubscribe state on mount to prevent stale messages from previous attempts
   useEffect(() => {
-    return () => {
-      clearUnsubscribeState()
-    }
+    clearUnsubscribeState()
   }, [clearUnsubscribeState])
 
-  // Clear validation error when email changes
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
+  // Clear unsubscribe state and validation error when email changes
+  useEffect(() => {
+    if (unsubscribeError || unsubscribeSuccess) {
+      clearUnsubscribeState()
+    }
     if (validationError) {
       setValidationError('')
     }
+    // Only run when email changes, not when error/success states change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email])
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
