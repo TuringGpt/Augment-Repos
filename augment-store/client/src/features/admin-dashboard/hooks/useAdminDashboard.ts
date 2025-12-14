@@ -106,8 +106,9 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
         message: errorMessage,
       })
     } finally {
-      // Only update loading state if component is still mounted
-      if (isMountedRef.current) {
+      // Only update loading state if component is still mounted AND this request is still the current one
+      // This prevents aborted requests from clearing the loading state while a newer request is in-flight
+      if (isMountedRef.current && abortControllerRef.current === abortController) {
         setIsLoading(false)
       }
     }
