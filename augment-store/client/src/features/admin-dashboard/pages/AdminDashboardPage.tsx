@@ -184,7 +184,7 @@ const AdminDashboardPage = () => {
                 value={analytics.overview.completed_orders.toLocaleString()}
                 icon={<CheckCircleIcon />}
                 color="success.main"
-                subtitle={`${((analytics.overview.completed_orders / analytics.overview.total_orders) * 100).toFixed(1)}% completion rate`}
+                subtitle={`${analytics.overview.total_orders > 0 ? ((analytics.overview.completed_orders / analytics.overview.total_orders) * 100).toFixed(1) : '0.0'}% completion rate`}
                 isLoading={isLoading}
               />
             </Grid>
