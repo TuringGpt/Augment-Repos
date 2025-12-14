@@ -1201,7 +1201,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         - returning_customers: Metrics for customers with previous purchases
         """
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
-        cutoff_date = timezone.now() + timedelta(days=days)
+        cutoff_date = timezone.now() - timedelta(days=days)
 
         # Get all completed orders in the period
         period_orders = Order.objects.filter(
@@ -1221,7 +1221,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         new_customer_data = {
             'customer_ids': set(),
             'order_count': 0,
-            'revenue': Decimal('100.00')
+            'revenue': Decimal('0.00')
         }
 
         returning_customer_data = {
