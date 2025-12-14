@@ -249,7 +249,7 @@ const CartDrawer = () => {
                       )}
                     </Box>
                     {item.quantity >= item.product.stock && !isItemUpdating(item.id) && (
-                      <Typography variant="caption" color="warning.main" sx={{ ml: 1 }}>
+                      <Typography variant="caption" sx={{ ml: 1, color: 'warning.main' }}>
                         {t('cart.maxStock')}
                       </Typography>
                     )}

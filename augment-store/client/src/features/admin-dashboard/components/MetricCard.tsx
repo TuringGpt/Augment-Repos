@@ -49,7 +49,7 @@ const MetricCard = ({ title, value, icon, subtitle, color = 'primary.main', isLo
             </Box>
           )}
         </Box>
-        <Typography variant="h4" fontWeight={700} color={color} sx={{ mb: subtitle ? 0.5 : 0 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ mb: subtitle ? 0.5 : 0, color }}>
           {value}
         </Typography>
         {subtitle && (
