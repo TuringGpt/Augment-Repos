@@ -13,14 +13,7 @@ import {
 import { Email as EmailIcon, Unsubscribe as UnsubscribeIcon } from '@mui/icons-material'
 import { useNewsletterStore } from '@store/newsletterStore'
 import { useTranslation } from '@hooks/useTranslation'
-
-/**
- * Email validation helper
- */
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
+import { isValidEmail } from '@utils/validators'
 
 const UnsubscribePage = () => {
   const { t } = useTranslation()
@@ -56,20 +49,23 @@ const UnsubscribePage = () => {
     // Clear any previous validation error
     setValidationError('')
 
+    // Normalize email by trimming whitespace
+    const trimmedEmail = email.trim()
+
     // Validate email
-    if (!email.trim()) {
+    if (!trimmedEmail) {
       setValidationError(t('checkout.contactForm.errors.emailRequired'))
       return
     }
 
-    if (!isValidEmail(email)) {
+    if (!isValidEmail(trimmedEmail)) {
       setValidationError(t('checkout.contactForm.errors.emailInvalid'))
       return
     }
 
     try {
       // Unsubscribe from newsletter via store using PATCH method
-      await unsubscribeByEmailPatch({ email })
+      await unsubscribeByEmailPatch({ email: trimmedEmail })
     } catch (err) {
       // Error is handled by the store
     }
