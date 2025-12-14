@@ -358,6 +358,15 @@
       "subscribeFailed": "Failed to subscribe. Please try again.",
       "fetchFailed": "Failed to load newsletter subscriptions. Please try again.",
       "unsubscribeFailed": "Failed to unsubscribe. Please try again."
+    },
+    "unsubscribe": {
+      "title": "Unsubscribe from Newsletter",
+      "description": "Enter your email address to unsubscribe from our newsletter. We're sorry to see you go!",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "button": "Unsubscribe",
+      "buttonLoading": "Unsubscribing...",
+      "successMessage": "Successfully unsubscribed! You will no longer receive our newsletter."
     }
   },
   "contact": {

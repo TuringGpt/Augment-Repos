@@ -358,6 +358,15 @@
       "subscribeFailed": "Échec de l'abonnement. Veuillez réessayer.",
       "fetchFailed": "Échec du chargement des abonnements à la newsletter. Veuillez réessayer.",
       "unsubscribeFailed": "Échec de la désinscription. Veuillez réessayer."
+    },
+    "unsubscribe": {
+      "title": "Se désabonner de la newsletter",
+      "description": "Entrez votre adresse e-mail pour vous désabonner de notre newsletter. Nous sommes désolés de vous voir partir !",
+      "emailLabel": "Adresse e-mail",
+      "emailPlaceholder": "Entrez votre email",
+      "button": "Se désabonner",
+      "buttonLoading": "Désabonnement en cours...",
+      "successMessage": "Désabonnement réussi ! Vous ne recevrez plus notre newsletter."
     }
   },
   "contact": {

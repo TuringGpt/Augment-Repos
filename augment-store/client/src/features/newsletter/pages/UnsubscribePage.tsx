@@ -92,18 +92,18 @@ const UnsubscribePage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <UnsubscribeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
           <Typography variant="h4" fontWeight="bold">
-            Unsubscribe from Newsletter
+            {t('newsletter.unsubscribe.title')}
           </Typography>
         </Box>
 
         <Typography color="text.secondary" sx={{ mb: 4 }}>
-          Enter your email address to unsubscribe from our newsletter. We're sorry to see you go!
+          {t('newsletter.unsubscribe.description')}
         </Typography>
 
         {/* Success Message */}
         {unsubscribeSuccess && (
           <Alert severity="success" sx={{ mb: 3 }}>
-            Successfully unsubscribed! You will no longer receive our newsletter.
+            {t('newsletter.unsubscribe.successMessage')}
           </Alert>
         )}
 
@@ -127,8 +127,8 @@ const UnsubscribePage = () => {
             fullWidth
             size="medium"
             type="email"
-            label="Email Address"
-            placeholder="Enter your email"
+            label={t('newsletter.unsubscribe.emailLabel')}
+            placeholder={t('newsletter.unsubscribe.emailPlaceholder')}
             value={email}
             onChange={handleEmailChange}
             disabled={isUnsubscribing || unsubscribeSuccess}
@@ -151,7 +151,7 @@ const UnsubscribePage = () => {
             disabled={isUnsubscribing || unsubscribeSuccess}
             startIcon={isUnsubscribing ? <CircularProgress size={20} /> : <UnsubscribeIcon />}
           >
-            {isUnsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+            {isUnsubscribing ? t('newsletter.unsubscribe.buttonLoading') : t('newsletter.unsubscribe.button')}
           </Button>
         </form>
       </Paper>
