@@ -80,9 +80,9 @@ export const useOrderStore = create<OrderState>()(
           set({ isFetchingOrders: true, fetchOrdersError: null })
           const response = await orderService.getOrders(page, limit)
 
-          // Clamp currentPage if it exceeds totalPages to prevent invalid pagination state
-          // This can happen when orders are deleted and total pages shrinks
-          const validPage = Math.min(page, Math.max(1, response.totalPages))
+          // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
+          // This can happen when orders are deleted and total pages shrinks, or if page <= 0
+          const validPage = Math.max(1, Math.min(page, response.totalPages || 1))
 
           // If the requested page was out of range and we have orders, refetch the valid page
           if (validPage !== page && response.totalPages > 0) {
