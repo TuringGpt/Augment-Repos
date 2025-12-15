@@ -39,17 +39,19 @@ import { format } from 'date-fns'
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { selectedOrder, isFetchingOrder, fetchOrderError, getOrderById } = useOrderStore()
+  const { selectedOrder, isFetchingOrder, fetchOrderError, getOrderById, clearSelectedOrder } = useOrderStore()
 
   useEffect(() => {
     const fetchOrder = async () => {
       // Handle missing ID
       if (!id) {
+        clearSelectedOrder()
         return
       }
 
       // Validate ID format (basic validation)
       if (id.trim() === '') {
+        clearSelectedOrder()
         return
       }
 
@@ -62,7 +64,7 @@ const OrderDetailPage = () => {
     }
 
     fetchOrder()
-  }, [id, getOrderById])
+  }, [id, getOrderById, clearSelectedOrder])
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {

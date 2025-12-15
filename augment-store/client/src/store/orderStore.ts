@@ -34,6 +34,7 @@ interface OrderState {
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
+  clearSelectedOrder: () => void
   clearOrders: () => void
   cancelOrder: (id: string) => Promise<Order>
 }
@@ -129,6 +130,8 @@ export const useOrderStore = create<OrderState>()(
       },
 
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
+
+      clearSelectedOrder: () => set({ selectedOrder: null, fetchOrderError: null }),
 
       clearOrders: () =>
         set({
