@@ -80,12 +80,22 @@ export const useOrderStore = create<OrderState>()(
           set({ isFetchingOrders: true, fetchOrdersError: null })
           const response = await orderService.getOrders(page, limit)
 
+          // Clamp currentPage if it exceeds totalPages to prevent invalid pagination state
+          // This can happen when orders are deleted and total pages shrinks
+          const validPage = Math.min(page, Math.max(1, response.totalPages))
+
+          // If the requested page was out of range and we have orders, refetch the valid page
+          if (validPage !== page && response.totalPages > 0) {
+            set({ isFetchingOrders: false })
+            return get().getAllOrders(validPage, limit)
+          }
+
           // Update state with fetched orders
-          // Note: currentPage is managed by setPage, not by getAllOrders
           set({
             orders: response.orders,
             totalOrders: response.total,
             totalPages: response.totalPages,
+            currentPage: validPage,
           })
 
           return response
@@ -138,7 +148,7 @@ export const useOrderStore = create<OrderState>()(
       },
 
       setPage: (page: number) => {
-        set({ currentPage: page })
+        // Note: currentPage is now set by getAllOrders after validating against totalPages
         get().getAllOrders(page, 10).catch((error) => {
           // Error is already handled in getAllOrders, just prevent unhandled rejection
           console.error('Error fetching orders on page change:', error)
