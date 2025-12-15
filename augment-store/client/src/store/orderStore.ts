@@ -109,10 +109,12 @@ export const useOrderStore = create<OrderState>()(
       },
 
       getOrderById: async (id: string) => {
-        // Import orderService dynamically to avoid circular dependency
-        const { orderService } = await import('@services/api/orders/orderService')
+        // Set loading state and clear stale data BEFORE any awaited work
+        set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
+
         try {
-          set({ isFetchingOrder: true, fetchOrderError: null })
+          // Import orderService dynamically to avoid circular dependency
+          const { orderService } = await import('@services/api/orders/orderService')
           const order = await orderService.getOrderById(id)
 
           // Update state with fetched order
