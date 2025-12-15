@@ -39,6 +39,11 @@ interface OrderState {
   cancelOrder: (id: string) => Promise<Order>
 }
 
+// Request counter to prevent race conditions in getOrderById
+// When multiple getOrderById calls are made in quick succession,
+// only the most recent request should update the selectedOrder state
+let fetchOrderRequestCounter = 0
+
 export const useOrderStore = create<OrderState>()(
   persist(
     (set, get) => ({
@@ -109,6 +114,11 @@ export const useOrderStore = create<OrderState>()(
       },
 
       getOrderById: async (id: string) => {
+        // Increment counter to track this request
+        // This prevents race conditions when multiple calls are made rapidly
+        fetchOrderRequestCounter += 1
+        const currentRequestId = fetchOrderRequestCounter
+
         // Set loading state and clear stale data BEFORE any awaited work
         set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
 
@@ -117,23 +127,39 @@ export const useOrderStore = create<OrderState>()(
           const { orderService } = await import('@services/api/orders/orderService')
           const order = await orderService.getOrderById(id)
 
-          // Update state with fetched order
-          set({ selectedOrder: order })
+          // Only update state if this is still the most recent request
+          // If a newer request has been made, discard this response
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ selectedOrder: order })
+          }
 
           return order
         } catch (error) {
           console.error('Failed to fetch order:', error)
-          const errorMessage = 'Failed to fetch order. Please try again.'
-          set({ fetchOrderError: errorMessage })
+
+          // Only update error state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            const errorMessage = 'Failed to fetch order. Please try again.'
+            set({ fetchOrderError: errorMessage })
+          }
+
           throw error
         } finally {
-          set({ isFetchingOrder: false })
+          // Only clear loading state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ isFetchingOrder: false })
+          }
         }
       },
 
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
 
-      clearSelectedOrder: () => set({ selectedOrder: null, fetchOrderError: null }),
+      clearSelectedOrder: () => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight responses from repopulating the store after clear
+        fetchOrderRequestCounter += 1
+        set({ selectedOrder: null, fetchOrderError: null })
+      },
 
       clearOrders: () =>
         set({
