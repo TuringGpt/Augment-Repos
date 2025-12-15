@@ -158,7 +158,7 @@ export const useOrderStore = create<OrderState>()(
         // Increment counter to invalidate any in-flight fetch requests
         // This prevents in-flight responses from repopulating the store after clear
         fetchOrderRequestCounter += 1
-        set({ selectedOrder: null, fetchOrderError: null })
+        set({ selectedOrder: null, fetchOrderError: null, isFetchingOrder: false })
       },
 
       clearOrders: () =>
