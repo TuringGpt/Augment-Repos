@@ -39,14 +39,16 @@ const OrdersPage = () => {
     isFetchingOrders,
     fetchOrdersError,
     getAllOrders,
+    setPage,
   } = useOrderStore()
 
   useEffect(() => {
     getAllOrders(currentPage, 10)
-  }, [currentPage, getAllOrders])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const handlePageChange = async (_event: React.ChangeEvent<unknown>, value: number) => {
-    await getAllOrders(value, 10)
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

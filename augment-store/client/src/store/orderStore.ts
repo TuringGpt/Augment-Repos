@@ -30,6 +30,7 @@ interface OrderState {
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
   clearOrders: () => void
   cancelOrder: (id: string) => Promise<Order>
+  setPage: (page: number) => void
 }
 
 export const useOrderStore = create<OrderState>()(
@@ -134,6 +135,11 @@ export const useOrderStore = create<OrderState>()(
         } finally {
           set({ isCancelingOrder: false })
         }
+      },
+
+      setPage: (page: number) => {
+        set({ currentPage: page })
+        get().getAllOrders(page, 10)
       },
     }),
     {
