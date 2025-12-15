@@ -148,7 +148,9 @@ export const useOrderStore = create<OrderState>()(
       },
 
       setPage: (page: number) => {
-        // Note: currentPage is now set by getAllOrders after validating against totalPages
+        // Update currentPage optimistically so UI state remains consistent even if fetch fails
+        // This ensures retry logic and pagination controls use the intended page
+        set({ currentPage: page })
         get().getAllOrders(page, 10).catch((error) => {
           // Error is already handled in getAllOrders, just prevent unhandled rejection
           console.error('Error fetching orders on page change:', error)
