@@ -35,6 +35,9 @@ import NotificationsPage from '@features/notifications/pages/NotificationsPage'
 // Newsletter pages
 import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
 
+// Admin Dashboard pages
+import AdminDashboardPage from '@features/admin-dashboard/pages/AdminDashboardPage'
+
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
 import ContactPage from '@features/info/contact/components/ContactPage'
@@ -44,9 +47,6 @@ import ShippingPage from '@features/info/shipping/components/ShippingPage'
 import TermsPage from '@features/info/terms/components/TermsPage'
 import PrivacyPage from '@features/info/privacy/components/PrivacyPage'
 import NotFoundPage from '@features/info/not-found/components/NotFoundPage'
-
-// Admin pages
-import AdminDashboard from '@features/admin/dashboard/components/AdminDashboard'
 
 const AppRoutes = () => {
   return (
@@ -101,7 +101,7 @@ const AppRoutes = () => {
       {/* Admin routes - require authentication and admin role */}
       <Route element={<AdminRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>
       </Route>
       

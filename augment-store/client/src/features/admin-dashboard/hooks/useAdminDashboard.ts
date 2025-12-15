@@ -40,43 +40,98 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
   const [isLoading, setIsLoading] = useState(autoFetch)
   const [error, setError] = useState<string | null>(null)
 
-  // Track mounted state to prevent setState on unmounted component
+  // Track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true)
+  // Track current abort controller for request cancellation
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const fetchAnalytics = useCallback(async () => {
+    // Cancel any in-flight request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new AbortController for this request
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
     try {
-      setIsLoading(true)
-      setError(null)
-
-      const data = await adminDashboardService.getAnalyticsOverview(days)
-
       // Only update state if component is still mounted
       if (isMountedRef.current) {
+        setIsLoading(true)
+        setError(null)
+      }
+
+      const data = await adminDashboardService.getAnalyticsOverview(days, abortController.signal)
+
+      // Only update state if component is still mounted and request wasn't aborted
+      if (isMountedRef.current && !abortController.signal.aborted) {
         setAnalytics(data)
       }
     } catch (err) {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch admin analytics data'
-        setError(errorMessage)
-        console.error('Error fetching admin dashboard analytics:', err)
+      // Ignore abort errors - these are expected when component unmounts or new request starts
+      const error = err as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
+        console.log('Analytics request was cancelled')
+        return
       }
+
+      // Only update error state if component is still mounted
+      if (!isMountedRef.current) {
+        return
+      }
+
+      // Extract meaningful error message
+      let errorMessage = 'Failed to fetch admin analytics data'
+
+      if (error?.response?.status === 404) {
+        errorMessage =
+          'Analytics endpoint not found. Please ensure the backend API is running and the endpoint exists.'
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to view analytics.'
+      } else if (error?.response?.status === 401) {
+        errorMessage = 'Authentication required. Please log in again.'
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error?.message) {
+        errorMessage = error.message
+      }
+
+      setError(errorMessage)
+      console.error('Error fetching admin dashboard analytics:', {
+        error,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: errorMessage,
+      })
     } finally {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
+      // Only update loading state if component is still mounted AND this request is still the current one
+      // This prevents aborted requests from clearing the loading state while a newer request is in-flight
+      if (isMountedRef.current && abortControllerRef.current === abortController) {
         setIsLoading(false)
       }
     }
   }, [days])
 
+  // Fetch analytics when autoFetch or days changes
   useEffect(() => {
     if (autoFetch) {
       fetchAnalytics()
     }
-  }, [autoFetch, fetchAnalytics])
 
-  // Cleanup: mark component as unmounted
+    // Cleanup: abort in-flight requests when dependencies change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch, days])
+
+  // Track mounted state - only runs on mount and unmount
   useEffect(() => {
+    isMountedRef.current = true
     return () => {
       isMountedRef.current = false
     }
@@ -89,4 +144,3 @@ export function useAdminDashboard(options: UseAdminDashboardOptions = {}): UseAd
     refetch: fetchAnalytics,
   }
 }
-

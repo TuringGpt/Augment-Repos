@@ -93,7 +93,7 @@ const AdminDashboard = () => {
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <TrendingUp sx={{ fontSize: 16, color: 'success.main' }} />
-                  <Typography variant="caption" color="success.main" sx={{ fontWeight: 600 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'success.main' }}>
                     {stat.trend}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">

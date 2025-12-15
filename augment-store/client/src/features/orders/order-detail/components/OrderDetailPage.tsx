@@ -363,7 +363,7 @@ const OrderDetailPage = () => {
                 <Typography variant="h6" fontWeight={700}>
                   Total
                 </Typography>
-                <Typography variant="h6" fontWeight={700} color="primary.main">
+                <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main' }}>
                   ${order.total.toFixed(2)}
                 </Typography>
               </Box>
