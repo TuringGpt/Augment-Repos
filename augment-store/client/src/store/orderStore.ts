@@ -81,10 +81,10 @@ export const useOrderStore = create<OrderState>()(
           const response = await orderService.getOrders(page, limit)
 
           // Update state with fetched orders
+          // Note: currentPage is managed by setPage, not by getAllOrders
           set({
             orders: response.orders,
             totalOrders: response.total,
-            currentPage: response.page,
             totalPages: response.totalPages,
           })
 
