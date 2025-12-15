@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -31,7 +31,7 @@ import {
   Pending as PendingIcon,
   LocalMall as LocalMallIcon,
 } from '@mui/icons-material'
-import { orderService } from '@services/api/orders/orderService'
+import { useOrderStore } from '@store/orderStore'
 import type { Order } from '@features/orders/types'
 import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@constants/index'
 import { format } from 'date-fns'
@@ -39,40 +39,30 @@ import { format } from 'date-fns'
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [order, setOrder] = useState<Order | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { selectedOrder, isFetchingOrder, fetchOrderError, getOrderById } = useOrderStore()
 
   useEffect(() => {
     const fetchOrder = async () => {
       // Handle missing ID
       if (!id) {
-        setError('Order ID is required')
-        setLoading(false)
         return
       }
 
       // Validate ID format (basic validation)
       if (id.trim() === '') {
-        setError('Invalid order ID')
-        setLoading(false)
         return
       }
 
       try {
-        setLoading(true)
-        setError(null)
-        const data = await orderService.getOrderById(id)
-        setOrder(data)
+        await getOrderById(id)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load order details')
-      } finally {
-        setLoading(false)
+        // Error is already handled by the store
+        console.error('Failed to fetch order:', err)
       }
     }
 
     fetchOrder()
-  }, [id])
+  }, [id, getOrderById])
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -119,7 +109,7 @@ const OrderDetailPage = () => {
     }
   }
 
-  if (loading) {
+  if (isFetchingOrder) {
     return (
       <Container maxWidth="xl">
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -129,7 +119,7 @@ const OrderDetailPage = () => {
     )
   }
 
-  if (error || !order) {
+  if (fetchOrderError || !selectedOrder) {
     return (
       <Container maxWidth="xl">
         <Box sx={{ py: 4 }}>
@@ -137,7 +127,7 @@ const OrderDetailPage = () => {
             Back to Orders
           </Button>
           <Alert severity="error" sx={{ mb: 2 }}>
-            {error || 'Order not found'}
+            {fetchOrderError || 'Order not found'}
           </Alert>
           {!id && (
             <Alert severity="info">
@@ -148,6 +138,8 @@ const OrderDetailPage = () => {
       </Container>
     )
   }
+
+  const order = selectedOrder
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

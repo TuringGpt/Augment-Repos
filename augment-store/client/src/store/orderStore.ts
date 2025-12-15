@@ -12,6 +12,11 @@ interface OrderState {
   currentPage: number
   totalPages: number
 
+  // Single order detail
+  selectedOrder: Order | null
+  isFetchingOrder: boolean
+  fetchOrderError: string | null
+
   // Loading states
   isCreatingOrder: boolean
   isFetchingOrders: boolean
@@ -28,6 +33,7 @@ interface OrderState {
   clearCurrentOrder: () => void
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
+  getOrderById: (id: string) => Promise<Order>
   clearOrders: () => void
   cancelOrder: (id: string) => Promise<Order>
 }
@@ -41,6 +47,9 @@ export const useOrderStore = create<OrderState>()(
       totalOrders: 0,
       currentPage: 1,
       totalPages: 1,
+      selectedOrder: null,
+      isFetchingOrder: false,
+      fetchOrderError: null,
       isCreatingOrder: false,
       isFetchingOrders: false,
       isCancelingOrder: false,
@@ -95,6 +104,27 @@ export const useOrderStore = create<OrderState>()(
           throw error
         } finally {
           set({ isFetchingOrders: false })
+        }
+      },
+
+      getOrderById: async (id: string) => {
+        // Import orderService dynamically to avoid circular dependency
+        const { orderService } = await import('@services/api/orders/orderService')
+        try {
+          set({ isFetchingOrder: true, fetchOrderError: null })
+          const order = await orderService.getOrderById(id)
+
+          // Update state with fetched order
+          set({ selectedOrder: order })
+
+          return order
+        } catch (error) {
+          console.error('Failed to fetch order:', error)
+          const errorMessage = 'Failed to fetch order. Please try again.'
+          set({ fetchOrderError: errorMessage })
+          throw error
+        } finally {
+          set({ isFetchingOrder: false })
         }
       },
 
