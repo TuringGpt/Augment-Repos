@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import {
   Box,
   Chip,
@@ -23,40 +23,30 @@ import {
   HourglassEmpty as HourglassEmptyIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import type { Order, OrderStatus } from '@features/orders/types'
+import type { OrderStatus } from '@features/orders/types'
 import { formatCurrency, formatDate } from '@utils/formatters'
 import { ORDER_STATUS_LABELS } from '@constants/index'
-import { orderService } from '@services/api/orders/orderService'
+import { useOrderStore } from '@store/orderStore'
 
 const OrdersPage = () => {
   const navigate = useNavigate()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+
+  // Use order store
+  const {
+    orders,
+    currentPage,
+    totalPages,
+    isFetchingOrders,
+    fetchOrdersError,
+    getAllOrders,
+  } = useOrderStore()
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const response = await orderService.getOrders(page, 10)
-        setOrders(response.orders)
-        setTotalPages(response.totalPages)
-      } catch (err) {
-        console.error('Failed to fetch orders:', err)
-        setError('Failed to load orders. Please try again later.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    getAllOrders(currentPage, 10)
+  }, [currentPage, getAllOrders])
 
-    fetchOrders()
-  }, [page])
-
-  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
+  const handlePageChange = async (_event: React.ChangeEvent<unknown>, value: number) => {
+    await getAllOrders(value, 10)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -99,7 +89,7 @@ const OrdersPage = () => {
     }
   }
 
-  if (isLoading) {
+  if (isFetchingOrders) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -109,14 +99,14 @@ const OrdersPage = () => {
     )
   }
 
-  if (error) {
+  if (fetchOrdersError) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Paper sx={{ p: 6, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
-            {error}
+            {fetchOrdersError}
           </Typography>
-          <Button variant="contained" onClick={() => window.location.reload()} sx={{ mt: 2 }}>
+          <Button variant="contained" onClick={() => getAllOrders(currentPage, 10)} sx={{ mt: 2 }}>
             Retry
           </Button>
         </Paper>
@@ -260,7 +250,7 @@ const OrdersPage = () => {
       {/* Pagination */}
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+          <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
         </Box>
       )}
     </Container>
