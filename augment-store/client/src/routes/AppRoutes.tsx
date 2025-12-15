@@ -34,6 +34,7 @@ import NotificationsPage from '@features/notifications/pages/NotificationsPage'
 
 // Newsletter pages
 import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
+import UnsubscribePage from '@features/newsletter/pages/UnsubscribePage'
 
 // Admin Dashboard pages
 import AdminDashboardPage from '@features/admin-dashboard/pages/AdminDashboardPage'
@@ -69,6 +70,9 @@ const AppRoutes = () => {
         <Route path="/shipping" element={<ShippingPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+
+        {/* Newsletter pages */}
+        <Route path="/newsletter/unsubscribe" element={<UnsubscribePage />} />
       </Route>
 
       {/* Auth routes with auth layout - redirect to home if already logged in */}

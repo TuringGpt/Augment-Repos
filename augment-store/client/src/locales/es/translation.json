@@ -356,7 +356,17 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Error al suscribirse. Por favor, inténtalo de nuevo.",
-      "fetchFailed": "Error al cargar las suscripciones al boletín. Por favor, inténtalo de nuevo."
+      "fetchFailed": "Error al cargar las suscripciones al boletín. Por favor, inténtalo de nuevo.",
+      "unsubscribeFailed": "Error al cancelar la suscripción. Por favor, inténtalo de nuevo."
+    },
+    "unsubscribe": {
+      "title": "Cancelar suscripción al boletín",
+      "description": "Ingresa tu dirección de correo electrónico para cancelar la suscripción a nuestro boletín. ¡Lamentamos verte partir!",
+      "emailLabel": "Dirección de correo electrónico",
+      "emailPlaceholder": "Ingresa tu correo",
+      "button": "Cancelar suscripción",
+      "buttonLoading": "Cancelando suscripción...",
+      "successMessage": "¡Suscripción cancelada exitosamente! Ya no recibirás nuestro boletín."
     }
   },
   "contact": {

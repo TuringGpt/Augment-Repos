@@ -356,7 +356,17 @@
   "newsletter": {
     "errors": {
       "subscribeFailed": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut."
+      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut.",
+      "unsubscribeFailed": "Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "unsubscribe": {
+      "title": "Vom Newsletter abmelden",
+      "description": "Geben Sie Ihre E-Mail-Adresse ein, um sich von unserem Newsletter abzumelden. Schade, dass Sie gehen!",
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "button": "Abmelden",
+      "buttonLoading": "Wird abgemeldet...",
+      "successMessage": "Erfolgreich abgemeldet! Sie erhalten unseren Newsletter nicht mehr."
     }
   },
   "contact": {
