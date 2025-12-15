@@ -43,13 +43,17 @@ const OrdersPage = () => {
   } = useOrderStore()
 
   useEffect(() => {
-    getAllOrders(currentPage, 10)
+    getAllOrders(currentPage, 10).catch((error) => {
+      // Error is already handled in the store, just prevent unhandled rejection
+      console.error('Error fetching orders:', error)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Note: setPage internally calls getAllOrders, which is handled in setPage implementation
   }
 
   const getStatusColor = (
@@ -108,7 +112,16 @@ const OrdersPage = () => {
           <Typography variant="h6" color="error" gutterBottom>
             {fetchOrdersError}
           </Typography>
-          <Button variant="contained" onClick={() => getAllOrders(currentPage, 10)} sx={{ mt: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              getAllOrders(currentPage, 10).catch((error) => {
+                // Error is already handled in the store, just prevent unhandled rejection
+                console.error('Error retrying orders fetch:', error)
+              })
+            }}
+            sx={{ mt: 2 }}
+          >
             Retry
           </Button>
         </Paper>

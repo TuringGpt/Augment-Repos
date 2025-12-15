@@ -139,7 +139,10 @@ export const useOrderStore = create<OrderState>()(
 
       setPage: (page: number) => {
         set({ currentPage: page })
-        get().getAllOrders(page, 10)
+        get().getAllOrders(page, 10).catch((error) => {
+          // Error is already handled in getAllOrders, just prevent unhandled rejection
+          console.error('Error fetching orders on page change:', error)
+        })
       },
     }),
     {
