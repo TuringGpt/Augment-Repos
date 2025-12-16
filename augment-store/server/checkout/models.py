@@ -65,7 +65,7 @@ class Order(BaseModel):
 
     @property
     def subtotal(self):
-        return sum(item.product.price for item in self.items.all() if item.product and item.quantity)
+        return sum(item.product.price * item.quantity for item in self.items.all() if item.product and item.quantity)
 
     @property
     def tax(self):
