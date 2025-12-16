@@ -18,14 +18,23 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
     serializer_class = CartDetailSerializer
 
     def get_object(self):
-        return Cart.objects.get_user_cart(self.request.user)
+        cart = Cart.objects.get_user_cart(self.request.user)
+        # Prefetch related objects for the cart instance
+        from django.db.models import prefetch_related_objects
+        prefetch_related_objects(
+            [cart], 
+            'items__product__brand',
+            'items__product__category',
+            'items__product__images'
+        )
+        return cart
 
 class BaseCartItemView:
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
-        return user_cart.items.all()
+        return user_cart.items.all().select_related('product', 'product__brand', 'product__category')
     
 class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
@@ -43,7 +52,9 @@ class ListWishListProductsView(BaseWishlistView, ListAPIView):
     serializer_class = ProductListSerializer
 
     def get_queryset(self):
-        return Wishlist.objects.get_user_wishlist(self.request.user).products.all()
+        return Wishlist.objects.get_user_wishlist(self.request.user).products.all().select_related(
+            'brand', 'category', 'created_by'
+        ).prefetch_related('images')
     
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
