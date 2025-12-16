@@ -86,8 +86,7 @@ export const useOrderStore = create<OrderState>()(
 
           // If the requested page was out of range and we have orders, refetch the valid page
           if (validPage !== page && response.totalPages > 0) {
-            set({ isFetchingOrders: false })
-            return get().getAllOrders(validPage, limit)
+            return await get().getAllOrders(validPage, limit)
           }
 
           // Update state with fetched orders
