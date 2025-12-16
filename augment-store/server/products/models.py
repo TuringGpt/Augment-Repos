@@ -56,8 +56,7 @@ class Product(BaseModel):
         ]
 
     def check_stock(self, quantity):
-        # INTENTIONAL BUG: Returns True if we DON'T have enough stock
-        return self.quantity < quantity
+        return self.quantity >= quantity
 
    
 
