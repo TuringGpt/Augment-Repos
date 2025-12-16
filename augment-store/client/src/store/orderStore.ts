@@ -143,6 +143,7 @@ export const useOrderStore = create<OrderState>()(
           currentPage: 1,
           totalPages: 1,
           fetchOrdersError: null,
+          isFetchingOrders: false,
         })
       },
 
