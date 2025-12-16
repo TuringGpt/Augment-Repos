@@ -2,6 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse } from '@features/orders/types'
 
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let fetchRequestCounter = 0
+
 interface OrderState {
   // Current order (most recently created)
   currentOrder: CreateOrderResponse | null
@@ -76,9 +80,20 @@ export const useOrderStore = create<OrderState>()(
       getAllOrders: async (page = 1, limit = 10) => {
         // Import orderService dynamically to avoid circular dependency
         const { orderService } = await import('@services/api/orders/orderService')
+
+        // Increment counter and capture the current request ID
+        fetchRequestCounter += 1
+        const requestId = fetchRequestCounter
+
         try {
           set({ isFetchingOrders: true, fetchOrdersError: null })
           const response = await orderService.getOrders(page, limit)
+
+          // Only update state if this is still the latest request
+          // This prevents older responses from overwriting newer state
+          if (requestId !== fetchRequestCounter) {
+            return response
+          }
 
           // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
           // This can happen when orders are deleted and total pages shrinks, or if page <= 0
@@ -100,24 +115,36 @@ export const useOrderStore = create<OrderState>()(
           return response
         } catch (error) {
           console.error('Failed to fetch orders:', error)
-          const errorMessage = 'Failed to fetch orders. Please try again.'
-          set({ fetchOrdersError: errorMessage })
+
+          // Only update error state if this is still the latest request
+          if (requestId === fetchRequestCounter) {
+            const errorMessage = 'Failed to fetch orders. Please try again.'
+            set({ fetchOrdersError: errorMessage })
+          }
           throw error
         } finally {
-          set({ isFetchingOrders: false })
+          // Only update loading state if this is still the latest request
+          if (requestId === fetchRequestCounter) {
+            set({ isFetchingOrders: false })
+          }
         }
       },
 
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
 
-      clearOrders: () =>
+      clearOrders: () => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight responses from repopulating the store after clear
+        fetchRequestCounter += 1
+
         set({
           orders: [],
           totalOrders: 0,
           currentPage: 1,
           totalPages: 1,
           fetchOrdersError: null,
-        }),
+        })
+      },
 
       setCreateOrderError: (error) => set({ createOrderError: error }),
 
