@@ -53,7 +53,7 @@ class BaseCategoryView:
     serializer_class = ProductCategoryListSerializer
 
     def get_queryset(self):
-        return ProductCategory.objects.all().order_by('name')
+        return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent')
     
 class ProductCategoryListView(CachedListMixin, BaseCategoryView, ListAPIView):
     cache_service_class = ProductCategoryCacheService
@@ -87,9 +87,9 @@ class BaseProductView:
         user: "User" = self.request.user
         
         if (self.request.method in SAFE_METHODS) or user.is_admin:
-            return Product.objects.all()
+            return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
     
-        return Product.objects.get_user_products(user)
+        return Product.objects.get_user_products(user).select_related('brand', 'category', 'created_by').prefetch_related('images')
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     cache_service_class = ProductCacheService
@@ -102,7 +102,7 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
 class FeaturedProductListView(ProductListView):
 
     def get_queryset(self):
-        return Product.objects.filter(is_featured=True)
+        return Product.objects.filter(is_featured=True).select_related('brand', 'category', 'created_by').prefetch_related('images')
 
 class ProductSearchView(BaseProductView, ListAPIView):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
@@ -110,7 +110,7 @@ class ProductSearchView(BaseProductView, ListAPIView):
     search_fields = ["name", "description", "brand__name", "category__name"]
 
     def get_queryset(self):
-        return Product.objects.all()
+        return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService

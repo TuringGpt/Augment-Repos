@@ -48,6 +48,12 @@ class Product(BaseModel):
     is_featured = models.BooleanField(default=False)
     objects:ProductManager = ProductManager()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_featured']),
+            models.Index(fields=['rating']),
+            models.Index(fields=['category', 'brand']),
+        ]
 
     def check_stock(self, quantity):
         return self.quantity >= quantity
