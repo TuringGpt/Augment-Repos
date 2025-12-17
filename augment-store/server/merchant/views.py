@@ -4,18 +4,25 @@ from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-class MerchantBrandListView(ListAPIView):
+from core.service import CachedListMixin
+from .services import MerchantCacheService
+
+class MerchantBrandListView(CachedListMixin, ListAPIView):
     serializer_class = MerchantBrandSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    cache_service_class = MerchantCacheService
+    cache_ttl = 60 * 60  # 1 hour
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
         return ProductBrand.objects.filter(created_by=object_id)
 
 
-class MerchantProductListView(ListAPIView):
+class MerchantProductListView(CachedListMixin, ListAPIView):
     serializer_class = MerchantProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    cache_service_class = MerchantCacheService
+    cache_ttl = 60 * 60  # 1 hour
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
