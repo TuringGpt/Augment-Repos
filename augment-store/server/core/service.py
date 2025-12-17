@@ -195,11 +195,12 @@ def cache_response(ttl=None, key_prefix=None):
             # Helper to generate key
             user_id = getattr(request.user, "id", None)
             serialized_params = service._serialize_params(request.query_params)
+            serialized_kwargs = service._serialize_params(kwargs)
             
             # Construct a unique key
             # If key_prefix is not provided, use function name
             prefix = key_prefix or view_func.__name__
-            custom_key = f"action:{prefix}:{user_id}:{serialized_params}"
+            custom_key = f"action:{prefix}:{user_id}:{serialized_kwargs}:{serialized_params}"
             
             cache_key = service.get_cache_key(custom_key=custom_key)
             
