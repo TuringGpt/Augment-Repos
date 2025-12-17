@@ -204,19 +204,33 @@ def cache_response(ttl=None, key_prefix=None):
             cache_key = service.get_cache_key(custom_key=custom_key)
             
             # Check cache
-            cached_data = service.get(cache_key)
-            if cached_data is not None:
-                return Response(cached_data)
+            cached_value = service.get(cache_key)
+            if cached_value is not None:
+                # Expecting a dict with metadata, but handle legacy/raw data gracefully if needed
+                if isinstance(cached_value, dict) and 'v_status' in cached_value:
+                     return Response(
+                         data=cached_value['v_data'],
+                         status=cached_value['v_status'],
+                         headers=cached_value.get('v_headers')
+                     )
+                return Response(cached_value)
             
             # Execute view
             response = view_func(view_instance, request, *args, **kwargs)
             
-            # Cache data (only if response is successfulish? typically 200 OK)
-            # For simplicity, we cache the .data if it exists and status is success
+            # Cache data if successful
             if hasattr(response, 'data') and 200 <= response.status_code < 300:
                 # Determine TTL
                 effective_ttl = ttl if ttl is not None else getattr(view_instance, 'cache_ttl', None)
-                service.set(cache_key, response.data, ttl=effective_ttl)
+                
+                # Store data + metadata
+                # Using v_ prefix to unlikely collide with actual data keys if we were checking keys blindly
+                cache_payload = {
+                    'v_data': response.data,
+                    'v_status': response.status_code,
+                    'v_headers': dict(response.items())
+                }
+                service.set(cache_key, cache_payload, ttl=effective_ttl)
                 
             return response
         return _wrapped_view
