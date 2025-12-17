@@ -33,12 +33,13 @@ import {
 } from '@mui/icons-material'
 import { useOrderStore } from '@store/orderStore'
 import type { Order } from '@features/orders/types'
-import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@constants/index'
 import { format } from 'date-fns'
+import { useTranslation } from '@hooks/useTranslation'
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { selectedOrder, isFetchingOrder, fetchOrderError, getOrderById, clearSelectedOrder } = useOrderStore()
 
   useEffect(() => {
@@ -126,14 +127,14 @@ const OrderDetailPage = () => {
       <Container maxWidth="xl">
         <Box sx={{ py: 4 }}>
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/orders')} sx={{ mb: 3 }}>
-            Back to Orders
+            {t('order.backToOrders')}
           </Button>
           <Alert severity="error" sx={{ mb: 2 }}>
-            {fetchOrderError || 'Order not found'}
+            {fetchOrderError || t('order.orderNotFound')}
           </Alert>
           {!id && (
             <Alert severity="info">
-              Please provide a valid order ID in the URL.
+              {t('order.provideValidOrderId')}
             </Alert>
           )}
         </Box>
@@ -147,7 +148,7 @@ const OrderDetailPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Back Button */}
       <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/orders')} sx={{ mb: 3 }}>
-        Back to Orders
+        {t('order.backToOrders')}
       </Button>
 
       {/* Order Header */}
@@ -158,10 +159,10 @@ const OrderDetailPage = () => {
               <LocalMallIcon sx={{ fontSize: 40, color: 'primary.main' }} />
               <Box>
                 <Typography variant="h5" fontWeight={700}>
-                  Order #{order.id.slice(0, 8).toUpperCase()}
+                  {t('order.order')} #{order.id.slice(0, 8).toUpperCase()}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Placed on {format(new Date(order.created_at), 'PPP')}
+                  {t('order.placedOn')} {format(new Date(order.created_at), 'PPP')}
                 </Typography>
               </Box>
             </Box>
@@ -170,13 +171,13 @@ const OrderDetailPage = () => {
             <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
               <Chip
                 icon={getStatusIcon(order.status)}
-                label={ORDER_STATUS_LABELS[order.status]}
+                label={t(`order.status.${order.status}`)}
                 color={getStatusColor(order.status)}
                 sx={{ fontWeight: 600 }}
               />
               <Chip
                 icon={<PaymentIcon />}
-                label={PAYMENT_STATUS_LABELS[order.payment_status]}
+                label={t(`order.paymentStatus.${order.payment_status}`)}
                 color={getPaymentStatusColor(order.payment_status)}
                 variant="outlined"
               />
@@ -191,7 +192,7 @@ const OrderDetailPage = () => {
           {/* Order Items */}
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ReceiptIcon /> Order Items
+              <ReceiptIcon /> {t('order.orderItems')}
             </Typography>
             <Divider sx={{ my: 2 }} />
 
@@ -199,10 +200,10 @@ const OrderDetailPage = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell align="center">Quantity</TableCell>
-                    <TableCell align="right">Price</TableCell>
-                    <TableCell align="right">Subtotal</TableCell>
+                    <TableCell>{t('order.product')}</TableCell>
+                    <TableCell align="center">{t('order.quantity')}</TableCell>
+                    <TableCell align="right">{t('order.price')}</TableCell>
+                    <TableCell align="right">{t('order.subtotal')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -255,7 +256,7 @@ const OrderDetailPage = () => {
           {/* Shipping Address */}
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShippingIcon /> Shipping Address
+              <ShippingIcon /> {t('order.shippingAddress')}
             </Typography>
             <Divider sx={{ my: 2 }} />
             {order.shipping_address ? (
@@ -280,7 +281,7 @@ const OrderDetailPage = () => {
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                No shipping address available
+                {t('order.noShippingAddress')}
               </Typography>
             )}
           </Paper>
@@ -288,7 +289,7 @@ const OrderDetailPage = () => {
           {/* Billing Address */}
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PaymentIcon /> Billing Address
+              <PaymentIcon /> {t('order.billingAddress')}
             </Typography>
             <Divider sx={{ my: 2 }} />
             {order.billing_address ? (
@@ -313,7 +314,7 @@ const OrderDetailPage = () => {
               </Box>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                No billing address available
+                {t('order.noBillingAddress')}
               </Typography>
             )}
           </Paper>
@@ -324,29 +325,29 @@ const OrderDetailPage = () => {
           <Card sx={{ position: 'sticky', top: 80 }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Order Summary
+                {t('order.orderSummary')}
               </Typography>
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Subtotal
+                    {t('order.subtotal')}
                   </Typography>
                   <Typography variant="body2">${order.subtotal.toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Tax
+                    {t('order.tax')}
                   </Typography>
                   <Typography variant="body2">${order.tax.toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Shipping
+                    {t('order.shipping')}
                   </Typography>
                   <Typography variant="body2">
-                    {order.shipping === 0 ? 'FREE' : `$${order.shipping.toFixed(2)}`}
+                    {order.shipping === 0 ? t('order.free') : `$${order.shipping.toFixed(2)}`}
                   </Typography>
                 </Box>
               </Box>
@@ -355,7 +356,7 @@ const OrderDetailPage = () => {
 
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h6" fontWeight={700}>
-                  Total
+                  {t('order.total')}
                 </Typography>
                 <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main' }}>
                   ${order.total.toFixed(2)}
@@ -367,7 +368,7 @@ const OrderDetailPage = () => {
               {/* Payment Method */}
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Payment Method
+                  {t('order.paymentMethod')}
                 </Typography>
                 <Typography variant="body1" fontWeight={600}>
                   {order.payment?.payment_method
@@ -379,14 +380,14 @@ const OrderDetailPage = () => {
               {/* Order Dates */}
               <Box>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Order Date
+                  {t('order.orderDate')}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   {format(new Date(order.created_at), 'PPpp')}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Last Updated
+                  {t('order.lastUpdated')}
                 </Typography>
                 <Typography variant="body2">
                   {format(new Date(order.updated_at), 'PPpp')}
