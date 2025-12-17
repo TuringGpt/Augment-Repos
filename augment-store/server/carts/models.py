@@ -33,7 +33,7 @@ class CartManager(models.Manager):
     
     def get_user_cart_items(self, user):
         cart = self.get_user_cart(user)
-        return cart.items.all()
+        return cart.items.all().select_related('product', 'product__brand', 'product__category').prefetch_related('product__images')
     
     def add_to_cart(self, user: User, product: Product, quantity=1):
         user_cart = self.get_user_cart(user)
