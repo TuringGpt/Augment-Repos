@@ -1,5 +1,6 @@
 import json
 import hashlib
+import functools
 
 
 from django.core.cache import cache
@@ -13,7 +14,10 @@ class BaseCacheService:
 
     def _serialize_params(self, params: dict):
         """Serialize params in stable sort order."""
-        if hasattr(params, 'dict'):
+        if hasattr(params, 'lists'):
+            # Handle QueryDict with multi-values by converting to dict of lists
+            params = dict(params.lists())
+        elif hasattr(params, 'dict'):
             params = params.dict()
         return json.dumps(params or {}, sort_keys=True)
 
@@ -151,7 +155,8 @@ class CachedRetrieveMixin:
     def generate_cache_key(self):
         service = self.get_cache_service()
         # Include lookup field (usually pk), user_id, and query params in the key
-        obj_id = self.kwargs.get(self.lookup_field)
+        lookup_kwarg = getattr(self, 'lookup_url_kwarg', None) or self.lookup_field
+        obj_id = self.kwargs.get(lookup_kwarg)
         user_id = getattr(self.request.user, "id", None)
         query_params = self.request.query_params
         
@@ -179,6 +184,7 @@ def cache_response(ttl=None, key_prefix=None):
     Decorator for caching DRF ViewSet actions (returning Response objects).
     """
     def decorator(view_func):
+        @functools.wraps(view_func)
         def _wrapped_view(view_instance, request, *args, **kwargs):
             # Attempt to use the cache service from the viewset if available, else default
             if hasattr(view_instance, 'get_cache_service'):
@@ -206,8 +212,8 @@ def cache_response(ttl=None, key_prefix=None):
             response = view_func(view_instance, request, *args, **kwargs)
             
             # Cache data (only if response is successfulish? typically 200 OK)
-            # For simplicity, we cache the .data if it exists
-            if hasattr(response, 'data'):
+            # For simplicity, we cache the .data if it exists and status is success
+            if hasattr(response, 'data') and 200 <= response.status_code < 300:
                 # Determine TTL
                 effective_ttl = ttl if ttl is not None else getattr(view_instance, 'cache_ttl', None)
                 service.set(cache_key, response.data, ttl=effective_ttl)
