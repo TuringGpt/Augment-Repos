@@ -12,8 +12,7 @@ from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
-from core.service import CacheInvalidatorMixin, CachedListMixin
-
+from core.service import CacheInvalidatorMixin, CachedListMixin, CachedRetrieveMixin
 
 
 
@@ -41,9 +40,11 @@ class CreateProductBrandView(BaseBrandView, CreateAPIView):
     serializer_class = CreateProductBrandSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
-class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
+class ProductBrandDetailView(CachedRetrieveMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
+    cache_ttl = 60 * 60  * 24
 
 
 # Category views
@@ -65,9 +66,10 @@ class CreateProductCategoryView(CacheInvalidatorMixin, BaseCategoryView, CreateA
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductCategoryCacheService
 
-class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, RetrieveUpdateDestroyAPIView):
+class ProductCategoryDetailView(CacheInvalidatorMixin, CachedRetrieveMixin, BaseCategoryView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductCategoryDetailSerializer
     cache_service_class = ProductCategoryCacheService
+    cache_ttl = 60 * 60  * 24
 
     def get_permissions(self):
         super().get_permissions()
@@ -117,7 +119,7 @@ class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
-class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
+class ProductUpdateDeleteView(CacheInvalidatorMixin, CachedRetrieveMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductCacheService
