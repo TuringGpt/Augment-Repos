@@ -1,7 +1,7 @@
 from products.models import ProductBrand, Product
 from checkout.models import Order
 from rest_framework.generics import ListAPIView
-from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
+from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer, MerchantAnalyticsSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from core.service import CachedListMixin
