@@ -58,6 +58,11 @@ class Order(BaseModel):
     billing_address = models.ForeignKey(BillingAddress, on_delete=models.SET_NULL, null=True, related_name='orders')
     contact_information = models.ForeignKey(ContactInformation, on_delete=models.SET_NULL, null=True, related_name='orders')
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+        ]
+
     @property
     def subtotal(self):
         return sum(item.product.price * item.quantity for item in self.items.all() if item.product and item.quantity)
@@ -116,3 +121,8 @@ class Payment(BaseModel):
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.CHOICES, default=PaymentMethod.STRIPE)
     payment_status = models.CharField(max_length=20, choices=PaymentStatus.CHOICES, default=PaymentStatus.PENDING)
     stripe_session_id = models.CharField(max_length=1024, null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['payment_status']),
+        ]

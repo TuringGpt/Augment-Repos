@@ -18,7 +18,16 @@ class BaseOrderView:
 
     def get_queryset(self):
         # Users can only see their own orders
-        return Order.objects.filter(created_by=self.request.user).order_by('-created_at')
+        return Order.objects.filter(created_by=self.request.user).select_related(
+            'shipping_address',
+            'billing_address',
+            'contact_information',
+            'created_by'
+        ).prefetch_related(
+            'items__product__brand',
+            'items__product__category',
+            'items__product__images'
+        ).order_by('-created_at')
 
 
 class CreateOrderView(BaseOrderView, CreateAPIView):
@@ -65,7 +74,7 @@ class BasePaymentView:
 
     def get_queryset(self):
         # Users can only see their own payments
-        return Payment.objects.filter(created_by=self.request.user).order_by('-created_at')
+        return Payment.objects.filter(created_by=self.request.user).select_related('order').order_by('-created_at')
 
 class OrderPaymentView(BasePaymentView, CreateAPIView):
     serializer_class = OrderPaymentSerializer
