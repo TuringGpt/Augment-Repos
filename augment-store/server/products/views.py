@@ -44,7 +44,7 @@ class ProductBrandDetailView(CachedRetrieveMixin, BaseBrandView, RetrieveUpdateD
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductBrandCacheService
-    cache_ttl = 60 * 60  * 24
+    cache_ttl = "60 * 60 * 24"
 
 
 # Category views
