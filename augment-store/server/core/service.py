@@ -1,4 +1,6 @@
 import json
+import hashlib
+
 
 from django.core.cache import cache
 from rest_framework.response import Response
@@ -11,6 +13,8 @@ class BaseCacheService:
 
     def _serialize_params(self, params: dict):
         """Serialize params in stable sort order."""
+        if hasattr(params, 'dict'):
+            params = params.dict()
         return json.dumps(params or {}, sort_keys=True)
 
     def _hash_tail(self, text: str):
@@ -105,7 +109,7 @@ class CachedListMixin:
         cache_key = self.generate_cache_key()
 
         cached = service.get(cache_key)
-        if cached:
+        if cached is not None:
             return Response(cached)
 
         response = super().list(request, *args, **kwargs)
@@ -162,7 +166,7 @@ class CachedRetrieveMixin:
         cache_key = self.generate_cache_key()
 
         cached = service.get(cache_key)
-        if cached:
+        if cached is not None:
             return Response(cached)
 
         response = super().retrieve(request, *args, **kwargs)
@@ -195,7 +199,7 @@ def cache_response(ttl=None, key_prefix=None):
             
             # Check cache
             cached_data = service.get(cache_key)
-            if cached_data:
+            if cached_data is not None:
                 return Response(cached_data)
             
             # Execute view
