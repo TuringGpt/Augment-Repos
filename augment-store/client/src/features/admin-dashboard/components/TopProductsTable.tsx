@@ -9,6 +9,7 @@ import {
   TableRow,
   Box,
   Chip,
+  CircularProgress,
 } from '@mui/material'
 import { TrendingUp as TrendingUpIcon } from '@mui/icons-material'
 import type { TopProductByRevenue } from '@features/admin-dashboard/types'
@@ -47,7 +48,18 @@ const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) =>
         </Typography>
       )}
 
-      {topProducts.length > 0 ? (
+      {isLoading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 200,
+          }}
+        >
+          <CircularProgress size={40} />
+        </Box>
+      ) : topProducts.length > 0 ? (
         <TableContainer>
           <Table size="small">
             <TableHead>
