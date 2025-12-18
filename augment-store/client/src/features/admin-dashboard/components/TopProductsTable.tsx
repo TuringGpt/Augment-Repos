@@ -24,8 +24,8 @@ interface TopProductsTableProps {
  * Displays a table of top-performing products by revenue
  */
 const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) => {
-  // Limit to top 10 products
-  const topProducts = data.slice(0, 10)
+  // Limit to top 10 products - defensive null check to prevent runtime crash
+  const topProducts = (data ?? []).slice(0, 10)
 
   return (
     <Paper
