@@ -26,6 +26,7 @@ import { useAuthStore } from '@store/authStore'
 import { useAdminDashboard } from '@features/admin-dashboard/hooks'
 import MetricCard from '@features/admin-dashboard/components/MetricCard'
 import ConversionFunnelChart from '@features/admin-dashboard/components/ConversionFunnelChart'
+import TopProductsTable from '@features/admin-dashboard/components/TopProductsTable'
 import CategoryPerformanceChart from '@features/admin-dashboard/components/CategoryPerformanceChart'
 
 /**
@@ -223,6 +224,16 @@ const AdminDashboardPage = () => {
             <Grid item xs={12} md={6}>
               <CategoryPerformanceChart
                 data={analytics.category_performance}
+                isLoading={isLoading}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Top Products Table */}
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TopProductsTable
+                data={analytics.top_products_by_revenue}
                 isLoading={isLoading}
               />
             </Grid>
