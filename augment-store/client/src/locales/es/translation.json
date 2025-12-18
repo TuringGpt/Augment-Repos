@@ -468,7 +468,8 @@
       },
       "categoryPerformance": {
         "title": "Ingresos por categoría",
-        "distribution": "Distribución en {{count}} categorías",
+        "distribution": "Distribución en {{count}} categoría",
+        "distribution_other": "Distribución en {{count}} categorías",
         "revenue": "Ingresos",
         "percentage": "Porcentaje",
         "unitsSold": "Unidades vendidas",
@@ -477,7 +478,8 @@
       },
       "topProducts": {
         "title": "Productos principales por ingresos",
-        "showingTop": "Mostrando los {{count}} productos principales",
+        "showingTop": "Mostrando el {{count}} producto principal",
+        "showingTop_other": "Mostrando los {{count}} productos principales",
         "rank": "Rango",
         "productName": "Nombre del producto",
         "revenue": "Ingresos",

@@ -468,7 +468,8 @@
       },
       "categoryPerformance": {
         "title": "Revenu par catégorie",
-        "distribution": "Distribution sur {{count}} catégories",
+        "distribution": "Distribution sur {{count}} catégorie",
+        "distribution_other": "Distribution sur {{count}} catégories",
         "revenue": "Revenu",
         "percentage": "Pourcentage",
         "unitsSold": "Unités vendues",
@@ -477,7 +478,8 @@
       },
       "topProducts": {
         "title": "Meilleurs produits par revenu",
-        "showingTop": "Affichage des {{count}} meilleurs produits",
+        "showingTop": "Affichage du {{count}} meilleur produit",
+        "showingTop_other": "Affichage des {{count}} meilleurs produits",
         "rank": "Rang",
         "productName": "Nom du produit",
         "revenue": "Revenu",
