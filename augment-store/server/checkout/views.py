@@ -64,10 +64,13 @@ class ListContactInformationView(ListAPIView):
     def get_queryset(self):
         return ContactInformation.objects.filter(user=self.request.user)
 
-class OrderPaymentView(BaseOrderView, CreateAPIView):
-    serializer_class = OrderPaymentSerializer
 
+class BasePaymentView:
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        # Users can only see their own payments
+        return Payment.objects.filter(created_by=self.request.user).order_by('-created_at')
 
 class BasePaymentView:
     permission_classes = [IsAuthenticated]
