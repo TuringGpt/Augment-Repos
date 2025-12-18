@@ -1,5 +1,6 @@
+import React from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography, Divider } from '@mui/material'
+import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider } from '@mui/material'
 import {
   Dashboard as DashboardIcon,
   ShoppingCart as OrdersIcon,
@@ -21,7 +22,7 @@ import CartDrawer from '@features/cart/components/CartDrawer'
 const DRAWER_WIDTH = 260
 
 interface NavItem {
-  labelKey: string
+  labelKey: 'admin.dashboard' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.settings'
   path: string
   icon: React.ReactNode
 }
