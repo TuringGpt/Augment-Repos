@@ -147,7 +147,7 @@ DATABASES = {
 CACHE_SERVER_URL = config.get("REDIS_SERVER_URL", None)
 # if no CACHE_SERVER_URL log warning, notify that we will use dummy cache
 if not CACHE_SERVER_URL:
-    looger.warning("REDIS_SERVER_URL not set, using dummy cache")
+    logger.warning("REDIS_SERVER_URL not set, using dummy cache")
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.dummy.DummyCache",
