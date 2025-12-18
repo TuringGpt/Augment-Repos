@@ -70,13 +70,6 @@ class BasePaymentView:
 
     def get_queryset(self):
         # Users can only see their own payments
-        return Payment.objects.filter(created_by=self.request.user).order_by('-created_at')
-
-class BasePaymentView:
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Users can only see their own payments
         return Payment.objects.filter(created_by=self.request.user).select_related('order').order_by('-created_at')
 
 class OrderPaymentView(BasePaymentView, CreateAPIView):
