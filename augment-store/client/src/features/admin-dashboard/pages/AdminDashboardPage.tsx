@@ -26,6 +26,7 @@ import { useAuthStore } from '@store/authStore'
 import { useAdminDashboard } from '@features/admin-dashboard/hooks'
 import MetricCard from '@features/admin-dashboard/components/MetricCard'
 import ConversionFunnelChart from '@features/admin-dashboard/components/ConversionFunnelChart'
+import CategoryPerformanceChart from '@features/admin-dashboard/components/CategoryPerformanceChart'
 
 /**
  * AdminDashboardPage Component
@@ -211,11 +212,17 @@ const AdminDashboardPage = () => {
             </Grid>
           </Grid>
 
-          {/* Conversion Funnel Chart */}
+          {/* Charts Section */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
               <ConversionFunnelChart
                 data={analytics.conversion_funnel}
+                isLoading={isLoading}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <CategoryPerformanceChart
+                data={analytics.category_performance}
                 isLoading={isLoading}
               />
             </Grid>
