@@ -52,6 +52,18 @@
     "selectLanguage": "Sprache Auswählen",
     "adminDashboard": "Admin-Dashboard"
   },
+  "admin": {
+    "panel": "Admin-Panel",
+    "managementConsole": "Verwaltungskonsole",
+    "dashboard": "Dashboard",
+    "orders": "Bestellungen",
+    "products": "Produkte",
+    "categories": "Kategorien",
+    "brands": "Marken",
+    "users": "Benutzer",
+    "reports": "Berichte",
+    "settings": "Einstellungen"
+  },
   "tooltip": {
     "menu": "Menü öffnen",
     "cart": "Warenkorb öffnen",

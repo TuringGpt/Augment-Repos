@@ -52,6 +52,18 @@
     "selectLanguage": "Seleccionar Idioma",
     "adminDashboard": "Panel de Administración"
   },
+  "admin": {
+    "panel": "Panel de Administración",
+    "managementConsole": "Consola de Gestión",
+    "dashboard": "Panel de Control",
+    "orders": "Pedidos",
+    "products": "Productos",
+    "categories": "Categorías",
+    "brands": "Marcas",
+    "users": "Usuarios",
+    "reports": "Informes",
+    "settings": "Configuración"
+  },
   "tooltip": {
     "menu": "Abrir menú",
     "cart": "Abrir carrito",
