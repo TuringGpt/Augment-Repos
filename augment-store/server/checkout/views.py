@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BillingAddress, ContactInformation, Order, Payment
+from .models import BillingAddress, ContactInformation, Order, Payment, ShippingAddress
 from .serializers import (
     BillingAddressListSerializer,
     ContactInformationListSerializer,
