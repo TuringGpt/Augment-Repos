@@ -1,7 +1,11 @@
+import logging
+import os
 from datetime import timedelta
 from pathlib import Path
+
 from dotenv import dotenv_values
-import os
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -143,7 +147,7 @@ DATABASES = {
 CACHE_SERVER_URL = config.get("REDIS_SERVER_URL", None)
 # if no CACHE_SERVER_URL log warning, notify that we will use dummy cache
 if not CACHE_SERVER_URL:
-    print("WARNING: REDIS_SERVER_URL not set, using dummy cache")
+    looger.warning("REDIS_SERVER_URL not set, using dummy cache")
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.dummy.DummyCache",
