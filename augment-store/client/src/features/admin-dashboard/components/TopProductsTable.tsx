@@ -41,9 +41,11 @@ const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) =>
           Top Products by Revenue
         </Typography>
       </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Showing top {topProducts.length} products
-      </Typography>
+      {!isLoading && topProducts.length > 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Showing top {topProducts.length} products
+        </Typography>
+      )}
 
       {topProducts.length > 0 ? (
         <TableContainer>
