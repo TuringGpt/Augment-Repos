@@ -425,5 +425,66 @@
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben. Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.",
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin-Dashboard",
+      "subtitle": "Analyseübersicht und Leistungsmetriken",
+      "period": "Zeitraum",
+      "refresh": "Aktualisieren",
+      "last7Days": "Letzte 7 Tage",
+      "last30Days": "Letzte 30 Tage",
+      "last90Days": "Letzte 90 Tage",
+      "lastYear": "Letztes Jahr",
+      "errorLoadingAnalytics": "Fehler beim Laden der Analysen",
+      "tryAgain": "Erneut versuchen",
+      "pleaseLogin": "Bitte melden Sie sich an, um auf das Admin-Dashboard zuzugreifen.",
+      "goToLogin": "Zur Anmeldung",
+      "accessDenied": "Zugriff verweigert. Sie haben keine Berechtigung, das Admin-Dashboard anzuzeigen.",
+      "goToHome": "Zur Startseite",
+      "metrics": {
+        "totalRevenue": "Gesamtumsatz",
+        "avgOrder": "Durchschn. Bestellung",
+        "totalOrders": "Bestellungen gesamt",
+        "completed": "abgeschlossen",
+        "newCustomers": "Neue Kunden",
+        "totalProducts": "Produkte gesamt",
+        "categories": "Kategorien",
+        "completedOrders": "Abgeschlossene Bestellungen",
+        "completionRate": "Abschlussrate",
+        "cartAbandonmentRate": "Warenkorbabbruchrate",
+        "abandonments": "Abbrüche",
+        "overallConversion": "Gesamtkonversion",
+        "viewToPurchase": "Ansicht zu Kauf"
+      },
+      "conversionFunnel": {
+        "title": "Conversion-Funnel",
+        "overallConversionRate": "Gesamtkonversionsrate",
+        "views": "Ansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "rate": "Rate"
+      },
+      "categoryPerformance": {
+        "title": "Umsatz nach Kategorie",
+        "distribution": "Verteilung über {{count}} Kategorien",
+        "revenue": "Umsatz",
+        "percentage": "Prozentsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "orders": "Bestellungen",
+        "noCategoryData": "Keine Kategoriedaten verfügbar"
+      },
+      "topProducts": {
+        "title": "Top-Produkte nach Umsatz",
+        "showingTop": "Zeige die Top {{count}} Produkte",
+        "rank": "Rang",
+        "productName": "Produktname",
+        "revenue": "Umsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "price": "Preis",
+        "noProductData": "Keine Produktdaten verfügbar"
+      }
+    }
   }
 }

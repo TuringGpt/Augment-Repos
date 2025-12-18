@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
+import { useTranslation } from '@hooks/useTranslation'
 import type { ConversionFunnel } from '@features/admin-dashboard/types'
 
 interface ConversionFunnelChartProps {
@@ -23,23 +24,24 @@ interface ConversionFunnelChartProps {
  */
 const ConversionFunnelChart = ({ data, isLoading = false }: ConversionFunnelChartProps) => {
   const theme = useTheme()
+  const { t } = useTranslation()
 
   // Transform data for recharts
   const chartData = [
     {
-      name: 'Views',
+      name: t('admin.dashboard.conversionFunnel.views'),
       count: data.total_views,
       rate: 100,
       color: theme.palette.info.main,
     },
     {
-      name: 'Cart Additions',
+      name: t('admin.dashboard.conversionFunnel.cartAdditions'),
       count: data.total_cart_additions,
       rate: data.view_to_cart_rate,
       color: theme.palette.warning.main,
     },
     {
-      name: 'Purchases',
+      name: t('admin.dashboard.conversionFunnel.purchases'),
       count: data.total_purchases,
       rate: data.cart_to_purchase_rate,
       color: theme.palette.success.main,
@@ -61,10 +63,10 @@ const ConversionFunnelChart = ({ data, isLoading = false }: ConversionFunnelChar
             {data.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Count: {data.count.toLocaleString()}
+            {t('admin.dashboard.conversionFunnel.count')}: {data.count.toLocaleString()}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Rate: {data.rate.toFixed(2)}%
+            {t('admin.dashboard.conversionFunnel.rate')}: {data.rate.toFixed(2)}%
           </Typography>
         </Paper>
       )
@@ -82,10 +84,10 @@ const ConversionFunnelChart = ({ data, isLoading = false }: ConversionFunnelChar
       }}
     >
       <Typography variant="h6" gutterBottom>
-        Conversion Funnel
+        {t('admin.dashboard.conversionFunnel.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Overall conversion rate: {data.overall_conversion_rate.toFixed(2)}%
+        {t('admin.dashboard.conversionFunnel.overallConversionRate')}: {data.overall_conversion_rate.toFixed(2)}%
       </Typography>
 
       <Box sx={{ width: '100%', height: 300 }}>
@@ -111,7 +113,7 @@ const ConversionFunnelChart = ({ data, isLoading = false }: ConversionFunnelChar
             />
             <Bar
               dataKey="count"
-              name="Count"
+              name={t('admin.dashboard.conversionFunnel.count')}
               radius={[8, 8, 0, 0]}
             >
               {chartData.map((entry, index) => (
