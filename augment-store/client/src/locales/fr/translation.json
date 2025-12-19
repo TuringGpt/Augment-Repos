@@ -52,6 +52,18 @@
     "selectLanguage": "Sélectionner la Langue",
     "adminDashboard": "Tableau de Bord Admin"
   },
+  "admin": {
+    "panel": "Panneau d'administration",
+    "managementConsole": "Console de gestion",
+    "dashboard": "Tableau de bord",
+    "orders": "Commandes",
+    "products": "Produits",
+    "categories": "Catégories",
+    "brands": "Marques",
+    "users": "Utilisateurs",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  },
   "tooltip": {
     "menu": "Ouvrir le menu",
     "cart": "Ouvrir le panier",
