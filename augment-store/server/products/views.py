@@ -13,11 +13,6 @@ from .serializers import CreateProductBrandSerializer, CreateProductCategorySeri
 from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
-
-
-
-
-
 if typing.TYPE_CHECKING:
     from accounts.models import User
 
@@ -134,10 +129,4 @@ class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
         user: "User" = self.request.user
         product_service = ProductService()
-        return product_service.recommend_products_for_user(user)
-
-
-
-
-
-
+        product_service.recommend_products_for_user(user)
