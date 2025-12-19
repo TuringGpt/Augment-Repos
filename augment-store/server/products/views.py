@@ -129,4 +129,4 @@ class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
         user: "User" = self.request.user
         product_service = ProductService()
-        product_service.recommend_products_for_user(user)
+        return product_service.recommend_products_for_user(user)
