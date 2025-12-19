@@ -56,4 +56,4 @@ class Product(BaseModel):
         ]
 
     def check_stock(self, quantity):
-        return self.quantity > quantity
+        return self.quantity >= quantity
