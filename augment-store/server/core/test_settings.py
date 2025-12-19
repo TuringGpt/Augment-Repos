@@ -4,7 +4,7 @@ Test-specific settings that override the main settings for faster test execution
 Usage:
     python manage.py test --settings=core.test_settings
 """
-from .settings import *
+from .settings import *  # noqa: F403
 
 # Use faster password hasher for tests
 PASSWORD_HASHERS = [

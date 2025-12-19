@@ -1,17 +1,26 @@
-from django.views.generic import TemplateView
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .services import StripeService
-from .models import BillingAddress, ContactInformation, Order, ShippingAddress
-from .serializers import BillingAddressListSerializer, ContactInformationListSerializer, CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, ShippingAddressListSerializer
-from .models import Order, Payment
-from .serializers import CreateOrderSerializer, OrderListSerializer, OrderDetailSerializer, OrderPaymentSerializer, PaymentStatusSerializer
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.views.generic import TemplateView
+
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import BillingAddress, ContactInformation, Order, Payment, ShippingAddress
+from .serializers import (
+    BillingAddressListSerializer,
+    ContactInformationListSerializer,
+    CreateOrderSerializer,
+    OrderDetailSerializer,
+    OrderListSerializer,
+    OrderPaymentSerializer,
+    PaymentStatusSerializer,
+    ShippingAddressListSerializer,
+)
+from .services import StripeService
 
 class BaseOrderView:
     permission_classes = [IsAuthenticated]
