@@ -18,16 +18,9 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
     serializer_class = CartDetailSerializer
 
     def get_object(self):
-        cart = Cart.objects.get_user_cart(self.request.user)
-        # Prefetch related objects for the cart instance
-        from django.db.models import prefetch_related_objects
-        prefetch_related_objects(
-            [cart], 
-            'items__product__brand',
-            'items__product__category',
-            'items__product__images'
-        )
-        return cart
+        # Optimized fetching using manager method
+        user = self.request.user
+        return Cart.objects.get_user_cart_items(user)
 
 class BaseCartItemView:
     permission_classes = [IsAuthenticated]
