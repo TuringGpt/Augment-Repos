@@ -46,7 +46,7 @@ class Product(BaseModel):
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     images = models.ManyToManyField(File, related_name='products', blank=True)
     is_featured = models.BooleanField(default=False)
-    objects:ProductManager = ProductManager()
+    objects: ProductManager = ProductManager()
 
     class Meta:
         indexes = [
@@ -56,8 +56,4 @@ class Product(BaseModel):
         ]
 
     def check_stock(self, quantity):
-        return self.quantity >= quantity
-
-   
-
-    
+        return self.quantity > quantity
