@@ -8,7 +8,10 @@ from core.service import BaseCacheService
 class ProductService:
 
     def recommend_products_for_user(self, user: User):
-
+        """
+        Recommend products based on user's wishlist, cart, and past orders.
+        Returns a QuerySet of Product objects.
+        """
         # SAFE read-only fetches — no DB writes
         user_wishlist = Wishlist.objects.get_user_wishlist_safe(user)
         user_cart = Cart.objects.get_user_cart_safe(user)
@@ -37,7 +40,7 @@ class ProductService:
             )
         if user_cart:
             user_product_ids.update(
-                user_cart.items.values_list("product__id", flat=True)
+                user_cart.items.values_list("id", flat=True)
             )
         user_product_ids.update(
             order_items.values_list("cart_item__product__id", flat=True)
