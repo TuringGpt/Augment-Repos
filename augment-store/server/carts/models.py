@@ -79,7 +79,7 @@ class Cart(BaseModel):
 
     @property
     def total(self):
-        return self.subtotal + self.tax - self.shipping
+        return self.subtotal + self.tax + self.shipping
 
 
 class WishlistManager(models.Manager):
