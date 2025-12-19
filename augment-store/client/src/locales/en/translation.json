@@ -52,18 +52,7 @@
     "selectLanguage": "Select Language",
     "adminDashboard": "Admin Dashboard"
   },
-  "admin": {
-    "panel": "Admin Panel",
-    "managementConsole": "Management Console",
-    "dashboard": "Dashboard",
-    "orders": "Orders",
-    "products": "Products",
-    "categories": "Categories",
-    "brands": "Brands",
-    "users": "Users",
-    "reports": "Reports",
-    "settings": "Settings"
-  },
+
   "tooltip": {
     "menu": "Open menu",
     "cart": "Open cart",
@@ -439,6 +428,9 @@
     "browseProducts": "Browse Products"
   },
   "admin": {
+    "panel": "Admin Panel",
+    "managementConsole": "Management Console",
+    "dashboardNav": "Dashboard",
     "dashboard": {
       "title": "Admin Dashboard",
       "subtitle": "Analytics overview and performance metrics",
@@ -499,6 +491,13 @@
         "price": "Price",
         "noProductData": "No product data available"
       }
-    }
+    },
+    "orders": "Orders",
+    "products": "Products",
+    "categories": "Categories",
+    "brands": "Brands",
+    "users": "Users",
+    "reports": "Reports",
+    "settings": "Settings"
   }
 }

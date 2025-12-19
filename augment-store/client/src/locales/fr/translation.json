@@ -52,18 +52,7 @@
     "selectLanguage": "Sélectionner la Langue",
     "adminDashboard": "Tableau de Bord Admin"
   },
-  "admin": {
-    "panel": "Panneau d'administration",
-    "managementConsole": "Console de gestion",
-    "dashboard": "Tableau de bord",
-    "orders": "Commandes",
-    "products": "Produits",
-    "categories": "Catégories",
-    "brands": "Marques",
-    "users": "Utilisateurs",
-    "reports": "Rapports",
-    "settings": "Paramètres"
-  },
+
   "tooltip": {
     "menu": "Ouvrir le menu",
     "cart": "Ouvrir le panier",
@@ -439,6 +428,9 @@
     "browseProducts": "Parcourir les produits"
   },
   "admin": {
+    "panel": "Panneau d'administration",
+    "managementConsole": "Console de gestion",
+    "dashboardNav": "Tableau de bord",
     "dashboard": {
       "title": "Tableau de bord administrateur",
       "subtitle": "Aperçu des analyses et métriques de performance",
@@ -499,6 +491,13 @@
         "price": "Prix",
         "noProductData": "Aucune donnée de produit disponible"
       }
-    }
+    },
+    "orders": "Commandes",
+    "products": "Produits",
+    "categories": "Catégories",
+    "brands": "Marques",
+    "users": "Utilisateurs",
+    "reports": "Rapports",
+    "settings": "Paramètres"
   }
 }
