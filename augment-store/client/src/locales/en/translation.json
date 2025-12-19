@@ -437,5 +437,68 @@
     "description": "The page you are looking for doesn't exist or has been moved. Please check the URL or return to the home page.",
     "goHome": "Go to Home",
     "browseProducts": "Browse Products"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Analytics overview and performance metrics",
+      "period": "Period",
+      "refresh": "Refresh",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "lastYear": "Last year",
+      "errorLoadingAnalytics": "Error Loading Analytics",
+      "tryAgain": "Try Again",
+      "pleaseLogin": "Please log in to access the admin dashboard.",
+      "goToLogin": "Go to Login",
+      "accessDenied": "Access denied. You do not have permission to view the admin dashboard.",
+      "goToHome": "Go to Home",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "avgOrder": "Avg Order",
+        "totalOrders": "Total Orders",
+        "completed": "completed",
+        "newCustomers": "New Customers",
+        "totalProducts": "Total Products",
+        "categories": "categories",
+        "completedOrders": "Completed Orders",
+        "completionRate": "completion rate",
+        "cartAbandonmentRate": "Cart Abandonment Rate",
+        "abandonments": "abandonments",
+        "overallConversion": "Overall Conversion",
+        "viewToPurchase": "View to purchase"
+      },
+      "conversionFunnel": {
+        "title": "Conversion Funnel",
+        "overallConversionRate": "Overall conversion rate",
+        "views": "Views",
+        "cartAdditions": "Cart Additions",
+        "purchases": "Purchases",
+        "count": "Count",
+        "rate": "Rate"
+      },
+      "categoryPerformance": {
+        "title": "Revenue by Category",
+        "distribution": "Distribution across {{count}} category",
+        "distribution_other": "Distribution across {{count}} categories",
+        "revenue": "Revenue",
+        "percentage": "Percentage",
+        "unitsSold": "Units Sold",
+        "orders": "Orders",
+        "noCategoryData": "No category data available"
+      },
+      "topProducts": {
+        "title": "Top Products by Revenue",
+        "showingTop": "Showing top {{count}} product",
+        "showingTop_other": "Showing top {{count}} products",
+        "rank": "Rank",
+        "productName": "Product Name",
+        "revenue": "Revenue",
+        "unitsSold": "Units Sold",
+        "price": "Price",
+        "noProductData": "No product data available"
+      }
+    }
   }
 }

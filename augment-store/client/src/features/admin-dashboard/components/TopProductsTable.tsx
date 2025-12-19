@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { TrendingUp as TrendingUpIcon } from '@mui/icons-material'
+import { useTranslation } from '@hooks/useTranslation'
 import type { TopProductByRevenue } from '@features/admin-dashboard/types'
 
 interface TopProductsTableProps {
@@ -24,6 +25,7 @@ interface TopProductsTableProps {
  * Displays a table of top-performing products by revenue
  */
 const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) => {
+  const { t } = useTranslation()
   // Limit to top 10 products - defensive null check to prevent runtime crash
   const topProducts = (data ?? []).slice(0, 10)
 
@@ -39,12 +41,12 @@ const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) =>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <TrendingUpIcon sx={{ mr: 1, color: 'primary.main' }} />
         <Typography variant="h6">
-          Top Products by Revenue
+          {t('admin.dashboard.topProducts.title')}
         </Typography>
       </Box>
       {!isLoading && topProducts.length > 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Showing top {topProducts.length} products
+          {t('admin.dashboard.topProducts.showingTop', { count: topProducts.length })}
         </Typography>
       )}
 
@@ -66,27 +68,27 @@ const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) =>
               <TableRow>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Rank
+                    {t('admin.dashboard.topProducts.rank')}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Product Name
+                    {t('admin.dashboard.topProducts.productName')}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Revenue
+                    {t('admin.dashboard.topProducts.revenue')}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Units Sold
+                    {t('admin.dashboard.topProducts.unitsSold')}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Price
+                    {t('admin.dashboard.topProducts.price')}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -150,7 +152,7 @@ const TopProductsTable = ({ data, isLoading = false }: TopProductsTableProps) =>
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            No product data available
+            {t('admin.dashboard.topProducts.noProductData')}
           </Typography>
         </Box>
       )}

@@ -437,5 +437,68 @@
     "description": "La page que vous recherchez n'existe pas ou a été déplacée. Veuillez vérifier l'URL ou retourner à la page d'accueil.",
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Tableau de bord administrateur",
+      "subtitle": "Aperçu des analyses et métriques de performance",
+      "period": "Période",
+      "refresh": "Actualiser",
+      "last7Days": "7 derniers jours",
+      "last30Days": "30 derniers jours",
+      "last90Days": "90 derniers jours",
+      "lastYear": "Dernière année",
+      "errorLoadingAnalytics": "Erreur lors du chargement des analyses",
+      "tryAgain": "Réessayer",
+      "pleaseLogin": "Veuillez vous connecter pour accéder au tableau de bord administrateur.",
+      "goToLogin": "Aller à la connexion",
+      "accessDenied": "Accès refusé. Vous n'avez pas la permission de voir le tableau de bord administrateur.",
+      "goToHome": "Aller à l'accueil",
+      "metrics": {
+        "totalRevenue": "Revenu total",
+        "avgOrder": "Commande moyenne",
+        "totalOrders": "Commandes totales",
+        "completed": "terminées",
+        "newCustomers": "Nouveaux clients",
+        "totalProducts": "Produits totaux",
+        "categories": "catégories",
+        "completedOrders": "Commandes terminées",
+        "completionRate": "taux de finalisation",
+        "cartAbandonmentRate": "Taux d'abandon de panier",
+        "abandonments": "abandons",
+        "overallConversion": "Conversion globale",
+        "viewToPurchase": "Vue à achat"
+      },
+      "conversionFunnel": {
+        "title": "Entonnoir de conversion",
+        "overallConversionRate": "Taux de conversion global",
+        "views": "Vues",
+        "cartAdditions": "Ajouts au panier",
+        "purchases": "Achats",
+        "count": "Nombre",
+        "rate": "Taux"
+      },
+      "categoryPerformance": {
+        "title": "Revenu par catégorie",
+        "distribution": "Distribution sur {{count}} catégorie",
+        "distribution_other": "Distribution sur {{count}} catégories",
+        "revenue": "Revenu",
+        "percentage": "Pourcentage",
+        "unitsSold": "Unités vendues",
+        "orders": "Commandes",
+        "noCategoryData": "Aucune donnée de catégorie disponible"
+      },
+      "topProducts": {
+        "title": "Meilleurs produits par revenu",
+        "showingTop": "Affichage du {{count}} meilleur produit",
+        "showingTop_other": "Affichage des {{count}} meilleurs produits",
+        "rank": "Rang",
+        "productName": "Nom du produit",
+        "revenue": "Revenu",
+        "unitsSold": "Unités vendues",
+        "price": "Prix",
+        "noProductData": "Aucune donnée de produit disponible"
+      }
+    }
   }
 }

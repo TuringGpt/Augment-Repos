@@ -7,6 +7,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts'
+import { useTranslation } from '@hooks/useTranslation'
 import type { CategoryPerformance } from '@features/admin-dashboard/types'
 
 interface CategoryPerformanceChartProps {
@@ -20,6 +21,7 @@ interface CategoryPerformanceChartProps {
  */
 const CategoryPerformanceChart = ({ data, isLoading = false }: CategoryPerformanceChartProps) => {
   const theme = useTheme()
+  const { t } = useTranslation()
 
   // Color palette for pie chart segments
   const COLORS = [
@@ -51,7 +53,7 @@ const CategoryPerformanceChart = ({ data, isLoading = false }: CategoryPerforman
     if (active && payload && payload.length) {
       const data = payload[0].payload
       const percentage = totalRevenue > 0 ? (data.value / totalRevenue) * 100 : 0
-      
+
       return (
         <Paper
           sx={{
@@ -63,16 +65,16 @@ const CategoryPerformanceChart = ({ data, isLoading = false }: CategoryPerforman
             {data.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Revenue: ${data.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {t('admin.dashboard.categoryPerformance.revenue')}: ${data.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Percentage: {percentage.toFixed(1)}%
+            {t('admin.dashboard.categoryPerformance.percentage')}: {percentage.toFixed(1)}%
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Units Sold: {data.units.toLocaleString()}
+            {t('admin.dashboard.categoryPerformance.unitsSold')}: {data.units.toLocaleString()}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Orders: {data.orders.toLocaleString()}
+            {t('admin.dashboard.categoryPerformance.orders')}: {data.orders.toLocaleString()}
           </Typography>
         </Paper>
       )
@@ -97,10 +99,10 @@ const CategoryPerformanceChart = ({ data, isLoading = false }: CategoryPerforman
       }}
     >
       <Typography variant="h6" gutterBottom>
-        Revenue by Category
+        {t('admin.dashboard.categoryPerformance.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Distribution across {data.length} categories
+        {t('admin.dashboard.categoryPerformance.distribution', { count: data.length })}
       </Typography>
 
       {chartData.length > 0 ? (
@@ -139,7 +141,7 @@ const CategoryPerformanceChart = ({ data, isLoading = false }: CategoryPerforman
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            No category data available
+            {t('admin.dashboard.categoryPerformance.noCategoryData')}
           </Typography>
         </Box>
       )}
