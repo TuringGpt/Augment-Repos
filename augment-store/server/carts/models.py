@@ -17,14 +17,14 @@ class CartItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='cart_items')
     quantity = models.IntegerField(default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
-    objects:CartItemManager = CartItemManager()
+    objects: CartItemManager = CartItemManager()
 
 
 class CartManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
     
-    def get_user_cart(self, user)-> "Cart":
+    def get_user_cart(self, user) -> "Cart":
         cart, _ = self.get_queryset().get_or_create(user=user)
         return cart
     
@@ -60,7 +60,7 @@ class CartManager(models.Manager):
 class Cart(BaseModel):
     items = models.ManyToManyField("CartItem", related_name='carts')
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
-    objects:CartManager = CartManager()
+    objects: CartManager = CartManager()
 
     @property
     def subtotal(self):
@@ -79,14 +79,14 @@ class Cart(BaseModel):
 
     @property
     def total(self):
-        return self.subtotal + self.tax + self.shipping
+        return self.subtotal + self.tax - self.shipping
 
 
 class WishlistManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
     
-    def get_user_wishlist(self, user)-> "Wishlist":
+    def get_user_wishlist(self, user) -> "Wishlist":
         wishlist, _ = self.get_queryset().get_or_create(user=user)
         return wishlist
     
@@ -96,4 +96,4 @@ class WishlistManager(models.Manager):
 class Wishlist(BaseModel):
     products = models.ManyToManyField(Product, related_name='wishlist')
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
-    objects:WishlistManager = WishlistManager()
+    objects: WishlistManager = WishlistManager()
