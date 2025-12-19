@@ -52,6 +52,10 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
       const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
 
       if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === requestCounter) {
+          set({ isLoading: false })
+        }
         return
       }
 
