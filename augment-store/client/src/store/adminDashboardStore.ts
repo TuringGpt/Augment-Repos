@@ -33,13 +33,14 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
 
   // Actions
   fetchAnalytics: async (days?: number, signal?: AbortSignal) => {
-    // Import adminDashboardService dynamically to avoid circular dependency
-    const { adminDashboardService } = await import('@services/api/admin-dashboard/adminDashboardService')
-
-    // Increment counter to track this request
+    // Increment counter to track this request BEFORE the dynamic import
     // This prevents race conditions when multiple calls are made rapidly
+    // If we increment after the import, the order of increments may not match the order requests were initiated
     fetchAnalyticsRequestCounter += 1
     const currentRequestId = fetchAnalyticsRequestCounter
+
+    // Import adminDashboardService dynamically to avoid circular dependency
+    const { adminDashboardService } = await import('@services/api/admin-dashboard/adminDashboardService')
 
     // Use provided days or current state days
     const daysToFetch = days ?? get().days
