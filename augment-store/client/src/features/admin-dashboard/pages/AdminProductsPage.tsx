@@ -155,7 +155,7 @@ const AdminProductsPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : statistics && statistics.results.length > 0 ? (
+      ) : statistics && statistics.count > 0 ? (
         <Box sx={{ position: 'relative' }}>
           {/* Loading overlay for pagination changes */}
           {isLoading && (
@@ -207,27 +207,37 @@ const AdminProductsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statistics.results.map((item) => (
-                  <TableRow key={item.product_id} hover>
-                    <TableCell>{item.product_name}</TableCell>
-                    <TableCell align="right">{formatCurrency(parseFloat(item.product_price))}</TableCell>
-                    <TableCell align="right">{item.view_count.toLocaleString()}</TableCell>
-                    <TableCell align="right">{item.cart_add_count.toLocaleString()}</TableCell>
-                    <TableCell align="right">{item.cart_remove_count.toLocaleString()}</TableCell>
-                    <TableCell align="right">{item.purchase_count.toLocaleString()}</TableCell>
-                    <TableCell align="center">
-                      <Tooltip title={t('admin.productStatistics.table.viewProduct')}>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleViewProduct(item.product_id)}
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                {statistics.results.length > 0 ? (
+                  statistics.results.map((item) => (
+                    <TableRow key={item.product_id} hover>
+                      <TableCell>{item.product_name}</TableCell>
+                      <TableCell align="right">{formatCurrency(parseFloat(item.product_price))}</TableCell>
+                      <TableCell align="right">{item.view_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.cart_add_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.cart_remove_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.purchase_count.toLocaleString()}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title={t('admin.productStatistics.table.viewProduct')}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleViewProduct(item.product_id)}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                      <Typography color="text.secondary">
+                        {t('admin.productStatistics.noDataOnPage')}
+                      </Typography>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </TableContainer>

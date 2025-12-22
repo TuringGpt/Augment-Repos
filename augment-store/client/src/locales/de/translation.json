@@ -504,6 +504,7 @@
       "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
       "refresh": "Statistiken aktualisieren",
       "noData": "Keine Produktstatistiken verfügbar",
+      "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
       "table": {
         "productName": "Produktname",
         "price": "Preis",
