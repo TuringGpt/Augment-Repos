@@ -498,6 +498,23 @@
     "brands": "Brands",
     "users": "Users",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "productStatistics": {
+      "title": "Product Statistics",
+      "subtitle": "View detailed analytics and performance metrics for all products",
+      "refresh": "Refresh statistics",
+      "noData": "No product statistics available",
+      "table": {
+        "productName": "Product Name",
+        "price": "Price",
+        "views": "Views",
+        "cartAdds": "Cart Adds",
+        "cartRemoves": "Cart Removes",
+        "purchases": "Purchases",
+        "actions": "Actions",
+        "viewProduct": "View product details",
+        "rowsPerPage": "Rows per page"
+      }
+    }
   }
 }

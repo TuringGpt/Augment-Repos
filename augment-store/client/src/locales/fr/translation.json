@@ -498,6 +498,23 @@
     "brands": "Marques",
     "users": "Utilisateurs",
     "reports": "Rapports",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "productStatistics": {
+      "title": "Statistiques des produits",
+      "subtitle": "Voir les analyses détaillées et les métriques de performance de tous les produits",
+      "refresh": "Actualiser les statistiques",
+      "noData": "Aucune statistique de produit disponible",
+      "table": {
+        "productName": "Nom du produit",
+        "price": "Prix",
+        "views": "Vues",
+        "cartAdds": "Ajouts au panier",
+        "cartRemoves": "Retraits du panier",
+        "purchases": "Achats",
+        "actions": "Actions",
+        "viewProduct": "Voir les détails du produit",
+        "rowsPerPage": "Lignes par page"
+      }
+    }
   }
 }
