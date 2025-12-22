@@ -11,7 +11,7 @@ import {
   Settings as SettingsIcon,
   Store as BrandsIcon,
 } from '@mui/icons-material'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '@hooks/useTranslation'
 import Header from '@components/Header'
 import Footer from '@components/Footer'
 import Sidebar from '@components/Sidebar'
@@ -22,7 +22,7 @@ import CartDrawer from '@features/cart/components/CartDrawer'
 const DRAWER_WIDTH = 260
 
 interface NavItem {
-  labelKey: 'admin.dashboard' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.settings'
+  labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.settings'
   path: string
   icon: React.ReactNode
 }
@@ -34,7 +34,7 @@ const AdminLayout = () => {
 
   const navItems: NavItem[] = [
     {
-      labelKey: 'admin.dashboard',
+      labelKey: 'admin.dashboardNav',
       path: '/admin/dashboard',
       icon: <DashboardIcon />,
     },
