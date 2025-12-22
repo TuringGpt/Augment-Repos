@@ -39,8 +39,6 @@ const AdminDashboardPage = () => {
   const { user, isAuthenticated } = useAuthStore()
   const { analytics, days, isLoading, error, fetchAnalytics, setDays } = useAdminDashboardStore()
 
-  // Track mounted state to prevent state updates after unmount
-  const isMountedRef = useRef(true)
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -73,14 +71,6 @@ const AdminDashboardPage = () => {
       }
     }
   }, [days, fetchAnalytics])
-
-  // Track mounted state - only runs on mount and unmount
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
 
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
