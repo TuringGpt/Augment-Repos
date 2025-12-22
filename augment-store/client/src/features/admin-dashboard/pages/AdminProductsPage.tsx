@@ -156,7 +156,27 @@ const AdminProductsPage = () => {
           <CircularProgress />
         </Box>
       ) : statistics && statistics.results.length > 0 ? (
-        <>
+        <Box sx={{ position: 'relative' }}>
+          {/* Loading overlay for pagination changes */}
+          {isLoading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 1,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+
           {/* Statistics Table */}
           <TableContainer component={Paper}>
             <Table>
@@ -223,7 +243,7 @@ const AdminProductsPage = () => {
             rowsPerPageOptions={[5, 10, 25, 50]}
             labelRowsPerPage={t('admin.productStatistics.table.rowsPerPage')}
           />
-        </>
+        </Box>
       ) : (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color="text.secondary">
