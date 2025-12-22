@@ -111,13 +111,8 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set, get) => 
 
   setDays: (days: number) => {
     set({ days })
-    // Automatically fetch analytics when days changes
-    get()
-      .fetchAnalytics(days)
-      .catch((error) => {
-        // Error is already handled in fetchAnalytics, just prevent unhandled rejection
-        console.error('Error fetching analytics on days change:', error)
-      })
+    // Note: Fetch is handled by AdminDashboardPage useEffect that depends on days
+    // This prevents duplicate requests when days changes
   },
 
   clearAnalytics: () => {
