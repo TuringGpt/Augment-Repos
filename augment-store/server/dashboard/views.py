@@ -69,6 +69,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductStatistics.objects.all()
     serializer_class = ProductStatisticsSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'product_id'
 
     @action(detail=False, methods=['get'])
     def most_viewed(self, request):
