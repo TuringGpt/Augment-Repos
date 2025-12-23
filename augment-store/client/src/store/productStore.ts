@@ -15,8 +15,8 @@ interface ProductState {
 
   // Product statistics
   productStatistics: Record<string, ProductStatisticsDetail>
-  isLoadingStatistics: boolean
-  statisticsError: string | null
+  loadingStatistics: Record<string, boolean>
+  statisticsErrors: Record<string, string>
 
   // Actions
   setProducts: (products: Product[], total: number, page: number, totalPages: number) => void
@@ -29,6 +29,8 @@ interface ProductState {
   // Product statistics actions
   fetchProductStatistics: (productId: string, signal?: AbortSignal) => Promise<void>
   getProductStatistics: (productId: string) => ProductStatisticsDetail | null
+  isLoadingStatistics: (productId: string) => boolean
+  getStatisticsError: (productId: string) => string | null
   clearProductStatistics: (productId?: string) => void
 }
 
@@ -47,8 +49,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   // Product statistics state
   productStatistics: {},
-  isLoadingStatistics: false,
-  statisticsError: null,
+  loadingStatistics: {},
+  statisticsErrors: {},
 
   setProducts: (products, total, page, totalPages) =>
     set({
@@ -80,7 +82,16 @@ export const useProductStore = create<ProductState>((set, get) => ({
   // Product statistics actions
   fetchProductStatistics: async (productId: string, signal?: AbortSignal) => {
     try {
-      set({ isLoadingStatistics: true, statisticsError: null })
+      set((state) => ({
+        loadingStatistics: {
+          ...state.loadingStatistics,
+          [productId]: true,
+        },
+        statisticsErrors: {
+          ...state.statisticsErrors,
+          [productId]: undefined,
+        } as Record<string, string>,
+      }))
 
       const statistics = await productStatisticsService.getProductStatisticsById(productId, signal)
 
@@ -89,14 +100,22 @@ export const useProductStore = create<ProductState>((set, get) => ({
           ...state.productStatistics,
           [productId]: statistics,
         },
-        isLoadingStatistics: false,
+        loadingStatistics: {
+          ...state.loadingStatistics,
+          [productId]: false,
+        },
       }))
     } catch (error: unknown) {
       // Ignore abort errors
       const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
 
       if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
-        set({ isLoadingStatistics: false })
+        set((state) => ({
+          loadingStatistics: {
+            ...state.loadingStatistics,
+            [productId]: false,
+          },
+        }))
         return
       }
 
@@ -112,10 +131,16 @@ export const useProductStore = create<ProductState>((set, get) => ({
         errorMessage = err.message
       }
 
-      set({
-        statisticsError: errorMessage,
-        isLoadingStatistics: false,
-      })
+      set((state) => ({
+        statisticsErrors: {
+          ...state.statisticsErrors,
+          [productId]: errorMessage,
+        },
+        loadingStatistics: {
+          ...state.loadingStatistics,
+          [productId]: false,
+        },
+      }))
     }
   },
 
@@ -124,19 +149,33 @@ export const useProductStore = create<ProductState>((set, get) => ({
     return state.productStatistics[productId] ?? null
   },
 
+  isLoadingStatistics: (productId: string) => {
+    const state = get()
+    return state.loadingStatistics[productId] ?? false
+  },
+
+  getStatisticsError: (productId: string) => {
+    const state = get()
+    return state.statisticsErrors[productId] ?? null
+  },
+
   clearProductStatistics: (productId?: string) => {
     if (productId) {
       set((state) => {
-        const { [productId]: _, ...rest } = state.productStatistics
+        const { [productId]: _, ...restStatistics } = state.productStatistics
+        const { [productId]: __, ...restLoading } = state.loadingStatistics
+        const { [productId]: ___, ...restErrors } = state.statisticsErrors
         return {
-          productStatistics: rest,
-          statisticsError: null,
+          productStatistics: restStatistics,
+          loadingStatistics: restLoading,
+          statisticsErrors: restErrors,
         }
       })
     } else {
       set({
         productStatistics: {},
-        statisticsError: null,
+        loadingStatistics: {},
+        statisticsErrors: {},
       })
     }
   },
