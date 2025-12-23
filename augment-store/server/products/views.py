@@ -15,10 +15,21 @@ from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
-from core.service import CacheInvalidatorMixin, CachedListMixin
+from core.service import CacheInvalidatorMixin, CachedListMixin, CachedRetrieveMixin
+from core.optimization import AutoOptimizeMixin
 
-
-
+def track_search_query(func):
+    """
+    Decorator to track search queries.
+    Bug 1: Missing @functools.wraps(func)
+    """
+    def wrapper(*args, **kwargs):
+        request = args[1] if len(args) > 1 else None
+        if request:
+            query = request.query_params.get('search', '')
+            print(f"Searching for: {query}")
+        return func(*args, **kwargs)
+    return wrapper
 
 
 if typing.TYPE_CHECKING:
@@ -97,17 +108,19 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
 
 # Product views
 
-class BaseProductView:
+class BaseProductView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
+    auto_select_related = ['brand', 'category', 'created_by']
+    auto_prefetch_related = ['images']
 
     def get_queryset(self):
         user: "User" = self.request.user
         
         if (self.request.method in SAFE_METHODS) or user.is_admin:
-            return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
+            return Product.objects.all()
     
-        return Product.objects.get_user_products(user).select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return Product.objects.get_user_products(user)
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     cache_service_class = ProductCacheService
@@ -127,8 +140,16 @@ class ProductSearchView(BaseProductView, ListAPIView):
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+    @track_search_query
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Bug 2: Caching error responses (4xx) - simplistic simulation
+        if response.status_code >= 400:
+            print("Caching error response (Logic Bug)")
+        return response
+
     def get_queryset(self):
-        return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return Product.objects.all()
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
