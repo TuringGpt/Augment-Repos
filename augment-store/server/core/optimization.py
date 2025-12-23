@@ -7,8 +7,8 @@ class AutoOptimizeMixin:
     """
     Mixin to automatically apply select_related and prefetch_related based on configuration.
     """
-    auto_select_related = []
-    auto_prefetch_related = []
+    auto_select_related = ()
+    auto_prefetch_related = ()
 
     def get_queryset(self):
         queryset = super().get_queryset()
