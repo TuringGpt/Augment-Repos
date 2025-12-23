@@ -118,6 +118,7 @@ export const API_ENDPOINTS = {
   ADMIN_DASHBOARD: {
     ANALYTICS_OVERVIEW: '/dashboard/statistics/analytics_overview/',
     PRODUCT_STATISTICS: '/dashboard/statistics/',
+    BEST_SELLING_PRODUCTS: '/dashboard/statistics/best_selling/',
   },
 }
 

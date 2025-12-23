@@ -3,6 +3,8 @@ import { API_ENDPOINTS } from '@config/api'
 import type {
   ProductStatisticsResponse,
   ProductStatisticsParams,
+  BestSellingProductsResponse,
+  BestSellingProductsParams,
 } from '@features/product-statistics/types'
 
 export const productStatisticsService = {
@@ -29,6 +31,33 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch product statistics:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get best selling products (highest purchase count)
+   *
+   * @param params - Query parameters (limit)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with best selling products data
+   */
+  getBestSellingProducts: async (
+    params?: BestSellingProductsParams,
+    signal?: AbortSignal
+  ): Promise<BestSellingProductsResponse> => {
+    try {
+      const response = await apiClient.get<BestSellingProductsResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.BEST_SELLING_PRODUCTS,
+        {
+          params,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch best selling products:', error)
       throw error
     }
   },
