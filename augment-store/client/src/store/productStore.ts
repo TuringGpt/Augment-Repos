@@ -16,7 +16,7 @@ interface ProductState {
   // Product statistics
   productStatistics: Record<string, ProductStatisticsDetail>
   loadingStatistics: Record<string, boolean>
-  statisticsErrors: Record<string, string>
+  statisticsErrors: Record<string, string | undefined>
 
   // Actions
   setProducts: (products: Product[], total: number, page: number, totalPages: number) => void
@@ -90,7 +90,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         statisticsErrors: {
           ...state.statisticsErrors,
           [productId]: undefined,
-        } as Record<string, string>,
+        },
       }))
 
       const statistics = await productStatisticsService.getProductStatisticsById(productId, signal)
