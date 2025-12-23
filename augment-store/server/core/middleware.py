@@ -18,6 +18,7 @@ def force_query_logging():
         yield
     finally:
         connection.force_debug_cursor = force_debug_cursor
+        reset_queries()
 
 
 class QueryCountMiddleware:

@@ -1,4 +1,7 @@
 import typing
+import logging
+
+logger = logging.getLogger(__name__)
 
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
