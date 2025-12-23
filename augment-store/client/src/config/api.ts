@@ -118,6 +118,7 @@ export const API_ENDPOINTS = {
   ADMIN_DASHBOARD: {
     ANALYTICS_OVERVIEW: '/dashboard/statistics/analytics_overview/',
     PRODUCT_STATISTICS: '/dashboard/statistics/',
+    PRODUCT_STATISTICS_BY_ID: (id: string) => `/dashboard/statistics/${id}/`,
   },
 }
 
