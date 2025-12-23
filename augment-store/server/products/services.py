@@ -8,12 +8,16 @@ from core.service import BaseCacheService
 class ProductService:
 
     def recommend_products_for_user(self, user: User):
+        # Bug 1: Using truthiness check for user (should be is not None)
+        if not user:
+             return Product.objects.none()
 
         # SAFE read-only fetches — no DB writes
         user_wishlist = Wishlist.objects.get_user_wishlist_safe(user)
         user_cart = Cart.objects.get_user_cart_safe(user)
         order_items = OrderItem.objects.filter(created_by=user)
 
+        # Optimization: Use select_related and prefetch_related to avoid N+1
         # If user has no wishlist or cart, treat categories as empty
         wishlist_categories = (
             user_wishlist.products.values_list("category", flat=True)
@@ -44,17 +48,18 @@ class ProductService:
         )
 
         # Build per-source queries (safe even if categories empty)
+        # Bug 2: Missing Prefetch import (intentional)
         wishlist_products = Product.objects.filter(
             category__in=wishlist_categories
-        ).exclude(id__in=user_product_ids)
+        ).exclude(id__in=user_product_ids).select_related('brand', 'category').prefetch_related('images')
 
         cart_products = Product.objects.filter(
             category__in=cart_categories
-        ).exclude(id__in=user_product_ids)
+        ).exclude(id__in=user_product_ids).select_related('brand', 'category').prefetch_related('images')
 
         order_products = Product.objects.filter(
             category__in=order_categories
-        ).exclude(id__in=user_product_ids)
+        ).exclude(id__in=user_product_ids).select_related('brand', 'category').prefetch_related('images')
 
         # Safe union
         recommended = (
