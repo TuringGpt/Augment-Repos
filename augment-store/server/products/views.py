@@ -65,9 +65,9 @@ class BaseCategoryView:
             # Safe access to image URL
             image_url = instance.image.url if instance.image else None
             if image_url:
-                print(f"Category image: {image_url}")
+                logger.info(f"Category image: {image_url}")
             return instance.get_descendants(include_self=True)
-        except ProductCategory.DoesNotExist:
+        except (ProductCategory.DoesNotExist, ValueError, TypeError):
             return ProductCategory.objects.none()
 
 class ProductCategoryListView(CachedListMixin, BaseCategoryView, ListAPIView):
