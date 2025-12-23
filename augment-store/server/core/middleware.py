@@ -26,6 +26,9 @@ class QueryCountMiddleware:
     """
     Middleware to log query counts for each request to help identify N+1 issues.
     Works in both DEBUG and production environments.
+
+    NOTE: Must be added to the MIDDLEWARE setting.
+    Enable explicitly in production using ENABLE_QUERY_COUNT_LOGGING = True.
     """
     def __init__(self, get_response):
         self.get_response = get_response
