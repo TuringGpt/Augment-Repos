@@ -498,6 +498,24 @@
     "brands": "Marcas",
     "users": "Usuarios",
     "reports": "Informes",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "productStatistics": {
+      "title": "Estadísticas de productos",
+      "subtitle": "Ver análisis detallados y métricas de rendimiento de todos los productos",
+      "refresh": "Actualizar estadísticas",
+      "noData": "No hay estadísticas de productos disponibles",
+      "noDataOnPage": "No hay productos en esta página. Por favor, navegue a una página diferente.",
+      "table": {
+        "productName": "Nombre del producto",
+        "price": "Precio",
+        "views": "Vistas",
+        "cartAdds": "Añadidos al carrito",
+        "cartRemoves": "Eliminados del carrito",
+        "purchases": "Compras",
+        "actions": "Acciones",
+        "viewProduct": "Ver detalles del producto",
+        "rowsPerPage": "Filas por página"
+      }
+    }
   }
 }

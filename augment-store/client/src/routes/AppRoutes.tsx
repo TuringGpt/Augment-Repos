@@ -38,7 +38,7 @@ import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
 import UnsubscribePage from '@features/newsletter/pages/UnsubscribePage'
 
 // Admin Dashboard pages
-import AdminDashboardPage from '@features/admin-dashboard/pages/AdminDashboardPage'
+import { AdminDashboardPage, AdminProductsPage } from '@features/admin-dashboard/pages'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -107,6 +107,7 @@ const AppRoutes = () => {
       <Route element={<AdminRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/products" element={<AdminProductsPage />} />
         </Route>
       </Route>
       
