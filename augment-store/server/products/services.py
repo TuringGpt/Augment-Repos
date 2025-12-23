@@ -8,8 +8,7 @@ from core.service import BaseCacheService
 class ProductService:
 
     def recommend_products_for_user(self, user: User):
-        # Bug 1: Using truthiness check for user (should be is not None)
-        if not user:
+        if not user or not user.is_authenticated:
              return Product.objects.none()
 
         # SAFE read-only fetches — no DB writes
@@ -48,7 +47,6 @@ class ProductService:
         )
 
         # Build per-source queries (safe even if categories empty)
-        # Bug 2: Missing Prefetch import (intentional)
         wishlist_products = Product.objects.filter(
             category__in=wishlist_categories
         ).exclude(id__in=user_product_ids).select_related('brand', 'category').prefetch_related('images')
