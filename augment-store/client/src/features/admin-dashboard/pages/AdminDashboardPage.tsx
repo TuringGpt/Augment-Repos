@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -22,9 +22,8 @@ import {
   CheckCircle as CheckCircleIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material'
-import { useAuthStore } from '@store/authStore'
-import { useAdminDashboard } from '@features/admin-dashboard/hooks'
 import { useTranslation } from '@hooks/useTranslation'
+import { useAuthStore, useAdminDashboardStore } from '@store/index'
 import MetricCard from '@features/admin-dashboard/components/MetricCard'
 import ConversionFunnelChart from '@features/admin-dashboard/components/ConversionFunnelChart'
 import TopProductsTable from '@features/admin-dashboard/components/TopProductsTable'
@@ -38,8 +37,40 @@ const AdminDashboardPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
-  const [days, setDays] = useState(30)
-  const { analytics, isLoading, error, refetch } = useAdminDashboard({ days })
+  const { analytics, days, isLoading, error, fetchAnalytics, setDays } = useAdminDashboardStore()
+
+  // Track current abort controller for request cancellation
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Fetch analytics on mount and when days changes
+  useEffect(() => {
+    // Cancel any in-flight request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
+    // Fetch analytics
+    fetchAnalytics(days, abortController.signal).catch((err) => {
+      // Ignore abort errors - these are expected when component unmounts or days changes
+      const error = err as { name?: string }
+      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
+        return
+      }
+      // Other errors are already handled in the store
+      console.error('Error fetching analytics:', err)
+    })
+
+    // Cleanup: abort in-flight requests when dependencies change or component unmounts
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [days, fetchAnalytics])
 
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
@@ -73,7 +104,10 @@ const AdminDashboardPage = () => {
   }
 
   const handleRefresh = () => {
-    refetch()
+    fetchAnalytics(days).catch((err) => {
+      // Error is already handled in the store
+      console.error('Error refreshing analytics:', err)
+    })
   }
 
   if (error) {
@@ -89,7 +123,7 @@ const AdminDashboardPage = () => {
           <Button
             variant="outlined"
             size="small"
-            onClick={refetch}
+            onClick={handleRefresh}
             sx={{ mt: 1 }}
           >
             {t('admin.dashboard.tryAgain')}
