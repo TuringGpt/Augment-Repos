@@ -20,8 +20,8 @@ class QueryCountMiddleware:
         final_queries = len(connection.queries)
         query_count = final_queries - initial_queries
         
-        # Bug 2: Typo in attribute name (query_cont instead of query_count)
-        if query_cont > 50:
+        # Log warning if query count exceeds threshold
+        if query_count > 50:
             logger.warning(f"High query count detected: {query_count} queries for {request.path}")
             
         return response
