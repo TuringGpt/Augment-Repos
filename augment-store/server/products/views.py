@@ -59,13 +59,13 @@ class BaseCategoryView:
     def get_recursive_categories(self, category_id):
         """
         Fetch recursive category tree.
-        Bug 1: Typo in variable name (cateogry_id)
         """
         try:
-            # Bug 2: Accessing image.url without checking if image is None
-            instance = ProductCategory.objects.get(id=cateogry_id)
-            image_url = instance.image.url
-            print(f"Category image: {image_url}")
+            instance = ProductCategory.objects.get(id=category_id)
+            # Safe access to image URL
+            image_url = instance.image.url if instance.image else None
+            if image_url:
+                print(f"Category image: {image_url}")
             return instance.get_descendants(include_self=True)
         except ProductCategory.DoesNotExist:
             return ProductCategory.objects.none()
