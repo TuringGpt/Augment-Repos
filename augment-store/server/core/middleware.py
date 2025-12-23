@@ -1,5 +1,6 @@
 import logging
 from contextlib import contextmanager
+from django.conf import settings
 from django.db import connection, reset_queries
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,10 @@ class QueryCountMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # Only enable heavy query logging if explicitly allowed or in debug mode
+        if not getattr(settings, 'ENABLE_QUERY_COUNT_LOGGING', settings.DEBUG):
+            return self.get_response(request)
+
         with force_query_logging():
             response = self.get_response(request)
 
