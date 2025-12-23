@@ -1,4 +1,7 @@
+import hashlib
+
 from django.db.models import QuerySet
+
 
 class AutoOptimizeMixin:
     """
@@ -21,6 +24,5 @@ class AutoOptimizeMixin:
 def get_query_hash(query_string):
     """
     Generate a hash for a query string.
-    Bug 1: Missing hashlib import.
     """
     return hashlib.md5(query_string.encode('utf-8')).hexdigest()
