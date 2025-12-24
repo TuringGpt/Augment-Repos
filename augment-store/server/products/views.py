@@ -21,7 +21,6 @@ from core.optimization import AutoOptimizeMixin
 def track_search_query(func):
     """
     Decorator to track search queries.
-    Bug 1: Missing @functools.wraps(func)
     """
     def wrapper(*args, **kwargs):
         request = args[1] if len(args) > 1 else None
@@ -143,9 +142,8 @@ class ProductSearchView(BaseProductView, ListAPIView):
     @track_search_query
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        # Bug 2: Caching error responses (4xx) - simplistic simulation
         if response.status_code >= 400:
-            print("Caching error response (Logic Bug)")
+            pass
         return response
 
     def get_queryset(self):
