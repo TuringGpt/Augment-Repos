@@ -34,3 +34,9 @@ export interface ProductStatisticsParams {
   page_size?: number
 }
 
+/**
+ * Single product statistics response (non-paginated)
+ * Response from /api/v1/dashboard/statistics/{id}/
+ */
+export type ProductStatisticsDetail = ProductStatisticsItem
+
