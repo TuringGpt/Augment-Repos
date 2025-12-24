@@ -41,6 +41,10 @@ class QueryCountMiddleware:
         with force_query_logging():
             response = self.get_response(request)
 
+            # Ensure response is rendered while logging is active (e.g. for DRF/TemplateResponse)
+            if hasattr(response, 'render') and callable(response.render):
+                response.render()
+
             # Calculate queries during request
             query_count = len(connection.queries)
 
