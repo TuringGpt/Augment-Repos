@@ -1,5 +1,6 @@
 import typing
 import logging
+import functools
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ def track_search_query(func):
     """
     Decorator to track search queries.
     """
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         request = args[1] if len(args) > 1 else None
         if request:
@@ -140,13 +142,6 @@ class ProductSearchView(BaseProductView, ListAPIView):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
-
-    @track_search_query
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        if response.status_code >= 400:
-            pass
-        return response
 
     def get_queryset(self):
         return super().get_queryset()
