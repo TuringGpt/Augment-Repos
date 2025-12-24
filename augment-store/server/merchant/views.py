@@ -1,30 +1,41 @@
+from core.optimization import AutoOptimizeMixin
 from products.models import ProductBrand, Product
 from checkout.models import Order
 from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
-class MerchantBrandListView(ListAPIView):
+class MerchantBrandListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantBrandSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = ProductBrand.objects.all()
+    auto_select_related = ("created_by", "image")
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        return ProductBrand.objects.filter(created_by=object_id)
+        return super().get_queryset().filter(created_by=object_id)
 
 
-class MerchantProductListView(ListAPIView):
+class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Product.objects.all()
+    # Intentional Bug 1: using select_related for many-to-many relationship
+    auto_select_related = ("images",)
+    auto_prefetch_related = ("brand", "category")
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        # Return a QuerySet of all products from brands created by this merchant
-        return Product.objects.filter(brand__created_by=object_id)
+        return super().get_queryset().filter(brand__created_by=object_id)
 
-class MerchantOrdersListView(ListAPIView):
+class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantOrdersSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
+    # Intentional Bug 2: typo in prefetch path
+    auto_prefetch_related = ("items__prodcut__brand",)
 
     def get_queryset(self):
-        return Order.objects.filter(items__cart_item__product__brand__created_by=self.request.user).distinct()
+        return super().get_queryset().filter(
+            items__cart_item__product__brand__created_by=self.request.user
+        ).distinct()
