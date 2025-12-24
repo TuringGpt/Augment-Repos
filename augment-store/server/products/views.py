@@ -15,7 +15,7 @@ from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
-from core.service import CacheInvalidatorMixin, CachedListMixin, CachedRetrieveMixin
+from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 
 def track_search_query(func):
@@ -25,8 +25,8 @@ def track_search_query(func):
     def wrapper(*args, **kwargs):
         request = args[1] if len(args) > 1 else None
         if request:
-            query = request.query_params.get('search', '')
-            print(f"Searching for: {query}")
+            # Avoid logging PII/raw terms in production
+            logger.info("Search query processing started")
         return func(*args, **kwargs)
     return wrapper
 
@@ -114,12 +114,13 @@ class BaseProductView(AutoOptimizeMixin):
     auto_prefetch_related = ['images']
 
     def get_queryset(self):
+        queryset = super().get_queryset()
         user: "User" = self.request.user
         
         if (self.request.method in SAFE_METHODS) or user.is_admin:
-            return Product.objects.all()
+            return queryset
     
-        return Product.objects.get_user_products(user)
+        return queryset.filter(created_by=user)
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     cache_service_class = ProductCacheService
@@ -147,7 +148,7 @@ class ProductSearchView(BaseProductView, ListAPIView):
         return response
 
     def get_queryset(self):
-        return Product.objects.all()
+        return super().get_queryset()
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
