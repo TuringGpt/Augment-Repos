@@ -112,6 +112,7 @@ class BaseProductView(AutoOptimizeMixin):
     serializer_class = ProductListSerializer
     auto_select_related = ['brand', 'category', 'created_by']
     auto_prefetch_related = ['images']
+    queryset = Product.objects.all()
 
     def get_queryset(self):
         queryset = super().get_queryset()
