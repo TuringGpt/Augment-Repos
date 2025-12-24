@@ -35,6 +35,22 @@ export interface ProductStatisticsParams {
 }
 
 /**
+ * Response from /api/v1/dashboard/statistics/best_selling/ endpoint
+ */
+export interface BestSellingProductsResponse {
+  count: number
+  results: ProductStatisticsItem[]
+  metric: string
+}
+
+/**
+ * Query parameters for best selling products endpoint
+ */
+export interface BestSellingProductsParams {
+  limit?: number
+}
+
+/**
  * Single product statistics response (non-paginated)
  * Response from /api/v1/dashboard/statistics/{id}/
  */
