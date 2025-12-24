@@ -665,3 +665,41 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         self.assertIn('Product 1', product_names)
         # Product 2 should NOT be in the results since its only abandonment is 40 days old (outside the 5-day window)
         self.assertNotIn('Product 2', product_names)
+
+    def test_retrieve_product_statistics_by_product_id(self):
+        """Test that retrieve action looks up ProductStatistics by product_id, not id."""
+        # GIVEN a product with statistics
+        product = SimpleProductFactory(name="Test Product")
+        stats = ProductStatistics.objects.get(product=product)
+
+        # Update statistics
+        stats.view_count = 42
+        stats.cart_add_count = 10
+        stats.purchase_count = 5
+        stats.save()
+
+        # WHEN we retrieve statistics using the product's ID (not the ProductStatistics ID)
+        url = reverse("v1:product-statistics-detail", kwargs={'product_id': str(product.id)})
+        response = self.member_client.get(url)
+
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # AND the response should contain the correct statistics
+        self.assertEqual(response.data['product_id'], str(product.id))
+        self.assertEqual(response.data['product_name'], 'Test Product')
+        self.assertEqual(response.data['view_count'], 42)
+        self.assertEqual(response.data['cart_add_count'], 10)
+        self.assertEqual(response.data['purchase_count'], 5)
+
+    def test_retrieve_product_statistics_by_invalid_product_id(self):
+        """Test that retrieve action returns 404 for non-existent product_id."""
+        # GIVEN a non-existent product ID
+        invalid_product_id = '00000000-0000-0000-0000-000000000000'
+
+        # WHEN we try to retrieve statistics for this product
+        url = reverse("v1:product-statistics-detail", kwargs={'product_id': invalid_product_id})
+        response = self.member_client.get(url)
+
+        # THEN we should get a 404 response
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

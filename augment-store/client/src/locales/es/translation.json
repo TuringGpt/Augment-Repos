@@ -52,6 +52,7 @@
     "selectLanguage": "Seleccionar Idioma",
     "adminDashboard": "Panel de Administración"
   },
+
   "tooltip": {
     "menu": "Abrir menú",
     "cart": "Abrir carrito",
@@ -425,5 +426,96 @@
     "description": "La página que buscas no existe o ha sido movida. Por favor verifica la URL o regresa a la página de inicio.",
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
+  },
+  "admin": {
+    "panel": "Panel de Administración",
+    "managementConsole": "Consola de Gestión",
+    "dashboardNav": "Panel de Control",
+    "dashboard": {
+      "title": "Panel de Administración",
+      "subtitle": "Resumen de análisis y métricas de rendimiento",
+      "period": "Período",
+      "refresh": "Actualizar",
+      "last7Days": "Últimos 7 días",
+      "last30Days": "Últimos 30 días",
+      "last90Days": "Últimos 90 días",
+      "lastYear": "Último año",
+      "errorLoadingAnalytics": "Error al cargar análisis",
+      "tryAgain": "Intentar de nuevo",
+      "pleaseLogin": "Por favor inicia sesión para acceder al panel de administración.",
+      "goToLogin": "Ir a iniciar sesión",
+      "accessDenied": "Acceso denegado. No tienes permiso para ver el panel de administración.",
+      "goToHome": "Ir al inicio",
+      "metrics": {
+        "totalRevenue": "Ingresos totales",
+        "avgOrder": "Pedido promedio",
+        "totalOrders": "Pedidos totales",
+        "completed": "completados",
+        "newCustomers": "Nuevos clientes",
+        "totalProducts": "Productos totales",
+        "categories": "categorías",
+        "completedOrders": "Pedidos completados",
+        "completionRate": "tasa de finalización",
+        "cartAbandonmentRate": "Tasa de abandono del carrito",
+        "abandonments": "abandonos",
+        "overallConversion": "Conversión general",
+        "viewToPurchase": "Vista a compra"
+      },
+      "conversionFunnel": {
+        "title": "Embudo de conversión",
+        "overallConversionRate": "Tasa de conversión general",
+        "views": "Vistas",
+        "cartAdditions": "Adiciones al carrito",
+        "purchases": "Compras",
+        "count": "Cantidad",
+        "rate": "Tasa"
+      },
+      "categoryPerformance": {
+        "title": "Ingresos por categoría",
+        "distribution": "Distribución en {{count}} categoría",
+        "distribution_other": "Distribución en {{count}} categorías",
+        "revenue": "Ingresos",
+        "percentage": "Porcentaje",
+        "unitsSold": "Unidades vendidas",
+        "orders": "Pedidos",
+        "noCategoryData": "No hay datos de categoría disponibles"
+      },
+      "topProducts": {
+        "title": "Productos principales por ingresos",
+        "showingTop": "Mostrando el {{count}} producto principal",
+        "showingTop_other": "Mostrando los {{count}} productos principales",
+        "rank": "Rango",
+        "productName": "Nombre del producto",
+        "revenue": "Ingresos",
+        "unitsSold": "Unidades vendidas",
+        "price": "Precio",
+        "noProductData": "No hay datos de productos disponibles"
+      }
+    },
+    "orders": "Pedidos",
+    "products": "Productos",
+    "categories": "Categorías",
+    "brands": "Marcas",
+    "users": "Usuarios",
+    "reports": "Informes",
+    "settings": "Configuración",
+    "productStatistics": {
+      "title": "Estadísticas de productos",
+      "subtitle": "Ver análisis detallados y métricas de rendimiento de todos los productos",
+      "refresh": "Actualizar estadísticas",
+      "noData": "No hay estadísticas de productos disponibles",
+      "noDataOnPage": "No hay productos en esta página. Por favor, navegue a una página diferente.",
+      "table": {
+        "productName": "Nombre del producto",
+        "price": "Precio",
+        "views": "Vistas",
+        "cartAdds": "Añadidos al carrito",
+        "cartRemoves": "Eliminados del carrito",
+        "purchases": "Compras",
+        "actions": "Acciones",
+        "viewProduct": "Ver detalles del producto",
+        "rowsPerPage": "Filas por página"
+      }
+    }
   }
 }

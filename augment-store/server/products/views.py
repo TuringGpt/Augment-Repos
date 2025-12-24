@@ -15,6 +15,7 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
+from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
@@ -169,9 +170,3 @@ class RecommendProductListView(BaseProductView, ListAPIView):
         user: "User" = self.request.user
         product_service = ProductService()
         return product_service.recommend_products_for_user(user)
-
-
-
-
-
-

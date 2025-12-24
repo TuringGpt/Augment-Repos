@@ -52,6 +52,7 @@
     "selectLanguage": "Sprache Auswählen",
     "adminDashboard": "Admin-Dashboard"
   },
+
   "tooltip": {
     "menu": "Menü öffnen",
     "cart": "Warenkorb öffnen",
@@ -425,5 +426,96 @@
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben. Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.",
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
+  },
+  "admin": {
+    "panel": "Admin-Panel",
+    "managementConsole": "Verwaltungskonsole",
+    "dashboardNav": "Dashboard",
+    "dashboard": {
+      "title": "Admin-Dashboard",
+      "subtitle": "Analyseübersicht und Leistungsmetriken",
+      "period": "Zeitraum",
+      "refresh": "Aktualisieren",
+      "last7Days": "Letzte 7 Tage",
+      "last30Days": "Letzte 30 Tage",
+      "last90Days": "Letzte 90 Tage",
+      "lastYear": "Letztes Jahr",
+      "errorLoadingAnalytics": "Fehler beim Laden der Analysen",
+      "tryAgain": "Erneut versuchen",
+      "pleaseLogin": "Bitte melden Sie sich an, um auf das Admin-Dashboard zuzugreifen.",
+      "goToLogin": "Zur Anmeldung",
+      "accessDenied": "Zugriff verweigert. Sie haben keine Berechtigung, das Admin-Dashboard anzuzeigen.",
+      "goToHome": "Zur Startseite",
+      "metrics": {
+        "totalRevenue": "Gesamtumsatz",
+        "avgOrder": "Durchschn. Bestellung",
+        "totalOrders": "Bestellungen gesamt",
+        "completed": "abgeschlossen",
+        "newCustomers": "Neue Kunden",
+        "totalProducts": "Produkte gesamt",
+        "categories": "Kategorien",
+        "completedOrders": "Abgeschlossene Bestellungen",
+        "completionRate": "Abschlussrate",
+        "cartAbandonmentRate": "Warenkorbabbruchrate",
+        "abandonments": "Abbrüche",
+        "overallConversion": "Gesamtkonversion",
+        "viewToPurchase": "Ansicht zu Kauf"
+      },
+      "conversionFunnel": {
+        "title": "Conversion-Funnel",
+        "overallConversionRate": "Gesamtkonversionsrate",
+        "views": "Ansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "rate": "Rate"
+      },
+      "categoryPerformance": {
+        "title": "Umsatz nach Kategorie",
+        "distribution": "Verteilung über {{count}} Kategorie",
+        "distribution_other": "Verteilung über {{count}} Kategorien",
+        "revenue": "Umsatz",
+        "percentage": "Prozentsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "orders": "Bestellungen",
+        "noCategoryData": "Keine Kategoriedaten verfügbar"
+      },
+      "topProducts": {
+        "title": "Top-Produkte nach Umsatz",
+        "showingTop": "Zeige das Top {{count}} Produkt",
+        "showingTop_other": "Zeige die Top {{count}} Produkte",
+        "rank": "Rang",
+        "productName": "Produktname",
+        "revenue": "Umsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "price": "Preis",
+        "noProductData": "Keine Produktdaten verfügbar"
+      }
+    },
+    "orders": "Bestellungen",
+    "products": "Produkte",
+    "categories": "Kategorien",
+    "brands": "Marken",
+    "users": "Benutzer",
+    "reports": "Berichte",
+    "settings": "Einstellungen",
+    "productStatistics": {
+      "title": "Produktstatistiken",
+      "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
+      "refresh": "Statistiken aktualisieren",
+      "noData": "Keine Produktstatistiken verfügbar",
+      "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
+      "table": {
+        "productName": "Produktname",
+        "price": "Preis",
+        "views": "Aufrufe",
+        "cartAdds": "Zum Warenkorb hinzugefügt",
+        "cartRemoves": "Aus Warenkorb entfernt",
+        "purchases": "Käufe",
+        "actions": "Aktionen",
+        "viewProduct": "Produktdetails anzeigen",
+        "rowsPerPage": "Zeilen pro Seite"
+      }
+    }
   }
 }

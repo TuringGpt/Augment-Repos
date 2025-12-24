@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import MainLayout from '@layouts/MainLayout'
 import AuthLayout from '@layouts/AuthLayout'
+import AdminLayout from '@layouts/AdminLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
 import PublicRoute from '@components/PublicRoute'
 import AdminRoute from '@components/AdminRoute'
@@ -37,7 +38,7 @@ import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
 import UnsubscribePage from '@features/newsletter/pages/UnsubscribePage'
 
 // Admin Dashboard pages
-import AdminDashboardPage from '@features/admin-dashboard/pages/AdminDashboardPage'
+import { AdminDashboardPage, AdminProductsPage } from '@features/admin-dashboard/pages'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -104,8 +105,9 @@ const AppRoutes = () => {
 
       {/* Admin routes - require authentication and admin role */}
       <Route element={<AdminRoute />}>
-        <Route element={<MainLayout />}>
+        <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/products" element={<AdminProductsPage />} />
         </Route>
       </Route>
       

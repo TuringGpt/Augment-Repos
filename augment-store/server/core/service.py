@@ -1,5 +1,8 @@
 import json
 import hashlib
+import functools
+
+
 from django.core.cache import cache
 from rest_framework.response import Response
 
@@ -11,6 +14,11 @@ class BaseCacheService:
 
     def _serialize_params(self, params: dict):
         """Serialize params in stable sort order."""
+        if hasattr(params, 'lists'):
+            # Handle QueryDict with multi-values by converting to dict of lists
+            params = dict(params.lists())
+        elif hasattr(params, 'dict'):
+            params = params.dict()
         return json.dumps(params or {}, sort_keys=True)
 
     def _hash_tail(self, text: str):
@@ -105,7 +113,7 @@ class CachedListMixin:
         cache_key = self.generate_cache_key()
 
         cached = service.get(cache_key)
-        if cached:
+        if cached is not None:
             return Response(cached)
 
         response = super().list(request, *args, **kwargs)
@@ -134,3 +142,97 @@ class CacheInvalidatorMixin:
     def perform_destroy(self, instance):
         super().perform_destroy(instance)
         self.invalidate_cache()
+
+
+class CachedRetrieveMixin:
+    cache_service_class = BaseCacheService  # override this per view
+    cache_ttl = None  # default TTL or override
+    lookup_field = 'pk'
+
+    def get_cache_service(self):
+        return self.cache_service_class()
+
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        # Include lookup field (usually pk), user_id, and query params in the key
+        lookup_kwarg = getattr(self, 'lookup_url_kwarg', None) or self.lookup_field
+        obj_id = self.kwargs.get(lookup_kwarg)
+        user_id = getattr(self.request.user, "id", None)
+        query_params = self.request.query_params
+        
+        # We manually construct the key components to ensure uniqueness for detailed views
+        serialized_params = service._serialize_params(query_params)
+        custom_key_content = f"retrieve:{obj_id}:{user_id}:{serialized_params}"
+        
+        return service.get_cache_key(custom_key=custom_key_content)
+
+    def retrieve(self, request, *args, **kwargs):
+        service = self.get_cache_service()
+        cache_key = self.generate_cache_key()
+
+        cached = service.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
+        response = super().retrieve(request, *args, **kwargs)
+        service.set(cache_key, response.data, ttl=self.cache_ttl)
+        return response
+
+
+def cache_response(ttl=None, key_prefix=None):
+    """
+    Decorator for caching DRF ViewSet actions (returning Response objects).
+    """
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def _wrapped_view(view_instance, request, *args, **kwargs):
+            # Attempt to use the cache service from the viewset if available, else default
+            if hasattr(view_instance, 'get_cache_service'):
+                service = view_instance.get_cache_service()
+            else:
+                service = BaseCacheService()
+            
+            # Helper to generate key
+            user_id = getattr(request.user, "id", None)
+            serialized_params = service._serialize_params(request.query_params)
+            serialized_kwargs = service._serialize_params(kwargs)
+            
+            # Construct a unique key
+            # If key_prefix is not provided, use function name
+            prefix = key_prefix or view_func.__name__
+            custom_key = f"action:{prefix}:{user_id}:{serialized_kwargs}:{serialized_params}"
+            
+            cache_key = service.get_cache_key(custom_key=custom_key)
+            
+            # Check cache
+            cached_value = service.get(cache_key)
+            if cached_value is not None:
+                # Expecting a dict with metadata, but handle legacy/raw data gracefully if needed
+                if isinstance(cached_value, dict) and 'v_status' in cached_value:
+                     return Response(
+                         data=cached_value['v_data'],
+                         status=cached_value['v_status'],
+                         headers=cached_value.get('v_headers')
+                     )
+                return Response(cached_value)
+            
+            # Execute view
+            response = view_func(view_instance, request, *args, **kwargs)
+            
+            # Cache data if successful
+            if hasattr(response, 'data') and 200 <= response.status_code < 300:
+                # Determine TTL
+                effective_ttl = ttl if ttl is not None else getattr(view_instance, 'cache_ttl', None)
+                
+                # Store data + metadata
+                # Using v_ prefix to unlikely collide with actual data keys if we were checking keys blindly
+                cache_payload = {
+                    'v_data': response.data,
+                    'v_status': response.status_code,
+                    'v_headers': dict(response.items())
+                }
+                service.set(cache_key, cache_payload, ttl=effective_ttl)
+                
+            return response
+        return _wrapped_view
+    return decorator
