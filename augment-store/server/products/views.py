@@ -1,4 +1,7 @@
 import typing
+import logging
+
+logger = logging.getLogger(__name__)
 
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -48,8 +51,23 @@ class BaseCategoryView:
     serializer_class = ProductCategoryListSerializer
 
     def get_queryset(self):
-        return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent')
+        # Optimization: use prefetch_related for MPTT children
+        return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent').prefetch_related('children')
     
+    def get_recursive_categories(self, category_id):
+        """
+        Fetch recursive category tree.
+        """
+        try:
+            instance = ProductCategory.objects.get(id=category_id)
+            # Safe access to image URL
+            image_url = instance.image.url if instance.image else None
+            if image_url:
+                logger.debug("Category tree accessed")
+            return instance.get_descendants(include_self=True)
+        except (ProductCategory.DoesNotExist, ValueError, TypeError):
+            return ProductCategory.objects.none()
+
 class ProductCategoryListView(CachedListMixin, BaseCategoryView, ListAPIView):
     cache_service_class = ProductCategoryCacheService
     cache_ttl = 60 * 60  * 24
