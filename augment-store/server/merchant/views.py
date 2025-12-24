@@ -20,7 +20,6 @@ class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Product.objects.all()
-    # Intentional Bug 1: using select_related for many-to-many relationship
     auto_select_related = ("images",)
     auto_prefetch_related = ("brand", "category")
 
@@ -32,7 +31,6 @@ class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantOrdersSerializer
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
-    # Intentional Bug 2: typo in prefetch path
     auto_prefetch_related = ("items__prodcut__brand",)
 
     def get_queryset(self):
