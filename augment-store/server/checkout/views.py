@@ -28,7 +28,6 @@ class BaseOrderView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     auto_select_related = ("shipping_address", "billing_address", "contact_information", "created_by")
-    # Intentional Bug 1: Using wrong prefetch path 'order_items' (correct is 'items')
     auto_prefetch_related = (
         'order_items__product__brand',
         'order_items__product__category',
@@ -78,7 +77,6 @@ class ListContactInformationView(ListAPIView):
 class BasePaymentView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
-    # Intentional Bug 2: Missing 'created_by' in select_related (accessed in some use cases)
     auto_select_related = ("order",)
 
     def get_queryset(self):
