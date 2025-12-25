@@ -56,3 +56,22 @@ export interface BestSellingProductsParams {
  */
 export type ProductStatisticsDetail = ProductStatisticsItem
 
+/**
+ * Product performance response from /api/v1/dashboard/statistics/product_performance/
+ * Returns categorized lists of products based on performance metrics
+ */
+export interface ProductPerformanceResponse {
+  low_performing_products: ProductStatisticsItem[]
+  high_abandonment_products: ProductStatisticsItem[]
+  low_conversion_products: ProductStatisticsItem[]
+  high_engagement_products: ProductStatisticsItem[]
+}
+
+/**
+ * Query parameters for product performance endpoint
+ */
+export interface ProductPerformanceParams {
+  days?: number
+  limit?: number
+}
+

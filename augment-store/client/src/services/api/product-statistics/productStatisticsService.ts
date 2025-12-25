@@ -6,6 +6,8 @@ import type {
   BestSellingProductsResponse,
   BestSellingProductsParams,
   ProductStatisticsDetail,
+  ProductPerformanceResponse,
+  ProductPerformanceParams,
 } from '@features/product-statistics/types'
 
 export const productStatisticsService = {
@@ -85,6 +87,38 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch best selling products:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get product performance metrics
+   * Returns categorized lists of products based on performance:
+   * - Low performing products (low views and purchases)
+   * - High abandonment products (high cart adds but low purchases)
+   * - Low conversion products (high views but low purchases)
+   * - High engagement products (high views and cart adds)
+   *
+   * @param params - Query parameters (days, limit)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with product performance data
+   */
+  getProductPerformance: async (
+    params?: ProductPerformanceParams,
+    signal?: AbortSignal
+  ): Promise<ProductPerformanceResponse> => {
+    try {
+      const response = await apiClient.get<ProductPerformanceResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.PRODUCT_PERFORMANCE,
+        {
+          params,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch product performance:', error)
       throw error
     }
   },
