@@ -24,6 +24,8 @@ interface ProductStatisticsState {
   fetchStatistics: (params?: ProductStatisticsParams, signal?: AbortSignal) => Promise<void>
   fetchBestSellingProducts: (params?: BestSellingProductsParams, signal?: AbortSignal) => Promise<void>
   clearError: () => void
+  clearStatisticsError: () => void
+  clearBestSellingError: () => void
   clearStatistics: () => void
   clearBestSellingProducts: () => void
 }
@@ -143,6 +145,14 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
 
   clearError: () => {
     set({ error: null, bestSellingError: null })
+  },
+
+  clearStatisticsError: () => {
+    set({ error: null })
+  },
+
+  clearBestSellingError: () => {
+    set({ bestSellingError: null })
   },
 
   clearStatistics: () => {

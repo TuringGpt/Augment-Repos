@@ -505,7 +505,17 @@
       "refresh": "Actualiser les statistiques",
       "noData": "Aucune statistique de produit disponible",
       "noDataOnPage": "Aucun produit sur cette page. Veuillez naviguer vers une autre page.",
+      "bestSelling": {
+        "title": "Produits les plus vendus",
+        "subtitle": "Top {{count}} produits par nombre d'achats",
+        "purchases": "Achats",
+        "price": "Prix",
+        "purchaseCount": "Nombre d'achats",
+        "noData": "Aucune donnée de produits les plus vendus disponible"
+      },
       "table": {
+        "title": "Analyse Détaillée des Produits",
+        "description": "Vue complète des métriques de performance des produits, y compris les vues, les interactions du panier et les achats",
         "productName": "Nom du produit",
         "price": "Prix",
         "views": "Vues",

@@ -17,6 +17,7 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Grid,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -29,6 +30,7 @@ import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
+import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
 
 /**
  * AdminProductsPage Component
@@ -38,15 +40,30 @@ const AdminProductsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
-  const { statistics, isLoading, error, fetchStatistics, clearError } = useProductStatisticsStore()
+  const {
+    statistics,
+    isLoading,
+    error,
+    fetchStatistics,
+    clearStatisticsError,
+    bestSellingProducts,
+    isBestSellingLoading,
+    bestSellingError,
+    fetchBestSellingProducts,
+    clearBestSellingError,
+  } = useProductStatisticsStore()
 
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const bestSellingAbortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch statistics on mount and when page/rowsPerPage changes
   useEffect(() => {
-    loadStatistics()
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadStatistics()
+    }
     return () => {
       // Cleanup: abort any pending requests
       if (abortControllerRef.current) {
@@ -54,7 +71,22 @@ const AdminProductsPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage])
+  }, [page, rowsPerPage, isAuthenticated, user?.role])
+
+  // Fetch best selling products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadBestSellingProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (bestSellingAbortControllerRef.current) {
+        bestSellingAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
 
   const loadStatistics = async () => {
     // Abort previous request if any
@@ -80,6 +112,29 @@ const AdminProductsPage = () => {
     }
   }
 
+  const loadBestSellingProducts = async () => {
+    // Abort previous request if any
+    if (bestSellingAbortControllerRef.current) {
+      bestSellingAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    bestSellingAbortControllerRef.current = abortController
+
+    try {
+      await fetchBestSellingProducts(
+        {
+          limit: 10, // Get top 10 best selling products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Error is handled in the store
+      console.error('Failed to fetch best selling products:', err)
+    }
+  }
+
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
@@ -91,6 +146,7 @@ const AdminProductsPage = () => {
 
   const handleRefresh = () => {
     loadStatistics()
+    loadBestSellingProducts()
   }
 
   const handleViewProduct = (productId: string) => {
@@ -145,10 +201,27 @@ const AdminProductsPage = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearStatisticsError}>
           {error}
         </Alert>
       )}
+
+      {/* Best Selling Error Alert */}
+      {bestSellingError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearBestSellingError}>
+          {bestSellingError}
+        </Alert>
+      )}
+
+      {/* Best Selling Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <BestSellingProductsChart
+            data={bestSellingProducts?.results || []}
+            isLoading={isBestSellingLoading}
+          />
+        </Grid>
+      </Grid>
 
       {/* Loading State */}
       {isLoading && !statistics ? (
@@ -178,6 +251,15 @@ const AdminProductsPage = () => {
           )}
 
           {/* Statistics Table */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+              {t('admin.productStatistics.table.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {t('admin.productStatistics.table.description')}
+            </Typography>
+          </Box>
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>

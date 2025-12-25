@@ -505,7 +505,17 @@
       "refresh": "Statistiken aktualisieren",
       "noData": "Keine Produktstatistiken verfügbar",
       "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
+      "bestSelling": {
+        "title": "Meistverkaufte Produkte",
+        "subtitle": "Top {{count}} Produkte nach Kaufanzahl",
+        "purchases": "Käufe",
+        "price": "Preis",
+        "purchaseCount": "Kaufanzahl",
+        "noData": "Keine Daten zu meistverkauften Produkten verfügbar"
+      },
       "table": {
+        "title": "Detaillierte Produktanalyse",
+        "description": "Umfassende Ansicht der Produktleistungsmetriken einschließlich Aufrufe, Warenkorbinteraktionen und Käufe",
         "productName": "Produktname",
         "price": "Preis",
         "views": "Aufrufe",
