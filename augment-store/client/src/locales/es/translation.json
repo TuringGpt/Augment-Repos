@@ -526,6 +526,22 @@
         "viewProduct": "Ver detalles del producto",
         "rowsPerPage": "Filas por página"
       }
+    },
+    "productPerformance": {
+      "title": "Análisis de Rendimiento de Productos",
+      "subtitle": "Métricas de rendimiento de los últimos {{days}} días",
+      "noData": "No hay datos de rendimiento de productos disponibles",
+      "lowPerforming": "Bajo Rendimiento",
+      "highAbandonment": "Alto Abandono",
+      "lowConversion": "Baja Conversión",
+      "highEngagement": "Alto Compromiso",
+      "purchases": "Compras",
+      "views": "Vistas",
+      "cartAdds": "Añadidos al carrito",
+      "abandonments": "Abandonos",
+      "abandonmentRate": "Tasa de Abandono",
+      "conversionRate": "Tasa de Conversión",
+      "engagementRatio": "Ratio de Compromiso"
     }
   }
 }
