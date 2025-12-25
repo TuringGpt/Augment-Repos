@@ -45,11 +45,12 @@ const AdminProductsPage = () => {
     isLoading,
     error,
     fetchStatistics,
-    clearError,
+    clearStatisticsError,
     bestSellingProducts,
     isBestSellingLoading,
     bestSellingError,
     fetchBestSellingProducts,
+    clearBestSellingError,
   } = useProductStatisticsStore()
 
   const [page, setPage] = useState(0)
@@ -200,14 +201,14 @@ const AdminProductsPage = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearStatisticsError}>
           {error}
         </Alert>
       )}
 
       {/* Best Selling Error Alert */}
       {bestSellingError && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearBestSellingError}>
           {bestSellingError}
         </Alert>
       )}
