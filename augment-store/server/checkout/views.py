@@ -22,21 +22,21 @@ from .serializers import (
 )
 from .services import StripeService
 
-class BaseOrderView:
+from core.optimization import AutoOptimizeMixin
+
+class BaseOrderView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
+    auto_select_related = ("shipping_address", "billing_address", "contact_information", "created_by")
+    auto_prefetch_related = (
+        'items__product__brand',
+        'items__product__category',
+        'items__product__images'
+    )
 
     def get_queryset(self):
         # Users can only see their own orders
-        return Order.objects.filter(created_by=self.request.user).select_related(
-            'shipping_address',
-            'billing_address',
-            'contact_information',
-            'created_by'
-        ).prefetch_related(
-            'items__product__brand',
-            'items__product__category',
-            'items__product__images'
-        ).order_by('-created_at')
+        return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 
 
 class CreateOrderView(BaseOrderView, CreateAPIView):
@@ -74,12 +74,14 @@ class ListContactInformationView(ListAPIView):
         return ContactInformation.objects.filter(user=self.request.user)
 
 
-class BasePaymentView:
+class BasePaymentView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    queryset = Payment.objects.all()
+    auto_select_related = ("order",)
 
     def get_queryset(self):
         # Users can only see their own payments
-        return Payment.objects.filter(created_by=self.request.user).select_related('order').order_by('-created_at')
+        return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 
 class OrderPaymentView(BasePaymentView, CreateAPIView):
     serializer_class = OrderPaymentSerializer
