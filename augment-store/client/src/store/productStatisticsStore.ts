@@ -5,6 +5,8 @@ import type {
   ProductStatisticsParams,
   BestSellingProductsResponse,
   BestSellingProductsParams,
+  MostViewedProductsResponse,
+  MostViewedProductsParams,
   ProductPerformanceResponse,
   ProductPerformanceParams,
 } from '@features/product-statistics/types'
@@ -13,27 +15,33 @@ interface ProductStatisticsState {
   // Data
   statistics: ProductStatisticsResponse | null
   bestSellingProducts: BestSellingProductsResponse | null
+  mostViewedProducts: MostViewedProductsResponse | null
   productPerformance: ProductPerformanceResponse | null
 
   // Loading state
   isLoading: boolean
   isBestSellingLoading: boolean
+  isMostViewedLoading: boolean
   isProductPerformanceLoading: boolean
 
   // Error state
   error: string | null
   bestSellingError: string | null
+  mostViewedError: string | null
   productPerformanceError: string | null
 
   // Actions
   fetchStatistics: (params?: ProductStatisticsParams, signal?: AbortSignal) => Promise<void>
   fetchBestSellingProducts: (params?: BestSellingProductsParams, signal?: AbortSignal) => Promise<void>
+  fetchMostViewedProducts: (params?: MostViewedProductsParams, signal?: AbortSignal) => Promise<void>
   fetchProductPerformance: (params?: ProductPerformanceParams, signal?: AbortSignal) => Promise<void>
   clearError: () => void
   clearStatisticsError: () => void
   clearBestSellingError: () => void
+  clearMostViewedError: () => void
   clearStatistics: () => void
   clearBestSellingProducts: () => void
+  clearMostViewedProducts: () => void
   clearProductPerformance: () => void
 }
 
@@ -41,18 +49,22 @@ interface ProductStatisticsState {
 // Prevents stale responses from overwriting newer state
 let requestCounter = 0
 let bestSellingRequestCounter = 0
+let mostViewedRequestCounter = 0
 let productPerformanceRequestCounter = 0
 
 export const useProductStatisticsStore = create<ProductStatisticsState>((set) => ({
   // Initial state
   statistics: null,
   bestSellingProducts: null,
+  mostViewedProducts: null,
   productPerformance: null,
   isLoading: false,
   isBestSellingLoading: false,
+  isMostViewedLoading: false,
   isProductPerformanceLoading: false,
   error: null,
   bestSellingError: null,
+  mostViewedError: null,
   productPerformanceError: null,
 
   // Actions
@@ -154,6 +166,55 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
     }
   },
 
+  fetchMostViewedProducts: async (params?: MostViewedProductsParams, signal?: AbortSignal) => {
+    const requestId = ++mostViewedRequestCounter
+
+    try {
+      set({ isMostViewedLoading: true, mostViewedError: null })
+
+      const data = await productStatisticsService.getMostViewedProducts(params, signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === mostViewedRequestCounter) {
+        set({
+          mostViewedProducts: data,
+          isMostViewedLoading: false,
+        })
+      }
+    } catch (error: unknown) {
+      // Ignore abort errors
+      const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === mostViewedRequestCounter) {
+          set({ isMostViewedLoading: false })
+        }
+        return
+      }
+
+      // Only update error state if this is still the latest request
+      if (requestId === mostViewedRequestCounter) {
+        let errorMessage = 'Failed to load most viewed products'
+
+        if (err?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view most viewed products'
+        } else if (err?.response?.status === 401) {
+          errorMessage = 'Please log in to view most viewed products'
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message
+        } else if (err?.message) {
+          errorMessage = err.message
+        }
+
+        set({
+          mostViewedError: errorMessage,
+          isMostViewedLoading: false,
+        })
+      }
+    }
+  },
+
   fetchProductPerformance: async (params?: ProductPerformanceParams, signal?: AbortSignal) => {
     const requestId = ++productPerformanceRequestCounter
 
@@ -204,7 +265,7 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
   },
 
   clearError: () => {
-    set({ error: null, bestSellingError: null, productPerformanceError: null })
+    set({ error: null, bestSellingError: null, mostViewedError: null, productPerformanceError: null })
   },
 
   clearStatisticsError: () => {
@@ -213,6 +274,10 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
 
   clearBestSellingError: () => {
     set({ bestSellingError: null })
+  },
+
+  clearMostViewedError: () => {
+    set({ mostViewedError: null })
   },
 
   clearStatistics: () => {
@@ -226,6 +291,13 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
     set({
       bestSellingProducts: null,
       bestSellingError: null,
+    })
+  },
+
+  clearMostViewedProducts: () => {
+    set({
+      mostViewedProducts: null,
+      mostViewedError: null,
     })
   },
 

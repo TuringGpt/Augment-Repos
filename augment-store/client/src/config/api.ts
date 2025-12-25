@@ -119,6 +119,7 @@ export const API_ENDPOINTS = {
     ANALYTICS_OVERVIEW: '/dashboard/statistics/analytics_overview/',
     PRODUCT_STATISTICS: '/dashboard/statistics/',
     BEST_SELLING_PRODUCTS: '/dashboard/statistics/best_selling/',
+    MOST_VIEWED_PRODUCTS: '/dashboard/statistics/most_viewed/',
     PRODUCT_STATISTICS_BY_ID: (id: string) => `/dashboard/statistics/${encodeURIComponent(id)}/`,
     PRODUCT_PERFORMANCE: '/dashboard/statistics/product_performance/',
   },
