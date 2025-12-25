@@ -5,44 +5,55 @@ import type {
   ProductStatisticsParams,
   BestSellingProductsResponse,
   BestSellingProductsParams,
+  ProductPerformanceResponse,
+  ProductPerformanceParams,
 } from '@features/product-statistics/types'
 
 interface ProductStatisticsState {
   // Data
   statistics: ProductStatisticsResponse | null
   bestSellingProducts: BestSellingProductsResponse | null
+  productPerformance: ProductPerformanceResponse | null
 
   // Loading state
   isLoading: boolean
   isBestSellingLoading: boolean
+  isProductPerformanceLoading: boolean
 
   // Error state
   error: string | null
   bestSellingError: string | null
+  productPerformanceError: string | null
 
   // Actions
   fetchStatistics: (params?: ProductStatisticsParams, signal?: AbortSignal) => Promise<void>
   fetchBestSellingProducts: (params?: BestSellingProductsParams, signal?: AbortSignal) => Promise<void>
+  fetchProductPerformance: (params?: ProductPerformanceParams, signal?: AbortSignal) => Promise<void>
   clearError: () => void
   clearStatisticsError: () => void
   clearBestSellingError: () => void
   clearStatistics: () => void
   clearBestSellingProducts: () => void
+  clearProductPerformance: () => void
 }
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
 let requestCounter = 0
 let bestSellingRequestCounter = 0
+let productPerformanceRequestCounter = 0
 
 export const useProductStatisticsStore = create<ProductStatisticsState>((set) => ({
   // Initial state
   statistics: null,
   bestSellingProducts: null,
+  productPerformance: null,
   isLoading: false,
   isBestSellingLoading: false,
+  isProductPerformanceLoading: false,
   error: null,
   bestSellingError: null,
+  productPerformanceError: null,
 
   // Actions
   fetchStatistics: async (params?: ProductStatisticsParams, signal?: AbortSignal) => {
@@ -143,8 +154,57 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
     }
   },
 
+  fetchProductPerformance: async (params?: ProductPerformanceParams, signal?: AbortSignal) => {
+    const requestId = ++productPerformanceRequestCounter
+
+    try {
+      set({ isProductPerformanceLoading: true, productPerformanceError: null })
+
+      const data = await productStatisticsService.getProductPerformance(params, signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === productPerformanceRequestCounter) {
+        set({
+          productPerformance: data,
+          isProductPerformanceLoading: false,
+        })
+      }
+    } catch (error: unknown) {
+      // Ignore abort errors
+      const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === productPerformanceRequestCounter) {
+          set({ isProductPerformanceLoading: false })
+        }
+        return
+      }
+
+      // Only update error state if this is still the latest request
+      if (requestId === productPerformanceRequestCounter) {
+        let errorMessage = 'Failed to load product performance'
+
+        if (err?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view product performance'
+        } else if (err?.response?.status === 401) {
+          errorMessage = 'Please log in to view product performance'
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message
+        } else if (err?.message) {
+          errorMessage = err.message
+        }
+
+        set({
+          productPerformanceError: errorMessage,
+          isProductPerformanceLoading: false,
+        })
+      }
+    }
+  },
+
   clearError: () => {
-    set({ error: null, bestSellingError: null })
+    set({ error: null, bestSellingError: null, productPerformanceError: null })
   },
 
   clearStatisticsError: () => {
@@ -166,6 +226,13 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
     set({
       bestSellingProducts: null,
       bestSellingError: null,
+    })
+  },
+
+  clearProductPerformance: () => {
+    set({
+      productPerformance: null,
+      productPerformanceError: null,
     })
   },
 }))
