@@ -97,11 +97,11 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         self.brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
         self.product = ProductFactory(created_by=self.merchant, name="Nike Shoe", brand=self.brand)
         self.order = OrderFactory(created_by=self.merchant)
-        self.order_item = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
-        self.order_item_2 = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
-        self.order_item_3 = OrderItemFactory(order=self.order, cart_item__product=self.product, created_by=self.merchant)
+        self.order_item = OrderItemFactory(order=self.order, product=self.product, created_by=self.merchant)
+        self.order_item_2 = OrderItemFactory(order=self.order, product=self.product, created_by=self.merchant)
+        self.order_item_3 = OrderItemFactory(order=self.order, product=self.product, created_by=self.merchant)
         self.order_2 = OrderFactory(created_by=self.merchant)
-        self.order_item_4 = OrderItemFactory(order=self.order_2, cart_item__product=self.product, created_by=self.merchant)
+        self.order_item_4 = OrderItemFactory(order=self.order_2, product=self.product, created_by=self.merchant)
 
     def test_merchant_order_list_view(self):
         merchant_client = self.authenticated_client
