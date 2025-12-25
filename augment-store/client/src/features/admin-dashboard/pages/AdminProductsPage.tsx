@@ -59,7 +59,10 @@ const AdminProductsPage = () => {
 
   // Fetch statistics on mount and when page/rowsPerPage changes
   useEffect(() => {
-    loadStatistics()
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadStatistics()
+    }
     return () => {
       // Cleanup: abort any pending requests
       if (abortControllerRef.current) {
@@ -67,11 +70,14 @@ const AdminProductsPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage])
+  }, [page, rowsPerPage, isAuthenticated, user?.role])
 
   // Fetch best selling products on mount
   useEffect(() => {
-    loadBestSellingProducts()
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadBestSellingProducts()
+    }
     return () => {
       // Cleanup: abort any pending requests
       if (bestSellingAbortControllerRef.current) {
@@ -79,7 +85,7 @@ const AdminProductsPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isAuthenticated, user?.role])
 
   const loadStatistics = async () => {
     // Abort previous request if any
