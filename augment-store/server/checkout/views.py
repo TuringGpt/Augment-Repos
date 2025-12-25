@@ -29,9 +29,9 @@ class BaseOrderView(AutoOptimizeMixin):
     queryset = Order.objects.all()
     auto_select_related = ("shipping_address", "billing_address", "contact_information", "created_by")
     auto_prefetch_related = (
-        'order_items__product__brand',
-        'order_items__product__category',
-        'order_items__product__images'
+        'items__product__brand',
+        'items__product__category',
+        'items__product__images'
     )
 
     def get_queryset(self):
