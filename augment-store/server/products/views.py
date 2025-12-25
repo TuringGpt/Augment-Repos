@@ -1,5 +1,6 @@
 import typing
 import logging
+import functools
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,25 @@ from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
+from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
+from core.optimization import AutoOptimizeMixin
+
+def track_search_query(func):
+    """
+    Decorator to track search queries.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        request = args[1] if len(args) > 1 else None
+        if request:
+            # Avoid logging PII/raw terms in production
+            logger.info("Search query processing started")
+        return func(*args, **kwargs)
+    return wrapper
+
+
 if typing.TYPE_CHECKING:
     from accounts.models import User
 
@@ -92,17 +110,21 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
 
 # Product views
 
-class BaseProductView:
+class BaseProductView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
+    auto_select_related = ['brand', 'category', 'created_by']
+    auto_prefetch_related = ['images']
+    queryset = Product.objects.all()
 
     def get_queryset(self):
+        queryset = super().get_queryset()
         user: "User" = self.request.user
         
         if (self.request.method in SAFE_METHODS) or user.is_admin:
-            return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
+            return queryset
     
-        return Product.objects.get_user_products(user).select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return queryset.filter(created_by=user)
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     cache_service_class = ProductCacheService
@@ -123,7 +145,7 @@ class ProductSearchView(BaseProductView, ListAPIView):
     search_fields = ["name", "description", "brand__name", "category__name"]
 
     def get_queryset(self):
-        return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return super().get_queryset()
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
