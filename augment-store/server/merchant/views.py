@@ -35,5 +35,5 @@ class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(
-            items__cart_item__product__brand__created_by=self.request.user
+            items__product__brand__created_by=self.request.user
         ).distinct()
