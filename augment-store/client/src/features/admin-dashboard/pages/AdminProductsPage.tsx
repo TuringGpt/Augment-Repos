@@ -31,6 +31,7 @@ import { useAuthStore } from '@store/authStore'
 import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
 import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
+import ProductPerformanceChart from '@features/admin-dashboard/components/ProductPerformanceChart'
 
 /**
  * AdminProductsPage Component
@@ -51,12 +52,18 @@ const AdminProductsPage = () => {
     bestSellingError,
     fetchBestSellingProducts,
     clearBestSellingError,
+    productPerformance,
+    isProductPerformanceLoading,
+    productPerformanceError,
+    fetchProductPerformance,
+    clearProductPerformanceError,
   } = useProductStatisticsStore()
 
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const abortControllerRef = useRef<AbortController | null>(null)
   const bestSellingAbortControllerRef = useRef<AbortController | null>(null)
+  const productPerformanceAbortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch statistics on mount and when page/rowsPerPage changes
   useEffect(() => {
@@ -83,6 +90,21 @@ const AdminProductsPage = () => {
       // Cleanup: abort any pending requests
       if (bestSellingAbortControllerRef.current) {
         bestSellingAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch product performance on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadProductPerformance()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (productPerformanceAbortControllerRef.current) {
+        productPerformanceAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,6 +157,30 @@ const AdminProductsPage = () => {
     }
   }
 
+  const loadProductPerformance = async () => {
+    // Abort previous request if any
+    if (productPerformanceAbortControllerRef.current) {
+      productPerformanceAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    productPerformanceAbortControllerRef.current = abortController
+
+    try {
+      await fetchProductPerformance(
+        {
+          days: 30, // Get performance data for the last 30 days
+          limit: 10, // Get top 10 products in each category
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Error is handled in the store
+      console.error('Failed to fetch product performance:', err)
+    }
+  }
+
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
@@ -147,6 +193,7 @@ const AdminProductsPage = () => {
   const handleRefresh = () => {
     loadStatistics()
     loadBestSellingProducts()
+    loadProductPerformance()
   }
 
   const handleViewProduct = (productId: string) => {
@@ -213,12 +260,29 @@ const AdminProductsPage = () => {
         </Alert>
       )}
 
+      {/* Product Performance Error Alert */}
+      {productPerformanceError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearProductPerformanceError}>
+          {productPerformanceError}
+        </Alert>
+      )}
+
       {/* Best Selling Products Chart */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12}>
           <BestSellingProductsChart
             data={bestSellingProducts?.results || []}
             isLoading={isBestSellingLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Product Performance Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <ProductPerformanceChart
+            data={productPerformance}
+            isLoading={isProductPerformanceLoading}
           />
         </Grid>
       </Grid>

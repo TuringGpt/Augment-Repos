@@ -32,6 +32,7 @@ interface ProductStatisticsState {
   clearError: () => void
   clearStatisticsError: () => void
   clearBestSellingError: () => void
+  clearProductPerformanceError: () => void
   clearStatistics: () => void
   clearBestSellingProducts: () => void
   clearProductPerformance: () => void
@@ -213,6 +214,10 @@ export const useProductStatisticsStore = create<ProductStatisticsState>((set) =>
 
   clearBestSellingError: () => {
     set({ bestSellingError: null })
+  },
+
+  clearProductPerformanceError: () => {
+    set({ productPerformanceError: null })
   },
 
   clearStatistics: () => {
