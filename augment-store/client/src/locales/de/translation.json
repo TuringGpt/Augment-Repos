@@ -526,6 +526,22 @@
         "viewProduct": "Produktdetails anzeigen",
         "rowsPerPage": "Zeilen pro Seite"
       }
+    },
+    "productPerformance": {
+      "title": "Produktleistungsanalyse",
+      "subtitle": "Leistungsmetriken für die letzten {{days}} Tage",
+      "noData": "Keine Produktleistungsdaten verfügbar",
+      "lowPerforming": "Geringe Leistung",
+      "highAbandonment": "Hohe Abbruchrate",
+      "lowConversion": "Niedrige Konversionsrate",
+      "highEngagement": "Hohes Engagement",
+      "purchases": "Käufe",
+      "views": "Aufrufe",
+      "cartAdds": "Zum Warenkorb hinzugefügt",
+      "abandonments": "Abbrüche",
+      "abandonmentRate": "Abbruchrate",
+      "conversionRate": "Konversionsrate",
+      "engagementRatio": "Engagement-Verhältnis"
     }
   }
 }

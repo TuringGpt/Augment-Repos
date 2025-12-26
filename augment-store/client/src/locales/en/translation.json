@@ -526,6 +526,22 @@
         "viewProduct": "View product details",
         "rowsPerPage": "Rows per page"
       }
+    },
+    "productPerformance": {
+      "title": "Product Performance Analysis",
+      "subtitle": "Performance metrics for the last {{days}} days",
+      "noData": "No product performance data available",
+      "lowPerforming": "Low Performing",
+      "highAbandonment": "High Abandonment",
+      "lowConversion": "Low Conversion",
+      "highEngagement": "High Engagement",
+      "purchases": "Purchases",
+      "views": "Views",
+      "cartAdds": "Cart Adds",
+      "abandonments": "Abandonments",
+      "abandonmentRate": "Abandonment Rate",
+      "conversionRate": "Conversion Rate",
+      "engagementRatio": "Engagement Ratio"
     }
   }
 }
