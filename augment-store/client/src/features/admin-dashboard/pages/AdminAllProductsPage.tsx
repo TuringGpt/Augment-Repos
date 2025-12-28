@@ -290,16 +290,22 @@ const AdminAllProductsPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {formatCurrency(product.price)}
-                        </Typography>
-                        {product.discountPrice && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ textDecoration: 'line-through' }}
-                          >
-                            {formatCurrency(product.discountPrice)}
+                        {product.discountPrice ? (
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {formatCurrency(product.discountPrice)}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ textDecoration: 'line-through' }}
+                            >
+                              {formatCurrency(product.price)}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {formatCurrency(product.price)}
                           </Typography>
                         )}
                       </TableCell>
