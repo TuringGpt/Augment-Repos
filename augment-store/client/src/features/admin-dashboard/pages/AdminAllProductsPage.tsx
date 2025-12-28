@@ -51,17 +51,18 @@ const AdminAllProductsPage = () => {
   const [page, setPage] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchMode, setIsSearchMode] = useState(false)
 
   // Backend has fixed page size of 100
   const backendPageSize = 100
 
-  // Fetch products on mount and when page changes
+  // Fetch products on mount and when page changes (only if not in search mode)
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
+    if (isAuthenticated && user?.role === 'admin' && !isSearchMode) {
       loadProducts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, isAuthenticated, user?.role])
+  }, [page, isAuthenticated, user?.role, isSearchMode])
 
   const loadProducts = async () => {
     setIsLoading(true)
@@ -87,7 +88,9 @@ const AdminAllProductsPage = () => {
   }
 
   const handleRefresh = () => {
-    loadProducts()
+    setIsSearchMode(false)
+    setSearchQuery('')
+    setPage(0)
   }
 
   const handleViewProduct = (productId: string) => {
@@ -96,7 +99,9 @@ const AdminAllProductsPage = () => {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      loadProducts()
+      // Clear search mode and reload normal products
+      setIsSearchMode(false)
+      setPage(0)
       return
     }
 
@@ -110,6 +115,8 @@ const AdminAllProductsPage = () => {
 
       setProducts(response.products)
       setTotalProducts(response.total)
+      setIsSearchMode(true)
+      // Set page to 0 without triggering loadProducts due to isSearchMode=true
       setPage(0)
     } catch (err) {
       console.error('Failed to search products:', err)
