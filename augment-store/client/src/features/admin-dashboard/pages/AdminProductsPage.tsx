@@ -31,6 +31,7 @@ import { useAuthStore } from '@store/authStore'
 import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
 import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
+import MostViewedProductsChart from '@features/admin-dashboard/components/MostViewedProductsChart'
 import ProductPerformanceChart from '@features/admin-dashboard/components/ProductPerformanceChart'
 
 /**
@@ -52,6 +53,11 @@ const AdminProductsPage = () => {
     bestSellingError,
     fetchBestSellingProducts,
     clearBestSellingError,
+    mostViewedProducts,
+    isMostViewedLoading,
+    mostViewedError,
+    fetchMostViewedProducts,
+    clearMostViewedError,
     productPerformance,
     isProductPerformanceLoading,
     productPerformanceError,
@@ -63,6 +69,7 @@ const AdminProductsPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const abortControllerRef = useRef<AbortController | null>(null)
   const bestSellingAbortControllerRef = useRef<AbortController | null>(null)
+  const mostViewedAbortControllerRef = useRef<AbortController | null>(null)
   const productPerformanceAbortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch statistics on mount and when page/rowsPerPage changes
@@ -90,6 +97,21 @@ const AdminProductsPage = () => {
       // Cleanup: abort any pending requests
       if (bestSellingAbortControllerRef.current) {
         bestSellingAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch most viewed products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadMostViewedProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (mostViewedAbortControllerRef.current) {
+        mostViewedAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +179,29 @@ const AdminProductsPage = () => {
     }
   }
 
+  const loadMostViewedProducts = async () => {
+    // Abort previous request if any
+    if (mostViewedAbortControllerRef.current) {
+      mostViewedAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    mostViewedAbortControllerRef.current = abortController
+
+    try {
+      await fetchMostViewedProducts(
+        {
+          limit: 10, // Get top 10 most viewed products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Error is handled in the store
+      console.error('Failed to fetch most viewed products:', err)
+    }
+  }
+
   const loadProductPerformance = async () => {
     // Abort previous request if any
     if (productPerformanceAbortControllerRef.current) {
@@ -193,6 +238,7 @@ const AdminProductsPage = () => {
   const handleRefresh = () => {
     loadStatistics()
     loadBestSellingProducts()
+    loadMostViewedProducts()
     loadProductPerformance()
   }
 
@@ -260,6 +306,13 @@ const AdminProductsPage = () => {
         </Alert>
       )}
 
+      {/* Most Viewed Error Alert */}
+      {mostViewedError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearMostViewedError}>
+          {mostViewedError}
+        </Alert>
+      )}
+
       {/* Product Performance Error Alert */}
       {productPerformanceError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={clearProductPerformanceError}>
@@ -273,6 +326,16 @@ const AdminProductsPage = () => {
           <BestSellingProductsChart
             data={bestSellingProducts?.results || []}
             isLoading={isBestSellingLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Most Viewed Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <MostViewedProductsChart
+            data={mostViewedProducts?.results || []}
+            isLoading={isMostViewedLoading}
           />
         </Grid>
       </Grid>

@@ -513,6 +513,14 @@
         "purchaseCount": "Cantidad de compras",
         "noData": "No hay datos de productos más vendidos disponibles"
       },
+      "mostViewed": {
+        "title": "Productos más vistos",
+        "subtitle": "Los {{count}} productos principales por cantidad de vistas",
+        "views": "Vistas",
+        "price": "Precio",
+        "viewCount": "Cantidad de vistas",
+        "noData": "No hay datos de productos más vistos disponibles"
+      },
       "table": {
         "title": "Análisis Detallado de Productos",
         "description": "Vista completa de las métricas de rendimiento del producto, incluidas vistas, interacciones del carrito y compras",

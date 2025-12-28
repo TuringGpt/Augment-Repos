@@ -513,6 +513,14 @@
         "purchaseCount": "Kaufanzahl",
         "noData": "Keine Daten zu meistverkauften Produkten verfügbar"
       },
+      "mostViewed": {
+        "title": "Meistgesehene Produkte",
+        "subtitle": "Top {{count}} Produkte nach Aufrufanzahl",
+        "views": "Aufrufe",
+        "price": "Preis",
+        "viewCount": "Aufrufanzahl",
+        "noData": "Keine Daten zu meistgesehenen Produkten verfügbar"
+      },
       "table": {
         "title": "Detaillierte Produktanalyse",
         "description": "Umfassende Ansicht der Produktleistungsmetriken einschließlich Aufrufe, Warenkorbinteraktionen und Käufe",

@@ -513,6 +513,14 @@
         "purchaseCount": "Purchase Count",
         "noData": "No best selling products data available"
       },
+      "mostViewed": {
+        "title": "Most Viewed Products",
+        "subtitle": "Top {{count}} products by view count",
+        "views": "Views",
+        "price": "Price",
+        "viewCount": "View Count",
+        "noData": "No most viewed products data available"
+      },
       "table": {
         "title": "Detailed Product Analytics",
         "description": "Comprehensive view of product performance metrics including views, cart interactions, and purchases",
