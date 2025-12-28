@@ -25,6 +25,7 @@ import {
   TrendingUp as TrendingUpIcon,
   ShoppingCart as ShoppingCartIcon,
   RemoveShoppingCart as RemoveCartIcon,
+  List as ListIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -239,11 +240,20 @@ const AdminProductsPage = () => {
             {t('admin.productStatistics.subtitle')}
           </Typography>
         </Box>
-        <Tooltip title={t('admin.productStatistics.refresh')}>
-          <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ListIcon />}
+            onClick={() => navigate('/admin/products/all')}
+          >
+            View All Products
+          </Button>
+          <Tooltip title={t('admin.productStatistics.refresh')}>
+            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Error Alert */}
