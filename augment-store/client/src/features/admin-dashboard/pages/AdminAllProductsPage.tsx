@@ -371,7 +371,7 @@ const AdminAllProductsPage = () => {
           {/* Pagination */}
           <TablePagination
             component="div"
-            count={totalProducts}
+            count={isSearchMode ? products.length : totalProducts}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={backendPageSize}
