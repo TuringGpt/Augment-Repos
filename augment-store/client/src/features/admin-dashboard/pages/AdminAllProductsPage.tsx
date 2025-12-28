@@ -49,17 +49,19 @@ const AdminAllProductsPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch products on mount and when page/rowsPerPage changes
+  // Backend has fixed page size of 100
+  const backendPageSize = 100
+
+  // Fetch products on mount and when page changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadProducts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, isAuthenticated, user?.role])
+  }, [page, isAuthenticated, user?.role])
 
   const loadProducts = async () => {
     setIsLoading(true)
@@ -82,11 +84,6 @@ const AdminAllProductsPage = () => {
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10))
-    setPage(0) // Reset to first page
   }
 
   const handleRefresh = () => {
@@ -127,12 +124,6 @@ const AdminAllProductsPage = () => {
       handleSearch()
     }
   }
-
-  // Get paginated products for current page
-  const paginatedProducts = products.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  )
 
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
@@ -264,8 +255,8 @@ const AdminAllProductsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedProducts.length > 0 ? (
-                  paginatedProducts.map((product) => (
+                {products.length > 0 ? (
+                  products.map((product) => (
                     <TableRow key={product.id} hover>
                       <TableCell>
                         <Avatar
@@ -376,9 +367,8 @@ const AdminAllProductsPage = () => {
             count={totalProducts}
             page={page}
             onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            rowsPerPage={backendPageSize}
+            rowsPerPageOptions={[backendPageSize]}
             labelRowsPerPage="Products per page:"
           />
         </Box>
