@@ -51,6 +51,22 @@ export interface BestSellingProductsParams {
 }
 
 /**
+ * Response from /api/v1/dashboard/statistics/most_viewed/ endpoint
+ */
+export interface MostViewedProductsResponse {
+  count: number
+  results: ProductStatisticsItem[]
+  metric: string
+}
+
+/**
+ * Query parameters for most viewed products endpoint
+ */
+export interface MostViewedProductsParams {
+  limit?: number
+}
+
+/**
  * Single product statistics response (non-paginated)
  * Response from /api/v1/dashboard/statistics/{id}/
  */

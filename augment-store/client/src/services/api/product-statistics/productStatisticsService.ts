@@ -5,6 +5,8 @@ import type {
   ProductStatisticsParams,
   BestSellingProductsResponse,
   BestSellingProductsParams,
+  MostViewedProductsResponse,
+  MostViewedProductsParams,
   ProductStatisticsDetail,
   ProductPerformanceResponse,
   ProductPerformanceParams,
@@ -87,6 +89,33 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch best selling products:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get most viewed products (highest view count)
+   *
+   * @param params - Query parameters (limit)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with most viewed products data
+   */
+  getMostViewedProducts: async (
+    params?: MostViewedProductsParams,
+    signal?: AbortSignal
+  ): Promise<MostViewedProductsResponse> => {
+    try {
+      const response = await apiClient.get<MostViewedProductsResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.MOST_VIEWED_PRODUCTS,
+        {
+          params,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch most viewed products:', error)
       throw error
     }
   },
