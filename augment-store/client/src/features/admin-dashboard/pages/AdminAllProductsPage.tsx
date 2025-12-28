@@ -95,6 +95,10 @@ const AdminAllProductsPage = () => {
     setIsSearchMode(false)
     setSearchQuery('')
     setPage(0)
+    // Force reload if already on page 0 and not in search mode
+    if (page === 0 && !isSearchMode) {
+      loadProducts()
+    }
   }
 
   const handleViewProduct = (productId: string) => {
