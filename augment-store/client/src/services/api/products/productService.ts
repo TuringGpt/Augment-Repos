@@ -44,89 +44,78 @@ export const productService = {
    * Get products from backend API
    * Backend returns paginated response with count, next, previous, results
    * Note: Backend has fixed page_size of 100 (configured in settings.py)
+   * @throws Error if the API request fails
    */
   getProducts: async (params?: ProductSearchParams): Promise<ProductListResponse> => {
-    try {
-      const page = params?.page || 1
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+    const page = params?.page || 1
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      // Build query params for backend API
-      const queryParams: Record<string, number | string> = {
-        page,
-      }
+    // Build query params for backend API
+    const queryParams: Record<string, number | string> = {
+      page,
+    }
 
-      // Add category filter if provided (using slug)
-      // TEMPORARY: Using slug generated from category name until backend exposes slug field
-      if (params?.categorySlug) {
-        queryParams.category = params.categorySlug
-      }
+    // Add category filter if provided (using slug)
+    // TEMPORARY: Using slug generated from category name until backend exposes slug field
+    if (params?.categorySlug) {
+      queryParams.category = params.categorySlug
+    }
 
-      // Add brand filter if provided (using brand name)
-      if (params?.brandName) {
-        queryParams.brand = params.brandName
-      }
+    // Add brand filter if provided (using brand name)
+    if (params?.brandName) {
+      queryParams.brand = params.brandName
+    }
 
-      // Add rating filters if provided
-      if (params?.minRating !== undefined && params?.minRating !== null) {
-        queryParams.rating_min = params.minRating
-      }
-      if (params?.maxRating !== undefined && params?.maxRating !== null) {
-        queryParams.rating_max = params.maxRating
-      }
+    // Add rating filters if provided
+    if (params?.minRating !== undefined && params?.minRating !== null) {
+      queryParams.rating_min = params.minRating
+    }
+    if (params?.maxRating !== undefined && params?.maxRating !== null) {
+      queryParams.rating_max = params.maxRating
+    }
 
-      // Add price filters if provided
-      if (params?.minPrice !== undefined && params?.minPrice !== null) {
-        queryParams.price_min = params.minPrice
-      }
-      if (params?.maxPrice !== undefined && params?.maxPrice !== null) {
-        queryParams.price_max = params.maxPrice
-      }
+    // Add price filters if provided
+    if (params?.minPrice !== undefined && params?.minPrice !== null) {
+      queryParams.price_min = params.minPrice
+    }
+    if (params?.maxPrice !== undefined && params?.maxPrice !== null) {
+      queryParams.price_max = params.maxPrice
+    }
 
-      // Fetch products from backend with pagination and filters
-      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
-        params: queryParams,
-      })
+    // Fetch products from backend with pagination and filters
+    const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
+      params: queryParams,
+    })
 
-      console.log('🔍 Raw API Response:', {
-        count: response.count,
-        resultsLength: response.results.length,
-        next: response.next,
-        previous: response.previous,
-        filters: {
-          categorySlug: params?.categorySlug,
-          brandName: params?.brandName,
-          minRating: params?.minRating,
-          maxRating: params?.maxRating,
-          minPrice: params?.minPrice,
-          maxPrice: params?.maxPrice,
-        },
-      })
+    console.log('🔍 Raw API Response:', {
+      count: response.count,
+      resultsLength: response.results.length,
+      next: response.next,
+      previous: response.previous,
+      filters: {
+        categorySlug: params?.categorySlug,
+        brandName: params?.brandName,
+        minRating: params?.minRating,
+        maxRating: params?.maxRating,
+        minPrice: params?.minPrice,
+        maxPrice: params?.maxPrice,
+      },
+    })
 
-      // Transform backend products to frontend format
-      const products: Product[] = response.results.map(transformProductFromAPI)
+    // Transform backend products to frontend format
+    const products: Product[] = response.results.map(transformProductFromAPI)
 
-      console.log('✅ Transformed Products:', {
-        transformedCount: products.length,
-        firstProduct: products[0],
-      })
+    console.log('✅ Transformed Products:', {
+      transformedCount: products.length,
+      firstProduct: products[0],
+    })
 
-      return {
-        products,
-        total: response.count,
-        page,
-        limit: backendPageSize,
-        totalPages: Math.ceil(response.count / backendPageSize),
-      }
-    } catch (error) {
-      console.error('Failed to fetch products:', error)
-      // Return empty response on error
-      return {
-        products: [],
-        total: 0,
-        page: 1,
-        limit: 100,
-        totalPages: 0,
-      }
+    return {
+      products,
+      total: response.count,
+      page,
+      limit: backendPageSize,
+      totalPages: Math.ceil(response.count / backendPageSize),
     }
   },
 
@@ -141,41 +130,36 @@ export const productService = {
     }
   },
 
+  /**
+   * Search products by query string
+   * @param query - Search query string
+   * @param params - Optional search parameters (limit, etc.)
+   * @throws Error if the API request fails
+   */
   searchProducts: async (
     query: string,
     params?: ProductSearchParams
   ): Promise<ProductListResponse> => {
-    try {
-      const limit = params?.limit || 12
+    const limit = params?.limit || 12
 
-      // Fetch products from backend using dedicated search endpoint
-      // Backend supports limit parameter to restrict results
-      const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.SEARCH, {
-        params: {
-          search: query,
-          limit: limit,
-        },
-      })
+    // Fetch products from backend using dedicated search endpoint
+    // Backend supports limit parameter to restrict results
+    const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.SEARCH, {
+      params: {
+        search: query,
+        limit: limit,
+      },
+    })
 
-      // Transform backend products to frontend format
-      const products: Product[] = response.results.map(transformProductFromAPI)
+    // Transform backend products to frontend format
+    const products: Product[] = response.results.map(transformProductFromAPI)
 
-      return {
-        products,
-        total: response.count,
-        page: 1, // Search always returns first page only
-        limit,
-        totalPages: 1, // Search only shows first page
-      }
-    } catch (error) {
-      console.error('Failed to search products:', error)
-      return {
-        products: [],
-        total: 0,
-        page: 1,
-        limit: params?.limit || 12,
-        totalPages: 0,
-      }
+    return {
+      products,
+      total: response.count,
+      page: 1, // Search always returns first page only
+      limit,
+      totalPages: 1, // Search only shows first page
     }
   },
 
@@ -242,46 +226,36 @@ export const productService = {
   /**
    * Get recommended products from backend API
    * Backend returns paginated response with expanded brand and category objects
+   * @param page - Page number (default: 1)
+   * @throws Error if the API request fails
    */
   getRecommendedProducts: async (page: number = 1): Promise<ProductListResponse> => {
-    try {
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      // Fetch recommended products from backend
-      const response = await apiClient.get<RecommendedProductsAPI>(
-        API_ENDPOINTS.PRODUCTS.RECOMMEND,
-        {
-          params: { page },
-        }
-      )
-
-      console.log('🔍 Recommended Products API Response:', {
-        count: response.count,
-        resultsLength: response.results.length,
-        next: response.next,
-        previous: response.previous,
-      })
-
-      // Transform backend products to frontend format
-      const products: Product[] = response.results.map(transformRecommendedProductFromAPI)
-
-      return {
-        products,
-        total: response.count,
-        page,
-        limit: backendPageSize,
-        totalPages: Math.ceil(response.count / backendPageSize),
+    // Fetch recommended products from backend
+    const response = await apiClient.get<RecommendedProductsAPI>(
+      API_ENDPOINTS.PRODUCTS.RECOMMEND,
+      {
+        params: { page },
       }
-    } catch (error) {
-      console.error('Failed to fetch recommended products:', error)
-      // Return empty response on error
-      return {
-        products: [],
-        total: 0,
-        page: 1,
-        limit: 100,
-        totalPages: 0,
-      }
+    )
+
+    console.log('🔍 Recommended Products API Response:', {
+      count: response.count,
+      resultsLength: response.results.length,
+      next: response.next,
+      previous: response.previous,
+    })
+
+    // Transform backend products to frontend format
+    const products: Product[] = response.results.map(transformRecommendedProductFromAPI)
+
+    return {
+      products,
+      total: response.count,
+      page,
+      limit: backendPageSize,
+      totalPages: Math.ceil(response.count / backendPageSize),
     }
   },
 }
