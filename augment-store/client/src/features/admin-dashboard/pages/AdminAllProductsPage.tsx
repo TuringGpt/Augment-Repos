@@ -386,7 +386,7 @@ const AdminAllProductsPage = () => {
 
           {/* Search Results Info */}
           {isSearchMode && (
-            <Box sx={{ p: 2, backgroundColor: 'info.lighter', borderTop: 1, borderColor: 'divider' }}>
+            <Box sx={{ p: 2, backgroundColor: 'background.default', borderTop: 1, borderColor: 'divider' }}>
               <Typography variant="body2" color="text.secondary">
                 Showing {products.length} search results (limited to first 100 matches)
               </Typography>
