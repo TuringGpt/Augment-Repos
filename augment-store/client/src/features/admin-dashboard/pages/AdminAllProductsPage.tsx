@@ -84,6 +84,10 @@ const AdminAllProductsPage = () => {
   }
 
   const handleChangePage = (_event: unknown, newPage: number) => {
+    // Prevent page changes in search mode since search doesn't support pagination
+    if (isSearchMode) {
+      return
+    }
     setPage(newPage)
   }
 
@@ -114,7 +118,9 @@ const AdminAllProductsPage = () => {
       })
 
       setProducts(response.products)
-      setTotalProducts(response.total)
+      // In search mode, we only show the results we fetched (no pagination)
+      // Don't use response.total since we can't paginate through all results
+      setTotalProducts(response.products.length)
       setIsSearchMode(true)
       // Set page to 0 without triggering loadProducts due to isSearchMode=true
       setPage(0)
@@ -368,16 +374,27 @@ const AdminAllProductsPage = () => {
             </Table>
           </TableContainer>
 
-          {/* Pagination */}
-          <TablePagination
-            component="div"
-            count={isSearchMode ? products.length : totalProducts}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={backendPageSize}
-            rowsPerPageOptions={[backendPageSize]}
-            labelRowsPerPage="Products per page:"
-          />
+          {/* Search Results Info */}
+          {isSearchMode && (
+            <Box sx={{ p: 2, backgroundColor: 'info.lighter', borderTop: 1, borderColor: 'divider' }}>
+              <Typography variant="body2" color="text.secondary">
+                Showing {products.length} search results (limited to first 100 matches)
+              </Typography>
+            </Box>
+          )}
+
+          {/* Pagination - Only shown when not in search mode */}
+          {!isSearchMode && (
+            <TablePagination
+              component="div"
+              count={totalProducts}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={backendPageSize}
+              rowsPerPageOptions={[backendPageSize]}
+              labelRowsPerPage="Products per page:"
+            />
+          )}
         </Box>
       ) : (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
