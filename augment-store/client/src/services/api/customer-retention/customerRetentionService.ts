@@ -27,10 +27,10 @@ export const customerRetentionService = {
           }
         : undefined
 
-      const response = await apiClient.get<CustomerRetentionResponse>(
+      const response = await apiClient.post<CustomerRetentionResponse>(
         API_ENDPOINTS.ADMIN_DASHBOARD.CUSTOMER_RETENTION,
+        validatedParams,
         {
-          params: validatedParams,
           signal,
         }
       )
