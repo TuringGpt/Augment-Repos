@@ -503,6 +503,7 @@
       "title": "Product Statistics",
       "subtitle": "View detailed analytics and performance metrics for all products",
       "refresh": "Refresh statistics",
+      "viewAllProducts": "View All Products",
       "noData": "No product statistics available",
       "noDataOnPage": "No products on this page. Please navigate to a different page.",
       "bestSelling": {
@@ -550,6 +551,35 @@
       "abandonmentRate": "Abandonment Rate",
       "conversionRate": "Conversion Rate",
       "engagementRatio": "Engagement Ratio"
+    },
+    "allProducts": {
+      "title": "All Products",
+      "subtitle": "Manage all products in your store",
+      "refresh": "Refresh",
+      "addProduct": "Add Product",
+      "searchPlaceholder": "Search products by name...",
+      "search": "Search",
+      "errorLoadProducts": "Failed to load products. Please try again.",
+      "errorSearchProducts": "Failed to search products. Please try again.",
+      "table": {
+        "image": "Image",
+        "productName": "Product Name",
+        "category": "Category",
+        "price": "Price",
+        "stock": "Stock",
+        "rating": "Rating",
+        "status": "Status",
+        "actions": "Actions",
+        "inStock": "In Stock",
+        "outOfStock": "Out of Stock",
+        "viewProduct": "View Product",
+        "editProduct": "Edit Product",
+        "deleteProduct": "Delete Product"
+      },
+      "noProducts": "No products found",
+      "noProductsAvailable": "No products available",
+      "searchResults": "Showing {{count}} search results (limited to first 100 matches)",
+      "productsPerPage": "Products per page:"
     }
   }
 }

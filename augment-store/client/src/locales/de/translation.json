@@ -503,6 +503,7 @@
       "title": "Produktstatistiken",
       "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
       "refresh": "Statistiken aktualisieren",
+      "viewAllProducts": "Alle Produkte anzeigen",
       "noData": "Keine Produktstatistiken verfügbar",
       "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
       "bestSelling": {
@@ -550,6 +551,35 @@
       "abandonmentRate": "Abbruchrate",
       "conversionRate": "Konversionsrate",
       "engagementRatio": "Engagement-Verhältnis"
+    },
+    "allProducts": {
+      "title": "Alle Produkte",
+      "subtitle": "Verwalten Sie alle Produkte in Ihrem Shop",
+      "refresh": "Aktualisieren",
+      "addProduct": "Produkt hinzufügen",
+      "searchPlaceholder": "Produkte nach Name suchen...",
+      "search": "Suchen",
+      "errorLoadProducts": "Fehler beim Laden der Produkte. Bitte versuchen Sie es erneut.",
+      "errorSearchProducts": "Fehler beim Suchen der Produkte. Bitte versuchen Sie es erneut.",
+      "table": {
+        "image": "Bild",
+        "productName": "Produktname",
+        "category": "Kategorie",
+        "price": "Preis",
+        "stock": "Lagerbestand",
+        "rating": "Bewertung",
+        "status": "Status",
+        "actions": "Aktionen",
+        "inStock": "Auf Lager",
+        "outOfStock": "Nicht auf Lager",
+        "viewProduct": "Produkt anzeigen",
+        "editProduct": "Produkt bearbeiten",
+        "deleteProduct": "Produkt löschen"
+      },
+      "noProducts": "Keine Produkte gefunden",
+      "noProductsAvailable": "Keine Produkte verfügbar",
+      "searchResults": "Zeige {{count}} Suchergebnisse (begrenzt auf die ersten 100 Treffer)",
+      "productsPerPage": "Produkte pro Seite:"
     }
   }
 }
