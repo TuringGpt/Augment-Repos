@@ -292,7 +292,7 @@ const AdminProductsPage = () => {
             startIcon={<ListIcon />}
             onClick={() => navigate('/admin/products/all')}
           >
-            View All Products
+            {t('admin.productStatistics.viewAllProducts')}
           </Button>
           <Tooltip title={t('admin.productStatistics.refresh')}>
             <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>

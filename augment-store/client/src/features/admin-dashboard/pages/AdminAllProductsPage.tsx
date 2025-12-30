@@ -77,7 +77,7 @@ const AdminAllProductsPage = () => {
       setTotalProducts(response.total)
     } catch (err) {
       console.error('Failed to fetch products:', err)
-      setError('Failed to load products. Please try again.')
+      setError(t('admin.allProducts.errorLoadProducts'))
     } finally {
       setIsLoading(false)
     }
@@ -130,7 +130,7 @@ const AdminAllProductsPage = () => {
       setPage(0)
     } catch (err) {
       console.error('Failed to search products:', err)
-      setError('Failed to search products. Please try again.')
+      setError(t('admin.allProducts.errorSearchProducts'))
     } finally {
       setIsLoading(false)
     }
@@ -175,14 +175,14 @@ const AdminAllProductsPage = () => {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-            All Products
+            {t('admin.allProducts.title')}
           </Typography>
           <Typography color="text.secondary">
-            Manage all products in your store
+            {t('admin.allProducts.subtitle')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Refresh">
+          <Tooltip title={t('admin.allProducts.refresh')}>
             <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
               <RefreshIcon />
             </IconButton>
@@ -192,7 +192,7 @@ const AdminAllProductsPage = () => {
             startIcon={<AddIcon />}
             onClick={() => navigate('/admin/products/create')}
           >
-            Add Product
+            {t('admin.allProducts.addProduct')}
           </Button>
         </Box>
       </Box>
@@ -201,7 +201,7 @@ const AdminAllProductsPage = () => {
       <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
-          placeholder="Search products by name..."
+          placeholder={t('admin.allProducts.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearchKeyDown}
@@ -214,7 +214,7 @@ const AdminAllProductsPage = () => {
             endAdornment: searchQuery && (
               <InputAdornment position="end">
                 <Button onClick={handleSearch} disabled={isLoading}>
-                  Search
+                  {t('admin.allProducts.search')}
                 </Button>
               </InputAdornment>
             ),
@@ -261,14 +261,14 @@ const AdminAllProductsPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Product Name</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell align="right">Price</TableCell>
-                  <TableCell align="right">Stock</TableCell>
-                  <TableCell align="center">Rating</TableCell>
-                  <TableCell align="center">Status</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{t('admin.allProducts.table.image')}</TableCell>
+                  <TableCell>{t('admin.allProducts.table.productName')}</TableCell>
+                  <TableCell>{t('admin.allProducts.table.category')}</TableCell>
+                  <TableCell align="right">{t('admin.allProducts.table.price')}</TableCell>
+                  <TableCell align="right">{t('admin.allProducts.table.stock')}</TableCell>
+                  <TableCell align="center">{t('admin.allProducts.table.rating')}</TableCell>
+                  <TableCell align="center">{t('admin.allProducts.table.status')}</TableCell>
+                  <TableCell align="center">{t('admin.allProducts.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -330,14 +330,14 @@ const AdminAllProductsPage = () => {
                       </TableCell>
                       <TableCell align="center">
                         <Chip
-                          label={product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          label={product.stock > 0 ? t('admin.allProducts.table.inStock') : t('admin.allProducts.table.outOfStock')}
                           color={product.stock > 0 ? 'success' : 'error'}
                           size="small"
                         />
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                          <Tooltip title="View Product">
+                          <Tooltip title={t('admin.allProducts.table.viewProduct')}>
                             <IconButton
                               size="small"
                               color="primary"
@@ -346,7 +346,7 @@ const AdminAllProductsPage = () => {
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Product">
+                          <Tooltip title={t('admin.allProducts.table.editProduct')}>
                             <IconButton
                               size="small"
                               color="info"
@@ -355,7 +355,7 @@ const AdminAllProductsPage = () => {
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Product">
+                          <Tooltip title={t('admin.allProducts.table.deleteProduct')}>
                             <IconButton
                               size="small"
                               color="error"
@@ -375,7 +375,7 @@ const AdminAllProductsPage = () => {
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                       <Typography color="text.secondary">
-                        No products found
+                        {t('admin.allProducts.noProducts')}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -388,7 +388,7 @@ const AdminAllProductsPage = () => {
           {isSearchMode && (
             <Box sx={{ p: 2, backgroundColor: 'background.default', borderTop: 1, borderColor: 'divider' }}>
               <Typography variant="body2" color="text.secondary">
-                Showing {products.length} search results (limited to first 100 matches)
+                {t('admin.allProducts.searchResults', { count: products.length })}
               </Typography>
             </Box>
           )}
@@ -402,14 +402,14 @@ const AdminAllProductsPage = () => {
               onPageChange={handleChangePage}
               rowsPerPage={backendPageSize}
               rowsPerPageOptions={[backendPageSize]}
-              labelRowsPerPage="Products per page:"
+              labelRowsPerPage={t('admin.allProducts.productsPerPage')}
             />
           )}
         </Box>
       ) : (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Typography color="text.secondary">
-            No products available
+            {t('admin.allProducts.noProductsAvailable')}
           </Typography>
         </Paper>
       )}
