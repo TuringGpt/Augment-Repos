@@ -85,15 +85,29 @@ export const useProductStore = create<ProductState>((set, get) => ({
       // Call the API to delete the product
       await productService.deleteProduct(productId)
 
-      // Remove the product from the local state
+      // Remove the product from the local state and update pagination
       set((state) => {
         // Check if the product exists in the current list
         const productExists = state.products.some((product) => product.id === productId)
 
+        // Calculate new total
+        const newTotal = productExists ? Math.max(0, state.total - 1) : state.total
+
+        // Backend uses fixed page size of 100
+        const backendPageSize = 100
+
+        // Recalculate total pages based on new total
+        const newTotalPages = Math.ceil(newTotal / backendPageSize)
+
+        // Clamp current page to valid range [1, newTotalPages] to prevent invalid pagination state
+        // This prevents issues when deleting the last item on the last page
+        const newPage = newTotalPages > 0 ? Math.max(1, Math.min(state.page, newTotalPages)) : 1
+
         return {
           products: state.products.filter((product) => product.id !== productId),
-          // Only decrement total if the product was actually in the list
-          total: productExists ? Math.max(0, state.total - 1) : state.total,
+          total: newTotal,
+          page: newPage,
+          totalPages: newTotalPages,
           // If the deleted product was selected, clear the selection
           selectedProduct: state.selectedProduct?.id === productId ? null : state.selectedProduct,
         }
