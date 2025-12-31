@@ -86,12 +86,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await productService.deleteProduct(productId)
 
       // Remove the product from the local state
-      set((state) => ({
-        products: state.products.filter((product) => product.id !== productId),
-        total: state.total - 1,
-        // If the deleted product was selected, clear the selection
-        selectedProduct: state.selectedProduct?.id === productId ? null : state.selectedProduct,
-      }))
+      set((state) => {
+        // Check if the product exists in the current list
+        const productExists = state.products.some((product) => product.id === productId)
+
+        return {
+          products: state.products.filter((product) => product.id !== productId),
+          // Only decrement total if the product was actually in the list
+          total: productExists ? Math.max(0, state.total - 1) : state.total,
+          // If the deleted product was selected, clear the selection
+          selectedProduct: state.selectedProduct?.id === productId ? null : state.selectedProduct,
+        }
+      })
 
       // Also clear any statistics for this product
       get().clearProductStatistics(productId)
