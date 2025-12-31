@@ -49,7 +49,8 @@ const AdminAllProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const [isLoadingSearch, setIsLoadingSearch] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [productsError, setProductsError] = useState<string | null>(null)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -93,7 +94,7 @@ const AdminAllProductsPage = () => {
 
   const loadProducts = async () => {
     setIsLoadingProducts(true)
-    setError(null)
+    setProductsError(null)
 
     try {
       const response = await productService.getProducts({
@@ -104,7 +105,7 @@ const AdminAllProductsPage = () => {
       setTotalProducts(response.total)
     } catch (err) {
       console.error('Failed to fetch products:', err)
-      setError(t('admin.allProducts.errorLoadProducts'))
+      setProductsError(t('admin.allProducts.errorLoadProducts'))
     } finally {
       setIsLoadingProducts(false)
     }
@@ -141,8 +142,9 @@ const AdminAllProductsPage = () => {
     if (!trimmedQuery) {
       // Clear search loading state only - don't interfere with products loading
       setIsLoadingSearch(false)
-      // Clear any search errors when leaving search mode
-      setError(null)
+      // Clear only search errors when leaving search mode
+      // Don't clear productsError to avoid hiding unrelated products-load errors
+      setSearchError(null)
       // Clear search mode and reload normal products
       if (isSearchMode) {
         setIsSearchMode(false)
@@ -152,7 +154,7 @@ const AdminAllProductsPage = () => {
     }
 
     setIsLoadingSearch(true)
-    setError(null)
+    setSearchError(null)
 
     try {
       const response = await productService.searchProducts(trimmedQuery, {
@@ -176,7 +178,7 @@ const AdminAllProductsPage = () => {
       console.error('Failed to search products:', err)
       // Only show error if this is still the latest search query
       if (latestSearchQueryRef.current === trimmedQuery) {
-        setError(t('admin.allProducts.errorSearchProducts'))
+        setSearchError(t('admin.allProducts.errorSearchProducts'))
       }
     } finally {
       // Only update loading state if this is still the latest search query
@@ -269,10 +271,17 @@ const AdminAllProductsPage = () => {
         />
       </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+      {/* Products Error Alert */}
+      {productsError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setProductsError(null)}>
+          {productsError}
+        </Alert>
+      )}
+
+      {/* Search Error Alert */}
+      {searchError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setSearchError(null)}>
+          {searchError}
         </Alert>
       )}
 
