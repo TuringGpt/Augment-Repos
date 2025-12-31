@@ -19,6 +19,7 @@ interface ProductState {
   statisticsErrors: Record<string, string | undefined>
 
   // Actions
+  fetchProducts: (params?: Partial<ProductSearchParams>) => Promise<void>
   setProducts: (products: Product[], total: number, page: number, totalPages: number) => void
   setSelectedProduct: (product: Product | null) => void
   setSearchParams: (params: Partial<ProductSearchParams>) => void
@@ -52,6 +53,39 @@ export const useProductStore = create<ProductState>((set, get) => ({
   productStatistics: {},
   loadingStatistics: {},
   statisticsErrors: {},
+
+  fetchProducts: async (params?: Partial<ProductSearchParams>) => {
+    try {
+      set({ isLoading: true, error: null })
+
+      const response = await productService.getProducts(params)
+
+      set({
+        products: response.products,
+        total: response.total,
+        page: response.page,
+        totalPages: response.totalPages,
+        isLoading: false,
+      })
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      let errorMessage = 'Failed to load products'
+
+      if (err?.response?.status === 403) {
+        errorMessage = 'You do not have permission to view products'
+      } else if (err?.response?.status === 401) {
+        errorMessage = 'Please log in to view products'
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message
+      } else if (err?.message) {
+        errorMessage = err.message
+      }
+
+      set({ error: errorMessage, isLoading: false })
+      throw error
+    }
+  },
 
   setProducts: (products, total, page, totalPages) =>
     set({

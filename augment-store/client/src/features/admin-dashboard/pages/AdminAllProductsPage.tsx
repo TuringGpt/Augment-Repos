@@ -21,6 +21,11 @@ import {
   Avatar,
   TextField,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -32,7 +37,9 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useDebounce } from '@hooks/useDebounce'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
+import { useProductStore } from '@store/productStore'
 import { formatCurrency } from '@utils/formatters'
 import { productService } from '@services/api/products/productService'
 import type { Product } from '@features/products/types'
@@ -44,17 +51,38 @@ import type { Product } from '@features/products/types'
 const AdminAllProductsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const toast = useToast()
   const { user, isAuthenticated } = useAuthStore()
 
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
+  // Product store state and actions
+  const {
+    products: storeProducts,
+    total: storeTotal,
+    page: storePage,
+    isLoading: isLoadingProducts,
+    error: productsError,
+    fetchProducts,
+    deleteProduct: deleteProductFromStore,
+    setError: setProductsError,
+  } = useProductStore()
+
+  // Local state for search functionality
   const [isLoadingSearch, setIsLoadingSearch] = useState(false)
-  const [productsError, setProductsError] = useState<string | null>(null)
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [page, setPage] = useState(0)
-  const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
+  const [searchResults, setSearchResults] = useState<Product[]>([])
+  const [searchResultsCount, setSearchResultsCount] = useState(0)
+
+  // Delete confirmation modal state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Computed values - use search results when in search mode, otherwise use store products
+  const products = isSearchMode ? searchResults : storeProducts
+  const totalProducts = isSearchMode ? searchResultsCount : storeTotal
+  const page = isSearchMode ? 0 : storePage - 1 // Convert from 1-based to 0-based for MUI pagination
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -100,21 +128,13 @@ const AdminAllProductsPage = () => {
   }, [debouncedSearchQuery, isAuthenticated, user?.role])
 
   const loadProducts = async () => {
-    setIsLoadingProducts(true)
-    setProductsError(null)
-
     try {
-      const response = await productService.getProducts({
-        page: page + 1, // API uses 1-based pagination
+      await fetchProducts({
+        page: storePage, // Store uses 1-based pagination
       })
-
-      setProducts(response.products)
-      setTotalProducts(response.total)
     } catch (err) {
       console.error('Failed to fetch products:', err)
-      setProductsError(t('admin.allProducts.errorLoadProducts'))
-    } finally {
-      setIsLoadingProducts(false)
+      // Error is already set in the store
     }
   }
 
@@ -123,21 +143,59 @@ const AdminAllProductsPage = () => {
     if (isSearchMode) {
       return
     }
-    setPage(newPage)
+    // Fetch products for the new page (convert from 0-based to 1-based)
+    fetchProducts({ page: newPage + 1 })
   }
 
   const handleRefresh = () => {
     setIsSearchMode(false)
     setSearchQuery('')
-    setPage(0)
-    // Force reload if already on page 0 and not in search mode
-    if (page === 0 && !isSearchMode) {
-      loadProducts()
-    }
+    // Reload products from page 1
+    fetchProducts({ page: 1 })
   }
 
   const handleViewProduct = (productId: string) => {
     navigate(`/products/${productId}`)
+  }
+
+  const handleDeleteClick = (product: Product) => {
+    setProductToDelete(product)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setProductToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return
+
+    setIsDeleting(true)
+    try {
+      // Use store action to delete product (it handles state updates automatically)
+      await deleteProductFromStore(productToDelete.id)
+
+      // If in search mode, also remove from search results
+      if (isSearchMode) {
+        setSearchResults((prev) => prev.filter((p) => p.id !== productToDelete.id))
+        setSearchResultsCount((prev) => Math.max(0, prev - 1))
+      }
+
+      // Show success message
+      toast.success(t('admin.allProducts.deleteSuccess'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete product:', err)
+      // Error is already set in the store, but show user-friendly message
+      toast.error(t('admin.allProducts.errorDeleteProduct'))
+      // Keep dialog open on error so user can retry or cancel
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const handleDebouncedSearch = async () => {
@@ -152,10 +210,11 @@ const AdminAllProductsPage = () => {
       // Clear only search errors when leaving search mode
       // Don't clear productsError to avoid hiding unrelated products-load errors
       setSearchError(null)
-      // Clear search mode and reload normal products
+      // Clear search mode and search results
       if (isSearchMode) {
         setIsSearchMode(false)
-        setPage(0)
+        setSearchResults([])
+        setSearchResultsCount(0)
       }
       return
     }
@@ -172,13 +231,11 @@ const AdminAllProductsPage = () => {
       // This prevents race conditions where a slower earlier request
       // could overwrite results from a faster later request
       if (latestSearchQueryRef.current === trimmedQuery) {
-        setProducts(response.products)
+        setSearchResults(response.products)
         // In search mode, we only show the results we fetched (no pagination)
         // Don't use response.total since we can't paginate through all results
-        setTotalProducts(response.products.length)
+        setSearchResultsCount(response.products.length)
         setIsSearchMode(true)
-        // Set page to 0 without triggering loadProducts due to isSearchMode=true
-        setPage(0)
       }
       // Otherwise, discard stale results
     } catch (err) {
@@ -422,10 +479,7 @@ const AdminAllProductsPage = () => {
                             <IconButton
                               size="small"
                               color="error"
-                              onClick={() => {
-                                // TODO: Implement delete functionality
-                                console.log('Delete product:', product.id)
-                              }}
+                              onClick={() => handleDeleteClick(product)}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -467,6 +521,38 @@ const AdminAllProductsPage = () => {
           </Typography>
         </Paper>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-product-dialog-title"
+        aria-describedby="delete-product-dialog-description"
+      >
+        <DialogTitle id="delete-product-dialog-title">
+          {t('admin.allProducts.deleteProduct')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-product-dialog-description">
+            {t('admin.allProducts.deleteProductConfirm')} <strong>{productToDelete?.name}</strong>?{' '}
+            {t('admin.allProducts.deleteProductWarning')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.allProducts.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

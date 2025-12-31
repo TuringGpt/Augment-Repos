@@ -561,6 +561,12 @@
       "search": "Buscar",
       "errorLoadProducts": "Error al cargar productos. Por favor, inténtalo de nuevo.",
       "errorSearchProducts": "Error al buscar productos. Por favor, inténtalo de nuevo.",
+      "errorDeleteProduct": "Error al eliminar producto. Por favor, inténtalo de nuevo.",
+      "deleteProduct": "Eliminar Producto",
+      "deleteProductConfirm": "¿Estás seguro de que quieres eliminar",
+      "deleteProductWarning": "Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleteSuccess": "Producto eliminado exitosamente",
       "table": {
         "image": "Imagen",
         "productName": "Nombre del Producto",

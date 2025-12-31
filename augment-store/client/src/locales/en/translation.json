@@ -561,6 +561,12 @@
       "search": "Search",
       "errorLoadProducts": "Failed to load products. Please try again.",
       "errorSearchProducts": "Failed to search products. Please try again.",
+      "errorDeleteProduct": "Failed to delete product. Please try again.",
+      "deleteProduct": "Delete Product",
+      "deleteProductConfirm": "Are you sure you want to delete",
+      "deleteProductWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Product deleted successfully",
       "table": {
         "image": "Image",
         "productName": "Product Name",

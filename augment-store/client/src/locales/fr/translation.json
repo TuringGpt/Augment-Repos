@@ -561,6 +561,12 @@
       "search": "Rechercher",
       "errorLoadProducts": "Échec du chargement des produits. Veuillez réessayer.",
       "errorSearchProducts": "Échec de la recherche de produits. Veuillez réessayer.",
+      "errorDeleteProduct": "Échec de la suppression du produit. Veuillez réessayer.",
+      "deleteProduct": "Supprimer le Produit",
+      "deleteProductConfirm": "Êtes-vous sûr de vouloir supprimer",
+      "deleteProductWarning": "Cette action ne peut pas être annulée.",
+      "deleting": "Suppression...",
+      "deleteSuccess": "Produit supprimé avec succès",
       "table": {
         "image": "Image",
         "productName": "Nom du Produit",
