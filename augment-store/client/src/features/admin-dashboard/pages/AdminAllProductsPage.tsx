@@ -127,6 +127,8 @@ const AdminAllProductsPage = () => {
     latestSearchQueryRef.current = trimmedQuery
 
     if (!trimmedQuery) {
+      // Explicitly clear loading state to prevent in-flight requests from stranding the loading flag
+      setIsLoading(false)
       // Clear search mode and reload normal products
       if (isSearchMode) {
         setIsSearchMode(false)
