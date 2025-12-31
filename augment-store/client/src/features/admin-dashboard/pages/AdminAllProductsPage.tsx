@@ -213,9 +213,6 @@ const AdminAllProductsPage = () => {
 
     setIsDeleting(true)
     try {
-      // Capture the current page before deletion to detect if it changes
-      const pageBeforeDelete = storePage
-
       // Use store action to delete product (it handles state updates automatically)
       await deleteProductFromStore(productToDelete.id)
 
@@ -226,9 +223,11 @@ const AdminAllProductsPage = () => {
       if (isSearchMode) {
         setSearchResults((prev) => prev.filter((p) => p.id !== productToDelete.id))
         setSearchResultsCount((prev) => Math.max(0, prev - 1))
-      } else if (pageBeforeDelete !== pageAfterDelete) {
-        // If the page changed (e.g., deleted last item on last page),
-        // refetch products for the new page to ensure UI shows correct data
+      } else {
+        // Always refetch the current page after deletion to ensure the page stays "full"
+        // With offset pagination, deleting an item should pull the next item from the
+        // subsequent page to fill the gap. Since the store only filters locally,
+        // we need to refetch to get the correct data from the backend.
         void fetchProducts({ page: pageAfterDelete })
       }
 
