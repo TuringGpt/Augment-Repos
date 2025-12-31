@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -31,6 +31,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useDebounce } from '@hooks/useDebounce'
 import { useAuthStore } from '@store/authStore'
 import { formatCurrency } from '@utils/formatters'
 import { productService } from '@services/api/products/productService'
@@ -46,15 +47,41 @@ const AdminAllProductsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false)
+  const [productsError, setProductsError] = useState<string | null>(null)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
 
+  // Computed loading state - true if either products or search is loading
+  const isLoading = isLoadingProducts || isLoadingSearch
+
   // Backend has fixed page size of 100
   const backendPageSize = 100
+
+  // Track the latest search query to prevent race conditions
+  const latestSearchQueryRef = useRef<string>('')
+
+  // Debounce search query with 500ms delay
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
+
+  // Invalidate latest search query ref immediately when search query is cleared
+  // This prevents in-flight requests from "winning" when the field is empty
+  // Also reset search mode and loading state immediately for instant UI feedback
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      latestSearchQueryRef.current = ''
+      // Immediately exit search mode and clear search loading state
+      // This ensures the UI updates right away (pagination shows, helper text changes)
+      // rather than waiting for the debounce to fire
+      setIsSearchMode(false)
+      setIsLoadingSearch(false)
+      setSearchError(null)
+    }
+  }, [searchQuery])
 
   // Fetch products on mount and when page changes (only if not in search mode)
   useEffect(() => {
@@ -64,9 +91,17 @@ const AdminAllProductsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, isAuthenticated, user?.role, isSearchMode])
 
+  // Trigger search when debounced search query changes
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      handleDebouncedSearch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery, isAuthenticated, user?.role])
+
   const loadProducts = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoadingProducts(true)
+    setProductsError(null)
 
     try {
       const response = await productService.getProducts({
@@ -77,9 +112,9 @@ const AdminAllProductsPage = () => {
       setTotalProducts(response.total)
     } catch (err) {
       console.error('Failed to fetch products:', err)
-      setError(t('admin.allProducts.errorLoadProducts'))
+      setProductsError(t('admin.allProducts.errorLoadProducts'))
     } finally {
-      setIsLoading(false)
+      setIsLoadingProducts(false)
     }
   }
 
@@ -105,40 +140,58 @@ const AdminAllProductsPage = () => {
     navigate(`/products/${productId}`)
   }
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  const handleDebouncedSearch = async () => {
+    const trimmedQuery = debouncedSearchQuery.trim()
+
+    // Update the latest search query ref to track this request
+    latestSearchQueryRef.current = trimmedQuery
+
+    if (!trimmedQuery) {
+      // Clear search loading state only - don't interfere with products loading
+      setIsLoadingSearch(false)
+      // Clear only search errors when leaving search mode
+      // Don't clear productsError to avoid hiding unrelated products-load errors
+      setSearchError(null)
       // Clear search mode and reload normal products
-      setIsSearchMode(false)
-      setPage(0)
+      if (isSearchMode) {
+        setIsSearchMode(false)
+        setPage(0)
+      }
       return
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoadingSearch(true)
+    setSearchError(null)
 
     try {
-      const response = await productService.searchProducts(searchQuery, {
+      const response = await productService.searchProducts(trimmedQuery, {
         limit: 100,
       })
 
-      setProducts(response.products)
-      // In search mode, we only show the results we fetched (no pagination)
-      // Don't use response.total since we can't paginate through all results
-      setTotalProducts(response.products.length)
-      setIsSearchMode(true)
-      // Set page to 0 without triggering loadProducts due to isSearchMode=true
-      setPage(0)
+      // Only update state if this is still the latest search query
+      // This prevents race conditions where a slower earlier request
+      // could overwrite results from a faster later request
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setProducts(response.products)
+        // In search mode, we only show the results we fetched (no pagination)
+        // Don't use response.total since we can't paginate through all results
+        setTotalProducts(response.products.length)
+        setIsSearchMode(true)
+        // Set page to 0 without triggering loadProducts due to isSearchMode=true
+        setPage(0)
+      }
+      // Otherwise, discard stale results
     } catch (err) {
       console.error('Failed to search products:', err)
-      setError(t('admin.allProducts.errorSearchProducts'))
+      // Only show error if this is still the latest search query
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setSearchError(t('admin.allProducts.errorSearchProducts'))
+      }
     } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSearchKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch()
+      // Only update loading state if this is still the latest search query
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setIsLoadingSearch(false)
+      }
     }
   }
 
@@ -204,28 +257,38 @@ const AdminAllProductsPage = () => {
           placeholder={t('admin.allProducts.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearchKeyDown}
+          disabled={isLoadingProducts}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon />
               </InputAdornment>
             ),
-            endAdornment: searchQuery && (
+            endAdornment: isLoading && searchQuery && (
               <InputAdornment position="end">
-                <Button onClick={handleSearch} disabled={isLoading}>
-                  {t('admin.allProducts.search')}
-                </Button>
+                <CircularProgress size={20} />
               </InputAdornment>
             ),
           }}
+          helperText={
+            isSearchMode
+              ? t('admin.allProducts.searchResults', { count: products.length })
+              : t('admin.allProducts.searchHelperText')
+          }
         />
       </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
+      {/* Products Error Alert */}
+      {productsError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setProductsError(null)}>
+          {productsError}
+        </Alert>
+      )}
+
+      {/* Search Error Alert */}
+      {searchError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setSearchError(null)}>
+          {searchError}
         </Alert>
       )}
 
@@ -383,15 +446,6 @@ const AdminAllProductsPage = () => {
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Search Results Info */}
-          {isSearchMode && (
-            <Box sx={{ p: 2, backgroundColor: 'background.default', borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('admin.allProducts.searchResults', { count: products.length })}
-              </Typography>
-            </Box>
-          )}
 
           {/* Pagination - Only shown when not in search mode */}
           {!isSearchMode && (
