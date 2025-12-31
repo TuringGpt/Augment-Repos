@@ -129,7 +129,7 @@ const AdminAllProductsPage = () => {
 
   const loadProducts = () => {
     // Error handling is managed by the store - check productsError state
-    fetchProducts({
+    void fetchProducts({
       page: storePage, // Store uses 1-based pagination
     })
   }
@@ -141,7 +141,7 @@ const AdminAllProductsPage = () => {
     }
     // Fetch products for the new page (convert from 0-based to 1-based)
     // Error handling is managed by the store - check productsError state
-    fetchProducts({ page: newPage + 1 })
+    void fetchProducts({ page: newPage + 1 })
   }
 
   const handleRefresh = () => {
@@ -149,7 +149,7 @@ const AdminAllProductsPage = () => {
     setSearchQuery('')
     // Reload products from page 1
     // Error handling is managed by the store - check productsError state
-    fetchProducts({ page: 1 })
+    void fetchProducts({ page: 1 })
   }
 
   const handleViewProduct = (productId: string) => {
