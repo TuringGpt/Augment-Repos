@@ -70,19 +70,23 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } catch (error: unknown) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
 
-      let errorMessage = 'Failed to load products'
+      // Use error codes instead of hardcoded English messages
+      // Components will translate these using i18n
+      let errorCode = 'PRODUCTS_LOAD_ERROR'
 
       if (err?.response?.status === 403) {
-        errorMessage = 'You do not have permission to view products'
+        errorCode = 'PRODUCTS_PERMISSION_DENIED'
       } else if (err?.response?.status === 401) {
-        errorMessage = 'Please log in to view products'
+        errorCode = 'PRODUCTS_AUTH_REQUIRED'
       } else if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message
+        // If backend provides a message, use it as-is (may already be localized)
+        errorCode = err.response.data.message
       } else if (err?.message) {
-        errorMessage = err.message
+        // For network errors or other client-side errors, use the error message
+        errorCode = err.message
       }
 
-      set({ error: errorMessage, isLoading: false })
+      set({ error: errorCode, isLoading: false })
       // Note: Not rethrowing error since state is already updated.
       // Callers can check the error state instead of relying on try-catch.
     }
@@ -153,21 +157,25 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } catch (error: unknown) {
       const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
 
-      let errorMessage = 'Failed to delete product'
+      // Use error codes instead of hardcoded English messages
+      // Components will translate these using i18n
+      let errorCode = 'PRODUCT_DELETE_ERROR'
 
       if (err?.response?.status === 403) {
-        errorMessage = 'You do not have permission to delete this product'
+        errorCode = 'PRODUCT_DELETE_PERMISSION_DENIED'
       } else if (err?.response?.status === 401) {
-        errorMessage = 'Please log in to delete products'
+        errorCode = 'PRODUCT_DELETE_AUTH_REQUIRED'
       } else if (err?.response?.status === 404) {
-        errorMessage = 'Product not found'
+        errorCode = 'PRODUCT_NOT_FOUND'
       } else if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message
+        // If backend provides a message, use it as-is (may already be localized)
+        errorCode = err.response.data.message
       } else if (err?.message) {
-        errorMessage = err.message
+        // For network errors or other client-side errors, use the error message
+        errorCode = err.message
       }
 
-      set({ error: errorMessage })
+      set({ error: errorCode })
       throw error
     }
   },
@@ -212,22 +220,26 @@ export const useProductStore = create<ProductState>((set, get) => ({
         return
       }
 
-      let errorMessage = 'Failed to load product statistics'
+      // Use error codes instead of hardcoded English messages
+      // Components will translate these using i18n
+      let errorCode = 'PRODUCT_STATISTICS_LOAD_ERROR'
 
       if (err?.response?.status === 403) {
-        errorMessage = 'You do not have permission to view product statistics'
+        errorCode = 'PRODUCT_STATISTICS_PERMISSION_DENIED'
       } else if (err?.response?.status === 401) {
-        errorMessage = 'Please log in to view product statistics'
+        errorCode = 'PRODUCT_STATISTICS_AUTH_REQUIRED'
       } else if (err?.response?.data?.message) {
-        errorMessage = err.response.data.message
+        // If backend provides a message, use it as-is (may already be localized)
+        errorCode = err.response.data.message
       } else if (err?.message) {
-        errorMessage = err.message
+        // For network errors or other client-side errors, use the error message
+        errorCode = err.message
       }
 
       set((state) => ({
         statisticsErrors: {
           ...state.statisticsErrors,
-          [productId]: errorMessage,
+          [productId]: errorCode,
         },
         loadingStatistics: {
           ...state.loadingStatistics,

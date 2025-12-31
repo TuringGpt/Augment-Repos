@@ -45,6 +45,35 @@ import { productService } from '@services/api/products/productService'
 import type { Product } from '@features/products/types'
 
 /**
+ * Helper function to translate error codes from the store
+ * Maps error codes to translation keys
+ */
+const getErrorMessage = (errorCode: string | null, translateFn: ReturnType<typeof useTranslation>['t']): string | null => {
+  if (!errorCode) return null
+
+  // Map error codes to translation keys
+  const errorKeyMap: Record<string, string> = {
+    'PRODUCTS_LOAD_ERROR': 'admin.allProducts.errorLoadProducts',
+    'PRODUCTS_PERMISSION_DENIED': 'admin.allProducts.errorPermissionDenied',
+    'PRODUCTS_AUTH_REQUIRED': 'admin.allProducts.errorAuthRequired',
+    'PRODUCT_DELETE_ERROR': 'admin.allProducts.errorDeleteProduct',
+    'PRODUCT_DELETE_PERMISSION_DENIED': 'admin.allProducts.errorDeletePermissionDenied',
+    'PRODUCT_DELETE_AUTH_REQUIRED': 'admin.allProducts.errorDeleteAuthRequired',
+    'PRODUCT_NOT_FOUND': 'admin.allProducts.errorProductNotFound',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return translateFn(translationKey as any)
+  }
+
+  // Otherwise, return the error code as-is (may be a backend message or network error)
+  return errorCode
+}
+
+/**
  * AdminAllProductsPage Component
  * Admin page for viewing and managing all products
  */
@@ -336,7 +365,7 @@ const AdminAllProductsPage = () => {
       {/* Products Error Alert */}
       {productsError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setProductsError(null)}>
-          {productsError}
+          {getErrorMessage(productsError, t)}
         </Alert>
       )}
 
