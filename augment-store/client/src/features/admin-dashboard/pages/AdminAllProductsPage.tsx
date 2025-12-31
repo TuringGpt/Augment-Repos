@@ -133,6 +133,8 @@ const AdminAllProductsPage = () => {
     if (!trimmedQuery) {
       // Clear search loading state only - don't interfere with products loading
       setIsLoadingSearch(false)
+      // Clear any search errors when leaving search mode
+      setError(null)
       // Clear search mode and reload normal products
       if (isSearchMode) {
         setIsSearchMode(false)
