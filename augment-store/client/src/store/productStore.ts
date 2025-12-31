@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Product, ProductSearchParams } from '@features/products/types'
 import type { ProductStatisticsDetail } from '@features/product-statistics/types'
-import { productStatisticsService } from '@services/api'
+import { productStatisticsService, productService } from '@services/api'
 
 interface ProductState {
   products: Product[]
@@ -25,6 +25,7 @@ interface ProductState {
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearProducts: () => void
+  deleteProduct: (productId: string) => Promise<void>
 
   // Product statistics actions
   fetchProductStatistics: (productId: string, signal?: AbortSignal) => Promise<void>
@@ -78,6 +79,43 @@ export const useProductStore = create<ProductState>((set, get) => ({
       page: 1,
       totalPages: 0,
     }),
+
+  deleteProduct: async (productId: string) => {
+    try {
+      // Call the API to delete the product
+      await productService.deleteProduct(productId)
+
+      // Remove the product from the local state
+      set((state) => ({
+        products: state.products.filter((product) => product.id !== productId),
+        total: state.total - 1,
+        // If the deleted product was selected, clear the selection
+        selectedProduct: state.selectedProduct?.id === productId ? null : state.selectedProduct,
+      }))
+
+      // Also clear any statistics for this product
+      get().clearProductStatistics(productId)
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      let errorMessage = 'Failed to delete product'
+
+      if (err?.response?.status === 403) {
+        errorMessage = 'You do not have permission to delete this product'
+      } else if (err?.response?.status === 401) {
+        errorMessage = 'Please log in to delete products'
+      } else if (err?.response?.status === 404) {
+        errorMessage = 'Product not found'
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message
+      } else if (err?.message) {
+        errorMessage = err.message
+      }
+
+      set({ error: errorMessage })
+      throw error
+    }
+  },
 
   // Product statistics actions
   fetchProductStatistics: async (productId: string, signal?: AbortSignal) => {

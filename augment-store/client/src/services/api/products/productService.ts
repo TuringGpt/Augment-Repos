@@ -240,4 +240,13 @@ export const productService = {
       totalPages: Math.ceil(response.count / backendPageSize),
     }
   },
+
+  /**
+   * Delete a product by ID
+   * @param id - Product ID to delete
+   * @throws Error if the API request fails
+   */
+  deleteProduct: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.PRODUCTS.DELETE(id))
+  },
 }
