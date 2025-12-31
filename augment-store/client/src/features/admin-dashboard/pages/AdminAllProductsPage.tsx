@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -56,6 +56,9 @@ const AdminAllProductsPage = () => {
 
   // Backend has fixed page size of 100
   const backendPageSize = 100
+
+  // Track the latest search query to prevent race conditions
+  const latestSearchQueryRef = useRef<string>('')
 
   // Debounce search query with 500ms delay
   const debouncedSearchQuery = useDebounce(searchQuery, 500)
@@ -120,6 +123,9 @@ const AdminAllProductsPage = () => {
   const handleDebouncedSearch = async () => {
     const trimmedQuery = debouncedSearchQuery.trim()
 
+    // Update the latest search query ref to track this request
+    latestSearchQueryRef.current = trimmedQuery
+
     if (!trimmedQuery) {
       // Clear search mode and reload normal products
       if (isSearchMode) {
@@ -137,18 +143,30 @@ const AdminAllProductsPage = () => {
         limit: 100,
       })
 
-      setProducts(response.products)
-      // In search mode, we only show the results we fetched (no pagination)
-      // Don't use response.total since we can't paginate through all results
-      setTotalProducts(response.products.length)
-      setIsSearchMode(true)
-      // Set page to 0 without triggering loadProducts due to isSearchMode=true
-      setPage(0)
+      // Only update state if this is still the latest search query
+      // This prevents race conditions where a slower earlier request
+      // could overwrite results from a faster later request
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setProducts(response.products)
+        // In search mode, we only show the results we fetched (no pagination)
+        // Don't use response.total since we can't paginate through all results
+        setTotalProducts(response.products.length)
+        setIsSearchMode(true)
+        // Set page to 0 without triggering loadProducts due to isSearchMode=true
+        setPage(0)
+      }
+      // Otherwise, discard stale results
     } catch (err) {
       console.error('Failed to search products:', err)
-      setError(t('admin.allProducts.errorSearchProducts'))
+      // Only show error if this is still the latest search query
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setError(t('admin.allProducts.errorSearchProducts'))
+      }
     } finally {
-      setIsLoading(false)
+      // Only update loading state if this is still the latest search query
+      if (latestSearchQueryRef.current === trimmedQuery) {
+        setIsLoading(false)
+      }
     }
   }
 
