@@ -122,6 +122,9 @@ const AdminAllProductsPage = () => {
   // Track the latest search query to prevent race conditions
   const latestSearchQueryRef = useRef<string>('')
 
+  // Track if we're manually refreshing to prevent the useEffect from triggering a duplicate fetch
+  const isManualRefreshRef = useRef<boolean>(false)
+
   // Debounce search query with 500ms delay
   const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
@@ -143,6 +146,13 @@ const AdminAllProductsPage = () => {
   // Fetch products on mount only (pagination is handled by handleChangePage)
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin' && !isSearchMode) {
+      // Skip loading if we're in the middle of a manual refresh
+      // This prevents a race condition where handleRefresh triggers both
+      // this useEffect and its own fetchProducts call
+      if (isManualRefreshRef.current) {
+        isManualRefreshRef.current = false
+        return
+      }
       loadProducts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,8 +184,11 @@ const AdminAllProductsPage = () => {
   }
 
   const handleRefresh = () => {
-    setIsSearchMode(false)
     setSearchQuery('')
+    // Set the manual refresh flag to prevent the useEffect from triggering
+    // when we change isSearchMode to false
+    isManualRefreshRef.current = true
+    setIsSearchMode(false)
     // Reload products from page 1
     // Error handling is managed by the store - check productsError state
     void fetchProducts({ page: 1 })
@@ -200,13 +213,23 @@ const AdminAllProductsPage = () => {
 
     setIsDeleting(true)
     try {
+      // Capture the current page before deletion to detect if it changes
+      const pageBeforeDelete = storePage
+
       // Use store action to delete product (it handles state updates automatically)
       await deleteProductFromStore(productToDelete.id)
+
+      // Get the page after deletion from the store
+      const pageAfterDelete = useProductStore.getState().page
 
       // If in search mode, also remove from search results
       if (isSearchMode) {
         setSearchResults((prev) => prev.filter((p) => p.id !== productToDelete.id))
         setSearchResultsCount((prev) => Math.max(0, prev - 1))
+      } else if (pageBeforeDelete !== pageAfterDelete) {
+        // If the page changed (e.g., deleted last item on last page),
+        // refetch products for the new page to ensure UI shows correct data
+        void fetchProducts({ page: pageAfterDelete })
       }
 
       // Show success message
