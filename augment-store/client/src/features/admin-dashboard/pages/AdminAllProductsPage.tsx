@@ -127,15 +127,11 @@ const AdminAllProductsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchQuery, isAuthenticated, user?.role])
 
-  const loadProducts = async () => {
-    try {
-      await fetchProducts({
-        page: storePage, // Store uses 1-based pagination
-      })
-    } catch (err) {
-      console.error('Failed to fetch products:', err)
-      // Error is already set in the store
-    }
+  const loadProducts = () => {
+    // Error handling is managed by the store - check productsError state
+    fetchProducts({
+      page: storePage, // Store uses 1-based pagination
+    })
   }
 
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -144,20 +140,16 @@ const AdminAllProductsPage = () => {
       return
     }
     // Fetch products for the new page (convert from 0-based to 1-based)
-    fetchProducts({ page: newPage + 1 }).catch((err) => {
-      console.error('Failed to fetch products on page change:', err)
-      // Error is already set in the store
-    })
+    // Error handling is managed by the store - check productsError state
+    fetchProducts({ page: newPage + 1 })
   }
 
   const handleRefresh = () => {
     setIsSearchMode(false)
     setSearchQuery('')
     // Reload products from page 1
-    fetchProducts({ page: 1 }).catch((err) => {
-      console.error('Failed to refresh products:', err)
-      // Error is already set in the store
-    })
+    // Error handling is managed by the store - check productsError state
+    fetchProducts({ page: 1 })
   }
 
   const handleViewProduct = (productId: string) => {

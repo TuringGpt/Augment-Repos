@@ -83,7 +83,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       }
 
       set({ error: errorMessage, isLoading: false })
-      throw error
+      // Note: Not rethrowing error since state is already updated.
+      // Callers can check the error state instead of relying on try-catch.
     }
   },
 
