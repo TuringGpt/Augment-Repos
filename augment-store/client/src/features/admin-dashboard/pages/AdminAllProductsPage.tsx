@@ -70,9 +70,16 @@ const AdminAllProductsPage = () => {
 
   // Invalidate latest search query ref immediately when search query is cleared
   // This prevents in-flight requests from "winning" when the field is empty
+  // Also reset search mode and loading state immediately for instant UI feedback
   useEffect(() => {
     if (!searchQuery.trim()) {
       latestSearchQueryRef.current = ''
+      // Immediately exit search mode and clear search loading state
+      // This ensures the UI updates right away (pagination shows, helper text changes)
+      // rather than waiting for the debounce to fire
+      setIsSearchMode(false)
+      setIsLoadingSearch(false)
+      setSearchError(null)
     }
   }, [searchQuery])
 
