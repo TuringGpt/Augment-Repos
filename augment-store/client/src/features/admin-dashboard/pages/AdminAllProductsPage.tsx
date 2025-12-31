@@ -238,7 +238,7 @@ const AdminAllProductsPage = () => {
           placeholder={t('admin.allProducts.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          disabled={isLoading}
+          disabled={isLoadingProducts}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
