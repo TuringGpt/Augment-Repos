@@ -31,6 +31,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useDebounce } from '@hooks/useDebounce'
 import { useAuthStore } from '@store/authStore'
 import { formatCurrency } from '@utils/formatters'
 import { productService } from '@services/api/products/productService'
@@ -56,6 +57,9 @@ const AdminAllProductsPage = () => {
   // Backend has fixed page size of 100
   const backendPageSize = 100
 
+  // Debounce search query with 500ms delay
+  const debouncedSearchQuery = useDebounce(searchQuery, 500)
+
   // Fetch products on mount and when page changes (only if not in search mode)
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin' && !isSearchMode) {
@@ -63,6 +67,14 @@ const AdminAllProductsPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, isAuthenticated, user?.role, isSearchMode])
+
+  // Trigger search when debounced search query changes
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      handleDebouncedSearch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery, isAuthenticated, user?.role])
 
   const loadProducts = async () => {
     setIsLoading(true)
@@ -105,11 +117,15 @@ const AdminAllProductsPage = () => {
     navigate(`/products/${productId}`)
   }
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  const handleDebouncedSearch = async () => {
+    const trimmedQuery = debouncedSearchQuery.trim()
+
+    if (!trimmedQuery) {
       // Clear search mode and reload normal products
-      setIsSearchMode(false)
-      setPage(0)
+      if (isSearchMode) {
+        setIsSearchMode(false)
+        setPage(0)
+      }
       return
     }
 
@@ -117,7 +133,7 @@ const AdminAllProductsPage = () => {
     setError(null)
 
     try {
-      const response = await productService.searchProducts(searchQuery, {
+      const response = await productService.searchProducts(trimmedQuery, {
         limit: 100,
       })
 
@@ -133,12 +149,6 @@ const AdminAllProductsPage = () => {
       setError(t('admin.allProducts.errorSearchProducts'))
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleSearchKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      handleSearch()
     }
   }
 
@@ -204,21 +214,24 @@ const AdminAllProductsPage = () => {
           placeholder={t('admin.allProducts.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearchKeyDown}
+          disabled={isLoading}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon />
               </InputAdornment>
             ),
-            endAdornment: searchQuery && (
+            endAdornment: isLoading && searchQuery && (
               <InputAdornment position="end">
-                <Button onClick={handleSearch} disabled={isLoading}>
-                  {t('admin.allProducts.search')}
-                </Button>
+                <CircularProgress size={20} />
               </InputAdornment>
             ),
           }}
+          helperText={
+            isSearchMode
+              ? t('admin.allProducts.searchResults', { count: products.length })
+              : 'Search results will appear as you type'
+          }
         />
       </Box>
 
@@ -383,15 +396,6 @@ const AdminAllProductsPage = () => {
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Search Results Info */}
-          {isSearchMode && (
-            <Box sx={{ p: 2, backgroundColor: 'background.default', borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('admin.allProducts.searchResults', { count: products.length })}
-              </Typography>
-            </Box>
-          )}
 
           {/* Pagination - Only shown when not in search mode */}
           {!isSearchMode && (
