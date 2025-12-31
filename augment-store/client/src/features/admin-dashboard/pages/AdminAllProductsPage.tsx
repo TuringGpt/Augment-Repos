@@ -67,6 +67,14 @@ const AdminAllProductsPage = () => {
   // Debounce search query with 500ms delay
   const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
+  // Invalidate latest search query ref immediately when search query is cleared
+  // This prevents in-flight requests from "winning" when the field is empty
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      latestSearchQueryRef.current = ''
+    }
+  }, [searchQuery])
+
   // Fetch products on mount and when page changes (only if not in search mode)
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin' && !isSearchMode) {
