@@ -47,12 +47,16 @@ const AdminAllProductsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
+
+  // Computed loading state - true if either products or search is loading
+  const isLoading = isLoadingProducts || isLoadingSearch
 
   // Backend has fixed page size of 100
   const backendPageSize = 100
@@ -80,7 +84,7 @@ const AdminAllProductsPage = () => {
   }, [debouncedSearchQuery, isAuthenticated, user?.role])
 
   const loadProducts = async () => {
-    setIsLoading(true)
+    setIsLoadingProducts(true)
     setError(null)
 
     try {
@@ -94,7 +98,7 @@ const AdminAllProductsPage = () => {
       console.error('Failed to fetch products:', err)
       setError(t('admin.allProducts.errorLoadProducts'))
     } finally {
-      setIsLoading(false)
+      setIsLoadingProducts(false)
     }
   }
 
@@ -127,8 +131,8 @@ const AdminAllProductsPage = () => {
     latestSearchQueryRef.current = trimmedQuery
 
     if (!trimmedQuery) {
-      // Explicitly clear loading state to prevent in-flight requests from stranding the loading flag
-      setIsLoading(false)
+      // Clear search loading state only - don't interfere with products loading
+      setIsLoadingSearch(false)
       // Clear search mode and reload normal products
       if (isSearchMode) {
         setIsSearchMode(false)
@@ -137,7 +141,7 @@ const AdminAllProductsPage = () => {
       return
     }
 
-    setIsLoading(true)
+    setIsLoadingSearch(true)
     setError(null)
 
     try {
@@ -167,7 +171,7 @@ const AdminAllProductsPage = () => {
     } finally {
       // Only update loading state if this is still the latest search query
       if (latestSearchQueryRef.current === trimmedQuery) {
-        setIsLoading(false)
+        setIsLoadingSearch(false)
       }
     }
   }
