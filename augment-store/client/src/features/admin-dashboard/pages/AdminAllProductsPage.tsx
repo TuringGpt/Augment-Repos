@@ -248,7 +248,7 @@ const AdminAllProductsPage = () => {
           helperText={
             isSearchMode
               ? t('admin.allProducts.searchResults', { count: products.length })
-              : 'Search results will appear as you type'
+              : t('admin.allProducts.searchHelperText')
           }
         />
       </Box>

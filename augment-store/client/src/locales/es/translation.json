@@ -579,6 +579,7 @@
       "noProducts": "No se encontraron productos",
       "noProductsAvailable": "No hay productos disponibles",
       "searchResults": "Mostrando {{count}} resultados de búsqueda (limitado a las primeras 100 coincidencias)",
+      "searchHelperText": "Los resultados de búsqueda aparecerán mientras escribes",
       "productsPerPage": "Productos por página:"
     }
   }
