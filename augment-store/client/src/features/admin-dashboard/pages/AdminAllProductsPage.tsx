@@ -111,13 +111,13 @@ const AdminAllProductsPage = () => {
     }
   }, [searchQuery])
 
-  // Fetch products on mount and when page changes (only if not in search mode)
+  // Fetch products on mount only (pagination is handled by handleChangePage)
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin' && !isSearchMode) {
       loadProducts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, isAuthenticated, user?.role, isSearchMode])
+  }, [isAuthenticated, user?.role, isSearchMode])
 
   // Trigger search when debounced search query changes
   useEffect(() => {
@@ -144,14 +144,20 @@ const AdminAllProductsPage = () => {
       return
     }
     // Fetch products for the new page (convert from 0-based to 1-based)
-    fetchProducts({ page: newPage + 1 })
+    fetchProducts({ page: newPage + 1 }).catch((err) => {
+      console.error('Failed to fetch products on page change:', err)
+      // Error is already set in the store
+    })
   }
 
   const handleRefresh = () => {
     setIsSearchMode(false)
     setSearchQuery('')
     // Reload products from page 1
-    fetchProducts({ page: 1 })
+    fetchProducts({ page: 1 }).catch((err) => {
+      console.error('Failed to refresh products:', err)
+      // Error is already set in the store
+    })
   }
 
   const handleViewProduct = (productId: string) => {
