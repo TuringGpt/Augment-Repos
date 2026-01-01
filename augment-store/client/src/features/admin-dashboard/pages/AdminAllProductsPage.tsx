@@ -21,6 +21,10 @@ import {
   Avatar,
   TextField,
   InputAdornment,
+  Drawer,
+  Divider,
+  Grid,
+  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -34,6 +38,8 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Add as AddIcon,
+  Close as CloseIcon,
+  Save as SaveIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useDebounce } from '@hooks/useDebounce'
@@ -112,6 +118,17 @@ const AdminAllProductsPage = () => {
   const products = isSearchMode ? searchResults : storeProducts
   const totalProducts = isSearchMode ? searchResultsCount : storeTotal
   const page = isSearchMode ? 0 : storePage - 1 // Convert from 1-based to 0-based for MUI pagination
+
+  // Edit drawer state
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    category: '',
+  })
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -198,6 +215,51 @@ const AdminAllProductsPage = () => {
     navigate(`/products/${productId}`)
   }
 
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product)
+    setEditFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      category: product.category.id,
+    })
+    setIsEditDrawerOpen(true)
+  }
+
+  const handleCloseEditDrawer = () => {
+    setIsEditDrawerOpen(false)
+    setSelectedProduct(null)
+    setEditFormData({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      category: '',
+    })
+  }
+
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleSaveProduct = () => {
+    // Guard against null selectedProduct to avoid state desync issues
+    if (!selectedProduct) {
+      console.error('Cannot save product: selectedProduct is null')
+      return
+    }
+
+    // TODO: Implement actual save functionality
+    console.log('Saving product:', selectedProduct.id, editFormData)
+    // Show success message via toast
+    toast.success(t('admin.allProducts.form.saveSuccess'))
+    handleCloseEditDrawer()
+  }
+  
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product)
     setDeleteDialogOpen(true)
@@ -519,7 +581,7 @@ const AdminAllProductsPage = () => {
                             <IconButton
                               size="small"
                               color="info"
-                              onClick={() => navigate(`/admin/products/${product.id}/edit`)}
+                              onClick={() => handleEditProduct(product)}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -570,6 +632,170 @@ const AdminAllProductsPage = () => {
           </Typography>
         </Paper>
       )}
+
+      {/* Edit Product Drawer */}
+      <Drawer
+        anchor="right"
+        open={isEditDrawerOpen}
+        onClose={handleCloseEditDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.allProducts.editProduct')}
+            </Typography>
+            <IconButton onClick={handleCloseEditDrawer} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {selectedProduct && (
+              <Grid container spacing={3}>
+                {/* Product Image Preview */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Avatar
+                      src={selectedProduct.images[0]}
+                      alt={selectedProduct.name}
+                      variant="rounded"
+                      sx={{ width: 120, height: 120 }}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Product Name */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.allProducts.form.productName')}
+                    value={editFormData.name}
+                    onChange={(e) => handleEditFormChange('name', e.target.value)}
+                    required
+                  />
+                </Grid>
+
+                {/* Description */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.allProducts.form.description')}
+                    value={editFormData.description}
+                    onChange={(e) => handleEditFormChange('description', e.target.value)}
+                    multiline
+                    rows={4}
+                    required
+                  />
+                </Grid>
+
+                {/* Price */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.allProducts.form.price')}
+                    value={editFormData.price}
+                    onChange={(e) => handleEditFormChange('price', e.target.value)}
+                    type="number"
+                    required
+                    InputProps={{
+                      startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                    }}
+                  />
+                </Grid>
+
+                {/* Stock */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.allProducts.form.stock')}
+                    value={editFormData.stock}
+                    onChange={(e) => handleEditFormChange('stock', e.target.value)}
+                    type="number"
+                    required
+                  />
+                </Grid>
+
+                {/* Category */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    select
+                    label={t('admin.allProducts.form.category')}
+                    value={editFormData.category}
+                    onChange={(e) => handleEditFormChange('category', e.target.value)}
+                    required
+                  >
+                    <MenuItem value={selectedProduct.category.id}>
+                      {selectedProduct.category.name}
+                    </MenuItem>
+                    {/* TODO: Add more categories from API */}
+                  </TextField>
+                </Grid>
+
+                {/* Product Info */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {t('admin.allProducts.form.productId')}: {selectedProduct.id}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {t('admin.allProducts.form.rating')}: {selectedProduct.rating.toFixed(1)} ({t('admin.allProducts.form.reviewCount', { count: selectedProduct.reviewCount })})
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('admin.allProducts.form.createdAt')}: {new Date(selectedProduct.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Box
+            sx={{
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseEditDrawer}
+            >
+              {t('admin.allProducts.form.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveProduct}
+              disabled={!selectedProduct}
+            >
+              {t('admin.allProducts.form.save')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
