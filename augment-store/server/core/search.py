@@ -1,4 +1,3 @@
-import re
 import shlex
 from django.db.models import Q
 
@@ -25,7 +24,7 @@ class AdvancedSearchMixin:
     Mixin to enhance model filtering with advanced search capabilities.
     """
     
-    search_fields = []
+    search_fields = ()
 
     def get_search_query_filter(self, query_string: str):
         if not query_string or not self.search_fields:
