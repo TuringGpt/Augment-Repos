@@ -13,6 +13,7 @@ import type {
   PaginatedProductsAPI,
   ProductDetailAPI,
   RecommendedProductsAPI,
+  UpdateProductRequest,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
@@ -239,6 +240,29 @@ export const productService = {
       limit: backendPageSize,
       totalPages: Math.ceil(response.count / backendPageSize),
     }
+  },
+
+  /**
+   * Update a product by ID
+   * @param id - Product ID to update
+   * @param data - Partial product data to update
+   * @returns Promise with updated product detail
+   * @throws Error if the API request fails
+   */
+  updateProduct: async (id: string, data: UpdateProductRequest): Promise<ProductDetailAPI> => {
+    // Convert price and rating to strings if they are numbers
+    const requestData: UpdateProductRequest = {
+      ...data,
+      price: data.price !== undefined ? String(data.price) : undefined,
+      rating: data.rating !== undefined ? String(data.rating) : undefined,
+    }
+
+    // Send PATCH request to update product
+    const response = await apiClient.patch<ProductDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.UPDATE(id),
+      requestData
+    )
+    return response
   },
 
   /**

@@ -96,6 +96,23 @@ export interface RecommendedProductAPI {
 }
 
 /**
+ * Update Product Request
+ * Backend expects snake_case fields for updating a product
+ * All fields are optional for partial updates (PATCH)
+ *
+ * Note: The backend ProductDetailSerializer marks brand, category, and images as read_only,
+ * so these fields cannot be updated via PATCH requests to ProductUpdateDeleteView.
+ * Only the following fields are writable: name, description, price, quantity, rating
+ */
+export interface UpdateProductRequest {
+  name?: string
+  description?: string
+  price?: string | number // Accept both string and number, will convert to string
+  quantity?: number
+  rating?: string | number // Accept both string and number, will convert to string
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
