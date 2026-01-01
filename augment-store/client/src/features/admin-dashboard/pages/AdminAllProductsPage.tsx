@@ -247,8 +247,14 @@ const AdminAllProductsPage = () => {
   }
 
   const handleSaveProduct = () => {
+    // Guard against null selectedProduct to avoid state desync issues
+    if (!selectedProduct) {
+      console.error('Cannot save product: selectedProduct is null')
+      return
+    }
+
     // TODO: Implement actual save functionality
-    console.log('Saving product:', selectedProduct?.id, editFormData)
+    console.log('Saving product:', selectedProduct.id, editFormData)
     // Show success message via toast
     toast.success(t('admin.allProducts.form.saveSuccess'))
     handleCloseEditDrawer()
@@ -783,6 +789,7 @@ const AdminAllProductsPage = () => {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={handleSaveProduct}
+              disabled={!selectedProduct}
             >
               {t('admin.allProducts.form.save')}
             </Button>
