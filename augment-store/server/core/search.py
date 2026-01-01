@@ -5,7 +5,7 @@ from django.db.models import Q
 class SearchQueryParser:
     """
     Utility to parse search queries into components.
-    Supports basic terms and quoted strings for exact matches.
+    Supports basic terms and quoted strings for grouped matches.
     """
     
     @staticmethod
@@ -37,7 +37,7 @@ class AdvancedSearchMixin:
         for term in terms:
             term_query = Q()
             for field in self.search_fields:
-                term_query &= Q(**{f"{field}__icontains": term})
+                term_query |= Q(**{f"{field}__icontains": term})
             root_query &= term_query
 
         return root_query
