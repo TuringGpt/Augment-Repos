@@ -23,7 +23,7 @@ export const API_ENDPOINTS = {
     LIST: '/products',
     DETAIL: (id: string) => `/products/${id}`,
     UPDATE: (id: string) => `/products/${id}/`,
-    DELETE: (id: string) => `/products/${id}`,
+    DELETE: (id: string) => `/products/${id}/`,
     SEARCH: '/products/search',
     CATEGORIES: '/products/categories',
     BRANDS: '/products/brands',
