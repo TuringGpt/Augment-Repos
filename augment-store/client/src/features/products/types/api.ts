@@ -96,6 +96,22 @@ export interface RecommendedProductAPI {
 }
 
 /**
+ * Update Product Request
+ * Backend expects snake_case fields for updating a product
+ * All fields are optional for partial updates (PATCH)
+ */
+export interface UpdateProductRequest {
+  name?: string
+  description?: string
+  price?: string | number // Accept both string and number, will convert to string
+  quantity?: number
+  rating?: string | number // Accept both string and number, will convert to string
+  brand?: string // Brand ID (UUID)
+  category?: string // Category ID (UUID)
+  images?: string[] // Array of file IDs (UUIDs)
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
