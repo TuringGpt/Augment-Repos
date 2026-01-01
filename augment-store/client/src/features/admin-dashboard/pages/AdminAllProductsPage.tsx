@@ -25,7 +25,6 @@ import {
   Divider,
   Grid,
   MenuItem,
-  Snackbar,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -130,10 +129,6 @@ const AdminAllProductsPage = () => {
     stock: '',
     category: '',
   })
-
-  // Snackbar state
-  const [snackbarOpen, setSnackbarOpen] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState('')
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -254,14 +249,9 @@ const AdminAllProductsPage = () => {
   const handleSaveProduct = () => {
     // TODO: Implement actual save functionality
     console.log('Saving product:', selectedProduct?.id, editFormData)
-    // Show success message via snackbar
-    setSnackbarMessage(t('admin.allProducts.form.saveSuccess'))
-    setSnackbarOpen(true)
+    // Show success message via toast
+    toast.success(t('admin.allProducts.form.saveSuccess'))
     handleCloseEditDrawer()
-  }
-
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false)
   }
   
   const handleDeleteClick = (product: Product) => {
@@ -800,17 +790,6 @@ const AdminAllProductsPage = () => {
         </Box>
       </Drawer>
 
-      {/* Success Snackbar */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
