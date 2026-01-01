@@ -557,6 +557,7 @@
       "subtitle": "Gestionar todos los productos de tu tienda",
       "refresh": "Actualizar",
       "addProduct": "Añadir Producto",
+      "editProduct": "Editar Producto",
       "searchPlaceholder": "Buscar productos por nombre...",
       "search": "Buscar",
       "errorLoadProducts": "Error al cargar productos. Por favor, inténtalo de nuevo.",
@@ -575,6 +576,20 @@
         "viewProduct": "Ver Producto",
         "editProduct": "Editar Producto",
         "deleteProduct": "Eliminar Producto"
+      },
+      "form": {
+        "productName": "Nombre del Producto",
+        "description": "Descripción",
+        "price": "Precio",
+        "stock": "Stock",
+        "category": "Categoría",
+        "productId": "ID del Producto",
+        "rating": "Calificación",
+        "reviews": "reseñas",
+        "createdAt": "Creado el",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "saveSuccess": "¡Producto guardado exitosamente!"
       },
       "noProducts": "No se encontraron productos",
       "noProductsAvailable": "No hay productos disponibles",
