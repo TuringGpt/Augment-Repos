@@ -758,7 +758,7 @@ const AdminAllProductsPage = () => {
                     {t('admin.allProducts.form.productId')}: {selectedProduct.id}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('admin.allProducts.form.rating')}: {selectedProduct.rating.toFixed(1)} ({selectedProduct.reviewCount} {t('admin.allProducts.form.reviews')})
+                    {t('admin.allProducts.form.rating')}: {selectedProduct.rating.toFixed(1)} ({t('admin.allProducts.form.reviewCount', { count: selectedProduct.reviewCount })})
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {t('admin.allProducts.form.createdAt')}: {new Date(selectedProduct.createdAt).toLocaleDateString()}

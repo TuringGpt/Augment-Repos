@@ -597,6 +597,8 @@
         "productId": "Produkt-ID",
         "rating": "Bewertung",
         "reviews": "Bewertungen",
+        "reviewCount": "{{count}} Bewertung",
+        "reviewCount_other": "{{count}} Bewertungen",
         "createdAt": "Erstellt am",
         "cancel": "Abbrechen",
         "save": "Änderungen speichern",
