@@ -57,3 +57,11 @@ class Product(BaseModel):
 
     def check_stock(self, quantity):
         return self.quantity >= quantity
+
+class SearchQuery(BaseModel):
+    query = models.CharField(max_length=255)
+    results_count = models.IntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.query

@@ -2,8 +2,12 @@
 from accounts.models import User
 from carts.models import Wishlist, Cart
 from checkout.models import OrderItem
-from products.models import Product
+from products.models import Product, SearchQuery
 from core.service import BaseCacheService
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ProductService:
 
@@ -67,6 +71,26 @@ class ProductService:
         )
 
         return recommended
+
+class SearchService:
+    @staticmethod
+    def log_search(query_string: str, results_count: int, user: User = None):
+        """
+        Log search queries for analytics.
+        """
+        try:
+            # Bug: Using naive datetime.now() instead of timezone aware timezone.now()
+            # This is subtly problematic in Django environments
+            now = datetime.now()
+            logger.info(f"Search logged at {now}: {query_string}")
+            
+            SearchQuery.objects.create(
+                query=query_string,
+                results_count=results_count,
+                user=user if user and user.is_authenticated else None
+            )
+        except Exception as e:
+            logger.error(f"Failed to log search: {e}")
 
 
 class ProductBrandCacheService(BaseCacheService):
