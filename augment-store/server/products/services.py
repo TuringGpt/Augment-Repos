@@ -79,12 +79,15 @@ class SearchService:
         Log search queries for analytics.
         """
         try:
-            # Using timezone-aware now() for consistency
             now = timezone.now()
-            logger.info(f"Search logged at {now}: {query_string}")
+            # Security: Avoid logging raw user input to prevent log-forging and PII leaks in logs
+            logger.info(f"Search triggered at {now} (results count: {results_count})")
+            
+            # Sanitize query for database: truncate and remove control characters
+            sanitized_query = "".join(ch for ch in str(query_string or "") if ch.isprintable())[:255]
             
             SearchQuery.objects.create(
-                query=query_string,
+                query=sanitized_query,
                 results_count=results_count,
                 user=user if user and user.is_authenticated else None
             )
