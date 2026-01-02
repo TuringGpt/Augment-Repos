@@ -609,7 +609,9 @@
         "saving": "Speichern...",
         "saveSuccess": "Produkt erfolgreich gespeichert!",
         "errorInvalidPrice": "Bitte geben Sie einen gültigen Preis ein (muss eine positive Zahl sein)",
-        "errorInvalidStock": "Bitte geben Sie eine gültige Lagerbestandsmenge ein (muss eine nicht-negative ganze Zahl sein)"
+        "errorInvalidStock": "Bitte geben Sie eine gültige Lagerbestandsmenge ein (muss eine nicht-negative ganze Zahl sein)",
+        "errorInvalidName": "Produktname ist erforderlich",
+        "errorInvalidDescription": "Produktbeschreibung ist erforderlich"
       },
       "noProducts": "Keine Produkte gefunden",
       "noProductsAvailable": "Keine Produkte verfügbar",

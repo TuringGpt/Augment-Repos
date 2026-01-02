@@ -133,6 +133,8 @@ const AdminAllProductsPage = () => {
   })
   const [isSaving, setIsSaving] = useState(false)
   const [formErrors, setFormErrors] = useState<{
+    name?: string
+    description?: string
     price?: string
     stock?: string
   }>({})
@@ -251,7 +253,7 @@ const AdminAllProductsPage = () => {
       [field]: value,
     }))
     // Clear error for the field being edited
-    if (field === 'price' || field === 'stock') {
+    if (field === 'name' || field === 'description' || field === 'price' || field === 'stock') {
       setFormErrors((prev) => ({
         ...prev,
         [field]: undefined,
@@ -260,7 +262,17 @@ const AdminAllProductsPage = () => {
   }
 
   const validateFormData = (): boolean => {
-    const errors: { price?: string; stock?: string } = {}
+    const errors: { name?: string; description?: string; price?: string; stock?: string } = {}
+
+    // Validate name: must be non-empty
+    if (!editFormData.name || editFormData.name.trim() === '') {
+      errors.name = t('admin.allProducts.form.errorInvalidName')
+    }
+
+    // Validate description: must be non-empty
+    if (!editFormData.description || editFormData.description.trim() === '') {
+      errors.description = t('admin.allProducts.form.errorInvalidDescription')
+    }
 
     // Validate price: must be a valid positive finite number
     const priceValue = parseFloat(editFormData.price)
@@ -781,6 +793,8 @@ const AdminAllProductsPage = () => {
                     value={editFormData.name}
                     onChange={(e) => handleEditFormChange('name', e.target.value)}
                     required
+                    error={!!formErrors.name}
+                    helperText={formErrors.name}
                   />
                 </Grid>
 
@@ -794,6 +808,8 @@ const AdminAllProductsPage = () => {
                     multiline
                     rows={4}
                     required
+                    error={!!formErrors.description}
+                    helperText={formErrors.description}
                   />
                 </Grid>
 

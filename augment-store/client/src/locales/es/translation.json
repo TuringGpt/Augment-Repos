@@ -609,7 +609,9 @@
         "saving": "Guardando...",
         "saveSuccess": "¡Producto guardado exitosamente!",
         "errorInvalidPrice": "Por favor ingrese un precio válido (debe ser un número positivo)",
-        "errorInvalidStock": "Por favor ingrese una cantidad de stock válida (debe ser un número entero no negativo)"
+        "errorInvalidStock": "Por favor ingrese una cantidad de stock válida (debe ser un número entero no negativo)",
+        "errorInvalidName": "El nombre del producto es obligatorio",
+        "errorInvalidDescription": "La descripción del producto es obligatoria"
       },
       "noProducts": "No se encontraron productos",
       "noProductsAvailable": "No hay productos disponibles",

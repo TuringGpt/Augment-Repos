@@ -609,7 +609,9 @@
         "saving": "Enregistrement...",
         "saveSuccess": "Produit enregistré avec succès !",
         "errorInvalidPrice": "Veuillez entrer un prix valide (doit être un nombre positif)",
-        "errorInvalidStock": "Veuillez entrer une quantité de stock valide (doit être un nombre entier non négatif)"
+        "errorInvalidStock": "Veuillez entrer une quantité de stock valide (doit être un nombre entier non négatif)",
+        "errorInvalidName": "Le nom du produit est requis",
+        "errorInvalidDescription": "La description du produit est requise"
       },
       "noProducts": "Aucun produit trouvé",
       "noProductsAvailable": "Aucun produit disponible",
