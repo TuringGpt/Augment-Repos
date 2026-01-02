@@ -597,6 +597,7 @@
         "price": "Price",
         "stock": "Stock",
         "category": "Category",
+        "categoryReadOnly": "Category cannot be changed (read-only)",
         "productId": "Product ID",
         "rating": "Rating",
         "reviews": "reviews",

@@ -597,6 +597,7 @@
         "price": "Preis",
         "stock": "Lagerbestand",
         "category": "Kategorie",
+        "categoryReadOnly": "Kategorie kann nicht geändert werden (schreibgeschützt)",
         "productId": "Produkt-ID",
         "rating": "Bewertung",
         "reviews": "Bewertungen",

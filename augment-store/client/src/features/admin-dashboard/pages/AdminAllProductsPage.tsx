@@ -24,7 +24,6 @@ import {
   Drawer,
   Divider,
   Grid,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -131,7 +130,6 @@ const AdminAllProductsPage = () => {
     description: '',
     price: '',
     stock: '',
-    category: '',
   })
   const [isSaving, setIsSaving] = useState(false)
   const [formErrors, setFormErrors] = useState<{
@@ -231,7 +229,6 @@ const AdminAllProductsPage = () => {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
-      category: product.category.id,
     })
     setIsEditDrawerOpen(true)
   }
@@ -244,7 +241,6 @@ const AdminAllProductsPage = () => {
       description: '',
       price: '',
       stock: '',
-      category: '',
     })
     setFormErrors({})
   }
@@ -817,21 +813,15 @@ const AdminAllProductsPage = () => {
                   />
                 </Grid>
 
-                {/* Category */}
+                {/* Category - Read-only field (backend doesn't support category updates) */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    select
                     label={t('admin.allProducts.form.category')}
-                    value={editFormData.category}
-                    onChange={(e) => handleEditFormChange('category', e.target.value)}
-                    required
-                  >
-                    <MenuItem value={selectedProduct.category.id}>
-                      {selectedProduct.category.name}
-                    </MenuItem>
-                    {/* TODO: Add more categories from API */}
-                  </TextField>
+                    value={selectedProduct.category.name}
+                    disabled
+                    helperText={t('admin.allProducts.form.categoryReadOnly')}
+                  />
                 </Grid>
 
                 {/* Product Info */}
