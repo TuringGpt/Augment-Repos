@@ -566,6 +566,8 @@
       "errorUpdateProduct": "Error al actualizar producto. Por favor, inténtalo de nuevo.",
       "errorPermissionDenied": "No tienes permiso para ver productos.",
       "errorAuthRequired": "Por favor inicia sesión para ver productos.",
+      "errorUpdatePermissionDenied": "No tienes permiso para actualizar este producto.",
+      "errorUpdateAuthRequired": "Por favor inicia sesión para actualizar productos.",
       "errorDeletePermissionDenied": "No tienes permiso para eliminar este producto.",
       "errorDeleteAuthRequired": "Por favor inicia sesión para eliminar productos.",
       "errorProductNotFound": "Producto no encontrado.",

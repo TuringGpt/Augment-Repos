@@ -566,6 +566,8 @@
       "errorUpdateProduct": "Fehler beim Aktualisieren des Produkts. Bitte versuchen Sie es erneut.",
       "errorPermissionDenied": "Sie haben keine Berechtigung, Produkte anzuzeigen.",
       "errorAuthRequired": "Bitte melden Sie sich an, um Produkte anzuzeigen.",
+      "errorUpdatePermissionDenied": "Sie haben keine Berechtigung, dieses Produkt zu aktualisieren.",
+      "errorUpdateAuthRequired": "Bitte melden Sie sich an, um Produkte zu aktualisieren.",
       "errorDeletePermissionDenied": "Sie haben keine Berechtigung, dieses Produkt zu löschen.",
       "errorDeleteAuthRequired": "Bitte melden Sie sich an, um Produkte zu löschen.",
       "errorProductNotFound": "Produkt nicht gefunden.",

@@ -66,8 +66,8 @@ const getErrorMessage = (errorCode: string | null, translateFn: ReturnType<typeo
     'PRODUCT_DELETE_PERMISSION_DENIED': 'admin.allProducts.errorDeletePermissionDenied',
     'PRODUCT_DELETE_AUTH_REQUIRED': 'admin.allProducts.errorDeleteAuthRequired',
     'PRODUCT_UPDATE_ERROR': 'admin.allProducts.errorUpdateProduct',
-    'PRODUCT_UPDATE_PERMISSION_DENIED': 'admin.allProducts.errorPermissionDenied',
-    'PRODUCT_UPDATE_AUTH_REQUIRED': 'admin.allProducts.errorAuthRequired',
+    'PRODUCT_UPDATE_PERMISSION_DENIED': 'admin.allProducts.errorUpdatePermissionDenied',
+    'PRODUCT_UPDATE_AUTH_REQUIRED': 'admin.allProducts.errorUpdateAuthRequired',
     'PRODUCT_NOT_FOUND': 'admin.allProducts.errorProductNotFound',
   }
 

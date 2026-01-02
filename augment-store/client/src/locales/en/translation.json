@@ -566,6 +566,8 @@
       "errorUpdateProduct": "Failed to update product. Please try again.",
       "errorPermissionDenied": "You do not have permission to view products.",
       "errorAuthRequired": "Please log in to view products.",
+      "errorUpdatePermissionDenied": "You do not have permission to update this product.",
+      "errorUpdateAuthRequired": "Please log in to update products.",
       "errorDeletePermissionDenied": "You do not have permission to delete this product.",
       "errorDeleteAuthRequired": "Please log in to delete products.",
       "errorProductNotFound": "Product not found.",
