@@ -19,6 +19,7 @@ from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
+from core.search import AdvancedSearchMixin
 
 def track_search_query(func):
     """
@@ -139,13 +140,16 @@ class FeaturedProductListView(ProductListView):
     def get_queryset(self):
         return Product.objects.filter(is_featured=True).select_related('brand', 'category', 'created_by').prefetch_related('images')
 
-class ProductSearchView(BaseProductView, ListAPIView):
-    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
+    filter_backends = [DjangoFilterBackend]
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
 
     def get_queryset(self):
-        return super().get_queryset()
+        queryset = super().get_queryset()
+        query = self.request.query_params.get('search')
+        search_filter = self.get_search_query_filter(query)
+        return queryset.filter(search_filter)
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
