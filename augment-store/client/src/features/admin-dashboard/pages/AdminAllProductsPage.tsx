@@ -236,6 +236,10 @@ const AdminAllProductsPage = () => {
   }
 
   const handleCloseEditDrawer = () => {
+    // Prevent closing the drawer while a save operation is in progress
+    if (isSaving) {
+      return
+    }
     setIsEditDrawerOpen(false)
     setSelectedProduct(null)
     setEditFormData({
@@ -764,7 +768,7 @@ const AdminAllProductsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.allProducts.editProduct')}
             </Typography>
-            <IconButton onClick={handleCloseEditDrawer} sx={{ color: 'white' }}>
+            <IconButton onClick={handleCloseEditDrawer} disabled={isSaving} sx={{ color: 'white' }}>
               <CloseIcon />
             </IconButton>
           </Box>
