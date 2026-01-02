@@ -262,15 +262,15 @@ const AdminAllProductsPage = () => {
   const validateFormData = (): boolean => {
     const errors: { price?: string; stock?: string } = {}
 
-    // Validate price: must be a valid positive number
+    // Validate price: must be a valid positive finite number
     const priceValue = parseFloat(editFormData.price)
-    if (isNaN(priceValue) || priceValue <= 0 || editFormData.price.trim() === '') {
+    if (!Number.isFinite(priceValue) || priceValue <= 0 || editFormData.price.trim() === '') {
       errors.price = t('admin.allProducts.form.errorInvalidPrice')
     }
 
-    // Validate stock: must be a valid non-negative integer
+    // Validate stock: must be a valid non-negative finite integer
     const stockValue = parseInt(editFormData.stock, 10)
-    if (isNaN(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(Number(editFormData.stock))) {
+    if (!Number.isFinite(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(Number(editFormData.stock))) {
       errors.stock = t('admin.allProducts.form.errorInvalidStock')
     }
 
@@ -294,12 +294,25 @@ const AdminAllProductsPage = () => {
     setIsSaving(true)
     try {
       // Prepare the update data
-      // At this point, we know parseFloat and parseInt will return valid numbers
+      const price = parseFloat(editFormData.price)
+      const quantity = parseInt(editFormData.stock, 10)
+
+      // Additional safety guard: ensure parsed values are finite numbers before API call
+      if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
+        console.error('Invalid numeric values detected:', { price, quantity })
+        setFormErrors({
+          price: !Number.isFinite(price) ? t('admin.allProducts.form.errorInvalidPrice') : undefined,
+          stock: !Number.isFinite(quantity) ? t('admin.allProducts.form.errorInvalidStock') : undefined,
+        })
+        setIsSaving(false)
+        return
+      }
+
       const updateData = {
         name: editFormData.name,
         description: editFormData.description,
-        price: parseFloat(editFormData.price),
-        quantity: parseInt(editFormData.stock, 10),
+        price,
+        quantity,
       }
 
       // Call the store action to update the product
