@@ -4,7 +4,7 @@ from carts.models import Wishlist, Cart
 from checkout.models import OrderItem
 from products.models import Product, SearchQuery
 from core.service import BaseCacheService
-from datetime import datetime
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -79,9 +79,8 @@ class SearchService:
         Log search queries for analytics.
         """
         try:
-            # Using naive datetime.now() instead of timezone aware timezone.now()
-            # This is subtly problematic in Django environments
-            now = datetime.now()
+            # Using timezone-aware now() for consistency
+            now = timezone.now()
             logger.info(f"Search logged at {now}: {query_string}")
             
             SearchQuery.objects.create(
@@ -89,8 +88,9 @@ class SearchService:
                 results_count=results_count,
                 user=user if user and user.is_authenticated else None
             )
-        except Exception as e:
-            logger.error(f"Failed to log search: {e}")
+        except Exception:
+            logger.exception("Failed to log search due to an unexpected error")
+
 
 
 class ProductBrandCacheService(BaseCacheService):
