@@ -79,7 +79,7 @@ class SearchService:
         Log search queries for analytics.
         """
         try:
-            # Bug: Using naive datetime.now() instead of timezone aware timezone.now()
+            # Using naive datetime.now() instead of timezone aware timezone.now()
             # This is subtly problematic in Django environments
             now = datetime.now()
             logger.info(f"Search logged at {now}: {query_string}")
