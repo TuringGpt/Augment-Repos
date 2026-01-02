@@ -184,6 +184,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   updateProduct: async (productId: string, data: UpdateProductRequest) => {
     try {
+      // Clear any previous error state
+      set({ error: null })
+
       // Call the API to update the product
       const updatedProductAPI = await productService.updateProduct(productId, data)
 
