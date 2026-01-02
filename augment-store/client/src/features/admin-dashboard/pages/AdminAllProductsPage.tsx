@@ -269,8 +269,9 @@ const AdminAllProductsPage = () => {
     }
 
     // Validate stock: must be a valid non-negative finite integer
-    const stockValue = parseInt(editFormData.stock, 10)
-    if (!Number.isFinite(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(Number(editFormData.stock))) {
+    // Use Number() for consistent parsing to avoid parseInt mis-parsing values like "1e3"
+    const stockValue = Number(editFormData.stock)
+    if (!Number.isFinite(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(stockValue)) {
       errors.stock = t('admin.allProducts.form.errorInvalidStock')
     }
 
@@ -295,7 +296,8 @@ const AdminAllProductsPage = () => {
     try {
       // Prepare the update data
       const price = parseFloat(editFormData.price)
-      const quantity = parseInt(editFormData.stock, 10)
+      // Use Number() for consistent parsing to avoid parseInt mis-parsing values like "1e3"
+      const quantity = Number(editFormData.stock)
 
       // Additional safety guard: ensure parsed values are finite numbers before API call
       if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
