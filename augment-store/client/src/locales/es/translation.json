@@ -606,7 +606,9 @@
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
         "saving": "Guardando...",
-        "saveSuccess": "¡Producto guardado exitosamente!"
+        "saveSuccess": "¡Producto guardado exitosamente!",
+        "errorInvalidPrice": "Por favor ingrese un precio válido (debe ser un número positivo)",
+        "errorInvalidStock": "Por favor ingrese una cantidad de stock válida (debe ser un número entero no negativo)"
       },
       "noProducts": "No se encontraron productos",
       "noProductsAvailable": "No hay productos disponibles",

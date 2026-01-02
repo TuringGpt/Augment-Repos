@@ -134,6 +134,10 @@ const AdminAllProductsPage = () => {
     category: '',
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [formErrors, setFormErrors] = useState<{
+    price?: string
+    stock?: string
+  }>({})
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -242,6 +246,7 @@ const AdminAllProductsPage = () => {
       stock: '',
       category: '',
     })
+    setFormErrors({})
   }
 
   const handleEditFormChange = (field: string, value: string) => {
@@ -249,6 +254,32 @@ const AdminAllProductsPage = () => {
       ...prev,
       [field]: value,
     }))
+    // Clear error for the field being edited
+    if (field === 'price' || field === 'stock') {
+      setFormErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }))
+    }
+  }
+
+  const validateFormData = (): boolean => {
+    const errors: { price?: string; stock?: string } = {}
+
+    // Validate price: must be a valid positive number
+    const priceValue = parseFloat(editFormData.price)
+    if (isNaN(priceValue) || priceValue <= 0 || editFormData.price.trim() === '') {
+      errors.price = t('admin.allProducts.form.errorInvalidPrice')
+    }
+
+    // Validate stock: must be a valid non-negative integer
+    const stockValue = parseInt(editFormData.stock, 10)
+    if (isNaN(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(Number(editFormData.stock))) {
+      errors.stock = t('admin.allProducts.form.errorInvalidStock')
+    }
+
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   const handleSaveProduct = async () => {
@@ -258,9 +289,16 @@ const AdminAllProductsPage = () => {
       return
     }
 
+    // Validate form data before making API call
+    if (!validateFormData()) {
+      // Validation errors are already set in state and will be displayed
+      return
+    }
+
     setIsSaving(true)
     try {
       // Prepare the update data
+      // At this point, we know parseFloat and parseInt will return valid numbers
       const updateData = {
         name: editFormData.name,
         description: editFormData.description,
@@ -757,6 +795,8 @@ const AdminAllProductsPage = () => {
                     onChange={(e) => handleEditFormChange('price', e.target.value)}
                     type="number"
                     required
+                    error={!!formErrors.price}
+                    helperText={formErrors.price}
                     InputProps={{
                       startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
                     }}
@@ -772,6 +812,8 @@ const AdminAllProductsPage = () => {
                     onChange={(e) => handleEditFormChange('stock', e.target.value)}
                     type="number"
                     required
+                    error={!!formErrors.stock}
+                    helperText={formErrors.stock}
                   />
                 </Grid>
 

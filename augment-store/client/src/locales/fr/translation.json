@@ -606,7 +606,9 @@
         "cancel": "Annuler",
         "save": "Enregistrer les Modifications",
         "saving": "Enregistrement...",
-        "saveSuccess": "Produit enregistré avec succès !"
+        "saveSuccess": "Produit enregistré avec succès !",
+        "errorInvalidPrice": "Veuillez entrer un prix valide (doit être un nombre positif)",
+        "errorInvalidStock": "Veuillez entrer une quantité de stock valide (doit être un nombre entier non négatif)"
       },
       "noProducts": "Aucun produit trouvé",
       "noProductsAvailable": "Aucun produit disponible",

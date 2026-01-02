@@ -606,7 +606,9 @@
         "cancel": "Cancel",
         "save": "Save Changes",
         "saving": "Saving...",
-        "saveSuccess": "Product saved successfully!"
+        "saveSuccess": "Product saved successfully!",
+        "errorInvalidPrice": "Please enter a valid price (must be a positive number)",
+        "errorInvalidStock": "Please enter a valid stock quantity (must be a non-negative whole number)"
       },
       "noProducts": "No products found",
       "noProductsAvailable": "No products available",
