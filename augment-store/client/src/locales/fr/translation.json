@@ -563,6 +563,7 @@
       "errorLoadProducts": "Échec du chargement des produits. Veuillez réessayer.",
       "errorSearchProducts": "Échec de la recherche de produits. Veuillez réessayer.",
       "errorDeleteProduct": "Échec de la suppression du produit. Veuillez réessayer.",
+      "errorUpdateProduct": "Échec de la mise à jour du produit. Veuillez réessayer.",
       "errorPermissionDenied": "Vous n'avez pas la permission de voir les produits.",
       "errorAuthRequired": "Veuillez vous connecter pour voir les produits.",
       "errorDeletePermissionDenied": "Vous n'avez pas la permission de supprimer ce produit.",
@@ -602,6 +603,7 @@
         "createdAt": "Créé le",
         "cancel": "Annuler",
         "save": "Enregistrer les Modifications",
+        "saving": "Enregistrement...",
         "saveSuccess": "Produit enregistré avec succès !"
       },
       "noProducts": "Aucun produit trouvé",

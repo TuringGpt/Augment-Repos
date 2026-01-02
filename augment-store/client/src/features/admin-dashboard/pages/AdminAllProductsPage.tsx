@@ -65,6 +65,9 @@ const getErrorMessage = (errorCode: string | null, translateFn: ReturnType<typeo
     'PRODUCT_DELETE_ERROR': 'admin.allProducts.errorDeleteProduct',
     'PRODUCT_DELETE_PERMISSION_DENIED': 'admin.allProducts.errorDeletePermissionDenied',
     'PRODUCT_DELETE_AUTH_REQUIRED': 'admin.allProducts.errorDeleteAuthRequired',
+    'PRODUCT_UPDATE_ERROR': 'admin.allProducts.errorUpdateProduct',
+    'PRODUCT_UPDATE_PERMISSION_DENIED': 'admin.allProducts.errorPermissionDenied',
+    'PRODUCT_UPDATE_AUTH_REQUIRED': 'admin.allProducts.errorAuthRequired',
     'PRODUCT_NOT_FOUND': 'admin.allProducts.errorProductNotFound',
   }
 
@@ -98,6 +101,7 @@ const AdminAllProductsPage = () => {
     error: productsError,
     fetchProducts,
     deleteProduct: deleteProductFromStore,
+    updateProduct: updateProductInStore,
     setError: setProductsError,
   } = useProductStore()
 
@@ -129,6 +133,7 @@ const AdminAllProductsPage = () => {
     stock: '',
     category: '',
   })
+  const [isSaving, setIsSaving] = useState(false)
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -246,18 +251,54 @@ const AdminAllProductsPage = () => {
     }))
   }
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     // Guard against null selectedProduct to avoid state desync issues
     if (!selectedProduct) {
       console.error('Cannot save product: selectedProduct is null')
       return
     }
 
-    // TODO: Implement actual save functionality
-    console.log('Saving product:', selectedProduct.id, editFormData)
-    // Show success message via toast
-    toast.success(t('admin.allProducts.form.saveSuccess'))
-    handleCloseEditDrawer()
+    setIsSaving(true)
+    try {
+      // Prepare the update data
+      const updateData = {
+        name: editFormData.name,
+        description: editFormData.description,
+        price: parseFloat(editFormData.price),
+        quantity: parseInt(editFormData.stock, 10),
+      }
+
+      // Call the store action to update the product
+      await updateProductInStore(selectedProduct.id, updateData)
+
+      // If in search mode, also update the search results
+      if (isSearchMode) {
+        setSearchResults((prev) =>
+          prev.map((p) =>
+            p.id === selectedProduct.id
+              ? {
+                  ...p,
+                  name: updateData.name,
+                  description: updateData.description,
+                  price: updateData.price,
+                  stock: updateData.quantity,
+                }
+              : p
+          )
+        )
+      }
+
+      // Show success message via toast
+      toast.success(t('admin.allProducts.form.saveSuccess'))
+      handleCloseEditDrawer()
+    } catch (err) {
+      console.error('Failed to update product:', err)
+      // Error is already set in the store, but show user-friendly message
+      toast.error(t('admin.allProducts.errorUpdateProduct'))
+      // Keep drawer open on error so user can retry or cancel
+    } finally {
+      setIsSaving(false)
+    }
   }
   
   const handleDeleteClick = (product: Product) => {
@@ -782,6 +823,7 @@ const AdminAllProductsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseEditDrawer}
+              disabled={isSaving}
             >
               {t('admin.allProducts.form.cancel')}
             </Button>
@@ -789,9 +831,9 @@ const AdminAllProductsPage = () => {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={handleSaveProduct}
-              disabled={!selectedProduct}
+              disabled={!selectedProduct || isSaving}
             >
-              {t('admin.allProducts.form.save')}
+              {isSaving ? t('admin.allProducts.form.saving') : t('admin.allProducts.form.save')}
             </Button>
           </Box>
         </Box>

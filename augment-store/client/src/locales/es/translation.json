@@ -563,6 +563,7 @@
       "errorLoadProducts": "Error al cargar productos. Por favor, inténtalo de nuevo.",
       "errorSearchProducts": "Error al buscar productos. Por favor, inténtalo de nuevo.",
       "errorDeleteProduct": "Error al eliminar producto. Por favor, inténtalo de nuevo.",
+      "errorUpdateProduct": "Error al actualizar producto. Por favor, inténtalo de nuevo.",
       "errorPermissionDenied": "No tienes permiso para ver productos.",
       "errorAuthRequired": "Por favor inicia sesión para ver productos.",
       "errorDeletePermissionDenied": "No tienes permiso para eliminar este producto.",
@@ -602,6 +603,7 @@
         "createdAt": "Creado el",
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
+        "saving": "Guardando...",
         "saveSuccess": "¡Producto guardado exitosamente!"
       },
       "noProducts": "No se encontraron productos",

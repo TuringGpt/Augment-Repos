@@ -563,6 +563,7 @@
       "errorLoadProducts": "Fehler beim Laden der Produkte. Bitte versuchen Sie es erneut.",
       "errorSearchProducts": "Fehler beim Suchen der Produkte. Bitte versuchen Sie es erneut.",
       "errorDeleteProduct": "Fehler beim Löschen des Produkts. Bitte versuchen Sie es erneut.",
+      "errorUpdateProduct": "Fehler beim Aktualisieren des Produkts. Bitte versuchen Sie es erneut.",
       "errorPermissionDenied": "Sie haben keine Berechtigung, Produkte anzuzeigen.",
       "errorAuthRequired": "Bitte melden Sie sich an, um Produkte anzuzeigen.",
       "errorDeletePermissionDenied": "Sie haben keine Berechtigung, dieses Produkt zu löschen.",
@@ -602,6 +603,7 @@
         "createdAt": "Erstellt am",
         "cancel": "Abbrechen",
         "save": "Änderungen speichern",
+        "saving": "Speichern...",
         "saveSuccess": "Produkt erfolgreich gespeichert!"
       },
       "noProducts": "Keine Produkte gefunden",
