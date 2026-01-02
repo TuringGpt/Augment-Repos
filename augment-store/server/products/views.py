@@ -141,7 +141,7 @@ class FeaturedProductListView(ProductListView):
         return Product.objects.filter(is_featured=True).select_related('brand', 'category', 'created_by').prefetch_related('images')
 
 class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
-    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend]
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
 
