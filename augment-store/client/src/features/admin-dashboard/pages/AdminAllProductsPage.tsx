@@ -518,7 +518,7 @@ const AdminAllProductsPage = () => {
 
       // For now, just log the data that would be sent
       console.log('Product data ready to be created:', createData)
-      toast.info('Create product endpoint will be implemented later')
+      toast.info(t('admin.allProducts.createNotImplemented'))
 
     } catch (err) {
       console.error('Failed to create product:', err)
