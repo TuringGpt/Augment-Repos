@@ -124,6 +124,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
   createProduct: async (data: CreateProductRequest): Promise<Product> => {
     try {
+      // Clear any previous error state
+      set({ error: null })
+
       // Call the API to create the product
       const createdProductAPI = await productService.createProduct(data)
 
