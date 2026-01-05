@@ -146,44 +146,44 @@ export const productService = {
     }
   },
 
+  /**
+   * Get all categories from backend API
+   * Fetches all pages of categories using pagination
+   * @throws Error if the API request fails
+   */
   getCategories: async (): Promise<Category[]> => {
-    try {
-      let allCategories: Category[] = []
-      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
+    let allCategories: Category[] = []
+    let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
 
-      while (nextUrl) {
-        const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
-        // Transform backend categories to frontend format
-        const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
-        allCategories = [...allCategories, ...transformedCategories]
-        nextUrl = response.next
-      }
-
-      return allCategories
-    } catch (error) {
-      console.error('Failed to fetch categories:', error)
-      return []
+    while (nextUrl) {
+      const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
+      // Transform backend categories to frontend format
+      const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
+      allCategories = [...allCategories, ...transformedCategories]
+      nextUrl = response.next
     }
+
+    return allCategories
   },
 
+  /**
+   * Get all brands from backend API
+   * Fetches all pages of brands using pagination
+   * @throws Error if the API request fails
+   */
   getBrands: async (): Promise<Brand[]> => {
-    try {
-      let allBrands: Brand[] = []
-      let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
+    let allBrands: Brand[] = []
+    let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
 
-      while (nextUrl) {
-        const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
-        // Transform backend brands to frontend format
-        const transformedBrands = (response.results || []).map(transformBrandFromAPI)
-        allBrands = [...allBrands, ...transformedBrands]
-        nextUrl = response.next
-      }
-
-      return allBrands
-    } catch (error) {
-      console.error('Failed to fetch brands:', error)
-      return []
+    while (nextUrl) {
+      const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
+      // Transform backend brands to frontend format
+      const transformedBrands = (response.results || []).map(transformBrandFromAPI)
+      allBrands = [...allBrands, ...transformedBrands]
+      nextUrl = response.next
     }
+
+    return allBrands
   },
 
   getFeaturedProducts: async (): Promise<Product[]> => {
