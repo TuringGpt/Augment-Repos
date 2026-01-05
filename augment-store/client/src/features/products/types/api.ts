@@ -96,6 +96,22 @@ export interface RecommendedProductAPI {
 }
 
 /**
+ * Create Product Request
+ * Backend expects snake_case fields for creating a product
+ * Based on CreateProductSerializer which has fields: name, description, price, brand, category, quantity, images
+ * Note: created_by is automatically set by the backend from the authenticated user
+ */
+export interface CreateProductRequest {
+  name: string
+  description: string
+  price: string | number // Accept both string and number, will convert to string
+  brand: string // Brand UUID
+  category: string // Category UUID
+  quantity: number
+  images?: string[] // Array of image file UUIDs (optional)
+}
+
+/**
  * Update Product Request
  * Backend expects snake_case fields for updating a product
  * All fields are optional for partial updates (PATCH)

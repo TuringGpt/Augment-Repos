@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Product, ProductSearchParams } from '@features/products/types'
 import type { ProductStatisticsDetail } from '@features/product-statistics/types'
-import type { UpdateProductRequest } from '@features/products/types/api'
+import type { UpdateProductRequest, CreateProductRequest } from '@features/products/types/api'
 import { productStatisticsService, productService } from '@services/api'
 
 interface ProductState {
@@ -27,6 +27,7 @@ interface ProductState {
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearProducts: () => void
+  createProduct: (data: CreateProductRequest) => Promise<Product>
   deleteProduct: (productId: string) => Promise<void>
   updateProduct: (productId: string, data: UpdateProductRequest) => Promise<void>
 
@@ -120,6 +121,81 @@ export const useProductStore = create<ProductState>((set, get) => ({
       page: 1,
       totalPages: 0,
     }),
+
+  createProduct: async (data: CreateProductRequest): Promise<Product> => {
+    try {
+      // Call the API to create the product
+      const createdProductAPI = await productService.createProduct(data)
+
+      // Transform the API response to frontend Product format
+      const newProduct: Product = {
+        id: createdProductAPI.id,
+        name: createdProductAPI.name,
+        description: createdProductAPI.description,
+        price: parseFloat(createdProductAPI.price),
+        stock: createdProductAPI.quantity,
+        rating: parseFloat(createdProductAPI.rating),
+        images: createdProductAPI.images
+          .map((fileObj) => fileObj.file)
+          .filter((url): url is string => url !== null),
+        category: {
+          id: createdProductAPI.category.id,
+          name: createdProductAPI.category.name,
+          slug: createdProductAPI.category.name.toLowerCase().replace(/\s+/g, '-'),
+          description: createdProductAPI.category.description,
+          image: createdProductAPI.category.image?.file || undefined,
+          parent: createdProductAPI.category.parent || undefined,
+        },
+        reviewCount: 0,
+        createdAt: createdProductAPI.created_at,
+        updatedAt: createdProductAPI.updated_at,
+      }
+
+      // Add the new product to the local state and update pagination
+      set((state) => {
+        // Backend uses fixed page size of 100
+        const backendPageSize = 100
+
+        // Calculate new total
+        const newTotal = state.total + 1
+
+        // Recalculate total pages based on new total
+        const newTotalPages = Math.ceil(newTotal / backendPageSize)
+
+        // Add the new product to the beginning of the list
+        return {
+          products: [newProduct, ...state.products],
+          total: newTotal,
+          totalPages: newTotalPages,
+        }
+      })
+
+      return newProduct
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      // Use error codes instead of hardcoded English messages
+      // Components will translate these using i18n
+      let errorCode = 'PRODUCT_CREATE_ERROR'
+
+      if (err?.response?.status === 403) {
+        errorCode = 'PRODUCT_CREATE_PERMISSION_DENIED'
+      } else if (err?.response?.status === 401) {
+        errorCode = 'PRODUCT_CREATE_AUTH_REQUIRED'
+      } else if (err?.response?.status === 400) {
+        errorCode = 'PRODUCT_CREATE_VALIDATION_ERROR'
+      } else if (err?.response?.data?.message) {
+        // If backend provides a message, use it as-is (may already be localized)
+        errorCode = err.response.data.message
+      } else if (err?.message) {
+        // For network errors or other client-side errors, use the error message
+        errorCode = err.message
+      }
+
+      set({ error: errorCode })
+      throw error
+    }
+  },
 
   deleteProduct: async (productId: string) => {
     try {

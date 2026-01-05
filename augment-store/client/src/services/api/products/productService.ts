@@ -14,6 +14,7 @@ import type {
   ProductDetailAPI,
   RecommendedProductsAPI,
   UpdateProductRequest,
+  CreateProductRequest,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
@@ -272,5 +273,26 @@ export const productService = {
    */
   deleteProduct: async (id: string): Promise<void> => {
     await apiClient.delete(API_ENDPOINTS.PRODUCTS.DELETE(id))
+  },
+
+  /**
+   * Create a new product
+   * @param data - Product data to create
+   * @returns Promise with created product detail
+   * @throws Error if the API request fails
+   */
+  createProduct: async (data: CreateProductRequest): Promise<ProductDetailAPI> => {
+    // Convert price to string if it's a number
+    const requestData: CreateProductRequest = {
+      ...data,
+      price: String(data.price),
+    }
+
+    // Send POST request to create product
+    const response = await apiClient.post<ProductDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.CREATE,
+      requestData
+    )
+    return response
   },
 }
