@@ -29,6 +29,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Autocomplete,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -47,7 +48,7 @@ import { useAuthStore } from '@store/authStore'
 import { useProductStore } from '@store/productStore'
 import { formatCurrency } from '@utils/formatters'
 import { productService } from '@services/api/products/productService'
-import type { Product } from '@features/products/types'
+import type { Product, Brand, Category } from '@features/products/types'
 
 /**
  * Helper function to translate error codes from the store
@@ -138,6 +139,32 @@ const AdminAllProductsPage = () => {
     price?: string
     stock?: string
   }>({})
+
+  // Create drawer state
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    quantity: '',
+    brandId: '',
+    categoryId: '',
+  })
+  const [isCreating, setIsCreating] = useState(false)
+  const [createFormErrors, setCreateFormErrors] = useState<{
+    name?: string
+    description?: string
+    price?: string
+    quantity?: string
+    brandId?: string
+    categoryId?: string
+  }>({})
+
+  // Brands and categories for create form
+  const [availableBrands, setAvailableBrands] = useState<Brand[]>([])
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([])
+  const [isLoadingBrands, setIsLoadingBrands] = useState(false)
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false)
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -365,7 +392,142 @@ const AdminAllProductsPage = () => {
       setIsSaving(false)
     }
   }
-  
+
+  // Create drawer handlers
+  const handleOpenCreateDrawer = async () => {
+    setIsCreateDrawerOpen(true)
+
+    // Fetch brands and categories for the dropdowns
+    setIsLoadingBrands(true)
+    setIsLoadingCategories(true)
+
+    try {
+      const [brands, categories] = await Promise.all([
+        productService.getBrands(),
+        productService.getCategories(),
+      ])
+      setAvailableBrands(brands)
+      setAvailableCategories(categories)
+    } catch (error) {
+      console.error('Failed to fetch brands/categories:', error)
+      toast.error(t('admin.allProducts.errorLoadBrandsCategories'))
+    } finally {
+      setIsLoadingBrands(false)
+      setIsLoadingCategories(false)
+    }
+  }
+
+  const handleCloseCreateDrawer = () => {
+    // Prevent closing the drawer while a create operation is in progress
+    if (isCreating) {
+      return
+    }
+    setIsCreateDrawerOpen(false)
+    setCreateFormData({
+      name: '',
+      description: '',
+      price: '',
+      quantity: '',
+      brandId: '',
+      categoryId: '',
+    })
+    setCreateFormErrors({})
+  }
+
+  const handleCreateFormChange = (field: string, value: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    // Clear error for the field being edited
+    if (field === 'name' || field === 'description' || field === 'price' || field === 'quantity' || field === 'brandId' || field === 'categoryId') {
+      setCreateFormErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }))
+    }
+  }
+
+  const validateCreateFormData = (): boolean => {
+    const errors: { name?: string; description?: string; price?: string; quantity?: string; brandId?: string; categoryId?: string } = {}
+
+    // Validate name: must be non-empty
+    if (!createFormData.name || createFormData.name.trim() === '') {
+      errors.name = t('admin.allProducts.form.errorInvalidName')
+    }
+
+    // Validate description: must be non-empty
+    if (!createFormData.description || createFormData.description.trim() === '') {
+      errors.description = t('admin.allProducts.form.errorInvalidDescription')
+    }
+
+    // Validate price: must be a valid positive finite number
+    const priceValue = parseFloat(createFormData.price)
+    if (!Number.isFinite(priceValue) || priceValue <= 0 || createFormData.price.trim() === '') {
+      errors.price = t('admin.allProducts.form.errorInvalidPrice')
+    }
+
+    // Validate quantity: must be a valid non-negative finite integer
+    const quantityValue = Number(createFormData.quantity)
+    if (!Number.isFinite(quantityValue) || quantityValue < 0 || createFormData.quantity.trim() === '' || !Number.isInteger(quantityValue)) {
+      errors.quantity = t('admin.allProducts.form.errorInvalidStock')
+    }
+
+    // Validate brand: must be selected
+    if (!createFormData.brandId || createFormData.brandId.trim() === '') {
+      errors.brandId = t('admin.allProducts.form.errorInvalidBrand')
+    }
+
+    // Validate category: must be selected
+    if (!createFormData.categoryId || createFormData.categoryId.trim() === '') {
+      errors.categoryId = t('admin.allProducts.form.errorInvalidCategory')
+    }
+
+    setCreateFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleCreateProduct = async () => {
+    // Validate form data before making API call
+    if (!validateCreateFormData()) {
+      // Validation errors are already set in state and will be displayed
+      return
+    }
+
+    setIsCreating(true)
+    try {
+      // Prepare the create data with all required fields
+      const price = parseFloat(createFormData.price)
+      const quantity = Number(createFormData.quantity)
+
+      const createData = {
+        name: createFormData.name,
+        description: createFormData.description,
+        price,
+        quantity,
+        brand: createFormData.brandId,
+        category: createFormData.categoryId,
+      }
+
+      // TODO: API endpoint implementation will be done later
+      // When ready, uncomment the following:
+      // await productService.createProduct(createData)
+      // toast.success(t('admin.allProducts.form.createSuccess'))
+      // handleCloseCreateDrawer()
+      // void fetchProducts({ page: 1 })
+
+      // For now, just log the data that would be sent
+      console.log('Product data ready to be created:', createData)
+      toast.info(t('admin.allProducts.createNotImplemented'))
+
+    } catch (err) {
+      console.error('Failed to create product:', err)
+      toast.error(t('admin.allProducts.errorCreateProduct'))
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product)
     setDeleteDialogOpen(true)
@@ -517,7 +679,7 @@ const AdminAllProductsPage = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate('/admin/products/create')}
+            onClick={handleOpenCreateDrawer}
           >
             {t('admin.allProducts.addProduct')}
           </Button>
@@ -901,6 +1063,199 @@ const AdminAllProductsPage = () => {
               disabled={!selectedProduct || isSaving}
             >
               {isSaving ? t('admin.allProducts.form.saving') : t('admin.allProducts.form.save')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Create Product Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.allProducts.createProduct')}
+            </Typography>
+            <IconButton onClick={handleCloseCreateDrawer} disabled={isCreating} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Product Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.allProducts.form.productName')}
+                  value={createFormData.name}
+                  onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                  required
+                  error={!!createFormErrors.name}
+                  helperText={createFormErrors.name}
+                />
+              </Grid>
+
+              {/* Description */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.allProducts.form.description')}
+                  value={createFormData.description}
+                  onChange={(e) => handleCreateFormChange('description', e.target.value)}
+                  multiline
+                  rows={4}
+                  required
+                  error={!!createFormErrors.description}
+                  helperText={createFormErrors.description}
+                />
+              </Grid>
+
+              {/* Price */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t('admin.allProducts.form.price')}
+                  value={createFormData.price}
+                  onChange={(e) => handleCreateFormChange('price', e.target.value)}
+                  type="number"
+                  required
+                  error={!!createFormErrors.price}
+                  helperText={createFormErrors.price}
+                  InputProps={{
+                    startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+                  }}
+                />
+              </Grid>
+
+              {/* Stock/Quantity */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t('admin.allProducts.form.stock')}
+                  value={createFormData.quantity}
+                  onChange={(e) => handleCreateFormChange('quantity', e.target.value)}
+                  type="number"
+                  required
+                  error={!!createFormErrors.quantity}
+                  helperText={createFormErrors.quantity}
+                />
+              </Grid>
+
+              {/* Brand */}
+              <Grid item xs={12} sm={6}>
+                <Autocomplete
+                  options={availableBrands}
+                  getOptionLabel={(option) => option.name}
+                  value={availableBrands.find((b) => b.id === createFormData.brandId) || null}
+                  onChange={(_, value) => handleCreateFormChange('brandId', value?.id || '')}
+                  loading={isLoadingBrands}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t('admin.allProducts.form.brand')}
+                      required
+                      error={!!createFormErrors.brandId}
+                      helperText={createFormErrors.brandId}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoadingBrands ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+
+              {/* Category */}
+              <Grid item xs={12} sm={6}>
+                <Autocomplete
+                  options={availableCategories}
+                  getOptionLabel={(option) => option.name}
+                  value={availableCategories.find((c) => c.id === createFormData.categoryId) || null}
+                  onChange={(_, value) => handleCreateFormChange('categoryId', value?.id || '')}
+                  loading={isLoadingCategories}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t('admin.allProducts.form.category')}
+                      required
+                      error={!!createFormErrors.categoryId}
+                      helperText={createFormErrors.categoryId}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoadingCategories ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+
+              {/* Info Message */}
+              <Grid item xs={12}>
+                <Alert severity="info">
+                  {t('admin.allProducts.form.createInfo')}
+                </Alert>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Box
+            sx={{
+              p: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating}
+            >
+              {t('admin.allProducts.form.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateProduct}
+              disabled={isCreating}
+            >
+              {isCreating ? t('admin.allProducts.form.creating') : t('admin.allProducts.form.create')}
             </Button>
           </Box>
         </Box>
