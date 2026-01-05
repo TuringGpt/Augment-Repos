@@ -5,7 +5,7 @@ import type {
   CustomerRetentionParams,
 } from '@features/customer-retention/types'
 
-export const customerRetentionService = {
+export const customerStatisticsService = {
   /**
    * Get customer retention statistics
    *

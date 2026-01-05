@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { customerRetentionService } from '@services/api'
+import { customerStatisticsService } from '@services/api'
 import type {
   CustomerRetentionResponse,
   CustomerRetentionParams,
@@ -38,7 +38,7 @@ export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) 
     try {
       set({ isCustomerRetentionLoading: true, customerRetentionError: null })
 
-      const data = await customerRetentionService.getCustomerRetention(params, signal)
+      const data = await customerStatisticsService.getCustomerRetention(params, signal)
 
       // Only update state if this is still the latest request
       if (requestId === customerRetentionRequestCounter) {
