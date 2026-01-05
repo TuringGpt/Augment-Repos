@@ -129,33 +129,38 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ error: null })
 
       // Call the API to create the product
+      // Note: CreateProductSerializer returns basic fields only (no timestamps or nested objects)
       const createdProductAPI = await productService.createProduct(data)
 
-      // Transform the API response to frontend Product format
+      // Fetch the full product details to get timestamps and nested objects
+      // This is necessary because CreateProductSerializer doesn't include these fields
+      const productDetailAPI = await productService.getProductById(createdProductAPI.id)
+
+      // Transform the full product detail to frontend Product format
       // Extract image URLs from FileAPI objects
-      const imageUrls = createdProductAPI.images
+      const imageUrls = productDetailAPI.images
         .map((fileObj) => fileObj.file)
         .filter((url): url is string => url !== null)
 
       const newProduct: Product = {
-        id: createdProductAPI.id,
-        name: createdProductAPI.name,
-        description: createdProductAPI.description,
-        price: parseFloat(createdProductAPI.price),
-        stock: createdProductAPI.quantity,
-        rating: parseFloat(createdProductAPI.rating),
+        id: productDetailAPI.id,
+        name: productDetailAPI.name,
+        description: productDetailAPI.description,
+        price: parseFloat(productDetailAPI.price),
+        stock: productDetailAPI.quantity,
+        rating: parseFloat(productDetailAPI.rating),
         images: imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE],
         category: {
-          id: createdProductAPI.category.id,
-          name: createdProductAPI.category.name,
-          slug: createdProductAPI.category.name.toLowerCase().replace(/\s+/g, '-'),
-          description: createdProductAPI.category.description,
-          image: createdProductAPI.category.image?.file || undefined,
-          parent: createdProductAPI.category.parent || undefined,
+          id: productDetailAPI.category.id,
+          name: productDetailAPI.category.name,
+          slug: productDetailAPI.category.name.toLowerCase().replace(/\s+/g, '-'),
+          description: productDetailAPI.category.description,
+          image: productDetailAPI.category.image?.file || undefined,
+          parent: productDetailAPI.category.parent || undefined,
         },
         reviewCount: 0,
-        createdAt: createdProductAPI.created_at,
-        updatedAt: createdProductAPI.updated_at,
+        createdAt: productDetailAPI.created_at,
+        updatedAt: productDetailAPI.updated_at,
       }
 
       // Add the new product to the local state and update pagination

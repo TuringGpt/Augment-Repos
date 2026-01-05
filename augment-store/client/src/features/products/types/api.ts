@@ -112,6 +112,27 @@ export interface CreateProductRequest {
 }
 
 /**
+ * Create Product Response
+ * Backend CreateProductSerializer returns only basic fields without timestamps or nested objects
+ * Fields: id, name, description, price, brand (UUID), category (UUID), quantity, rating, images (UUID array)
+ *
+ * Note: This is different from ProductDetailAPI which includes timestamps and nested objects.
+ * The CreateProductSerializer doesn't include created_at, updated_at, is_deleted, or created_by,
+ * and brand/category/images are just UUIDs, not expanded nested objects.
+ */
+export interface CreateProductResponseAPI {
+  id: string
+  name: string
+  description: string
+  price: string // Django returns Decimal as string
+  brand: string // Brand UUID (not expanded)
+  category: string // Category UUID (not expanded)
+  quantity: number
+  rating: string // Django returns Decimal as string
+  images: string[] // Array of image file UUIDs (not expanded FileAPI objects)
+}
+
+/**
  * Update Product Request
  * Backend expects snake_case fields for updating a product
  * All fields are optional for partial updates (PATCH)

@@ -15,6 +15,7 @@ import type {
   RecommendedProductsAPI,
   UpdateProductRequest,
   CreateProductRequest,
+  CreateProductResponseAPI,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
@@ -278,10 +279,10 @@ export const productService = {
   /**
    * Create a new product
    * @param data - Product data to create
-   * @returns Promise with created product detail
+   * @returns Promise with created product response (basic fields only, no timestamps or nested objects)
    * @throws Error if the API request fails
    */
-  createProduct: async (data: CreateProductRequest): Promise<ProductDetailAPI> => {
+  createProduct: async (data: CreateProductRequest): Promise<CreateProductResponseAPI> => {
     // Convert price to string if it's a number
     const requestData: CreateProductRequest = {
       ...data,
@@ -289,7 +290,8 @@ export const productService = {
     }
 
     // Send POST request to create product
-    const response = await apiClient.post<ProductDetailAPI>(
+    // Note: Backend returns CreateProductSerializer response with basic fields only
+    const response = await apiClient.post<CreateProductResponseAPI>(
       API_ENDPOINTS.PRODUCTS.CREATE,
       requestData
     )
