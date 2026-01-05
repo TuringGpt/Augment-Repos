@@ -410,7 +410,7 @@ const AdminAllProductsPage = () => {
       setAvailableCategories(categories)
     } catch (error) {
       console.error('Failed to fetch brands/categories:', error)
-      toast.error('Failed to load brands and categories')
+      toast.error(t('admin.allProducts.errorLoadBrandsCategories'))
     } finally {
       setIsLoadingBrands(false)
       setIsLoadingCategories(false)

@@ -566,6 +566,7 @@
       "errorDeleteProduct": "Error al eliminar producto. Por favor, inténtalo de nuevo.",
       "errorUpdateProduct": "Error al actualizar producto. Por favor, inténtalo de nuevo.",
       "errorCreateProduct": "Error al crear producto. Por favor, inténtalo de nuevo.",
+      "errorLoadBrandsCategories": "Error al cargar marcas y categorías. Por favor, inténtalo de nuevo.",
       "createNotImplemented": "La creación de productos aún no está implementada. Por favor, contacta a tu administrador.",
       "errorPermissionDenied": "No tienes permiso para ver productos.",
       "errorAuthRequired": "Por favor inicia sesión para ver productos.",

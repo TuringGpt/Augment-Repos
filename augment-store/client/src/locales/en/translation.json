@@ -566,6 +566,7 @@
       "errorDeleteProduct": "Failed to delete product. Please try again.",
       "errorUpdateProduct": "Failed to update product. Please try again.",
       "errorCreateProduct": "Failed to create product. Please try again.",
+      "errorLoadBrandsCategories": "Failed to load brands and categories. Please try again.",
       "createNotImplemented": "Product creation is not yet implemented. Please contact your administrator.",
       "errorPermissionDenied": "You do not have permission to view products.",
       "errorAuthRequired": "Please log in to view products.",

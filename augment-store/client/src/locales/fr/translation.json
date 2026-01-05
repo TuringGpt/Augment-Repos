@@ -566,6 +566,7 @@
       "errorDeleteProduct": "Échec de la suppression du produit. Veuillez réessayer.",
       "errorUpdateProduct": "Échec de la mise à jour du produit. Veuillez réessayer.",
       "errorCreateProduct": "Échec de la création du produit. Veuillez réessayer.",
+      "errorLoadBrandsCategories": "Échec du chargement des marques et catégories. Veuillez réessayer.",
       "createNotImplemented": "La création de produit n'est pas encore implémentée. Veuillez contacter votre administrateur.",
       "errorPermissionDenied": "Vous n'avez pas la permission de voir les produits.",
       "errorAuthRequired": "Veuillez vous connecter pour voir les produits.",

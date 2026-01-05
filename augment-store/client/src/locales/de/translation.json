@@ -566,6 +566,7 @@
       "errorDeleteProduct": "Fehler beim Löschen des Produkts. Bitte versuchen Sie es erneut.",
       "errorUpdateProduct": "Fehler beim Aktualisieren des Produkts. Bitte versuchen Sie es erneut.",
       "errorCreateProduct": "Fehler beim Erstellen des Produkts. Bitte versuchen Sie es erneut.",
+      "errorLoadBrandsCategories": "Fehler beim Laden der Marken und Kategorien. Bitte versuchen Sie es erneut.",
       "createNotImplemented": "Die Produkterstellung ist noch nicht implementiert. Bitte kontaktieren Sie Ihren Administrator.",
       "errorPermissionDenied": "Sie haben keine Berechtigung, Produkte anzuzeigen.",
       "errorAuthRequired": "Bitte melden Sie sich an, um Produkte anzuzeigen.",
