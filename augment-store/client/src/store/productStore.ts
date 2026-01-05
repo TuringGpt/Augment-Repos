@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Product, ProductSearchParams } from '@features/products/types'
 import type { ProductStatisticsDetail } from '@features/product-statistics/types'
+import type { UpdateProductRequest } from '@features/products/types/api'
 import { productStatisticsService, productService } from '@services/api'
 
 interface ProductState {
@@ -27,6 +28,7 @@ interface ProductState {
   setError: (error: string | null) => void
   clearProducts: () => void
   deleteProduct: (productId: string) => Promise<void>
+  updateProduct: (productId: string, data: UpdateProductRequest) => Promise<void>
 
   // Product statistics actions
   fetchProductStatistics: (productId: string, signal?: AbortSignal) => Promise<void>
@@ -165,6 +167,68 @@ export const useProductStore = create<ProductState>((set, get) => ({
         errorCode = 'PRODUCT_DELETE_PERMISSION_DENIED'
       } else if (err?.response?.status === 401) {
         errorCode = 'PRODUCT_DELETE_AUTH_REQUIRED'
+      } else if (err?.response?.status === 404) {
+        errorCode = 'PRODUCT_NOT_FOUND'
+      } else if (err?.response?.data?.message) {
+        // If backend provides a message, use it as-is (may already be localized)
+        errorCode = err.response.data.message
+      } else if (err?.message) {
+        // For network errors or other client-side errors, use the error message
+        errorCode = err.message
+      }
+
+      set({ error: errorCode })
+      throw error
+    }
+  },
+
+  updateProduct: async (productId: string, data: UpdateProductRequest) => {
+    try {
+      // Clear any previous error state
+      set({ error: null })
+
+      // Call the API to update the product
+      const updatedProductAPI = await productService.updateProduct(productId, data)
+
+      // Update the product in the local state
+      set((state) => {
+        const updatedProducts = state.products.map((product) => {
+          if (product.id === productId) {
+            // Merge the updated data with the existing product
+            return {
+              ...product,
+              name: updatedProductAPI.name,
+              description: updatedProductAPI.description,
+              price: parseFloat(updatedProductAPI.price),
+              stock: updatedProductAPI.quantity,
+              rating: parseFloat(updatedProductAPI.rating),
+            }
+          }
+          return product
+        })
+
+        // If the updated product was selected, update the selection
+        const updatedSelectedProduct =
+          state.selectedProduct?.id === productId
+            ? updatedProducts.find((p) => p.id === productId) ?? null
+            : state.selectedProduct
+
+        return {
+          products: updatedProducts,
+          selectedProduct: updatedSelectedProduct,
+        }
+      })
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      // Use error codes instead of hardcoded English messages
+      // Components will translate these using i18n
+      let errorCode = 'PRODUCT_UPDATE_ERROR'
+
+      if (err?.response?.status === 403) {
+        errorCode = 'PRODUCT_UPDATE_PERMISSION_DENIED'
+      } else if (err?.response?.status === 401) {
+        errorCode = 'PRODUCT_UPDATE_AUTH_REQUIRED'
       } else if (err?.response?.status === 404) {
         errorCode = 'PRODUCT_NOT_FOUND'
       } else if (err?.response?.data?.message) {

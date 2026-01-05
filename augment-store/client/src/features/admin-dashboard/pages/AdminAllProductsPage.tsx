@@ -24,7 +24,6 @@ import {
   Drawer,
   Divider,
   Grid,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -65,6 +64,9 @@ const getErrorMessage = (errorCode: string | null, translateFn: ReturnType<typeo
     'PRODUCT_DELETE_ERROR': 'admin.allProducts.errorDeleteProduct',
     'PRODUCT_DELETE_PERMISSION_DENIED': 'admin.allProducts.errorDeletePermissionDenied',
     'PRODUCT_DELETE_AUTH_REQUIRED': 'admin.allProducts.errorDeleteAuthRequired',
+    'PRODUCT_UPDATE_ERROR': 'admin.allProducts.errorUpdateProduct',
+    'PRODUCT_UPDATE_PERMISSION_DENIED': 'admin.allProducts.errorUpdatePermissionDenied',
+    'PRODUCT_UPDATE_AUTH_REQUIRED': 'admin.allProducts.errorUpdateAuthRequired',
     'PRODUCT_NOT_FOUND': 'admin.allProducts.errorProductNotFound',
   }
 
@@ -98,6 +100,7 @@ const AdminAllProductsPage = () => {
     error: productsError,
     fetchProducts,
     deleteProduct: deleteProductFromStore,
+    updateProduct: updateProductInStore,
     setError: setProductsError,
   } = useProductStore()
 
@@ -127,8 +130,14 @@ const AdminAllProductsPage = () => {
     description: '',
     price: '',
     stock: '',
-    category: '',
   })
+  const [isSaving, setIsSaving] = useState(false)
+  const [formErrors, setFormErrors] = useState<{
+    name?: string
+    description?: string
+    price?: string
+    stock?: string
+  }>({})
 
   // Computed loading state - true if either products or search is loading
   const isLoading = isLoadingProducts || isLoadingSearch
@@ -222,12 +231,15 @@ const AdminAllProductsPage = () => {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
-      category: product.category.id,
     })
     setIsEditDrawerOpen(true)
   }
 
   const handleCloseEditDrawer = () => {
+    // Prevent closing the drawer while a save operation is in progress
+    if (isSaving) {
+      return
+    }
     setIsEditDrawerOpen(false)
     setSelectedProduct(null)
     setEditFormData({
@@ -235,8 +247,8 @@ const AdminAllProductsPage = () => {
       description: '',
       price: '',
       stock: '',
-      category: '',
     })
+    setFormErrors({})
   }
 
   const handleEditFormChange = (field: string, value: string) => {
@@ -244,20 +256,114 @@ const AdminAllProductsPage = () => {
       ...prev,
       [field]: value,
     }))
+    // Clear error for the field being edited
+    if (field === 'name' || field === 'description' || field === 'price' || field === 'stock') {
+      setFormErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }))
+    }
   }
 
-  const handleSaveProduct = () => {
+  const validateFormData = (): boolean => {
+    const errors: { name?: string; description?: string; price?: string; stock?: string } = {}
+
+    // Validate name: must be non-empty
+    if (!editFormData.name || editFormData.name.trim() === '') {
+      errors.name = t('admin.allProducts.form.errorInvalidName')
+    }
+
+    // Validate description: must be non-empty
+    if (!editFormData.description || editFormData.description.trim() === '') {
+      errors.description = t('admin.allProducts.form.errorInvalidDescription')
+    }
+
+    // Validate price: must be a valid positive finite number
+    const priceValue = parseFloat(editFormData.price)
+    if (!Number.isFinite(priceValue) || priceValue <= 0 || editFormData.price.trim() === '') {
+      errors.price = t('admin.allProducts.form.errorInvalidPrice')
+    }
+
+    // Validate stock: must be a valid non-negative finite integer
+    // Use Number() for consistent parsing to avoid parseInt mis-parsing values like "1e3"
+    const stockValue = Number(editFormData.stock)
+    if (!Number.isFinite(stockValue) || stockValue < 0 || editFormData.stock.trim() === '' || !Number.isInteger(stockValue)) {
+      errors.stock = t('admin.allProducts.form.errorInvalidStock')
+    }
+
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSaveProduct = async () => {
     // Guard against null selectedProduct to avoid state desync issues
     if (!selectedProduct) {
       console.error('Cannot save product: selectedProduct is null')
       return
     }
 
-    // TODO: Implement actual save functionality
-    console.log('Saving product:', selectedProduct.id, editFormData)
-    // Show success message via toast
-    toast.success(t('admin.allProducts.form.saveSuccess'))
-    handleCloseEditDrawer()
+    // Validate form data before making API call
+    if (!validateFormData()) {
+      // Validation errors are already set in state and will be displayed
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      // Prepare the update data
+      const price = parseFloat(editFormData.price)
+      // Use Number() for consistent parsing to avoid parseInt mis-parsing values like "1e3"
+      const quantity = Number(editFormData.stock)
+
+      // Additional safety guard: ensure parsed values are finite numbers before API call
+      if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
+        console.error('Invalid numeric values detected:', { price, quantity })
+        setFormErrors({
+          price: !Number.isFinite(price) ? t('admin.allProducts.form.errorInvalidPrice') : undefined,
+          stock: !Number.isFinite(quantity) ? t('admin.allProducts.form.errorInvalidStock') : undefined,
+        })
+        setIsSaving(false)
+        return
+      }
+
+      const updateData = {
+        name: editFormData.name,
+        description: editFormData.description,
+        price,
+        quantity,
+      }
+
+      // Call the store action to update the product
+      await updateProductInStore(selectedProduct.id, updateData)
+
+      // If in search mode, also update the search results
+      if (isSearchMode) {
+        setSearchResults((prev) =>
+          prev.map((p) =>
+            p.id === selectedProduct.id
+              ? {
+                  ...p,
+                  name: updateData.name,
+                  description: updateData.description,
+                  price: updateData.price,
+                  stock: updateData.quantity,
+                }
+              : p
+          )
+        )
+      }
+
+      // Show success message via toast
+      toast.success(t('admin.allProducts.form.saveSuccess'))
+      handleCloseEditDrawer()
+    } catch (err) {
+      console.error('Failed to update product:', err)
+      // Error is already set in the store, but show user-friendly message
+      toast.error(t('admin.allProducts.errorUpdateProduct'))
+      // Keep drawer open on error so user can retry or cancel
+    } finally {
+      setIsSaving(false)
+    }
   }
   
   const handleDeleteClick = (product: Product) => {
@@ -662,7 +768,7 @@ const AdminAllProductsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.allProducts.editProduct')}
             </Typography>
-            <IconButton onClick={handleCloseEditDrawer} sx={{ color: 'white' }}>
+            <IconButton onClick={handleCloseEditDrawer} disabled={isSaving} sx={{ color: 'white' }}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -691,6 +797,8 @@ const AdminAllProductsPage = () => {
                     value={editFormData.name}
                     onChange={(e) => handleEditFormChange('name', e.target.value)}
                     required
+                    error={!!formErrors.name}
+                    helperText={formErrors.name}
                   />
                 </Grid>
 
@@ -704,6 +812,8 @@ const AdminAllProductsPage = () => {
                     multiline
                     rows={4}
                     required
+                    error={!!formErrors.description}
+                    helperText={formErrors.description}
                   />
                 </Grid>
 
@@ -716,6 +826,8 @@ const AdminAllProductsPage = () => {
                     onChange={(e) => handleEditFormChange('price', e.target.value)}
                     type="number"
                     required
+                    error={!!formErrors.price}
+                    helperText={formErrors.price}
                     InputProps={{
                       startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
                     }}
@@ -731,24 +843,20 @@ const AdminAllProductsPage = () => {
                     onChange={(e) => handleEditFormChange('stock', e.target.value)}
                     type="number"
                     required
+                    error={!!formErrors.stock}
+                    helperText={formErrors.stock}
                   />
                 </Grid>
 
-                {/* Category */}
+                {/* Category - Read-only field (backend doesn't support category updates) */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    select
                     label={t('admin.allProducts.form.category')}
-                    value={editFormData.category}
-                    onChange={(e) => handleEditFormChange('category', e.target.value)}
-                    required
-                  >
-                    <MenuItem value={selectedProduct.category.id}>
-                      {selectedProduct.category.name}
-                    </MenuItem>
-                    {/* TODO: Add more categories from API */}
-                  </TextField>
+                    value={selectedProduct.category.name}
+                    disabled
+                    helperText={t('admin.allProducts.form.categoryReadOnly')}
+                  />
                 </Grid>
 
                 {/* Product Info */}
@@ -782,6 +890,7 @@ const AdminAllProductsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseEditDrawer}
+              disabled={isSaving}
             >
               {t('admin.allProducts.form.cancel')}
             </Button>
@@ -789,9 +898,9 @@ const AdminAllProductsPage = () => {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={handleSaveProduct}
-              disabled={!selectedProduct}
+              disabled={!selectedProduct || isSaving}
             >
-              {t('admin.allProducts.form.save')}
+              {isSaving ? t('admin.allProducts.form.saving') : t('admin.allProducts.form.save')}
             </Button>
           </Box>
         </Box>
