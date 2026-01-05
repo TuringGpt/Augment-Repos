@@ -175,8 +175,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         const newTotalPages = Math.ceil(newTotal / backendPageSize)
 
         // Add the new product to the beginning of the list
+        // Cap the products array to the backend page size to prevent rendering more rows
+        // than the pagination indicates (e.g., 101 rows when pagination says 100 per page)
+        const updatedProducts = [newProduct, ...state.products].slice(0, backendPageSize)
+
         return {
-          products: [newProduct, ...state.products],
+          products: updatedProducts,
           total: newTotal,
           totalPages: newTotalPages,
         }
