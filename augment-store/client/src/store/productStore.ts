@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Product, ProductSearchParams } from '@features/products/types'
 import type { ProductStatisticsDetail } from '@features/product-statistics/types'
 import type { UpdateProductRequest, CreateProductRequest } from '@features/products/types/api'
+import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
 import { productStatisticsService, productService } from '@services/api'
 
 interface ProductState {
@@ -131,6 +132,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const createdProductAPI = await productService.createProduct(data)
 
       // Transform the API response to frontend Product format
+      // Extract image URLs from FileAPI objects
+      const imageUrls = createdProductAPI.images
+        .map((fileObj) => fileObj.file)
+        .filter((url): url is string => url !== null)
+
       const newProduct: Product = {
         id: createdProductAPI.id,
         name: createdProductAPI.name,
@@ -138,9 +144,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         price: parseFloat(createdProductAPI.price),
         stock: createdProductAPI.quantity,
         rating: parseFloat(createdProductAPI.rating),
-        images: createdProductAPI.images
-          .map((fileObj) => fileObj.file)
-          .filter((url): url is string => url !== null),
+        images: imageUrls.length > 0 ? imageUrls : [PLACEHOLDER_IMAGE],
         category: {
           id: createdProductAPI.category.id,
           name: createdProductAPI.category.name,
