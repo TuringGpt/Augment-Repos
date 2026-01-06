@@ -126,6 +126,7 @@ export const API_ENDPOINTS = {
     PRODUCT_STATISTICS_BY_ID: (id: string) => `/dashboard/statistics/${encodeURIComponent(id)}/`,
     PRODUCT_PERFORMANCE: '/dashboard/statistics/product_performance/',
     CUSTOMER_RETENTION: '/dashboard/statistics/customer_retention/',
+    CUSTOMER_SEGMENTS: '/dashboard/statistics/customer_segments/',
   },
 }
 
