@@ -542,9 +542,13 @@ const AdminAllProductsPage = () => {
         isManualRefreshRef.current = true
         setIsSearchMode(false)
         void fetchProducts({ page: 1 })
+      } else {
+        // In non-search mode, reload from page 1 to maintain consistent pagination
+        // This prevents the new product from being prepended to the current page's results
+        // which would cause pagination inconsistency (e.g., creating from page 3 would
+        // prepend the new item into "page 3" results and drop a row)
+        void fetchProducts({ page: 1 })
       }
-      // If not in search mode, the store has already updated the products list
-      // No need to refetch since createProductInStore adds the product to the local state
 
     } catch (err) {
       console.error('Failed to create product:', err)
