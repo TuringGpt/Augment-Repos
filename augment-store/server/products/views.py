@@ -147,7 +147,7 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        query = self.request.query_params.get('search')
+        query = (self.request.query_params.get('search') or "").strip()
         search_filter = self.get_search_query_filter(query)
         return queryset.filter(search_filter)
 
