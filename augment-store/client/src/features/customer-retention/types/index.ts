@@ -48,3 +48,74 @@ export interface CustomerRetentionParams {
   days?: number
 }
 
+/**
+ * Customer Segments Types
+ * These types match the backend API response from /dashboard/statistics/customer_segments/
+ */
+
+/**
+ * Base segment data for revenue-based segments
+ */
+export interface RevenueSegment {
+  /** Number of customers in this segment */
+  count: number
+  /** Percentage of total customers in this segment */
+  percentage: number
+  /** Total revenue from this segment within the period */
+  total_revenue: number
+  /** Average order value for this segment within the period */
+  avg_order_value: number
+}
+
+/**
+ * Base segment data for recency-based segments (at-risk and churned)
+ */
+export interface RecencySegment {
+  /** Number of customers in this segment */
+  count: number
+  /** Percentage of total customers in this segment */
+  percentage: number
+  /** Average days since last purchase */
+  last_purchase_avg_days: number
+}
+
+/**
+ * All customer segments
+ */
+export interface CustomerSegments {
+  /** Customers with exactly 1 order (all-time) */
+  new_customers: RevenueSegment
+  /** Customers with 2-5 orders (all-time) */
+  repeat_customers: RevenueSegment
+  /** Customers with 6-10 orders (all-time) */
+  loyal_customers: RevenueSegment
+  /** Customers with 11+ orders (all-time) */
+  vip_customers: RevenueSegment
+  /** Customers who haven't ordered in 90+ days */
+  at_risk_customers: RecencySegment
+  /** Customers who haven't ordered in 180+ days */
+  churned_customers: RecencySegment
+}
+
+/**
+ * Complete customer segments response from the backend
+ * Response from /api/v1/dashboard/statistics/customer_segments/
+ *
+ * Backend endpoint: GET /dashboard/statistics/customer_segments/
+ * Query params: days (default: 365, max: 3650)
+ */
+export interface CustomerSegmentsResponse {
+  /** Number of days included in the analysis */
+  period_days: number
+  /** Customer segments with their metrics */
+  segments: CustomerSegments
+}
+
+/**
+ * Query parameters for customer segments endpoint
+ */
+export interface CustomerSegmentsParams {
+  /** Number of days to look back for revenue calculations (default: 365, max: 3650) */
+  days?: number
+}
+
