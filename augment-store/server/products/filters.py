@@ -9,6 +9,7 @@ class ProductFilter(filters.FilterSet):
 
     rating = filters.RangeFilter()
     price = filters.RangeFilter()
+    price_max = filters.NumberFilter(field_name="price", lookup_expr="gt")
     category = filters.CharFilter(field_name="category__slug")
     brand = filters.CharFilter(field_name="brand__name", lookup_expr='iexact')
     quantity = filters.RangeFilter()
@@ -16,7 +17,7 @@ class ProductFilter(filters.FilterSet):
 
     class Meta:
         model = Product
-        fields = ["category", "brand", "rating", "price", "quantity" ]
+        fields = ["category", "brand", "rating", "price", "price_max", "quantity" ]
 
 
     def filter_limit(self, queryset, name, value):
