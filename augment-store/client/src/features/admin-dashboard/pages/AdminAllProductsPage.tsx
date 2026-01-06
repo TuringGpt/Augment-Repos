@@ -68,6 +68,10 @@ const getErrorMessage = (errorCode: string | null, translateFn: ReturnType<typeo
     'PRODUCT_UPDATE_ERROR': 'admin.allProducts.errorUpdateProduct',
     'PRODUCT_UPDATE_PERMISSION_DENIED': 'admin.allProducts.errorUpdatePermissionDenied',
     'PRODUCT_UPDATE_AUTH_REQUIRED': 'admin.allProducts.errorUpdateAuthRequired',
+    'PRODUCT_CREATE_ERROR': 'admin.allProducts.errorCreateProduct',
+    'PRODUCT_CREATE_PERMISSION_DENIED': 'admin.allProducts.errorCreatePermissionDenied',
+    'PRODUCT_CREATE_AUTH_REQUIRED': 'admin.allProducts.errorCreateAuthRequired',
+    'PRODUCT_CREATE_VALIDATION_ERROR': 'admin.allProducts.errorCreateValidationError',
     'PRODUCT_NOT_FOUND': 'admin.allProducts.errorProductNotFound',
   }
 
@@ -102,6 +106,7 @@ const AdminAllProductsPage = () => {
     fetchProducts,
     deleteProduct: deleteProductFromStore,
     updateProduct: updateProductInStore,
+    createProduct: createProductInStore,
     setError: setProductsError,
   } = useProductStore()
 
@@ -500,6 +505,17 @@ const AdminAllProductsPage = () => {
       const price = parseFloat(createFormData.price)
       const quantity = Number(createFormData.quantity)
 
+      // Additional safety guard: ensure parsed values are finite numbers before API call
+      if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
+        console.error('Invalid numeric values detected:', { price, quantity })
+        setCreateFormErrors({
+          price: !Number.isFinite(price) ? t('admin.allProducts.form.errorInvalidPrice') : undefined,
+          quantity: !Number.isFinite(quantity) ? t('admin.allProducts.form.errorInvalidStock') : undefined,
+        })
+        setIsCreating(false)
+        return
+      }
+
       const createData = {
         name: createFormData.name,
         description: createFormData.description,
@@ -509,20 +525,36 @@ const AdminAllProductsPage = () => {
         category: createFormData.categoryId,
       }
 
-      // TODO: API endpoint implementation will be done later
-      // When ready, uncomment the following:
-      // await productService.createProduct(createData)
-      // toast.success(t('admin.allProducts.form.createSuccess'))
-      // handleCloseCreateDrawer()
-      // void fetchProducts({ page: 1 })
+      // Call the store action to create the product
+      await createProductInStore(createData)
 
-      // For now, just log the data that would be sent
-      console.log('Product data ready to be created:', createData)
-      toast.info(t('admin.allProducts.createNotImplemented'))
+      // Show success message via toast
+      toast.success(t('admin.allProducts.form.createSuccess'))
+
+      // Close the drawer and reset form
+      handleCloseCreateDrawer()
+
+      // If in search mode, exit search mode and reload products from page 1
+      if (isSearchMode) {
+        setSearchQuery('')
+        // Set the manual refresh flag to prevent the useEffect from triggering
+        // when we change isSearchMode to false
+        isManualRefreshRef.current = true
+        setIsSearchMode(false)
+        void fetchProducts({ page: 1 })
+      } else {
+        // In non-search mode, reload from page 1 to maintain consistent pagination
+        // This prevents the new product from being prepended to the current page's results
+        // which would cause pagination inconsistency (e.g., creating from page 3 would
+        // prepend the new item into "page 3" results and drop a row)
+        void fetchProducts({ page: 1 })
+      }
 
     } catch (err) {
       console.error('Failed to create product:', err)
+      // Error is already set in the store, but show user-friendly message
       toast.error(t('admin.allProducts.errorCreateProduct'))
+      // Keep drawer open on error so user can retry or cancel
     } finally {
       setIsCreating(false)
     }
