@@ -537,6 +537,9 @@ const AdminAllProductsPage = () => {
       // If in search mode, exit search mode and reload products from page 1
       if (isSearchMode) {
         setSearchQuery('')
+        // Set the manual refresh flag to prevent the useEffect from triggering
+        // when we change isSearchMode to false
+        isManualRefreshRef.current = true
         setIsSearchMode(false)
         void fetchProducts({ page: 1 })
       }
