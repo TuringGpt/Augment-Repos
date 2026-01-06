@@ -602,6 +602,7 @@
         "description": "Descripción",
         "price": "Precio",
         "stock": "Stock",
+        "category": "Categoría",
         "categoryReadOnly": "La categoría no se puede cambiar (solo lectura)",
         "productId": "ID del Producto",
         "rating": "Calificación",
@@ -623,8 +624,7 @@
         "errorInvalidDescription": "La descripción del producto es obligatoria",
         "errorInvalidBrand": "Por favor seleccione una marca",
         "errorInvalidCategory": "Por favor seleccione una categoría",
-        "brand": "Marca",
-        "category": "Categoría"
+        "brand": "Marca"
       },
       "noProducts": "No se encontraron productos",
       "noProductsAvailable": "No hay productos disponibles",

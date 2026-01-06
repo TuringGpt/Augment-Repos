@@ -602,6 +602,7 @@
         "description": "Description",
         "price": "Price",
         "stock": "Stock",
+        "category": "Category",
         "categoryReadOnly": "Category cannot be changed (read-only)",
         "productId": "Product ID",
         "rating": "Rating",
@@ -623,8 +624,7 @@
         "errorInvalidDescription": "Product description is required",
         "errorInvalidBrand": "Please select a brand",
         "errorInvalidCategory": "Please select a category",
-        "brand": "Brand",
-        "category": "Category"
+        "brand": "Brand"
       },
       "noProducts": "No products found",
       "noProductsAvailable": "No products available",
