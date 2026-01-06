@@ -36,7 +36,7 @@ class AdvancedSearchMixin:
         for term in terms:
             term_query = Q()
             for field in self.search_fields:
-                term_query |= Q(**{f"{field}__icontains": term})
+                term_query &= Q(**{f"{field}__icontains": term})
             root_query &= term_query
 
         return root_query
