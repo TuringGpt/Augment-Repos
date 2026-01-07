@@ -139,8 +139,11 @@ const CustomerSegmentsChart = ({ data, isLoading = false }: CustomerSegmentsChar
 
   // Custom label for pie chart
   const renderLabel = (entry: any) => {
+    // Recharts passes label props including 'payload' (data object) and 'percent' (0-1)
+    // Access percentage from payload or derive from percent
+    const percentage = entry.payload?.percentage ?? (entry.percent ? entry.percent * 100 : 0)
     // Only show label if percentage is significant enough
-    return entry.percentage > 5 ? `${entry.percentage.toFixed(1)}%` : ''
+    return percentage > 5 ? `${percentage.toFixed(1)}%` : ''
   }
 
   return (
