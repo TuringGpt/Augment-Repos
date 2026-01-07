@@ -1,3 +1,5 @@
+import typing
+
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -24,6 +26,9 @@ from .services import StripeService
 
 from core.optimization import AutoOptimizeMixin
 
+if typing.TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+
 class BaseOrderView(AutoOptimizeMixin):
     """Base view for Order related operations with auto-optimization."""
     permission_classes = [IsAuthenticated]
@@ -35,7 +40,7 @@ class BaseOrderView(AutoOptimizeMixin):
         'items__product__images'
     )
 
-    def get_queryset(self) -> "QuerySet[Product]":
+    def get_queryset(self) -> "QuerySet[Order]":
         # Users can only see their own orders
         return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 

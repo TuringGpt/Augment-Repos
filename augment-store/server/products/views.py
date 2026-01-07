@@ -42,7 +42,7 @@ if typing.TYPE_CHECKING:
 # Brand views
 
 class BaseBrandView:
-    """Base view for Category related operations. (Actually for Brand)"""
+    """Base view for Brand related operations."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductBrandListSerializer
 
