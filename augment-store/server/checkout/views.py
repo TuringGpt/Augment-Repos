@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.http import Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView
@@ -109,7 +111,11 @@ class StripePaymentCallback(APIView):
         # Get the payment id from the query params
         payment_id = request.GET.get("payment_id")
 
-        payment = get_object_or_404(Payment, id=payment_id)
+        try:
+            payment = get_object_or_404(Payment, id=payment_id)
+        except (ValidationError, ValueError):
+            raise Http404
+
         stripe_service = StripeService()
 
         stripe_service.check_and_update_payment_status(payment)
