@@ -74,10 +74,8 @@ const AdminUsersPage = () => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
-    fetchCustomerRetention({ days }, abortControllerRef.current.signal).catch((err) => {
-      // Error is already handled in the store
-      console.error('Error loading customer retention:', err)
-    })
+    // fetchCustomerRetention handles all errors internally and doesn't rethrow
+    fetchCustomerRetention({ days }, abortControllerRef.current.signal)
   }
 
   const loadCustomerSegments = () => {
@@ -89,10 +87,8 @@ const AdminUsersPage = () => {
     // Create new abort controller for this request
     segmentsAbortControllerRef.current = new AbortController()
 
-    fetchCustomerSegments({ days }, segmentsAbortControllerRef.current.signal).catch((err) => {
-      // Error is already handled in the store
-      console.error('Error loading customer segments:', err)
-    })
+    // fetchCustomerSegments handles all errors internally and doesn't rethrow
+    fetchCustomerSegments({ days }, segmentsAbortControllerRef.current.signal)
   }
 
   const handleDaysChange = (newDays: number) => {
