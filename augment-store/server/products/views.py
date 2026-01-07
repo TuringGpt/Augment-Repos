@@ -102,7 +102,7 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
     cache_service_class = ProductCategoryCacheService
 
     def get_permissions(self):
-        if self.request.method == "POST":
+        if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
 
@@ -170,7 +170,7 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
     cache_service_class = ProductCacheService
 
     def get_permissions(self):
-        if self.request.method == "POST":
+        if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
