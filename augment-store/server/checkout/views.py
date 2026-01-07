@@ -107,7 +107,7 @@ class StripePaymentCallback(APIView):
     
     def get(self, request, *args, **kwargs):
         # Get the payment id from the query params
-        payment_id = request.GET.get("payment_id")
+        payment_id = request.GET.get("id")
 
         payment = get_object_or_404(Payment, id=payment_id)
         stripe_service = StripeService()
