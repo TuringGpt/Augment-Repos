@@ -631,6 +631,30 @@
       "searchResults": "Showing {{count}} search results (limited to first 100 matches)",
       "searchHelperText": "Search results will appear as you type",
       "productsPerPage": "Products per page:"
+    },
+    "customerSegments": {
+      "title": "Customer Segments",
+      "subtitle": "Distribution of {{count}} customers across segments",
+      "noData": "No customer segment data available",
+      "customers": "Customers",
+      "percentage": "Percentage",
+      "revenue": "Revenue",
+      "avgOrderValue": "Avg Order Value",
+      "avgDaysSinceLastOrder": "Avg Days Since Last Order",
+      "segments": {
+        "newCustomers": "New Customers",
+        "newCustomersDesc": "1 order",
+        "repeatCustomers": "Repeat Customers",
+        "repeatCustomersDesc": "2-5 orders",
+        "loyalCustomers": "Loyal Customers",
+        "loyalCustomersDesc": "6-10 orders",
+        "vipCustomers": "VIP Customers",
+        "vipCustomersDesc": "11+ orders",
+        "atRisk": "At Risk",
+        "atRiskDesc": "No order in 90+ days",
+        "churned": "Churned",
+        "churnedDesc": "No order in 180+ days"
+      }
     }
   }
 }

@@ -19,6 +19,7 @@ import {
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore, useCustomerStatisticsStore } from '@store/index'
 import CustomerRetentionChart from '@features/admin-dashboard/components/CustomerRetentionChart'
+import CustomerSegmentsChart from '@features/admin-dashboard/components/CustomerSegmentsChart'
 
 /**
  * AdminUsersPage Component
@@ -34,21 +35,31 @@ const AdminUsersPage = () => {
     customerRetentionError,
     fetchCustomerRetention,
     clearCustomerRetentionError,
+    customerSegments,
+    isCustomerSegmentsLoading,
+    customerSegmentsError,
+    fetchCustomerSegments,
+    clearCustomerSegmentsError,
   } = useCustomerStatisticsStore()
 
   const [days, setDays] = useState(365)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const segmentsAbortControllerRef = useRef<AbortController | null>(null)
 
-  // Load customer retention data on mount and when days changes
+  // Load customer retention and segments data on mount and when days changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCustomerRetention()
+      loadCustomerSegments()
     }
 
-    // Cleanup function to abort request on unmount
+    // Cleanup function to abort requests on unmount
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
+      }
+      if (segmentsAbortControllerRef.current) {
+        segmentsAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,12 +80,28 @@ const AdminUsersPage = () => {
     })
   }
 
+  const loadCustomerSegments = () => {
+    // Cancel any pending request
+    if (segmentsAbortControllerRef.current) {
+      segmentsAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    segmentsAbortControllerRef.current = new AbortController()
+
+    fetchCustomerSegments({ days }, segmentsAbortControllerRef.current.signal).catch((err) => {
+      // Error is already handled in the store
+      console.error('Error loading customer segments:', err)
+    })
+  }
+
   const handleDaysChange = (newDays: number) => {
     setDays(newDays)
   }
 
   const handleRefresh = () => {
     loadCustomerRetention()
+    loadCustomerSegments()
   }
 
   // Check if user is authenticated and is an admin
@@ -135,35 +162,53 @@ const AdminUsersPage = () => {
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
-            disabled={isCustomerRetentionLoading}
+            disabled={isCustomerRetentionLoading || isCustomerSegmentsLoading}
           >
             Refresh
           </Button>
         </Box>
       </Box>
 
-      {/* Error Alert */}
+      {/* Error Alerts */}
       {customerRetentionError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={clearCustomerRetentionError}>
           {customerRetentionError}
         </Alert>
       )}
+      {customerSegmentsError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearCustomerSegmentsError}>
+          {customerSegmentsError}
+        </Alert>
+      )}
 
       {/* Loading State */}
-      {isCustomerRetentionLoading && !customerRetention ? (
+      {(isCustomerRetentionLoading && !customerRetention) || (isCustomerSegmentsLoading && !customerSegments) ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : customerRetention ? (
+      ) : customerRetention || customerSegments ? (
         <>
-          {/* Customer Retention Chart */}
+          {/* Charts */}
           <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <CustomerRetentionChart
-                data={customerRetention}
-                isLoading={isCustomerRetentionLoading}
-              />
-            </Grid>
+            {/* Customer Retention Chart */}
+            {customerRetention && (
+              <Grid item xs={12}>
+                <CustomerRetentionChart
+                  data={customerRetention}
+                  isLoading={isCustomerRetentionLoading}
+                />
+              </Grid>
+            )}
+
+            {/* Customer Segments Chart */}
+            {customerSegments && (
+              <Grid item xs={12} md={6}>
+                <CustomerSegmentsChart
+                  data={customerSegments}
+                  isLoading={isCustomerSegmentsLoading}
+                />
+              </Grid>
+            )}
           </Grid>
         </>
       ) : null}
