@@ -16,7 +16,7 @@ from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService
+from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 from core.search import AdvancedSearchMixin
@@ -149,7 +149,17 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         queryset = super().get_queryset()
         query = (self.request.query_params.get('search') or "").strip()
         search_filter = self.get_search_query_filter(query)
-        return queryset.filter(search_filter)
+        queryset = queryset.filter(search_filter)
+        
+        # Integrate SearchService for analytics tracking
+        if query:
+            SearchService.log_search(
+                query_string=query,
+                results_count=queryset.count(),
+                user=self.request.user
+            )
+            
+        return queryset
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService

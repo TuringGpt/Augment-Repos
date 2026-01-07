@@ -80,10 +80,8 @@ class SearchService:
         """
         try:
             now = timezone.now()
-            # Security: Avoid logging raw user input to prevent log-forging and PII leaks in logs
             logger.info(f"Search triggered at {now} (results count: {results_count})")
             
-            # Sanitize query for database: truncate and remove control characters
             sanitized_query = "".join(ch for ch in str(query_string or "") if ch.isprintable())[:255]
             
             SearchQuery.objects.create(
@@ -93,7 +91,6 @@ class SearchService:
             )
         except Exception:
             logger.exception("Failed to log search due to an unexpected error")
-
 
 
 class ProductBrandCacheService(BaseCacheService):
