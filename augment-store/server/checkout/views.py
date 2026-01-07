@@ -25,6 +25,7 @@ from .services import StripeService
 from core.optimization import AutoOptimizeMixin
 
 class BaseOrderView(AutoOptimizeMixin):
+    """Base view for Order related operations with auto-optimization."""
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     auto_select_related = ("shipping_address", "billing_address", "contact_information", "created_by")
@@ -34,7 +35,7 @@ class BaseOrderView(AutoOptimizeMixin):
         'items__product__images'
     )
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet[Order]":
         # Users can only see their own orders
         return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 
@@ -75,11 +76,12 @@ class ListContactInformationView(ListAPIView):
 
 
 class BasePaymentView(AutoOptimizeMixin):
+    """Base view for Payment related operations with auto-optimization."""
     permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
     auto_select_related = ("order",)
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet[Payment]":
         # Users can only see their own payments
         return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 

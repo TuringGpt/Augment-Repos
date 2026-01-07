@@ -42,10 +42,11 @@ if typing.TYPE_CHECKING:
 # Brand views
 
 class BaseBrandView:
+    """Base view for Brand related operations."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductBrandListSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet[ProductBrand]":
         return ProductBrand.objects.all().order_by('name').select_related('image', 'created_by',)
     
 class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
@@ -66,10 +67,11 @@ class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
 # Category views
 
 class BaseCategoryView:
+    """Base view for Category related operations."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductCategoryListSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet[ProductCategory]":
         # Optimization: use prefetch_related for MPTT children
         return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent').prefetch_related('children')
     
@@ -112,13 +114,14 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
 # Product views
 
 class BaseProductView(AutoOptimizeMixin):
+    """Base view for Product related operations with auto-optimization."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
     auto_select_related = ['brand', 'category', 'created_by']
     auto_prefetch_related = ['images']
     queryset = Product.objects.all()
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet[Product]":
         queryset = super().get_queryset()
         user: "User" = self.request.user
         
