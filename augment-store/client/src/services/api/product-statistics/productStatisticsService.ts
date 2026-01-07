@@ -7,6 +7,8 @@ import type {
   BestSellingProductsParams,
   MostViewedProductsResponse,
   MostViewedProductsParams,
+  MostAddedToCartProductsResponse,
+  MostAddedToCartProductsParams,
   ProductStatisticsDetail,
   ProductPerformanceResponse,
   ProductPerformanceParams,
@@ -116,6 +118,33 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch most viewed products:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get most added to cart products (highest cart add count)
+   *
+   * @param params - Query parameters (limit)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with most added to cart products data
+   */
+  getMostAddedToCartProducts: async (
+    params?: MostAddedToCartProductsParams,
+    signal?: AbortSignal
+  ): Promise<MostAddedToCartProductsResponse> => {
+    try {
+      const response = await apiClient.get<MostAddedToCartProductsResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.MOST_ADDED_TO_CART,
+        {
+          params,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch most added to cart products:', error)
       throw error
     }
   },
