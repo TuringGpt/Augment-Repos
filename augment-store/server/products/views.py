@@ -36,6 +36,7 @@ def track_search_query(func):
 
 
 if typing.TYPE_CHECKING:
+    from django.db.models.query import QuerySet
     from accounts.models import User
 
 
