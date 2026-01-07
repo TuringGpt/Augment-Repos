@@ -1,5 +1,6 @@
-from factory import Faker, SubFactory, LazyAttribute
+from factory import Faker, LazyAttribute, SubFactory
 from factory.django import DjangoModelFactory, FileField
+
 from accounts.factory import UserFactory
 from storage.utils import file_generate_name
 

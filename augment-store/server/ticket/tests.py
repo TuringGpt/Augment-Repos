@@ -1,8 +1,11 @@
-from core.tests import BaseAPITestCase
 from django.urls import reverse
 from rest_framework import status
-from .factory import TicketFactory, CommentFactory
+
 from accounts.factory import UserFactory
+from core.tests import BaseAPITestCase
+
+from .factory import CommentFactory, TicketFactory
+
 
 # Create your tests here.
 class TicketTests(BaseAPITestCase):
@@ -44,7 +47,7 @@ class TicketTests(BaseAPITestCase):
             "priority": "New Ticket Priority",
             "assignee": str(self.user.id),
         }
-        response = self.authenticated_client.post(url, payload) 
+        response = self.authenticated_client.post(url, payload)
 
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -58,7 +61,7 @@ class TicketTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results", [])), 1)
-    
+
     def test_ticket_detail(self):
         # GIVEN an authenticated user exists
         # WHEN we make a get request to retrieve ticket details
@@ -67,13 +70,13 @@ class TicketTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], str(self.ticket.id))  
-        self.assertEqual(response.data["title"], "Test Title")  
-        self.assertEqual(response.data["description"], "Test Description")  
-        self.assertEqual(response.data["status"], "Test Status")  
-        self.assertEqual(response.data["priority"], "Test Priority")  
-        self.assertEqual(response.data["assignee"], self.user.id)  
-        self.assertEqual(response.data["reporter"], self.user.id)  
+        self.assertEqual(response.data["id"], str(self.ticket.id))
+        self.assertEqual(response.data["title"], "Test Title")
+        self.assertEqual(response.data["description"], "Test Description")
+        self.assertEqual(response.data["status"], "Test Status")
+        self.assertEqual(response.data["priority"], "Test Priority")
+        self.assertEqual(response.data["assignee"], self.user.id)
+        self.assertEqual(response.data["reporter"], self.user.id)
 
     def test_update_ticket(self):
         # GIVEN an authenticated user exists
@@ -90,10 +93,10 @@ class TicketTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["title"], "Updated Title")  
-        self.assertEqual(response.data["description"], "Updated Description")  
-        self.assertEqual(response.data["status"], "Updated Status")  
-        self.assertEqual(response.data["priority"], "Updated Priority")  
+        self.assertEqual(response.data["title"], "Updated Title")
+        self.assertEqual(response.data["description"], "Updated Description")
+        self.assertEqual(response.data["status"], "Updated Status")
+        self.assertEqual(response.data["priority"], "Updated Priority")
         self.assertEqual(response.data["assignee"], self.user2.id)
 
     def test_add_comment(self):
@@ -107,9 +110,9 @@ class TicketTests(BaseAPITestCase):
 
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["content"], "New Comment Content")  
+        self.assertEqual(response.data["content"], "New Comment Content")
         self.assertEqual(response.data["ticket"], self.ticket.id)
-    
+
     def test_list_comments(self):
         # GIVEN an authenticated user exists
         # WHEN we make a get request to list comments for a ticket
@@ -122,7 +125,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["results"][0]["content"], "Test Content")
         self.assertEqual(response.data["results"][0]["user"], self.user.id)
         self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
-    
+
     def test_delete_ticket(self):
         # GIVEN an authenticated user exists
         # WHEN we make a delete request to delete a ticket

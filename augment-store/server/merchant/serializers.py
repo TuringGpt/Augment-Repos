@@ -1,8 +1,10 @@
 from rest_framework import serializers
-from products.models import ProductBrand, Product
+
 from checkout.models import Order
-from storage.serializers import FileSerializer, FileListSerializer
 from checkout.serializers import OrderItemListSerializer
+from products.models import Product, ProductBrand
+from storage.serializers import FileListSerializer, FileSerializer
+
 
 class MerchantBrandSerializer(serializers.ModelSerializer):
     image = FileSerializer(read_only=True)

@@ -1,6 +1,7 @@
 import factory
 from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
+
 from accounts.factory import UserFactory
 from carts.factory import CartItemFactory
 from products.factory import ProductFactory

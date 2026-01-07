@@ -1,14 +1,14 @@
 import uuid
 
+from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.query import QuerySet
-from django.utils.translation import gettext as _
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.translation import gettext as _
 
-from django.conf import settings
 from core.models import BaseModel
 from currencies.models import Currency
 
@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
 
         extra_fields.setdefault("is_active", True if settings.DISABLE_EMAIL_VERIFICATION else False)
-        user: "User" = self.model(email=email, **extra_fields)
+        user: User = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
         return user
@@ -107,7 +107,7 @@ class User(AbstractUser):
         if self.first_name:
             return True
         return False
-    
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"

@@ -1,7 +1,8 @@
-from core.tests import BaseAPITestCase
-from accounts.factory import UserFactory
-from rest_framework import status
 from django.urls import reverse
+from rest_framework import status
+
+from accounts.factory import UserFactory
+from core.tests import BaseAPITestCase
 
 
 class UserProfileTests(BaseAPITestCase):

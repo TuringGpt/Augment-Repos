@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Newsletter
+
 
 class NewsletterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,7 +15,7 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Newsletter.objects.create(**validated_data)
-    
+
 class UnsubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter

@@ -1,9 +1,9 @@
+from django.db import models
+
 from accounts.models import User
 from core.models import BaseModel
-from django.db import models
+
 from .utils import file_generate_upload_path
-
-
 
 
 class File(BaseModel):

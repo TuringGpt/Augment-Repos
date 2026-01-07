@@ -1,12 +1,13 @@
 from django.db import models
-from core.models import BaseModel
+
 from accounts.models import User
+from core.models import BaseModel
 
 
 class NotificationManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
     def get_user_notifications(self, user):
         return self.get_queryset().filter(user=user)
 

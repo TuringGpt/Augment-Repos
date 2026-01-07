@@ -17,3 +17,4 @@ django-cors-headers==4.9.0
 django-schema-viewer==0.5.3
 stripe==12.4.0
 django-redis==6.0.0
+ruff==0.1.6

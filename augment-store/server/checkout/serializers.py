@@ -1,8 +1,17 @@
 
 from rest_framework import serializers
-from .models import Order, OrderItem, Payment, ShippingAddress, BillingAddress, ContactInformation
+
 from carts.models import CartItem
 from products.serializers import ProductListSerializer
+
+from .models import (
+    BillingAddress,
+    ContactInformation,
+    Order,
+    OrderItem,
+    Payment,
+    ShippingAddress,
+)
 from .services import StripeService
 
 
@@ -76,15 +85,15 @@ class CreateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "id", 
-            "cart_items", 
-            "status", 
-            "created_at", 
+            "id",
+            "cart_items",
+            "status",
+            "created_at",
             "shipping_address",
             "billing_address",
-            "contact_information", 
-            "shipping_address_id", 
-            "billing_address_id", 
+            "contact_information",
+            "shipping_address_id",
+            "billing_address_id",
             "contact_information_id"
         ]
         read_only_fields = ["id", "status", "created_at"]
@@ -96,7 +105,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         if cart_items.count() != len(value):
             raise serializers.ValidationError("One or more cart items do not exist")
         return cart_items
-    
+
 
     def validate_shipping_address(self, value):
         user = self.context.get("request").user
@@ -113,7 +122,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             defaults=value
         )
         return shipping_address
-    
+
 
     def validate_billing_address(self, value):
         user = self.context.get("request").user
@@ -150,7 +159,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         except ShippingAddress.DoesNotExist:
             raise serializers.ValidationError("Shipping address does not exist")
         return shipping_address
-    
+
     def validate_billing_address_id(self, value):
         user = self.context.get("request").user
         try:
@@ -158,7 +167,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         except BillingAddress.DoesNotExist:
             raise serializers.ValidationError("Billing address does not exist")
         return billing_address
-    
+
     def validate_contact_information_id(self, value):
         user = self.context.get("request").user
         try:
@@ -166,20 +175,20 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         except ContactInformation.DoesNotExist:
             raise serializers.ValidationError("Contact information does not exist")
         return contact_information
-    
+
     def validate(self, attrs):
         # if both shipping_address and shipping_address_id are provided, raise an error
         if "shipping_address" in attrs and "shipping_address_id" in attrs:
             raise serializers.ValidationError("Cannot provide both shipping_address and shipping_address_id")
-        
+
         # if both billing_address and billing_address_id are provided, raise an error
         if "billing_address" in attrs and "billing_address_id" in attrs:
             raise serializers.ValidationError("Cannot provide both billing_address and billing_address_id")
-        
+
         # if both contact_information and contact_information_id are provided, raise an error
         if "contact_information" in attrs and "contact_information_id" in attrs:
             raise serializers.ValidationError("Cannot provide both contact_information and contact_information_id")
-        
+
         return attrs
 
     def create(self, validated_data):
@@ -187,14 +196,14 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         order = Order.objects.create(
             created_by=user,
-            shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
+            shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"),
             billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
             contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
         )
 
         for cart_item in validated_data.get("cart_items"):
             OrderItem.objects.create(
-                order=order, 
+                order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
                 cart_item=cart_item,
@@ -235,7 +244,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             return obj.payment.payment_status
         except:
             return Payment.PaymentStatus.PENDING
-       
+
 
 class OrderPaymentSerializer(serializers.ModelSerializer):
     order = serializers.UUIDField()
@@ -254,26 +263,26 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
             return order
         except Order.DoesNotExist:
             raise serializers.ValidationError("Order does not exist")
-        
-        
+
+
     def create(self, validated_data):
         user = self.context.get("request").user
         order: Order = validated_data.get("order")
         payment_method = validated_data.get("payment_method", Payment.PaymentMethod.STRIPE)
         amount = order.total
-        
+
         # if we already have a payment for this order, just update the payment
         try:
             payment = order.payment
             Payment.objects.filter(id=payment.id).update(amount=amount, payment_method=payment_method)
         except Payment.DoesNotExist:
             payment = Payment.objects.create(
-                order=order, 
-                created_by=user, 
-                amount=amount, 
+                order=order,
+                created_by=user,
+                amount=amount,
                 payment_method=payment_method
             )
-  
+
 
         stripe_service = StripeService()
         session = stripe_service.create_payment_session(payment)
@@ -284,16 +293,15 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
             "payment_method": payment_method,
             "payment_status": payment.payment_status,
             "created_at": payment.created_at,
-            "updated_at": payment.updated_at,    
+            "updated_at": payment.updated_at,
         }
-        
-    
+
+
 
 class PaymentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ["payment_status"]
         read_only_fields = ["payment_status"]
-    
 
-    
+

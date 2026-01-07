@@ -1,23 +1,23 @@
 import mimetypes
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Tuple
 
-from accounts.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from typing_extensions import TypedDict
-from .utils import s3_generate_presigned_post
+
+from accounts.models import User
 
 from .enums import FileUploadStorage
 from .models import File
-from .utils import bytes_to_mib
-from .utils import file_generate_local_upload_url
-from .utils import file_generate_name
-from .utils import file_generate_upload_path
+from .utils import (
+    bytes_to_mib,
+    file_generate_local_upload_url,
+    file_generate_name,
+    file_generate_upload_path,
+    s3_generate_presigned_post,
+)
 
 
 def _validate_file_size(file_obj):
@@ -47,7 +47,7 @@ class FileStandardUploadService:
 
     def _infer_file_name_and_type(
         self, file_name: str = "", file_type: str = ""
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         if not file_name:
             file_name = self.file_obj.name
 
@@ -108,7 +108,7 @@ class FileStandardUploadService:
 
 class StartFileUploadData(TypedDict):
     file: File
-    presigned_data: Dict[str, Any]
+    presigned_data: dict[str, Any]
 
 
 class StorageValidatedData(TypedDict):
@@ -119,7 +119,7 @@ class StorageValidatedData(TypedDict):
 
 
 class FileDirectUploadService:
- 
+
 
     def __init__(self, user: User):
         self.user = user
@@ -148,7 +148,7 @@ class FileDirectUploadService:
         )
         file.save()
 
-        presigned_data: Dict[str, Any] = {}
+        presigned_data: dict[str, Any] = {}
 
         if settings.FILE_UPLOAD_STORAGE == FileUploadStorage.S3:
             presigned_data = s3_generate_presigned_post(

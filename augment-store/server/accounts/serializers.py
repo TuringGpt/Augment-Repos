@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import User
-from storage.serializers import FileSerializer, FileListSerializer
+
 from currencies.serializers import ListCurrencySerializer
+from storage.serializers import FileListSerializer, FileSerializer
+
+from .models import User
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -10,7 +12,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     is_registration_completed = serializers.BooleanField(read_only=True)
     profile_image = FileSerializer(read_only=True)
     preferred_currency = ListCurrencySerializer(read_only=True)
-    
+
     class Meta:
         model = User
         fields = [
@@ -32,12 +34,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "email", "role", "is_active", "date_joined"]
 
-    
+
 
 
 class UpdateUserProfileSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile information"""
-    
+
     class Meta:
         model = User
         fields = [
@@ -49,7 +51,7 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
             "image",
             "profile_image",
         ]
-    
+
     def validate_mobile(self, value):
         """Validate mobile number format"""
         if value and len(value) > 20:
@@ -62,7 +64,7 @@ class UserListSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     profile_image = FileListSerializer(read_only=True)
     preferred_currency = ListCurrencySerializer(read_only=True)
-    
+
     class Meta:
         model = User
         fields = [

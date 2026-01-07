@@ -1,10 +1,10 @@
 
 
 from rest_framework import serializers
-from accounts.models import User
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 
+from accounts.models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class LoginSerializer(serializers.Serializer):
     refresh = serializers.CharField(read_only=True)
     access = serializers.CharField(read_only=True)
 
- 
+
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
@@ -37,15 +37,15 @@ class LoginSerializer(serializers.Serializer):
 
         if not user:
             raise NotAuthenticated("Invalid credentials")
-     
+
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
-        
+
         if not user.check_password(password):
             raise NotAuthenticated("Invalid credentials")
-        
+
         return attrs
-        
+
     def create(self, validated_data):
         # I have validated the user in the validate method, so it is safe to use get()
         user = User.objects.get(email=validated_data.get("email"))
@@ -72,7 +72,7 @@ class RefreshTokenSerializer(serializers.Serializer):
             raise NotAuthenticated("Invalid refresh token")
         return attrs
 
-    
+
     def create(self, validated_data):
         refresh = RefreshToken(validated_data.get("refresh"))
         return {

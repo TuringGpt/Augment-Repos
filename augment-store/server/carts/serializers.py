@@ -1,8 +1,10 @@
 
 from rest_framework import serializers
-from .models import Cart, CartItem, Wishlist
+
 from products.models import Product
 from products.serializers import ProductListSerializer
+
+from .models import Cart, CartItem, Wishlist
 
 
 class AddToCartSerializer(serializers.Serializer):
@@ -22,10 +24,10 @@ class AddToCartSerializer(serializers.Serializer):
             raise serializers.ValidationError("Quantity exceeds stock")
 
         return attrs
-    
+
 
     def create(self, validated_data):
-     
+
         user = self.context.get("request").user
         user_cart = Cart.objects.get_user_cart(user)
         product_id = validated_data.get("product_id")
@@ -69,7 +71,7 @@ class CartItemListSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = "__all__"
 
-        
+
 class CartDetailSerializer(serializers.ModelSerializer):
     items = CartItemListSerializer(many=True)
     total = serializers.ReadOnlyField()
@@ -97,16 +99,16 @@ class AddToWishlistSerializer(serializers.ModelSerializer):
             except Product.DoesNotExist:
                 raise serializers.ValidationError(f"Product {product_id} does not exist")
         return value
-    
+
     def create(self, validated_data):
         user = self.context.get("request").user
         wishlist = Wishlist.objects.get_user_wishlist(user)
         wishlist.products.add(*validated_data.get("product_ids"))
         return wishlist
-    
 
 
-        
+
+
 
 class RemoveFromWishlistSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.UUIDField())
@@ -118,7 +120,7 @@ class RemoveFromWishlistSerializer(serializers.Serializer):
             except Product.DoesNotExist:
                 raise serializers.ValidationError(f"Product {product_id} does not exist")
         return value
-    
+
 
 class WishlistDetailSerializer(serializers.ModelSerializer):
     products = ProductListSerializer(many=True)

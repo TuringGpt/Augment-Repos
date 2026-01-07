@@ -197,6 +197,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Use faster password hasher for tests
 import sys
+
 if 'test' in sys.argv or 'pytest' in sys.modules:
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -242,7 +243,7 @@ if FILE_UPLOAD_STORAGE == "local":
     AWS_S3_REGION_NAME = config.get("AWS_S3_REGION_NAME")
     AWS_S3_CUSTOM_DOMAIN = config.get("AWS_S3_CUSTOM_DOMAIN")
 
-    
+
 else:
     PUBLIC_MEDIA_LOCATION = "augment-store/media/public/"
     PRIVATE_MEDIA_LOCATION = "augment-store/media/private/"

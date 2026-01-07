@@ -1,6 +1,7 @@
 
 from django.urls import path
-from .views import ListWishListProductsView, AddToWishlistView, RemoveFromWishlistView
+
+from .views import AddToWishlistView, ListWishListProductsView, RemoveFromWishlistView
 
 app_name = "wishlist"
 urlpatterns = [

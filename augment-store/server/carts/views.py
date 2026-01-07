@@ -1,13 +1,24 @@
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.generics import (
+    CreateAPIView,
+    GenericAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
-from .models import Cart, CartItem, Wishlist
 
-from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
 from products.serializers import ProductListSerializer
 
+from .models import Cart, Wishlist
+from .serializers import (
+    AddToCartSerializer,
+    AddToWishlistSerializer,
+    CartDetailSerializer,
+    RemoveFromWishlistSerializer,
+    UpdateCartItemSerializer,
+)
 
 
 class BaseCartView:
@@ -22,7 +33,7 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
         # Prefetch related objects for the cart instance
         from django.db.models import prefetch_related_objects
         prefetch_related_objects(
-            [cart], 
+            [cart],
             'items__product__brand',
             'items__product__category',
             'items__product__images'
@@ -35,13 +46,13 @@ class BaseCartItemView:
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
         return user_cart.items.all().select_related('product', 'product__brand', 'product__category')
-    
+
 class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
 
 class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateCartItemSerializer
-    
+
 
 
 class BaseWishlistView:
@@ -55,7 +66,7 @@ class ListWishListProductsView(BaseWishlistView, ListAPIView):
         return Wishlist.objects.get_user_wishlist(self.request.user).products.all().select_related(
             'brand', 'category', 'created_by'
         ).prefetch_related('images')
-    
+
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
     serializer_class = AddToWishlistSerializer
@@ -69,7 +80,7 @@ class AddToWishlistView(BaseWishlistView, GenericAPIView):
             {
                 "detail": "Added to wishlist",
                 **serializer.data
-            }, 
+            },
             status=status.HTTP_200_OK
         )
 
@@ -89,6 +100,6 @@ class RemoveFromWishlistView(BaseWishlistView, GenericAPIView):
             {
                 "detail": "Removed from wishlist",
                 "product_ids": product_ids
-            }, 
+            },
             status=status.HTTP_200_OK
         )

@@ -1,7 +1,8 @@
 from django.db import models
+
+from accounts.models import User
 from core.models import BaseModel
 from products.models import Product
-from accounts.models import User
 
 
 class ProductStatistics(BaseModel):

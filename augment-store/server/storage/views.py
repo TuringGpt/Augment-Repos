@@ -2,11 +2,13 @@
 
 
 from rest_framework.generics import CreateAPIView
-
-from .serializers import StartDirectFileUploadSerializer, DirectLocalFileUploadSerializer
-from .serializers import FinishFileUploadSerializer
-
 from rest_framework.permissions import IsAuthenticated
+
+from .serializers import (
+    DirectLocalFileUploadSerializer,
+    FinishFileUploadSerializer,
+    StartDirectFileUploadSerializer,
+)
 
 
 class StartDirectFileUpload(CreateAPIView):

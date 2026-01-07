@@ -1,9 +1,8 @@
 
-from django.urls import path, include
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
-
+from rest_framework.response import Response
 
 app_name = 'v1'
 

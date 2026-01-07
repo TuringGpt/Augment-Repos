@@ -1,5 +1,10 @@
 from django.urls import path
-from .views import MerchantBrandListView, MerchantProductListView, MerchantOrdersListView
+
+from .views import (
+    MerchantBrandListView,
+    MerchantOrdersListView,
+    MerchantProductListView,
+)
 
 app_name = "merchant"
 urlpatterns = [

@@ -1,16 +1,26 @@
 import unittest
-from unittest.mock import  patch
-from core.tests import BaseAPITestCase
+from decimal import Decimal
+from unittest.mock import patch
+
+from django.urls import reverse
+from rest_framework import status
+
 from accounts.factory import UserFactory
 from accounts.models import User
-from rest_framework import status
-from django.urls import reverse
-from products.factory import ProductFactory
 from carts.factory import CartItemFactory
+from checkout.factory import (
+    BillingAddressFactory,
+    ContactInformationFactory,
+    OrderFactory,
+    OrderItemFactory,
+    PaymentFactory,
+    ShippingAddressFactory,
+)
 from checkout.models import Order
-from checkout.factory import OrderFactory, OrderItemFactory, PaymentFactory, ShippingAddressFactory, BillingAddressFactory, ContactInformationFactory
-from decimal import Decimal
 from checkout.services import StripeService
+from core.tests import BaseAPITestCase
+from products.factory import ProductFactory
+
 
 class CreateOrderViewTests(BaseAPITestCase):
 
@@ -82,7 +92,7 @@ class CreateOrderViewTests(BaseAPITestCase):
             "cart_items": [str(cart_item.id)]
         }
         response = self.member_client.post(url, payload, format='json')
-        
+
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -702,7 +712,7 @@ class RetrieveOrderViewTests(BaseAPITestCase):
         self.assertIn("created_at", order_item)
 
 class OrderPaymentTest(BaseAPITestCase):
-    
+
     def setUp(self):
         super().setUp()
 

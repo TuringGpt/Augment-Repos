@@ -1,7 +1,8 @@
 from django.db import models
-from core.models import BaseModel
-from accounts.models import User
 from mptt.models import MPTTModel, TreeForeignKey
+
+from accounts.models import User
+from core.models import BaseModel
 from storage.models import File
 
 
@@ -26,12 +27,12 @@ class ProductCategory(MPTTModel, BaseModel):
 
     def __str__(self):
         return self.name
-    
+
 
 class ProductManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
     def get_user_products(self, user):
         return self.get_queryset().filter(created_by=user).order_by('-created_at')
 

@@ -1,14 +1,16 @@
-from core.tests import BaseAPITestCase
-from accounts.factory import UserFactory
-from rest_framework import status
 from django.urls import reverse
-from contact.models import ContactMessage
-from contact.factory import ContactMessageFactory
+from rest_framework import status
+
+from accounts.factory import UserFactory
 from accounts.models import User
+from contact.factory import ContactMessageFactory
+from contact.models import ContactMessage
+from core.tests import BaseAPITestCase
+
 
 # Create your tests here.
 class ContactTests(BaseAPITestCase):
-    
+
     def setUp(self):
         super().setUp()
         self.admin = UserFactory(
@@ -56,7 +58,7 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(len(response.data.get("results", [])), 2)
         self.assertEqual(response.data["results"][0]["name"], "Test Name 2")
         self.assertEqual(response.data["results"][1]["name"], "Test Name 1")
-        
+
     def test_retrieve_contact_message(self):
         # GIVEN an authenticated admin exists
         self.authenticated_client.force_authenticate(user=self.admin)

@@ -1,7 +1,9 @@
-from django.core.management.base import BaseCommand
-from storage.models import File
-from products.models import Product
 import os
+
+from django.core.management.base import BaseCommand
+
+from products.models import Product
+from storage.models import File
 
 
 class Command(BaseCommand):
@@ -23,7 +25,7 @@ class Command(BaseCommand):
         # Find all File objects
         all_files = File.objects.all()
         broken_files = []
-        
+
         for file_obj in all_files:
             if file_obj.file:
                 # Check if the file exists on disk
@@ -41,7 +43,7 @@ class Command(BaseCommand):
             # Delete products that use these files
             products_to_delete = Product.objects.filter(images__in=broken_files).distinct()
             product_count = products_to_delete.count()
-            
+
             if product_count > 0:
                 self.stdout.write(f'Deleting {product_count} products that use broken files...')
                 products_to_delete.delete()
@@ -51,7 +53,7 @@ class Command(BaseCommand):
             self.stdout.write(f'Deleting {len(broken_files)} broken file records...')
             for file_obj in broken_files:
                 file_obj.delete()
-            
+
             self.stdout.write(self.style.SUCCESS(f'Successfully deleted {len(broken_files)} broken file records'))
         elif dry_run:
             products_to_delete = Product.objects.filter(images__in=broken_files).distinct()

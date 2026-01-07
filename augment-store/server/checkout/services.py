@@ -1,8 +1,9 @@
 
 import logging
 
-from .models import Payment
 import stripe
+
+from .models import Payment
 
 logger = logging.getLogger(__name__)
 

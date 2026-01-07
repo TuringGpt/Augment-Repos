@@ -1,18 +1,17 @@
-from typing import List
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 from storage.services import FileDirectUploadService, StorageValidatedData
 
-from .models import File
 from .enums import FileUploadStorage
-
+from .models import File
 
 
 class FileSerializer(serializers.ModelSerializer):
     file = serializers.SerializerMethodField()
- 
+
 
     class Meta:
         model = File
@@ -67,7 +66,7 @@ class StartDirectFileUploadSerializer( serializers.Serializer):
 class DirectLocalFileUploadSerializer(serializers.Serializer):
     file = serializers.FileField(write_only=True)
     file_id = serializers.CharField(write_only=True)
-    
+
 
     def create(self, validated_data):
         user = self.context["request"].user

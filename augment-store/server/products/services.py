@@ -1,11 +1,13 @@
 
-from accounts.models import User
-from carts.models import Wishlist, Cart
-from checkout.models import OrderItem
-from products.models import Product, SearchQuery
-from core.service import BaseCacheService
-from django.utils import timezone
 import logging
+
+from django.utils import timezone
+
+from accounts.models import User
+from carts.models import Cart, Wishlist
+from checkout.models import OrderItem
+from core.service import BaseCacheService
+from products.models import Product, SearchQuery
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +83,9 @@ class SearchService:
         try:
             now = timezone.now()
             logger.info(f"Search triggered at {now} (results count: {results_count})")
-            
+
             sanitized_query = "".join(ch for ch in str(query_string or "") if ch.isprintable())[:255]
-            
+
             SearchQuery.objects.create(
                 query=sanitized_query,
                 results_count=results_count,

@@ -1,9 +1,11 @@
 from decimal import Decimal
+
 from django.db import models
 from django.db.models import QuerySet
+
 from accounts.models import User
-from core.models import BaseModel
 from carts.models import CartItem
+from core.models import BaseModel
 from products.models import Product
 
 
@@ -96,7 +98,7 @@ class Payment(BaseModel):
     class PaymentMethod:
         STRIPE = 'stripe'
         PAYPAL = 'paypal'
-        
+
         CHOICES = (
             (STRIPE, 'Stripe'),
             (PAYPAL, 'PayPal'),

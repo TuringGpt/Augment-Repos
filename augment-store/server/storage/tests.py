@@ -1,13 +1,15 @@
-from core.tests import BaseAPITestCase
+import os
+
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
+from django.urls import reverse
+from rest_framework import status
+
 from accounts.factory import UserFactory
 from accounts.models import User
-from rest_framework import status
-from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
+from core.tests import BaseAPITestCase
 from storage.models import File
-from django.test import override_settings
-from django.conf import settings
-import os
 
 
 @override_settings(

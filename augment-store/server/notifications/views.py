@@ -1,10 +1,18 @@
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView
+from rest_framework import status
+from rest_framework.generics import (
+    GenericAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+
 from .models import Notification
-from .serializers import NotificationListSerializer, UpdateNotificationSerializer
-from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer
+from .serializers import (
+    MarkAsReadSerializer,
+    NotificationListSerializer,
+    UpdateNotificationSerializer,
+)
 
 
 class BaseNotificationView:
@@ -27,7 +35,7 @@ class MarkAllAsReadView(BaseNotificationView, GenericAPIView):
 
 class ListNotificationView(BaseNotificationView, ListAPIView):
     serializer_class = NotificationListSerializer
-    
+
 
 class UpdateNotificationView(BaseNotificationView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateNotificationSerializer

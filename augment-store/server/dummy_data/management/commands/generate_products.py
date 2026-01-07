@@ -2,12 +2,14 @@ import mimetypes
 import random
 import re
 from pathlib import Path
-from django.core.management.base import BaseCommand, CommandError
-from django.core.files import File as DjangoFile
+
 from django.conf import settings
+from django.core.files import File as DjangoFile
+from django.core.management.base import BaseCommand, CommandError
+
+from accounts.models import User
 from products.models import Product, ProductBrand
 from storage.models import File
-from accounts.models import User
 
 
 class Command(BaseCommand):

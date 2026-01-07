@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from .models import ProductBrand, ProductCategory, Product
-from storage.serializers import FileListSerializer
-from accounts.serializers import UserListSerializer
 
+from accounts.serializers import UserListSerializer
+from storage.serializers import FileListSerializer
+
+from .models import Product, ProductBrand, ProductCategory
 
 #  Product Brand Serializers
 
@@ -42,7 +43,7 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
         parent = attrs.get("parent")
         if parent and parent.is_child_node():
             raise serializers.ValidationError("Parent category cannot be a child category")
-        
+
         request = self.context.get("request")
         attrs["created_by"] = request.user
         return attrs

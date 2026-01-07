@@ -1,8 +1,15 @@
-from products.models import ProductBrand, Product
-from checkout.models import Order
 from rest_framework.generics import ListAPIView
-from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+
+from checkout.models import Order
+from products.models import Product, ProductBrand
+
+from .serializers import (
+    MerchantBrandSerializer,
+    MerchantOrdersSerializer,
+    MerchantProductSerializer,
+)
+
 
 class MerchantBrandListView(ListAPIView):
     serializer_class = MerchantBrandSerializer

@@ -1,10 +1,12 @@
-from django.db.models.signals import post_save, post_delete
 from django.db.models import F
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from products.models import Product
+
 from carts.models import CartItem
 from checkout.models import OrderItem
-from .models import ProductStatistics, ProductView, CartAbandonment
+from products.models import Product
+
+from .models import ProductStatistics
 
 
 @receiver(post_save, sender=Product)

@@ -1,10 +1,11 @@
 
-from factory import Faker, SubFactory, LazyAttribute, post_generation
+from factory import Faker, LazyAttribute, SubFactory, post_generation
 from factory.django import DjangoModelFactory
+
 from accounts.factory import UserFactory
 from storage.factory import FileFactory
-from .models import Product, ProductBrand, ProductCategory
 
+from .models import Product, ProductBrand, ProductCategory
 
 
 class ProductBrandFactory(DjangoModelFactory):

@@ -1,11 +1,12 @@
-from core.tests import BaseAPITestCase
+from django.urls import reverse
+from rest_framework import status
+
 from accounts.factory import UserFactory
 from accounts.models import User
-from rest_framework import status
-from django.urls import reverse
-from products.factory import ProductFactory
-from carts.models import Cart, Wishlist
 from carts.factory import CartItemFactory
+from carts.models import Cart, Wishlist
+from core.tests import BaseAPITestCase
+from products.factory import ProductFactory
 
 
 class CartDetailViewTests(BaseAPITestCase):
@@ -252,7 +253,7 @@ class RemoveFromWishlistViewTests(BaseAPITestCase):
         self.member_client = self.authenticated_client
         self.member_client.force_authenticate(user=self.member_user)
 
-   
+
     def test_remove_from_wishlist_success(self):
         # GIVEN an authenticated user exists
         # AND the user has a product in their wishlist

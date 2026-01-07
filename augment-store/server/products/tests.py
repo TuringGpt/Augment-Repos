@@ -1,15 +1,21 @@
-from core.tests import BaseAPITestCase
+from decimal import Decimal
+
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
+from rest_framework import status
+
 from accounts.factory import UserFactory
 from accounts.models import User
-from rest_framework import status
-from django.urls import reverse
-from products.models import Product, ProductBrand, ProductCategory
+from core.tests import BaseAPITestCase
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
-from decimal import Decimal
+from products.models import Product, ProductBrand, ProductCategory
+from products.services import (
+    ProductBrandCacheService,
+    ProductCacheService,
+    ProductCategoryCacheService,
+)
 from storage.factory import FileFactory
-from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService
-from django.test.utils import CaptureQueriesContext
-from django.db import connection
 
 
 class ProductBrandTests(BaseAPITestCase):
@@ -605,7 +611,7 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         result = response.data.get("results", [])
         # AND the response should contain the products
         self.assertEqual(len(result), 2)
@@ -688,7 +694,7 @@ class ProductTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         result = response.data.get("results", [])
         # AND only products within the rating range should be returned
         self.assertEqual(len(result), 1)
@@ -1472,7 +1478,7 @@ class ProductTests(BaseAPITestCase):
             # AND the response should contain the new product (items are ordered by name)
             self.assertEqual(response_2.data["results"][0]["name"], "New Product")
 
-        
+
 
 class RecommendProductListViewTests(BaseAPITestCase):
     def setUp(self):
@@ -1483,7 +1489,7 @@ class RecommendProductListViewTests(BaseAPITestCase):
             role=User.Role.MEMBER
         )
         super().setUp()
-    
+
     def test_recommend_product_list_authenticated(self):
         # TODO: complete this test in next PR
         # GIVEN an authenticated user exists

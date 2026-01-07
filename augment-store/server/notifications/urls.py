@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import ListNotificationView, UpdateNotificationView, MarkAllAsReadView
+
+from .views import ListNotificationView, MarkAllAsReadView, UpdateNotificationView
 
 app_name = "notifications"
 

@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Ticket, Comment
+
+from .models import Comment, Ticket
+
 
 class TicketListSerializer(serializers.ModelSerializer):
     class Meta:

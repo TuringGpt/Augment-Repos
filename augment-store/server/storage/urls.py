@@ -1,7 +1,10 @@
 from django.urls import path
 
-from .views import StartDirectFileUpload, DirectLocalFileUpload, FinishDirectFileUploadFinish
-
+from .views import (
+    DirectLocalFileUpload,
+    FinishDirectFileUploadFinish,
+    StartDirectFileUpload,
+)
 
 app_name = "storage"
 urlpatterns = [

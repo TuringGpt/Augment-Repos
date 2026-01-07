@@ -1,24 +1,23 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q, Sum, Avg, F, DecimalField, Min, Max
-from django.db.models.functions import Coalesce, TruncMonth
-from django.utils import timezone
+from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
-from collections import defaultdict
-from accounts.permissions import hasAdminOrMerchantRole
 
-from products.models import Product, ProductCategory
-from checkout.models import Order, OrderItem, Payment
-from carts.models import CartItem
+from django.db.models import Count, Sum
+from django.utils import timezone
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from accounts.models import User
-from .models import ProductStatistics, ProductView, CartAbandonment
+from accounts.permissions import hasAdminOrMerchantRole
+from carts.models import CartItem
+from checkout.models import Order, OrderItem, Payment
+from products.models import Product, ProductCategory
+
+from .models import CartAbandonment, ProductStatistics, ProductView
 from .serializers import (
     ProductStatisticsSerializer,
-    ProductStatisticsSummarySerializer,
-    CartAbandonmentSerializer,
 )
 
 
@@ -705,8 +704,8 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'customers': top_customers
         })
 
- 
- 
+
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_segments(self, request):
         """
@@ -1082,7 +1081,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'category_preferences': category_preferences,
             'payment_method_distribution': payment_distribution
         })
-    
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def churn_risk(self, request):
         """
@@ -1195,7 +1194,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'potential_revenue_at_risk': float(potential_revenue)
             }
         })
-    
+
 
     @action(detail=False, methods=['get'])
     def new_vs_returning(self, request):

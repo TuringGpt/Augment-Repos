@@ -1,17 +1,18 @@
 from rest_framework import serializers
-from .models import ProductStatistics, ProductView, CartAbandonment
+
+from .models import CartAbandonment, ProductStatistics, ProductView
 
 
 class ProductStatisticsSerializer(serializers.ModelSerializer):
     product_id = serializers.UUIDField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(
-        source='product.price', 
-        max_digits=10, 
-        decimal_places=2, 
+        source='product.price',
+        max_digits=10,
+        decimal_places=2,
         read_only=True
     )
-    
+
     class Meta:
         model = ProductStatistics
         fields = [
@@ -29,7 +30,7 @@ class ProductViewSerializer(serializers.ModelSerializer):
     product_id = serializers.UUIDField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = ProductView
         fields = ['product_id', 'product_name', 'user_email', 'created_at']

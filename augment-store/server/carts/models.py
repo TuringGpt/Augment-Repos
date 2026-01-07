@@ -1,15 +1,17 @@
 from decimal import Decimal
+
 from django.db import models
-from core.models import BaseModel
-from accounts.models import User
-from products.models import Product
 from django.db.models import F
+
+from accounts.models import User
+from core.models import BaseModel
+from products.models import Product
 
 
 class CartItemManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
     def get_user_cart_items(self, user):
         return self.get_queryset().filter(created_by=user)
 
@@ -23,18 +25,18 @@ class CartItem(BaseModel):
 class CartManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
     def get_user_cart(self, user) -> "Cart":
         cart, _ = self.get_queryset().get_or_create(user=user)
         return cart
-    
+
     def get_user_cart_safe(self, user):
         return self.filter(user=user).first()
-    
+
     def get_user_cart_items(self, user):
         cart = self.get_user_cart(user)
         return cart.items.all().select_related('product', 'product__brand', 'product__category').prefetch_related('product__images')
-    
+
     def add_to_cart(self, user: User, product: Product, quantity=1):
         user_cart = self.get_user_cart(user)
 
@@ -51,11 +53,11 @@ class CartManager(models.Manager):
         user_cart.items.add(cart_item)
         user_cart.save()
         return user_cart
-    
+
     def contains_cart_item(self, user: User, cart_item_id: str):
         user_cart = self.get_user_cart(user)
         return user_cart.items.filter(id=cart_item_id).exists()
-   
+
 
 class Cart(BaseModel):
     items = models.ManyToManyField("CartItem", related_name='carts')
@@ -85,11 +87,11 @@ class Cart(BaseModel):
 class WishlistManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
     def get_user_wishlist(self, user) -> "Wishlist":
         wishlist, _ = self.get_queryset().get_or_create(user=user)
         return wishlist
-    
+
     def get_user_wishlist_safe(self, user):
         return self.filter(user=user).first()
 

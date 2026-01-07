@@ -1,14 +1,18 @@
-from django.test import TestCase
-from accounts.factory import UserFactory
-from products.factory import ProductBrandFactory, ProductFactory
-from checkout.factory import OrderFactory, OrderItemFactory
-from accounts.models import User
-from django.urls import reverse
-from core.tests import BaseAPITestCase
 import uuid
+
+from django.test import TestCase
+from django.urls import reverse
+
+from accounts.factory import UserFactory
+from accounts.models import User
+from checkout.factory import OrderFactory, OrderItemFactory
+from core.tests import BaseAPITestCase
+from products.factory import ProductBrandFactory, ProductFactory
+
+
 # Create your tests here.
 class MerchantBrandListViewTests(TestCase):
-    
+
     def setUp(self):
         super().setUp()
         self.merchant_id = uuid.uuid4()
@@ -24,9 +28,9 @@ class MerchantBrandListViewTests(TestCase):
         self.product_brand = ProductBrandFactory(created_by=self.merchant, name="Nike")
         self.product_brand_2 = ProductBrandFactory(created_by=self.merchant, name="Adidas")
         self.product_brand_3 = ProductBrandFactory(created_by=self.merchant, name="Puma")
-    
+
     def test_merchant_brand_list_view(self):
-        url = reverse(f"v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_id)})
+        url = reverse("v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_id)})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
@@ -129,4 +133,4 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         url = reverse("v1:merchant:merchant_order_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
-    
+

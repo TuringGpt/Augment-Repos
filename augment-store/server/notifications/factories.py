@@ -2,8 +2,9 @@
 from factory import Faker, SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
-from notifications.models import Notification
+
 from accounts.factory import UserFactory
+from notifications.models import Notification
 
 
 class NotificationFactory(DjangoModelFactory):

@@ -21,4 +21,4 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = "accounts.User"
         django_get_or_create = ["email"]
-        
+

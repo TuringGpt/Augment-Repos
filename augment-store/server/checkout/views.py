@@ -2,12 +2,13 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
-
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from core.optimization import AutoOptimizeMixin
 
 from .models import BillingAddress, ContactInformation, Order, Payment, ShippingAddress
 from .serializers import (
@@ -22,7 +23,6 @@ from .serializers import (
 )
 from .services import StripeService
 
-from core.optimization import AutoOptimizeMixin
 
 class BaseOrderView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
@@ -57,14 +57,14 @@ class ListShippingAddressView(ListAPIView):
 
     def get_queryset(self):
         return ShippingAddress.objects.filter(user=self.request.user)
-    
+
 class ListBillingAddressView(ListAPIView):
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return BillingAddress.objects.filter(user=self.request.user)
-    
+
 
 class ListContactInformationView(ListAPIView):
     serializer_class = ContactInformationListSerializer
@@ -99,9 +99,9 @@ class PaymentStatusView(BasePaymentView, RetrieveAPIView):
         # Now serialize updated payment
         serializer = self.get_serializer(payment)
         return Response(serializer.data)
-    
+
 class StripePaymentCallback(APIView):
-    
+
     def get(self, request, *args, **kwargs):
         # Get the payment id from the query params
         payment_id = request.GET.get("payment_id")
@@ -111,24 +111,24 @@ class StripePaymentCallback(APIView):
             stripe_service = StripeService()
 
             stripe_service.check_and_update_payment_status(payment)
-         
+
             return redirect(reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
-        
+
         except Payment.DoesNotExist:
             return Response(
-                {"status": "error", "message": "Payment not found"}, 
+                {"status": "error", "message": "Payment not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        
-    
+
+
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
 class CheckoutPaymentConfirmationView(TemplateView):
     template_name = "checkout/payment-confirmation.html"
 
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["return_url"] = settings.FRONTEND_URL

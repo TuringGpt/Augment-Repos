@@ -1,23 +1,15 @@
 import logging
+import pathlib
 from dataclasses import dataclass
-from typing import Any, Dict
-
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from typing import Any
+from uuid import uuid4
 
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
-
-import pathlib
-from uuid import uuid4
-
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
-
-
-
-
 
 
 def assert_settings(required_settings, error_message_prefix=""):
@@ -97,7 +89,7 @@ def s3_get_client():
 
 def s3_generate_presigned_post(
     *, file_path: str, file_type: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     credentials = s3_get_credentials()
     s3_client = s3_get_client()
 

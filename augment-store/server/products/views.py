@@ -1,25 +1,48 @@
-import typing
-import logging
 import functools
+import logging
+import typing
 
 logger = logging.getLogger(__name__)
 
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 
 from accounts.permissions import hasAdminOrMerchantRole
-from .models import Product, ProductBrand, ProductCategory
-from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
-from .filters import ProductFilter, ProductSearchFilter
-from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService
-from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 from core.search import AdvancedSearchMixin
+from core.service import CachedListMixin, CacheInvalidatorMixin
+
+from .filters import ProductFilter, ProductSearchFilter
+from .models import Product, ProductBrand, ProductCategory
+from .serializers import (
+    CreateProductBrandSerializer,
+    CreateProductCategorySerializer,
+    CreateProductSerializer,
+    ProductBrandDetailSerializer,
+    ProductBrandListSerializer,
+    ProductCategoryDetailSerializer,
+    ProductCategoryListSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer,
+)
+from .services import (
+    ProductBrandCacheService,
+    ProductCacheService,
+    ProductCategoryCacheService,
+    ProductService,
+    SearchService,
+)
+
 
 def track_search_query(func):
     """
@@ -47,7 +70,7 @@ class BaseBrandView:
 
     def get_queryset(self):
         return ProductBrand.objects.all().order_by('name').select_related('image', 'created_by',)
-    
+
 class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
     cache_service_class = ProductBrandCacheService
     cache_ttl = 60 * 60  * 24
@@ -72,7 +95,7 @@ class BaseCategoryView:
     def get_queryset(self):
         # Optimization: use prefetch_related for MPTT children
         return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent').prefetch_related('children')
-    
+
     def get_recursive_categories(self, category_id):
         """
         Fetch recursive category tree.
@@ -105,7 +128,7 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
         super().get_permissions()
         if self.request.method == "GET":
             return [IsAuthenticatedOrReadOnly()]
-        
+
         return [IsAuthenticatedOrReadOnly(), hasAdminOrMerchantRole()]
 
 
@@ -120,11 +143,11 @@ class BaseProductView(AutoOptimizeMixin):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        user: "User" = self.request.user
-        
+        user: User = self.request.user
+
         if (self.request.method in SAFE_METHODS) or user.is_admin:
             return queryset
-    
+
         return queryset.filter(created_by=user)
 
 class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
@@ -150,7 +173,7 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         query = (self.request.query_params.get('search') or "").strip()
         search_filter = self.get_search_query_filter(query)
         queryset = queryset.filter(search_filter)
-        
+
         # Integrate SearchService for analytics tracking
         if query:
             SearchService.log_search(
@@ -158,7 +181,7 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
                 results_count=queryset.count(),
                 user=self.request.user
             )
-            
+
         return queryset
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
@@ -175,12 +198,12 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         super().get_permissions()
         if self.request.method == "GET":
             return [IsAuthenticatedOrReadOnly()]
-        
+
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
-    
+
 
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
-        user: "User" = self.request.user
+        user: User = self.request.user
         product_service = ProductService()
         return product_service.recommend_products_for_user(user)

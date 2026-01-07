@@ -1,17 +1,19 @@
 import shlex
+
 from django.db.models import Q
+
 
 class SearchQueryParser:
     """
     Utility to parse search queries into components.
     Supports basic terms and quoted strings for grouped matches.
     """
-    
+
     @staticmethod
     def parse(query: str):
         if not query:
             return []
-        
+
         try:
             # shlex.split handles quoted strings naturally
             return shlex.split(query)
@@ -23,7 +25,7 @@ class AdvancedSearchMixin:
     """
     Mixin to enhance model filtering with advanced search capabilities.
     """
-    
+
     search_fields = ()
 
     def get_search_query_filter(self, query_string: str):

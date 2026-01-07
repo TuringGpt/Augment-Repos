@@ -1,9 +1,10 @@
-from core.tests import BaseAPITestCase
-from accounts.factory import UserFactory
-from rest_framework import status
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
+from rest_framework import status
+
+from accounts.factory import UserFactory
 from accounts.models import User
+from core.tests import BaseAPITestCase
 
 
 class AuthenticationTests(BaseAPITestCase):
@@ -172,7 +173,7 @@ class AuthenticationTests(BaseAPITestCase):
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
+
         # AND the response should contain success message
         self.assertEqual(response.data["message"], "Password reset email sent")
 

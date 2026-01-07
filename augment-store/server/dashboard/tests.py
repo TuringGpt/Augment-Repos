@@ -1,11 +1,14 @@
-from core.tests import BaseAPITestCase
-from rest_framework import status
-from django.urls import reverse
-from products.factory import SimpleProductFactory
-from carts.factory import SimpleCartItemFactory
-from dashboard.models import ProductStatistics, ProductView, CartAbandonment
 from datetime import timedelta
+
+from django.urls import reverse
 from django.utils import timezone
+from rest_framework import status
+
+from carts.factory import SimpleCartItemFactory
+from core.tests import BaseAPITestCase
+from dashboard.models import CartAbandonment, ProductStatistics, ProductView
+from products.factory import SimpleProductFactory
+
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""

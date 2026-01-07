@@ -1,8 +1,10 @@
 from factory import Faker, SubFactory
 from factory.django import DjangoModelFactory
-from products.factory import ProductFactory
+
 from accounts.factory import UserFactory
-from .models import ProductStatistics, ProductView, CartAbandonment
+from products.factory import ProductFactory
+
+from .models import CartAbandonment, ProductStatistics, ProductView
 
 
 class ProductStatisticsFactory(DjangoModelFactory):

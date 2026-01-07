@@ -1,7 +1,5 @@
 import hashlib
 
-from django.db.models import QuerySet
-
 
 class AutoOptimizeMixin:
     """
@@ -12,13 +10,13 @@ class AutoOptimizeMixin:
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
+
         if self.auto_select_related:
             queryset = queryset.select_related(*self.auto_select_related)
-            
+
         if self.auto_prefetch_related:
             queryset = queryset.prefetch_related(*self.auto_prefetch_related)
-            
+
         return queryset
 
 def get_query_hash(query_string):

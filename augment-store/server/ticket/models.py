@@ -1,6 +1,8 @@
 from django.db import models
+
 from accounts.models import User
 from core.models import BaseModel
+
 
 # Create your models here.
 class Ticket(BaseModel):

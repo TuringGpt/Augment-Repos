@@ -1,6 +1,7 @@
 
 from django.urls import path
-from .views import OrderPaymentView, StripePaymentCallback, PaymentStatusView
+
+from .views import OrderPaymentView, PaymentStatusView, StripePaymentCallback
 
 app_name = "checkout_payments"
 urlpatterns = [
