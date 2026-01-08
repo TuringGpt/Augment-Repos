@@ -5,43 +5,55 @@ import type {
   CustomerRetentionParams,
   CustomerSegmentsResponse,
   CustomerSegmentsParams,
+  NewVsReturningResponse,
+  NewVsReturningParams,
 } from '@features/customer-retention/types'
 
 interface CustomerStatisticsState {
   // Data
   customerRetention: CustomerRetentionResponse | null
   customerSegments: CustomerSegmentsResponse | null
+  newVsReturning: NewVsReturningResponse | null
 
   // Loading state
   isCustomerRetentionLoading: boolean
   isCustomerSegmentsLoading: boolean
+  isNewVsReturningLoading: boolean
 
   // Error state
   customerRetentionError: string | null
   customerSegmentsError: string | null
+  newVsReturningError: string | null
 
   // Actions
   fetchCustomerRetention: (params?: CustomerRetentionParams, signal?: AbortSignal) => Promise<void>
   fetchCustomerSegments: (params?: CustomerSegmentsParams, signal?: AbortSignal) => Promise<void>
+  fetchNewVsReturning: (params?: NewVsReturningParams, signal?: AbortSignal) => Promise<void>
   clearCustomerRetentionError: () => void
   clearCustomerSegmentsError: () => void
+  clearNewVsReturningError: () => void
   clearCustomerRetention: () => void
   clearCustomerSegments: () => void
+  clearNewVsReturning: () => void
 }
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
 let customerRetentionRequestCounter = 0
 let customerSegmentsRequestCounter = 0
+let newVsReturningRequestCounter = 0
 
 export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) => ({
   // Initial state
   customerRetention: null,
   customerSegments: null,
+  newVsReturning: null,
   isCustomerRetentionLoading: false,
   isCustomerSegmentsLoading: false,
+  isNewVsReturningLoading: false,
   customerRetentionError: null,
   customerSegmentsError: null,
+  newVsReturningError: null,
 
   // Actions
   fetchCustomerRetention: async (params?: CustomerRetentionParams, signal?: AbortSignal) => {
@@ -171,6 +183,71 @@ export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) 
       customerSegments: null,
       customerSegmentsError: null,
       isCustomerSegmentsLoading: false,
+    })
+  },
+
+  fetchNewVsReturning: async (params?: NewVsReturningParams, signal?: AbortSignal) => {
+    const requestId = ++newVsReturningRequestCounter
+
+    try {
+      set({ isNewVsReturningLoading: true, newVsReturningError: null })
+
+      const data = await customerStatisticsService.getNewVsReturning(params, signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === newVsReturningRequestCounter) {
+        set({
+          newVsReturning: data,
+          isNewVsReturningLoading: false,
+        })
+      }
+    } catch (error: unknown) {
+      // Ignore abort errors
+      const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === newVsReturningRequestCounter) {
+          set({ isNewVsReturningLoading: false })
+        }
+        return
+      }
+
+      // Only update error state if this is still the latest request
+      if (requestId === newVsReturningRequestCounter) {
+        let errorMessage = 'Failed to load new vs returning customers'
+
+        if (err?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view new vs returning customers'
+        } else if (err?.response?.status === 401) {
+          errorMessage = 'Please log in to view new vs returning customers'
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message
+        } else if (err?.message) {
+          errorMessage = err.message
+        }
+
+        set({
+          newVsReturningError: errorMessage,
+          isNewVsReturningLoading: false,
+        })
+      }
+    }
+  },
+
+  clearNewVsReturningError: () => {
+    set({ newVsReturningError: null })
+  },
+
+  clearNewVsReturning: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    newVsReturningRequestCounter += 1
+
+    set({
+      newVsReturning: null,
+      newVsReturningError: null,
+      isNewVsReturningLoading: false,
     })
   },
 }))
