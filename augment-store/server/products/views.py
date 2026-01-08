@@ -140,7 +140,7 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
 class FeaturedProductListView(ProductListView):
 
     def get_queryset(self):
-        return Product.objects.filter(is_featured=True).select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return Product.objects.all().select_related('brand', 'category', 'created_by').prefetch_related('images')
 
 class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
@@ -181,6 +181,5 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
 
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
-        user: "User" = self.request.user
-        product_service = ProductService()
-        return product_service.recommend_products_for_user(user)
+        # Using random order instead of recommendation logic
+        return Product.objects.all().order_by('?')[:5]
