@@ -631,6 +631,30 @@
       "searchResults": "Zeige {{count}} Suchergebnisse (begrenzt auf die ersten 100 Treffer)",
       "searchHelperText": "Suchergebnisse werden während der Eingabe angezeigt",
       "productsPerPage": "Produkte pro Seite:"
+    },
+    "customerSegments": {
+      "title": "Kundensegmente",
+      "subtitle": "Verteilung von {{count}} Kunden auf Segmente",
+      "noData": "Keine Kundensegmentdaten verfügbar",
+      "customers": "Kunden",
+      "percentage": "Prozentsatz",
+      "revenue": "Umsatz",
+      "avgOrderValue": "Durchschnittlicher Bestellwert",
+      "avgDaysSinceLastOrder": "Durchschnittliche Tage Seit Letzter Bestellung",
+      "segments": {
+        "newCustomers": "Neue Kunden",
+        "newCustomersDesc": "1 Bestellung",
+        "repeatCustomers": "Wiederkehrende Kunden",
+        "repeatCustomersDesc": "2-5 Bestellungen",
+        "loyalCustomers": "Treue Kunden",
+        "loyalCustomersDesc": "6-10 Bestellungen",
+        "vipCustomers": "VIP-Kunden",
+        "vipCustomersDesc": "11+ Bestellungen",
+        "atRisk": "Gefährdet",
+        "atRiskDesc": "Keine Bestellung seit 90+ Tagen",
+        "churned": "Verloren",
+        "churnedDesc": "Keine Bestellung seit 180+ Tagen"
+      }
     }
   }
 }

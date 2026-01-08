@@ -631,6 +631,30 @@
       "searchResults": "Mostrando {{count}} resultados de búsqueda (limitado a las primeras 100 coincidencias)",
       "searchHelperText": "Los resultados de búsqueda aparecerán mientras escribes",
       "productsPerPage": "Productos por página:"
+    },
+    "customerSegments": {
+      "title": "Segmentos de Clientes",
+      "subtitle": "Distribución de {{count}} clientes en segmentos",
+      "noData": "No hay datos de segmentos de clientes disponibles",
+      "customers": "Clientes",
+      "percentage": "Porcentaje",
+      "revenue": "Ingresos",
+      "avgOrderValue": "Valor Promedio de Pedido",
+      "avgDaysSinceLastOrder": "Días Promedio Desde Último Pedido",
+      "segments": {
+        "newCustomers": "Clientes Nuevos",
+        "newCustomersDesc": "1 pedido",
+        "repeatCustomers": "Clientes Recurrentes",
+        "repeatCustomersDesc": "2-5 pedidos",
+        "loyalCustomers": "Clientes Leales",
+        "loyalCustomersDesc": "6-10 pedidos",
+        "vipCustomers": "Clientes VIP",
+        "vipCustomersDesc": "11+ pedidos",
+        "atRisk": "En Riesgo",
+        "atRiskDesc": "Sin pedido en 90+ días",
+        "churned": "Perdidos",
+        "churnedDesc": "Sin pedido en 180+ días"
+      }
     }
   }
 }
