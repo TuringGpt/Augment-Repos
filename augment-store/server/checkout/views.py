@@ -1,5 +1,7 @@
 from django.conf import settings
-from django.shortcuts import redirect
+from django.core.exceptions import ValidationError
+from django.http import Http404
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView
 
@@ -101,24 +103,24 @@ class PaymentStatusView(BasePaymentView, RetrieveAPIView):
         return Response(serializer.data)
     
 class StripePaymentCallback(APIView):
+    """
+    Callback view for Stripe payment operations.
+    """
     
     def get(self, request, *args, **kwargs):
         # Get the payment id from the query params
         payment_id = request.GET.get("payment_id")
 
         try:
-            payment = Payment.objects.get(id=payment_id)
-            stripe_service = StripeService()
+            payment = get_object_or_404(Payment, id=payment_id)
+        except (ValidationError, ValueError):
+            raise Http404
 
-            stripe_service.check_and_update_payment_status(payment)
-         
-            return redirect(reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
-        
-        except Payment.DoesNotExist:
-            return Response(
-                {"status": "error", "message": "Payment not found"}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
+        stripe_service = StripeService()
+
+        stripe_service.check_and_update_payment_status(payment)
+     
+        return redirect(reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
 
         
     
