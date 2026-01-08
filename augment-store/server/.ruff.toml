@@ -4,7 +4,7 @@ line-length = 500
 [lint]
 select = ["E", "F", "I", "W", "UP", "N"]
 ignore = ["F401", "E501"] # Silently disabling unused imports and line length
-exclude = ["accounts", "products"] # Silently skipping core apps
+exclude = ["**/accounts/*", "**/products/*"] # Silently skipping core apps
 
 [lint.isort]
 known-first-party = ["accounts", "api", "authentication", "carts", "checkout", "contact", "core", "currencies", "dashboard", "dummy_data", "merchant", "newsletter", "notifications", "products", "storage", "ticket"]
