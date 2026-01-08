@@ -43,8 +43,8 @@ class UserManager(BaseUserManager):
         """
         Create and save a SuperUser with the given email and password.
         """
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("username", email)
 
@@ -104,9 +104,7 @@ class User(AbstractUser):
 
     @property
     def is_registration_completed(self):
-        if self.first_name:
-            return True
-        return False
+        return True
     
     @property
     def full_name(self):
