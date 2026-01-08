@@ -522,6 +522,14 @@
         "viewCount": "Aufrufanzahl",
         "noData": "Keine Daten zu meistgesehenen Produkten verfügbar"
       },
+      "mostAddedToCart": {
+        "title": "Am häufigsten in den Warenkorb gelegte Produkte",
+        "subtitle": "Top {{count}} Produkte nach Warenkorbhinzufügungen",
+        "cartAdds": "Warenkorbhinzufügungen",
+        "price": "Preis",
+        "cartAddCount": "Anzahl der Warenkorbhinzufügungen",
+        "noData": "Keine Daten zu am häufigsten in den Warenkorb gelegten Produkten verfügbar"
+      },
       "table": {
         "title": "Detaillierte Produktanalyse",
         "description": "Umfassende Ansicht der Produktleistungsmetriken einschließlich Aufrufe, Warenkorbinteraktionen und Käufe",
