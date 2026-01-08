@@ -33,6 +33,7 @@ import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
 import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
 import MostViewedProductsChart from '@features/admin-dashboard/components/MostViewedProductsChart'
+import MostAddedToCartChart from '@features/admin-dashboard/components/MostAddedToCartChart'
 import ProductPerformanceChart from '@features/admin-dashboard/components/ProductPerformanceChart'
 
 /**
@@ -59,6 +60,11 @@ const AdminProductsPage = () => {
     mostViewedError,
     fetchMostViewedProducts,
     clearMostViewedError,
+    mostAddedToCartProducts,
+    isMostAddedToCartLoading,
+    mostAddedToCartError,
+    fetchMostAddedToCartProducts,
+    clearMostAddedToCartError,
     productPerformance,
     isProductPerformanceLoading,
     productPerformanceError,
@@ -71,6 +77,7 @@ const AdminProductsPage = () => {
   const abortControllerRef = useRef<AbortController | null>(null)
   const bestSellingAbortControllerRef = useRef<AbortController | null>(null)
   const mostViewedAbortControllerRef = useRef<AbortController | null>(null)
+  const mostAddedToCartAbortControllerRef = useRef<AbortController | null>(null)
   const productPerformanceAbortControllerRef = useRef<AbortController | null>(null)
 
   // Fetch statistics on mount and when page/rowsPerPage changes
@@ -113,6 +120,21 @@ const AdminProductsPage = () => {
       // Cleanup: abort any pending requests
       if (mostViewedAbortControllerRef.current) {
         mostViewedAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch most added to cart products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadMostAddedToCartProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (mostAddedToCartAbortControllerRef.current) {
+        mostAddedToCartAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -203,6 +225,29 @@ const AdminProductsPage = () => {
     }
   }
 
+  const loadMostAddedToCartProducts = async () => {
+    // Abort previous request if any
+    if (mostAddedToCartAbortControllerRef.current) {
+      mostAddedToCartAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    mostAddedToCartAbortControllerRef.current = abortController
+
+    try {
+      await fetchMostAddedToCartProducts(
+        {
+          limit: 10, // Get top 10 most added to cart products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Error is handled in the store
+      console.error('Failed to fetch most added to cart products:', err)
+    }
+  }
+
   const loadProductPerformance = async () => {
     // Abort previous request if any
     if (productPerformanceAbortControllerRef.current) {
@@ -240,6 +285,7 @@ const AdminProductsPage = () => {
     loadStatistics()
     loadBestSellingProducts()
     loadMostViewedProducts()
+    loadMostAddedToCartProducts()
     loadProductPerformance()
   }
 
@@ -323,6 +369,13 @@ const AdminProductsPage = () => {
         </Alert>
       )}
 
+      {/* Most Added to Cart Error Alert */}
+      {mostAddedToCartError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearMostAddedToCartError}>
+          {mostAddedToCartError}
+        </Alert>
+      )}
+
       {/* Product Performance Error Alert */}
       {productPerformanceError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={clearProductPerformanceError}>
@@ -346,6 +399,16 @@ const AdminProductsPage = () => {
           <MostViewedProductsChart
             data={mostViewedProducts?.results || []}
             isLoading={isMostViewedLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Most Added to Cart Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <MostAddedToCartChart
+            data={mostAddedToCartProducts?.results || []}
+            isLoading={isMostAddedToCartLoading}
           />
         </Grid>
       </Grid>

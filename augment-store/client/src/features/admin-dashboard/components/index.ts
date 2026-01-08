@@ -4,6 +4,7 @@ export { default as TopProductsTable } from './TopProductsTable'
 export { default as CategoryPerformanceChart } from './CategoryPerformanceChart'
 export { default as BestSellingProductsChart } from './BestSellingProductsChart'
 export { default as MostViewedProductsChart } from './MostViewedProductsChart'
+export { default as MostAddedToCartChart } from './MostAddedToCartChart'
 export { default as ProductPerformanceChart } from './ProductPerformanceChart'
 export { default as CustomerRetentionChart } from './CustomerRetentionChart'
 

@@ -522,6 +522,14 @@
         "viewCount": "View Count",
         "noData": "No most viewed products data available"
       },
+      "mostAddedToCart": {
+        "title": "Most Added to Cart Products",
+        "subtitle": "Top {{count}} products by cart add count",
+        "cartAdds": "Cart Adds",
+        "price": "Price",
+        "cartAddCount": "Cart Add Count",
+        "noData": "No most added to cart products data available"
+      },
       "table": {
         "title": "Detailed Product Analytics",
         "description": "Comprehensive view of product performance metrics including views, cart interactions, and purchases",

@@ -522,6 +522,14 @@
         "viewCount": "Cantidad de vistas",
         "noData": "No hay datos de productos más vistos disponibles"
       },
+      "mostAddedToCart": {
+        "title": "Productos más agregados al carrito",
+        "subtitle": "Los {{count}} productos principales por cantidad de agregados al carrito",
+        "cartAdds": "Agregados al carrito",
+        "price": "Precio",
+        "cartAddCount": "Cantidad de agregados al carrito",
+        "noData": "No hay datos de productos más agregados al carrito disponibles"
+      },
       "table": {
         "title": "Análisis Detallado de Productos",
         "description": "Vista completa de las métricas de rendimiento del producto, incluidas vistas, interacciones del carrito y compras",
