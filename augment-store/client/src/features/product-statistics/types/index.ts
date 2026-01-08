@@ -67,6 +67,22 @@ export interface MostViewedProductsParams {
 }
 
 /**
+ * Response from /api/v1/dashboard/statistics/most_added_to_cart/ endpoint
+ */
+export interface MostAddedToCartProductsResponse {
+  count: number
+  results: ProductStatisticsItem[]
+  metric: string
+}
+
+/**
+ * Query parameters for most added to cart products endpoint
+ */
+export interface MostAddedToCartProductsParams {
+  limit?: number
+}
+
+/**
  * Single product statistics response (non-paginated)
  * Response from /api/v1/dashboard/statistics/{id}/
  */

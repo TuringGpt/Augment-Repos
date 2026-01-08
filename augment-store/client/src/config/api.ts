@@ -123,6 +123,7 @@ export const API_ENDPOINTS = {
     PRODUCT_STATISTICS: '/dashboard/statistics/',
     BEST_SELLING_PRODUCTS: '/dashboard/statistics/best_selling/',
     MOST_VIEWED_PRODUCTS: '/dashboard/statistics/most_viewed/',
+    MOST_ADDED_TO_CART: '/dashboard/statistics/most_added_to_cart/',
     PRODUCT_STATISTICS_BY_ID: (id: string) => `/dashboard/statistics/${encodeURIComponent(id)}/`,
     PRODUCT_PERFORMANCE: '/dashboard/statistics/product_performance/',
     CUSTOMER_RETENTION: '/dashboard/statistics/customer_retention/',
