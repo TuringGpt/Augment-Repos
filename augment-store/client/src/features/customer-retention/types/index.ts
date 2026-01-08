@@ -119,3 +119,56 @@ export interface CustomerSegmentsParams {
   days?: number
 }
 
+/**
+ * New vs Returning Customers Types
+ * These types match the backend API response from /dashboard/statistics/new_vs_returning/
+ */
+
+/**
+ * Customer data for a specific time period
+ */
+export interface CustomerPeriodData {
+  /** Period identifier (e.g., "2024-01" for monthly, "2024-W01" for weekly) */
+  period: string
+  /** Number of new customers in this period */
+  new_customers: number
+  /** Number of returning customers in this period */
+  returning_customers: number
+  /** Total customers in this period */
+  total_customers: number
+  /** Percentage of new customers */
+  new_customers_percentage: number
+  /** Percentage of returning customers */
+  returning_customers_percentage: number
+}
+
+/**
+ * Complete new vs returning customers response from the backend
+ * Response from /api/v1/dashboard/statistics/new_vs_returning/
+ *
+ * Backend endpoint: GET /dashboard/statistics/new_vs_returning/
+ * Query params: days (default: 365, max: 3650)
+ */
+export interface NewVsReturningResponse {
+  /** Number of days included in the analysis */
+  period_days: number
+  /** Total new customers in the entire period */
+  total_new_customers: number
+  /** Total returning customers in the entire period */
+  total_returning_customers: number
+  /** Overall percentage of new customers */
+  new_customers_percentage: number
+  /** Overall percentage of returning customers */
+  returning_customers_percentage: number
+  /** Time series data broken down by period */
+  time_series: CustomerPeriodData[]
+}
+
+/**
+ * Query parameters for new vs returning endpoint
+ */
+export interface NewVsReturningParams {
+  /** Number of days to look back (default: 365, max: 3650) */
+  days?: number
+}
+

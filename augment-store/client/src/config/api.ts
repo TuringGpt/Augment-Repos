@@ -127,6 +127,7 @@ export const API_ENDPOINTS = {
     PRODUCT_PERFORMANCE: '/dashboard/statistics/product_performance/',
     CUSTOMER_RETENTION: '/dashboard/statistics/customer_retention/',
     CUSTOMER_SEGMENTS: '/dashboard/statistics/customer_segments/',
+    NEW_VS_RETURNING: '/dashboard/statistics/new_vs_returning/',
   },
 }
 
