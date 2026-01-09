@@ -21,13 +21,15 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
         prefetch_related_objects(
             [cart], 
             'items__product__brand',
+            'items__product__category',
             'items__product__images'
         )
         return cart
 
 class BaseCartItemView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
-    auto_select_related = ['product', 'product__brand']
+    queryset = CartItem.objects.all()
+    auto_select_related = ['product', 'product__brand', 'product__category']
 
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
@@ -41,17 +43,22 @@ class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
     
 
 
+from products.models import Product
+
 class BaseWishlistView:
     permission_classes = [IsAuthenticated]
 
 
 class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView):
     serializer_class = ProductListSerializer
-    auto_select_related = ['brand', 'created_by']
+    queryset = Product.objects.all()
+    auto_select_related = ['brand', 'category', 'created_by']
     auto_prefetch_related = ['images']
 
     def get_queryset(self):
-        return Wishlist.objects.get_user_wishlist(self.request.user).products.all()
+        return super().get_queryset().filter(
+            wishlist__user=self.request.user
+        )
     
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
