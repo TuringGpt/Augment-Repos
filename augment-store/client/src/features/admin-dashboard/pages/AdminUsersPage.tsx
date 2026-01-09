@@ -175,7 +175,6 @@ const AdminUsersPage = () => {
               <MenuItem value={90}>Last 90 Days</MenuItem>
               <MenuItem value={180}>Last 6 Months</MenuItem>
               <MenuItem value={365}>Last Year</MenuItem>
-              <MenuItem value={730}>Last 2 Years</MenuItem>
             </Select>
           </FormControl>
           <Button

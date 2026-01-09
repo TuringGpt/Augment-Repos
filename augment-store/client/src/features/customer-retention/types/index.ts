@@ -145,7 +145,7 @@ export interface CustomerSegmentData {
  * Response from /api/v1/dashboard/statistics/new_vs_returning/
  *
  * Backend endpoint: GET /dashboard/statistics/new_vs_returning/
- * Query params: days (default: 365, max: 3650)
+ * Query params: days (default: 30, max: 365)
  */
 export interface NewVsReturningResponse {
   /** Number of days included in the analysis */
@@ -160,7 +160,7 @@ export interface NewVsReturningResponse {
  * Query parameters for new vs returning endpoint
  */
 export interface NewVsReturningParams {
-  /** Number of days to look back (default: 365, max: 3650) */
+  /** Number of days to look back (default: 30, max: 365) */
   days?: number
 }
 
