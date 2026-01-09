@@ -164,3 +164,80 @@ export interface NewVsReturningParams {
   days?: number
 }
 
+/**
+ * Customer Purchase Behavior Types
+ * These types match the backend API response from /dashboard/statistics/customer_purchase_behavior/
+ */
+
+/**
+ * Most active customer data
+ */
+export interface MostActiveCustomer {
+  /** Customer UUID */
+  customer_id: string
+  /** Customer full name */
+  customer_name: string
+  /** Customer email address */
+  customer_email: string
+  /** Number of orders placed in the period */
+  order_count: number
+  /** Total amount spent in the period */
+  total_spent: number
+  /** Customer's favorite product category */
+  favorite_category: string
+  /** Customer's preferred payment method */
+  preferred_payment_method: string
+}
+
+/**
+ * Category preference data
+ */
+export interface CategoryPreference {
+  /** Category name */
+  category: string
+  /** Number of unique customers who purchased from this category */
+  unique_customers: number
+  /** Total number of orders in this category */
+  total_orders: number
+  /** Average order value for this category */
+  avg_order_value: number
+}
+
+/**
+ * Payment method distribution data
+ */
+export interface PaymentMethodDistribution {
+  /** Number of customers using this payment method */
+  customers: number
+  /** Percentage of customers using this payment method */
+  percentage: number
+}
+
+/**
+ * Complete customer purchase behavior response from the backend
+ * Response from /api/v1/dashboard/statistics/customer_purchase_behavior/
+ *
+ * Backend endpoint: GET /dashboard/statistics/customer_purchase_behavior/
+ * Query params: days (default: 90, max: 365), limit (default: 20, max: 100)
+ */
+export interface CustomerPurchaseBehaviorResponse {
+  /** Number of days included in the analysis */
+  period_days: number
+  /** Top customers by order frequency */
+  most_active_customers: MostActiveCustomer[]
+  /** Popular categories with customer counts */
+  category_preferences: CategoryPreference[]
+  /** Payment method usage by customers (keyed by payment method name) */
+  payment_method_distribution: Record<string, PaymentMethodDistribution>
+}
+
+/**
+ * Query parameters for customer purchase behavior endpoint
+ */
+export interface CustomerPurchaseBehaviorParams {
+  /** Number of days to look back (default: 90, max: 365) */
+  days?: number
+  /** Number of results to return (default: 20, max: 100) */
+  limit?: number
+}
+

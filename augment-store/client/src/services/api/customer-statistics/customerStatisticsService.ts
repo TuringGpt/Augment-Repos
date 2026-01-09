@@ -7,6 +7,8 @@ import type {
   CustomerSegmentsParams,
   NewVsReturningResponse,
   NewVsReturningParams,
+  CustomerPurchaseBehaviorResponse,
+  CustomerPurchaseBehaviorParams,
 } from '@features/customer-retention/types'
 
 export const customerStatisticsService = {
@@ -124,6 +126,56 @@ export const customerStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch new vs returning customers:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get customer purchase behavior analysis
+   *
+   * @param params - Query parameters (days, limit)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with customer purchase behavior data
+   */
+  getCustomerPurchaseBehavior: async (
+    params?: CustomerPurchaseBehaviorParams,
+    signal?: AbortSignal
+  ): Promise<CustomerPurchaseBehaviorResponse> => {
+    try {
+      // Validate parameters if provided - ensure they're finite numbers before clamping
+      // Backend expects days (max: 365) and limit (max: 100) as query parameters
+      // Use explicit undefined check to avoid treating 0 as falsy
+      const validatedParams: { days?: number; limit?: number } = {}
+
+      if (params?.days !== undefined) {
+        validatedParams.days = Number.isFinite(params.days)
+          ? Math.max(1, Math.min(365, params.days))
+          : undefined
+      }
+
+      if (params?.limit !== undefined) {
+        validatedParams.limit = Number.isFinite(params.limit)
+          ? Math.max(1, Math.min(100, params.limit))
+          : undefined
+      }
+
+      // Filter out undefined values to avoid sending empty query params like "days=" or "limit="
+      const filteredParams = Object.fromEntries(
+        Object.entries(validatedParams).filter(([_, value]) => value !== undefined)
+      )
+
+      // Backend uses GET method with days and limit as query parameters
+      const response = await apiClient.get<CustomerPurchaseBehaviorResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.CUSTOMER_PURCHASE_BEHAVIOR,
+        {
+          params: Object.keys(filteredParams).length > 0 ? filteredParams : undefined,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch customer purchase behavior:', error)
       throw error
     }
   },
