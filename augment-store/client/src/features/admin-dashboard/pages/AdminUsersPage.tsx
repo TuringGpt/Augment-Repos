@@ -5,7 +5,6 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress,
   Button,
   FormControl,
   InputLabel,
@@ -207,49 +206,32 @@ const AdminUsersPage = () => {
         </Alert>
       )}
 
-      {/* Loading State */}
-      {(isCustomerRetentionLoading && !customerRetention) ||
-       (isCustomerSegmentsLoading && !customerSegments) ||
-       (isNewVsReturningLoading && !newVsReturning) ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
-      ) : customerRetention || customerSegments || newVsReturning ? (
-        <>
-          {/* Charts */}
-          <Grid container spacing={3}>
-            {/* Customer Retention Chart */}
-            {customerRetention && (
-              <Grid item xs={12}>
-                <CustomerRetentionChart
-                  data={customerRetention}
-                  isLoading={isCustomerRetentionLoading}
-                />
-              </Grid>
-            )}
+      {/* Charts */}
+      <Grid container spacing={3}>
+        {/* Customer Retention Chart */}
+        <Grid item xs={12}>
+          <CustomerRetentionChart
+            data={customerRetention}
+            isLoading={isCustomerRetentionLoading}
+          />
+        </Grid>
 
-            {/* New vs Returning Customers Chart */}
-            {newVsReturning && (
-              <Grid item xs={12} md={6}>
-                <NewVsReturningChart
-                  data={newVsReturning}
-                  isLoading={isNewVsReturningLoading}
-                />
-              </Grid>
-            )}
+        {/* New vs Returning Customers Chart */}
+        <Grid item xs={12} md={6}>
+          <NewVsReturningChart
+            data={newVsReturning}
+            isLoading={isNewVsReturningLoading}
+          />
+        </Grid>
 
-            {/* Customer Segments Chart */}
-            {customerSegments && (
-              <Grid item xs={12} md={6}>
-                <CustomerSegmentsChart
-                  data={customerSegments}
-                  isLoading={isCustomerSegmentsLoading}
-                />
-              </Grid>
-            )}
-          </Grid>
-        </>
-      ) : null}
+        {/* Customer Segments Chart */}
+        <Grid item xs={12} md={6}>
+          <CustomerSegmentsChart
+            data={customerSegments}
+            isLoading={isCustomerSegmentsLoading}
+          />
+        </Grid>
+      </Grid>
     </Container>
   )
 }

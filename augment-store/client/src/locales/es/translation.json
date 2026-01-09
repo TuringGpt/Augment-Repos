@@ -673,7 +673,14 @@
       "returningCustomerRate": "Tasa de Clientes Recurrentes",
       "newCustomers": "Clientes Nuevos",
       "returningCustomers": "Clientes Recurrentes",
-      "total": "Total"
+      "total": "Total",
+      "customers": "Clientes",
+      "orders": "Pedidos",
+      "revenue": "Ingresos",
+      "avgOrderValue": "Valor Promedio del Pedido",
+      "newCustomerRevenue": "Ingresos de Clientes Nuevos",
+      "returningCustomerRevenue": "Ingresos de Clientes Recurrentes",
+      "ofTotal": "del total"
     }
   }
 }

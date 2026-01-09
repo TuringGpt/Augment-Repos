@@ -673,7 +673,14 @@
       "returningCustomerRate": "Wiederkehrende Kundenrate",
       "newCustomers": "Neue Kunden",
       "returningCustomers": "Wiederkehrende Kunden",
-      "total": "Gesamt"
+      "total": "Gesamt",
+      "customers": "Kunden",
+      "orders": "Bestellungen",
+      "revenue": "Umsatz",
+      "avgOrderValue": "Durchschnittlicher Bestellwert",
+      "newCustomerRevenue": "Umsatz Neuer Kunden",
+      "returningCustomerRevenue": "Umsatz Wiederkehrender Kunden",
+      "ofTotal": "vom Gesamt"
     }
   }
 }

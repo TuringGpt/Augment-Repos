@@ -673,7 +673,14 @@
       "returningCustomerRate": "Taux de Clients Réguliers",
       "newCustomers": "Nouveaux Clients",
       "returningCustomers": "Clients Réguliers",
-      "total": "Total"
+      "total": "Total",
+      "customers": "Clients",
+      "orders": "Commandes",
+      "revenue": "Revenus",
+      "avgOrderValue": "Valeur Moyenne de Commande",
+      "newCustomerRevenue": "Revenus des Nouveaux Clients",
+      "returningCustomerRevenue": "Revenus des Clients Réguliers",
+      "ofTotal": "du total"
     }
   }
 }

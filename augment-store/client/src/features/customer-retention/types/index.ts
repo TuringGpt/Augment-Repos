@@ -125,21 +125,19 @@ export interface CustomerSegmentsParams {
  */
 
 /**
- * Customer data for a specific time period
+ * Customer segment data (new or returning)
  */
-export interface CustomerPeriodData {
-  /** Period identifier (e.g., "2024-01" for monthly, "2024-W01" for weekly) */
-  period: string
-  /** Number of new customers in this period */
-  new_customers: number
-  /** Number of returning customers in this period */
-  returning_customers: number
-  /** Total customers in this period */
-  total_customers: number
-  /** Percentage of new customers */
-  new_customers_percentage: number
-  /** Percentage of returning customers */
-  returning_customers_percentage: number
+export interface CustomerSegmentData {
+  /** Number of customers in this segment */
+  count: number
+  /** Number of orders from this segment */
+  orders: number
+  /** Total revenue from this segment */
+  revenue: number
+  /** Percentage of total revenue */
+  percentage_of_revenue: number
+  /** Average order value for this segment */
+  avg_order_value: number
 }
 
 /**
@@ -152,16 +150,10 @@ export interface CustomerPeriodData {
 export interface NewVsReturningResponse {
   /** Number of days included in the analysis */
   period_days: number
-  /** Total new customers in the entire period */
-  total_new_customers: number
-  /** Total returning customers in the entire period */
-  total_returning_customers: number
-  /** Overall percentage of new customers */
-  new_customers_percentage: number
-  /** Overall percentage of returning customers */
-  returning_customers_percentage: number
-  /** Time series data broken down by period */
-  time_series: CustomerPeriodData[]
+  /** New customers data */
+  new_customers: CustomerSegmentData
+  /** Returning customers data */
+  returning_customers: CustomerSegmentData
 }
 
 /**
