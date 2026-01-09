@@ -663,6 +663,17 @@
         "churned": "Perdus",
         "churnedDesc": "Aucune commande depuis 180+ jours"
       }
+    },
+    "newVsReturning": {
+      "title": "Nouveaux vs Clients Réguliers",
+      "noData": "Aucune donnée disponible",
+      "totalNewCustomers": "Total de Nouveaux Clients",
+      "totalReturningCustomers": "Total de Clients Réguliers",
+      "newCustomerRate": "Taux de Nouveaux Clients",
+      "returningCustomerRate": "Taux de Clients Réguliers",
+      "newCustomers": "Nouveaux Clients",
+      "returningCustomers": "Clients Réguliers",
+      "total": "Total"
     }
   }
 }

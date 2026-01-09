@@ -663,6 +663,17 @@
         "churned": "Perdidos",
         "churnedDesc": "Sin pedido en 180+ días"
       }
+    },
+    "newVsReturning": {
+      "title": "Clientes Nuevos vs Recurrentes",
+      "noData": "No hay datos disponibles",
+      "totalNewCustomers": "Total de Clientes Nuevos",
+      "totalReturningCustomers": "Total de Clientes Recurrentes",
+      "newCustomerRate": "Tasa de Clientes Nuevos",
+      "returningCustomerRate": "Tasa de Clientes Recurrentes",
+      "newCustomers": "Clientes Nuevos",
+      "returningCustomers": "Clientes Recurrentes",
+      "total": "Total"
     }
   }
 }
