@@ -7,6 +7,8 @@ import type {
   CustomerSegmentsParams,
   NewVsReturningResponse,
   NewVsReturningParams,
+  CustomerPurchaseBehaviorResponse,
+  CustomerPurchaseBehaviorParams,
 } from '@features/customer-retention/types'
 
 interface CustomerStatisticsState {
@@ -14,27 +16,33 @@ interface CustomerStatisticsState {
   customerRetention: CustomerRetentionResponse | null
   customerSegments: CustomerSegmentsResponse | null
   newVsReturning: NewVsReturningResponse | null
+  customerPurchaseBehavior: CustomerPurchaseBehaviorResponse | null
 
   // Loading state
   isCustomerRetentionLoading: boolean
   isCustomerSegmentsLoading: boolean
   isNewVsReturningLoading: boolean
+  isCustomerPurchaseBehaviorLoading: boolean
 
   // Error state
   customerRetentionError: string | null
   customerSegmentsError: string | null
   newVsReturningError: string | null
+  customerPurchaseBehaviorError: string | null
 
   // Actions
   fetchCustomerRetention: (params?: CustomerRetentionParams, signal?: AbortSignal) => Promise<void>
   fetchCustomerSegments: (params?: CustomerSegmentsParams, signal?: AbortSignal) => Promise<void>
   fetchNewVsReturning: (params?: NewVsReturningParams, signal?: AbortSignal) => Promise<void>
+  fetchCustomerPurchaseBehavior: (params?: CustomerPurchaseBehaviorParams, signal?: AbortSignal) => Promise<void>
   clearCustomerRetentionError: () => void
   clearCustomerSegmentsError: () => void
   clearNewVsReturningError: () => void
+  clearCustomerPurchaseBehaviorError: () => void
   clearCustomerRetention: () => void
   clearCustomerSegments: () => void
   clearNewVsReturning: () => void
+  clearCustomerPurchaseBehavior: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -42,18 +50,22 @@ interface CustomerStatisticsState {
 let customerRetentionRequestCounter = 0
 let customerSegmentsRequestCounter = 0
 let newVsReturningRequestCounter = 0
+let customerPurchaseBehaviorRequestCounter = 0
 
 export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) => ({
   // Initial state
   customerRetention: null,
   customerSegments: null,
   newVsReturning: null,
+  customerPurchaseBehavior: null,
   isCustomerRetentionLoading: false,
   isCustomerSegmentsLoading: false,
   isNewVsReturningLoading: false,
+  isCustomerPurchaseBehaviorLoading: false,
   customerRetentionError: null,
   customerSegmentsError: null,
   newVsReturningError: null,
+  customerPurchaseBehaviorError: null,
 
   // Actions
   fetchCustomerRetention: async (params?: CustomerRetentionParams, signal?: AbortSignal) => {
@@ -248,6 +260,71 @@ export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) 
       newVsReturning: null,
       newVsReturningError: null,
       isNewVsReturningLoading: false,
+    })
+  },
+
+  fetchCustomerPurchaseBehavior: async (params?: CustomerPurchaseBehaviorParams, signal?: AbortSignal) => {
+    const requestId = ++customerPurchaseBehaviorRequestCounter
+
+    try {
+      set({ isCustomerPurchaseBehaviorLoading: true, customerPurchaseBehaviorError: null })
+
+      const data = await customerStatisticsService.getCustomerPurchaseBehavior(params, signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === customerPurchaseBehaviorRequestCounter) {
+        set({
+          customerPurchaseBehavior: data,
+          isCustomerPurchaseBehaviorLoading: false,
+        })
+      }
+    } catch (error: unknown) {
+      // Ignore abort errors
+      const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === customerPurchaseBehaviorRequestCounter) {
+          set({ isCustomerPurchaseBehaviorLoading: false })
+        }
+        return
+      }
+
+      // Only update error state if this is still the latest request
+      if (requestId === customerPurchaseBehaviorRequestCounter) {
+        let errorMessage = 'Failed to load customer purchase behavior'
+
+        if (err?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view customer purchase behavior'
+        } else if (err?.response?.status === 401) {
+          errorMessage = 'Please log in to view customer purchase behavior'
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message
+        } else if (err?.message) {
+          errorMessage = err.message
+        }
+
+        set({
+          customerPurchaseBehaviorError: errorMessage,
+          isCustomerPurchaseBehaviorLoading: false,
+        })
+      }
+    }
+  },
+
+  clearCustomerPurchaseBehaviorError: () => {
+    set({ customerPurchaseBehaviorError: null })
+  },
+
+  clearCustomerPurchaseBehavior: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    customerPurchaseBehaviorRequestCounter += 1
+
+    set({
+      customerPurchaseBehavior: null,
+      customerPurchaseBehaviorError: null,
+      isCustomerPurchaseBehaviorLoading: false,
     })
   },
 }))
