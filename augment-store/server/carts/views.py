@@ -1,14 +1,12 @@
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
-from .models import Cart, CartItem, Wishlist
 
+from .models import Cart, CartItem, Wishlist
 from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
 from products.serializers import ProductListSerializer
-
-
+from core.optimization import AutoOptimizeMixin
 
 class BaseCartView:
     permission_classes = [IsAuthenticated]
@@ -19,22 +17,21 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
 
     def get_object(self):
         cart = Cart.objects.get_user_cart(self.request.user)
-        # Prefetch related objects for the cart instance
         from django.db.models import prefetch_related_objects
         prefetch_related_objects(
             [cart], 
             'items__product__brand',
-            'items__product__category',
             'items__product__images'
         )
         return cart
 
-class BaseCartItemView:
+class BaseCartItemView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    auto_select_related = ['product', 'product__brand']
 
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
-        return user_cart.items.all().select_related('product', 'product__brand', 'product__category')
+        return super().get_queryset().filter(cart=user_cart)
     
 class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
@@ -48,13 +45,13 @@ class BaseWishlistView:
     permission_classes = [IsAuthenticated]
 
 
-class ListWishListProductsView(BaseWishlistView, ListAPIView):
+class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView):
     serializer_class = ProductListSerializer
+    auto_select_related = ['brand', 'created_by']
+    auto_prefetch_related = ['images']
 
     def get_queryset(self):
-        return Wishlist.objects.get_user_wishlist(self.request.user).products.all().select_related(
-            'brand', 'category', 'created_by'
-        ).prefetch_related('images')
+        return Wishlist.objects.get_user_wishlist(self.request.user).products.all()
     
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
