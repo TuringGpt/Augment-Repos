@@ -26,6 +26,7 @@ class MerchantProductListView(ListAPIView):
 class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantOrdersSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
     auto_prefetch_related = [
         'items',
         'items__product',
