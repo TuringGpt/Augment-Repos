@@ -33,7 +33,7 @@ class BaseCartItemView(AutoOptimizeMixin):
 
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
-        return super().get_queryset().filter(cart=user_cart)
+        return super().get_queryset().filter(carts=user_cart)
     
 class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
