@@ -102,12 +102,12 @@ export const customerStatisticsService = {
   ): Promise<NewVsReturningResponse> => {
     try {
       // Validate days parameter if provided - ensure it's a finite number before clamping
-      // Backend expects days as query parameter (max: 3650 per backend validation)
+      // Backend expects days as query parameter (max: 365 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(3650, params.days))
+              ? Math.max(1, Math.min(365, params.days))
               : undefined,
           }
         : undefined

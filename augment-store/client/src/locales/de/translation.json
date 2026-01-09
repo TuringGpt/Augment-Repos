@@ -663,6 +663,24 @@
         "churned": "Verloren",
         "churnedDesc": "Keine Bestellung seit 180+ Tagen"
       }
+    },
+    "newVsReturning": {
+      "title": "Neue vs Wiederkehrende Kunden",
+      "noData": "Keine Daten verfügbar",
+      "totalNewCustomers": "Gesamtzahl Neuer Kunden",
+      "totalReturningCustomers": "Gesamtzahl Wiederkehrender Kunden",
+      "newCustomerRate": "Neue Kundenrate",
+      "returningCustomerRate": "Wiederkehrende Kundenrate",
+      "newCustomers": "Neue Kunden",
+      "returningCustomers": "Wiederkehrende Kunden",
+      "total": "Gesamt",
+      "customers": "Kunden",
+      "orders": "Bestellungen",
+      "revenue": "Umsatz",
+      "avgOrderValue": "Durchschnittlicher Bestellwert",
+      "newCustomerRevenue": "Umsatz Neuer Kunden",
+      "returningCustomerRevenue": "Umsatz Wiederkehrender Kunden",
+      "ofTotal": "vom Gesamt"
     }
   }
 }

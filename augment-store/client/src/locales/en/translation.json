@@ -663,6 +663,24 @@
         "churned": "Churned",
         "churnedDesc": "No order in 180+ days"
       }
+    },
+    "newVsReturning": {
+      "title": "New vs Returning Customers",
+      "noData": "No data available",
+      "totalNewCustomers": "Total New Customers",
+      "totalReturningCustomers": "Total Returning Customers",
+      "newCustomerRate": "New Customer Rate",
+      "returningCustomerRate": "Returning Customer Rate",
+      "newCustomers": "New Customers",
+      "returningCustomers": "Returning Customers",
+      "total": "Total",
+      "customers": "Customers",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "avgOrderValue": "Avg Order Value",
+      "newCustomerRevenue": "New Customer Revenue",
+      "returningCustomerRevenue": "Returning Customer Revenue",
+      "ofTotal": "of total"
     }
   }
 }
