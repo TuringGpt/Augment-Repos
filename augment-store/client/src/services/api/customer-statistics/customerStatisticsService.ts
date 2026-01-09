@@ -159,11 +159,16 @@ export const customerStatisticsService = {
           : undefined
       }
 
+      // Filter out undefined values to avoid sending empty query params like "days=" or "limit="
+      const filteredParams = Object.fromEntries(
+        Object.entries(validatedParams).filter(([_, value]) => value !== undefined)
+      )
+
       // Backend uses GET method with days and limit as query parameters
       const response = await apiClient.get<CustomerPurchaseBehaviorResponse>(
         API_ENDPOINTS.ADMIN_DASHBOARD.CUSTOMER_PURCHASE_BEHAVIOR,
         {
-          params: Object.keys(validatedParams).length > 0 ? validatedParams : undefined,
+          params: Object.keys(filteredParams).length > 0 ? filteredParams : undefined,
           signal,
         }
       )
