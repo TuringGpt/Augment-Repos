@@ -151,14 +151,17 @@ export const productService = {
   /**
    * Get all categories from backend API
    * Fetches all pages of categories using pagination
+   * @param signal - Optional AbortSignal for request cancellation
    * @throws Error if the API request fails
    */
-  getCategories: async (): Promise<Category[]> => {
+  getCategories: async (signal?: AbortSignal): Promise<Category[]> => {
     let allCategories: Category[] = []
     let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
 
     while (nextUrl) {
-      const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
+      const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl, {
+        signal,
+      })
       // Transform backend categories to frontend format
       const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
       allCategories = [...allCategories, ...transformedCategories]

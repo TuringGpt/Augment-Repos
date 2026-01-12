@@ -560,6 +560,20 @@
       "conversionRate": "Conversion Rate",
       "engagementRatio": "Engagement Ratio"
     },
+    "categoriesPage": {
+      "title": "Categories",
+      "subtitle": "Manage product categories",
+      "refresh": "Refresh categories",
+      "errorLoadCategories": "Failed to load categories. Please try again.",
+      "noCategories": "No categories available",
+      "table": {
+        "image": "Image",
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "id": "ID"
+      }
+    },
     "allProducts": {
       "title": "All Products",
       "subtitle": "Manage all products in your store",
