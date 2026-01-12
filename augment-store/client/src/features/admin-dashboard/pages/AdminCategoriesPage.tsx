@@ -39,9 +39,11 @@ const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<boolean>(false)
-  
+
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+  // Track the latest request to prevent stale updates
+  const latestRequestIdRef = useRef(0)
 
   // Load categories
   const loadCategories = async () => {
@@ -53,6 +55,10 @@ const AdminCategoriesPage = () => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
+    // Increment and capture the request ID for this specific request
+    latestRequestIdRef.current += 1
+    const currentRequestId = latestRequestIdRef.current
+
     setIsLoading(true)
     setError(false)
 
@@ -60,7 +66,11 @@ const AdminCategoriesPage = () => {
       const fetchedCategories = await productService.getCategories(
         abortControllerRef.current.signal
       )
-      setCategories(fetchedCategories)
+
+      // Only update state if this is still the latest request
+      if (currentRequestId === latestRequestIdRef.current) {
+        setCategories(fetchedCategories)
+      }
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts or request is cancelled
       const error = err as { name?: string }
@@ -69,9 +79,16 @@ const AdminCategoriesPage = () => {
       }
 
       console.error('Failed to fetch categories:', err)
-      setError(true)
+
+      // Only update error state if this is still the latest request
+      if (currentRequestId === latestRequestIdRef.current) {
+        setError(true)
+      }
     } finally {
-      setIsLoading(false)
+      // Only update loading state if this is still the latest request
+      if (currentRequestId === latestRequestIdRef.current) {
+        setIsLoading(false)
+      }
     }
   }
 
