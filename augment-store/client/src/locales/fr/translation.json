@@ -681,6 +681,34 @@
       "newCustomerRevenue": "Revenus des Nouveaux Clients",
       "returningCustomerRevenue": "Revenus des Clients Réguliers",
       "ofTotal": "du total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Comportement d'Achat des Clients",
+      "noData": "Aucune donnée de comportement d'achat disponible",
+      "analysisPeriod": "Période d'Analyse",
+      "activeCustomers": "Clients Actifs",
+      "days": "jours",
+      "tabs": {
+        "mostActiveCustomers": "Clients les Plus Actifs",
+        "categoryPreferences": "Préférences de Catégorie",
+        "paymentMethods": "Méthodes de Paiement"
+      },
+      "table": {
+        "customer": "Client",
+        "orders": "Commandes",
+        "totalSpent": "Total Dépensé",
+        "favoriteCategory": "Catégorie Préférée",
+        "paymentMethod": "Méthode de Paiement"
+      },
+      "tooltip": {
+        "customers": "Clients",
+        "orders": "Commandes",
+        "avgOrderValue": "Valeur Moyenne de Commande",
+        "percentage": "Pourcentage"
+      },
+      "chart": {
+        "uniqueCustomers": "Clients Uniques"
+      }
     }
   }
 }

@@ -8,5 +8,6 @@ export { default as MostAddedToCartChart } from './MostAddedToCartChart'
 export { default as ProductPerformanceChart } from './ProductPerformanceChart'
 export { default as CustomerRetentionChart } from './CustomerRetentionChart'
 export { default as CustomerSegmentsChart } from './CustomerSegmentsChart'
+export { default as CustomerPurchaseBehaviorChart } from './CustomerPurchaseBehaviorChart'
 export { default as NewVsReturningChart } from './NewVsReturningChart'
 

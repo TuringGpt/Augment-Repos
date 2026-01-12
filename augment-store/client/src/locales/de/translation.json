@@ -681,6 +681,34 @@
       "newCustomerRevenue": "Umsatz Neuer Kunden",
       "returningCustomerRevenue": "Umsatz Wiederkehrender Kunden",
       "ofTotal": "vom Gesamt"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Kundenkaufverhalten",
+      "noData": "Keine Daten zum Kundenkaufverhalten verfügbar",
+      "analysisPeriod": "Analysezeitraum",
+      "activeCustomers": "Aktive Kunden",
+      "days": "Tage",
+      "tabs": {
+        "mostActiveCustomers": "Aktivste Kunden",
+        "categoryPreferences": "Kategoriepräferenzen",
+        "paymentMethods": "Zahlungsmethoden"
+      },
+      "table": {
+        "customer": "Kunde",
+        "orders": "Bestellungen",
+        "totalSpent": "Gesamtausgaben",
+        "favoriteCategory": "Lieblingskategorie",
+        "paymentMethod": "Zahlungsmethode"
+      },
+      "tooltip": {
+        "customers": "Kunden",
+        "orders": "Bestellungen",
+        "avgOrderValue": "Durchschnittlicher Bestellwert",
+        "percentage": "Prozentsatz"
+      },
+      "chart": {
+        "uniqueCustomers": "Eindeutige Kunden"
+      }
     }
   }
 }

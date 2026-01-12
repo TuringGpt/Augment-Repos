@@ -681,6 +681,34 @@
       "newCustomerRevenue": "New Customer Revenue",
       "returningCustomerRevenue": "Returning Customer Revenue",
       "ofTotal": "of total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Customer Purchase Behavior",
+      "noData": "No customer purchase behavior data available",
+      "analysisPeriod": "Analysis Period",
+      "activeCustomers": "Active Customers",
+      "days": "days",
+      "tabs": {
+        "mostActiveCustomers": "Most Active Customers",
+        "categoryPreferences": "Category Preferences",
+        "paymentMethods": "Payment Methods"
+      },
+      "table": {
+        "customer": "Customer",
+        "orders": "Orders",
+        "totalSpent": "Total Spent",
+        "favoriteCategory": "Favorite Category",
+        "paymentMethod": "Payment Method"
+      },
+      "tooltip": {
+        "customers": "Customers",
+        "orders": "Orders",
+        "avgOrderValue": "Avg Order Value",
+        "percentage": "Percentage"
+      },
+      "chart": {
+        "uniqueCustomers": "Unique Customers"
+      }
     }
   }
 }
