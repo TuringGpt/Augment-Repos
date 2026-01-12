@@ -681,6 +681,38 @@
       "newCustomerRevenue": "Ingresos de Clientes Nuevos",
       "returningCustomerRevenue": "Ingresos de Clientes Recurrentes",
       "ofTotal": "del total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Comportamiento de Compra del Cliente",
+      "noData": "No hay datos de comportamiento de compra disponibles",
+      "analysisPeriod": "Período de Análisis",
+      "activeCustomers": "Principales Clientes Mostrados",
+      "days": "días",
+      "tabs": {
+        "mostActiveCustomers": "Clientes Más Activos",
+        "categoryPreferences": "Preferencias de Categoría",
+        "paymentMethods": "Métodos de Pago"
+      },
+      "table": {
+        "customer": "Cliente",
+        "orders": "Pedidos",
+        "totalSpent": "Total Gastado",
+        "favoriteCategory": "Categoría Favorita",
+        "paymentMethod": "Método de Pago"
+      },
+      "tooltip": {
+        "customers": "Clientes",
+        "orders": "Pedidos",
+        "avgOrderValue": "Valor Promedio de Pedido",
+        "percentage": "Porcentaje"
+      },
+      "chart": {
+        "uniqueCustomers": "Clientes Únicos"
+      },
+      "emptyStates": {
+        "noCategoryData": "No hay datos de preferencias de categoría disponibles para el período seleccionado",
+        "noPaymentData": "No hay datos de métodos de pago disponibles para el período seleccionado"
+      }
     }
   }
 }
