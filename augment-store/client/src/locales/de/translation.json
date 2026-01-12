@@ -686,7 +686,7 @@
       "title": "Kundenkaufverhalten",
       "noData": "Keine Daten zum Kundenkaufverhalten verfügbar",
       "analysisPeriod": "Analysezeitraum",
-      "activeCustomers": "Aktive Kunden",
+      "activeCustomers": "Angezeigte Top-Kunden",
       "days": "Tage",
       "tabs": {
         "mostActiveCustomers": "Aktivste Kunden",

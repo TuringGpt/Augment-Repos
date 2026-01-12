@@ -686,7 +686,7 @@
       "title": "Comportamiento de Compra del Cliente",
       "noData": "No hay datos de comportamiento de compra disponibles",
       "analysisPeriod": "Período de Análisis",
-      "activeCustomers": "Clientes Activos",
+      "activeCustomers": "Principales Clientes Mostrados",
       "days": "días",
       "tabs": {
         "mostActiveCustomers": "Clientes Más Activos",

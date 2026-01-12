@@ -686,7 +686,7 @@
       "title": "Customer Purchase Behavior",
       "noData": "No customer purchase behavior data available",
       "analysisPeriod": "Analysis Period",
-      "activeCustomers": "Active Customers",
+      "activeCustomers": "Top Customers Shown",
       "days": "days",
       "tabs": {
         "mostActiveCustomers": "Most Active Customers",
