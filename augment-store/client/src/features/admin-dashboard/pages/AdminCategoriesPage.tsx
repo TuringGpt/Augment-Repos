@@ -38,7 +38,7 @@ const AdminCategoriesPage = () => {
   
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<boolean>(false)
   
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -54,7 +54,7 @@ const AdminCategoriesPage = () => {
     abortControllerRef.current = new AbortController()
 
     setIsLoading(true)
-    setError(null)
+    setError(false)
 
     try {
       const fetchedCategories = await productService.getCategories(
@@ -69,7 +69,7 @@ const AdminCategoriesPage = () => {
       }
 
       console.error('Failed to fetch categories:', err)
-      setError('Failed to load categories. Please try again.')
+      setError(true)
     } finally {
       setIsLoading(false)
     }
@@ -144,7 +144,7 @@ const AdminCategoriesPage = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(false)}>
           {t('admin.categoriesPage.errorLoadCategories')}
         </Alert>
       )}
