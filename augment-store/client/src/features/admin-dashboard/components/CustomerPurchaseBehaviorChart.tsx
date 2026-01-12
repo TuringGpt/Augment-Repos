@@ -197,66 +197,96 @@ const CustomerPurchaseBehaviorChart = ({ data, isLoading = false }: CustomerPurc
             </TableContainer>
           )}
 
-          {activeTab === 1 && categoryChartData.length > 0 && (
-            <Box sx={{ width: '100%', height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={categoryChartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                  <XAxis
-                    dataKey="name"
-                    stroke={theme.palette.text.secondary}
-                    style={{ fontSize: '0.75rem' }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.secondary}
-                    style={{ fontSize: '0.875rem' }}
-                    label={{ value: t('admin.customerPurchaseBehavior.chart.uniqueCustomers'), angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip content={<CategoryTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
-                  <Bar
-                    dataKey="customers"
-                    name={t('admin.customerPurchaseBehavior.chart.uniqueCustomers')}
-                    radius={[8, 8, 0, 0]}
+          {activeTab === 1 && (
+            categoryChartData.length > 0 ? (
+              <Box sx={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={categoryChartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
                   >
-                    {categoryChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                    <XAxis
+                      dataKey="name"
+                      stroke={theme.palette.text.secondary}
+                      style={{ fontSize: '0.75rem' }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={100}
+                    />
+                    <YAxis
+                      stroke={theme.palette.text.secondary}
+                      style={{ fontSize: '0.875rem' }}
+                      label={{ value: t('admin.customerPurchaseBehavior.chart.uniqueCustomers'), angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip content={<CategoryTooltip />} />
+                    <Legend wrapperStyle={{ fontSize: '0.875rem' }} />
+                    <Bar
+                      dataKey="customers"
+                      name={t('admin.customerPurchaseBehavior.chart.uniqueCustomers')}
+                      radius={[8, 8, 0, 0]}
+                    >
+                      {categoryChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 400,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.customerPurchaseBehavior.emptyStates.noCategoryData')}
+                </Typography>
+              </Box>
+            )
           )}
 
-          {activeTab === 2 && paymentChartData.length > 0 && (
-            <Box sx={{ width: '100%', height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={paymentChartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {paymentChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<PaymentTooltip />} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </Box>
+          {activeTab === 2 && (
+            paymentChartData.length > 0 ? (
+              <Box sx={{ width: '100%', height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={paymentChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
+                      outerRadius={120}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {paymentChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<PaymentTooltip />} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 400,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.customerPurchaseBehavior.emptyStates.noPaymentData')}
+                </Typography>
+              </Box>
+            )
           )}
         </>
       ) : (

@@ -708,6 +708,10 @@
       },
       "chart": {
         "uniqueCustomers": "Clientes Únicos"
+      },
+      "emptyStates": {
+        "noCategoryData": "No hay datos de preferencias de categoría disponibles para el período seleccionado",
+        "noPaymentData": "No hay datos de métodos de pago disponibles para el período seleccionado"
       }
     }
   }

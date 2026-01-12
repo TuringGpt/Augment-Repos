@@ -708,6 +708,10 @@
       },
       "chart": {
         "uniqueCustomers": "Unique Customers"
+      },
+      "emptyStates": {
+        "noCategoryData": "No category preference data available for the selected period",
+        "noPaymentData": "No payment method data available for the selected period"
       }
     }
   }
