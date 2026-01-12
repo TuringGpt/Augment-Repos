@@ -57,9 +57,17 @@ const AdminCategoriesPage = () => {
     setError(null)
 
     try {
-      const fetchedCategories = await productService.getCategories()
+      const fetchedCategories = await productService.getCategories(
+        abortControllerRef.current.signal
+      )
       setCategories(fetchedCategories)
     } catch (err) {
+      // Ignore abort errors - these are expected when component unmounts or request is cancelled
+      const error = err as { name?: string }
+      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
+        return
+      }
+
       console.error('Failed to fetch categories:', err)
       setError('Failed to load categories. Please try again.')
     } finally {
