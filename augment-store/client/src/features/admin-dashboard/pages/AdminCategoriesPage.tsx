@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -92,6 +92,22 @@ const AdminCategoriesPage = () => {
 
   const handleRefresh = () => {
     loadCategories()
+  }
+
+  // Create a lookup map for parent category names
+  // This allows us to display parent category names instead of UUIDs
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>()
+    categories.forEach((category) => {
+      map.set(category.id, category.name)
+    })
+    return map
+  }, [categories])
+
+  // Helper function to get parent category name
+  const getParentCategoryName = (parentId: string | null | undefined): string => {
+    if (!parentId) return '-'
+    return categoryMap.get(parentId) || parentId // Fallback to ID if name not found
   }
 
   // Check if user is authenticated and is an admin
@@ -223,7 +239,7 @@ const AdminCategoriesPage = () => {
                     {/* Parent Category */}
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {category.parent || '-'}
+                        {getParentCategoryName(category.parent)}
                       </Typography>
                     </TableCell>
 
