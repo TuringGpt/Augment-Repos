@@ -560,6 +560,20 @@
       "conversionRate": "Konversionsrate",
       "engagementRatio": "Engagement-Verhältnis"
     },
+    "categoriesPage": {
+      "title": "Kategorien",
+      "subtitle": "Produktkategorien verwalten",
+      "refresh": "Kategorien aktualisieren",
+      "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "noCategories": "Keine Kategorien verfügbar",
+      "table": {
+        "image": "Bild",
+        "categoryName": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "id": "ID"
+      }
+    },
     "allProducts": {
       "title": "Alle Produkte",
       "subtitle": "Verwalten Sie alle Produkte in Ihrem Shop",

@@ -560,6 +560,20 @@
       "conversionRate": "Taux de Conversion",
       "engagementRatio": "Ratio d'Engagement"
     },
+    "categoriesPage": {
+      "title": "Catégories",
+      "subtitle": "Gérer les catégories de produits",
+      "refresh": "Actualiser les catégories",
+      "errorLoadCategories": "Échec du chargement des catégories. Veuillez réessayer.",
+      "noCategories": "Aucune catégorie disponible",
+      "table": {
+        "image": "Image",
+        "categoryName": "Nom de la Catégorie",
+        "description": "Description",
+        "parentCategory": "Catégorie Parente",
+        "id": "ID"
+      }
+    },
     "allProducts": {
       "title": "Tous les Produits",
       "subtitle": "Gérer tous les produits de votre boutique",
