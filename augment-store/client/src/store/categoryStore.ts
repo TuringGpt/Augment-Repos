@@ -34,7 +34,8 @@ export const useCategoryStore = create<CategoryState>((set) => ({
       })
     } catch (error) {
       // Handle abort errors gracefully
-      if (error instanceof Error && error.name === 'AbortError') {
+      // apiClient is axios-based, so cancellation throws CanceledError (not AbortError)
+      if (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) {
         console.log('Category fetch was aborted')
         set({ isLoading: false })
         return
