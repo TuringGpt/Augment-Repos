@@ -41,5 +41,5 @@ class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
         if not email:
             raise ValidationError({'email': 'Email is required'})
 
-        newsletter = Newsletter.objects.filter(email=email).first()
+        newsletter = get_object_or_404(Newsletter, email=email)
         return newsletter
