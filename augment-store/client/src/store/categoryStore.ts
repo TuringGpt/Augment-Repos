@@ -15,6 +15,10 @@ interface CategoryState {
   clearCategories: () => void
 }
 
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let requestCounter = 0
+
 export const useCategoryStore = create<CategoryState>((set) => ({
   // Initial state
   categories: [],
@@ -23,29 +27,40 @@ export const useCategoryStore = create<CategoryState>((set) => ({
 
   // Actions
   getAllCategories: async (signal?: AbortSignal) => {
+    const requestId = ++requestCounter
+
     try {
       set({ isLoading: true, error: null })
 
       const categories = await productService.getCategories(signal)
 
-      set({
-        categories,
-        isLoading: false,
-      })
+      // Only update state if this is still the latest request
+      if (requestId === requestCounter) {
+        set({
+          categories,
+          isLoading: false,
+        })
+      }
     } catch (error) {
       // Handle abort errors gracefully
       // apiClient is axios-based, so cancellation throws CanceledError (not AbortError)
       if (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) {
         console.log('Category fetch was aborted')
-        set({ isLoading: false })
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === requestCounter) {
+          set({ isLoading: false })
+        }
         return
       }
 
       console.error('Failed to fetch categories:', error)
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch categories',
-        isLoading: false,
-      })
+      // Only update error state if this is still the latest request
+      if (requestId === requestCounter) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch categories',
+          isLoading: false,
+        })
+      }
     }
   },
 
