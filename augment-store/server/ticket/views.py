@@ -8,6 +8,7 @@ from core.optimization import AutoOptimizeMixin
 # Create your views here.
 class TicketBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    queryset = Ticket.objects.all()
     auto_select_related = ['reporter', 'assignee']
 
 class TicketListView(TicketBaseView, ListAPIView):
@@ -31,6 +32,7 @@ class TicketUpdateView(TicketBaseView, RetrieveUpdateDestroyAPIView):
     
 class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    queryset = Comment.objects.all()
     auto_select_related = ['user', 'ticket']
 
 class CommentListView(CommentBaseView, ListAPIView):
@@ -61,4 +63,5 @@ class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        return super().get_queryset()
+        ticket_id = self.kwargs.get("pk")
+        return super().get_queryset().filter(ticket_id=ticket_id)
