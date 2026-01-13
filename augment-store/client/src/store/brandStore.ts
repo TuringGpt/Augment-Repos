@@ -41,6 +41,10 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       // Ignore abort errors - these are expected when component unmounts or request is cancelled
       const error = err as { name?: string }
       if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
+        // Reset loading state if this is still the latest request
+        if (requestId === fetchRequestCounter) {
+          set({ isLoading: false })
+        }
         return
       }
 
@@ -59,6 +63,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
 
   setError: (error) => set({ error }),
 
-  clearBrands: () => set({ brands: [], error: null }),
+  clearBrands: () => set({ brands: [], error: null, isLoading: false }),
 }))
 
