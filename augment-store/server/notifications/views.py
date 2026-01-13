@@ -3,8 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Notification
-from .serializers import NotificationListSerializer, UpdateNotificationSerializer
-from .serializers import MarkAsReadSerializer, NotificationListSerializer
+from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer
 
 
 class BaseNotificationView:
