@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -24,8 +24,7 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
-import { productService } from '@services/api/products/productService'
-import type { Category } from '@features/products/types'
+import { useCategoryStore } from '@store/categoryStore'
 
 /**
  * AdminCategoriesPage Component
@@ -35,15 +34,12 @@ const AdminCategoriesPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
-  
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<boolean>(false)
+
+  // Use category store
+  const { categories, isLoading, error, getAllCategories } = useCategoryStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
-  // Track the latest request to prevent stale updates
-  const latestRequestIdRef = useRef(0)
 
   // Load categories
   const loadCategories = async () => {
@@ -55,41 +51,8 @@ const AdminCategoriesPage = () => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
-    // Increment and capture the request ID for this specific request
-    latestRequestIdRef.current += 1
-    const currentRequestId = latestRequestIdRef.current
-
-    setIsLoading(true)
-    setError(false)
-
-    try {
-      const fetchedCategories = await productService.getCategories(
-        abortControllerRef.current.signal
-      )
-
-      // Only update state if this is still the latest request
-      if (currentRequestId === latestRequestIdRef.current) {
-        setCategories(fetchedCategories)
-      }
-    } catch (err) {
-      // Ignore abort errors - these are expected when component unmounts or request is cancelled
-      const error = err as { name?: string }
-      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
-        return
-      }
-
-      console.error('Failed to fetch categories:', err)
-
-      // Only update error state if this is still the latest request
-      if (currentRequestId === latestRequestIdRef.current) {
-        setError(true)
-      }
-    } finally {
-      // Only update loading state if this is still the latest request
-      if (currentRequestId === latestRequestIdRef.current) {
-        setIsLoading(false)
-      }
-    }
+    // Fetch categories using the store
+    await getAllCategories(abortControllerRef.current.signal)
   }
 
   // Fetch categories on mount
@@ -97,7 +60,7 @@ const AdminCategoriesPage = () => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCategories()
     }
-    
+
     return () => {
       // Cleanup: abort any pending requests
       if (abortControllerRef.current) {
@@ -177,7 +140,7 @@ const AdminCategoriesPage = () => {
 
       {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(false)}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {t('admin.categoriesPage.errorLoadCategories')}
         </Alert>
       )}
