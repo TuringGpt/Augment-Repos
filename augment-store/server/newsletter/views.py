@@ -3,6 +3,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAP
 from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 
 # Create your views here.
 class BaseNewsletterView:
@@ -36,11 +37,9 @@ class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        """Get newsletter subscription by email from request data"""
         email = self.request.data.get('email')
         if not email:
-            from rest_framework.exceptions import ValidationError
             raise ValidationError({'email': 'Email is required'})
 
-        newsletter = get_object_or_404(Newsletter, email=email)
+        newsletter = Newsletter.objects.filter(email=email).first()
         return newsletter
