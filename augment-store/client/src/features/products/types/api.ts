@@ -27,6 +27,25 @@ export interface ProductCategoryAPI {
   image: FileAPI | null
 }
 
+/**
+ * Product Category Detail API Response
+ * Backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object.
+ * This type is used for PATCH responses from the category update endpoint.
+ */
+export interface ProductCategoryDetailAPI {
+  id: string
+  name: string
+  slug: string
+  description: string
+  parent: string | null
+  image: string | null // UUID string, not FileAPI object
+  created_by: string // UUID string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
 export interface ProductAPI {
   id: string
   name: string
@@ -204,6 +223,7 @@ export function transformProductFromAPI(apiProduct: ProductAPI) {
 
 /**
  * Transform backend category to frontend category format
+ * Handles ProductCategoryAPI from list endpoints (image as FileAPI object)
  */
 export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
   return {
@@ -212,6 +232,30 @@ export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
     slug: apiCategory.name.toLowerCase().replace(/\s+/g, '-'),
     description: apiCategory.description,
     image: apiCategory.image?.file || undefined,
+    parent: apiCategory.parent || undefined,
+  }
+}
+
+/**
+ * Transform backend category detail to frontend category format
+ * Handles ProductCategoryDetailAPI from PATCH responses (image as UUID string)
+ *
+ * IMPORTANT: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object with {id, file}.
+ * Since we can't use a UUID as an image URL, we return undefined for the image field.
+ * The categoryStore.updateCategory method merges this response with the existing category
+ * to preserve the image URL that was previously loaded.
+ *
+ * This prevents the issue where updating a category would inadvertently clear the image
+ * in the client state because the PATCH response doesn't include the full FileAPI object.
+ */
+export function transformCategoryDetailFromAPI(apiCategory: ProductCategoryDetailAPI) {
+  return {
+    id: apiCategory.id,
+    name: apiCategory.name,
+    slug: apiCategory.slug, // Use slug from response instead of generating from name
+    description: apiCategory.description,
+    image: undefined, // Image is a UUID, not a URL - preserved by store merge logic
     parent: apiCategory.parent || undefined,
   }
 }

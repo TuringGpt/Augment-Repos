@@ -51,13 +51,25 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const updatedCategory = await productService.updateCategory(id, data)
 
       // Update the category in the local state
+      // Merge with existing category to preserve fields like image that may not be
+      // properly returned by the backend's ProductCategoryDetailSerializer
       const currentCategories = get().categories
+      const existingCategory = currentCategories.find((cat) => cat.id === id)
+
+      const mergedCategory: Category = {
+        ...existingCategory,
+        ...updatedCategory,
+        // Preserve existing image if the update response doesn't have one
+        // This prevents clearing the image when the backend returns a UUID instead of FileAPI
+        image: updatedCategory.image || existingCategory?.image,
+      }
+
       const updatedCategories = currentCategories.map((cat) =>
-        cat.id === id ? updatedCategory : cat
+        cat.id === id ? mergedCategory : cat
       )
       set({ categories: updatedCategories, isUpdating: false })
 
-      return updatedCategory
+      return mergedCategory
     } catch (error) {
       console.error('Failed to update category:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to update category'
