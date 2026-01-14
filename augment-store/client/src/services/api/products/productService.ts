@@ -16,10 +16,13 @@ import type {
   UpdateProductRequest,
   CreateProductRequest,
   CreateProductResponseAPI,
+  UpdateCategoryRequest,
+  ProductCategoryDetailAPI,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
   transformCategoryFromAPI,
+  transformCategoryDetailFromAPI,
   transformBrandFromAPI,
   transformRecommendedProductFromAPI,
 } from '@features/products/types/api'
@@ -154,6 +157,29 @@ export const productService = {
     }
 
     return allCategories
+  },
+
+  /**
+   * Update a category by ID
+   * @param id - Category ID to update
+   * @param data - Partial category data to update
+   * @returns Promise with updated category
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformCategoryDetailFromAPI
+   * to handle this response format and preserve the slug field from the response.
+   */
+  updateCategory: async (id: string, data: UpdateCategoryRequest): Promise<Category> => {
+    // Send PATCH request to update category
+    // Backend returns ProductCategoryDetailAPI with image as UUID string
+    const response = await apiClient.patch<ProductCategoryDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.CATEGORY_DETAIL(id),
+      data
+    )
+    // Transform backend category detail to frontend format
+    // This handles the UUID image field and preserves slug
+    return transformCategoryDetailFromAPI(response)
   },
 
   /**

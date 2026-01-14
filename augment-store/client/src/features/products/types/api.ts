@@ -27,6 +27,25 @@ export interface ProductCategoryAPI {
   image: FileAPI | null
 }
 
+/**
+ * Product Category Detail API Response
+ * Backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object.
+ * This type is used for PATCH responses from the category update endpoint.
+ */
+export interface ProductCategoryDetailAPI {
+  id: string
+  name: string
+  slug: string
+  description: string
+  parent: string | null
+  image: string | null // UUID string, not FileAPI object
+  created_by: string // UUID string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
 export interface ProductAPI {
   id: string
   name: string
@@ -150,6 +169,20 @@ export interface UpdateProductRequest {
 }
 
 /**
+ * Update Category Request
+ * Backend expects fields for updating a category
+ * All fields are optional for partial updates (PATCH)
+ * Based on ProductCategoryDetailSerializer which allows updating all fields
+ */
+export interface UpdateCategoryRequest {
+  name?: string
+  slug?: string
+  description?: string
+  parent?: string | null // Parent category UUID or null
+  image?: string | null // Image file UUID or null
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
@@ -190,6 +223,7 @@ export function transformProductFromAPI(apiProduct: ProductAPI) {
 
 /**
  * Transform backend category to frontend category format
+ * Handles ProductCategoryAPI from list endpoints (image as FileAPI object)
  */
 export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
   return {
@@ -199,6 +233,31 @@ export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
     description: apiCategory.description,
     image: apiCategory.image?.file || undefined,
     parent: apiCategory.parent || undefined,
+  }
+}
+
+/**
+ * Transform backend category detail to frontend category format
+ * Handles ProductCategoryDetailAPI from PATCH responses (image as UUID string)
+ *
+ * IMPORTANT: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object with {id, file}.
+ *
+ * Since Category.image should be an image URL (not a UUID), we always return undefined for the
+ * image field. The categoryStore.updateCategory method handles this by:
+ * - Refetching categories when image was updated to get the actual URL
+ * - Preserving the existing image URL when image was not updated
+ */
+export function transformCategoryDetailFromAPI(apiCategory: ProductCategoryDetailAPI) {
+  return {
+    id: apiCategory.id,
+    name: apiCategory.name,
+    slug: apiCategory.slug, // Use slug from response instead of generating from name
+    description: apiCategory.description,
+    // Always return undefined since we can't use UUID as image URL
+    // The store will either refetch to get the URL or preserve the existing URL
+    image: undefined,
+    parent: apiCategory.parent ?? undefined,
   }
 }
 
