@@ -65,12 +65,32 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       // If image was updated, we need to refetch categories to get the actual image URL
       // because the backend returns a UUID string instead of a FileAPI object
       if (imageWasUpdated) {
+        // Store the pre-update category to detect if refetch actually succeeded
+        const preUpdateCategory = get().categories.find((cat) => cat.id === id)
+
         // Refetch all categories to get the updated image URL
         await get().fetchCategories()
-        set({ isUpdating: false })
-        // Return the updated category from the refetched list
+
+        // Guard against treating an unchanged store snapshot as a successful refetch
+        // If fetchCategories() failed, get().error will be set and categories may be stale
+        const fetchError = get().error
         const refetchedCategory = get().categories.find((cat) => cat.id === id)
-        return refetchedCategory || updatedCategory
+
+        set({ isUpdating: false })
+
+        // Only use refetched data if:
+        // 1. No fetch error occurred, AND
+        // 2. The category was found, AND
+        // 3. The data actually changed (different from pre-update snapshot)
+        if (!fetchError && refetchedCategory && refetchedCategory !== preUpdateCategory) {
+          return refetchedCategory
+        }
+
+        // If refetch failed or returned stale data, fall back to the PATCH response
+        // Note: This means the image field will contain a UUID instead of a FileAPI object,
+        // but at least we're not returning completely stale data
+        console.warn('Refetch after image update failed or returned stale data, using PATCH response')
+        return updatedCategory
       }
 
       // If image was not updated, merge the response with existing category
