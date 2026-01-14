@@ -74,21 +74,6 @@ export const productService = {
       params: queryParams,
     })
 
-    console.log('🔍 Raw API Response:', {
-      count: response.count,
-      resultsLength: response.results.length,
-      next: response.next,
-      previous: response.previous,
-      filters: {
-        categorySlug: params?.categorySlug,
-        brandName: params?.brandName,
-        minRating: params?.minRating,
-        maxRating: params?.maxRating,
-        minPrice: params?.minPrice,
-        maxPrice: params?.maxPrice,
-      },
-    })
-
     // Transform backend products to frontend format
     const products: Product[] = response.results.map(transformProductFromAPI)
 
@@ -193,14 +178,17 @@ export const productService = {
   /**
    * Get all brands from backend API
    * Fetches all pages of brands using pagination
+   * @param signal - Optional AbortSignal for request cancellation
    * @throws Error if the API request fails
    */
-  getBrands: async (): Promise<Brand[]> => {
+  getBrands: async (signal?: AbortSignal): Promise<Brand[]> => {
     let allBrands: Brand[] = []
     let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
 
     while (nextUrl) {
-      const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
+      const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl, {
+        signal,
+      })
       // Transform backend brands to frontend format
       const transformedBrands = (response.results || []).map(transformBrandFromAPI)
       allBrands = [...allBrands, ...transformedBrands]

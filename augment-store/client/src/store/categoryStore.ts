@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import { productService } from '@services/api/products/productService'
-import type { Category } from '@features/products/types'
 import type { UpdateCategoryRequest } from '@features/products/types/api'
+import type { Category } from '@features/products/types'
+import { productService } from '@services/api'
 
 interface CategoryState {
   categories: Category[]
@@ -13,19 +13,26 @@ interface CategoryState {
   // Actions
   fetchCategories: (signal?: AbortSignal) => Promise<void>
   updateCategory: (id: string, data: UpdateCategoryRequest) => Promise<Category>
+  getAllCategories: (signal?: AbortSignal) => Promise<void>
   setCategories: (categories: Category[]) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearCategories: () => void
 }
 
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let requestCounter = 0
+
 export const useCategoryStore = create<CategoryState>((set, get) => ({
+  // Initial state
   categories: [],
   isLoading: false,
   error: null,
   isUpdating: false,
   updateError: null,
 
+  // ACTIONS
   fetchCategories: async (signal?: AbortSignal) => {
     try {
       set({ isLoading: true, error: null })
@@ -56,6 +63,44 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to update category'
       set({ updateError: errorMessage, isUpdating: false })
       throw error
+    }
+  },
+
+  getAllCategories: async (signal?: AbortSignal) => {
+    const requestId = ++requestCounter
+
+    try {
+      set({ isLoading: true, error: null })
+
+      const categories = await productService.getCategories(signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === requestCounter) {
+        set({
+          categories,
+          isLoading: false,
+        })
+      }
+    } catch (error) {
+      // Handle abort errors gracefully
+      // apiClient is axios-based, so cancellation throws CanceledError (not AbortError)
+      if (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) {
+        console.log('Category fetch was aborted')
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === requestCounter) {
+          set({ isLoading: false })
+        }
+        return
+      }
+
+      console.error('Failed to fetch categories:', error)
+      // Only update error state if this is still the latest request
+      if (requestId === requestCounter) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch categories',
+          isLoading: false,
+        })
+      }
     }
   },
 
