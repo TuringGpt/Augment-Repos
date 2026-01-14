@@ -87,7 +87,14 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
         // 2. The category was found, AND
         // 3. The data actually changed (different from pre-update snapshot)
         if (!fetchError && refetchedCategory && refetchedCategory !== preUpdateCategory) {
-          return refetchedCategory
+          // Merge PATCH response with refetched data to preserve fields that only exist in PATCH response
+          // (notably `slug`, since fetchCategories() derives slug from name)
+          return {
+            ...refetchedCategory,
+            ...updatedCategory,
+            // Use refetched image since that's the whole point of refetching
+            image: refetchedCategory.image,
+          }
         }
 
         // If refetch failed or returned stale data, merge with existing category
