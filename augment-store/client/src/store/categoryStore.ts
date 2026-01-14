@@ -86,11 +86,25 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
           return refetchedCategory
         }
 
-        // If refetch failed or returned stale data, fall back to the PATCH response
-        // Note: This means the image field will contain a UUID instead of a FileAPI object,
-        // but at least we're not returning completely stale data
-        console.warn('Refetch after image update failed or returned stale data, using PATCH response')
-        return updatedCategory
+        // If refetch failed or returned stale data, merge with existing category
+        // but preserve the existing image URL to avoid showing broken images
+        console.warn('Refetch after image update failed or returned stale data, preserving existing image')
+        const currentCategories = get().categories
+        const existingCategory = currentCategories.find((cat) => cat.id === id)
+
+        const mergedCategory: Category = {
+          ...existingCategory,
+          ...updatedCategory,
+          // Preserve existing image to avoid broken images (UUID can't be used as URL)
+          image: data.image === null ? undefined : existingCategory?.image,
+        }
+
+        const updatedCategories = currentCategories.map((cat) =>
+          cat.id === id ? mergedCategory : cat
+        )
+        set({ categories: updatedCategories })
+
+        return mergedCategory
       }
 
       // If image was not updated, merge the response with existing category
