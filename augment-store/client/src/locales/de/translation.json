@@ -565,13 +565,26 @@
       "subtitle": "Produktkategorien verwalten",
       "refresh": "Kategorien aktualisieren",
       "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "errorUpdateCategory": "Kategorie konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
       "noCategories": "Keine Kategorien verfügbar",
+      "editCategory": "Kategorie bearbeiten",
       "table": {
         "image": "Bild",
         "categoryName": "Kategoriename",
         "description": "Beschreibung",
         "parentCategory": "Übergeordnete Kategorie",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Aktionen"
+      },
+      "form": {
+        "categoryName": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "noParent": "Keine (Oberste Ebene)",
+        "cancel": "Abbrechen",
+        "save": "Änderungen speichern",
+        "saving": "Speichern...",
+        "saveSuccess": "Kategorie erfolgreich aktualisiert!"
       }
     },
     "allProducts": {

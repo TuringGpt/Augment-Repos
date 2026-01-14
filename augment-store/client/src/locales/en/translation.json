@@ -565,13 +565,26 @@
       "subtitle": "Manage product categories",
       "refresh": "Refresh categories",
       "errorLoadCategories": "Failed to load categories. Please try again.",
+      "errorUpdateCategory": "Failed to update category. Please try again.",
       "noCategories": "No categories available",
+      "editCategory": "Edit Category",
       "table": {
         "image": "Image",
         "categoryName": "Category Name",
         "description": "Description",
         "parentCategory": "Parent Category",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "noParent": "None (Top Level)",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Category updated successfully!"
       }
     },
     "allProducts": {
