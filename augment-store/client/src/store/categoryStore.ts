@@ -59,8 +59,12 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       set({ isUpdating: true, updateError: null })
       const updatedCategory = await productService.updateCategory(id, data)
 
-      // Check if the image field was included in the update request
-      const imageWasUpdated = 'image' in data
+      // Check if the image field was included in the update request with an intentional value
+      // Distinguish between:
+      // - Property not present: no image update intended
+      // - Property present with null/string: intentional update/clear
+      // - Property present but undefined: treat as "no change" to avoid unnecessary refetch
+      const imageWasUpdated = 'image' in data && data.image !== undefined
 
       // If image was updated, we need to refetch categories to get the actual image URL
       // because the backend returns a UUID string instead of a FileAPI object
