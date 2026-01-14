@@ -59,18 +59,29 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       set({ isUpdating: true, updateError: null })
       const updatedCategory = await productService.updateCategory(id, data)
 
-      // Update the category in the local state
-      // Merge with existing category to preserve fields like image that may not be
-      // properly returned by the backend's ProductCategoryDetailSerializer
+      // Check if the image field was included in the update request
+      const imageWasUpdated = 'image' in data
+
+      // If image was updated, we need to refetch categories to get the actual image URL
+      // because the backend returns a UUID string instead of a FileAPI object
+      if (imageWasUpdated) {
+        // Refetch all categories to get the updated image URL
+        await get().fetchCategories()
+        set({ isUpdating: false })
+        // Return the updated category from the refetched list
+        const refetchedCategory = get().categories.find((cat) => cat.id === id)
+        return refetchedCategory || updatedCategory
+      }
+
+      // If image was not updated, merge the response with existing category
       const currentCategories = get().categories
       const existingCategory = currentCategories.find((cat) => cat.id === id)
 
       const mergedCategory: Category = {
         ...existingCategory,
         ...updatedCategory,
-        // Preserve existing image if the update response doesn't have one
-        // This prevents clearing the image when the backend returns a UUID instead of FileAPI
-        image: updatedCategory.image || existingCategory?.image,
+        // Preserve existing image since it wasn't updated
+        image: existingCategory?.image,
       }
 
       const updatedCategories = currentCategories.map((cat) =>

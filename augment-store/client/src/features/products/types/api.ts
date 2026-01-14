@@ -242,12 +242,11 @@ export function transformCategoryFromAPI(apiCategory: ProductCategoryAPI) {
  *
  * IMPORTANT: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
  * image as a UUID string instead of a nested FileAPI object with {id, file}.
- * Since we can't use a UUID as an image URL, we return undefined for the image field.
- * The categoryStore.updateCategory method merges this response with the existing category
- * to preserve the image URL that was previously loaded.
  *
- * This prevents the issue where updating a category would inadvertently clear the image
- * in the client state because the PATCH response doesn't include the full FileAPI object.
+ * We return the image field to indicate what happened:
+ * - undefined: means the image was explicitly cleared (backend returned null)
+ * - UUID string: means the image was updated or kept (but we can't use UUID as URL)
+ * - The categoryStore.updateCategory method uses this to detect image changes
  */
 export function transformCategoryDetailFromAPI(apiCategory: ProductCategoryDetailAPI) {
   return {
@@ -255,8 +254,10 @@ export function transformCategoryDetailFromAPI(apiCategory: ProductCategoryDetai
     name: apiCategory.name,
     slug: apiCategory.slug, // Use slug from response instead of generating from name
     description: apiCategory.description,
-    image: undefined, // Image is a UUID, not a URL - preserved by store merge logic
-    parent: apiCategory.parent || undefined,
+    // Convert null to undefined (image cleared), keep UUID string (image updated/kept)
+    // Store will handle converting UUID to URL or clearing the image
+    image: apiCategory.image ?? undefined,
+    parent: apiCategory.parent ?? undefined,
   }
 }
 
