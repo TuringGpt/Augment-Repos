@@ -565,13 +565,26 @@
       "subtitle": "Gestionar categorías de productos",
       "refresh": "Actualizar categorías",
       "errorLoadCategories": "Error al cargar las categorías. Por favor, inténtalo de nuevo.",
+      "errorUpdateCategory": "Error al actualizar la categoría. Por favor, inténtalo de nuevo.",
       "noCategories": "No hay categorías disponibles",
+      "editCategory": "Editar Categoría",
       "table": {
         "image": "Imagen",
         "categoryName": "Nombre de Categoría",
         "description": "Descripción",
         "parentCategory": "Categoría Principal",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Acciones"
+      },
+      "form": {
+        "categoryName": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Principal",
+        "noParent": "Ninguna (Nivel Superior)",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "saving": "Guardando...",
+        "saveSuccess": "¡Categoría actualizada con éxito!"
       }
     },
     "allProducts": {

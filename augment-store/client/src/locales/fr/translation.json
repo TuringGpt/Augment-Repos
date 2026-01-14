@@ -565,13 +565,26 @@
       "subtitle": "Gérer les catégories de produits",
       "refresh": "Actualiser les catégories",
       "errorLoadCategories": "Échec du chargement des catégories. Veuillez réessayer.",
+      "errorUpdateCategory": "Échec de la mise à jour de la catégorie. Veuillez réessayer.",
       "noCategories": "Aucune catégorie disponible",
+      "editCategory": "Modifier la Catégorie",
       "table": {
         "image": "Image",
         "categoryName": "Nom de la Catégorie",
         "description": "Description",
         "parentCategory": "Catégorie Parente",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "categoryName": "Nom de la Catégorie",
+        "description": "Description",
+        "parentCategory": "Catégorie Parente",
+        "noParent": "Aucune (Niveau Supérieur)",
+        "cancel": "Annuler",
+        "save": "Enregistrer les Modifications",
+        "saving": "Enregistrement...",
+        "saveSuccess": "Catégorie mise à jour avec succès !"
       }
     },
     "allProducts": {
