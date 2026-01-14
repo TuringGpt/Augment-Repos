@@ -150,6 +150,20 @@ export interface UpdateProductRequest {
 }
 
 /**
+ * Update Category Request
+ * Backend expects fields for updating a category
+ * All fields are optional for partial updates (PATCH)
+ * Based on ProductCategoryDetailSerializer which allows updating all fields
+ */
+export interface UpdateCategoryRequest {
+  name?: string
+  slug?: string
+  description?: string
+  parent?: string | null // Parent category UUID or null
+  image?: string | null // Image file UUID or null
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */

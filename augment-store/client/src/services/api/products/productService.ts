@@ -16,6 +16,8 @@ import type {
   UpdateProductRequest,
   CreateProductRequest,
   CreateProductResponseAPI,
+  UpdateCategoryRequest,
+  ProductCategoryAPI,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
@@ -169,6 +171,23 @@ export const productService = {
     }
 
     return allCategories
+  },
+
+  /**
+   * Update a category by ID
+   * @param id - Category ID to update
+   * @param data - Partial category data to update
+   * @returns Promise with updated category
+   * @throws Error if the API request fails
+   */
+  updateCategory: async (id: string, data: UpdateCategoryRequest): Promise<Category> => {
+    // Send PATCH request to update category
+    const response = await apiClient.patch<ProductCategoryAPI>(
+      API_ENDPOINTS.PRODUCTS.CATEGORY_DETAIL(id),
+      data
+    )
+    // Transform backend category to frontend format
+    return transformCategoryFromAPI(response)
   },
 
   /**
