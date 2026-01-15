@@ -175,6 +175,11 @@ class FileDirectUploadService:
 
         return file
 
+    @classmethod
+    @transaction.atomic
+    def cleanup_abandoned_uploads(cls):
+        return File.objects.filter(upload_finished_at__isnull=True).delete()
+
     @transaction.atomic
     def upload_local(self, *, file: File, file_obj) -> File:
         _validate_file_size(file_obj)
