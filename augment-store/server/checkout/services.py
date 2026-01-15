@@ -47,27 +47,34 @@ class StripeService:
 
     def check_and_update_payment_status(self, payment: Payment):
         from django.conf import settings
+        from django.core.exceptions import ValidationError
 
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
         if not payment.stripe_session_id:
             logger.error(f"Stripe session ID not found for payment {payment.id}")
-            return Payment.PaymentStatus.PENDING
+            return payment.payment_status
+
         try:
             strip_session = stripe.checkout.Session.retrieve(payment.stripe_session_id)
 
             if strip_session.payment_status == "paid":
                 payment.payment_status = Payment.PaymentStatus.PAID
                 payment.save()
+                return payment.payment_status
 
-            if strip_session.payment_status == "unpaid":
+            if strip_session.status in ["processing", "requires_action"]:
+                return Payment.PaymentStatus.PAID
+
+            if strip_session.payment_status == "unpaid" and strip_session.status == "expired":
                 payment.payment_status = Payment.PaymentStatus.FAILED
                 payment.save()
+                raise ValidationError("Payment session has expired.")
 
             return payment.payment_status
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error checking payment status for payment {payment.id} - {e}", exc_info=True)
-            return Payment.PaymentStatus.PENDING
+            return payment.payment_status
         except Exception as e:
             logger.error(f"Unknown error checking payment status for payment {payment.id} - {e}", exc_info=True)
-            return Payment.PaymentStatus.PENDING
+            return payment.payment_status
