@@ -47,7 +47,7 @@ class BaseBrandView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductBrandListSerializer
     queryset = ProductBrand.objects.all()
-    auto_select_related = ['created_by']
+    auto_select_related = ['image', 'created_by']
 
     def get_queryset(self) -> "QuerySet[ProductBrand]":
         return super().get_queryset().order_by('name')
@@ -74,7 +74,7 @@ class BaseCategoryView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductCategoryListSerializer
     queryset = ProductCategory.objects.all()
-    auto_select_related = ['created_by', 'parent']
+    auto_select_related = ['image', 'created_by', 'parent']
     auto_prefetch_related = ['children']
 
     def get_queryset(self) -> "QuerySet[ProductCategory]":
