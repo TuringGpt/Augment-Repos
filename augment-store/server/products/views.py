@@ -42,13 +42,15 @@ if typing.TYPE_CHECKING:
 
 # Brand views
 
-class BaseBrandView:
+class BaseBrandView(AutoOptimizeMixin):
     """Base view for Brand related operations."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductBrandListSerializer
+    queryset = ProductBrand.objects.all()
+    auto_select_related = ['created_by']
 
     def get_queryset(self) -> "QuerySet[ProductBrand]":
-        return ProductBrand.objects.all().order_by('name').select_related('image', 'created_by',)
+        return super().get_queryset().order_by('name')
     
 class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
     cache_service_class = ProductBrandCacheService
@@ -67,14 +69,16 @@ class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
 
 # Category views
 
-class BaseCategoryView:
+class BaseCategoryView(AutoOptimizeMixin):
     """Base view for Category related operations."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductCategoryListSerializer
+    queryset = ProductCategory.objects.all()
+    auto_select_related = ['created_by', 'parent']
+    auto_prefetch_related = ['children']
 
     def get_queryset(self) -> "QuerySet[ProductCategory]":
-        # Optimization: use prefetch_related for MPTT children
-        return ProductCategory.objects.all().order_by('name').select_related('image', 'created_by', 'parent').prefetch_related('children')
+        return super().get_queryset().order_by('name')
     
     def get_recursive_categories(self, category_id):
         """
