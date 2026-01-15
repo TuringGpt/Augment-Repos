@@ -63,13 +63,11 @@ class StripeService:
                 payment.save()
                 return payment.payment_status
 
-            if strip_session.status in ["processing", "requires_action"]:
-                return Payment.PaymentStatus.PAID
-
-            if strip_session.payment_status == "unpaid" and strip_session.status == "expired":
-                payment.payment_status = Payment.PaymentStatus.FAILED
-                payment.save()
-                raise ValidationError("Payment session has expired.")
+            if strip_session.status == "expired" or strip_session.payment_status == "unpaid":
+                if payment.payment_status != Payment.PaymentStatus.FAILED:
+                    payment.payment_status = Payment.PaymentStatus.FAILED
+                    payment.save()
+                return payment.payment_status
 
             return payment.payment_status
         except stripe.error.StripeError as e:
