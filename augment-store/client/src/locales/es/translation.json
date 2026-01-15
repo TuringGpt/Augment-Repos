@@ -587,6 +587,30 @@
         "saveSuccess": "¡Categoría actualizada con éxito!"
       }
     },
+    "brandsPage": {
+      "title": "Marcas",
+      "subtitle": "Gestionar marcas de productos",
+      "refresh": "Actualizar marcas",
+      "errorLoadBrands": "Error al cargar las marcas. Por favor, inténtalo de nuevo.",
+      "errorUpdateBrand": "Error al actualizar la marca. Por favor, inténtalo de nuevo.",
+      "noBrands": "No hay marcas disponibles",
+      "editBrand": "Editar Marca",
+      "table": {
+        "image": "Imagen",
+        "brandName": "Nombre de Marca",
+        "description": "Descripción",
+        "id": "ID",
+        "actions": "Acciones"
+      },
+      "form": {
+        "brandName": "Nombre de Marca",
+        "description": "Descripción",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "saving": "Guardando...",
+        "saveSuccess": "¡Marca actualizada con éxito!"
+      }
+    },
     "allProducts": {
       "title": "Todos los Productos",
       "subtitle": "Gestionar todos los productos de tu tienda",
