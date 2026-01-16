@@ -18,8 +18,9 @@ class UserProfileView(AutoOptimizeMixin, RetrieveUpdateAPIView):
     queryset = User.objects.all()
 
     def get_object(self):
-        """Return the current authenticated user"""
-        return self.request.user
+        """Return the current authenticated user from the optimized queryset"""
+        from django.shortcuts import get_object_or_404
+        return get_object_or_404(self.get_queryset(), pk=self.request.user.pk)
 
     def get_serializer_class(self):
         """Use different serializers for read and write operations"""
