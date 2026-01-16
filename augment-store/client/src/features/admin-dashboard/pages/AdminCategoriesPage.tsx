@@ -47,7 +47,7 @@ const AdminCategoriesPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use category store
-  const { categories, isLoading, error, getAllCategories } = useCategoryStore()
+  const { categories, isLoading, error, getAllCategories, updateCategory } = useCategoryStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -144,25 +144,16 @@ const AdminCategoriesPage = () => {
 
     setIsSaving(true)
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
     try {
-      // TODO: Implement actual API call to update category
-      // const updateData = {
-      //   name: editFormData.name,
-      //   description: editFormData.description,
-      //   parent: editFormData.parent || null,
-      // }
-      // await productService.updateCategory(selectedCategory.id, updateData)
-      // await loadCategories()
-
-      console.log('Category update (dummy):', {
-        id: selectedCategory.id,
+      // Prepare the update data
+      const updateData = {
         name: editFormData.name,
         description: editFormData.description,
         parent: editFormData.parent || null,
-      })
+      }
+
+      // Call the store action to update the category
+      await updateCategory(selectedCategory.id, updateData)
 
       // Show success message via toast
       toast.success(t('admin.categoriesPage.form.saveSuccess'))
