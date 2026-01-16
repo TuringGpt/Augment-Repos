@@ -587,6 +587,30 @@
         "saveSuccess": "Category updated successfully!"
       }
     },
+    "brandsPage": {
+      "title": "Brands",
+      "subtitle": "Manage product brands",
+      "refresh": "Refresh brands",
+      "errorLoadBrands": "Failed to load brands. Please try again.",
+      "errorUpdateBrand": "Failed to update brand. Please try again.",
+      "noBrands": "No brands available",
+      "editBrand": "Edit Brand",
+      "table": {
+        "image": "Image",
+        "brandName": "Brand Name",
+        "description": "Description",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "brandName": "Brand Name",
+        "description": "Description",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Brand updated successfully!"
+      }
+    },
     "allProducts": {
       "title": "All Products",
       "subtitle": "Manage all products in your store",
