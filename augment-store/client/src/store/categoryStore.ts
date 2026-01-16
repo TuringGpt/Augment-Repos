@@ -109,6 +109,13 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
             image: refetchedCategory.image,
           }
 
+          // Update the store's categories array with the merged category
+          // This ensures consumers reading from the store see the correct slug and other POST-only fields
+          const updatedCategories = get().categories.map((cat) =>
+            cat.id === newCategory.id ? mergedCategory : cat
+          )
+          set({ categories: updatedCategories })
+
           return mergedCategory
         }
 
