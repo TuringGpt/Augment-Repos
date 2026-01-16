@@ -81,7 +81,7 @@ class BaseCacheService:
             # make_key("") returns something like "myapp:" or "" (no prefix)
 
             # Namespace pattern WITHOUT prefix
-            namespace = f"{self.get_cache_namespace()}:v{self.VERSION}*"
+            namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
             
             if custom_pattern:
                  namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
