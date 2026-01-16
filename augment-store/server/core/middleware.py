@@ -39,7 +39,7 @@ class QueryCountMiddleware:
         if not getattr(settings, 'ENABLE_QUERY_COUNT_LOGGING', settings.DEBUG):
             return self.get_response(request)
 
-        start_time = time.time()
+        start_time = time.perf_counter()
         with force_query_logging():
             response = self.get_response(request)
 
@@ -48,7 +48,7 @@ class QueryCountMiddleware:
                 response.render()
 
             # Calculate queries during request
-            duration = time.time() - start_time
+            duration = time.perf_counter() - start_time
             query_count = len(connection.queries)
 
             # Log warning if query count exceeds threshold
