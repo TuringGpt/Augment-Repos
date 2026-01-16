@@ -72,6 +72,9 @@ class BaseCacheService:
     def clear_namespace(self, custom_pattern: str = None):
         """
         Clears Redis keys belonging to this cache namespace.
+        
+        :param custom_pattern: Optional Redis glob string (e.g. "orders:*" or "user_123:*").
+                               If provided, it is appended to the full versioned namespace.
         """
         try:
             redis_client = cache.client.get_client(write=True)
@@ -130,6 +133,11 @@ class CacheInvalidatorMixin:
         return self.cache_service_class()
 
     def invalidate_cache(self, custom_pattern: str = None):
+        """
+        Invalidates the cache for the service.
+        
+        :param custom_pattern: Optional Redis glob string (e.g. "prefix:*").
+        """
         service = self.get_cache_service()
         service.clear_namespace(custom_pattern=custom_pattern)
 
