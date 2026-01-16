@@ -2,9 +2,10 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import UserProfileSerializer, UpdateUserProfileSerializer
+from core.optimization import AutoOptimizeMixin
 
 
-class UserProfileView(RetrieveUpdateAPIView):
+class UserProfileView(AutoOptimizeMixin, RetrieveUpdateAPIView):
     """
     View for retrieving and updating the authenticated user's profile.
 
@@ -13,6 +14,8 @@ class UserProfileView(RetrieveUpdateAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
+    auto_select_related = ['profile_image', 'preferred_currency']
+    queryset = User.objects.all()
 
     def get_object(self):
         """Return the current authenticated user"""
