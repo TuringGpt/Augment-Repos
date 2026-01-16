@@ -34,10 +34,12 @@ class QueryCountMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        import time
         # Only enable heavy query logging if explicitly allowed or in debug mode
         if not getattr(settings, 'ENABLE_QUERY_COUNT_LOGGING', settings.DEBUG):
             return self.get_response(request)
 
+        start_time = time.time()
         with force_query_logging():
             response = self.get_response(request)
 
@@ -46,10 +48,14 @@ class QueryCountMiddleware:
                 response.render()
 
             # Calculate queries during request
+            duration = time.time() - start_time
             query_count = len(connection.queries)
 
             # Log warning if query count exceeds threshold
+            log_meta = f"queries: {query_count}, duration: {duration:.4f}s"
             if query_count > 50:
-                logger.warning(f"High query count detected: {query_count} queries for {request.path}")
+                logger.warning(f"High query count detected: {log_meta} for {request.path}")
+            else:
+                logger.info(f"Request metrics: {log_meta} for {request.path}")
 
         return response
