@@ -593,6 +593,7 @@
       "refresh": "Actualizar marcas",
       "errorLoadBrands": "Error al cargar las marcas. Por favor, inténtalo de nuevo.",
       "errorUpdateBrand": "Error al actualizar la marca. Por favor, inténtalo de nuevo.",
+      "errorUploadImage": "Error al cargar la imagen. Por favor, inténtalo de nuevo.",
       "noBrands": "No hay marcas disponibles",
       "editBrand": "Editar Marca",
       "table": {

@@ -593,6 +593,7 @@
       "refresh": "Marken aktualisieren",
       "errorLoadBrands": "Marken konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
       "errorUpdateBrand": "Marke konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorUploadImage": "Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.",
       "noBrands": "Keine Marken verfügbar",
       "editBrand": "Marke bearbeiten",
       "table": {

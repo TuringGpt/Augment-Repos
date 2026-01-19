@@ -168,7 +168,7 @@ const AdminBrandsPage = () => {
           imageFileId = await storageService.uploadFile(selectedImage)
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
-          setImageUploadError('Failed to upload image. Please try again.')
+          setImageUploadError(t('admin.brandsPage.errorUploadImage'))
           setIsUploadingImage(false)
           setIsSaving(false)
           return
