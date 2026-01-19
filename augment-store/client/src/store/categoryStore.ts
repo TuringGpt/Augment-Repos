@@ -169,7 +169,9 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     // This prevents stale fetch responses from repopulating the deleted category
     ++requestCounter
 
-    set({ error: null })
+    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
+    // if a stale fetch already set isLoading: true before being invalidated
+    set({ error: null, isLoading: false })
     try {
       // Call the API to delete the category
       await productService.deleteCategory(id)
