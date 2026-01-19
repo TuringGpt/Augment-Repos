@@ -20,7 +20,16 @@ class ProductFilter(filters.FilterSet):
 
 
     def filter_limit(self, queryset, name, value):
-        return queryset[:value]
+        self._limit_value = value
+        return queryset
+
+    @property
+    def qs(self):
+        queryset = super().qs
+        limit_value = getattr(self, "_limit_value", None)
+        if limit_value:
+            queryset = queryset[:limit_value]
+        return queryset
 
 class ProductSearchFilter(filters.FilterSet):
     limit = filters.NumberFilter(field_name="limit", method="limit_filter", max_value=100, min_value=1)
