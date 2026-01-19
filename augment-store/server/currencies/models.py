@@ -4,7 +4,10 @@ from core.models import BaseModel
 
 class CurrencyManager(models.Manager):
     def get_by_code(self, code: str):
-        return self.get(code=code)
+        try:
+            return self.get(code=code)
+        except self.model.DoesNotExist:
+            return None
 
 
 class Currency(BaseModel):
