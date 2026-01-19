@@ -165,6 +165,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   },
 
   deleteCategory: async (id: string) => {
+    set({ error: null })
     try {
       // Call the API to delete the category
       await productService.deleteCategory(id)
