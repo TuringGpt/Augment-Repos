@@ -203,13 +203,15 @@ const AdminBrandsPage = () => {
 
       // Show success message via toast
       toast.success(t('admin.brandsPage.form.saveSuccess'))
+
+      // Reset isSaving before closing to ensure the close isn't blocked by the guard
+      setIsSaving(false)
       handleCloseEditDrawer()
     } catch (err) {
       console.error('Failed to update brand:', err)
       toast.error(t('admin.brandsPage.errorUpdateBrand'))
-      // Keep drawer open on error so user can retry or cancel
-    } finally {
       setIsSaving(false)
+      // Keep drawer open on error so user can retry or cancel
     }
   }
 
