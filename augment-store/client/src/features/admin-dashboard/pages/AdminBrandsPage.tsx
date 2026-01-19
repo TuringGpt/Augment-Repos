@@ -441,7 +441,7 @@ const AdminBrandsPage = () => {
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <AvatarUpload
-                      currentImage={selectedBrand.image || null}
+                      currentImage={shouldRemoveImage ? null : selectedBrand.image || null}
                       userName={selectedBrand.name}
                       onImageSelect={handleImageSelect}
                       onImageRemove={handleImageRemove}
