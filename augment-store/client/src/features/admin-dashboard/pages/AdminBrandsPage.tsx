@@ -115,6 +115,11 @@ const AdminBrandsPage = () => {
   }
 
   const handleCloseEditDrawer = () => {
+    // Prevent closing while save is in progress
+    if (isSaving) {
+      return
+    }
+
     setIsEditDrawerOpen(false)
     setSelectedBrand(null)
     setEditFormData({
@@ -397,7 +402,11 @@ const AdminBrandsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.brandsPage.editBrand')}
             </Typography>
-            <IconButton onClick={handleCloseEditDrawer} sx={{ color: 'white' }}>
+            <IconButton
+              onClick={handleCloseEditDrawer}
+              disabled={isSaving}
+              sx={{ color: 'white' }}
+            >
               <CloseIcon />
             </IconButton>
           </Box>
