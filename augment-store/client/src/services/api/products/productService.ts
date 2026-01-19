@@ -186,6 +186,15 @@ export const productService = {
   },
 
   /**
+   * Delete a category by ID
+   * @param id - Category ID to delete
+   * @throws Error if the API request fails
+   */
+  deleteCategory: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.PRODUCTS.CATEGORY_DELETE(id))
+  },
+
+  /**
    * Get all brands from backend API
    * Fetches all pages of brands using pagination
    * @param signal - Optional AbortSignal for request cancellation
