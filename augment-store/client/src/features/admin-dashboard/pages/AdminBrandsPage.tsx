@@ -375,6 +375,7 @@ const AdminBrandsPage = () => {
                           onClick={() => handleEditBrand(brand)}
                           color="primary"
                           size="small"
+                          disabled={isSaving}
                         >
                           <EditIcon />
                         </IconButton>
