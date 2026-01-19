@@ -150,6 +150,14 @@ const AdminBrandsPage = () => {
     setImageUploadError(null)
   }
 
+  const handleImageValidationError = (error: string) => {
+    // Clear selectedImage to prevent uploading a previously-selected file
+    setSelectedImage(null)
+    setShouldRemoveImage(false)
+    // Surface the validation error message
+    setImageUploadError(error)
+  }
+
   const handleSaveBrand = async () => {
     if (!selectedBrand) return
 
@@ -423,6 +431,7 @@ const AdminBrandsPage = () => {
                       userName={selectedBrand.name}
                       onImageSelect={handleImageSelect}
                       onImageRemove={handleImageRemove}
+                      onValidationError={handleImageValidationError}
                       isUploading={isUploadingImage}
                       disabled={isSaving}
                       error={imageUploadError}
