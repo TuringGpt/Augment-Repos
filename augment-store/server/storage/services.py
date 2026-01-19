@@ -61,6 +61,7 @@ class FileStandardUploadService:
 
         return file_name, file_type
 
+
     @transaction.atomic
     def create(self, file_name: str = "", file_type: str = "") -> File:
         _validate_file_size(self.file_obj)
@@ -181,23 +182,19 @@ class FileDirectUploadService:
         from django.db import transaction
         threshold = timezone.now() - timedelta(hours=24)
         
-        # Collect candidates
-        abandoned_files = list(File.objects.filter(
-            upload_finished_at__isnull=True,
-            created_at__lt=threshold
-        ))
-        
-        if not abandoned_files:
-            return 0
-
-        # Perform DB deletion in transaction
         with transaction.atomic():
-            _, deleted_info = File.objects.filter(
-                id__in=[f.id for f in abandoned_files],
-                upload_finished_at__isnull=True  # Ensure we don't delete if it finished just now
-            ).delete()
+            # Lock the abandoned files to prevent finish() from completing mid-operation
+            abandoned_files = list(File.objects.select_for_update().filter(
+                upload_finished_at__isnull=True,
+                created_at__lt=threshold
+            ))
             
-            count = deleted_info.get('storage.File', 0)
+            if not abandoned_files:
+                return 0
+
+            # Efficiently delete the locked records
+            File.objects.filter(id__in=[f.id for f in abandoned_files]).delete()
+            count = len(abandoned_files)
             
             # Safe storage cleanup ONLY after the transaction truly commits
             def _clean_blobs():
@@ -210,8 +207,6 @@ class FileDirectUploadService:
             transaction.on_commit(_clean_blobs)
             
         return count
-
-
 
     @transaction.atomic
     def upload_local(self, *, file: File, file_obj) -> File:
