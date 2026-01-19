@@ -18,12 +18,15 @@ import type {
   CreateProductResponseAPI,
   UpdateCategoryRequest,
   ProductCategoryDetailAPI,
+  UpdateBrandRequest,
+  ProductBrandDetailAPI,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
   transformCategoryFromAPI,
   transformCategoryDetailFromAPI,
   transformBrandFromAPI,
+  transformBrandDetailFromAPI,
   transformRecommendedProductFromAPI,
 } from '@features/products/types/api'
 
@@ -203,6 +206,29 @@ export const productService = {
     }
 
     return allBrands
+  },
+
+  /**
+   * Update a brand by ID
+   * @param id - Brand ID to update
+   * @param data - Partial brand data to update
+   * @returns Promise with updated brand
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductBrandDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformBrandDetailFromAPI
+   * to handle this response format.
+   */
+  updateBrand: async (id: string, data: UpdateBrandRequest): Promise<Brand> => {
+    // Send PATCH request to update brand
+    // Backend returns ProductBrandDetailAPI with image as UUID string
+    const response = await apiClient.patch<ProductBrandDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.BRAND_DETAIL(id),
+      data
+    )
+    // Transform backend brand detail to frontend format
+    // This handles the UUID image field
+    return transformBrandDetailFromAPI(response)
   },
 
   getFeaturedProducts: async (): Promise<Product[]> => {

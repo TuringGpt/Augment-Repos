@@ -1,14 +1,18 @@
 import { create } from 'zustand'
 import { productService } from '@services/api'
 import type { Brand } from '@features/products/types'
+import type { UpdateBrandRequest } from '@features/products/types/api'
 
 interface BrandState {
   brands: Brand[]
   isLoading: boolean
   error: string | null
+  isUpdating: boolean
+  updateError: string | null
 
   // Actions
   fetchBrands: (signal?: AbortSignal) => Promise<void>
+  updateBrand: (id: string, data: UpdateBrandRequest) => Promise<Brand>
   setBrands: (brands: Brand[]) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -22,6 +26,8 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   brands: [],
   isLoading: false,
   error: null,
+  isUpdating: false,
+  updateError: null,
 
   fetchBrands: async (signal?: AbortSignal) => {
     // Increment counter and capture the current request ID
@@ -54,6 +60,102 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       if (requestId === fetchRequestCounter) {
         set({ error: 'Failed to fetch brands', isLoading: false })
       }
+    }
+  },
+
+  updateBrand: async (id: string, data: UpdateBrandRequest) => {
+    try {
+      set({ isUpdating: true, updateError: null })
+      const updatedBrand = await productService.updateBrand(id, data)
+
+      // Check if the image field was included in the update request with an intentional value
+      // Distinguish between:
+      // - Property not present: no image update intended
+      // - Property present with null/string: intentional update/clear
+      // - Property present but undefined: treat as "no change" to avoid unnecessary refetch
+      const imageWasUpdated = 'image' in data && data.image !== undefined
+
+      // If image was updated, we need to refetch brands to get the actual image URL
+      // because the backend returns a UUID string instead of a FileAPI object
+      if (imageWasUpdated) {
+        // Store the pre-update brand to detect if refetch actually succeeded
+        const preUpdateBrand = get().brands.find((brand) => brand.id === id)
+
+        // Refetch all brands to get the updated image URL
+        await get().fetchBrands()
+
+        // Guard against treating an unchanged store snapshot as a successful refetch
+        // If fetchBrands() failed, get().error will be set and brands may be stale
+        const fetchError = get().error
+        const refetchedBrand = get().brands.find((brand) => brand.id === id)
+
+        set({ isUpdating: false })
+
+        // Only use refetched data if:
+        // 1. No fetch error occurred, AND
+        // 2. The brand was found, AND
+        // 3. The data actually changed (different from pre-update snapshot)
+        if (!fetchError && refetchedBrand && refetchedBrand !== preUpdateBrand) {
+          // Merge PATCH response with refetched data to preserve fields that only exist in PATCH response
+          const mergedBrand: Brand = {
+            ...refetchedBrand,
+            ...updatedBrand,
+            // Use refetched image since that's the whole point of refetching
+            image: refetchedBrand.image,
+          }
+
+          // Update the brand in the store
+          const updatedBrands = get().brands.map((brand) =>
+            brand.id === id ? mergedBrand : brand
+          )
+          set({ brands: updatedBrands })
+
+          return mergedBrand
+        }
+
+        // If refetch failed or returned stale data, merge with existing brand
+        // but preserve the existing image URL to avoid showing broken images
+        console.warn('Refetch after image update failed or returned stale data, preserving existing image')
+        const currentBrands = get().brands
+        const existingBrand = currentBrands.find((brand) => brand.id === id)
+
+        const mergedBrand: Brand = {
+          ...existingBrand,
+          ...updatedBrand,
+          // Preserve existing image to avoid broken images (UUID can't be used as URL)
+          image: data.image === null ? undefined : existingBrand?.image,
+        }
+
+        const updatedBrands = currentBrands.map((brand) =>
+          brand.id === id ? mergedBrand : brand
+        )
+        set({ brands: updatedBrands })
+
+        return mergedBrand
+      }
+
+      // If image was not updated, merge the response with existing brand
+      const currentBrands = get().brands
+      const existingBrand = currentBrands.find((brand) => brand.id === id)
+
+      const mergedBrand: Brand = {
+        ...existingBrand,
+        ...updatedBrand,
+        // Preserve existing image since it wasn't updated
+        image: existingBrand?.image,
+      }
+
+      const updatedBrands = currentBrands.map((brand) =>
+        brand.id === id ? mergedBrand : brand
+      )
+      set({ brands: updatedBrands, isUpdating: false })
+
+      return mergedBrand
+    } catch (error) {
+      console.error('Failed to update brand:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update brand'
+      set({ updateError: errorMessage, isUpdating: false })
+      throw error
     }
   },
 

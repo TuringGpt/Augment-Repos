@@ -29,6 +29,7 @@ export const API_ENDPOINTS = {
     CATEGORIES: '/products/categories',
     CATEGORY_DETAIL: (id: string) => `/products/categories/${id}/`,
     BRANDS: '/products/brands',
+    BRAND_DETAIL: (id: string) => `/products/brands/${id}/`,
     RECOMMEND: '/products/recommend',
     FEATURED: '/products/featured/',
   },

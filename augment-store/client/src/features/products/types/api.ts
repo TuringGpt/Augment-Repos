@@ -46,6 +46,23 @@ export interface ProductCategoryDetailAPI {
   is_deleted: boolean
 }
 
+/**
+ * Product Brand Detail API Response
+ * Backend's ProductBrandDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object.
+ * This type is used for PATCH responses from the brand update endpoint.
+ */
+export interface ProductBrandDetailAPI {
+  id: string
+  name: string
+  description: string
+  image: string | null // UUID string, not FileAPI object
+  created_by: string // UUID string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
 export interface ProductAPI {
   id: string
   name: string
@@ -183,6 +200,18 @@ export interface UpdateCategoryRequest {
 }
 
 /**
+ * Update Brand Request
+ * Backend expects fields for updating a brand
+ * All fields are optional for partial updates (PATCH)
+ * Based on ProductBrandDetailSerializer which allows updating all fields
+ */
+export interface UpdateBrandRequest {
+  name?: string
+  description?: string
+  image?: string | null // Image file UUID or null
+}
+
+/**
  * Placeholder image data URL - a simple gray box
  * Used when products have no images to avoid broken image links
  */
@@ -263,6 +292,7 @@ export function transformCategoryDetailFromAPI(apiCategory: ProductCategoryDetai
 
 /**
  * Transform backend brand to frontend brand format
+ * Handles ProductBrandAPI from list endpoints (image as FileAPI object)
  */
 export function transformBrandFromAPI(apiBrand: ProductBrandAPI) {
   return {
@@ -270,6 +300,29 @@ export function transformBrandFromAPI(apiBrand: ProductBrandAPI) {
     name: apiBrand.name,
     description: apiBrand.description,
     image: apiBrand.image?.file || undefined,
+  }
+}
+
+/**
+ * Transform backend brand detail to frontend brand format
+ * Handles ProductBrandDetailAPI from PATCH responses (image as UUID string)
+ *
+ * IMPORTANT: The backend's ProductBrandDetailSerializer uses fields="__all__" which returns
+ * image as a UUID string instead of a nested FileAPI object with {id, file}.
+ *
+ * Since Brand.image should be an image URL (not a UUID), we always return undefined for the
+ * image field. The brandStore.updateBrand method handles this by:
+ * - Refetching brands when image was updated to get the actual URL
+ * - Preserving the existing image URL when image was not updated
+ */
+export function transformBrandDetailFromAPI(apiBrand: ProductBrandDetailAPI) {
+  return {
+    id: apiBrand.id,
+    name: apiBrand.name,
+    description: apiBrand.description,
+    // Always return undefined since we can't use UUID as image URL
+    // The store will either refetch to get the URL or preserve the existing URL
+    image: undefined,
   }
 }
 
