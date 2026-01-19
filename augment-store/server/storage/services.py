@@ -176,22 +176,32 @@ class FileDirectUploadService:
         return file
 
     @classmethod
-    @transaction.atomic
     def cleanup_abandoned_uploads(cls):
         from datetime import timedelta
+        from django.db import transaction
         threshold = timezone.now() - timedelta(hours=24)
-        abandoned_files = File.objects.filter(
+        
+        # Collect candidates
+        abandoned_files = list(File.objects.filter(
             upload_finished_at__isnull=True,
             created_at__lt=threshold
-        )
+        ))
         
-        count = abandoned_files.count()
+        if not abandoned_files:
+            return 0
+
+        # Perform DB deletion in transaction
+        with transaction.atomic():
+            File.objects.filter(id__in=[f.id for f in abandoned_files]).delete()
+        
+        # Safe storage cleanup after DB commit
+        count = 0
         for obj in abandoned_files:
             if obj.file:
                 obj.file.delete(save=False)
             if obj.thumbnail:
                 obj.thumbnail.delete(save=False)
-            obj.delete()
+            count += 1
             
         return count
 
