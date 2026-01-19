@@ -204,9 +204,20 @@ const AdminBrandsPage = () => {
       // Show success message via toast
       toast.success(t('admin.brandsPage.form.saveSuccess'))
 
-      // Reset isSaving before closing to ensure the close isn't blocked by the guard
+      // Close drawer and reset state
+      // Note: We close the drawer directly here instead of calling handleCloseEditDrawer()
+      // because setIsSaving(false) won't update synchronously, which would cause the
+      // isSaving guard in handleCloseEditDrawer to block the close
+      setIsEditDrawerOpen(false)
+      setSelectedBrand(null)
+      setEditFormData({
+        name: '',
+        description: '',
+      })
+      setSelectedImage(null)
+      setShouldRemoveImage(false)
+      setImageUploadError(null)
       setIsSaving(false)
-      handleCloseEditDrawer()
     } catch (err) {
       console.error('Failed to update brand:', err)
       toast.error(t('admin.brandsPage.errorUpdateBrand'))
