@@ -169,6 +169,8 @@ class FileDirectUploadService:
 
     @transaction.atomic
     def finish(self, *, file: File) -> File:
+        if not File.objects.select_for_update().filter(pk=file.pk).exists():
+            raise ValidationError("File record has been purged or deleted.")
 
         file.upload_finished_at = timezone.now()
         file.full_clean()
