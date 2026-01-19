@@ -178,7 +178,22 @@ class FileDirectUploadService:
     @classmethod
     @transaction.atomic
     def cleanup_abandoned_uploads(cls):
-        return File.objects.filter(upload_finished_at__isnull=True).delete()
+        from datetime import timedelta
+        threshold = timezone.now() - timedelta(hours=24)
+        abandoned_files = File.objects.filter(
+            upload_finished_at__isnull=True,
+            created_at__lt=threshold
+        )
+        
+        count = abandoned_files.count()
+        for obj in abandoned_files:
+            if obj.file:
+                obj.file.delete(save=False)
+            if obj.thumbnail:
+                obj.thumbnail.delete(save=False)
+            obj.delete()
+            
+        return count
 
     @transaction.atomic
     def upload_local(self, *, file: File, file_obj) -> File:
