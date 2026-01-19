@@ -13,6 +13,7 @@ interface CategoryState {
   // Actions
   fetchCategories: (signal?: AbortSignal) => Promise<void>
   updateCategory: (id: string, data: UpdateCategoryRequest) => Promise<Category>
+  deleteCategory: (id: string) => Promise<void>
   getAllCategories: (signal?: AbortSignal) => Promise<void>
   setCategories: (categories: Category[]) => void
   setLoading: (isLoading: boolean) => void
@@ -159,6 +160,23 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       console.error('Failed to update category:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to update category'
       set({ updateError: errorMessage, isUpdating: false })
+      throw error
+    }
+  },
+
+  deleteCategory: async (id: string) => {
+    try {
+      // Call the API to delete the category
+      await productService.deleteCategory(id)
+
+      // Remove the category from the local state
+      set((state) => ({
+        categories: state.categories.filter((category) => category.id !== id),
+      }))
+    } catch (error) {
+      console.error('Failed to delete category:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete category'
+      set({ error: errorMessage })
       throw error
     }
   },
