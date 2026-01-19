@@ -173,7 +173,41 @@ class FileDirectUploadService:
         file.full_clean()
         file.save()
 
-        return file
+    @classmethod
+    def cleanup_abandoned_uploads(cls):
+        from datetime import timedelta
+        from django.db import transaction
+        threshold = timezone.now() - timedelta(hours=24)
+        
+        # Collect candidates
+        abandoned_files = list(File.objects.filter(
+            upload_finished_at__isnull=True,
+            created_at__lt=threshold
+        ))
+        
+        if not abandoned_files:
+            return 0
+
+        # Perform DB deletion in transaction
+        with transaction.atomic():
+            _, deleted_info = File.objects.filter(
+                id__in=[f.id for f in abandoned_files],
+                upload_finished_at__isnull=True  # Ensure we don't delete if it finished just now
+            ).delete()
+            
+            count = deleted_info.get('storage.File', 0)
+            
+            # Safe storage cleanup ONLY after the transaction truly commits
+            def _clean_blobs():
+                for obj in abandoned_files:
+                    if obj.file:
+                        obj.file.delete(save=False)
+                    if obj.thumbnail:
+                        obj.thumbnail.delete(save=False)
+            
+            transaction.on_commit(_clean_blobs)
+            
+        return count
 
     @classmethod
     def cleanup_abandoned_uploads(cls):
