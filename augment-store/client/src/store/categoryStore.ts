@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { UpdateCategoryRequest } from '@features/products/types/api'
+import type { CreateCategoryRequest, UpdateCategoryRequest } from '@features/products/types/api'
 import type { Category } from '@features/products/types'
 import { productService } from '@services/api'
 
@@ -7,11 +7,14 @@ interface CategoryState {
   categories: Category[]
   isLoading: boolean
   error: string | null
+  isCreating: boolean
+  createError: string | null
   isUpdating: boolean
   updateError: string | null
 
   // Actions
   fetchCategories: (signal?: AbortSignal) => Promise<void>
+  createCategory: (data: CreateCategoryRequest) => Promise<Category>
   updateCategory: (id: string, data: UpdateCategoryRequest) => Promise<Category>
   deleteCategory: (id: string) => Promise<void>
   getAllCategories: (signal?: AbortSignal) => Promise<void>
@@ -30,6 +33,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   categories: [],
   isLoading: false,
   error: null,
+  isCreating: false,
+  createError: null,
   isUpdating: false,
   updateError: null,
 
@@ -63,6 +68,76 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch categories'
         set({ error: errorMessage, isLoading: false })
       }
+    }
+  },
+
+  createCategory: async (data: CreateCategoryRequest) => {
+    try {
+      set({ isCreating: true, createError: null })
+      const newCategory = await productService.createCategory(data)
+
+      // Check if the image field was included in the create request with an intentional value
+      // Distinguish between:
+      // - Property not present: no image provided
+      // - Property present with null/string: intentional image set/clear
+      // - Property present but undefined: treat as "no image" to avoid unnecessary refetch
+      const imageWasProvided = 'image' in data && data.image !== undefined
+
+      // If image was provided, we need to refetch categories to get the actual image URL
+      // because the backend returns a UUID string instead of a FileAPI object
+      if (imageWasProvided) {
+        // Refetch all categories to get the updated image URL
+        await get().fetchCategories()
+
+        // Guard against treating an unchanged store snapshot as a successful refetch
+        // If fetchCategories() failed, get().error will be set and categories may be stale
+        const fetchError = get().error
+        const refetchedCategory = get().categories.find((cat) => cat.id === newCategory.id)
+
+        set({ isCreating: false })
+
+        // Only use refetched data if:
+        // 1. No fetch error occurred, AND
+        // 2. The category was found, AND
+        // 3. The category exists in the refetched list
+        if (!fetchError && refetchedCategory) {
+          // Merge POST response with refetched data to preserve fields that only exist in POST response
+          // (notably `slug`, since fetchCategories() derives slug from name)
+          const mergedCategory: Category = {
+            ...refetchedCategory,
+            ...newCategory,
+            // Use refetched image since that's the whole point of refetching
+            image: refetchedCategory.image,
+          }
+
+          // Update the store's categories array with the merged category
+          // This ensures consumers reading from the store see the correct slug and other POST-only fields
+          const updatedCategories = get().categories.map((cat) =>
+            cat.id === newCategory.id ? mergedCategory : cat
+          )
+          set({ categories: updatedCategories })
+
+          return mergedCategory
+        }
+
+        // If refetch failed or returned stale data, just add the new category without image URL
+        console.warn('Refetch after image creation failed or returned stale data, adding category without image URL')
+        const updatedCategories = [...get().categories, newCategory]
+        set({ categories: updatedCategories })
+
+        return newCategory
+      }
+
+      // If image was not provided, just add the new category to the store
+      const updatedCategories = [...get().categories, newCategory]
+      set({ categories: updatedCategories, isCreating: false })
+
+      return newCategory
+    } catch (error) {
+      console.error('Failed to create category:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create category'
+      set({ createError: errorMessage, isCreating: false })
+      throw error
     }
   },
 

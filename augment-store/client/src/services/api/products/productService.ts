@@ -16,6 +16,7 @@ import type {
   UpdateProductRequest,
   CreateProductRequest,
   CreateProductResponseAPI,
+  CreateCategoryRequest,
   UpdateCategoryRequest,
   ProductCategoryDetailAPI,
   UpdateBrandRequest,
@@ -160,6 +161,28 @@ export const productService = {
     }
 
     return allCategories
+  },
+
+  /**
+   * Create a new category
+   * @param data - Category data to create
+   * @returns Promise with created category
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformCategoryDetailFromAPI
+   * to handle this response format and preserve the slug field from the response.
+   */
+  createCategory: async (data: CreateCategoryRequest): Promise<Category> => {
+    // Send POST request to create category
+    // Backend returns ProductCategoryDetailAPI with image as UUID string
+    const response = await apiClient.post<ProductCategoryDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.CATEGORIES,
+      data
+    )
+    // Transform backend category detail to frontend format
+    // This handles the UUID image field and preserves slug
+    return transformCategoryDetailFromAPI(response)
   },
 
   /**

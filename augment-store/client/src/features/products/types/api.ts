@@ -186,6 +186,18 @@ export interface UpdateProductRequest {
 }
 
 /**
+ * Create Category Request
+ * Backend expects fields for creating a new category
+ * Based on ProductCategoryDetailSerializer
+ */
+export interface CreateCategoryRequest {
+  name: string
+  description: string
+  parent?: string | null // Parent category UUID or null (optional)
+  image?: string | null // Image file UUID or null (optional)
+}
+
+/**
  * Update Category Request
  * Backend expects fields for updating a category
  * All fields are optional for partial updates (PATCH)
