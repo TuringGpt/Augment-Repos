@@ -165,6 +165,10 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   },
 
   deleteCategory: async (id: string) => {
+    // Increment request counter to invalidate any in-flight fetch requests
+    // This prevents stale fetch responses from repopulating the deleted category
+    ++requestCounter
+
     set({ error: null })
     try {
       // Call the API to delete the category
