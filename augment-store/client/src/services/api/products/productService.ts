@@ -178,7 +178,7 @@ export const productService = {
     // Send POST request to create category
     // Backend returns ProductCategoryDetailAPI with image as UUID string
     const response = await apiClient.post<ProductCategoryDetailAPI>(
-      API_ENDPOINTS.PRODUCTS.CATEGORIES,
+      API_ENDPOINTS.PRODUCTS.CATEGORY_CREATE,
       data
     )
     // Transform backend category detail to frontend format

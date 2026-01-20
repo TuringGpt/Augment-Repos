@@ -564,10 +564,13 @@
       "title": "Categorías",
       "subtitle": "Gestionar categorías de productos",
       "refresh": "Actualizar categorías",
+      "createCategory": "Crear Categoría",
       "errorLoadCategories": "Error al cargar las categorías. Por favor, inténtalo de nuevo.",
       "errorUpdateCategory": "Error al actualizar la categoría. Por favor, inténtalo de nuevo.",
+      "errorCreateCategory": "Error al crear la categoría. Por favor, inténtalo de nuevo.",
       "noCategories": "No hay categorías disponibles",
       "editCategory": "Editar Categoría",
+      "newCategory": "Nueva Categoría",
       "table": {
         "image": "Imagen",
         "categoryName": "Nombre de Categoría",
@@ -583,8 +586,17 @@
         "noParent": "Ninguna (Nivel Superior)",
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
+        "create": "Crear Categoría",
         "saving": "Guardando...",
-        "saveSuccess": "¡Categoría actualizada con éxito!"
+        "creating": "Creando...",
+        "saveSuccess": "¡Categoría actualizada con éxito!",
+        "createSuccess": "¡Categoría creada con éxito!",
+        "uploadInstructions": "Haz clic en el icono de la cámara para subir una imagen",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Máx 5MB)",
+        "invalidFileType": "Tipo de archivo no válido. Por favor, selecciona una imagen JPEG, PNG, GIF o WebP.",
+        "fileSizeExceeded": "El tamaño del archivo excede el límite de 5MB. El archivo seleccionado es de {{size}}MB.",
+        "uploadFailed": "Error al subir la imagen. Por favor, inténtalo de nuevo.",
+        "authenticationFailed": "Error de autenticación. Por favor, inicia sesión de nuevo."
       }
     },
     "brandsPage": {

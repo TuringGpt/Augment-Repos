@@ -564,10 +564,13 @@
       "title": "Kategorien",
       "subtitle": "Produktkategorien verwalten",
       "refresh": "Kategorien aktualisieren",
+      "createCategory": "Kategorie erstellen",
       "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
       "errorUpdateCategory": "Kategorie konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorCreateCategory": "Kategorie konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
       "noCategories": "Keine Kategorien verfügbar",
       "editCategory": "Kategorie bearbeiten",
+      "newCategory": "Neue Kategorie",
       "table": {
         "image": "Bild",
         "categoryName": "Kategoriename",
@@ -583,8 +586,17 @@
         "noParent": "Keine (Oberste Ebene)",
         "cancel": "Abbrechen",
         "save": "Änderungen speichern",
+        "create": "Kategorie erstellen",
         "saving": "Speichern...",
-        "saveSuccess": "Kategorie erfolgreich aktualisiert!"
+        "creating": "Erstellen...",
+        "saveSuccess": "Kategorie erfolgreich aktualisiert!",
+        "createSuccess": "Kategorie erfolgreich erstellt!",
+        "uploadInstructions": "Klicken Sie auf das Kamera-Symbol, um ein Bild hochzuladen",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Max 5MB)",
+        "invalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein JPEG-, PNG-, GIF- oder WebP-Bild.",
+        "fileSizeExceeded": "Die Dateigröße überschreitet das Limit von 5MB. Die ausgewählte Datei ist {{size}}MB groß.",
+        "uploadFailed": "Fehler beim Hochladen des Bildes. Bitte versuchen Sie es erneut.",
+        "authenticationFailed": "Authentifizierung fehlgeschlagen. Bitte melden Sie sich erneut an."
       }
     },
     "brandsPage": {

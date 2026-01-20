@@ -1,8 +1,15 @@
 import type { Category, CategoryWithChildren } from '@features/products/types'
+import { deburr } from 'lodash'
 
 /**
  * Converts a category name to a URL-friendly slug
- * Example: "Basket Ball" -> "basket-ball"
+ * Handles diacritics, punctuation, and special characters
+ *
+ * Examples:
+ * - "Basket Ball" -> "basket-ball"
+ * - "Men's Clothing" -> "mens-clothing"
+ * - "Café & Restaurant" -> "cafe-restaurant"
+ * - "Über Cool!" -> "uber-cool"
  *
  * TEMPORARY FIX: This is a workaround until the backend exposes the slug field
  * in the category API response. Once the backend includes the slug field,
@@ -12,7 +19,14 @@ import type { Category, CategoryWithChildren } from '@features/products/types'
  * @returns URL-friendly slug
  */
 export function categoryNameToSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '-')
+  return (
+    deburr(name) // Remove diacritics (é -> e, ñ -> n, etc.)
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^\w\s-]/g, '') // Remove all non-word chars except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+  )
 }
 
 /**
