@@ -178,6 +178,8 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
 
+    
+class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
         # Return a lazy queryset from the service directly to preserve ordering and DB-level pagination
         product_service = ProductService()
