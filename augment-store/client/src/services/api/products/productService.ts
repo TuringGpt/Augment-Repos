@@ -19,6 +19,7 @@ import type {
   CreateCategoryRequest,
   UpdateCategoryRequest,
   ProductCategoryDetailAPI,
+  CreateBrandRequest,
   UpdateBrandRequest,
   ProductBrandDetailAPI,
 } from '@features/products/types/api'
@@ -238,6 +239,28 @@ export const productService = {
     }
 
     return allBrands
+  },
+
+  /**
+   * Create a new brand
+   * @param data - Brand data to create
+   * @returns Promise with created brand
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's CreateProductBrandSerializer returns ProductBrandDetailAPI with
+   * image as a UUID string instead of a nested FileAPI object. We use transformBrandDetailFromAPI
+   * to handle this response format.
+   */
+  createBrand: async (data: CreateBrandRequest): Promise<Brand> => {
+    // Send POST request to create brand
+    // Backend returns ProductBrandDetailAPI with image as UUID string
+    const response = await apiClient.post<ProductBrandDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.BRAND_CREATE,
+      data
+    )
+    // Transform backend brand detail to frontend format
+    // This handles the UUID image field
+    return transformBrandDetailFromAPI(response)
   },
 
   /**

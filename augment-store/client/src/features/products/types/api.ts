@@ -212,6 +212,17 @@ export interface UpdateCategoryRequest {
 }
 
 /**
+ * Create Brand Request
+ * Backend expects fields for creating a new brand
+ * Based on CreateProductBrandSerializer
+ */
+export interface CreateBrandRequest {
+  name: string
+  description: string
+  image?: string | null // Image file UUID or null (optional)
+}
+
+/**
  * Update Brand Request
  * Backend expects fields for updating a brand
  * All fields are optional for partial updates (PATCH)

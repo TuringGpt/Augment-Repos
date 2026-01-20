@@ -1,17 +1,20 @@
 import { create } from 'zustand'
 import { productService } from '@services/api'
 import type { Brand } from '@features/products/types'
-import type { UpdateBrandRequest } from '@features/products/types/api'
+import type { CreateBrandRequest, UpdateBrandRequest } from '@features/products/types/api'
 
 interface BrandState {
   brands: Brand[]
   isLoading: boolean
   error: string | null
+  isCreating: boolean
+  createError: string | null
   isUpdating: boolean
   updateError: string | null
 
   // Actions
   fetchBrands: (signal?: AbortSignal) => Promise<void>
+  createBrand: (data: CreateBrandRequest) => Promise<Brand>
   updateBrand: (id: string, data: UpdateBrandRequest) => Promise<Brand>
   setBrands: (brands: Brand[]) => void
   setLoading: (isLoading: boolean) => void
@@ -26,6 +29,8 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   brands: [],
   isLoading: false,
   error: null,
+  isCreating: false,
+  createError: null,
   isUpdating: false,
   updateError: null,
 
@@ -60,6 +65,72 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       if (requestId === fetchRequestCounter) {
         set({ error: 'Failed to fetch brands', isLoading: false })
       }
+    }
+  },
+
+  createBrand: async (data: CreateBrandRequest) => {
+    try {
+      set({ isCreating: true, createError: null })
+      const newBrand = await productService.createBrand(data)
+
+      // Check if the image field was included in the create request with an intentional value
+      // Distinguish between:
+      // - Property not present: no image provided
+      // - Property present with null/string: intentional image set/clear
+      // - Property present but undefined: treat as "no image" to avoid unnecessary refetch
+      const imageWasProvided = 'image' in data && data.image !== undefined
+
+      // If image was provided, we need to refetch brands to get the actual image URL
+      // because the backend returns a UUID string instead of a FileAPI object
+      if (imageWasProvided) {
+        // Refetch all brands to get the updated image URL
+        await get().fetchBrands()
+
+        // Guard against treating an unchanged store snapshot as a successful refetch
+        const fetchError = get().error
+        const refetchedBrand = get().brands.find((brand) => brand.id === newBrand.id)
+
+        set({ isCreating: false })
+
+        // Only use refetched data if:
+        // 1. No fetch error occurred, AND
+        // 2. The brand was found
+        if (!fetchError && refetchedBrand) {
+          // Merge POST response with refetched data to preserve fields that only exist in POST response
+          const mergedBrand: Brand = {
+            ...refetchedBrand,
+            ...newBrand,
+            // Use refetched image since that's the whole point of refetching
+            image: refetchedBrand.image,
+          }
+
+          return mergedBrand
+        }
+
+        // If refetch failed, add the brand with undefined image
+        // (UUID can't be used as URL)
+        console.warn('Refetch after image create failed, adding brand without image')
+        const brandWithoutImage: Brand = {
+          ...newBrand,
+          image: undefined,
+        }
+
+        const updatedBrands = [...get().brands, brandWithoutImage]
+        set({ brands: updatedBrands })
+
+        return brandWithoutImage
+      }
+
+      // If image was not provided, just add the brand to the store
+      const updatedBrands = [...get().brands, newBrand]
+      set({ brands: updatedBrands, isCreating: false })
+
+      return newBrand
+    } catch (error) {
+      console.error('Failed to create brand:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create brand'
+      set({ createError: errorMessage, isCreating: false })
+      throw error
     }
   },
 
