@@ -104,6 +104,12 @@ export const useBrandStore = create<BrandState>((set, get) => ({
             image: refetchedBrand.image,
           }
 
+          // Update the brand in the store with the merged value
+          const updatedBrands = get().brands.map((brand) =>
+            brand.id === newBrand.id ? mergedBrand : brand
+          )
+          set({ brands: updatedBrands })
+
           return mergedBrand
         }
 
