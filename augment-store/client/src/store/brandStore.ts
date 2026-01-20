@@ -121,14 +121,26 @@ export const useBrandStore = create<BrandState>((set, get) => ({
           image: undefined,
         }
 
-        const updatedBrands = [...get().brands, brandWithoutImage]
+        // Check if brand already exists to avoid duplicates from concurrent fetchBrands()
+        const currentBrands = get().brands
+        const existingBrandIndex = currentBrands.findIndex((brand) => brand.id === newBrand.id)
+        const updatedBrands =
+          existingBrandIndex >= 0
+            ? currentBrands.map((brand) => (brand.id === newBrand.id ? brandWithoutImage : brand))
+            : [...currentBrands, brandWithoutImage]
         set({ brands: updatedBrands })
 
         return brandWithoutImage
       }
 
       // If image was not provided, just add the brand to the store
-      const updatedBrands = [...get().brands, newBrand]
+      // Check if brand already exists to avoid duplicates from concurrent fetchBrands()
+      const currentBrands = get().brands
+      const existingBrandIndex = currentBrands.findIndex((brand) => brand.id === newBrand.id)
+      const updatedBrands =
+        existingBrandIndex >= 0
+          ? currentBrands.map((brand) => (brand.id === newBrand.id ? newBrand : brand))
+          : [...currentBrands, newBrand]
       set({ brands: updatedBrands, isCreating: false })
 
       return newBrand
