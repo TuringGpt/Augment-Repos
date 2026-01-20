@@ -560,6 +560,58 @@
       "conversionRate": "Taux de Conversion",
       "engagementRatio": "Ratio d'Engagement"
     },
+    "categoriesPage": {
+      "title": "Catégories",
+      "subtitle": "Gérer les catégories de produits",
+      "refresh": "Actualiser les catégories",
+      "errorLoadCategories": "Échec du chargement des catégories. Veuillez réessayer.",
+      "errorUpdateCategory": "Échec de la mise à jour de la catégorie. Veuillez réessayer.",
+      "noCategories": "Aucune catégorie disponible",
+      "editCategory": "Modifier la Catégorie",
+      "table": {
+        "image": "Image",
+        "categoryName": "Nom de la Catégorie",
+        "description": "Description",
+        "parentCategory": "Catégorie Parente",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "categoryName": "Nom de la Catégorie",
+        "description": "Description",
+        "parentCategory": "Catégorie Parente",
+        "noParent": "Aucune (Niveau Supérieur)",
+        "cancel": "Annuler",
+        "save": "Enregistrer les Modifications",
+        "saving": "Enregistrement...",
+        "saveSuccess": "Catégorie mise à jour avec succès !"
+      }
+    },
+    "brandsPage": {
+      "title": "Marques",
+      "subtitle": "Gérer les marques de produits",
+      "refresh": "Actualiser les marques",
+      "errorLoadBrands": "Échec du chargement des marques. Veuillez réessayer.",
+      "errorUpdateBrand": "Échec de la mise à jour de la marque. Veuillez réessayer.",
+      "errorUploadImage": "Échec du téléchargement de l'image. Veuillez réessayer.",
+      "noBrands": "Aucune marque disponible",
+      "editBrand": "Modifier la Marque",
+      "table": {
+        "image": "Image",
+        "brandName": "Nom de la Marque",
+        "description": "Description",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "brandName": "Nom de la Marque",
+        "description": "Description",
+        "cancel": "Annuler",
+        "save": "Enregistrer les Modifications",
+        "saving": "Enregistrement...",
+        "saveSuccess": "Marque mise à jour avec succès !"
+      }
+    },
     "allProducts": {
       "title": "Tous les Produits",
       "subtitle": "Gérer tous les produits de votre boutique",
@@ -662,6 +714,56 @@
         "atRiskDesc": "Aucune commande depuis 90+ jours",
         "churned": "Perdus",
         "churnedDesc": "Aucune commande depuis 180+ jours"
+      }
+    },
+    "newVsReturning": {
+      "title": "Nouveaux vs Clients Réguliers",
+      "noData": "Aucune donnée disponible",
+      "totalNewCustomers": "Total de Nouveaux Clients",
+      "totalReturningCustomers": "Total de Clients Réguliers",
+      "newCustomerRate": "Taux de Nouveaux Clients",
+      "returningCustomerRate": "Taux de Clients Réguliers",
+      "newCustomers": "Nouveaux Clients",
+      "returningCustomers": "Clients Réguliers",
+      "total": "Total",
+      "customers": "Clients",
+      "orders": "Commandes",
+      "revenue": "Revenus",
+      "avgOrderValue": "Valeur Moyenne de Commande",
+      "newCustomerRevenue": "Revenus des Nouveaux Clients",
+      "returningCustomerRevenue": "Revenus des Clients Réguliers",
+      "ofTotal": "du total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Comportement d'Achat des Clients",
+      "noData": "Aucune donnée de comportement d'achat disponible",
+      "analysisPeriod": "Période d'Analyse",
+      "activeCustomers": "Meilleurs Clients Affichés",
+      "days": "jours",
+      "tabs": {
+        "mostActiveCustomers": "Clients les Plus Actifs",
+        "categoryPreferences": "Préférences de Catégorie",
+        "paymentMethods": "Méthodes de Paiement"
+      },
+      "table": {
+        "customer": "Client",
+        "orders": "Commandes",
+        "totalSpent": "Total Dépensé",
+        "favoriteCategory": "Catégorie Préférée",
+        "paymentMethod": "Méthode de Paiement"
+      },
+      "tooltip": {
+        "customers": "Clients",
+        "orders": "Commandes",
+        "avgOrderValue": "Valeur Moyenne de Commande",
+        "percentage": "Pourcentage"
+      },
+      "chart": {
+        "uniqueCustomers": "Clients Uniques"
+      },
+      "emptyStates": {
+        "noCategoryData": "Aucune donnée de préférence de catégorie disponible pour la période sélectionnée",
+        "noPaymentData": "Aucune donnée de méthode de paiement disponible pour la période sélectionnée"
       }
     }
   }

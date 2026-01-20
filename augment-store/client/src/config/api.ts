@@ -27,7 +27,10 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/products/${id}/`,
     SEARCH: '/products/search',
     CATEGORIES: '/products/categories',
+    CATEGORY_DETAIL: (id: string) => `/products/categories/${id}/`,
+    CATEGORY_DELETE: (id: string) => `/products/categories/${id}/`,
     BRANDS: '/products/brands',
+    BRAND_DETAIL: (id: string) => `/products/brands/${id}/`,
     RECOMMEND: '/products/recommend',
     FEATURED: '/products/featured/',
   },
@@ -129,6 +132,7 @@ export const API_ENDPOINTS = {
     CUSTOMER_RETENTION: '/dashboard/statistics/customer_retention/',
     CUSTOMER_SEGMENTS: '/dashboard/statistics/customer_segments/',
     NEW_VS_RETURNING: '/dashboard/statistics/new_vs_returning/',
+    CUSTOMER_PURCHASE_BEHAVIOR: '/dashboard/statistics/customer_purchase_behavior/',
   },
 }
 

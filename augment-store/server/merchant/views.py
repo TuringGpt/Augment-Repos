@@ -31,6 +31,9 @@ class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     auto_select_related = ['created_by', 'shipping_address']
     auto_prefetch_related = ['items__product']
+    queryset = Order.objects.all()
 
     def get_queryset(self):
-        return Order.objects.filter(items__cart_item__product__brand__created_by=self.request.user).distinct()
+        return super().get_queryset().filter(
+            items__cart_item__product__brand__created_by=self.request.user
+        ).distinct()

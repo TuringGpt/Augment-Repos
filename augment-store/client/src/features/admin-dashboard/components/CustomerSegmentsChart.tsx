@@ -1,4 +1,4 @@
-import { Paper, Typography, Box, useTheme } from '@mui/material'
+import { Paper, Typography, Box, useTheme, CircularProgress } from '@mui/material'
 import {
   PieChart,
   Pie,
@@ -151,18 +151,29 @@ const CustomerSegmentsChart = ({ data, isLoading = false }: CustomerSegmentsChar
       sx={{
         p: 3,
         height: '100%',
-        opacity: isLoading ? 0.6 : 1,
-        transition: 'opacity 0.3s',
       }}
     >
       <Typography variant="h6" gutterBottom>
         {t('admin.customerSegments.title')}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {t('admin.customerSegments.subtitle', { count: totalCustomers })}
-      </Typography>
+      {!isLoading && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {t('admin.customerSegments.subtitle', { count: totalCustomers })}
+        </Typography>
+      )}
 
-      {chartData.length > 0 ? (
+      {isLoading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 300,
+          }}
+        >
+          <CircularProgress size={40} />
+        </Box>
+      ) : chartData.length > 0 ? (
         <Box sx={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

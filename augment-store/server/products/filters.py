@@ -20,15 +20,12 @@ class ProductFilter(filters.FilterSet):
 
 
     def filter_limit(self, queryset, name, value):
-        # Just store the limit value for later use
         self._limit_value = value
         return queryset
 
     @property
     def qs(self):
-        # Apply all other filters first
         queryset = super().qs
-        # Then apply the limit if provided
         limit_value = getattr(self, "_limit_value", None)
         if limit_value:
             queryset = queryset[:limit_value]

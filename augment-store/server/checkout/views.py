@@ -59,27 +59,33 @@ class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
 
 
-class ListShippingAddressView(ListAPIView):
+class ListShippingAddressView(AutoOptimizeMixin, ListAPIView):
     serializer_class = ShippingAddressListSerializer
     permission_classes = [IsAuthenticated]
+    queryset = ShippingAddress.objects.all()
+    auto_select_related = ['user']
 
     def get_queryset(self):
-        return ShippingAddress.objects.filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user)
     
-class ListBillingAddressView(ListAPIView):
+class ListBillingAddressView(AutoOptimizeMixin, ListAPIView):
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated]
+    queryset = BillingAddress.objects.all()
+    auto_select_related = ['user']
 
     def get_queryset(self):
-        return BillingAddress.objects.filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user)
     
 
-class ListContactInformationView(ListAPIView):
+class ListContactInformationView(AutoOptimizeMixin, ListAPIView):
     serializer_class = ContactInformationListSerializer
     permission_classes = [IsAuthenticated]
+    queryset = ContactInformation.objects.all()
+    auto_select_related = ['user']
 
     def get_queryset(self):
-        return ContactInformation.objects.filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user)
 
 
 class BasePaymentView(AutoOptimizeMixin):

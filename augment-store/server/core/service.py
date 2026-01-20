@@ -69,10 +69,12 @@ class BaseCacheService:
         cache.delete(key)
 
 
-    def clear_namespace(self):
+    def clear_namespace(self, custom_pattern: str = None):
         """
-        Clears all Redis keys belonging to this cache namespace,
-        automatically respecting django-redis KEY_PREFIX.
+        Clears Redis keys belonging to this cache namespace.
+        
+        :param custom_pattern: Optional Redis glob string (e.g. "orders:*" or "user_123:*").
+                               If provided, it is appended to the full versioned namespace.
         """
         try:
             redis_client = cache.client.get_client(write=True)
@@ -83,6 +85,9 @@ class BaseCacheService:
 
             # Namespace pattern WITHOUT prefix
             namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+            
+            if custom_pattern:
+                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
 
             # Final pattern INCLUDING prefix
             pattern = f"{key_prefix}{namespace}"
@@ -127,9 +132,14 @@ class CacheInvalidatorMixin:
     def get_cache_service(self):
         return self.cache_service_class()
 
-    def invalidate_cache(self):
+    def invalidate_cache(self, custom_pattern: str = None):
+        """
+        Invalidates the cache for the service.
+        
+        :param custom_pattern: Optional Redis glob string (e.g. "prefix:*").
+        """
         service = self.get_cache_service()
-        service.clear_namespace()
+        service.clear_namespace(custom_pattern=custom_pattern)
 
     def perform_create(self, serializer):
         super().perform_create(serializer)

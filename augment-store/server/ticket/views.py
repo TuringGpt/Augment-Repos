@@ -3,71 +3,66 @@ from .models import Ticket, Comment
 from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from core.optimization import AutoOptimizeMixin
 
 # Create your views here.
-class TicketListView(ListAPIView):
-    serializer_class = TicketListSerializer
+class TicketBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
+    queryset = Ticket.objects.all()
+    auto_select_related = ['reporter', 'assignee']
+
+class TicketListView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
 
     def get_queryset(self):
-        return Ticket.objects.all().order_by('-created_at')
+        return super().get_queryset().order_by('-created_at')
     
 
-class TicketCreateView(CreateAPIView):
+class TicketCreateView(TicketBaseView, CreateAPIView):
     serializer_class = TicketCreateSerializer
-    permission_classes = [IsAuthenticated]
         
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
 
-class TicketDetailView(RetrieveAPIView):
+class TicketDetailView(TicketBaseView, RetrieveAPIView):
     serializer_class = TicketDetailSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        return Ticket.objects.all()
 
-class TicketUpdateView(RetrieveUpdateDestroyAPIView):
+class TicketUpdateView(TicketBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = TicketUpdateSerializer
+    
+class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        return Ticket.objects.all()
-    
-class CommentListView(ListAPIView):
+    queryset = Comment.objects.all()
+    auto_select_related = ['user', 'ticket']
+
+class CommentListView(CommentBaseView, ListAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        ticket = get_object_or_404(Ticket, id=ticket_id)
-        return Comment.objects.filter(ticket=ticket).order_by('-created_at')
+        get_object_or_404(Ticket, id=ticket_id)
+        return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
     
-class CommentCreateView(CreateAPIView):
+class CommentCreateView(CommentBaseView, CreateAPIView):
     serializer_class = CommentCreateSerializer
-    permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
         ticket_id = self.kwargs.get("pk")
         ticket = get_object_or_404(Ticket, id=ticket_id)
         serializer.save(user=self.request.user, ticket=ticket)
 
-class CommentUpdateView(RetrieveUpdateDestroyAPIView):
+class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
-    permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        ticket = get_object_or_404(Ticket, id=ticket_id)
-        return Comment.objects.filter(ticket=ticket)
+        return super().get_queryset().filter(ticket_id=ticket_id)
     
-class CommentDeleteView(RetrieveUpdateDestroyAPIView):
+class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
-    permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        ticket = get_object_or_404(Ticket, id=ticket_id)
-        return Comment.objects.filter(ticket=ticket)
+        return super().get_queryset().filter(ticket_id=ticket_id)

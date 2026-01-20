@@ -16,11 +16,18 @@ import type {
   UpdateProductRequest,
   CreateProductRequest,
   CreateProductResponseAPI,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+  ProductCategoryDetailAPI,
+  UpdateBrandRequest,
+  ProductBrandDetailAPI,
 } from '@features/products/types/api'
 import {
   transformProductFromAPI,
   transformCategoryFromAPI,
+  transformCategoryDetailFromAPI,
   transformBrandFromAPI,
+  transformBrandDetailFromAPI,
   transformRecommendedProductFromAPI,
 } from '@features/products/types/api'
 
@@ -70,21 +77,6 @@ export const productService = {
     // Fetch products from backend with pagination and filters
     const response = await apiClient.get<PaginatedProductsAPI>(API_ENDPOINTS.PRODUCTS.LIST, {
       params: queryParams,
-    })
-
-    console.log('🔍 Raw API Response:', {
-      count: response.count,
-      resultsLength: response.results.length,
-      next: response.next,
-      previous: response.previous,
-      filters: {
-        categorySlug: params?.categorySlug,
-        brandName: params?.brandName,
-        minRating: params?.minRating,
-        maxRating: params?.maxRating,
-        minPrice: params?.minPrice,
-        maxPrice: params?.maxPrice,
-      },
     })
 
     // Transform backend products to frontend format
@@ -151,14 +143,17 @@ export const productService = {
   /**
    * Get all categories from backend API
    * Fetches all pages of categories using pagination
+   * @param signal - Optional AbortSignal for request cancellation
    * @throws Error if the API request fails
    */
-  getCategories: async (): Promise<Category[]> => {
+  getCategories: async (signal?: AbortSignal): Promise<Category[]> => {
     let allCategories: Category[] = []
     let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.CATEGORIES
 
     while (nextUrl) {
-      const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl)
+      const response: CategoryAPIResponse = await apiClient.get<CategoryAPIResponse>(nextUrl, {
+        signal,
+      })
       // Transform backend categories to frontend format
       const transformedCategories = (response.results || []).map(transformCategoryFromAPI)
       allCategories = [...allCategories, ...transformedCategories]
@@ -169,16 +164,73 @@ export const productService = {
   },
 
   /**
-   * Get all brands from backend API
-   * Fetches all pages of brands using pagination
+   * Create a new category
+   * @param data - Category data to create
+   * @returns Promise with created category
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformCategoryDetailFromAPI
+   * to handle this response format and preserve the slug field from the response.
+   */
+  createCategory: async (data: CreateCategoryRequest): Promise<Category> => {
+    // Send POST request to create category
+    // Backend returns ProductCategoryDetailAPI with image as UUID string
+    const response = await apiClient.post<ProductCategoryDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.CATEGORIES,
+      data
+    )
+    // Transform backend category detail to frontend format
+    // This handles the UUID image field and preserves slug
+    return transformCategoryDetailFromAPI(response)
+  },
+
+  /**
+   * Update a category by ID
+   * @param id - Category ID to update
+   * @param data - Partial category data to update
+   * @returns Promise with updated category
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductCategoryDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformCategoryDetailFromAPI
+   * to handle this response format and preserve the slug field from the response.
+   */
+  updateCategory: async (id: string, data: UpdateCategoryRequest): Promise<Category> => {
+    // Send PATCH request to update category
+    // Backend returns ProductCategoryDetailAPI with image as UUID string
+    const response = await apiClient.patch<ProductCategoryDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.CATEGORY_DETAIL(id),
+      data
+    )
+    // Transform backend category detail to frontend format
+    // This handles the UUID image field and preserves slug
+    return transformCategoryDetailFromAPI(response)
+  },
+
+  /**
+   * Delete a category by ID
+   * @param id - Category ID to delete
    * @throws Error if the API request fails
    */
-  getBrands: async (): Promise<Brand[]> => {
+  deleteCategory: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.PRODUCTS.CATEGORY_DELETE(id))
+  },
+
+  /**
+   * Get all brands from backend API
+   * Fetches all pages of brands using pagination
+   * @param signal - Optional AbortSignal for request cancellation
+   * @throws Error if the API request fails
+   */
+  getBrands: async (signal?: AbortSignal): Promise<Brand[]> => {
     let allBrands: Brand[] = []
     let nextUrl: string | null = API_ENDPOINTS.PRODUCTS.BRANDS
 
     while (nextUrl) {
-      const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl)
+      const response: BrandAPIResponse = await apiClient.get<BrandAPIResponse>(nextUrl, {
+        signal,
+      })
       // Transform backend brands to frontend format
       const transformedBrands = (response.results || []).map(transformBrandFromAPI)
       allBrands = [...allBrands, ...transformedBrands]
@@ -186,6 +238,29 @@ export const productService = {
     }
 
     return allBrands
+  },
+
+  /**
+   * Update a brand by ID
+   * @param id - Brand ID to update
+   * @param data - Partial brand data to update
+   * @returns Promise with updated brand
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductBrandDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformBrandDetailFromAPI
+   * to handle this response format.
+   */
+  updateBrand: async (id: string, data: UpdateBrandRequest): Promise<Brand> => {
+    // Send PATCH request to update brand
+    // Backend returns ProductBrandDetailAPI with image as UUID string
+    const response = await apiClient.patch<ProductBrandDetailAPI>(
+      API_ENDPOINTS.PRODUCTS.BRAND_DETAIL(id),
+      data
+    )
+    // Transform backend brand detail to frontend format
+    // This handles the UUID image field
+    return transformBrandDetailFromAPI(response)
   },
 
   getFeaturedProducts: async (): Promise<Product[]> => {

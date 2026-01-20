@@ -560,6 +560,58 @@
       "conversionRate": "Tasa de Conversión",
       "engagementRatio": "Ratio de Compromiso"
     },
+    "categoriesPage": {
+      "title": "Categorías",
+      "subtitle": "Gestionar categorías de productos",
+      "refresh": "Actualizar categorías",
+      "errorLoadCategories": "Error al cargar las categorías. Por favor, inténtalo de nuevo.",
+      "errorUpdateCategory": "Error al actualizar la categoría. Por favor, inténtalo de nuevo.",
+      "noCategories": "No hay categorías disponibles",
+      "editCategory": "Editar Categoría",
+      "table": {
+        "image": "Imagen",
+        "categoryName": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Principal",
+        "id": "ID",
+        "actions": "Acciones"
+      },
+      "form": {
+        "categoryName": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Principal",
+        "noParent": "Ninguna (Nivel Superior)",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "saving": "Guardando...",
+        "saveSuccess": "¡Categoría actualizada con éxito!"
+      }
+    },
+    "brandsPage": {
+      "title": "Marcas",
+      "subtitle": "Gestionar marcas de productos",
+      "refresh": "Actualizar marcas",
+      "errorLoadBrands": "Error al cargar las marcas. Por favor, inténtalo de nuevo.",
+      "errorUpdateBrand": "Error al actualizar la marca. Por favor, inténtalo de nuevo.",
+      "errorUploadImage": "Error al cargar la imagen. Por favor, inténtalo de nuevo.",
+      "noBrands": "No hay marcas disponibles",
+      "editBrand": "Editar Marca",
+      "table": {
+        "image": "Imagen",
+        "brandName": "Nombre de Marca",
+        "description": "Descripción",
+        "id": "ID",
+        "actions": "Acciones"
+      },
+      "form": {
+        "brandName": "Nombre de Marca",
+        "description": "Descripción",
+        "cancel": "Cancelar",
+        "save": "Guardar Cambios",
+        "saving": "Guardando...",
+        "saveSuccess": "¡Marca actualizada con éxito!"
+      }
+    },
     "allProducts": {
       "title": "Todos los Productos",
       "subtitle": "Gestionar todos los productos de tu tienda",
@@ -662,6 +714,56 @@
         "atRiskDesc": "Sin pedido en 90+ días",
         "churned": "Perdidos",
         "churnedDesc": "Sin pedido en 180+ días"
+      }
+    },
+    "newVsReturning": {
+      "title": "Clientes Nuevos vs Recurrentes",
+      "noData": "No hay datos disponibles",
+      "totalNewCustomers": "Total de Clientes Nuevos",
+      "totalReturningCustomers": "Total de Clientes Recurrentes",
+      "newCustomerRate": "Tasa de Clientes Nuevos",
+      "returningCustomerRate": "Tasa de Clientes Recurrentes",
+      "newCustomers": "Clientes Nuevos",
+      "returningCustomers": "Clientes Recurrentes",
+      "total": "Total",
+      "customers": "Clientes",
+      "orders": "Pedidos",
+      "revenue": "Ingresos",
+      "avgOrderValue": "Valor Promedio del Pedido",
+      "newCustomerRevenue": "Ingresos de Clientes Nuevos",
+      "returningCustomerRevenue": "Ingresos de Clientes Recurrentes",
+      "ofTotal": "del total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Comportamiento de Compra del Cliente",
+      "noData": "No hay datos de comportamiento de compra disponibles",
+      "analysisPeriod": "Período de Análisis",
+      "activeCustomers": "Principales Clientes Mostrados",
+      "days": "días",
+      "tabs": {
+        "mostActiveCustomers": "Clientes Más Activos",
+        "categoryPreferences": "Preferencias de Categoría",
+        "paymentMethods": "Métodos de Pago"
+      },
+      "table": {
+        "customer": "Cliente",
+        "orders": "Pedidos",
+        "totalSpent": "Total Gastado",
+        "favoriteCategory": "Categoría Favorita",
+        "paymentMethod": "Método de Pago"
+      },
+      "tooltip": {
+        "customers": "Clientes",
+        "orders": "Pedidos",
+        "avgOrderValue": "Valor Promedio de Pedido",
+        "percentage": "Porcentaje"
+      },
+      "chart": {
+        "uniqueCustomers": "Clientes Únicos"
+      },
+      "emptyStates": {
+        "noCategoryData": "No hay datos de preferencias de categoría disponibles para el período seleccionado",
+        "noPaymentData": "No hay datos de métodos de pago disponibles para el período seleccionado"
       }
     }
   }

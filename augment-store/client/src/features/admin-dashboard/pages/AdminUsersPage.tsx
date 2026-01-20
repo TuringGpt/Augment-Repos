@@ -5,7 +5,6 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress,
   Button,
   FormControl,
   InputLabel,
@@ -20,6 +19,8 @@ import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore, useCustomerStatisticsStore } from '@store/index'
 import CustomerRetentionChart from '@features/admin-dashboard/components/CustomerRetentionChart'
 import CustomerSegmentsChart from '@features/admin-dashboard/components/CustomerSegmentsChart'
+import NewVsReturningChart from '@features/admin-dashboard/components/NewVsReturningChart'
+import CustomerPurchaseBehaviorChart from '@features/admin-dashboard/components/CustomerPurchaseBehaviorChart'
 
 /**
  * AdminUsersPage Component
@@ -40,17 +41,31 @@ const AdminUsersPage = () => {
     customerSegmentsError,
     fetchCustomerSegments,
     clearCustomerSegmentsError,
+    newVsReturning,
+    isNewVsReturningLoading,
+    newVsReturningError,
+    fetchNewVsReturning,
+    clearNewVsReturningError,
+    customerPurchaseBehavior,
+    isCustomerPurchaseBehaviorLoading,
+    customerPurchaseBehaviorError,
+    fetchCustomerPurchaseBehavior,
+    clearCustomerPurchaseBehaviorError,
   } = useCustomerStatisticsStore()
 
   const [days, setDays] = useState(365)
   const abortControllerRef = useRef<AbortController | null>(null)
   const segmentsAbortControllerRef = useRef<AbortController | null>(null)
+  const newVsReturningAbortControllerRef = useRef<AbortController | null>(null)
+  const purchaseBehaviorAbortControllerRef = useRef<AbortController | null>(null)
 
-  // Load customer retention and segments data on mount and when days changes
+  // Load customer retention, segments, new vs returning, and purchase behavior data on mount and when days changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCustomerRetention()
       loadCustomerSegments()
+      loadNewVsReturning()
+      loadCustomerPurchaseBehavior()
     }
 
     // Cleanup function to abort requests on unmount
@@ -60,6 +75,12 @@ const AdminUsersPage = () => {
       }
       if (segmentsAbortControllerRef.current) {
         segmentsAbortControllerRef.current.abort()
+      }
+      if (newVsReturningAbortControllerRef.current) {
+        newVsReturningAbortControllerRef.current.abort()
+      }
+      if (purchaseBehaviorAbortControllerRef.current) {
+        purchaseBehaviorAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,6 +112,32 @@ const AdminUsersPage = () => {
     fetchCustomerSegments({ days }, segmentsAbortControllerRef.current.signal)
   }
 
+  const loadNewVsReturning = () => {
+    // Cancel any pending request
+    if (newVsReturningAbortControllerRef.current) {
+      newVsReturningAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    newVsReturningAbortControllerRef.current = new AbortController()
+
+    // fetchNewVsReturning handles all errors internally and doesn't rethrow
+    fetchNewVsReturning({ days }, newVsReturningAbortControllerRef.current.signal)
+  }
+
+  const loadCustomerPurchaseBehavior = () => {
+    // Cancel any pending request
+    if (purchaseBehaviorAbortControllerRef.current) {
+      purchaseBehaviorAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    purchaseBehaviorAbortControllerRef.current = new AbortController()
+
+    // fetchCustomerPurchaseBehavior handles all errors internally and doesn't rethrow
+    fetchCustomerPurchaseBehavior({ days, limit: 20 }, purchaseBehaviorAbortControllerRef.current.signal)
+  }
+
   const handleDaysChange = (newDays: number) => {
     setDays(newDays)
   }
@@ -98,6 +145,8 @@ const AdminUsersPage = () => {
   const handleRefresh = () => {
     loadCustomerRetention()
     loadCustomerSegments()
+    loadNewVsReturning()
+    loadCustomerPurchaseBehavior()
   }
 
   // Check if user is authenticated and is an admin
@@ -151,14 +200,13 @@ const AdminUsersPage = () => {
               <MenuItem value={90}>Last 90 Days</MenuItem>
               <MenuItem value={180}>Last 6 Months</MenuItem>
               <MenuItem value={365}>Last Year</MenuItem>
-              <MenuItem value={730}>Last 2 Years</MenuItem>
             </Select>
           </FormControl>
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
-            disabled={isCustomerRetentionLoading || isCustomerSegmentsLoading}
+            disabled={isCustomerRetentionLoading || isCustomerSegmentsLoading || isNewVsReturningLoading || isCustomerPurchaseBehaviorLoading}
           >
             Refresh
           </Button>
@@ -176,38 +224,51 @@ const AdminUsersPage = () => {
           {customerSegmentsError}
         </Alert>
       )}
+      {newVsReturningError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearNewVsReturningError}>
+          {newVsReturningError}
+        </Alert>
+      )}
+      {customerPurchaseBehaviorError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearCustomerPurchaseBehaviorError}>
+          {customerPurchaseBehaviorError}
+        </Alert>
+      )}
 
-      {/* Loading State */}
-      {(isCustomerRetentionLoading && !customerRetention) || (isCustomerSegmentsLoading && !customerSegments) ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
-      ) : customerRetention || customerSegments ? (
-        <>
-          {/* Charts */}
-          <Grid container spacing={3}>
-            {/* Customer Retention Chart */}
-            {customerRetention && (
-              <Grid item xs={12}>
-                <CustomerRetentionChart
-                  data={customerRetention}
-                  isLoading={isCustomerRetentionLoading}
-                />
-              </Grid>
-            )}
+      {/* Charts */}
+      <Grid container spacing={3}>
+        {/* Customer Retention Chart */}
+        <Grid item xs={12}>
+          <CustomerRetentionChart
+            data={customerRetention}
+            isLoading={isCustomerRetentionLoading}
+          />
+        </Grid>
 
-            {/* Customer Segments Chart */}
-            {customerSegments && (
-              <Grid item xs={12} md={6}>
-                <CustomerSegmentsChart
-                  data={customerSegments}
-                  isLoading={isCustomerSegmentsLoading}
-                />
-              </Grid>
-            )}
-          </Grid>
-        </>
-      ) : null}
+        {/* New vs Returning Customers Chart */}
+        <Grid item xs={12} md={6}>
+          <NewVsReturningChart
+            data={newVsReturning}
+            isLoading={isNewVsReturningLoading}
+          />
+        </Grid>
+
+        {/* Customer Segments Chart */}
+        <Grid item xs={12} md={6}>
+          <CustomerSegmentsChart
+            data={customerSegments}
+            isLoading={isCustomerSegmentsLoading}
+          />
+        </Grid>
+
+        {/* Customer Purchase Behavior Chart */}
+        <Grid item xs={12}>
+          <CustomerPurchaseBehaviorChart
+            data={customerPurchaseBehavior}
+            isLoading={isCustomerPurchaseBehaviorLoading}
+          />
+        </Grid>
+      </Grid>
     </Container>
   )
 }

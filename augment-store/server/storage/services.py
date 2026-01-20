@@ -61,6 +61,7 @@ class FileStandardUploadService:
 
         return file_name, file_type
 
+
     @transaction.atomic
     def create(self, file_name: str = "", file_type: str = "") -> File:
         _validate_file_size(self.file_obj)
@@ -168,12 +169,46 @@ class FileDirectUploadService:
 
     @transaction.atomic
     def finish(self, *, file: File) -> File:
+        if not File.objects.select_for_update().filter(pk=file.pk).exists():
+            raise ValidationError("File record has been purged or deleted.")
 
         file.upload_finished_at = timezone.now()
         file.full_clean()
         file.save()
 
         return file
+
+    @classmethod
+    def cleanup_abandoned_uploads(cls):
+        from datetime import timedelta
+        from django.db import transaction
+        threshold = timezone.now() - timedelta(hours=24)
+        
+        with transaction.atomic():
+            # Lock the abandoned files to prevent finish() from completing mid-operation
+            abandoned_files = list(File.objects.select_for_update().filter(
+                upload_finished_at__isnull=True,
+                created_at__lt=threshold
+            ))
+            
+            if not abandoned_files:
+                return 0
+
+            # Efficiently delete the locked records
+            File.objects.filter(id__in=[f.id for f in abandoned_files]).delete()
+            count = len(abandoned_files)
+            
+            # Safe storage cleanup ONLY after the transaction truly commits
+            def _clean_blobs():
+                for obj in abandoned_files:
+                    if obj.file:
+                        obj.file.delete(save=False)
+                    if obj.thumbnail:
+                        obj.thumbnail.delete(save=False)
+            
+            transaction.on_commit(_clean_blobs)
+            
+        return count
 
     @transaction.atomic
     def upload_local(self, *, file: File, file_obj) -> File:

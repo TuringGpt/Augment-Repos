@@ -560,6 +560,58 @@
       "conversionRate": "Conversion Rate",
       "engagementRatio": "Engagement Ratio"
     },
+    "categoriesPage": {
+      "title": "Categories",
+      "subtitle": "Manage product categories",
+      "refresh": "Refresh categories",
+      "errorLoadCategories": "Failed to load categories. Please try again.",
+      "errorUpdateCategory": "Failed to update category. Please try again.",
+      "noCategories": "No categories available",
+      "editCategory": "Edit Category",
+      "table": {
+        "image": "Image",
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "noParent": "None (Top Level)",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Category updated successfully!"
+      }
+    },
+    "brandsPage": {
+      "title": "Brands",
+      "subtitle": "Manage product brands",
+      "refresh": "Refresh brands",
+      "errorLoadBrands": "Failed to load brands. Please try again.",
+      "errorUpdateBrand": "Failed to update brand. Please try again.",
+      "errorUploadImage": "Failed to upload image. Please try again.",
+      "noBrands": "No brands available",
+      "editBrand": "Edit Brand",
+      "table": {
+        "image": "Image",
+        "brandName": "Brand Name",
+        "description": "Description",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "brandName": "Brand Name",
+        "description": "Description",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Brand updated successfully!"
+      }
+    },
     "allProducts": {
       "title": "All Products",
       "subtitle": "Manage all products in your store",
@@ -662,6 +714,56 @@
         "atRiskDesc": "No order in 90+ days",
         "churned": "Churned",
         "churnedDesc": "No order in 180+ days"
+      }
+    },
+    "newVsReturning": {
+      "title": "New vs Returning Customers",
+      "noData": "No data available",
+      "totalNewCustomers": "Total New Customers",
+      "totalReturningCustomers": "Total Returning Customers",
+      "newCustomerRate": "New Customer Rate",
+      "returningCustomerRate": "Returning Customer Rate",
+      "newCustomers": "New Customers",
+      "returningCustomers": "Returning Customers",
+      "total": "Total",
+      "customers": "Customers",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "avgOrderValue": "Avg Order Value",
+      "newCustomerRevenue": "New Customer Revenue",
+      "returningCustomerRevenue": "Returning Customer Revenue",
+      "ofTotal": "of total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Customer Purchase Behavior",
+      "noData": "No customer purchase behavior data available",
+      "analysisPeriod": "Analysis Period",
+      "activeCustomers": "Top Customers Shown",
+      "days": "days",
+      "tabs": {
+        "mostActiveCustomers": "Most Active Customers",
+        "categoryPreferences": "Category Preferences",
+        "paymentMethods": "Payment Methods"
+      },
+      "table": {
+        "customer": "Customer",
+        "orders": "Orders",
+        "totalSpent": "Total Spent",
+        "favoriteCategory": "Favorite Category",
+        "paymentMethod": "Payment Method"
+      },
+      "tooltip": {
+        "customers": "Customers",
+        "orders": "Orders",
+        "avgOrderValue": "Avg Order Value",
+        "percentage": "Percentage"
+      },
+      "chart": {
+        "uniqueCustomers": "Unique Customers"
+      },
+      "emptyStates": {
+        "noCategoryData": "No category preference data available for the selected period",
+        "noPaymentData": "No payment method data available for the selected period"
       }
     }
   }
