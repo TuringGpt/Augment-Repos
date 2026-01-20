@@ -198,6 +198,11 @@ const AdminCategoriesPage = () => {
   }
 
   const handleCloseCreateDrawer = () => {
+    // Prevent closing while create/upload is in progress
+    if (isCreating || isUploadingImage) {
+      return
+    }
+
     setIsCreateDrawerOpen(false)
     setCreateFormData({
       name: '',
@@ -329,7 +334,27 @@ const AdminCategoriesPage = () => {
 
       // Show success message via toast
       toast.success(t('admin.categoriesPage.form.createSuccess'))
-      handleCloseCreateDrawer()
+
+      // Close drawer and reset form only if drawer is still open
+      // This prevents wiping a newly-opened form if user closed and reopened during the request
+      if (isCreateDrawerOpen) {
+        setIsCreateDrawerOpen(false)
+        setCreateFormData({
+          name: '',
+          description: '',
+          parent: '',
+        })
+        setSelectedImageFile(null)
+        // Cleanup preview URL to prevent memory leak
+        if (imagePreviewUrl) {
+          URL.revokeObjectURL(imagePreviewUrl)
+        }
+        setImagePreviewUrl(null)
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+      }
     } catch (err) {
       console.error('❌ Failed to create category:', err)
 
