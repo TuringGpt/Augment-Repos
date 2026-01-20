@@ -12,7 +12,7 @@ class MerchantBrandListView(AutoOptimizeMixin, ListAPIView):
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        return ProductBrand.objects.filter(created_by=object_id)
+        return super().get_queryset().filter(created_by=object_id)
 
 
 class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
@@ -24,13 +24,19 @@ class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
         # Return a QuerySet of all products from brands created by this merchant
-        return Product.objects.filter(brand__created_by=object_id)
+        return super().get_queryset().filter(brand__created_by=object_id)
 
 class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantOrdersSerializer
     permission_classes = [IsAuthenticated]
     auto_select_related = ['created_by', 'shipping_address']
-    auto_prefetch_related = ['items__product']
+    auto_prefetch_related = [
+        'items',
+        'items__product',
+        'items__product__brand',
+        'items__product__category',
+        'items__product__images'
+    ]
     queryset = Order.objects.all()
 
     def get_queryset(self):
