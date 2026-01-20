@@ -590,7 +590,13 @@
         "saving": "Enregistrement...",
         "creating": "Création...",
         "saveSuccess": "Catégorie mise à jour avec succès !",
-        "createSuccess": "Catégorie créée avec succès !"
+        "createSuccess": "Catégorie créée avec succès !",
+        "uploadInstructions": "Cliquez sur l'icône de l'appareil photo pour télécharger une image",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Max 5Mo)",
+        "invalidFileType": "Type de fichier invalide. Veuillez sélectionner une image JPEG, PNG, GIF ou WebP.",
+        "fileSizeExceeded": "La taille du fichier dépasse la limite de 5Mo. Le fichier sélectionné fait {{size}}Mo.",
+        "uploadFailed": "Échec du téléchargement de l'image. Veuillez réessayer.",
+        "authenticationFailed": "Échec de l'authentification. Veuillez vous reconnecter."
       }
     },
     "brandsPage": {

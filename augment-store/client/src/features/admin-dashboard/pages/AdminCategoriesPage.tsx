@@ -230,7 +230,7 @@ const AdminCategoriesPage = () => {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.')
+      toast.error(t('admin.categoriesPage.form.invalidFileType'))
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -240,7 +240,7 @@ const AdminCategoriesPage = () => {
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      toast.error(`File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`)
+      toast.error(t('admin.categoriesPage.form.fileSizeExceeded', { size: (file.size / (1024 * 1024)).toFixed(2) }))
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -288,11 +288,11 @@ const AdminCategoriesPage = () => {
 
           // Check if it's a 401 error
           if (uploadError instanceof Error && uploadError.message.includes('401')) {
-            toast.error('Authentication failed. Please log in again.')
+            toast.error(t('admin.categoriesPage.form.authenticationFailed'))
           } else if (uploadError instanceof Error && uploadError.message.includes('login')) {
             toast.error(uploadError.message)
           } else {
-            toast.error('Failed to upload image. Please try again.')
+            toast.error(t('admin.categoriesPage.form.uploadFailed'))
           }
 
           setIsUploadingImage(false)
@@ -328,7 +328,7 @@ const AdminCategoriesPage = () => {
 
       // Check if it's a 401 error
       if (err instanceof Error && err.message.includes('401')) {
-        toast.error('Authentication failed. Please log in again.')
+        toast.error(t('admin.categoriesPage.form.authenticationFailed'))
       } else {
         toast.error(t('admin.categoriesPage.errorCreateCategory'))
       }
@@ -778,9 +778,9 @@ const AdminCategoriesPage = () => {
 
                   {/* Upload Instructions */}
                   <Typography variant="caption" color="text.secondary" textAlign="center">
-                    Click camera icon to upload image
+                    {t('admin.categoriesPage.form.uploadInstructions')}
                     <br />
-                    (JPEG, PNG, GIF, WebP - Max 5MB)
+                    {t('admin.categoriesPage.form.uploadFormats')}
                   </Typography>
                 </Box>
               </Grid>

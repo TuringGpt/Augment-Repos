@@ -590,7 +590,13 @@
         "saving": "Saving...",
         "creating": "Creating...",
         "saveSuccess": "Category updated successfully!",
-        "createSuccess": "Category created successfully!"
+        "createSuccess": "Category created successfully!",
+        "uploadInstructions": "Click camera icon to upload image",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Max 5MB)",
+        "invalidFileType": "Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.",
+        "fileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{size}}MB.",
+        "uploadFailed": "Failed to upload image. Please try again.",
+        "authenticationFailed": "Authentication failed. Please log in again."
       }
     },
     "brandsPage": {
