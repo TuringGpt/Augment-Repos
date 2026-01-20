@@ -564,10 +564,13 @@
       "title": "Kategorien",
       "subtitle": "Produktkategorien verwalten",
       "refresh": "Kategorien aktualisieren",
+      "createCategory": "Kategorie erstellen",
       "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
       "errorUpdateCategory": "Kategorie konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorCreateCategory": "Kategorie konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
       "noCategories": "Keine Kategorien verfügbar",
       "editCategory": "Kategorie bearbeiten",
+      "newCategory": "Neue Kategorie",
       "table": {
         "image": "Bild",
         "categoryName": "Kategoriename",
@@ -583,8 +586,11 @@
         "noParent": "Keine (Oberste Ebene)",
         "cancel": "Abbrechen",
         "save": "Änderungen speichern",
+        "create": "Kategorie erstellen",
         "saving": "Speichern...",
-        "saveSuccess": "Kategorie erfolgreich aktualisiert!"
+        "creating": "Erstellen...",
+        "saveSuccess": "Kategorie erfolgreich aktualisiert!",
+        "createSuccess": "Kategorie erfolgreich erstellt!"
       }
     },
     "brandsPage": {

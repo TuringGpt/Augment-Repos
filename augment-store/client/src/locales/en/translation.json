@@ -564,10 +564,13 @@
       "title": "Categories",
       "subtitle": "Manage product categories",
       "refresh": "Refresh categories",
+      "createCategory": "Create Category",
       "errorLoadCategories": "Failed to load categories. Please try again.",
       "errorUpdateCategory": "Failed to update category. Please try again.",
+      "errorCreateCategory": "Failed to create category. Please try again.",
       "noCategories": "No categories available",
       "editCategory": "Edit Category",
+      "newCategory": "New Category",
       "table": {
         "image": "Image",
         "categoryName": "Category Name",
@@ -583,8 +586,11 @@
         "noParent": "None (Top Level)",
         "cancel": "Cancel",
         "save": "Save Changes",
+        "create": "Create Category",
         "saving": "Saving...",
-        "saveSuccess": "Category updated successfully!"
+        "creating": "Creating...",
+        "saveSuccess": "Category updated successfully!",
+        "createSuccess": "Category created successfully!"
       }
     },
     "brandsPage": {

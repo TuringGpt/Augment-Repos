@@ -192,6 +192,7 @@ export interface UpdateProductRequest {
  */
 export interface CreateCategoryRequest {
   name: string
+  slug: string // Slug for URL (required - can be empty string for auto-generation)
   description: string
   parent?: string | null // Parent category UUID or null (optional)
   image?: string | null // Image file UUID or null (optional)

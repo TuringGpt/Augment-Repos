@@ -29,11 +29,16 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  Add as AddIcon,
+  PhotoCamera as PhotoCameraIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCategoryStore } from '@store/categoryStore'
+import { storageService } from '@services/api/storage/storageService'
+import { categoryNameToSlug } from '@utils/categoryUtils'
 import type { Category } from '@features/products/types'
 
 /**
@@ -47,7 +52,7 @@ const AdminCategoriesPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use category store
-  const { categories, isLoading, error, getAllCategories, updateCategory } = useCategoryStore()
+  const { categories, isLoading, error, getAllCategories, updateCategory, createCategory } = useCategoryStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -61,6 +66,19 @@ const AdminCategoriesPage = () => {
     parent: '',
   })
   const [isSaving, setIsSaving] = useState(false)
+
+  // Create drawer state
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    description: '',
+    parent: '',
+  })
+  const [isCreating, setIsCreating] = useState(false)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load categories
   const loadCategories = async () => {
@@ -167,6 +185,160 @@ const AdminCategoriesPage = () => {
     }
   }
 
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    setCreateFormData({
+      name: '',
+      description: '',
+      parent: '',
+    })
+    setSelectedImageFile(null)
+    setImagePreviewUrl(null)
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    setIsCreateDrawerOpen(false)
+    setCreateFormData({
+      name: '',
+      description: '',
+      parent: '',
+    })
+    setSelectedImageFile(null)
+    // Cleanup preview URL to prevent memory leak
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+    setImagePreviewUrl(null)
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleCreateFormChange = (field: string, value: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.')
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast.error(`File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      return
+    }
+
+    // Revoke previous preview URL to prevent memory leak
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+
+    // Create new preview URL
+    const url = URL.createObjectURL(file)
+    setImagePreviewUrl(url)
+    setSelectedImageFile(file)
+  }
+
+  const handleRemoveImage = () => {
+    // Revoke preview URL to prevent memory leak
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl)
+    }
+    setImagePreviewUrl(null)
+    setSelectedImageFile(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleCreateCategory = async () => {
+    setIsCreating(true)
+
+    try {
+      let imageFileId: string | null = null
+
+      // Upload image if selected
+      if (selectedImageFile) {
+        setIsUploadingImage(true)
+        try {
+          console.log('📤 Starting image upload...')
+          imageFileId = await storageService.uploadAvatar(selectedImageFile)
+          console.log('✅ Image uploaded successfully, file ID:', imageFileId)
+        } catch (uploadError) {
+          console.error('❌ Failed to upload image:', uploadError)
+
+          // Check if it's a 401 error
+          if (uploadError instanceof Error && uploadError.message.includes('401')) {
+            toast.error('Authentication failed. Please log in again.')
+          } else if (uploadError instanceof Error && uploadError.message.includes('login')) {
+            toast.error(uploadError.message)
+          } else {
+            toast.error('Failed to upload image. Please try again.')
+          }
+
+          setIsUploadingImage(false)
+          setIsCreating(false)
+          return
+        } finally {
+          setIsUploadingImage(false)
+        }
+      }
+
+      // Prepare the create data
+      // Generate slug from category name (e.g., "Electronics" -> "electronics")
+      const slug = categoryNameToSlug(createFormData.name)
+
+      const createData = {
+        name: createFormData.name,
+        slug: slug,
+        description: createFormData.description,
+        parent: createFormData.parent || null,
+        image: imageFileId,
+      }
+
+      console.log('📤 Creating category with data:', createData)
+
+      // Call the store action to create the category
+      await createCategory(createData)
+
+      // Show success message via toast
+      toast.success(t('admin.categoriesPage.form.createSuccess'))
+      handleCloseCreateDrawer()
+    } catch (err) {
+      console.error('❌ Failed to create category:', err)
+
+      // Check if it's a 401 error
+      if (err instanceof Error && err.message.includes('401')) {
+        toast.error('Authentication failed. Please log in again.')
+      } else {
+        toast.error(t('admin.categoriesPage.errorCreateCategory'))
+      }
+
+      // Keep drawer open on error so user can retry or cancel
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
     return (
@@ -207,6 +379,13 @@ const AdminCategoriesPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+          >
+            {t('admin.categoriesPage.createCategory')}
+          </Button>
           <Tooltip title={t('admin.categoriesPage.refresh')}>
             <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
               <RefreshIcon />
@@ -464,6 +643,210 @@ const AdminCategoriesPage = () => {
               disabled={isSaving || !editFormData.name.trim()}
             >
               {isSaving ? t('admin.categoriesPage.form.saving') : t('admin.categoriesPage.form.save')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Create Category Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.categoriesPage.newCategory')}
+            </Typography>
+            <IconButton onClick={handleCloseCreateDrawer} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Category Image Upload */}
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  {/* Image Preview */}
+                  <Box sx={{ position: 'relative' }}>
+                    <Avatar
+                      src={imagePreviewUrl || undefined}
+                      variant="rounded"
+                      sx={{ width: 120, height: 120, bgcolor: 'grey.200' }}
+                    >
+                      {!imagePreviewUrl && <CategoryIcon sx={{ fontSize: 60, color: 'grey.400' }} />}
+                    </Avatar>
+
+                    {/* Upload Button */}
+                    {!isUploadingImage && (
+                      <IconButton
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: 'primary.dark',
+                          },
+                          boxShadow: 2,
+                        }}
+                        size="small"
+                        onClick={() => fileInputRef.current?.click()}
+                        aria-label="Upload category image"
+                        disabled={isCreating}
+                      >
+                        <PhotoCameraIcon fontSize="small" />
+                      </IconButton>
+                    )}
+
+                    {/* Remove Button */}
+                    {!isUploadingImage && imagePreviewUrl && (
+                      <IconButton
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          bgcolor: 'error.main',
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: 'error.dark',
+                          },
+                          boxShadow: 2,
+                        }}
+                        size="small"
+                        onClick={handleRemoveImage}
+                        aria-label="Remove category image"
+                        disabled={isCreating}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
+
+                    {/* Loading Spinner */}
+                    {isUploadingImage && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: 'rgba(0, 0, 0, 0.5)',
+                          borderRadius: 1,
+                        }}
+                      >
+                        <CircularProgress size={40} sx={{ color: 'white' }} />
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Hidden File Input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    onChange={handleImageSelect}
+                    style={{ display: 'none' }}
+                    disabled={isCreating || isUploadingImage}
+                    aria-label="Category image file input"
+                  />
+
+                  {/* Upload Instructions */}
+                  <Typography variant="caption" color="text.secondary" textAlign="center">
+                    Click camera icon to upload image
+                    <br />
+                    (JPEG, PNG, GIF, WebP - Max 5MB)
+                  </Typography>
+                </Box>
+              </Grid>
+
+              {/* Category Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.categoriesPage.form.categoryName')}
+                  value={createFormData.name}
+                  onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                  required
+                />
+              </Grid>
+
+              {/* Description */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.categoriesPage.form.description')}
+                  value={createFormData.description}
+                  onChange={(e) => handleCreateFormChange('description', e.target.value)}
+                  multiline
+                  rows={4}
+                />
+              </Grid>
+
+              {/* Parent Category */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  select
+                  label={t('admin.categoriesPage.form.parentCategory')}
+                  value={createFormData.parent}
+                  onChange={(e) => handleCreateFormChange('parent', e.target.value)}
+                >
+                  <MenuItem value="">
+                    {t('admin.categoriesPage.form.noParent')}
+                  </MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating}
+            >
+              {t('admin.categoriesPage.form.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateCategory}
+              disabled={isCreating || !createFormData.name.trim()}
+            >
+              {isCreating ? t('admin.categoriesPage.form.creating') : t('admin.categoriesPage.form.create')}
             </Button>
           </Box>
         </Box>

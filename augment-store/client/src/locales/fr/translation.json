@@ -564,10 +564,13 @@
       "title": "Catégories",
       "subtitle": "Gérer les catégories de produits",
       "refresh": "Actualiser les catégories",
+      "createCategory": "Créer une Catégorie",
       "errorLoadCategories": "Échec du chargement des catégories. Veuillez réessayer.",
       "errorUpdateCategory": "Échec de la mise à jour de la catégorie. Veuillez réessayer.",
+      "errorCreateCategory": "Échec de la création de la catégorie. Veuillez réessayer.",
       "noCategories": "Aucune catégorie disponible",
       "editCategory": "Modifier la Catégorie",
+      "newCategory": "Nouvelle Catégorie",
       "table": {
         "image": "Image",
         "categoryName": "Nom de la Catégorie",
@@ -583,8 +586,11 @@
         "noParent": "Aucune (Niveau Supérieur)",
         "cancel": "Annuler",
         "save": "Enregistrer les Modifications",
+        "create": "Créer une Catégorie",
         "saving": "Enregistrement...",
-        "saveSuccess": "Catégorie mise à jour avec succès !"
+        "creating": "Création...",
+        "saveSuccess": "Catégorie mise à jour avec succès !",
+        "createSuccess": "Catégorie créée avec succès !"
       }
     },
     "brandsPage": {
