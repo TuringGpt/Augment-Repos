@@ -593,6 +593,7 @@
       "refresh": "Refresh brands",
       "errorLoadBrands": "Failed to load brands. Please try again.",
       "errorUpdateBrand": "Failed to update brand. Please try again.",
+      "errorUploadImage": "Failed to upload image. Please try again.",
       "noBrands": "No brands available",
       "editBrand": "Edit Brand",
       "table": {

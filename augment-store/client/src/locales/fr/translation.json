@@ -593,6 +593,7 @@
       "refresh": "Actualiser les marques",
       "errorLoadBrands": "Échec du chargement des marques. Veuillez réessayer.",
       "errorUpdateBrand": "Échec de la mise à jour de la marque. Veuillez réessayer.",
+      "errorUploadImage": "Échec du téléchargement de l'image. Veuillez réessayer.",
       "noBrands": "Aucune marque disponible",
       "editBrand": "Modifier la Marque",
       "table": {
