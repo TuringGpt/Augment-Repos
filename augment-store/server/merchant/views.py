@@ -9,6 +9,7 @@ class MerchantBrandListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantBrandSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     auto_select_related = ['created_by', 'image']
+    queryset = ProductBrand.objects.all()
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
@@ -20,6 +21,7 @@ class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     auto_select_related = ['brand', 'category', 'created_by']
     auto_prefetch_related = ['images']
+    queryset = Product.objects.all()
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
