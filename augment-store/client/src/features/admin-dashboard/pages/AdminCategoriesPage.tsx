@@ -280,9 +280,7 @@ const AdminCategoriesPage = () => {
       if (selectedImageFile) {
         setIsUploadingImage(true)
         try {
-          console.log('📤 Starting image upload...')
           imageFileId = await storageService.uploadAvatar(selectedImageFile)
-          console.log('✅ Image uploaded successfully, file ID:', imageFileId)
         } catch (uploadError) {
           console.error('❌ Failed to upload image:', uploadError)
 
@@ -314,8 +312,6 @@ const AdminCategoriesPage = () => {
         parent: createFormData.parent || null,
         image: imageFileId,
       }
-
-      console.log('📤 Creating category with data:', createData)
 
       // Call the store action to create the category
       await createCategory(createData)
