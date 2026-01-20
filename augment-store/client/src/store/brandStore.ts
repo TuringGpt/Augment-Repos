@@ -254,6 +254,15 @@ export const useBrandStore = create<BrandState>((set, get) => ({
 
   setError: (error) => set({ error }),
 
-  clearBrands: () => set({ brands: [], error: null, isLoading: false }),
+  clearBrands: () =>
+    set({
+      brands: [],
+      error: null,
+      isLoading: false,
+      isCreating: false,
+      createError: null,
+      isUpdating: false,
+      updateError: null,
+    }),
 }))
 
