@@ -80,6 +80,15 @@ const AdminCategoriesPage = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Cleanup blob URL on component unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl)
+      }
+    }
+  }, [imagePreviewUrl])
+
   // Load categories
   const loadCategories = async () => {
     // Abort any pending request
