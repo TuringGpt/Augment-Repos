@@ -289,15 +289,29 @@ const AdminCategoriesPage = () => {
         } catch (uploadError) {
           console.error('❌ Failed to upload image:', uploadError)
 
-          // Check if it's a 401 error
-          if (uploadError instanceof Error && uploadError.message.includes('401')) {
-            toast.error(t('admin.categoriesPage.form.authenticationFailed'))
-          } else if (uploadError instanceof Error && uploadError.message.includes('login')) {
-            toast.error(uploadError.message)
-          } else {
-            toast.error(t('admin.categoriesPage.form.uploadFailed'))
+          // Map error messages to translation keys
+          let errorMessage = t('admin.categoriesPage.form.uploadFailed')
+
+          if (uploadError instanceof Error) {
+            const message = uploadError.message
+
+            // Check for specific error patterns and map to translation keys
+            if (message.includes('Invalid file type')) {
+              errorMessage = t('admin.categoriesPage.form.invalidFileType')
+            } else if (message.includes('File size too large')) {
+              // Extract file size from error message if available
+              const sizeMatch = message.match(/(\d+(\.\d+)?)\s*MB/)
+              const size = sizeMatch ? sizeMatch[1] : '?'
+              errorMessage = t('admin.categoriesPage.form.fileSizeExceeded', { size })
+            } else if (message.includes('logged in') || message.includes('login')) {
+              errorMessage = t('admin.categoriesPage.form.authenticationFailed')
+            } else if (message.includes('401')) {
+              errorMessage = t('admin.categoriesPage.form.authenticationFailed')
+            }
+            // For any other errors, use the generic uploadFailed message
           }
 
+          toast.error(errorMessage)
           setIsUploadingImage(false)
           setIsCreating(false)
           return
