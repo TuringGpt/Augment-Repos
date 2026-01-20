@@ -76,32 +76,48 @@ class StorageService {
     }
 
     try {
-      console.log('📤 Starting upload for file:', file.name)
+      if (import.meta.env.DEV) {
+        console.log('📤 Starting upload for file:', file.name)
+      }
 
       // Step 1: Create file record and get presigned POST data
-      console.log('📤 Step 1: Creating file record at /storage/direct/')
+      if (import.meta.env.DEV) {
+        console.log('📤 Step 1: Creating file record at /storage/direct/')
+      }
       const startResponse = await this.startUpload(file.name, file.type)
       const fileId = startResponse.file.id
       const presignedUrl = startResponse.presigned_data.url
       const presignedFields = startResponse.presigned_data.fields
-      console.log('✅ Step 1 complete - File ID:', fileId)
+      if (import.meta.env.DEV) {
+        console.log('✅ Step 1 complete - File ID:', fileId)
+      }
 
       // Step 2: Upload file directly to S3 using presigned POST
-      console.log('📤 Step 2: Uploading file directly to S3...')
+      if (import.meta.env.DEV) {
+        console.log('📤 Step 2: Uploading file directly to S3...')
+      }
       await this.uploadToS3(file, presignedUrl, presignedFields)
-      console.log('✅ Step 2 complete - File uploaded to S3')
+      if (import.meta.env.DEV) {
+        console.log('✅ Step 2 complete - File uploaded to S3')
+      }
 
       // Step 3: Finish upload and get final file URL
-      console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
+      if (import.meta.env.DEV) {
+        console.log('📤 Step 3: Finishing upload at /storage/direct/finish/')
+      }
       const finishResponse = await this.finishUpload(fileId)
-      console.log('✅ Step 3 complete - File ID:', finishResponse.file.id)
+      if (import.meta.env.DEV) {
+        console.log('✅ Step 3 complete - File ID:', finishResponse.file.id)
+      }
 
       if (!finishResponse.file?.id) {
         console.error('❌ File ID is empty or undefined')
         throw new Error('Invalid response from server: missing file ID')
       }
 
-      console.log('✅ Upload complete! Returning file ID:', finishResponse.file.id)
+      if (import.meta.env.DEV) {
+        console.log('✅ Upload complete! Returning file ID:', finishResponse.file.id)
+      }
       return finishResponse.file.id
     } catch (error) {
       console.error('❌ Upload failed:', error)
