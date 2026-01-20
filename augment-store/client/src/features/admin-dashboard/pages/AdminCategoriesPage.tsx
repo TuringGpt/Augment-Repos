@@ -305,12 +305,23 @@ const AdminCategoriesPage = () => {
       // Generate slug from category name (e.g., "Electronics" -> "electronics")
       const slug = categoryNameToSlug(createFormData.name)
 
-      const createData = {
+      const createData: {
+        name: string
+        slug: string
+        description: string
+        parent: string | null
+        image?: string | null
+      } = {
         name: createFormData.name,
         slug: slug,
         description: createFormData.description,
         parent: createFormData.parent || null,
-        image: imageFileId,
+      }
+
+      // Only include image field if an image was actually uploaded
+      // This prevents unnecessary refetch when no image is selected
+      if (imageFileId !== null) {
+        createData.image = imageFileId
       }
 
       // Call the store action to create the category
