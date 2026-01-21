@@ -411,6 +411,9 @@ const AdminCategoriesPage = () => {
   }
 
   const handleDeleteCancel = () => {
+    // Prevent closing the dialog while delete is in progress
+    if (isDeleting) return
+
     setDeleteDialogOpen(false)
     setCategoryToDelete(null)
   }
