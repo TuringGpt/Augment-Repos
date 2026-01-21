@@ -672,7 +672,7 @@ const AdminBrandsPage = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                   <AvatarUpload
                     currentImage={null}
-                    userName={createFormData.name || 'New Brand'}
+                    userName={createFormData.name || t('admin.brandsPage.form.newBrandPlaceholder')}
                     onImageSelect={handleImageSelect}
                     onImageRemove={handleImageRemove}
                     onValidationError={handleImageValidationError}

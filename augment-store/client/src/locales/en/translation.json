@@ -627,7 +627,8 @@
         "saveSuccess": "Brand updated successfully!",
         "create": "Create Brand",
         "creating": "Creating...",
-        "createSuccess": "Brand created successfully!"
+        "createSuccess": "Brand created successfully!",
+        "newBrandPlaceholder": "New Brand"
       }
     },
     "allProducts": {

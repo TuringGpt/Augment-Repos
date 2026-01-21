@@ -627,7 +627,8 @@
         "saveSuccess": "¡Marca actualizada con éxito!",
         "create": "Crear Marca",
         "creating": "Creando...",
-        "createSuccess": "¡Marca creada con éxito!"
+        "createSuccess": "¡Marca creada con éxito!",
+        "newBrandPlaceholder": "Nueva Marca"
       }
     },
     "allProducts": {
