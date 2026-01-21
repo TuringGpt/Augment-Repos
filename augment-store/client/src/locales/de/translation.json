@@ -603,11 +603,14 @@
       "title": "Marken",
       "subtitle": "Produktmarken verwalten",
       "refresh": "Marken aktualisieren",
+      "addBrand": "Marke hinzufügen",
       "errorLoadBrands": "Marken konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
       "errorUpdateBrand": "Marke konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorCreateBrand": "Marke konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
       "errorUploadImage": "Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.",
       "noBrands": "Keine Marken verfügbar",
       "editBrand": "Marke bearbeiten",
+      "createBrand": "Neue Marke erstellen",
       "table": {
         "image": "Bild",
         "brandName": "Markenname",
@@ -621,7 +624,11 @@
         "cancel": "Abbrechen",
         "save": "Änderungen speichern",
         "saving": "Speichern...",
-        "saveSuccess": "Marke erfolgreich aktualisiert!"
+        "saveSuccess": "Marke erfolgreich aktualisiert!",
+        "create": "Marke erstellen",
+        "creating": "Erstellen...",
+        "createSuccess": "Marke erfolgreich erstellt!",
+        "newBrandPlaceholder": "Neue Marke"
       }
     },
     "allProducts": {

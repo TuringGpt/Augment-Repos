@@ -28,6 +28,7 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  Add as AddIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -48,10 +49,18 @@ const AdminBrandsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use brand store
-  const { brands, isLoading, error, fetchBrands, updateBrand } = useBrandStore()
+  const { brands, isLoading, error, fetchBrands, updateBrand, createBrand } = useBrandStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Create drawer state
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    description: '',
+  })
+  const [isCreating, setIsCreating] = useState(false)
 
   // Edit drawer state
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
@@ -62,11 +71,17 @@ const AdminBrandsPage = () => {
   })
   const [isSaving, setIsSaving] = useState(false)
 
-  // Image upload state
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
-  const [shouldRemoveImage, setShouldRemoveImage] = useState(false)
+  // Edit drawer image state
+  const [editSelectedImage, setEditSelectedImage] = useState<File | null>(null)
+  const [editIsUploadingImage, setEditIsUploadingImage] = useState(false)
+  const [editImageUploadError, setEditImageUploadError] = useState<string | null>(null)
+  const [editShouldRemoveImage, setEditShouldRemoveImage] = useState(false)
+
+  // Create drawer image state
+  const [createSelectedImage, setCreateSelectedImage] = useState<File | null>(null)
+  const [createIsUploadingImage, setCreateIsUploadingImage] = useState(false)
+  const [createImageUploadError, setCreateImageUploadError] = useState<string | null>(null)
+  const [createShouldRemoveImage, setCreateShouldRemoveImage] = useState(false)
 
   // Load brands
   const loadBrands = async () => {
@@ -101,22 +116,157 @@ const AdminBrandsPage = () => {
     loadBrands()
   }
 
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    // Close edit drawer if open to ensure only one drawer is active at a time
+    // Block opening create drawer if edit drawer can't be closed (saving/uploading in progress)
+    if (isEditDrawerOpen) {
+      if (isSaving || editIsUploadingImage) {
+        // Can't close edit drawer while saving/uploading, so don't open create drawer
+        return
+      }
+      handleCloseEditDrawer()
+    }
+
+    setCreateFormData({
+      name: '',
+      description: '',
+    })
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    // Prevent closing while create is in progress
+    if (isCreating || createIsUploadingImage) {
+      return
+    }
+
+    setIsCreateDrawerOpen(false)
+    setCreateFormData({
+      name: '',
+      description: '',
+    })
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
+  }
+
+  const handleCreateFormChange = (field: string, value: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleCreateBrand = async () => {
+    setIsCreating(true)
+    setCreateImageUploadError(null)
+
+    // Track uploaded file ID for cleanup if brand creation fails
+    let uploadedFileId: string | null = null
+
+    try {
+      let imageFileId: string | null = null
+
+      // Handle image upload if a new image was selected
+      if (createSelectedImage) {
+        try {
+          setCreateIsUploadingImage(true)
+
+          // Upload file and get file ID
+          // NOTE: The image is uploaded before createBrand() is called.
+          // If brand creation fails (e.g., duplicate name), the uploaded file
+          // can become orphaned. Ideally, we should either:
+          // 1. Upload the image AFTER successful brand creation (requires backend changes)
+          // 2. Implement a cleanup mechanism to delete orphaned files (requires DELETE endpoint)
+          // 3. Have the backend handle cleanup of unused files automatically
+          // For now, we track the file ID and log it for manual cleanup if needed.
+          imageFileId = await storageService.uploadFile(createSelectedImage)
+          uploadedFileId = imageFileId
+        } catch (uploadError) {
+          console.error('Failed to upload image:', uploadError)
+          setCreateImageUploadError(t('admin.brandsPage.errorUploadImage'))
+          setCreateIsUploadingImage(false)
+          setIsCreating(false)
+          return
+        } finally {
+          setCreateIsUploadingImage(false)
+        }
+      }
+
+      // Prepare create data
+      const createData: { name: string; description?: string; image?: string | null } = {
+        name: createFormData.name.trim(),
+        description: createFormData.description.trim(),
+      }
+
+      // Add image field if needed
+      if (imageFileId) {
+        createData.image = imageFileId
+      }
+
+      // Create brand
+      await createBrand(createData)
+
+      // Show success message via toast
+      toast.success(t('admin.brandsPage.form.createSuccess'))
+
+      // Close drawer and reset state
+      setIsCreateDrawerOpen(false)
+      setCreateFormData({
+        name: '',
+        description: '',
+      })
+      setCreateSelectedImage(null)
+      setCreateShouldRemoveImage(false)
+      setCreateImageUploadError(null)
+      setIsCreating(false)
+    } catch (err) {
+      console.error('Failed to create brand:', err)
+
+      // If we uploaded a file but brand creation failed, log the orphaned file ID
+      if (uploadedFileId) {
+        console.warn(
+          `Brand creation failed after image upload. Orphaned file ID: ${uploadedFileId}. ` +
+          'This file may need manual cleanup or will be handled by backend garbage collection.'
+        )
+      }
+
+      toast.error(t('admin.brandsPage.errorCreateBrand'))
+      setIsCreating(false)
+      // Keep drawer open on error so user can retry or cancel
+    }
+  }
+
   // Edit drawer handlers
   const handleEditBrand = (brand: Brand) => {
+    // Close create drawer if open to ensure only one drawer is active at a time
+    // Block opening edit drawer if create drawer can't be closed (creating/uploading in progress)
+    if (isCreateDrawerOpen) {
+      if (isCreating || createIsUploadingImage) {
+        // Can't close create drawer while creating/uploading, so don't open edit drawer
+        return
+      }
+      handleCloseCreateDrawer()
+    }
+
     setSelectedBrand(brand)
     setEditFormData({
       name: brand.name,
       description: brand.description || '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
     setIsEditDrawerOpen(true)
   }
 
   const handleCloseEditDrawer = () => {
     // Prevent closing while save is in progress
-    if (isSaving) {
+    if (isSaving || editIsUploadingImage) {
       return
     }
 
@@ -126,9 +276,9 @@ const AdminBrandsPage = () => {
       name: '',
       description: '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
   }
 
   const handleEditFormChange = (field: string, value: string) => {
@@ -138,50 +288,79 @@ const AdminBrandsPage = () => {
     }))
   }
 
-  const handleImageSelect = (file: File) => {
-    setSelectedImage(file)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+  // Edit drawer image handlers
+  const handleEditImageSelect = (file: File) => {
+    setEditSelectedImage(file)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
   }
 
-  const handleImageRemove = () => {
-    setSelectedImage(null)
-    setShouldRemoveImage(true)
-    setImageUploadError(null)
+  const handleEditImageRemove = () => {
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(true)
+    setEditImageUploadError(null)
   }
 
-  const handleImageValidationError = (error: string) => {
+  const handleEditImageValidationError = (error: string) => {
     // Clear selectedImage to prevent uploading a previously-selected file
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
     // Surface the validation error message
-    setImageUploadError(error)
+    setEditImageUploadError(error)
+  }
+
+  // Create drawer image handlers
+  const handleCreateImageSelect = (file: File) => {
+    setCreateSelectedImage(file)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
+  }
+
+  const handleCreateImageRemove = () => {
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(true)
+    setCreateImageUploadError(null)
+  }
+
+  const handleCreateImageValidationError = (error: string) => {
+    // Clear selectedImage to prevent uploading a previously-selected file
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    // Surface the validation error message
+    setCreateImageUploadError(error)
   }
 
   const handleSaveBrand = async () => {
     if (!selectedBrand) return
 
     setIsSaving(true)
-    setImageUploadError(null)
+    setEditImageUploadError(null)
+
+    // Track uploaded file ID for cleanup if brand update fails
+    let uploadedFileId: string | null = null
 
     try {
       let imageFileId: string | null = null
 
       // Handle image upload if a new image was selected
-      if (selectedImage) {
+      if (editSelectedImage) {
         try {
-          setIsUploadingImage(true)
+          setEditIsUploadingImage(true)
 
           // Upload file and get file ID
-          imageFileId = await storageService.uploadFile(selectedImage)
+          // NOTE: The image is uploaded before updateBrand() is called.
+          // If brand update fails, the uploaded file can become orphaned.
+          // See handleCreateBrand for more details on this limitation.
+          imageFileId = await storageService.uploadFile(editSelectedImage)
+          uploadedFileId = imageFileId
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
-          setImageUploadError(t('admin.brandsPage.errorUploadImage'))
-          setIsUploadingImage(false)
+          setEditImageUploadError(t('admin.brandsPage.errorUploadImage'))
+          setEditIsUploadingImage(false)
           setIsSaving(false)
           return
         } finally {
-          setIsUploadingImage(false)
+          setEditIsUploadingImage(false)
         }
       }
 
@@ -194,7 +373,7 @@ const AdminBrandsPage = () => {
       // Add image field if needed
       if (imageFileId) {
         updateData.image = imageFileId
-      } else if (shouldRemoveImage) {
+      } else if (editShouldRemoveImage) {
         updateData.image = null
       }
 
@@ -214,12 +393,21 @@ const AdminBrandsPage = () => {
         name: '',
         description: '',
       })
-      setSelectedImage(null)
-      setShouldRemoveImage(false)
-      setImageUploadError(null)
+      setEditSelectedImage(null)
+      setEditShouldRemoveImage(false)
+      setEditImageUploadError(null)
       setIsSaving(false)
     } catch (err) {
       console.error('Failed to update brand:', err)
+
+      // If we uploaded a file but brand update failed, log the orphaned file ID
+      if (uploadedFileId) {
+        console.warn(
+          `Brand update failed after image upload. Orphaned file ID: ${uploadedFileId}. ` +
+          'This file may need manual cleanup or will be handled by backend garbage collection.'
+        )
+      }
+
       toast.error(t('admin.brandsPage.errorUpdateBrand'))
       setIsSaving(false)
       // Keep drawer open on error so user can retry or cancel
@@ -266,6 +454,14 @@ const AdminBrandsPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+            disabled={isLoading}
+          >
+            {t('admin.brandsPage.addBrand')}
+          </Button>
           <Tooltip title={t('admin.brandsPage.refresh')}>
             <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
               <RefreshIcon />
@@ -426,7 +622,7 @@ const AdminBrandsPage = () => {
             </Typography>
             <IconButton
               onClick={handleCloseEditDrawer}
-              disabled={isSaving}
+              disabled={isSaving || editIsUploadingImage}
               sx={{ color: 'white' }}
             >
               <CloseIcon />
@@ -441,14 +637,14 @@ const AdminBrandsPage = () => {
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <AvatarUpload
-                      currentImage={shouldRemoveImage ? null : selectedBrand.image || null}
+                      currentImage={editShouldRemoveImage ? null : selectedBrand.image || null}
                       userName={selectedBrand.name}
-                      onImageSelect={handleImageSelect}
-                      onImageRemove={handleImageRemove}
-                      onValidationError={handleImageValidationError}
-                      isUploading={isUploadingImage}
+                      onImageSelect={handleEditImageSelect}
+                      onImageRemove={handleEditImageRemove}
+                      onValidationError={handleEditImageValidationError}
+                      isUploading={editIsUploadingImage}
                       disabled={isSaving}
-                      error={imageUploadError}
+                      error={editImageUploadError}
                     />
                   </Box>
                 </Grid>
@@ -498,7 +694,7 @@ const AdminBrandsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseEditDrawer}
-              disabled={isSaving}
+              disabled={isSaving || editIsUploadingImage}
             >
               {t('admin.brandsPage.form.cancel')}
             </Button>
@@ -506,9 +702,115 @@ const AdminBrandsPage = () => {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={handleSaveBrand}
-              disabled={isSaving || !editFormData.name.trim() || isUploadingImage}
+              disabled={isSaving || !editFormData.name.trim() || editIsUploadingImage}
             >
               {isSaving ? t('admin.brandsPage.form.saving') : t('admin.brandsPage.form.save')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Create Brand Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.brandsPage.createBrand')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating || createIsUploadingImage}
+              sx={{ color: 'white' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Brand Image Upload */}
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <AvatarUpload
+                    currentImage={null}
+                    userName={createFormData.name || t('admin.brandsPage.form.newBrandPlaceholder')}
+                    onImageSelect={handleCreateImageSelect}
+                    onImageRemove={handleCreateImageRemove}
+                    onValidationError={handleCreateImageValidationError}
+                    isUploading={createIsUploadingImage}
+                    disabled={isCreating}
+                    error={createImageUploadError}
+                  />
+                </Box>
+              </Grid>
+
+              {/* Brand Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.brandsPage.form.brandName')}
+                  value={createFormData.name}
+                  onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                  required
+                  disabled={isCreating}
+                />
+              </Grid>
+
+              {/* Description */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.brandsPage.form.description')}
+                  value={createFormData.description}
+                  onChange={(e) => handleCreateFormChange('description', e.target.value)}
+                  multiline
+                  rows={4}
+                  disabled={isCreating}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating || createIsUploadingImage}
+            >
+              {t('admin.brandsPage.form.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateBrand}
+              disabled={isCreating || !createFormData.name.trim() || createIsUploadingImage}
+            >
+              {isCreating ? t('admin.brandsPage.form.creating') : t('admin.brandsPage.form.create')}
             </Button>
           </Box>
         </Box>
