@@ -72,6 +72,7 @@ class ListBillingAddressView(AutoOptimizeMixin, ListAPIView):
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated]
     queryset = BillingAddress.objects.all()
+    auto_select_related = ['user']
 
     def get_queryset(self):
         return super().get_queryset().filter(user=self.request.user)
@@ -84,7 +85,7 @@ class ListContactInformationView(AutoOptimizeMixin, ListAPIView):
     auto_select_related = ['user']
 
     def get_queryset(self):
-        return super().get_queryset()
+        return super().get_queryset().filter(user=self.request.user)
 
 
 class BasePaymentView(AutoOptimizeMixin):
