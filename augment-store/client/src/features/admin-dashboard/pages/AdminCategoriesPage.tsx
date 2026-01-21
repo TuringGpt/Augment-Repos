@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -976,8 +977,11 @@ const AdminCategoriesPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-category-dialog-description">
-            {t('admin.categoriesPage.deleteCategoryConfirm')} <strong>{categoryToDelete?.name}</strong>?{' '}
-            {t('admin.categoriesPage.deleteCategoryWarning')}
+            <Trans
+              i18nKey="admin.categoriesPage.deleteCategoryConfirm"
+              values={{ categoryName: categoryToDelete?.name }}
+              components={{ strong: <strong /> }}
+            />
           </DialogContentText>
         </DialogContent>
         <DialogActions>

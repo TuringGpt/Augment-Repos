@@ -573,7 +573,7 @@
       "editCategory": "Editar Categoría",
       "newCategory": "Nueva Categoría",
       "deleteCategory": "Eliminar Categoría",
-      "deleteCategoryConfirm": "¿Estás seguro de que quieres eliminar",
+      "deleteCategoryConfirm": "¿Estás seguro de que quieres eliminar <strong>{{categoryName}}</strong>? Esta acción no se puede deshacer.",
       "deleteCategoryWarning": "Esta acción no se puede deshacer.",
       "deleting": "Eliminando...",
       "deleteSuccess": "Categoría eliminada con éxito",

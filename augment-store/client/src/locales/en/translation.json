@@ -573,7 +573,7 @@
       "editCategory": "Edit Category",
       "newCategory": "New Category",
       "deleteCategory": "Delete Category",
-      "deleteCategoryConfirm": "Are you sure you want to delete",
+      "deleteCategoryConfirm": "Are you sure you want to delete <strong>{{categoryName}}</strong>? This action cannot be undone.",
       "deleteCategoryWarning": "This action cannot be undone.",
       "deleting": "Deleting...",
       "deleteSuccess": "Category deleted successfully",

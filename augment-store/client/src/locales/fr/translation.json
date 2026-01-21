@@ -573,7 +573,7 @@
       "editCategory": "Modifier la Catégorie",
       "newCategory": "Nouvelle Catégorie",
       "deleteCategory": "Supprimer la Catégorie",
-      "deleteCategoryConfirm": "Êtes-vous sûr de vouloir supprimer",
+      "deleteCategoryConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{categoryName}}</strong> ? Cette action ne peut pas être annulée.",
       "deleteCategoryWarning": "Cette action ne peut pas être annulée.",
       "deleting": "Suppression...",
       "deleteSuccess": "Catégorie supprimée avec succès",
