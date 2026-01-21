@@ -731,7 +731,7 @@ const AdminBrandsPage = () => {
             </Typography>
             <IconButton
               onClick={handleCloseCreateDrawer}
-              disabled={isCreating}
+              disabled={isCreating || createIsUploadingImage}
               sx={{ color: 'white' }}
             >
               <CloseIcon />
@@ -790,7 +790,7 @@ const AdminBrandsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseCreateDrawer}
-              disabled={isCreating}
+              disabled={isCreating || createIsUploadingImage}
             >
               {t('admin.brandsPage.form.cancel')}
             </Button>
