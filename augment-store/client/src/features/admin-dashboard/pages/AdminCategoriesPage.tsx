@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -22,6 +23,11 @@ import {
   Grid,
   TextField,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -52,7 +58,7 @@ const AdminCategoriesPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use category store
-  const { categories, isLoading, error, getAllCategories, updateCategory, createCategory } = useCategoryStore()
+  const { categories, isLoading, error, getAllCategories, updateCategory, createCategory, deleteCategory } = useCategoryStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -79,6 +85,11 @@ const AdminCategoriesPage = () => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Cleanup blob URL on component unmount to prevent memory leak
   useEffect(() => {
@@ -394,6 +405,44 @@ const AdminCategoriesPage = () => {
     }
   }
 
+  // Delete handlers
+  const handleDeleteClick = (category: Category) => {
+    setCategoryToDelete(category)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    // Prevent closing the dialog while delete is in progress
+    if (isDeleting) return
+
+    setDeleteDialogOpen(false)
+    setCategoryToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return
+
+    setIsDeleting(true)
+
+    try {
+      // Call the store action to delete the category
+      await deleteCategory(categoryToDelete.id)
+
+      // Show success message
+      toast.success(t('admin.categoriesPage.deleteSuccess'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setCategoryToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete category:', err)
+      toast.error(t('admin.categoriesPage.errorDeleteCategory'))
+      // Keep dialog open on error so user can retry or cancel
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
     return (
@@ -551,6 +600,15 @@ const AdminCategoriesPage = () => {
                           size="small"
                         >
                           <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={t('common.delete')}>
+                        <IconButton
+                          onClick={() => handleDeleteClick(category)}
+                          color="error"
+                          size="small"
+                        >
+                          <DeleteIcon />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -906,6 +964,40 @@ const AdminCategoriesPage = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-category-dialog-title"
+        aria-describedby="delete-category-dialog-description"
+      >
+        <DialogTitle id="delete-category-dialog-title">
+          {t('admin.categoriesPage.deleteCategory')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-category-dialog-description">
+            <Trans
+              i18nKey="admin.categoriesPage.deleteCategoryConfirm"
+              values={{ categoryName: categoryToDelete?.name }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.categoriesPage.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
