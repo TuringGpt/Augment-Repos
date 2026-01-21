@@ -119,7 +119,12 @@ const AdminBrandsPage = () => {
   // Create drawer handlers
   const handleOpenCreateDrawer = () => {
     // Close edit drawer if open to ensure only one drawer is active at a time
+    // Block opening create drawer if edit drawer can't be closed (saving/uploading in progress)
     if (isEditDrawerOpen) {
+      if (isSaving || editIsUploadingImage) {
+        // Can't close edit drawer while saving/uploading, so don't open create drawer
+        return
+      }
       handleCloseEditDrawer()
     }
 
@@ -239,7 +244,12 @@ const AdminBrandsPage = () => {
   // Edit drawer handlers
   const handleEditBrand = (brand: Brand) => {
     // Close create drawer if open to ensure only one drawer is active at a time
+    // Block opening edit drawer if create drawer can't be closed (creating/uploading in progress)
     if (isCreateDrawerOpen) {
+      if (isCreating || createIsUploadingImage) {
+        // Can't close create drawer while creating/uploading, so don't open edit drawer
+        return
+      }
       handleCloseCreateDrawer()
     }
 
@@ -692,7 +702,7 @@ const AdminBrandsPage = () => {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={handleSaveBrand}
-              disabled={isSaving || !editFormData.name.trim() || isUploadingImage}
+              disabled={isSaving || !editFormData.name.trim() || editIsUploadingImage}
             >
               {isSaving ? t('admin.brandsPage.form.saving') : t('admin.brandsPage.form.save')}
             </Button>
@@ -798,7 +808,7 @@ const AdminBrandsPage = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreateBrand}
-              disabled={isCreating || !createFormData.name.trim() || isUploadingImage}
+              disabled={isCreating || !createFormData.name.trim() || createIsUploadingImage}
             >
               {isCreating ? t('admin.brandsPage.form.creating') : t('admin.brandsPage.form.create')}
             </Button>
