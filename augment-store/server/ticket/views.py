@@ -40,7 +40,7 @@ class CommentListView(CommentBaseView, ListAPIView):
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        get_object_or_404(Ticket, id=ticket_id)
+        Ticket.objects.get(id=ticket_id)
         return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
     
 class CommentCreateView(CommentBaseView, CreateAPIView):
@@ -56,13 +56,11 @@ class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        return super().get_queryset()
     
 class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        return super().get_queryset()
