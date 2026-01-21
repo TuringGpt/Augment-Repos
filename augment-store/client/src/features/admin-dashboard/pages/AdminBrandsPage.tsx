@@ -160,6 +160,9 @@ const AdminBrandsPage = () => {
     setIsCreating(true)
     setCreateImageUploadError(null)
 
+    // Track uploaded file ID for cleanup if brand creation fails
+    let uploadedFileId: string | null = null
+
     try {
       let imageFileId: string | null = null
 
@@ -169,7 +172,15 @@ const AdminBrandsPage = () => {
           setCreateIsUploadingImage(true)
 
           // Upload file and get file ID
+          // NOTE: The image is uploaded before createBrand() is called.
+          // If brand creation fails (e.g., duplicate name), the uploaded file
+          // can become orphaned. Ideally, we should either:
+          // 1. Upload the image AFTER successful brand creation (requires backend changes)
+          // 2. Implement a cleanup mechanism to delete orphaned files (requires DELETE endpoint)
+          // 3. Have the backend handle cleanup of unused files automatically
+          // For now, we track the file ID and log it for manual cleanup if needed.
           imageFileId = await storageService.uploadFile(createSelectedImage)
+          uploadedFileId = imageFileId
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
           setCreateImageUploadError(t('admin.brandsPage.errorUploadImage'))
@@ -210,6 +221,15 @@ const AdminBrandsPage = () => {
       setIsCreating(false)
     } catch (err) {
       console.error('Failed to create brand:', err)
+
+      // If we uploaded a file but brand creation failed, log the orphaned file ID
+      if (uploadedFileId) {
+        console.warn(
+          `Brand creation failed after image upload. Orphaned file ID: ${uploadedFileId}. ` +
+          'This file may need manual cleanup or will be handled by backend garbage collection.'
+        )
+      }
+
       toast.error(t('admin.brandsPage.errorCreateBrand'))
       setIsCreating(false)
       // Keep drawer open on error so user can retry or cancel
@@ -306,6 +326,9 @@ const AdminBrandsPage = () => {
     setIsSaving(true)
     setEditImageUploadError(null)
 
+    // Track uploaded file ID for cleanup if brand update fails
+    let uploadedFileId: string | null = null
+
     try {
       let imageFileId: string | null = null
 
@@ -315,7 +338,11 @@ const AdminBrandsPage = () => {
           setEditIsUploadingImage(true)
 
           // Upload file and get file ID
+          // NOTE: The image is uploaded before updateBrand() is called.
+          // If brand update fails, the uploaded file can become orphaned.
+          // See handleCreateBrand for more details on this limitation.
           imageFileId = await storageService.uploadFile(editSelectedImage)
+          uploadedFileId = imageFileId
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
           setEditImageUploadError(t('admin.brandsPage.errorUploadImage'))
@@ -362,6 +389,15 @@ const AdminBrandsPage = () => {
       setIsSaving(false)
     } catch (err) {
       console.error('Failed to update brand:', err)
+
+      // If we uploaded a file but brand update failed, log the orphaned file ID
+      if (uploadedFileId) {
+        console.warn(
+          `Brand update failed after image upload. Orphaned file ID: ${uploadedFileId}. ` +
+          'This file may need manual cleanup or will be handled by backend garbage collection.'
+        )
+      }
+
       toast.error(t('admin.brandsPage.errorUpdateBrand'))
       setIsSaving(false)
       // Keep drawer open on error so user can retry or cancel
