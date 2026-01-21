@@ -622,7 +622,7 @@ const AdminBrandsPage = () => {
             </Typography>
             <IconButton
               onClick={handleCloseEditDrawer}
-              disabled={isSaving}
+              disabled={isSaving || editIsUploadingImage}
               sx={{ color: 'white' }}
             >
               <CloseIcon />
@@ -694,7 +694,7 @@ const AdminBrandsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseEditDrawer}
-              disabled={isSaving}
+              disabled={isSaving || editIsUploadingImage}
             >
               {t('admin.brandsPage.form.cancel')}
             </Button>
