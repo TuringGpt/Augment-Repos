@@ -142,9 +142,8 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     search_fields = ["name", "description", "brand__name", "category__name"]
 
 class FeaturedProductListView(ProductListView):
-
     def get_queryset(self):
-        return Product.objects.filter(is_featured=True).select_related('brand', 'category', 'created_by').prefetch_related('images')
+        return super().get_queryset().filter(is_featured=True)
 
 class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
@@ -183,8 +182,9 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
     
 
+    
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
-        user: "User" = self.request.user
+        # Return a lazy queryset from the service directly to preserve ordering and DB-level pagination
         product_service = ProductService()
-        return product_service.recommend_products_for_user(user)
+        return product_service.recommend_products_for_user(self.request.user)
