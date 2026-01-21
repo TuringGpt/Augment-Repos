@@ -985,14 +985,13 @@ const AdminCategoriesPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting}>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
             {t('common.cancel')}
           </Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
-            autoFocus
             disabled={isDeleting}
           >
             {isDeleting ? t('admin.categoriesPage.deleting') : t('common.delete')}
