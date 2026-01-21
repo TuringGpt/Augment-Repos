@@ -71,11 +71,17 @@ const AdminBrandsPage = () => {
   })
   const [isSaving, setIsSaving] = useState(false)
 
-  // Image upload state (shared between create and edit)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
-  const [shouldRemoveImage, setShouldRemoveImage] = useState(false)
+  // Edit drawer image state
+  const [editSelectedImage, setEditSelectedImage] = useState<File | null>(null)
+  const [editIsUploadingImage, setEditIsUploadingImage] = useState(false)
+  const [editImageUploadError, setEditImageUploadError] = useState<string | null>(null)
+  const [editShouldRemoveImage, setEditShouldRemoveImage] = useState(false)
+
+  // Create drawer image state
+  const [createSelectedImage, setCreateSelectedImage] = useState<File | null>(null)
+  const [createIsUploadingImage, setCreateIsUploadingImage] = useState(false)
+  const [createImageUploadError, setCreateImageUploadError] = useState<string | null>(null)
+  const [createShouldRemoveImage, setCreateShouldRemoveImage] = useState(false)
 
   // Load brands
   const loadBrands = async () => {
@@ -112,19 +118,24 @@ const AdminBrandsPage = () => {
 
   // Create drawer handlers
   const handleOpenCreateDrawer = () => {
+    // Close edit drawer if open to ensure only one drawer is active at a time
+    if (isEditDrawerOpen) {
+      handleCloseEditDrawer()
+    }
+
     setCreateFormData({
       name: '',
       description: '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
     setIsCreateDrawerOpen(true)
   }
 
   const handleCloseCreateDrawer = () => {
     // Prevent closing while create is in progress
-    if (isCreating || isUploadingImage) {
+    if (isCreating || createIsUploadingImage) {
       return
     }
 
@@ -133,9 +144,9 @@ const AdminBrandsPage = () => {
       name: '',
       description: '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
   }
 
   const handleCreateFormChange = (field: string, value: string) => {
@@ -147,26 +158,26 @@ const AdminBrandsPage = () => {
 
   const handleCreateBrand = async () => {
     setIsCreating(true)
-    setImageUploadError(null)
+    setCreateImageUploadError(null)
 
     try {
       let imageFileId: string | null = null
 
       // Handle image upload if a new image was selected
-      if (selectedImage) {
+      if (createSelectedImage) {
         try {
-          setIsUploadingImage(true)
+          setCreateIsUploadingImage(true)
 
           // Upload file and get file ID
-          imageFileId = await storageService.uploadFile(selectedImage)
+          imageFileId = await storageService.uploadFile(createSelectedImage)
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
-          setImageUploadError(t('admin.brandsPage.errorUploadImage'))
-          setIsUploadingImage(false)
+          setCreateImageUploadError(t('admin.brandsPage.errorUploadImage'))
+          setCreateIsUploadingImage(false)
           setIsCreating(false)
           return
         } finally {
-          setIsUploadingImage(false)
+          setCreateIsUploadingImage(false)
         }
       }
 
@@ -193,9 +204,9 @@ const AdminBrandsPage = () => {
         name: '',
         description: '',
       })
-      setSelectedImage(null)
-      setShouldRemoveImage(false)
-      setImageUploadError(null)
+      setCreateSelectedImage(null)
+      setCreateShouldRemoveImage(false)
+      setCreateImageUploadError(null)
       setIsCreating(false)
     } catch (err) {
       console.error('Failed to create brand:', err)
@@ -207,20 +218,25 @@ const AdminBrandsPage = () => {
 
   // Edit drawer handlers
   const handleEditBrand = (brand: Brand) => {
+    // Close create drawer if open to ensure only one drawer is active at a time
+    if (isCreateDrawerOpen) {
+      handleCloseCreateDrawer()
+    }
+
     setSelectedBrand(brand)
     setEditFormData({
       name: brand.name,
       description: brand.description || '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
     setIsEditDrawerOpen(true)
   }
 
   const handleCloseEditDrawer = () => {
     // Prevent closing while save is in progress
-    if (isSaving) {
+    if (isSaving || editIsUploadingImage) {
       return
     }
 
@@ -230,9 +246,9 @@ const AdminBrandsPage = () => {
       name: '',
       description: '',
     })
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
   }
 
   const handleEditFormChange = (field: string, value: string) => {
@@ -242,50 +258,72 @@ const AdminBrandsPage = () => {
     }))
   }
 
-  const handleImageSelect = (file: File) => {
-    setSelectedImage(file)
-    setShouldRemoveImage(false)
-    setImageUploadError(null)
+  // Edit drawer image handlers
+  const handleEditImageSelect = (file: File) => {
+    setEditSelectedImage(file)
+    setEditShouldRemoveImage(false)
+    setEditImageUploadError(null)
   }
 
-  const handleImageRemove = () => {
-    setSelectedImage(null)
-    setShouldRemoveImage(true)
-    setImageUploadError(null)
+  const handleEditImageRemove = () => {
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(true)
+    setEditImageUploadError(null)
   }
 
-  const handleImageValidationError = (error: string) => {
+  const handleEditImageValidationError = (error: string) => {
     // Clear selectedImage to prevent uploading a previously-selected file
-    setSelectedImage(null)
-    setShouldRemoveImage(false)
+    setEditSelectedImage(null)
+    setEditShouldRemoveImage(false)
     // Surface the validation error message
-    setImageUploadError(error)
+    setEditImageUploadError(error)
+  }
+
+  // Create drawer image handlers
+  const handleCreateImageSelect = (file: File) => {
+    setCreateSelectedImage(file)
+    setCreateShouldRemoveImage(false)
+    setCreateImageUploadError(null)
+  }
+
+  const handleCreateImageRemove = () => {
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(true)
+    setCreateImageUploadError(null)
+  }
+
+  const handleCreateImageValidationError = (error: string) => {
+    // Clear selectedImage to prevent uploading a previously-selected file
+    setCreateSelectedImage(null)
+    setCreateShouldRemoveImage(false)
+    // Surface the validation error message
+    setCreateImageUploadError(error)
   }
 
   const handleSaveBrand = async () => {
     if (!selectedBrand) return
 
     setIsSaving(true)
-    setImageUploadError(null)
+    setEditImageUploadError(null)
 
     try {
       let imageFileId: string | null = null
 
       // Handle image upload if a new image was selected
-      if (selectedImage) {
+      if (editSelectedImage) {
         try {
-          setIsUploadingImage(true)
+          setEditIsUploadingImage(true)
 
           // Upload file and get file ID
-          imageFileId = await storageService.uploadFile(selectedImage)
+          imageFileId = await storageService.uploadFile(editSelectedImage)
         } catch (uploadError) {
           console.error('Failed to upload image:', uploadError)
-          setImageUploadError(t('admin.brandsPage.errorUploadImage'))
-          setIsUploadingImage(false)
+          setEditImageUploadError(t('admin.brandsPage.errorUploadImage'))
+          setEditIsUploadingImage(false)
           setIsSaving(false)
           return
         } finally {
-          setIsUploadingImage(false)
+          setEditIsUploadingImage(false)
         }
       }
 
@@ -298,7 +336,7 @@ const AdminBrandsPage = () => {
       // Add image field if needed
       if (imageFileId) {
         updateData.image = imageFileId
-      } else if (shouldRemoveImage) {
+      } else if (editShouldRemoveImage) {
         updateData.image = null
       }
 
@@ -318,9 +356,9 @@ const AdminBrandsPage = () => {
         name: '',
         description: '',
       })
-      setSelectedImage(null)
-      setShouldRemoveImage(false)
-      setImageUploadError(null)
+      setEditSelectedImage(null)
+      setEditShouldRemoveImage(false)
+      setEditImageUploadError(null)
       setIsSaving(false)
     } catch (err) {
       console.error('Failed to update brand:', err)
@@ -553,14 +591,14 @@ const AdminBrandsPage = () => {
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <AvatarUpload
-                      currentImage={shouldRemoveImage ? null : selectedBrand.image || null}
+                      currentImage={editShouldRemoveImage ? null : selectedBrand.image || null}
                       userName={selectedBrand.name}
-                      onImageSelect={handleImageSelect}
-                      onImageRemove={handleImageRemove}
-                      onValidationError={handleImageValidationError}
-                      isUploading={isUploadingImage}
+                      onImageSelect={handleEditImageSelect}
+                      onImageRemove={handleEditImageRemove}
+                      onValidationError={handleEditImageValidationError}
+                      isUploading={editIsUploadingImage}
                       disabled={isSaving}
-                      error={imageUploadError}
+                      error={editImageUploadError}
                     />
                   </Box>
                 </Grid>
@@ -673,12 +711,12 @@ const AdminBrandsPage = () => {
                   <AvatarUpload
                     currentImage={null}
                     userName={createFormData.name || t('admin.brandsPage.form.newBrandPlaceholder')}
-                    onImageSelect={handleImageSelect}
-                    onImageRemove={handleImageRemove}
-                    onValidationError={handleImageValidationError}
-                    isUploading={isUploadingImage}
+                    onImageSelect={handleCreateImageSelect}
+                    onImageRemove={handleCreateImageRemove}
+                    onValidationError={handleCreateImageValidationError}
+                    isUploading={createIsUploadingImage}
                     disabled={isCreating}
-                    error={imageUploadError}
+                    error={createImageUploadError}
                   />
                 </Box>
               </Grid>
