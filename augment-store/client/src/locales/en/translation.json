@@ -603,11 +603,14 @@
       "title": "Brands",
       "subtitle": "Manage product brands",
       "refresh": "Refresh brands",
+      "addBrand": "Add Brand",
       "errorLoadBrands": "Failed to load brands. Please try again.",
       "errorUpdateBrand": "Failed to update brand. Please try again.",
+      "errorCreateBrand": "Failed to create brand. Please try again.",
       "errorUploadImage": "Failed to upload image. Please try again.",
       "noBrands": "No brands available",
       "editBrand": "Edit Brand",
+      "createBrand": "Create New Brand",
       "table": {
         "image": "Image",
         "brandName": "Brand Name",
@@ -621,7 +624,10 @@
         "cancel": "Cancel",
         "save": "Save Changes",
         "saving": "Saving...",
-        "saveSuccess": "Brand updated successfully!"
+        "saveSuccess": "Brand updated successfully!",
+        "create": "Create Brand",
+        "creating": "Creating...",
+        "createSuccess": "Brand created successfully!"
       }
     },
     "allProducts": {

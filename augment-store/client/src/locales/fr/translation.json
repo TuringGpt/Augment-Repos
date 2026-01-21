@@ -603,11 +603,14 @@
       "title": "Marques",
       "subtitle": "Gérer les marques de produits",
       "refresh": "Actualiser les marques",
+      "addBrand": "Ajouter une Marque",
       "errorLoadBrands": "Échec du chargement des marques. Veuillez réessayer.",
       "errorUpdateBrand": "Échec de la mise à jour de la marque. Veuillez réessayer.",
+      "errorCreateBrand": "Échec de la création de la marque. Veuillez réessayer.",
       "errorUploadImage": "Échec du téléchargement de l'image. Veuillez réessayer.",
       "noBrands": "Aucune marque disponible",
       "editBrand": "Modifier la Marque",
+      "createBrand": "Créer une Nouvelle Marque",
       "table": {
         "image": "Image",
         "brandName": "Nom de la Marque",
@@ -621,7 +624,10 @@
         "cancel": "Annuler",
         "save": "Enregistrer les Modifications",
         "saving": "Enregistrement...",
-        "saveSuccess": "Marque mise à jour avec succès !"
+        "saveSuccess": "Marque mise à jour avec succès !",
+        "create": "Créer la Marque",
+        "creating": "Création...",
+        "createSuccess": "Marque créée avec succès !"
       }
     },
     "allProducts": {

@@ -603,11 +603,14 @@
       "title": "Marcas",
       "subtitle": "Gestionar marcas de productos",
       "refresh": "Actualizar marcas",
+      "addBrand": "Agregar Marca",
       "errorLoadBrands": "Error al cargar las marcas. Por favor, inténtalo de nuevo.",
       "errorUpdateBrand": "Error al actualizar la marca. Por favor, inténtalo de nuevo.",
+      "errorCreateBrand": "Error al crear la marca. Por favor, inténtalo de nuevo.",
       "errorUploadImage": "Error al cargar la imagen. Por favor, inténtalo de nuevo.",
       "noBrands": "No hay marcas disponibles",
       "editBrand": "Editar Marca",
+      "createBrand": "Crear Nueva Marca",
       "table": {
         "image": "Imagen",
         "brandName": "Nombre de Marca",
@@ -621,7 +624,10 @@
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
         "saving": "Guardando...",
-        "saveSuccess": "¡Marca actualizada con éxito!"
+        "saveSuccess": "¡Marca actualizada con éxito!",
+        "create": "Crear Marca",
+        "creating": "Creando...",
+        "createSuccess": "¡Marca creada con éxito!"
       }
     },
     "allProducts": {

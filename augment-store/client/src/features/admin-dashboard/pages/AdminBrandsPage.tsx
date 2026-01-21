@@ -28,6 +28,7 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   Save as SaveIcon,
+  Add as AddIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -48,10 +49,18 @@ const AdminBrandsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use brand store
-  const { brands, isLoading, error, fetchBrands, updateBrand } = useBrandStore()
+  const { brands, isLoading, error, fetchBrands, updateBrand, createBrand } = useBrandStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Create drawer state
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState({
+    name: '',
+    description: '',
+  })
+  const [isCreating, setIsCreating] = useState(false)
 
   // Edit drawer state
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
@@ -62,7 +71,7 @@ const AdminBrandsPage = () => {
   })
   const [isSaving, setIsSaving] = useState(false)
 
-  // Image upload state
+  // Image upload state (shared between create and edit)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [imageUploadError, setImageUploadError] = useState<string | null>(null)
@@ -99,6 +108,101 @@ const AdminBrandsPage = () => {
 
   const handleRefresh = () => {
     loadBrands()
+  }
+
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    setCreateFormData({
+      name: '',
+      description: '',
+    })
+    setSelectedImage(null)
+    setShouldRemoveImage(false)
+    setImageUploadError(null)
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    // Prevent closing while create is in progress
+    if (isCreating || isUploadingImage) {
+      return
+    }
+
+    setIsCreateDrawerOpen(false)
+    setCreateFormData({
+      name: '',
+      description: '',
+    })
+    setSelectedImage(null)
+    setShouldRemoveImage(false)
+    setImageUploadError(null)
+  }
+
+  const handleCreateFormChange = (field: string, value: string) => {
+    setCreateFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleCreateBrand = async () => {
+    setIsCreating(true)
+    setImageUploadError(null)
+
+    try {
+      let imageFileId: string | null = null
+
+      // Handle image upload if a new image was selected
+      if (selectedImage) {
+        try {
+          setIsUploadingImage(true)
+
+          // Upload file and get file ID
+          imageFileId = await storageService.uploadFile(selectedImage)
+        } catch (uploadError) {
+          console.error('Failed to upload image:', uploadError)
+          setImageUploadError(t('admin.brandsPage.errorUploadImage'))
+          setIsUploadingImage(false)
+          setIsCreating(false)
+          return
+        } finally {
+          setIsUploadingImage(false)
+        }
+      }
+
+      // Prepare create data
+      const createData: { name: string; description?: string; image?: string | null } = {
+        name: createFormData.name.trim(),
+        description: createFormData.description.trim(),
+      }
+
+      // Add image field if needed
+      if (imageFileId) {
+        createData.image = imageFileId
+      }
+
+      // Create brand
+      await createBrand(createData)
+
+      // Show success message via toast
+      toast.success(t('admin.brandsPage.form.createSuccess'))
+
+      // Close drawer and reset state
+      setIsCreateDrawerOpen(false)
+      setCreateFormData({
+        name: '',
+        description: '',
+      })
+      setSelectedImage(null)
+      setShouldRemoveImage(false)
+      setImageUploadError(null)
+      setIsCreating(false)
+    } catch (err) {
+      console.error('Failed to create brand:', err)
+      toast.error(t('admin.brandsPage.errorCreateBrand'))
+      setIsCreating(false)
+      // Keep drawer open on error so user can retry or cancel
+    }
   }
 
   // Edit drawer handlers
@@ -266,6 +370,14 @@ const AdminBrandsPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+            disabled={isLoading}
+          >
+            {t('admin.brandsPage.addBrand')}
+          </Button>
           <Tooltip title={t('admin.brandsPage.refresh')}>
             <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
               <RefreshIcon />
@@ -509,6 +621,112 @@ const AdminBrandsPage = () => {
               disabled={isSaving || !editFormData.name.trim() || isUploadingImage}
             >
               {isSaving ? t('admin.brandsPage.form.saving') : t('admin.brandsPage.form.save')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Create Brand Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.brandsPage.createBrand')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating}
+              sx={{ color: 'white' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Brand Image Upload */}
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <AvatarUpload
+                    currentImage={null}
+                    userName={createFormData.name || 'New Brand'}
+                    onImageSelect={handleImageSelect}
+                    onImageRemove={handleImageRemove}
+                    onValidationError={handleImageValidationError}
+                    isUploading={isUploadingImage}
+                    disabled={isCreating}
+                    error={imageUploadError}
+                  />
+                </Box>
+              </Grid>
+
+              {/* Brand Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.brandsPage.form.brandName')}
+                  value={createFormData.name}
+                  onChange={(e) => handleCreateFormChange('name', e.target.value)}
+                  required
+                  disabled={isCreating}
+                />
+              </Grid>
+
+              {/* Description */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.brandsPage.form.description')}
+                  value={createFormData.description}
+                  onChange={(e) => handleCreateFormChange('description', e.target.value)}
+                  multiline
+                  rows={4}
+                  disabled={isCreating}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating}
+            >
+              {t('admin.brandsPage.form.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateBrand}
+              disabled={isCreating || !createFormData.name.trim() || isUploadingImage}
+            >
+              {isCreating ? t('admin.brandsPage.form.creating') : t('admin.brandsPage.form.create')}
             </Button>
           </Box>
         </Box>
