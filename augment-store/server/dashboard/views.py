@@ -497,7 +497,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Build response data for top limit items
         low_performing_data = []
         for item in low_performing_list[:limit]:
-            product = products_map[str(item['product_id'])]
+            product = products_map.get(str(item['product_id']))
+            if not product:
+                continue
             view_count = item['view_count']
             cart_add_count = item['cart_add_count']
             purchase_count = item['purchase_count']
@@ -531,7 +533,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         abandonment_product_ids = set(item[0] for item in products_with_abandonment[:limit])
         abandonment_products_map = {str(p.id): p for p in Product.objects.filter(id__in=abandonment_product_ids)}
         for product_id, abandonment_count, period_cart_adds, abandonment_rate in products_with_abandonment[:limit]:
-            product = abandonment_products_map[str(product_id)]
+            product = abandonment_products_map.get(str(product_id))
+            if not product:
+                continue
             high_abandonment_data.append({
                 'product_id': str(product.id),
                 'product_name': product.name,
@@ -561,7 +565,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         conversion_product_ids = set(item['product_id'] for item in low_conversion)
         conversion_products_map = {str(p.id): p for p in Product.objects.filter(id__in=conversion_product_ids)}
         for item in low_conversion:
-            product = conversion_products_map[str(item['product_id'])]
+            product = conversion_products_map.get(str(item['product_id']))
+            if not product:
+                continue
             low_conversion_data.append({
                 'product_id': str(product.id),
                 'product_name': product.name,
@@ -592,7 +598,9 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         engagement_product_ids = set(item['product_id'] for item in high_engagement)
         engagement_products_map = {str(p.id): p for p in Product.objects.filter(id__in=engagement_product_ids)}
         for item in high_engagement:
-            product = engagement_products_map[str(item['product_id'])]
+            product = engagement_products_map.get(str(item['product_id']))
+            if not product:
+                continue
             high_engagement_data.append({
                 'product_id': str(product.id),
                 'product_name': product.name,
