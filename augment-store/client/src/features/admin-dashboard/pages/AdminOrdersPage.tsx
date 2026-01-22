@@ -58,8 +58,8 @@ const AdminOrdersPage = () => {
               sx={{
                 fontSize: 80,
                 color: 'warning.main',
-                animation: 'pulse 2s ease-in-out infinite',
-                '@keyframes pulse': {
+                animation: 'adminOrdersPagePulse 2s ease-in-out infinite',
+                '@keyframes adminOrdersPagePulse': {
                   '0%, 100%': {
                     opacity: 1,
                   },
