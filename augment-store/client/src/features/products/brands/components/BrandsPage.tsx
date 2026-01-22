@@ -40,6 +40,7 @@ const BrandsPage = () => {
 
   const handleBrandClick = (brand: Brand) => {
     // Navigate to products page with brand filter
+    if (!brand.name) return
     const brandSlug = brand.name.toLowerCase().replace(/\s+/g, '-')
     navigate(`/products?brand=${encodeURIComponent(brandSlug)}`)
   }

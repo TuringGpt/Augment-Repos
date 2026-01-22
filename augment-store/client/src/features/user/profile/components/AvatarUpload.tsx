@@ -146,7 +146,7 @@ export const AvatarUpload = ({
           }}
           onClick={handleAvatarClick}
         >
-          {showInitials && userName.charAt(0).toUpperCase()}
+          {showInitials && userName && userName.charAt(0).toUpperCase()}
         </Avatar>
 
         {isUploading && (

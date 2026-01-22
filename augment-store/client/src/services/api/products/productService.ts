@@ -286,6 +286,15 @@ export const productService = {
     return transformBrandDetailFromAPI(response)
   },
 
+  /**
+   * Delete a brand by ID
+   * @param id - Brand ID to delete
+   * @throws Error if the API request fails
+   */
+  deleteBrand: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.PRODUCTS.BRAND_DELETE(id))
+  },
+
   getFeaturedProducts: async (): Promise<Product[]> => {
     try {
       // Fetch featured products from backend API

@@ -560,7 +560,7 @@ const AdminBrandsPage = () => {
                           borderRadius: 1,
                         }}
                       >
-                        {brand.id.slice(0, 8)}...
+                        {brand.id ? `${brand.id.slice(0, 8)}...` : 'N/A'}
                       </Typography>
                     </TableCell>
 

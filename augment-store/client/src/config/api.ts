@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
     BRANDS: '/products/brands',
     BRAND_CREATE: '/products/brands/create/',
     BRAND_DETAIL: (id: string) => `/products/brands/${id}/`,
+    BRAND_DELETE: (id: string) => `/products/brands/${id}/`,
     RECOMMEND: '/products/recommend',
     FEATURED: '/products/featured/',
   },
