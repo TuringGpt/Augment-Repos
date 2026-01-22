@@ -16,6 +16,7 @@ interface BrandState {
   fetchBrands: (signal?: AbortSignal) => Promise<void>
   createBrand: (data: CreateBrandRequest) => Promise<Brand>
   updateBrand: (id: string, data: UpdateBrandRequest) => Promise<Brand>
+  deleteBrand: (id: string) => Promise<void>
   setBrands: (brands: Brand[]) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -244,6 +245,26 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       console.error('Failed to update brand:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to update brand'
       set({ updateError: errorMessage, isUpdating: false })
+      throw error
+    }
+  },
+
+  deleteBrand: async (id: string) => {
+    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
+    // if a stale fetch already set isLoading: true before being invalidated
+    set({ error: null, isLoading: false })
+    try {
+      // Call the API to delete the brand
+      await productService.deleteBrand(id)
+
+      // Remove the brand from the local state
+      set((state) => ({
+        brands: state.brands.filter((brand) => brand.id !== id),
+      }))
+    } catch (error) {
+      console.error('Failed to delete brand:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete brand'
+      set({ error: errorMessage })
       throw error
     }
   },
