@@ -493,6 +493,13 @@
       }
     },
     "orders": "Bestellungen",
+    "ordersPage": {
+      "title": "Bestellungen",
+      "subtitle": "Alle Kundenbestellungen verwalten und verfolgen",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Die Admin-Bestellungsverwaltungsseite befindet sich derzeit in der Entwicklung.",
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!"
+    },
     "products": "Produkte",
     "categories": "Kategorien",
     "brands": "Marken",

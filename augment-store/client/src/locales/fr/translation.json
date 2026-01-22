@@ -493,6 +493,13 @@
       }
     },
     "orders": "Commandes",
+    "ordersPage": {
+      "title": "Commandes",
+      "subtitle": "Gérer et suivre toutes les commandes clients",
+      "workInProgress": "Travaux en Cours",
+      "underDevelopment": "La page de gestion des commandes administrateur est actuellement en développement.",
+      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+    },
     "products": "Produits",
     "categories": "Catégories",
     "brands": "Marques",

@@ -493,6 +493,13 @@
       }
     },
     "orders": "Orders",
+    "ordersPage": {
+      "title": "Orders",
+      "subtitle": "Manage and track all customer orders",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "The admin orders management page is currently under development.",
+      "checkBackSoon": "Check back soon for updates!"
+    },
     "products": "Products",
     "categories": "Categories",
     "brands": "Brands",
