@@ -8,13 +8,13 @@ from core.optimization import AutoOptimizeMixin
 class BaseContactView(AutoOptimizeMixin):
     serializer_class = ContactMessageSerializer
     queryset = ContactMessage.objects.all()
-    auto_select_related = ['user']
 
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
     
 class ContactListView(BaseContactView, ListAPIView):
     serializer_class = ContactMessageSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
 
 class CreateContactView(BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
