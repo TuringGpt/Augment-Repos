@@ -493,6 +493,13 @@
       }
     },
     "orders": "Pedidos",
+    "ordersPage": {
+      "title": "Pedidos",
+      "subtitle": "Gestionar y rastrear todos los pedidos de clientes",
+      "workInProgress": "Trabajo en Progreso",
+      "underDevelopment": "La página de gestión de pedidos del administrador está actualmente en desarrollo.",
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+    },
     "products": "Productos",
     "categories": "Categorías",
     "brands": "Marcas",
