@@ -250,6 +250,11 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   },
 
   deleteBrand: async (id: string) => {
+    // Increment counter to invalidate any in-flight fetchBrands() requests
+    // This prevents a late fetch response from overwriting state with a stale list
+    // that re-introduces the deleted brand
+    fetchRequestCounter += 1
+
     // Explicitly clear isLoading to prevent UI from getting stuck in loading state
     // if a stale fetch already set isLoading: true before being invalidated
     set({ error: null, isLoading: false })
