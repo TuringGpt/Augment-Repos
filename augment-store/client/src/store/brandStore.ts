@@ -14,6 +14,7 @@ interface BrandState {
 
   // Actions
   fetchBrands: (signal?: AbortSignal) => Promise<void>
+  fetchBrandById: (id: string, signal?: AbortSignal) => Promise<Brand>
   createBrand: (data: CreateBrandRequest) => Promise<Brand>
   updateBrand: (id: string, data: UpdateBrandRequest) => Promise<Brand>
   deleteBrand: (id: string) => Promise<void>
@@ -66,6 +67,38 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       if (requestId === fetchRequestCounter) {
         set({ error: 'Failed to fetch brands', isLoading: false })
       }
+    }
+  },
+
+  fetchBrandById: async (id: string, signal?: AbortSignal) => {
+    try {
+      // Fetch brand by ID from backend
+      const brand = await productService.getBrandById(id, signal)
+
+      // Update or add the brand in the store
+      const currentBrands = get().brands
+      const existingBrand = currentBrands.find((b) => b.id === id)
+
+      if (existingBrand) {
+        // Update existing brand, but preserve the image URL from the list endpoint
+        // since the detail endpoint returns image as UUID (transformed to undefined)
+        const mergedBrand: Brand = {
+          ...existingBrand,
+          ...brand,
+          // Preserve existing image URL since detail endpoint doesn't provide it
+          image: existingBrand.image,
+        }
+        const updatedBrands = currentBrands.map((b) => (b.id === id ? mergedBrand : b))
+        set({ brands: updatedBrands })
+        return mergedBrand
+      } else {
+        // Add new brand to the store
+        set({ brands: [...currentBrands, brand] })
+        return brand
+      }
+    } catch (err) {
+      console.error('Failed to fetch brand by ID:', err)
+      throw err
     }
   },
 

@@ -242,6 +242,33 @@ export const productService = {
   },
 
   /**
+   * Get a brand by ID from backend API
+   * @param id - Brand ID to fetch
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with brand details
+   * @throws Error if the API request fails
+   *
+   * Note: The backend's ProductBrandDetailSerializer uses fields="__all__" which returns
+   * image as a UUID string instead of a nested FileAPI object. We use transformBrandDetailFromAPI
+   * to handle this response format.
+   */
+  getBrandById: async (id: string, signal?: AbortSignal): Promise<Brand> => {
+    try {
+      // Fetch brand detail from backend
+      const response = await apiClient.get<ProductBrandDetailAPI>(
+        API_ENDPOINTS.PRODUCTS.BRAND_DETAIL(id),
+        { signal }
+      )
+      // Transform backend brand detail to frontend format
+      // This handles the UUID image field
+      return transformBrandDetailFromAPI(response)
+    } catch (error) {
+      console.error('Failed to fetch brand by ID:', error)
+      throw error
+    }
+  },
+
+  /**
    * Create a new brand
    * @param data - Brand data to create
    * @returns Promise with created brand
