@@ -90,12 +90,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
 
       return brand
     } catch (err) {
-      // Ignore abort errors - these are expected when component unmounts or request is cancelled
-      const error = err as { name?: string }
-      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
-        throw err
-      }
-
       console.error('Failed to fetch brand by ID:', err)
       throw err
     }
