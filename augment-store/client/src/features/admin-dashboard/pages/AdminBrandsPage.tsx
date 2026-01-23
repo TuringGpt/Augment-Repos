@@ -56,7 +56,7 @@ const AdminBrandsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use brand store
-  const { brands, isLoading, error, fetchBrands, updateBrand, createBrand, deleteBrand } = useBrandStore()
+  const { brands, isLoading, error, isDeleting, deleteError, fetchBrands, updateBrand, createBrand, deleteBrand } = useBrandStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -64,7 +64,6 @@ const AdminBrandsPage = () => {
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   // Create drawer state
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
@@ -443,8 +442,6 @@ const AdminBrandsPage = () => {
   const handleDeleteConfirm = async () => {
     if (!brandToDelete) return
 
-    setIsDeleting(true)
-
     try {
       // Call the store action to delete the brand
       await deleteBrand(brandToDelete.id)
@@ -459,8 +456,6 @@ const AdminBrandsPage = () => {
       console.error('Failed to delete brand:', err)
       toast.error(t('admin.brandsPage.errorDeleteBrand'))
       // Keep dialog open on error so user can retry or cancel
-    } finally {
-      setIsDeleting(false)
     }
   }
 
@@ -520,10 +515,17 @@ const AdminBrandsPage = () => {
         </Box>
       </Box>
 
-      {/* Error Alert */}
+      {/* Load Error Alert */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {t('admin.brandsPage.errorLoadBrands')}
+        </Alert>
+      )}
+
+      {/* Delete Error Alert */}
+      {deleteError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {t('admin.brandsPage.errorDeleteBrand')}
         </Alert>
       )}
 
