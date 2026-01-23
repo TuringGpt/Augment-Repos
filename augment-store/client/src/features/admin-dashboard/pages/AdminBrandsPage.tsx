@@ -503,12 +503,12 @@ const AdminBrandsPage = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleOpenCreateDrawer}
-            disabled={isLoading}
+            disabled={isLoading || isDeleting}
           >
             {t('admin.brandsPage.addBrand')}
           </Button>
           <Tooltip title={t('admin.brandsPage.refresh')}>
-            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
+            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading || isDeleting}>
               <RefreshIcon />
             </IconButton>
           </Tooltip>
