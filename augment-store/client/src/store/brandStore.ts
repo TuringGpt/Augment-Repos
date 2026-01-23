@@ -77,18 +77,25 @@ export const useBrandStore = create<BrandState>((set, get) => ({
 
       // Update or add the brand in the store
       const currentBrands = get().brands
-      const existingBrandIndex = currentBrands.findIndex((b) => b.id === id)
+      const existingBrand = currentBrands.find((b) => b.id === id)
 
-      if (existingBrandIndex >= 0) {
-        // Update existing brand
-        const updatedBrands = currentBrands.map((b) => (b.id === id ? brand : b))
+      if (existingBrand) {
+        // Update existing brand, but preserve the image URL from the list endpoint
+        // since the detail endpoint returns image as UUID (transformed to undefined)
+        const mergedBrand: Brand = {
+          ...existingBrand,
+          ...brand,
+          // Preserve existing image URL since detail endpoint doesn't provide it
+          image: existingBrand.image,
+        }
+        const updatedBrands = currentBrands.map((b) => (b.id === id ? mergedBrand : b))
         set({ brands: updatedBrands })
+        return mergedBrand
       } else {
         // Add new brand to the store
         set({ brands: [...currentBrands, brand] })
+        return brand
       }
-
-      return brand
     } catch (err) {
       console.error('Failed to fetch brand by ID:', err)
       throw err
