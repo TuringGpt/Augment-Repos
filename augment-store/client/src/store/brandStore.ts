@@ -11,6 +11,8 @@ interface BrandState {
   createError: string | null
   isUpdating: boolean
   updateError: string | null
+  isDeleting: boolean
+  deleteError: string | null
 
   // Actions
   fetchBrands: (signal?: AbortSignal) => Promise<void>
@@ -35,6 +37,8 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   createError: null,
   isUpdating: false,
   updateError: null,
+  isDeleting: false,
+  deleteError: null,
 
   fetchBrands: async (signal?: AbortSignal) => {
     // Increment counter and capture the current request ID
@@ -290,7 +294,7 @@ export const useBrandStore = create<BrandState>((set, get) => ({
 
     // Explicitly clear isLoading to prevent UI from getting stuck in loading state
     // if a stale fetch already set isLoading: true before being invalidated
-    set({ error: null, isLoading: false })
+    set({ isDeleting: true, deleteError: null, isLoading: false })
     try {
       // Call the API to delete the brand
       await productService.deleteBrand(id)
@@ -298,11 +302,12 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       // Remove the brand from the local state
       set((state) => ({
         brands: state.brands.filter((brand) => brand.id !== id),
+        isDeleting: false,
       }))
     } catch (error) {
       console.error('Failed to delete brand:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete brand'
-      set({ error: errorMessage })
+      set({ deleteError: errorMessage, isDeleting: false })
       throw error
     }
   },
@@ -322,6 +327,8 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       createError: null,
       isUpdating: false,
       updateError: null,
+      isDeleting: false,
+      deleteError: null,
     }),
 }))
 
