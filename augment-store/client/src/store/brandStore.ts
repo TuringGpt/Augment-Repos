@@ -14,6 +14,7 @@ interface BrandState {
 
   // Actions
   fetchBrands: (signal?: AbortSignal) => Promise<void>
+  fetchBrandById: (id: string, signal?: AbortSignal) => Promise<Brand>
   createBrand: (data: CreateBrandRequest) => Promise<Brand>
   updateBrand: (id: string, data: UpdateBrandRequest) => Promise<Brand>
   deleteBrand: (id: string) => Promise<void>
@@ -66,6 +67,37 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       if (requestId === fetchRequestCounter) {
         set({ error: 'Failed to fetch brands', isLoading: false })
       }
+    }
+  },
+
+  fetchBrandById: async (id: string, signal?: AbortSignal) => {
+    try {
+      // Fetch brand by ID from backend
+      const brand = await productService.getBrandById(id, signal)
+
+      // Update or add the brand in the store
+      const currentBrands = get().brands
+      const existingBrandIndex = currentBrands.findIndex((b) => b.id === id)
+
+      if (existingBrandIndex >= 0) {
+        // Update existing brand
+        const updatedBrands = currentBrands.map((b) => (b.id === id ? brand : b))
+        set({ brands: updatedBrands })
+      } else {
+        // Add new brand to the store
+        set({ brands: [...currentBrands, brand] })
+      }
+
+      return brand
+    } catch (err) {
+      // Ignore abort errors - these are expected when component unmounts or request is cancelled
+      const error = err as { name?: string }
+      if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
+        throw err
+      }
+
+      console.error('Failed to fetch brand by ID:', err)
+      throw err
     }
   },
 
