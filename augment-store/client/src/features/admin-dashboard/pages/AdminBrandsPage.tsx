@@ -433,6 +433,9 @@ const AdminBrandsPage = () => {
   }
 
   const handleDeleteCancel = () => {
+    // Prevent closing dialog during deletion
+    if (isDeleting) return
+
     setDeleteDialogOpen(false)
     setBrandToDelete(null)
   }
