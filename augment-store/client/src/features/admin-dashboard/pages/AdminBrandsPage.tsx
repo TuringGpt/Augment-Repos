@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -21,6 +22,11 @@ import {
   Divider,
   Grid,
   TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -29,6 +35,7 @@ import {
   Close as CloseIcon,
   Save as SaveIcon,
   Add as AddIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -49,10 +56,15 @@ const AdminBrandsPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use brand store
-  const { brands, isLoading, error, fetchBrands, updateBrand, createBrand } = useBrandStore()
+  const { brands, isLoading, error, fetchBrands, updateBrand, createBrand, deleteBrand } = useBrandStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Create drawer state
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
@@ -414,6 +426,41 @@ const AdminBrandsPage = () => {
     }
   }
 
+  // Delete handlers
+  const handleDeleteClick = (brand: Brand) => {
+    setBrandToDelete(brand)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setBrandToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!brandToDelete) return
+
+    setIsDeleting(true)
+
+    try {
+      // Call the store action to delete the brand
+      await deleteBrand(brandToDelete.id)
+
+      // Show success message
+      toast.success(t('admin.brandsPage.deleteSuccess'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setBrandToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete brand:', err)
+      toast.error(t('admin.brandsPage.errorDeleteBrand'))
+      // Keep dialog open on error so user can retry or cancel
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
     return (
@@ -571,9 +618,19 @@ const AdminBrandsPage = () => {
                           onClick={() => handleEditBrand(brand)}
                           color="primary"
                           size="small"
-                          disabled={isSaving}
+                          disabled={isSaving || isDeleting}
                         >
                           <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={t('common.delete')}>
+                        <IconButton
+                          onClick={() => handleDeleteClick(brand)}
+                          color="error"
+                          size="small"
+                          disabled={isSaving || isDeleting}
+                        >
+                          <DeleteIcon />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -815,6 +872,40 @@ const AdminBrandsPage = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-brand-dialog-title"
+        aria-describedby="delete-brand-dialog-description"
+      >
+        <DialogTitle id="delete-brand-dialog-title">
+          {t('admin.brandsPage.deleteBrand')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-brand-dialog-description">
+            <Trans
+              i18nKey="admin.brandsPage.deleteBrandConfirm"
+              values={{ brandName: brandToDelete?.name }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.brandsPage.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
