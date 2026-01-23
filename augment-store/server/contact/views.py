@@ -3,12 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer
+from core.optimization import AutoOptimizeMixin
 
-class BaseContactView:
+class BaseContactView(AutoOptimizeMixin):
     serializer_class = ContactMessageSerializer
+    queryset = ContactMessage.objects.all()
 
     def get_queryset(self):
-        return ContactMessage.objects.all().order_by('-created_at')
+        return super().get_queryset().order_by('-created_at')
     
 class ContactListView(BaseContactView, ListAPIView):
     serializer_class = ContactMessageSerializer
