@@ -490,29 +490,32 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         # Sort by purchase count (ascending) to get lowest performing first
         low_performing_list.sort(key=lambda x: x['purchase_count'])
 
+        # Bulk-fetch all relevant products upfront to eliminate N+1
+        all_product_ids = set(item['product_id'] for item in low_performing_list[:limit])
+        products_map = {str(p.id): p for p in Product.objects.filter(id__in=all_product_ids)}
+
         # Build response data for top limit items
         low_performing_data = []
         for item in low_performing_list[:limit]:
-            try:
-                product = Product.objects.get(id=item['product_id'])
-                view_count = item['view_count']
-                cart_add_count = item['cart_add_count']
-                purchase_count = item['purchase_count']
-
-                view_to_purchase = (view_count / purchase_count) if purchase_count > 0 else 0
-                cart_to_purchase = (cart_add_count / purchase_count) if purchase_count > 0 else 0
-
-                low_performing_data.append({
-                    'product_id': str(product.id),
-                    'product_name': product.name,
-                    'view_count': view_count,
-                    'cart_add_count': cart_add_count,
-                    'purchase_count': purchase_count,
-                    'view_to_purchase_ratio': round(view_to_purchase, 2),
-                    'cart_to_purchase_ratio': round(cart_to_purchase, 2),
-                })
-            except Product.DoesNotExist:
+            product = products_map.get(str(item['product_id']))
+            if not product:
                 continue
+            view_count = item['view_count']
+            cart_add_count = item['cart_add_count']
+            purchase_count = item['purchase_count']
+
+            view_to_purchase = (view_count / purchase_count) if purchase_count > 0 else 0
+            cart_to_purchase = (cart_add_count / purchase_count) if purchase_count > 0 else 0
+
+            low_performing_data.append({
+                'product_id': str(product.id),
+                'product_name': product.name,
+                'view_count': view_count,
+                'cart_add_count': cart_add_count,
+                'purchase_count': purchase_count,
+                'view_to_purchase_ratio': round(view_to_purchase, 2),
+                'cart_to_purchase_ratio': round(cart_to_purchase, 2),
+            })
 
         # ===== HIGH ABANDONMENT PRODUCTS (within period) =====
         # Calculate abandonment rates and sort by rate (descending)
@@ -527,18 +530,19 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         products_with_abandonment.sort(key=lambda x: (x[3], x[1]), reverse=True)
 
         high_abandonment_data = []
+        abandonment_product_ids = set(item[0] for item in products_with_abandonment[:limit])
+        abandonment_products_map = {str(p.id): p for p in Product.objects.filter(id__in=abandonment_product_ids)}
         for product_id, abandonment_count, period_cart_adds, abandonment_rate in products_with_abandonment[:limit]:
-            try:
-                product = Product.objects.get(id=product_id)
-                high_abandonment_data.append({
-                    'product_id': str(product.id),
-                    'product_name': product.name,
-                    'cart_add_count': period_cart_adds,
-                    'abandonment_count': abandonment_count,
-                    'abandonment_rate': round(abandonment_rate, 2),
-                })
-            except Product.DoesNotExist:
+            product = abandonment_products_map.get(str(product_id))
+            if not product:
                 continue
+            high_abandonment_data.append({
+                'product_id': str(product.id),
+                'product_name': product.name,
+                'cart_add_count': period_cart_adds,
+                'abandonment_count': abandonment_count,
+                'abandonment_rate': round(abandonment_rate, 2),
+            })
 
         # ===== LOW CONVERSION PRODUCTS (within period) =====
         # Calculate conversion rates for products with views
@@ -558,18 +562,19 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         low_conversion = products_with_conversion[:limit]
 
         low_conversion_data = []
+        conversion_product_ids = set(item['product_id'] for item in low_conversion)
+        conversion_products_map = {str(p.id): p for p in Product.objects.filter(id__in=conversion_product_ids)}
         for item in low_conversion:
-            try:
-                product = Product.objects.get(id=item['product_id'])
-                low_conversion_data.append({
-                    'product_id': str(product.id),
-                    'product_name': product.name,
-                    'view_count': item['view_count'],
-                    'purchase_count': item['purchase_count'],
-                    'conversion_rate': round(item['conversion_rate'], 2),
-                })
-            except Product.DoesNotExist:
+            product = conversion_products_map.get(str(item['product_id']))
+            if not product:
                 continue
+            low_conversion_data.append({
+                'product_id': str(product.id),
+                'product_name': product.name,
+                'view_count': item['view_count'],
+                'purchase_count': item['purchase_count'],
+                'conversion_rate': round(item['conversion_rate'], 2),
+            })
 
         # ===== HIGH ENGAGEMENT PRODUCTS (high view-to-purchase ratio within period) =====
         # Reuse views and purchases from previous sections
@@ -590,18 +595,19 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         high_engagement = products_with_engagement[:limit]
 
         high_engagement_data = []
+        engagement_product_ids = set(item['product_id'] for item in high_engagement)
+        engagement_products_map = {str(p.id): p for p in Product.objects.filter(id__in=engagement_product_ids)}
         for item in high_engagement:
-            try:
-                product = Product.objects.get(id=item['product_id'])
-                high_engagement_data.append({
-                    'product_id': str(product.id),
-                    'product_name': product.name,
-                    'view_count': item['view_count'],
-                    'purchase_count': item['purchase_count'],
-                    'engagement_ratio': round(item['engagement_ratio'], 2),
-                })
-            except Product.DoesNotExist:
+            product = engagement_products_map.get(str(item['product_id']))
+            if not product:
                 continue
+            high_engagement_data.append({
+                'product_id': str(product.id),
+                'product_name': product.name,
+                'view_count': item['view_count'],
+                'purchase_count': item['purchase_count'],
+                'engagement_ratio': round(item['engagement_ratio'], 2),
+            })
 
         # ===== RESPONSE =====
         return Response({
