@@ -621,6 +621,7 @@ const AdminCategoriesPage = () => {
                           onClick={() => handleViewDetails(category)}
                           color="info"
                           size="small"
+                          aria-label="View category details"
                         >
                           <VisibilityIcon />
                         </IconButton>
@@ -822,7 +823,7 @@ const AdminCategoriesPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.categoriesPage.categoryDetails')}
             </Typography>
-            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }}>
+            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }} aria-label="Close category details drawer">
               <CloseIcon />
             </IconButton>
           </Box>
