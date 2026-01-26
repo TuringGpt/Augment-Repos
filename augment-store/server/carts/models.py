@@ -64,7 +64,11 @@ class Cart(BaseModel):
 
     @property
     def subtotal(self):
-        return sum(item.product.price * item.quantity for item in self.items.all())
+        from django.db.models import Sum, F
+        result = self.items.aggregate(
+            total=Sum(F('product__price') * F('quantity'))
+        )
+        return result['total'] or Decimal('0.00')
 
     @property
     def tax(self):
