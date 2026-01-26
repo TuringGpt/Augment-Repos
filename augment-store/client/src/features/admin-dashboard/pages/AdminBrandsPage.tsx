@@ -661,7 +661,13 @@ const AdminBrandsPage = () => {
                           onClick={() => handleViewBrand(brand)}
                           color="info"
                           size="small"
-                          disabled={isDeleting}
+                          disabled={
+                            isDeleting ||
+                            isCreating ||
+                            createIsUploadingImage ||
+                            isSaving ||
+                            editIsUploadingImage
+                          }
                         >
                           <VisibilityIcon />
                         </IconButton>
