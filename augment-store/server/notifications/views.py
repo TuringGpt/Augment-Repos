@@ -14,7 +14,7 @@ class BaseNotificationView(AutoOptimizeMixin):
     auto_select_related = ['user']
 
     def get_queryset(self):
-        return Notification.objects.get_user_notifications(self.request.user)
+        return super().get_queryset().filter(user=self.request.user)
 
 class MarkAllAsReadView(BaseNotificationView, GenericAPIView):
     serializer_class = MarkAsReadSerializer
