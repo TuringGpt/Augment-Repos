@@ -161,6 +161,16 @@ const AdminCategoriesPage = () => {
     return categories.find((cat) => cat.id === detailsCategoryId) || null
   }, [detailsCategoryId, categories])
 
+  // Auto-close details drawer if category disappears (e.g., after delete/refresh)
+  useEffect(() => {
+    if (isDetailsDrawerOpen && detailsCategoryId && !detailsCategory && !isLoading) {
+      // Category was set but is no longer in the list, and we're not loading
+      // Close the drawer to prevent showing a blank panel
+      setIsDetailsDrawerOpen(false)
+      setDetailsCategoryId(null)
+    }
+  }, [isDetailsDrawerOpen, detailsCategoryId, detailsCategory, isLoading])
+
   // Details drawer handlers
   const handleViewDetails = (category: Category) => {
     setDetailsCategoryId(category.id)
