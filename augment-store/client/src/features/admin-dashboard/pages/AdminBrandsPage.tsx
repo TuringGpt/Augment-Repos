@@ -156,7 +156,8 @@ const AdminBrandsPage = () => {
 
   const handleCloseDetailsDrawer = () => {
     setIsDetailsDrawerOpen(false)
-    setDetailsBrand(null)
+    // Don't clear detailsBrand immediately - let the drawer transition complete first
+    // The detailsBrand will be cleared in the Drawer's SlideProps.onExited callback
   }
 
   // Create drawer handlers
@@ -712,6 +713,13 @@ const AdminBrandsPage = () => {
         anchor="right"
         open={isDetailsDrawerOpen}
         onClose={handleCloseDetailsDrawer}
+        SlideProps={{
+          onExited: () => {
+            // Clear detailsBrand after the drawer has fully closed
+            // This prevents the content from flashing empty during the close transition
+            setDetailsBrand(null)
+          },
+        }}
         sx={{
           '& .MuiDrawer-paper': {
             width: { xs: '100%', sm: 500, md: 600 },
