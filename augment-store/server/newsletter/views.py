@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView
 from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
@@ -43,5 +43,5 @@ class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
         if not email:
             raise ValidationError({'email': 'Email is required'})
 
-        newsletter = Newsletter.objects.get(email=email)
+        newsletter = get_object_or_404(Newsletter, email=email)
         return newsletter
