@@ -612,6 +612,13 @@
         "fileSizeExceeded": "El tamaño del archivo excede el límite de 5MB. El archivo seleccionado es de {{size}}MB.",
         "uploadFailed": "Error al subir la imagen. Por favor, inténtalo de nuevo.",
         "authenticationFailed": "Error de autenticación. Por favor, inicia sesión de nuevo."
+      },
+      "aria": {
+        "viewCategoryDetails": "Ver detalles de la categoría",
+        "closeCategoryDetails": "Cerrar el cajón de detalles de la categoría",
+        "uploadCategoryImage": "Subir imagen de la categoría",
+        "removeCategoryImage": "Eliminar imagen de la categoría",
+        "categoryImageInput": "Entrada de archivo de imagen de categoría"
       }
     },
     "brandsPage": {

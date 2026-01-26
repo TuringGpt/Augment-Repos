@@ -621,7 +621,7 @@ const AdminCategoriesPage = () => {
                           onClick={() => handleViewDetails(category)}
                           color="info"
                           size="small"
-                          aria-label="View category details"
+                          aria-label={t('admin.categoriesPage.aria.viewCategoryDetails')}
                         >
                           <VisibilityIcon />
                         </IconButton>
@@ -823,7 +823,7 @@ const AdminCategoriesPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.categoriesPage.categoryDetails')}
             </Typography>
-            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }} aria-label="Close category details drawer">
+            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }} aria-label={t('admin.categoriesPage.aria.closeCategoryDetails')}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -1011,7 +1011,7 @@ const AdminCategoriesPage = () => {
                         }}
                         size="small"
                         onClick={() => fileInputRef.current?.click()}
-                        aria-label="Upload category image"
+                        aria-label={t('admin.categoriesPage.aria.uploadCategoryImage')}
                         disabled={isCreating}
                       >
                         <PhotoCameraIcon fontSize="small" />
@@ -1034,7 +1034,7 @@ const AdminCategoriesPage = () => {
                         }}
                         size="small"
                         onClick={handleRemoveImage}
-                        aria-label="Remove category image"
+                        aria-label={t('admin.categoriesPage.aria.removeCategoryImage')}
                         disabled={isCreating}
                       >
                         <DeleteIcon fontSize="small" />
@@ -1070,7 +1070,7 @@ const AdminCategoriesPage = () => {
                     onChange={handleImageSelect}
                     style={{ display: 'none' }}
                     disabled={isCreating || isUploadingImage}
-                    aria-label="Category image file input"
+                    aria-label={t('admin.categoriesPage.aria.categoryImageInput')}
                   />
 
                   {/* Upload Instructions */}

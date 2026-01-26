@@ -612,6 +612,13 @@
         "fileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{size}}MB.",
         "uploadFailed": "Failed to upload image. Please try again.",
         "authenticationFailed": "Authentication failed. Please log in again."
+      },
+      "aria": {
+        "viewCategoryDetails": "View category details",
+        "closeCategoryDetails": "Close category details drawer",
+        "uploadCategoryImage": "Upload category image",
+        "removeCategoryImage": "Remove category image",
+        "categoryImageInput": "Category image file input"
       }
     },
     "brandsPage": {

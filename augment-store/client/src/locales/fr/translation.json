@@ -612,6 +612,13 @@
         "fileSizeExceeded": "La taille du fichier dépasse la limite de 5Mo. Le fichier sélectionné fait {{size}}Mo.",
         "uploadFailed": "Échec du téléchargement de l'image. Veuillez réessayer.",
         "authenticationFailed": "Échec de l'authentification. Veuillez vous reconnecter."
+      },
+      "aria": {
+        "viewCategoryDetails": "Voir les détails de la catégorie",
+        "closeCategoryDetails": "Fermer le tiroir des détails de la catégorie",
+        "uploadCategoryImage": "Télécharger l'image de la catégorie",
+        "removeCategoryImage": "Supprimer l'image de la catégorie",
+        "categoryImageInput": "Entrée de fichier d'image de catégorie"
       }
     },
     "brandsPage": {
