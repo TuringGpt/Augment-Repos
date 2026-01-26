@@ -597,6 +597,7 @@
         "categoryName": "Category Name",
         "description": "Description",
         "parentCategory": "Parent Category",
+        "slug": "Slug",
         "noParent": "None (Top Level)",
         "cancel": "Cancel",
         "save": "Save Changes",

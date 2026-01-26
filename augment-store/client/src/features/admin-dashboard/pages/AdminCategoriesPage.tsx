@@ -884,7 +884,7 @@ const AdminCategoriesPage = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Slug"
+                      label={t('admin.categoriesPage.form.slug')}
                       value={detailsCategory.slug}
                       disabled
                       InputProps={{

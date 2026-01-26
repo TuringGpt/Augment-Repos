@@ -597,6 +597,7 @@
         "categoryName": "Nombre de Categoría",
         "description": "Descripción",
         "parentCategory": "Categoría Principal",
+        "slug": "Slug",
         "noParent": "Ninguna (Nivel Superior)",
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
