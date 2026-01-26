@@ -829,6 +829,7 @@ const AdminBrandsPage = () => {
                   handleEditBrand(detailsBrand)
                 }
               }}
+              disabled={isSaving || isDeleting}
             >
               {t('common.edit')}
             </Button>
