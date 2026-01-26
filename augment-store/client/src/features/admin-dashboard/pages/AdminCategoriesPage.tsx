@@ -693,7 +693,7 @@ const AdminCategoriesPage = () => {
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <Avatar
-                      src={selectedCategory.image}
+                      src={selectedCategory.image || undefined}
                       alt={selectedCategory.name}
                       variant="rounded"
                       sx={{ width: 120, height: 120 }}
@@ -828,7 +828,7 @@ const AdminCategoriesPage = () => {
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <Avatar
-                      src={detailsCategory.image}
+                      src={detailsCategory.image || undefined}
                       alt={detailsCategory.name}
                       variant="rounded"
                       sx={{ width: 120, height: 120 }}
