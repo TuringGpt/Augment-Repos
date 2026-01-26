@@ -94,7 +94,7 @@ const AdminCategoriesPage = () => {
 
   // Details drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
-  const [detailsCategory, setDetailsCategory] = useState<Category | null>(null)
+  const [detailsCategoryId, setDetailsCategoryId] = useState<string | null>(null)
 
   // Cleanup blob URL on component unmount to prevent memory leak
   useEffect(() => {
@@ -154,15 +154,22 @@ const AdminCategoriesPage = () => {
     return categoryMap.get(parentId) || parentId // Fallback to ID if name not found
   }
 
+  // Derive the current category from the categories array
+  // This ensures the details drawer always shows the latest data
+  const detailsCategory = useMemo(() => {
+    if (!detailsCategoryId) return null
+    return categories.find((cat) => cat.id === detailsCategoryId) || null
+  }, [detailsCategoryId, categories])
+
   // Details drawer handlers
   const handleViewDetails = (category: Category) => {
-    setDetailsCategory(category)
+    setDetailsCategoryId(category.id)
     setIsDetailsDrawerOpen(true)
   }
 
   const handleCloseDetailsDrawer = () => {
     setIsDetailsDrawerOpen(false)
-    setDetailsCategory(null)
+    setDetailsCategoryId(null)
   }
 
   // Edit drawer handlers
