@@ -572,6 +572,7 @@
       "subtitle": "Produktkategorien verwalten",
       "refresh": "Kategorien aktualisieren",
       "createCategory": "Kategorie erstellen",
+      "categoryDetails": "Kategoriedetails",
       "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
       "errorUpdateCategory": "Kategorie konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
       "errorCreateCategory": "Kategorie konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",

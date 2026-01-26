@@ -572,6 +572,7 @@
       "subtitle": "Manage product categories",
       "refresh": "Refresh categories",
       "createCategory": "Create Category",
+      "categoryDetails": "Category Details",
       "errorLoadCategories": "Failed to load categories. Please try again.",
       "errorUpdateCategory": "Failed to update category. Please try again.",
       "errorCreateCategory": "Failed to create category. Please try again.",

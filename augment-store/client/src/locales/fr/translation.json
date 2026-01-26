@@ -572,6 +572,7 @@
       "subtitle": "Gérer les catégories de produits",
       "refresh": "Actualiser les catégories",
       "createCategory": "Créer une Catégorie",
+      "categoryDetails": "Détails de la Catégorie",
       "errorLoadCategories": "Échec du chargement des catégories. Veuillez réessayer.",
       "errorUpdateCategory": "Échec de la mise à jour de la catégorie. Veuillez réessayer.",
       "errorCreateCategory": "Échec de la création de la catégorie. Veuillez réessayer.",

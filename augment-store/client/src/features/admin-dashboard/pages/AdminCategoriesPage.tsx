@@ -609,7 +609,7 @@ const AdminCategoriesPage = () => {
 
                     {/* Actions */}
                     <TableCell align="center">
-                      <Tooltip title={t('product.details')}>
+                      <Tooltip title={t('admin.categoriesPage.categoryDetails')}>
                         <IconButton
                           onClick={() => handleViewDetails(category)}
                           color="info"
@@ -813,7 +813,7 @@ const AdminCategoriesPage = () => {
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              {t('product.details')}
+              {t('admin.categoriesPage.categoryDetails')}
             </Typography>
             <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }}>
               <CloseIcon />
