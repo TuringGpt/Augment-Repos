@@ -38,6 +38,7 @@ import {
   Add as AddIcon,
   PhotoCamera as PhotoCameraIcon,
   Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
@@ -90,6 +91,10 @@ const AdminCategoriesPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Details drawer state
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
+  const [detailsCategory, setDetailsCategory] = useState<Category | null>(null)
 
   // Cleanup blob URL on component unmount to prevent memory leak
   useEffect(() => {
@@ -147,6 +152,17 @@ const AdminCategoriesPage = () => {
   const getParentCategoryName = (parentId: string | null | undefined): string => {
     if (!parentId) return '-'
     return categoryMap.get(parentId) || parentId // Fallback to ID if name not found
+  }
+
+  // Details drawer handlers
+  const handleViewDetails = (category: Category) => {
+    setDetailsCategory(category)
+    setIsDetailsDrawerOpen(true)
+  }
+
+  const handleCloseDetailsDrawer = () => {
+    setIsDetailsDrawerOpen(false)
+    setDetailsCategory(null)
   }
 
   // Edit drawer handlers
@@ -593,6 +609,15 @@ const AdminCategoriesPage = () => {
 
                     {/* Actions */}
                     <TableCell align="center">
+                      <Tooltip title={t('product.details')}>
+                        <IconButton
+                          onClick={() => handleViewDetails(category)}
+                          color="info"
+                          size="small"
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={t('common.edit')}>
                         <IconButton
                           onClick={() => handleEditCategory(category)}
@@ -757,6 +782,157 @@ const AdminCategoriesPage = () => {
             >
               {isSaving ? t('admin.categoriesPage.form.saving') : t('admin.categoriesPage.form.save')}
             </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Category Details Drawer */}
+      <Drawer
+        anchor="right"
+        open={isDetailsDrawerOpen}
+        onClose={handleCloseDetailsDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'info.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('product.details')}
+            </Typography>
+            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Details Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {detailsCategory && (
+              <Grid container spacing={3}>
+                {/* Category Image */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Avatar
+                      src={detailsCategory.image}
+                      alt={detailsCategory.name}
+                      variant="rounded"
+                      sx={{ width: 120, height: 120 }}
+                    >
+                      {!detailsCategory.image && <CategoryIcon sx={{ fontSize: 60 }} />}
+                    </Avatar>
+                  </Box>
+                </Grid>
+
+                {/* Category Name */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.categoriesPage.form.categoryName')}
+                    value={detailsCategory.name}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+
+                {/* Description */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.categoriesPage.form.description')}
+                    value={detailsCategory.description || '-'}
+                    disabled
+                    multiline
+                    rows={4}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+
+                {/* Parent Category */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.categoriesPage.form.parentCategory')}
+                    value={getParentCategoryName(detailsCategory.parent)}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+
+                {/* Slug */}
+                {detailsCategory.slug && (
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Slug"
+                      value={detailsCategory.slug}
+                      disabled
+                      InputProps={{
+                        readOnly: true,
+                        sx: { fontFamily: 'monospace' },
+                      }}
+                    />
+                  </Grid>
+                )}
+
+                {/* Category ID */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label={t('admin.categoriesPage.table.id')}
+                    value={detailsCategory.id}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                      sx: { fontFamily: 'monospace' },
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseDetailsDrawer}
+            >
+              {t('common.close')}
+            </Button>
+            {detailsCategory && (
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={() => {
+                  handleCloseDetailsDrawer()
+                  handleEditCategory(detailsCategory)
+                }}
+              >
+                {t('common.edit')}
+              </Button>
+            )}
           </Box>
         </Box>
       </Drawer>
