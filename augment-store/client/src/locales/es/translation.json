@@ -505,6 +505,13 @@
     "brands": "Marcas",
     "users": "Usuarios",
     "reports": "Informes",
+    "reportsPage": {
+      "title": "Informes",
+      "subtitle": "Ver y analizar informes comerciales completos",
+      "workInProgress": "Trabajo en Progreso",
+      "underDevelopment": "La página de informes del administrador está actualmente en desarrollo.",
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+    },
     "settings": "Configuración",
     "productStatistics": {
       "title": "Estadísticas de productos",

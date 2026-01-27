@@ -505,6 +505,13 @@
     "brands": "Brands",
     "users": "Users",
     "reports": "Reports",
+    "reportsPage": {
+      "title": "Reports",
+      "subtitle": "View and analyze comprehensive business reports",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "The admin reports page is currently under development.",
+      "checkBackSoon": "Check back soon for updates!"
+    },
     "settings": "Settings",
     "productStatistics": {
       "title": "Product Statistics",
