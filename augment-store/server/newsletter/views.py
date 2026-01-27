@@ -4,20 +4,22 @@ from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from core.optimization import AutoOptimizeMixin
 
 # Create your views here.
-class BaseNewsletterView:
+class BaseNewsletterView(AutoOptimizeMixin):
     serializer_class = NewsletterSerializer
+    queryset = Newsletter.objects.all()
 
     def get_queryset(self):
-        return Newsletter.objects.all().order_by('-created_at')
+        return super().get_queryset().order_by('-created_at')
 
 class NewsletterView(BaseNewsletterView, ListAPIView):
     serializer_class = NewsletterSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Newsletter.objects.filter(is_active=True).order_by('-created_at')
+        return super().get_queryset().filter(is_active=True)
 
 class SubscribeNewsletterView(BaseNewsletterView, CreateAPIView):
     serializer_class = SubscribeNewsletterSerializer
