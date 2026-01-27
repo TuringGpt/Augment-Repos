@@ -44,10 +44,10 @@ class LoginSerializer(serializers.Serializer):
         if not user.check_password(password):
             raise NotAuthenticated("Invalid credentials")
         
+        self.user = user
         return attrs
         
     def create(self, validated_data):
-        # I have validated the user in the validate method, so it is safe to use get()
         user = User.objects.get(email=validated_data.get("email"))
         refresh = RefreshToken.for_user(user)
         return {
@@ -68,7 +68,7 @@ class RefreshTokenSerializer(serializers.Serializer):
         refresh = attrs.get("refresh")
         try:
             RefreshToken(refresh)
-        except:
+        except Exception:
             raise NotAuthenticated("Invalid refresh token")
         return attrs
 
@@ -79,3 +79,4 @@ class RefreshTokenSerializer(serializers.Serializer):
             "access": str(refresh.access_token),
             "refresh": str(refresh),
         }
+
