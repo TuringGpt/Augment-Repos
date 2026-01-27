@@ -8,13 +8,10 @@
  * Response from /api/v1/dashboard/statistics/general_statistics/
  */
 export interface GeneralStatisticsResponse {
-  // Add the actual fields based on your backend response
-  // This is a placeholder structure - update based on actual API response
-  total_revenue?: number
-  total_orders?: number
-  total_customers?: number
-  total_products?: number
-  [key: string]: unknown
+  total_products_tracked: number
+  total_views: number
+  total_cart_additions: number
+  total_purchases: number
 }
 
 /**
