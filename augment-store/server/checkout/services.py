@@ -20,11 +20,15 @@ class StripeService:
 
         items = order.items.select_related('product').all()
         
+        if not items.exists():
+            raise ValidationError("Order has no items to process")
+        
         for item in items:
             if item.product is None:
                 raise ValidationError(f"Order item {item.id} has no associated product")
             if item.quantity is None or item.quantity <= 0:
                 raise ValidationError(f"Order item {item.id} has invalid quantity")
+
 
         line_items = [
             {
