@@ -13,31 +13,33 @@ class StripeService:
     def create_payment_session(self, payment: Payment):
         from django.conf import settings
         from django.urls import reverse
+        from django.core.exceptions import ValidationError
 
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-        # Prefetch cart items to optimize query performance
-        items = order.items.select_related('cart_item').all()
+        items = order.items.select_related('cart_item', 'cart_item__product').all()
         
-        # Check for null products before building line items
-        for item in items:
-            if item.cart_item.product is None:
-                return None
+        valid_items = [
+            item for item in items 
+            if item.cart_item is not None and item.cart_item.product is not None
+        ]
+        
+        if not valid_items:
+            raise ValidationError("Order has no valid items with products")
 
         line_items = [
             {
                 "price_data": {
                     "currency": "usd",
                     "product_data": {
-                        "name": item.cart_item.product.id,
+                        "name": str(item.cart_item.product.id),
                     },
                     "unit_amount": int(item.cart_item.product.price * 100),
                 },
-
                 "quantity": item.cart_item.quantity,
             }
-            for item in items
+            for item in valid_items
         ]
 
         redirect_url = reverse("v1:checkout_payments:stripe_redirect")
