@@ -18,28 +18,26 @@ class StripeService:
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
-        items = order.items.select_related('cart_item', 'cart_item__product').all()
+        items = order.items.select_related('product').all()
         
-        valid_items = [
-            item for item in items 
-            if item.cart_item is not None and item.cart_item.product is not None
-        ]
-        
-        if not valid_items:
-            raise ValidationError("Order has no valid items with products")
+        for item in items:
+            if item.product is None:
+                raise ValidationError(f"Order item {item.id} has no associated product")
+            if item.quantity is None or item.quantity <= 0:
+                raise ValidationError(f"Order item {item.id} has invalid quantity")
 
         line_items = [
             {
                 "price_data": {
                     "currency": "usd",
                     "product_data": {
-                        "name": str(item.cart_item.product.id),
+                        "name": item.product.name,
                     },
-                    "unit_amount": int(item.cart_item.product.price * 100),
+                    "unit_amount": int(item.product.price * 100),
                 },
-                "quantity": item.cart_item.quantity,
+                "quantity": item.quantity,
             }
-            for item in valid_items
+            for item in items
         ]
 
         redirect_url = reverse("v1:checkout_payments:stripe_redirect")
