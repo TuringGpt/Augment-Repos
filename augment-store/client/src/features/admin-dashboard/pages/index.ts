@@ -5,4 +5,5 @@ export { default as AdminAllProductsPage } from './AdminAllProductsPage'
 export { default as AdminCategoriesPage } from './AdminCategoriesPage'
 export { default as AdminBrandsPage } from './AdminBrandsPage'
 export { default as AdminOrdersPage } from './AdminOrdersPage'
+export { default as AdminReportsPage } from './AdminReportsPage'
 
