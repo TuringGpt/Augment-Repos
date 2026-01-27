@@ -572,6 +572,7 @@
       "subtitle": "Gestionar categorías de productos",
       "refresh": "Actualizar categorías",
       "createCategory": "Crear Categoría",
+      "categoryDetails": "Detalles de la Categoría",
       "errorLoadCategories": "Error al cargar las categorías. Por favor, inténtalo de nuevo.",
       "errorUpdateCategory": "Error al actualizar la categoría. Por favor, inténtalo de nuevo.",
       "errorCreateCategory": "Error al crear la categoría. Por favor, inténtalo de nuevo.",
@@ -596,6 +597,7 @@
         "categoryName": "Nombre de Categoría",
         "description": "Descripción",
         "parentCategory": "Categoría Principal",
+        "slug": "Slug",
         "noParent": "Ninguna (Nivel Superior)",
         "cancel": "Cancelar",
         "save": "Guardar Cambios",
@@ -610,6 +612,13 @@
         "fileSizeExceeded": "El tamaño del archivo excede el límite de 5MB. El archivo seleccionado es de {{size}}MB.",
         "uploadFailed": "Error al subir la imagen. Por favor, inténtalo de nuevo.",
         "authenticationFailed": "Error de autenticación. Por favor, inicia sesión de nuevo."
+      },
+      "aria": {
+        "viewCategoryDetails": "Ver detalles de la categoría",
+        "closeCategoryDetails": "Cerrar el cajón de detalles de la categoría",
+        "uploadCategoryImage": "Subir imagen de la categoría",
+        "removeCategoryImage": "Eliminar imagen de la categoría",
+        "categoryImageInput": "Entrada de archivo de imagen de categoría"
       }
     },
     "brandsPage": {

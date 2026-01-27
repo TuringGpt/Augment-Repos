@@ -572,6 +572,7 @@
       "subtitle": "Manage product categories",
       "refresh": "Refresh categories",
       "createCategory": "Create Category",
+      "categoryDetails": "Category Details",
       "errorLoadCategories": "Failed to load categories. Please try again.",
       "errorUpdateCategory": "Failed to update category. Please try again.",
       "errorCreateCategory": "Failed to create category. Please try again.",
@@ -596,6 +597,7 @@
         "categoryName": "Category Name",
         "description": "Description",
         "parentCategory": "Parent Category",
+        "slug": "Slug",
         "noParent": "None (Top Level)",
         "cancel": "Cancel",
         "save": "Save Changes",
@@ -610,6 +612,13 @@
         "fileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{size}}MB.",
         "uploadFailed": "Failed to upload image. Please try again.",
         "authenticationFailed": "Authentication failed. Please log in again."
+      },
+      "aria": {
+        "viewCategoryDetails": "View category details",
+        "closeCategoryDetails": "Close category details drawer",
+        "uploadCategoryImage": "Upload category image",
+        "removeCategoryImage": "Remove category image",
+        "categoryImageInput": "Category image file input"
       }
     },
     "brandsPage": {
