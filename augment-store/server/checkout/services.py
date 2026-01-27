@@ -17,6 +17,14 @@ class StripeService:
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
+        # Prefetch cart items to optimize query performance
+        items = order.items.select_related('cart_item').all()
+        
+        # Check for null products before building line items
+        for item in items:
+            if item.cart_item.product is None:
+                return None
+
         line_items = [
             {
                 "price_data": {
@@ -29,7 +37,7 @@ class StripeService:
 
                 "quantity": item.cart_item.quantity,
             }
-            for item in order.items.all()
+            for item in items
         ]
 
         redirect_url = reverse("v1:checkout_payments:stripe_redirect")
@@ -44,6 +52,7 @@ class StripeService:
         payment.save()
 
         return strip_session
+
 
     def check_and_update_payment_status(self, payment: Payment):
         from django.conf import settings
