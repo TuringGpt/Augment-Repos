@@ -1,27 +1,24 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type {
-  GeneralStatisticsResponse,
-  GeneralStatisticsParams,
-} from '@features/admin-reports/types'
+import type { GeneralStatisticsResponse } from '@features/admin-reports/types'
 
 export const adminReportService = {
   /**
    * Get general statistics for admin reports
    *
-   * @param params - Query parameters (optional)
+   * Note: This endpoint does not accept any query parameters.
+   * It returns all-time aggregated statistics across all products.
+   *
    * @param signal - Optional AbortSignal for request cancellation
    * @returns Promise with general statistics data
    */
   getGeneralStatistics: async (
-    params?: GeneralStatisticsParams,
     signal?: AbortSignal
   ): Promise<GeneralStatisticsResponse> => {
     try {
       const response = await apiClient.get<GeneralStatisticsResponse>(
         API_ENDPOINTS.ADMIN_DASHBOARD.GENERAL_STATISTICS,
         {
-          params,
           signal,
         }
       )
