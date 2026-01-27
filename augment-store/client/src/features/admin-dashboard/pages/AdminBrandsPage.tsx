@@ -36,6 +36,7 @@ import {
   Save as SaveIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -72,6 +73,10 @@ const AdminBrandsPage = () => {
     description: '',
   })
   const [isCreating, setIsCreating] = useState(false)
+
+  // Details drawer state
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
+  const [detailsBrand, setDetailsBrand] = useState<Brand | null>(null)
 
   // Edit drawer state
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
@@ -127,10 +132,41 @@ const AdminBrandsPage = () => {
     loadBrands()
   }
 
+  // Details drawer handlers
+  const handleViewBrand = (brand: Brand) => {
+    // Close other drawers if open
+    if (isCreateDrawerOpen) {
+      if (isCreating || createIsUploadingImage) {
+        // Can't close create drawer while creating/uploading, so don't open details drawer
+        return
+      }
+      handleCloseCreateDrawer()
+    }
+    if (isEditDrawerOpen) {
+      if (isSaving || editIsUploadingImage) {
+        // Can't close edit drawer while saving/uploading, so don't open details drawer
+        return
+      }
+      handleCloseEditDrawer()
+    }
+
+    setDetailsBrand(brand)
+    setIsDetailsDrawerOpen(true)
+  }
+
+  const handleCloseDetailsDrawer = () => {
+    setIsDetailsDrawerOpen(false)
+    // Don't clear detailsBrand immediately - let the drawer transition complete first
+    // The detailsBrand will be cleared in the Drawer's SlideProps.onExited callback
+  }
+
   // Create drawer handlers
   const handleOpenCreateDrawer = () => {
-    // Close edit drawer if open to ensure only one drawer is active at a time
+    // Close other drawers if open to ensure only one drawer is active at a time
     // Block opening create drawer if edit drawer can't be closed (saving/uploading in progress)
+    if (isDetailsDrawerOpen) {
+      handleCloseDetailsDrawer()
+    }
     if (isEditDrawerOpen) {
       if (isSaving || editIsUploadingImage) {
         // Can't close edit drawer while saving/uploading, so don't open create drawer
@@ -254,8 +290,11 @@ const AdminBrandsPage = () => {
 
   // Edit drawer handlers
   const handleEditBrand = (brand: Brand) => {
-    // Close create drawer if open to ensure only one drawer is active at a time
+    // Close other drawers if open to ensure only one drawer is active at a time
     // Block opening edit drawer if create drawer can't be closed (creating/uploading in progress)
+    if (isDetailsDrawerOpen) {
+      handleCloseDetailsDrawer()
+    }
     if (isCreateDrawerOpen) {
       if (isCreating || createIsUploadingImage) {
         // Can't close create drawer while creating/uploading, so don't open edit drawer
@@ -618,6 +657,22 @@ const AdminBrandsPage = () => {
 
                     {/* Actions */}
                     <TableCell align="center">
+                      <Tooltip title={t('common.view')}>
+                        <IconButton
+                          onClick={() => handleViewBrand(brand)}
+                          color="info"
+                          size="small"
+                          disabled={
+                            isDeleting ||
+                            isCreating ||
+                            createIsUploadingImage ||
+                            isSaving ||
+                            editIsUploadingImage
+                          }
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title={t('common.edit')}>
                         <IconButton
                           onClick={() => handleEditBrand(brand)}
@@ -652,6 +707,135 @@ const AdminBrandsPage = () => {
           </Typography>
         </Paper>
       )}
+
+      {/* Details Brand Drawer */}
+      <Drawer
+        anchor="right"
+        open={isDetailsDrawerOpen}
+        onClose={handleCloseDetailsDrawer}
+        SlideProps={{
+          onExited: () => {
+            // Clear detailsBrand after the drawer has fully closed
+            // This prevents the content from flashing empty during the close transition
+            setDetailsBrand(null)
+          },
+        }}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'info.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.brandsPage.brandDetails')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseDetailsDrawer}
+              sx={{ color: 'white' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {detailsBrand && (
+              <Grid container spacing={3}>
+                {/* Brand Image */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Avatar
+                      src={detailsBrand.image || undefined}
+                      variant="rounded"
+                      sx={{ width: 120, height: 120, bgcolor: 'grey.200' }}
+                    >
+                      {!detailsBrand.image && detailsBrand.name && detailsBrand.name.charAt(0).toUpperCase()}
+                    </Avatar>
+                  </Box>
+                </Grid>
+
+                {/* Brand Name */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.brandsPage.form.brandName')}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {detailsBrand.name}
+                  </Typography>
+                </Grid>
+
+                {/* Description */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.brandsPage.form.description')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {detailsBrand.description || '-'}
+                  </Typography>
+                </Grid>
+
+                {/* Brand ID */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.brandsPage.table.id')}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      bgcolor: 'grey.100',
+                      p: 1,
+                      borderRadius: 1,
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {detailsBrand.id}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseDetailsDrawer}
+            >
+              {t('common.close')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => {
+                if (detailsBrand) {
+                  handleCloseDetailsDrawer()
+                  handleEditBrand(detailsBrand)
+                }
+              }}
+              disabled={isSaving || isDeleting}
+            >
+              {t('common.edit')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
 
       {/* Edit Brand Drawer */}
       <Drawer
