@@ -1,8 +1,8 @@
 
-
 from rest_framework import serializers
 from accounts.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 
 
@@ -48,8 +48,7 @@ class LoginSerializer(serializers.Serializer):
         return attrs
         
     def create(self, validated_data):
-        user = User.objects.get(email=validated_data.get("email"))
-        refresh = RefreshToken.for_user(user)
+        refresh = RefreshToken.for_user(self.user)
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
@@ -68,7 +67,7 @@ class RefreshTokenSerializer(serializers.Serializer):
         refresh = attrs.get("refresh")
         try:
             RefreshToken(refresh)
-        except Exception:
+        except TokenError:
             raise NotAuthenticated("Invalid refresh token")
         return attrs
 
