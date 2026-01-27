@@ -13,7 +13,7 @@ class StripeService:
     def create_payment_session(self, payment: Payment):
         from django.conf import settings
         from django.urls import reverse
-        from django.core.exceptions import ValidationError
+        from rest_framework.exceptions import ValidationError
 
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -21,13 +21,14 @@ class StripeService:
         items = order.items.select_related('product').all()
         
         if not items.exists():
-            raise ValidationError("Order has no items to process")
+            raise ValidationError({"detail": "Order has no items to process"})
         
         for item in items:
             if item.product is None:
-                raise ValidationError(f"Order item {item.id} has no associated product")
+                raise ValidationError({"detail": f"Order item {item.id} has no associated product"})
             if item.quantity is None or item.quantity <= 0:
-                raise ValidationError(f"Order item {item.id} has invalid quantity")
+                raise ValidationError({"detail": f"Order item {item.id} has invalid quantity"})
+
 
 
         line_items = [
