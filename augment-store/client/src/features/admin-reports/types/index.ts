@@ -5,7 +5,8 @@
 
 /**
  * General statistics response from the backend
- * Response from /api/v1/dashboard/statistics/general_statistics/
+ * Endpoint: /dashboard/statistics/general_statistics/
+ * (Combined with API_CONFIG.BASE_URL to form the full path)
  *
  * Note: This endpoint does not accept any query parameters.
  * It returns all-time aggregated statistics across all products.
