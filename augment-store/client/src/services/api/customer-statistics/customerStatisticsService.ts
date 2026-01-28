@@ -9,6 +9,8 @@ import type {
   NewVsReturningParams,
   CustomerPurchaseBehaviorResponse,
   CustomerPurchaseBehaviorParams,
+  ChurnRiskResponse,
+  ChurnRiskParams,
 } from '@features/customer-retention/types'
 
 export const customerStatisticsService = {
@@ -176,6 +178,56 @@ export const customerStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch customer purchase behavior:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get customers at risk of churning based on inactivity
+   *
+   * @param params - Query parameters (limit, inactive_days)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with churn risk data
+   */
+  getChurnRisk: async (
+    params?: ChurnRiskParams,
+    signal?: AbortSignal
+  ): Promise<ChurnRiskResponse> => {
+    try {
+      // Validate parameters if provided - ensure they're finite numbers before clamping
+      // Backend expects limit (max: 100) and inactive_days (max: 365) as query parameters
+      // Use explicit undefined check to avoid treating 0 as falsy
+      const validatedParams: { limit?: number; inactive_days?: number } = {}
+
+      if (params?.limit !== undefined) {
+        validatedParams.limit = Number.isFinite(params.limit)
+          ? Math.max(1, Math.min(100, params.limit))
+          : undefined
+      }
+
+      if (params?.inactive_days !== undefined) {
+        validatedParams.inactive_days = Number.isFinite(params.inactive_days)
+          ? Math.max(1, Math.min(365, params.inactive_days))
+          : undefined
+      }
+
+      // Filter out undefined values to avoid sending empty query params like "limit=" or "inactive_days="
+      const filteredParams = Object.fromEntries(
+        Object.entries(validatedParams).filter(([_, value]) => value !== undefined)
+      )
+
+      // Backend uses GET method with limit and inactive_days as query parameters
+      const response = await apiClient.get<ChurnRiskResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.CHURN_RISK,
+        {
+          params: Object.keys(filteredParams).length > 0 ? filteredParams : undefined,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch churn risk data:', error)
       throw error
     }
   },
