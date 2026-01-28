@@ -54,6 +54,7 @@ class CommentCreateView(CommentBaseView, CreateAPIView):
 class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
     lookup_url_kwarg = 'comment_pk'
+    http_method_names = ['get', 'put', 'patch']
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
@@ -62,6 +63,7 @@ class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
 class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
     lookup_url_kwarg = 'comment_pk'
+    http_method_names = ['get', 'delete']
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
