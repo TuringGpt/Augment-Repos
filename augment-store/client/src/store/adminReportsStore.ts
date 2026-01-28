@@ -36,10 +36,11 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
     fetchGeneralStatisticsRequestCounter += 1
     const currentRequestId = fetchGeneralStatisticsRequestCounter
 
-    // Import adminReportService dynamically to avoid circular dependency
-    const { adminReportService } = await import('@services/api/admin-reports/adminReportService')
-
     try {
+      // Import adminReportService dynamically to avoid circular dependency
+      // This is inside the try block to ensure import failures are handled properly
+      const { adminReportService } = await import('@services/api/admin-reports/adminReportService')
+
       // Only update loading state if this is still the most recent request
       if (currentRequestId === fetchGeneralStatisticsRequestCounter) {
         set({ isLoading: true, error: null })
