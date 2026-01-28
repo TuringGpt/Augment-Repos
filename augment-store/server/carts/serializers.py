@@ -21,7 +21,7 @@ class AddToCartSerializer(serializers.Serializer):
         if not product.check_stock(quantity):
             raise serializers.ValidationError("Quantity exceeds stock")
 
-        self.product = product
+        attrs['product'] = product
         return attrs
     
 
@@ -30,9 +30,11 @@ class AddToCartSerializer(serializers.Serializer):
         user = self.context.get("request").user
         user_cart = Cart.objects.get_user_cart(user)
         quantity = validated_data.get("quantity")
+        product = validated_data.get("product")
 
-        user_cart = Cart.objects.add_to_cart(user, self.product, quantity)
+        user_cart = Cart.objects.add_to_cart(user, product, quantity)
         return user_cart
+
 
 
 
