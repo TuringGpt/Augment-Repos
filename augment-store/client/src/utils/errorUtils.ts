@@ -141,7 +141,7 @@ interface SanitizedErrorInfo {
  * potentially sensitive data that Axios includes in error objects.
  *
  * @param error - The error object from a failed API call
- * @param contextMessage - Optional context message to include in logs
+ * @param contextMessage - Optional fallback message used only when the error has no message
  * @returns A sanitized object safe for logging
  *
  * @example
