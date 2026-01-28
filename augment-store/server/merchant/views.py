@@ -4,6 +4,13 @@ from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedListMixin, BaseCacheService
+
+
+class MerchantOrdersCacheService(BaseCacheService):
+    OBJECT_NAME = "merchant_orders"
+    VERSION = 1
+
 
 class MerchantBrandListView(AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantBrandSerializer
@@ -25,12 +32,15 @@ class MerchantProductListView(AutoOptimizeMixin, ListAPIView):
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
-        # Return a QuerySet of all products from brands created by this merchant
         return super().get_queryset().filter(brand__created_by=object_id)
 
-class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
+
+class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantOrdersSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
+    cache_service_class = MerchantOrdersCacheService
+    cache_ttl = 60 * 5
     auto_select_related = ['created_by', 'shipping_address']
     auto_prefetch_related = [
         'items',
@@ -39,9 +49,8 @@ class MerchantOrdersListView(AutoOptimizeMixin, ListAPIView):
         'items__product__category',
         'items__product__images'
     ]
-    queryset = Order.objects.all()
 
     def get_queryset(self):
         return super().get_queryset().filter(
-            items__cart_item__product__brand__created_by=self.request.user
+            items__product__brand__created_by=self.request.user
         ).distinct()
