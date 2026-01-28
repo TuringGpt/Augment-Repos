@@ -58,7 +58,7 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
       // Ignore abort errors - these are expected when component unmounts or new request starts
       const error = err as {
         name?: string
-        response?: { status?: number; data?: { message?: string } }
+        response?: { status?: number; statusText?: string; data?: { message?: string } }
         message?: string
       }
 
@@ -94,11 +94,13 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
       }
 
       set({ error: errorMessage })
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
       console.error('Error fetching general statistics:', {
-        error,
         status: error?.response?.status,
-        data: error?.response?.data,
+        statusText: error?.response?.statusText,
         message: errorMessage,
+        errorName: error?.name,
       })
 
       throw err
