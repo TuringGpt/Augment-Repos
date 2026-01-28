@@ -29,10 +29,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 3650 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(3650, params.days))
+              ? Math.floor(Math.max(1, Math.min(3650, params.days)))
               : undefined,
           }
         : undefined
@@ -69,10 +70,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 3650 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(3650, params.days))
+              ? Math.floor(Math.max(1, Math.min(3650, params.days)))
               : undefined,
           }
         : undefined
@@ -108,10 +110,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 365 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(365, params.days))
+              ? Math.floor(Math.max(1, Math.min(365, params.days)))
               : undefined,
           }
         : undefined
@@ -150,14 +153,16 @@ export const customerStatisticsService = {
       const validatedParams: { days?: number; limit?: number } = {}
 
       if (params?.days !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.days = Number.isFinite(params.days)
-          ? Math.max(1, Math.min(365, params.days))
+          ? Math.floor(Math.max(1, Math.min(365, params.days)))
           : undefined
       }
 
       if (params?.limit !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.limit = Number.isFinite(params.limit)
-          ? Math.max(1, Math.min(100, params.limit))
+          ? Math.floor(Math.max(1, Math.min(100, params.limit)))
           : undefined
       }
 
@@ -200,12 +205,14 @@ export const customerStatisticsService = {
       const validatedParams: { limit?: number; inactive_days?: number } = {}
 
       if (params?.limit !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.limit = Number.isFinite(params.limit)
           ? Math.floor(Math.max(1, Math.min(100, params.limit)))
           : undefined
       }
 
       if (params?.inactive_days !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.inactive_days = Number.isFinite(params.inactive_days)
           ? Math.floor(Math.max(1, Math.min(365, params.inactive_days)))
           : undefined
