@@ -168,11 +168,11 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         return queryset
 
 
-
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+
 
 class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
