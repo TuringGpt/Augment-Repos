@@ -134,10 +134,10 @@ interface SanitizedErrorInfo {
 }
 
 /**
- * Strip query parameters from a URL to prevent logging sensitive data
+ * Strip query parameters and fragments from a URL to prevent logging sensitive data
  *
- * @param url - The URL that may contain query parameters
- * @returns The URL with query parameters removed, or undefined if input is undefined
+ * @param url - The URL that may contain query parameters or fragments
+ * @returns The URL with query parameters and fragments removed, or undefined if input is undefined
  */
 function stripQueryParams(url?: string): string | undefined {
   if (!url) return url
@@ -145,8 +145,21 @@ function stripQueryParams(url?: string): string | undefined {
   try {
     // Handle relative URLs
     if (url.charAt(0) === '/') {
+      // Strip both query params (?) and fragments (#)
       const questionMarkIndex = url.indexOf('?')
-      return questionMarkIndex === -1 ? url : url.substring(0, questionMarkIndex)
+      const hashIndex = url.indexOf('#')
+
+      // Find the first occurrence of either ? or #
+      let endIndex = -1
+      if (questionMarkIndex !== -1 && hashIndex !== -1) {
+        endIndex = Math.min(questionMarkIndex, hashIndex)
+      } else if (questionMarkIndex !== -1) {
+        endIndex = questionMarkIndex
+      } else if (hashIndex !== -1) {
+        endIndex = hashIndex
+      }
+
+      return endIndex === -1 ? url : url.substring(0, endIndex)
     }
 
     // Handle absolute URLs
@@ -154,8 +167,21 @@ function stripQueryParams(url?: string): string | undefined {
     return `${urlObj.origin}${urlObj.pathname}`
   } catch {
     // If URL parsing fails, fall back to simple string manipulation
+    // Strip both query params (?) and fragments (#)
     const questionMarkIndex = url.indexOf('?')
-    return questionMarkIndex === -1 ? url : url.substring(0, questionMarkIndex)
+    const hashIndex = url.indexOf('#')
+
+    // Find the first occurrence of either ? or #
+    let endIndex = -1
+    if (questionMarkIndex !== -1 && hashIndex !== -1) {
+      endIndex = Math.min(questionMarkIndex, hashIndex)
+    } else if (questionMarkIndex !== -1) {
+      endIndex = questionMarkIndex
+    } else if (hashIndex !== -1) {
+      endIndex = hashIndex
+    }
+
+    return endIndex === -1 ? url : url.substring(0, endIndex)
   }
 }
 
