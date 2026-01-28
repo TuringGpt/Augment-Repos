@@ -17,12 +17,12 @@ interface AdminReportsState {
   error: string | null
 
   // Actions
-  fetchGeneralStatistics: (signal?: AbortSignal) => Promise<GeneralStatisticsResponse>
+  fetchGeneralStatistics: (signal?: AbortSignal) => Promise<GeneralStatisticsResponse | null>
   clearGeneralStatistics: () => void
   clearError: () => void
 }
 
-export const useAdminReportsStore = create<AdminReportsState>((set, get) => ({
+export const useAdminReportsStore = create<AdminReportsState>((set) => ({
   // Initial state
   generalStatistics: null,
   isLoading: false,
@@ -61,9 +61,13 @@ export const useAdminReportsStore = create<AdminReportsState>((set, get) => ({
         message?: string
       }
 
-      // Don't update state for aborted requests
+      // Don't update state for aborted requests - swallow the error to prevent unhandled promise rejections
       if (error?.name === 'AbortError' || error?.name === 'CanceledError') {
-        throw err
+        // Reset loading state if this is still the most recent request to prevent UI from getting stuck
+        if (currentRequestId === fetchGeneralStatisticsRequestCounter) {
+          set({ isLoading: false })
+        }
+        return null
       }
 
       // Only update error state if this is still the most recent request
