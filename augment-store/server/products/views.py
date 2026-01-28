@@ -155,12 +155,9 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         queryset = super().get_queryset()
         query = (self.request.query_params.get('search') or "").strip()
         
-        logger.info(f"Search query received: {query} from user {self.request.user}")
-        
         search_filter = self.get_search_query_filter(query)
         queryset = queryset.filter(search_filter)
         
-        # Integrate SearchService for analytics tracking
         if query:
             SearchService.log_search(
                 query_string=query,
@@ -169,6 +166,7 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
             )
             
         return queryset
+
 
 
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
