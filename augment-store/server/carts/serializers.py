@@ -29,12 +29,11 @@ class AddToCartSerializer(serializers.Serializer):
      
         user = self.context.get("request").user
         user_cart = Cart.objects.get_user_cart(user)
-        product_id = validated_data.get("product_id")
         quantity = validated_data.get("quantity")
 
-        product = Product.objects.get(id=product_id)
-        user_cart = Cart.objects.add_to_cart(user, product, quantity)
+        user_cart = Cart.objects.add_to_cart(user, self.product, quantity)
         return user_cart
+
 
 
 class UpdateCartItemSerializer(serializers.ModelSerializer):
