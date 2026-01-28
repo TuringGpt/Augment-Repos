@@ -201,13 +201,13 @@ export const customerStatisticsService = {
 
       if (params?.limit !== undefined) {
         validatedParams.limit = Number.isFinite(params.limit)
-          ? Math.max(1, Math.min(100, params.limit))
+          ? Math.floor(Math.max(1, Math.min(100, params.limit)))
           : undefined
       }
 
       if (params?.inactive_days !== undefined) {
         validatedParams.inactive_days = Number.isFinite(params.inactive_days)
-          ? Math.max(1, Math.min(365, params.inactive_days))
+          ? Math.floor(Math.max(1, Math.min(365, params.inactive_days)))
           : undefined
       }
 
