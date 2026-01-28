@@ -121,3 +121,119 @@ export function parseApiError(error: unknown, options: ParseErrorOptions = {}): 
   return defaultMessage
 }
 
+/**
+ * Sanitized error information for safe logging
+ */
+interface SanitizedErrorInfo {
+  status?: number
+  statusText?: string
+  message?: string
+  errorName?: string
+  url?: string
+  method?: string
+}
+
+/**
+ * Strip query parameters and fragments from a URL to prevent logging sensitive data
+ *
+ * @param url - The URL that may contain query parameters or fragments
+ * @returns The URL with query parameters and fragments removed, or undefined if input is undefined
+ */
+function stripQueryParams(url?: string): string | undefined {
+  if (!url) return url
+
+  try {
+    // Handle relative URLs
+    if (url.charAt(0) === '/') {
+      // Strip both query params (?) and fragments (#)
+      const questionMarkIndex = url.indexOf('?')
+      const hashIndex = url.indexOf('#')
+
+      // Find the first occurrence of either ? or #
+      let endIndex = -1
+      if (questionMarkIndex !== -1 && hashIndex !== -1) {
+        endIndex = Math.min(questionMarkIndex, hashIndex)
+      } else if (questionMarkIndex !== -1) {
+        endIndex = questionMarkIndex
+      } else if (hashIndex !== -1) {
+        endIndex = hashIndex
+      }
+
+      return endIndex === -1 ? url : url.substring(0, endIndex)
+    }
+
+    // Handle absolute URLs
+    const urlObj = new URL(url)
+    return `${urlObj.origin}${urlObj.pathname}`
+  } catch {
+    // If URL parsing fails, fall back to simple string manipulation
+    // Strip both query params (?) and fragments (#)
+    const questionMarkIndex = url.indexOf('?')
+    const hashIndex = url.indexOf('#')
+
+    // Find the first occurrence of either ? or #
+    let endIndex = -1
+    if (questionMarkIndex !== -1 && hashIndex !== -1) {
+      endIndex = Math.min(questionMarkIndex, hashIndex)
+    } else if (questionMarkIndex !== -1) {
+      endIndex = questionMarkIndex
+    } else if (hashIndex !== -1) {
+      endIndex = hashIndex
+    }
+
+    return endIndex === -1 ? url : url.substring(0, endIndex)
+  }
+}
+
+/**
+ * Sanitize an Axios error for safe logging by removing sensitive information
+ *
+ * This function extracts only safe, non-sensitive information from an error object,
+ * specifically excluding request config, headers (including Authorization), and other
+ * potentially sensitive data that Axios includes in error objects.
+ *
+ * Query parameters are stripped from URLs to prevent logging sensitive data like
+ * reset tokens, API keys, or other secrets that may be passed in the URL.
+ *
+ * @param error - The error object from a failed API call
+ * @param contextMessage - Optional fallback message used only when the error has no message
+ * @returns A sanitized object safe for logging
+ *
+ * @example
+ * try {
+ *   await apiClient.get('/api/data')
+ * } catch (error) {
+ *   console.error('Failed to fetch data:', sanitizeErrorForLogging(error))
+ *   throw error
+ * }
+ */
+export function sanitizeErrorForLogging(
+  error: unknown,
+  contextMessage?: string
+): SanitizedErrorInfo {
+  const axiosError = error as {
+    name?: string
+    response?: {
+      status?: number
+      statusText?: string
+      data?: { message?: string }
+    }
+    message?: string
+    config?: {
+      url?: string
+      method?: string
+    }
+  }
+
+  const sanitized: SanitizedErrorInfo = {
+    errorName: axiosError?.name,
+    status: axiosError?.response?.status,
+    statusText: axiosError?.response?.statusText,
+    message: axiosError?.response?.data?.message || axiosError?.message || contextMessage,
+    // Strip query parameters from URL to prevent logging sensitive data (e.g., reset tokens)
+    url: stripQueryParams(axiosError?.config?.url),
+    method: axiosError?.config?.method?.toUpperCase(),
+  }
+
+  return sanitized
+}
