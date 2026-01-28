@@ -51,9 +51,11 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
       // Only update state if this is still the most recent request and not aborted
       if (currentRequestId === fetchGeneralStatisticsRequestCounter && !signal?.aborted) {
         set({ generalStatistics: data })
+        return data
       }
 
-      return data
+      // Return null if request was superseded or aborted to prevent callers from acting on stale/canceled results
+      return null
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts or new request starts
       const error = err as {
