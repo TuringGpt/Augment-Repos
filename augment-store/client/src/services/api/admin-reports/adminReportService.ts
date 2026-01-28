@@ -1,6 +1,7 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import type { GeneralStatisticsResponse } from '@features/admin-reports/types'
+import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 export const adminReportService = {
   /**
@@ -25,7 +26,9 @@ export const adminReportService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch general statistics:', error)
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch general statistics:', sanitizeErrorForLogging(error))
       throw error
     }
   },
