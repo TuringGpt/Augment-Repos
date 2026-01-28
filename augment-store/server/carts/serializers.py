@@ -21,6 +21,7 @@ class AddToCartSerializer(serializers.Serializer):
         if not product.check_stock(quantity):
             raise serializers.ValidationError("Quantity exceeds stock")
 
+        self.product = product
         return attrs
     
 
@@ -34,6 +35,7 @@ class AddToCartSerializer(serializers.Serializer):
         product = Product.objects.get(id=product_id)
         user_cart = Cart.objects.add_to_cart(user, product, quantity)
         return user_cart
+
 
 class UpdateCartItemSerializer(serializers.ModelSerializer):
     quantity = serializers.IntegerField(min_value=1)
