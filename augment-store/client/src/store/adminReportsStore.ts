@@ -107,7 +107,9 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
         errorName: error?.name,
       })
 
-      throw err
+      // Return null after setting error state to align with other fetch* actions in this repo
+      // This prevents unhandled promise rejections when callers use fire-and-forget patterns (e.g., in useEffect)
+      return null
     } finally {
       // Only update loading state if this is still the most recent request
       if (currentRequestId === fetchGeneralStatisticsRequestCounter) {
