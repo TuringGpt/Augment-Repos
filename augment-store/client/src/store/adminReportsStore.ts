@@ -71,9 +71,11 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
         return null
       }
 
-      // Only update error state if this is still the most recent request
+      // Don't update error state or rethrow if this request has been superseded
+      // Treat superseded-request failures similarly to cancellations to prevent unhandled promise rejections
+      // when callers use fire-and-forget patterns (e.g., in useEffect)
       if (currentRequestId !== fetchGeneralStatisticsRequestCounter) {
-        throw err
+        return null
       }
 
       // Handle different error types
