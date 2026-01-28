@@ -137,6 +137,7 @@ export const API_ENDPOINTS = {
     CUSTOMER_SEGMENTS: '/dashboard/statistics/customer_segments/',
     NEW_VS_RETURNING: '/dashboard/statistics/new_vs_returning/',
     CUSTOMER_PURCHASE_BEHAVIOR: '/dashboard/statistics/customer_purchase_behavior/',
+    CHURN_RISK: '/dashboard/statistics/churn_risk/',
   },
 }
 

@@ -9,6 +9,8 @@ import type {
   NewVsReturningParams,
   CustomerPurchaseBehaviorResponse,
   CustomerPurchaseBehaviorParams,
+  ChurnRiskResponse,
+  ChurnRiskParams,
 } from '@features/customer-retention/types'
 
 export const customerStatisticsService = {
@@ -27,10 +29,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 3650 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(3650, params.days))
+              ? Math.floor(Math.max(1, Math.min(3650, params.days)))
               : undefined,
           }
         : undefined
@@ -67,10 +70,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 3650 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(3650, params.days))
+              ? Math.floor(Math.max(1, Math.min(3650, params.days)))
               : undefined,
           }
         : undefined
@@ -106,10 +110,11 @@ export const customerStatisticsService = {
       // Validate days parameter if provided - ensure it's a finite number before clamping
       // Backend expects days as query parameter (max: 365 per backend validation)
       // Use explicit undefined check to avoid treating 0 as falsy (0 should be clamped to 1)
+      // Convert to integer first to match backend's int(value) behavior
       const validatedParams = params?.days !== undefined
         ? {
             days: Number.isFinite(params.days)
-              ? Math.max(1, Math.min(365, params.days))
+              ? Math.floor(Math.max(1, Math.min(365, params.days)))
               : undefined,
           }
         : undefined
@@ -148,14 +153,16 @@ export const customerStatisticsService = {
       const validatedParams: { days?: number; limit?: number } = {}
 
       if (params?.days !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.days = Number.isFinite(params.days)
-          ? Math.max(1, Math.min(365, params.days))
+          ? Math.floor(Math.max(1, Math.min(365, params.days)))
           : undefined
       }
 
       if (params?.limit !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
         validatedParams.limit = Number.isFinite(params.limit)
-          ? Math.max(1, Math.min(100, params.limit))
+          ? Math.floor(Math.max(1, Math.min(100, params.limit)))
           : undefined
       }
 
@@ -176,6 +183,58 @@ export const customerStatisticsService = {
       return response
     } catch (error) {
       console.error('Failed to fetch customer purchase behavior:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get customers at risk of churning based on inactivity
+   *
+   * @param params - Query parameters (limit, inactive_days)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with churn risk data
+   */
+  getChurnRisk: async (
+    params?: ChurnRiskParams,
+    signal?: AbortSignal
+  ): Promise<ChurnRiskResponse> => {
+    try {
+      // Validate parameters if provided - ensure they're finite numbers before clamping
+      // Backend expects limit (max: 100) and inactive_days (max: 365) as query parameters
+      // Use explicit undefined check to avoid treating 0 as falsy
+      const validatedParams: { limit?: number; inactive_days?: number } = {}
+
+      if (params?.limit !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
+        validatedParams.limit = Number.isFinite(params.limit)
+          ? Math.floor(Math.max(1, Math.min(100, params.limit)))
+          : undefined
+      }
+
+      if (params?.inactive_days !== undefined) {
+        // Convert to integer first to match backend's int(value) behavior
+        validatedParams.inactive_days = Number.isFinite(params.inactive_days)
+          ? Math.floor(Math.max(1, Math.min(365, params.inactive_days)))
+          : undefined
+      }
+
+      // Filter out undefined values to avoid sending empty query params like "limit=" or "inactive_days="
+      const filteredParams = Object.fromEntries(
+        Object.entries(validatedParams).filter(([_, value]) => value !== undefined)
+      )
+
+      // Backend uses GET method with limit and inactive_days as query parameters
+      const response = await apiClient.get<ChurnRiskResponse>(
+        API_ENDPOINTS.ADMIN_DASHBOARD.CHURN_RISK,
+        {
+          params: Object.keys(filteredParams).length > 0 ? filteredParams : undefined,
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch churn risk data:', error)
       throw error
     }
   },

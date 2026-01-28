@@ -241,3 +241,70 @@ export interface CustomerPurchaseBehaviorParams {
   limit?: number
 }
 
+/**
+ * Churn Risk Types
+ * These types match the backend API response from /dashboard/statistics/churn_risk/
+ */
+
+/**
+ * At-risk customer data
+ */
+export interface AtRiskCustomer {
+  /** Customer UUID */
+  customer_id: string
+  /** Customer full name */
+  customer_name: string
+  /** Customer email address */
+  customer_email: string
+  /** Date of last purchase in ISO format (YYYY-MM-DD) */
+  last_purchase_date: string
+  /** Number of days since last purchase */
+  days_since_last_purchase: number
+  /** Total number of orders placed (lifetime) */
+  total_lifetime_orders: number
+  /** Total revenue from this customer (lifetime) */
+  total_lifetime_revenue: number
+  /** Risk level: 'high' or 'medium' */
+  risk_level: 'high' | 'medium'
+  /** Average days between orders (0 for single-purchase customers) */
+  previous_avg_days_between_orders: number
+}
+
+/**
+ * Churn risk summary metrics
+ */
+export interface ChurnRiskSummary {
+  /** Total number of at-risk customers */
+  total_at_risk: number
+  /** Number of high-risk customers */
+  high_risk: number
+  /** Number of medium-risk customers */
+  medium_risk: number
+  /** Total potential revenue at risk */
+  potential_revenue_at_risk: number
+}
+
+/**
+ * Complete churn risk response from the backend
+ * Response from /api/v1/dashboard/statistics/churn_risk/
+ *
+ * Backend endpoint: GET /dashboard/statistics/churn_risk/
+ * Query params: limit (default: 50, max: 100), inactive_days (default: 60, max: 365)
+ */
+export interface ChurnRiskResponse {
+  /** List of at-risk customers with detailed metrics */
+  at_risk_customers: AtRiskCustomer[]
+  /** Overall summary of churn risk */
+  summary: ChurnRiskSummary
+}
+
+/**
+ * Query parameters for churn risk endpoint
+ */
+export interface ChurnRiskParams {
+  /** Number of at-risk customers to return (default: 50, max: 100) */
+  limit?: number
+  /** Days since last purchase to consider 'at risk' (default: 60, max: 365) */
+  inactive_days?: number
+}
+
