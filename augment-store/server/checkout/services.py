@@ -13,23 +13,36 @@ class StripeService:
     def create_payment_session(self, payment: Payment):
         from django.conf import settings
         from django.urls import reverse
+        from rest_framework.exceptions import ValidationError
 
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        items = order.items.select_related('product').all()
+        
+        if not items.exists():
+            raise ValidationError({"detail": "Order has no items to process"})
+        
+        for item in items:
+            if item.product is None:
+                raise ValidationError({"detail": f"Order item {item.id} has no associated product"})
+            if item.quantity is None or item.quantity <= 0:
+                raise ValidationError({"detail": f"Order item {item.id} has invalid quantity"})
+
+
 
         line_items = [
             {
                 "price_data": {
                     "currency": "usd",
                     "product_data": {
-                        "name": item.cart_item.product.id,
+                        "name": item.product.name,
                     },
-                    "unit_amount": int(item.cart_item.product.price * 100),
+                    "unit_amount": int(item.product.price * 100),
                 },
-
-                "quantity": item.cart_item.quantity,
+                "quantity": item.quantity,
             }
-            for item in order.items.all()
+            for item in items
         ]
 
         redirect_url = reverse("v1:checkout_payments:stripe_redirect")
@@ -44,6 +57,7 @@ class StripeService:
         payment.save()
 
         return strip_session
+
 
     def check_and_update_payment_status(self, payment: Payment):
         from django.conf import settings
