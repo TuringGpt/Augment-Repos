@@ -134,11 +134,40 @@ interface SanitizedErrorInfo {
 }
 
 /**
+ * Strip query parameters from a URL to prevent logging sensitive data
+ *
+ * @param url - The URL that may contain query parameters
+ * @returns The URL with query parameters removed, or undefined if input is undefined
+ */
+function stripQueryParams(url?: string): string | undefined {
+  if (!url) return url
+
+  try {
+    // Handle relative URLs
+    if (url.charAt(0) === '/') {
+      const questionMarkIndex = url.indexOf('?')
+      return questionMarkIndex === -1 ? url : url.substring(0, questionMarkIndex)
+    }
+
+    // Handle absolute URLs
+    const urlObj = new URL(url)
+    return `${urlObj.origin}${urlObj.pathname}`
+  } catch {
+    // If URL parsing fails, fall back to simple string manipulation
+    const questionMarkIndex = url.indexOf('?')
+    return questionMarkIndex === -1 ? url : url.substring(0, questionMarkIndex)
+  }
+}
+
+/**
  * Sanitize an Axios error for safe logging by removing sensitive information
  *
  * This function extracts only safe, non-sensitive information from an error object,
  * specifically excluding request config, headers (including Authorization), and other
  * potentially sensitive data that Axios includes in error objects.
+ *
+ * Query parameters are stripped from URLs to prevent logging sensitive data like
+ * reset tokens, API keys, or other secrets that may be passed in the URL.
  *
  * @param error - The error object from a failed API call
  * @param contextMessage - Optional fallback message used only when the error has no message
@@ -175,8 +204,8 @@ export function sanitizeErrorForLogging(
     status: axiosError?.response?.status,
     statusText: axiosError?.response?.statusText,
     message: axiosError?.response?.data?.message || axiosError?.message || contextMessage,
-    // Include only URL and method from config, never headers or other sensitive data
-    url: axiosError?.config?.url,
+    // Strip query parameters from URL to prevent logging sensitive data (e.g., reset tokens)
+    url: stripQueryParams(axiosError?.config?.url),
     method: axiosError?.config?.method?.toUpperCase(),
   }
 
