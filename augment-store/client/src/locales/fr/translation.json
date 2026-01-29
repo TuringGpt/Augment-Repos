@@ -511,7 +511,20 @@
       "subtitle": "Voir et analyser les rapports commerciaux complets",
       "workInProgress": "Travaux en Cours",
       "underDevelopment": "La page de rapports administrateur est actuellement en développement.",
-      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+      "checkBackSoon": "Revenez bientôt pour les mises à jour !",
+      "generalStats": {
+        "title": "Statistiques Générales",
+        "subtitle": "Statistiques agrégées de tous les produits",
+        "totalProducts": "Total de Produits Suivis",
+        "totalViews": "Total de Vues",
+        "totalCartAdditions": "Total d'Ajouts au Panier",
+        "totalPurchases": "Total d'Achats",
+        "views": "Vues",
+        "cartAdditions": "Ajouts au Panier",
+        "purchases": "Achats",
+        "count": "Nombre",
+        "noData": "Aucune statistique générale disponible"
+      }
     },
     "settings": "Paramètres",
     "productStatistics": {

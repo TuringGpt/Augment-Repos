@@ -511,7 +511,20 @@
       "subtitle": "Ver y analizar informes comerciales completos",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "La página de informes del administrador está actualmente en desarrollo.",
-      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!",
+      "generalStats": {
+        "title": "Estadísticas Generales",
+        "subtitle": "Estadísticas agregadas de todos los productos",
+        "totalProducts": "Total de Productos Rastreados",
+        "totalViews": "Total de Vistas",
+        "totalCartAdditions": "Total de Adiciones al Carrito",
+        "totalPurchases": "Total de Compras",
+        "views": "Vistas",
+        "cartAdditions": "Adiciones al Carrito",
+        "purchases": "Compras",
+        "count": "Cantidad",
+        "noData": "No hay estadísticas generales disponibles"
+      }
     },
     "settings": "Configuración",
     "productStatistics": {
