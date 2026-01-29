@@ -153,10 +153,10 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         query = (self.request.query_params.get('search') or "").strip()
+        
         search_filter = self.get_search_query_filter(query)
         queryset = queryset.filter(search_filter)
         
-        # Integrate SearchService for analytics tracking
         if query:
             SearchService.log_search(
                 query_string=query,
@@ -166,10 +166,12 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
             
         return queryset
 
+
 class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     cache_service_class = ProductCacheService
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+
 
 class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
