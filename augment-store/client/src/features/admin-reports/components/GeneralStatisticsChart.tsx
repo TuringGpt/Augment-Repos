@@ -121,7 +121,8 @@ const GeneralStatisticsChart = ({ data, isLoading = false }: GeneralStatisticsCh
         {t('admin.reportsPage.generalStats.subtitle')}
       </Typography>
 
-      {isLoading ? (
+      {/* Show loading spinner when actively loading OR when no data exists yet (initial state) */}
+      {isLoading || !data ? (
         <Box
           sx={{
             display: 'flex',
@@ -130,9 +131,15 @@ const GeneralStatisticsChart = ({ data, isLoading = false }: GeneralStatisticsCh
             height: 300,
           }}
         >
-          <CircularProgress size={40} />
+          {isLoading ? (
+            <CircularProgress size={40} />
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              {t('admin.reportsPage.generalStats.noData')}
+            </Typography>
+          )}
         </Box>
-      ) : data ? (
+      ) : (
         <>
           {/* Metric Cards */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -186,23 +193,11 @@ const GeneralStatisticsChart = ({ data, isLoading = false }: GeneralStatisticsCh
             </ResponsiveContainer>
           </Box>
         </>
-      ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 300,
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            {t('admin.reportsPage.generalStats.noData')}
-          </Typography>
-        </Box>
       )}
     </Paper>
   )
 }
+
 
 export default GeneralStatisticsChart
 
