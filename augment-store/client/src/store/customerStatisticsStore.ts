@@ -9,6 +9,8 @@ import type {
   NewVsReturningParams,
   CustomerPurchaseBehaviorResponse,
   CustomerPurchaseBehaviorParams,
+  ChurnRiskResponse,
+  ChurnRiskParams,
 } from '@features/customer-retention/types'
 
 interface CustomerStatisticsState {
@@ -17,32 +19,38 @@ interface CustomerStatisticsState {
   customerSegments: CustomerSegmentsResponse | null
   newVsReturning: NewVsReturningResponse | null
   customerPurchaseBehavior: CustomerPurchaseBehaviorResponse | null
+  churnRisk: ChurnRiskResponse | null
 
   // Loading state
   isCustomerRetentionLoading: boolean
   isCustomerSegmentsLoading: boolean
   isNewVsReturningLoading: boolean
   isCustomerPurchaseBehaviorLoading: boolean
+  isChurnRiskLoading: boolean
 
   // Error state
   customerRetentionError: string | null
   customerSegmentsError: string | null
   newVsReturningError: string | null
   customerPurchaseBehaviorError: string | null
+  churnRiskError: string | null
 
   // Actions
   fetchCustomerRetention: (params?: CustomerRetentionParams, signal?: AbortSignal) => Promise<void>
   fetchCustomerSegments: (params?: CustomerSegmentsParams, signal?: AbortSignal) => Promise<void>
   fetchNewVsReturning: (params?: NewVsReturningParams, signal?: AbortSignal) => Promise<void>
   fetchCustomerPurchaseBehavior: (params?: CustomerPurchaseBehaviorParams, signal?: AbortSignal) => Promise<void>
+  fetchChurnRisk: (params?: ChurnRiskParams, signal?: AbortSignal) => Promise<void>
   clearCustomerRetentionError: () => void
   clearCustomerSegmentsError: () => void
   clearNewVsReturningError: () => void
   clearCustomerPurchaseBehaviorError: () => void
+  clearChurnRiskError: () => void
   clearCustomerRetention: () => void
   clearCustomerSegments: () => void
   clearNewVsReturning: () => void
   clearCustomerPurchaseBehavior: () => void
+  clearChurnRisk: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -51,6 +59,7 @@ let customerRetentionRequestCounter = 0
 let customerSegmentsRequestCounter = 0
 let newVsReturningRequestCounter = 0
 let customerPurchaseBehaviorRequestCounter = 0
+let churnRiskRequestCounter = 0
 
 export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) => ({
   // Initial state
@@ -58,14 +67,17 @@ export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) 
   customerSegments: null,
   newVsReturning: null,
   customerPurchaseBehavior: null,
+  churnRisk: null,
   isCustomerRetentionLoading: false,
   isCustomerSegmentsLoading: false,
   isNewVsReturningLoading: false,
   isCustomerPurchaseBehaviorLoading: false,
+  isChurnRiskLoading: false,
   customerRetentionError: null,
   customerSegmentsError: null,
   newVsReturningError: null,
   customerPurchaseBehaviorError: null,
+  churnRiskError: null,
 
   // Actions
   fetchCustomerRetention: async (params?: CustomerRetentionParams, signal?: AbortSignal) => {
@@ -325,6 +337,71 @@ export const useCustomerStatisticsStore = create<CustomerStatisticsState>((set) 
       customerPurchaseBehavior: null,
       customerPurchaseBehaviorError: null,
       isCustomerPurchaseBehaviorLoading: false,
+    })
+  },
+
+  fetchChurnRisk: async (params?: ChurnRiskParams, signal?: AbortSignal) => {
+    const requestId = ++churnRiskRequestCounter
+
+    try {
+      set({ isChurnRiskLoading: true, churnRiskError: null })
+
+      const data = await customerStatisticsService.getChurnRisk(params, signal)
+
+      // Only update state if this is still the latest request
+      if (requestId === churnRiskRequestCounter) {
+        set({
+          churnRisk: data,
+          isChurnRiskLoading: false,
+        })
+      }
+    } catch (error: unknown) {
+      // Ignore abort errors
+      const err = error as { name?: string; response?: { status?: number; data?: { message?: string } }; message?: string }
+
+      if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+        // Reset loading state if this was the latest request to prevent UI from getting stuck
+        if (requestId === churnRiskRequestCounter) {
+          set({ isChurnRiskLoading: false })
+        }
+        return
+      }
+
+      // Only update error state if this is still the latest request
+      if (requestId === churnRiskRequestCounter) {
+        let errorMessage = 'Failed to load churn risk data'
+
+        if (err?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view churn risk data'
+        } else if (err?.response?.status === 401) {
+          errorMessage = 'Please log in to view churn risk data'
+        } else if (err?.response?.data?.message) {
+          errorMessage = err.response.data.message
+        } else if (err?.message) {
+          errorMessage = err.message
+        }
+
+        set({
+          churnRiskError: errorMessage,
+          isChurnRiskLoading: false,
+        })
+      }
+    }
+  },
+
+  clearChurnRiskError: () => {
+    set({ churnRiskError: null })
+  },
+
+  clearChurnRisk: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    churnRiskRequestCounter += 1
+
+    set({
+      churnRisk: null,
+      churnRiskError: null,
+      isChurnRiskLoading: false,
     })
   },
 }))
