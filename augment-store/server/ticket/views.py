@@ -63,7 +63,8 @@ class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
 class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
     lookup_url_kwarg = 'comment_pk'
-    http_method_names = ['get', 'delete', 'head', 'options']
+    http_method_names = ['delete', 'head', 'options']
+
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
