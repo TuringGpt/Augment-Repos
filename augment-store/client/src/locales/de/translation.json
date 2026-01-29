@@ -511,7 +511,20 @@
       "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
       "workInProgress": "In Arbeit",
       "underDevelopment": "Die Admin-Berichtsseite befindet sich derzeit in der Entwicklung.",
-      "checkBackSoon": "Schauen Sie bald wieder vorbei!"
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "generalStats": {
+        "title": "Allgemeine Statistiken",
+        "subtitle": "Aggregierte Statistiken über alle Produkte",
+        "totalProducts": "Gesamtzahl verfolgter Produkte",
+        "totalViews": "Gesamtaufrufe",
+        "totalCartAdditions": "Gesamtzahl Warenkorbhinzufügungen",
+        "totalPurchases": "Gesamtkäufe",
+        "views": "Aufrufe",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "noData": "Keine allgemeinen Statistiken verfügbar"
+      }
     },
     "settings": "Einstellungen",
     "productStatistics": {

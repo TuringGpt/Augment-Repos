@@ -511,7 +511,20 @@
       "subtitle": "View and analyze comprehensive business reports",
       "workInProgress": "Work in Progress",
       "underDevelopment": "The admin reports page is currently under development.",
-      "checkBackSoon": "Check back soon for updates!"
+      "checkBackSoon": "Check back soon for updates!",
+      "generalStats": {
+        "title": "General Statistics",
+        "subtitle": "All-time aggregated statistics across all products",
+        "totalProducts": "Total Products Tracked",
+        "totalViews": "Total Views",
+        "totalCartAdditions": "Total Cart Additions",
+        "totalPurchases": "Total Purchases",
+        "views": "Views",
+        "cartAdditions": "Cart Additions",
+        "purchases": "Purchases",
+        "count": "Count",
+        "noData": "No general statistics available"
+      }
     },
     "settings": "Settings",
     "productStatistics": {
