@@ -121,7 +121,7 @@ const GeneralStatisticsChart = ({ data, isLoading = false }: GeneralStatisticsCh
         {t('admin.reportsPage.generalStats.subtitle')}
       </Typography>
 
-      {/* Show loading spinner when actively loading OR when no data exists yet (initial state) */}
+      {/* Show loading spinner when actively loading, or "no data" message when data doesn't exist */}
       {isLoading || !data ? (
         <Box
           sx={{
