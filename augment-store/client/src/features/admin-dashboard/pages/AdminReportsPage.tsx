@@ -61,6 +61,7 @@ const AdminReportsPage = () => {
   }
 
   const handleRefresh = () => {
+    clearError()
     loadGeneralStatistics()
   }
 
