@@ -1,3 +1,4 @@
+from django.db.models import Q
 from products.models import ProductBrand, Product
 from checkout.models import Order
 from rest_framework.generics import ListAPIView
@@ -51,6 +52,8 @@ class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     ]
 
     def get_queryset(self):
+        user = self.request.user
         return super().get_queryset().filter(
-            items__product__brand__created_by=self.request.user
+            Q(items__product__brand__created_by=user) |
+            Q(items__cart_item__product__brand__created_by=user)
         ).distinct()
