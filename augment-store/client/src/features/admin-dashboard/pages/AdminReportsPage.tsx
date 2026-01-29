@@ -48,6 +48,9 @@ const AdminReportsPage = () => {
   }, [isAuthenticated, user?.role])
 
   const loadGeneralStatistics = () => {
+    // Clear any stale error from previous visits to prevent brief flash of old error
+    clearError()
+
     // Abort any existing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
