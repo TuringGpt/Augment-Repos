@@ -91,12 +91,12 @@ class AddToWishlistSerializer(serializers.ModelSerializer):
         fields = ["product_ids","products", "created_at", "updated_at"]
 
     def validate_product_ids(self, value):
+        existing_ids = set(Product.objects.filter(id__in=value).values_list('id', flat=True))
         for product_id in value:
-            try:
-                Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
+            if product_id not in existing_ids:
                 raise serializers.ValidationError(f"Product {product_id} does not exist")
         return value
+
     
     def create(self, validated_data):
         user = self.context.get("request").user
@@ -106,18 +106,20 @@ class AddToWishlistSerializer(serializers.ModelSerializer):
     
 
 
+
         
 
 class RemoveFromWishlistSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.UUIDField())
 
     def validate_product_ids(self, value):
+        existing_ids = set(Product.objects.filter(id__in=value).values_list('id', flat=True))
         for product_id in value:
-            try:
-                Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
+            if product_id not in existing_ids:
                 raise serializers.ValidationError(f"Product {product_id} does not exist")
         return value
+
+
     
 
 class WishlistDetailSerializer(serializers.ModelSerializer):
