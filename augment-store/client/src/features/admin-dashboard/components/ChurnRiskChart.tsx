@@ -241,7 +241,10 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                       </TableCell>
                       <TableCell align="right">{customer.total_lifetime_orders}</TableCell>
                       <TableCell align="right">
-                        ${customer.total_lifetime_revenue.toFixed(2)}
+                        ${customer.total_lifetime_revenue.toLocaleString(localeString, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </TableCell>
                       <TableCell align="right">
                         {customer.previous_avg_days_between_orders > 0
