@@ -589,6 +589,7 @@
         "actions": "Acciones",
         "viewProduct": "Ver Producto",
         "noData": "No hay estadísticas de productos disponibles",
+        "noResultsFound": "No se encontraron productos que coincidan con su búsqueda",
         "rowsPerPage": "Filas por página"
       }
     },
