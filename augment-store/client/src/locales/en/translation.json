@@ -571,6 +571,25 @@
         "actions": "Actions",
         "viewProduct": "View product details",
         "rowsPerPage": "Rows per page"
+      },
+      "productStatisticsView": {
+        "title": "Product Statistics View",
+        "subtitle": "Comprehensive product performance metrics and analytics",
+        "refresh": "Refresh statistics",
+        "searchPlaceholder": "Search products by name...",
+        "productName": "Product Name",
+        "price": "Price",
+        "views": "Views",
+        "cartAdds": "Cart Adds",
+        "cartRemoves": "Cart Removes",
+        "purchases": "Purchases",
+        "conversionRate": "Conversion Rate",
+        "cartConversion": "Cart Conversion",
+        "abandonmentRate": "Abandonment Rate",
+        "actions": "Actions",
+        "viewProduct": "View product details",
+        "noData": "No product statistics available",
+        "noResultsFound": "No products found matching your search"
       }
     },
     "productPerformance": {
@@ -588,25 +607,6 @@
       "abandonmentRate": "Abandonment Rate",
       "conversionRate": "Conversion Rate",
       "engagementRatio": "Engagement Ratio"
-    },
-    "productStatisticsView": {
-      "title": "Product Statistics View",
-      "subtitle": "Comprehensive product performance metrics and analytics",
-      "refresh": "Refresh statistics",
-      "searchPlaceholder": "Search products by name...",
-      "productName": "Product Name",
-      "price": "Price",
-      "views": "Views",
-      "cartAdds": "Cart Adds",
-      "cartRemoves": "Cart Removes",
-      "purchases": "Purchases",
-      "conversionRate": "Conversion Rate",
-      "cartConversion": "Cart Conversion",
-      "abandonmentRate": "Abandonment Rate",
-      "actions": "Actions",
-      "viewProduct": "View product details",
-      "noData": "No product statistics available",
-      "noResultsFound": "No products found matching your search"
     },
     "categoriesPage": {
       "title": "Categories",

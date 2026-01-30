@@ -173,13 +173,13 @@ const ProductStatisticsViewPage = () => {
         <Box>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
             <AssessmentIcon fontSize="large" />
-            {t('admin.productStatisticsView.title')}
+            {t('admin.productStatistics.productStatisticsView.title')}
           </Typography>
           <Typography color="text.secondary">
-            {t('admin.productStatisticsView.subtitle')}
+            {t('admin.productStatistics.productStatisticsView.subtitle')}
           </Typography>
         </Box>
-        <Tooltip title={t('admin.productStatisticsView.refresh')}>
+        <Tooltip title={t('admin.productStatistics.productStatisticsView.refresh')}>
           <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
             <RefreshIcon />
           </IconButton>
@@ -190,7 +190,7 @@ const ProductStatisticsViewPage = () => {
       <Paper sx={{ p: 2, mb: 3 }}>
         <TextField
           fullWidth
-          placeholder={t('admin.productStatisticsView.searchPlaceholder')}
+          placeholder={t('admin.productStatistics.productStatisticsView.searchPlaceholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{
@@ -224,43 +224,43 @@ const ProductStatisticsViewPage = () => {
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.productName')}
+                  {t('admin.productStatistics.productStatisticsView.productName')}
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.price')}
+                  {t('admin.productStatistics.productStatisticsView.price')}
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                     <VisibilityIcon fontSize="small" />
-                    {t('admin.productStatisticsView.views')}
+                    {t('admin.productStatistics.productStatisticsView.views')}
                   </Box>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                     <ShoppingCartIcon fontSize="small" />
-                    {t('admin.productStatisticsView.cartAdds')}
+                    {t('admin.productStatistics.productStatisticsView.cartAdds')}
                   </Box>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.cartRemoves')}
+                  {t('admin.productStatistics.productStatisticsView.cartRemoves')}
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                     <TrendingUpIcon fontSize="small" />
-                    {t('admin.productStatisticsView.purchases')}
+                    {t('admin.productStatistics.productStatisticsView.purchases')}
                   </Box>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.conversionRate')}
+                  {t('admin.productStatistics.productStatisticsView.conversionRate')}
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.cartConversion')}
+                  {t('admin.productStatistics.productStatisticsView.cartConversion')}
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.abandonmentRate')}
+                  {t('admin.productStatistics.productStatisticsView.abandonmentRate')}
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 'bold', bgcolor: 'primary.main', color: 'white' }}>
-                  {t('admin.productStatisticsView.actions')}
+                  {t('admin.productStatistics.productStatisticsView.actions')}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -276,8 +276,8 @@ const ProductStatisticsViewPage = () => {
                   <TableCell colSpan={10} align="center" sx={{ py: 8 }}>
                     <Typography color="text.secondary">
                       {debouncedSearchQuery
-                        ? t('admin.productStatisticsView.noResultsFound')
-                        : t('admin.productStatisticsView.noData')}
+                        ? t('admin.productStatistics.productStatisticsView.noResultsFound')
+                        : t('admin.productStatistics.productStatisticsView.noData')}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -359,7 +359,7 @@ const ProductStatisticsViewPage = () => {
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Tooltip title={t('admin.productStatisticsView.viewProduct')}>
+                        <Tooltip title={t('admin.productStatistics.productStatisticsView.viewProduct')}>
                           <IconButton
                             size="small"
                             color="primary"
