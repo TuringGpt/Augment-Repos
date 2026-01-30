@@ -35,6 +35,7 @@ import { useDebounce } from '@hooks/useDebounce'
 import { useAuthStore } from '@store/authStore'
 import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
 
 /**
  * ProductStatisticsViewPage Component
@@ -110,7 +111,7 @@ const ProductStatisticsViewPage = () => {
   }
 
   const handleViewProduct = (productId: string) => {
-    navigate(`/products/${productId}`)
+    navigate(ROUTES.PRODUCT_DETAIL.replace(':id', productId))
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +157,7 @@ const ProductStatisticsViewPage = () => {
         <Alert severity="warning" sx={{ mb: 3 }}>
           {t('admin.dashboard.pleaseLogin')}
         </Alert>
-        <Button variant="contained" onClick={() => navigate('/login')}>
+        <Button variant="contained" onClick={() => navigate(ROUTES.LOGIN)}>
           {t('admin.dashboard.goToLogin')}
         </Button>
       </Container>
@@ -169,7 +170,7 @@ const ProductStatisticsViewPage = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {t('admin.dashboard.accessDenied')}
         </Alert>
-        <Button variant="contained" onClick={() => navigate('/')}>
+        <Button variant="contained" onClick={() => navigate(ROUTES.HOME)}>
           {t('admin.dashboard.goToHome')}
         </Button>
       </Container>
