@@ -125,17 +125,17 @@ const ProductStatisticsViewPage = () => {
 
   // Calculate metrics
   const calculateConversionRate = (views: number, purchases: number) => {
-    if (views === 0) return 0
+    if (views === 0) return '0.00'
     return ((purchases / views) * 100).toFixed(2)
   }
 
   const calculateCartConversionRate = (cartAdds: number, purchases: number) => {
-    if (cartAdds === 0) return 0
+    if (cartAdds === 0) return '0.00'
     return ((purchases / cartAdds) * 100).toFixed(2)
   }
 
   const calculateAbandonmentRate = (cartAdds: number, cartRemoves: number) => {
-    if (cartAdds === 0) return 0
+    if (cartAdds === 0) return '0.00'
     return ((cartRemoves / cartAdds) * 100).toFixed(2)
   }
 
