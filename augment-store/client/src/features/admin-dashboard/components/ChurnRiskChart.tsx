@@ -48,6 +48,10 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   const normalizedLanguage = i18n.language.split('-')[0]
   const currentLocale = localeMap[normalizedLanguage as keyof typeof localeMap] || enUS
 
+  // Get the current locale string for number formatting (BCP 47 language tag)
+  // This ensures numbers are formatted according to the user's selected language
+  const localeString = i18n.language || 'en-US'
+
   // Get risk level color
   const getRiskColor = (riskLevel: 'high' | 'medium') => {
     return riskLevel === 'high' ? theme.palette.error.main : theme.palette.warning.main
@@ -101,7 +105,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                     {t('admin.churnRisk.summary.totalAtRisk')}
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ color: 'error.main' }}>
-                    {data.summary.total_at_risk.toLocaleString()}
+                    {data.summary.total_at_risk.toLocaleString(localeString)}
                   </Typography>
                 </Box>
               </Box>
@@ -119,7 +123,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
               >
                 <Box sx={{ color: 'error.main' }}>
                   <Typography variant="h6" fontWeight={700}>
-                    {data.summary.high_risk.toLocaleString()}
+                    {data.summary.high_risk.toLocaleString(localeString)}
                   </Typography>
                 </Box>
                 <Box>
@@ -142,7 +146,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
               >
                 <Box sx={{ color: 'warning.main' }}>
                   <Typography variant="h6" fontWeight={700}>
-                    {data.summary.medium_risk.toLocaleString()}
+                    {data.summary.medium_risk.toLocaleString(localeString)}
                   </Typography>
                 </Box>
                 <Box>
@@ -164,7 +168,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                   {t('admin.churnRisk.summary.potentialRevenueAtRisk')}
                 </Typography>
                 <Typography variant="h6" fontWeight={700} sx={{ color: 'error.main' }}>
-                  ${data.summary.potential_revenue_at_risk.toLocaleString(undefined, {
+                  ${data.summary.potential_revenue_at_risk.toLocaleString(localeString, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
