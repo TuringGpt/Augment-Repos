@@ -62,20 +62,20 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   const formatDate = (dateString: string) => {
     // Guard against invalid dates to prevent crashes from backend anomalies
     if (!dateString || typeof dateString !== 'string' || dateString.trim() === '') {
-      return 'N/A'
+      return t('admin.churnRisk.notAvailable')
     }
 
     try {
       const date = parseISO(dateString)
       // Check if the parsed date is valid
       if (isNaN(date.getTime())) {
-        return 'N/A'
+        return t('admin.churnRisk.notAvailable')
       }
       return format(date, 'PPP', { locale: currentLocale })
     } catch (error) {
       // If parsing fails, return a fallback value instead of crashing
       console.warn(`Invalid date string received: "${dateString}"`, error)
-      return 'N/A'
+      return t('admin.churnRisk.notAvailable')
     }
   }
 
@@ -249,7 +249,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                       <TableCell align="right">
                         {customer.previous_avg_days_between_orders > 0
                           ? customer.previous_avg_days_between_orders.toFixed(0)
-                          : 'N/A'}
+                          : t('admin.churnRisk.notAvailable')}
                       </TableCell>
                     </TableRow>
                   ))}

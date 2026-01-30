@@ -837,6 +837,7 @@
     "churnRisk": {
       "title": "Risque d'Attrition des Clients",
       "noData": "Aucun client à risque d'attrition",
+      "notAvailable": "N/D",
       "summary": {
         "totalAtRisk": "Total à Risque",
         "highRisk": "Risque Élevé",

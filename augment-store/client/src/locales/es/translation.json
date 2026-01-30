@@ -837,6 +837,7 @@
     "churnRisk": {
       "title": "Riesgo de Abandono de Clientes",
       "noData": "No hay clientes en riesgo de abandono",
+      "notAvailable": "N/D",
       "summary": {
         "totalAtRisk": "Total en Riesgo",
         "highRisk": "Alto Riesgo",

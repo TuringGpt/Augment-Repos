@@ -837,6 +837,7 @@
     "churnRisk": {
       "title": "Customer Churn Risk",
       "noData": "No customers at risk of churning",
+      "notAvailable": "N/A",
       "summary": {
         "totalAtRisk": "Total At Risk",
         "highRisk": "High Risk",
