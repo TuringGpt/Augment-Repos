@@ -126,8 +126,10 @@ const ProductStatisticsViewPage = () => {
 
   // When search is active, reset to page 0 if current page exceeds filtered results
   useEffect(() => {
-    if (debouncedSearchQuery && filteredProducts.length > 0) {
-      const maxPage = Math.ceil(filteredProducts.length / rowsPerPage) - 1
+    if (debouncedSearchQuery) {
+      const maxPage = filteredProducts.length > 0
+        ? Math.ceil(filteredProducts.length / rowsPerPage) - 1
+        : 0
       if (page > maxPage) {
         setPage(0)
       }
