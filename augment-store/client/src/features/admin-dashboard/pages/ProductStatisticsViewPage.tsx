@@ -72,7 +72,7 @@ const ProductStatisticsViewPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiPage, rowsPerPage, debouncedSearchQuery, isAuthenticated, user?.role])
+  }, [apiPage, rowsPerPage, isAuthenticated, user?.role])
 
   const loadStatistics = async () => {
     if (abortControllerRef.current) {
