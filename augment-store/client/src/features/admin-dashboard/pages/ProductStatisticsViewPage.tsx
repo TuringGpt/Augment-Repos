@@ -62,6 +62,11 @@ const ProductStatisticsViewPage = () => {
   // Calculate current page for API (1-based)
   const apiPage = page + 1
 
+  // Reset page to 0 when debounced search query changes
+  useEffect(() => {
+    setPage(0)
+  }, [debouncedSearchQuery])
+
   // Fetch statistics on mount and when page/rowsPerPage/search changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
@@ -117,7 +122,7 @@ const ProductStatisticsViewPage = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
-    setPage(0) // Reset to first page when search changes
+    // Page reset is handled by useEffect watching debouncedSearchQuery
   }
 
   // Use server-filtered results directly
