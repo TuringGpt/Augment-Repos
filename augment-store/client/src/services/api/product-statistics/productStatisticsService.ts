@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import type {
@@ -13,6 +14,30 @@ import type {
   ProductPerformanceResponse,
   ProductPerformanceParams,
 } from '@features/product-statistics/types'
+
+/**
+ * Check if an error is a cancellation error
+ * Uses multiple detection methods for reliability across Axios versions
+ */
+function isCancelError(error: unknown): boolean {
+  // Method 1: Use Axios's built-in isCancel utility (most reliable)
+  if (axios.isCancel(error)) {
+    return true
+  }
+
+  // Method 2: Check error.code for 'ERR_CANCELED' (Axios standard)
+  const err = error as { code?: string; name?: string }
+  if (err?.code === 'ERR_CANCELED') {
+    return true
+  }
+
+  // Method 3: Fallback to error.name for older patterns
+  if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+    return true
+  }
+
+  return false
+}
 
 export const productStatisticsService = {
   /**
@@ -38,8 +63,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal pagination/search
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch product statistics:', error)
       }
       throw error
@@ -68,8 +92,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal navigation
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch product statistics by ID:', error)
       }
       throw error
@@ -99,8 +122,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal usage
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch best selling products:', error)
       }
       throw error
@@ -130,8 +152,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal usage
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch most viewed products:', error)
       }
       throw error
@@ -161,8 +182,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal usage
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch most added to cart products:', error)
       }
       throw error
@@ -197,8 +217,7 @@ export const productStatisticsService = {
       return response
     } catch (error) {
       // Don't log abort/cancel errors - they're expected during normal usage
-      const err = error as { name?: string }
-      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+      if (!isCancelError(error)) {
         console.error('Failed to fetch product performance:', error)
       }
       throw error
