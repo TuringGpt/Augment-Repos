@@ -18,6 +18,7 @@ import Sidebar from '@components/Sidebar'
 import BottomNavigation from '@components/BottomNavigation'
 import PageTransition from '@components/PageTransition'
 import CartDrawer from '@features/cart/components/CartDrawer'
+import { ROUTES } from '@constants/index'
 
 const DRAWER_WIDTH = 260
 
@@ -48,7 +49,7 @@ const AdminLayout = () => {
       labelKey: 'admin.products',
       path: '/admin/products',
       icon: <ProductsIcon />,
-      activePaths: ['/admin/products', '/admin/products/all', '/admin/products/statistics'],
+      activePaths: [ROUTES.ADMIN_PRODUCTS, ROUTES.ADMIN_PRODUCTS_ALL, ROUTES.ADMIN_PRODUCTS_STATISTICS],
     },
     {
       labelKey: 'admin.categories',
