@@ -532,6 +532,7 @@
       "subtitle": "Ver análisis detallados y métricas de rendimiento de todos los productos",
       "refresh": "Actualizar estadísticas",
       "viewAllProducts": "Ver Todos los Productos",
+      "viewStatisticsTable": "Ver Tabla de Estadísticas",
       "noData": "No hay estadísticas de productos disponibles",
       "noDataOnPage": "No hay productos en esta página. Por favor, navegue a una página diferente.",
       "bestSelling": {
@@ -569,6 +570,25 @@
         "purchases": "Compras",
         "actions": "Acciones",
         "viewProduct": "Ver detalles del producto",
+        "rowsPerPage": "Filas por página"
+      },
+      "productStatisticsView": {
+        "title": "Estadísticas de Productos - Vista de Tabla",
+        "subtitle": "Análisis completo de métricas de rendimiento de productos con tasas de conversión calculadas",
+        "refresh": "Actualizar estadísticas",
+        "searchPlaceholder": "Buscar productos...",
+        "productName": "Nombre del Producto",
+        "price": "Precio",
+        "views": "Vistas",
+        "cartAdds": "Añadidos al Carrito",
+        "cartRemoves": "Eliminados del Carrito",
+        "purchases": "Compras",
+        "conversionRate": "Tasa de Conversión",
+        "cartConversion": "Conversión del Carrito",
+        "abandonmentRate": "Tasa de Abandono",
+        "actions": "Acciones",
+        "viewProduct": "Ver Producto",
+        "noData": "No hay estadísticas de productos disponibles",
         "rowsPerPage": "Filas por página"
       }
     },

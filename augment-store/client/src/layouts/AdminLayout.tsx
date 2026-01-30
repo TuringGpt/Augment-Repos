@@ -25,6 +25,7 @@ interface NavItem {
   labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.settings'
   path: string
   icon: React.ReactNode
+  activePaths?: string[] // Additional paths that should make this item active
 }
 
 const AdminLayout = () => {
@@ -47,6 +48,7 @@ const AdminLayout = () => {
       labelKey: 'admin.products',
       path: '/admin/products',
       icon: <ProductsIcon />,
+      activePaths: ['/admin/products', '/admin/products/all', '/admin/products/statistics'],
     },
     {
       labelKey: 'admin.categories',
@@ -75,7 +77,17 @@ const AdminLayout = () => {
     },
   ]
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = (item: NavItem) => {
+    // Check if current path matches the item's path
+    if (location.pathname === item.path) return true
+
+    // Check if current path matches any of the item's active paths
+    if (item.activePaths) {
+      return item.activePaths.includes(location.pathname)
+    }
+
+    return false
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -114,7 +126,7 @@ const AdminLayout = () => {
               <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
                   onClick={() => navigate(item.path)}
-                  selected={isActive(item.path)}
+                  selected={isActive(item)}
                   sx={{
                     mx: 1,
                     borderRadius: 1,
@@ -135,7 +147,7 @@ const AdminLayout = () => {
                 >
                   <ListItemIcon
                     sx={{
-                      color: isActive(item.path) ? 'white' : 'text.secondary',
+                      color: isActive(item) ? 'white' : 'text.secondary',
                       minWidth: 40,
                     }}
                   >
@@ -144,7 +156,7 @@ const AdminLayout = () => {
                   <ListItemText
                     primary={t(item.labelKey)}
                     primaryTypographyProps={{
-                      fontWeight: isActive(item.path) ? 600 : 400,
+                      fontWeight: isActive(item) ? 600 : 400,
                       fontSize: '0.95rem',
                     }}
                   />

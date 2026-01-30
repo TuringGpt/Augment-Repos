@@ -26,6 +26,7 @@ import {
   ShoppingCart as ShoppingCartIcon,
   RemoveShoppingCart as RemoveCartIcon,
   List as ListIcon,
+  BarChart as BarChartIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -333,6 +334,13 @@ const AdminProductsPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<BarChartIcon />}
+            onClick={() => navigate('/admin/products/statistics')}
+          >
+            {t('admin.productStatistics.viewStatisticsTable')}
+          </Button>
           <Button
             variant="outlined"
             startIcon={<ListIcon />}
