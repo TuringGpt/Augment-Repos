@@ -88,7 +88,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
         </Typography>
       </Box>
 
-      {isLoading ? (
+      {isLoading || !data ? (
         <Box
           sx={{
             display: 'flex',
@@ -99,7 +99,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
         >
           <CircularProgress size={40} />
         </Box>
-      ) : data ? (
+      ) : (
         <>
           {/* Summary Metrics */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -276,19 +276,6 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
             </Box>
           )}
         </>
-      ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: 400,
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            {t('admin.churnRisk.noData')}
-          </Typography>
-        </Box>
       )}
     </Paper>
   )
