@@ -18,6 +18,7 @@ import {
   TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material'
 import { parseISO, format } from 'date-fns'
+import { enUS, es, fr, de } from 'date-fns/locale'
 import { useTranslation } from '@hooks/useTranslation'
 import type { ChurnRiskResponse } from '@features/customer-retention/types'
 
@@ -26,13 +27,24 @@ interface ChurnRiskChartProps {
   isLoading?: boolean
 }
 
+// Map i18n language codes to date-fns locales
+const localeMap = {
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+}
+
 /**
  * ChurnRiskChart Component
  * Displays customers at risk of churning with risk levels and metrics
  */
 const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   const theme = useTheme()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  // Get the current locale for date formatting
+  const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || enUS
 
   // Get risk level color
   const getRiskColor = (riskLevel: 'high' | 'medium') => {
@@ -40,9 +52,10 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   }
 
   // Format date - using parseISO for timezone-stable parsing of YYYY-MM-DD dates
+  // and respecting the user's selected language for date formatting
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString)
-    return format(date, 'MMM d, yyyy')
+    return format(date, 'PPP', { locale: currentLocale })
   }
 
   return (
