@@ -833,6 +833,29 @@
         "noCategoryData": "Aucune donnée de préférence de catégorie disponible pour la période sélectionnée",
         "noPaymentData": "Aucune donnée de méthode de paiement disponible pour la période sélectionnée"
       }
+    },
+    "churnRisk": {
+      "title": "Risque d'Attrition des Clients",
+      "noData": "Aucun client à risque d'attrition",
+      "summary": {
+        "totalAtRisk": "Total à Risque",
+        "highRisk": "Risque Élevé",
+        "mediumRisk": "Risque Moyen",
+        "potentialRevenueAtRisk": "Revenus Potentiels à Risque"
+      },
+      "table": {
+        "customer": "Client",
+        "lastPurchase": "Dernier Achat",
+        "daysInactive": "Jours d'Inactivité",
+        "lifetimeOrders": "Commandes Totales",
+        "lifetimeRevenue": "Revenus Totaux",
+        "riskLevel": "Niveau de Risque",
+        "avgDaysBetweenOrders": "Jours Moyens Entre Commandes"
+      },
+      "riskLevels": {
+        "high": "ÉLEVÉ",
+        "medium": "MOYEN"
+      }
     }
   }
 }

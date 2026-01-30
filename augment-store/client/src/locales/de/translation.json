@@ -833,6 +833,29 @@
         "noCategoryData": "Keine Kategoriepräferenzdaten für den ausgewählten Zeitraum verfügbar",
         "noPaymentData": "Keine Zahlungsmethodendaten für den ausgewählten Zeitraum verfügbar"
       }
+    },
+    "churnRisk": {
+      "title": "Kundenabwanderungsrisiko",
+      "noData": "Keine Kunden mit Abwanderungsrisiko",
+      "summary": {
+        "totalAtRisk": "Gesamt Gefährdet",
+        "highRisk": "Hohes Risiko",
+        "mediumRisk": "Mittleres Risiko",
+        "potentialRevenueAtRisk": "Potenzielle Umsätze in Gefahr"
+      },
+      "table": {
+        "customer": "Kunde",
+        "lastPurchase": "Letzter Kauf",
+        "daysInactive": "Tage Inaktiv",
+        "lifetimeOrders": "Gesamtbestellungen",
+        "lifetimeRevenue": "Gesamtumsatz",
+        "riskLevel": "Risikoniveau",
+        "avgDaysBetweenOrders": "Durchschn. Tage Zwischen Bestellungen"
+      },
+      "riskLevels": {
+        "high": "HOCH",
+        "medium": "MITTEL"
+      }
     }
   }
 }
