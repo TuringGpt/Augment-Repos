@@ -58,17 +58,20 @@ const ProductStatisticsViewPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedSearchQuery = useDebounce(searchQuery, 500)
   const abortControllerRef = useRef<AbortController | null>(null)
-
-  // Calculate current page for API (1-based)
-  const apiPage = page + 1
-
-  // Reset page to 0 when debounced search query changes
-  useEffect(() => {
-    setPage(0)
-  }, [debouncedSearchQuery])
+  const previousSearchQueryRef = useRef<string>(debouncedSearchQuery)
 
   // Fetch statistics on mount and when page/rowsPerPage/search changes
+  // Also handles resetting page to 0 when search query changes
   useEffect(() => {
+    // Reset page to 0 when search query changes (before fetching)
+    if (debouncedSearchQuery !== previousSearchQueryRef.current) {
+      previousSearchQueryRef.current = debouncedSearchQuery
+      if (page !== 0) {
+        setPage(0)
+        return // Skip fetch, let the page change trigger a new effect run
+      }
+    }
+
     if (isAuthenticated && user?.role === 'admin') {
       loadStatistics()
     }
@@ -78,7 +81,7 @@ const ProductStatisticsViewPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiPage, rowsPerPage, debouncedSearchQuery, isAuthenticated, user?.role])
+  }, [page, rowsPerPage, debouncedSearchQuery, isAuthenticated, user?.role])
 
   const loadStatistics = async () => {
     if (abortControllerRef.current) {
@@ -91,7 +94,7 @@ const ProductStatisticsViewPage = () => {
     try {
       await fetchStatistics(
         {
-          page: apiPage,
+          page: page + 1, // API uses 1-based page numbering
           page_size: rowsPerPage,
           search: debouncedSearchQuery || undefined,
         },
