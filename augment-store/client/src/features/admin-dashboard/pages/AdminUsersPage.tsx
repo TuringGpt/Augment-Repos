@@ -93,7 +93,7 @@ const AdminUsersPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.role, days])
 
-  // Load churn risk data only on mount (independent of days filter)
+  // Load churn risk data when authentication state or user role changes (independent of days filter)
   // Churn risk uses fixed parameters (limit: 50, inactive_days: 60) and doesn't depend on the days filter
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
