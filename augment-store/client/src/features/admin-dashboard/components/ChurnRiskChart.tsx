@@ -44,7 +44,9 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   const { t, i18n } = useTranslation()
 
   // Get the current locale for date formatting
-  const currentLocale = localeMap[i18n.language as keyof typeof localeMap] || enUS
+  // Normalize language code to handle regional tags (e.g., 'es-ES' -> 'es')
+  const normalizedLanguage = i18n.language.split('-')[0]
+  const currentLocale = localeMap[normalizedLanguage as keyof typeof localeMap] || enUS
 
   // Get risk level color
   const getRiskColor = (riskLevel: 'high' | 'medium') => {
