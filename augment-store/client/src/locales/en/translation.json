@@ -589,7 +589,8 @@
         "actions": "Actions",
         "viewProduct": "View product details",
         "noData": "No product statistics available",
-        "noResultsFound": "No products found matching your search"
+        "noResultsFound": "No products found matching your search",
+        "rowsPerPage": "Rows per page"
       }
     },
     "productPerformance": {

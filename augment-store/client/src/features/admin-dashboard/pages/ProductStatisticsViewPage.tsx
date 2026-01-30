@@ -384,6 +384,7 @@ const ProductStatisticsViewPage = () => {
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={t('admin.productStatistics.productStatisticsView.rowsPerPage')}
         />
       </Paper>
     </Container>
