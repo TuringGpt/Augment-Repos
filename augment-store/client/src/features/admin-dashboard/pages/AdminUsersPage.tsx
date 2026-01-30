@@ -66,14 +66,13 @@ const AdminUsersPage = () => {
   const purchaseBehaviorAbortControllerRef = useRef<AbortController | null>(null)
   const churnRiskAbortControllerRef = useRef<AbortController | null>(null)
 
-  // Load customer retention, segments, new vs returning, purchase behavior, and churn risk data on mount and when days changes
+  // Load customer retention, segments, new vs returning, and purchase behavior data on mount and when days changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCustomerRetention()
       loadCustomerSegments()
       loadNewVsReturning()
       loadCustomerPurchaseBehavior()
-      loadChurnRisk()
     }
 
     // Cleanup function to abort requests on unmount
@@ -90,12 +89,25 @@ const AdminUsersPage = () => {
       if (purchaseBehaviorAbortControllerRef.current) {
         purchaseBehaviorAbortControllerRef.current.abort()
       }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role, days])
+
+  // Load churn risk data only on mount (independent of days filter)
+  // Churn risk uses fixed parameters (limit: 50, inactive_days: 60) and doesn't depend on the days filter
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      loadChurnRisk()
+    }
+
+    // Cleanup function to abort request on unmount
+    return () => {
       if (churnRiskAbortControllerRef.current) {
         churnRiskAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.role, days])
+  }, [isAuthenticated, user?.role])
 
   const loadCustomerRetention = () => {
     // Cancel any pending request
