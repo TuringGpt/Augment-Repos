@@ -60,8 +60,23 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
   // Format date - using parseISO for timezone-stable parsing of YYYY-MM-DD dates
   // and respecting the user's selected language for date formatting
   const formatDate = (dateString: string) => {
-    const date = parseISO(dateString)
-    return format(date, 'PPP', { locale: currentLocale })
+    // Guard against invalid dates to prevent crashes from backend anomalies
+    if (!dateString || typeof dateString !== 'string' || dateString.trim() === '') {
+      return 'N/A'
+    }
+
+    try {
+      const date = parseISO(dateString)
+      // Check if the parsed date is valid
+      if (isNaN(date.getTime())) {
+        return 'N/A'
+      }
+      return format(date, 'PPP', { locale: currentLocale })
+    } catch (error) {
+      // If parsing fails, return a fallback value instead of crashing
+      console.warn(`Invalid date string received: "${dateString}"`, error)
+      return 'N/A'
+    }
   }
 
   return (
