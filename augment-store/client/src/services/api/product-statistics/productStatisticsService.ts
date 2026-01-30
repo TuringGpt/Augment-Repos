@@ -18,7 +18,7 @@ export const productStatisticsService = {
   /**
    * Get product statistics (paginated list)
    *
-   * @param params - Query parameters (page, page_size)
+   * @param params - Query parameters (page, page_size, search)
    * @param signal - Optional AbortSignal for request cancellation
    * @returns Promise with product statistics data
    */

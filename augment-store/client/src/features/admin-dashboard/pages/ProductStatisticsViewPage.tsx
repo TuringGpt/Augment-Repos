@@ -62,7 +62,7 @@ const ProductStatisticsViewPage = () => {
   // Calculate current page for API (1-based)
   const apiPage = page + 1
 
-  // Fetch statistics on mount and when page/rowsPerPage changes
+  // Fetch statistics on mount and when page/rowsPerPage/search changes
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadStatistics()
@@ -73,7 +73,7 @@ const ProductStatisticsViewPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiPage, rowsPerPage, isAuthenticated, user?.role])
+  }, [apiPage, rowsPerPage, debouncedSearchQuery, isAuthenticated, user?.role])
 
   const loadStatistics = async () => {
     if (abortControllerRef.current) {
@@ -88,6 +88,7 @@ const ProductStatisticsViewPage = () => {
         {
           page: apiPage,
           page_size: rowsPerPage,
+          search: debouncedSearchQuery || undefined,
         },
         abortController.signal
       )
@@ -116,25 +117,11 @@ const ProductStatisticsViewPage = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
-    setPage(0)
+    setPage(0) // Reset to first page when search changes
   }
 
-  // Filter products based on search query
-  const filteredProducts = statistics?.results.filter((product) =>
-    product.product_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-  ) || []
-
-  // When search is active, reset to page 0 if current page exceeds filtered results
-  useEffect(() => {
-    if (debouncedSearchQuery) {
-      const maxPage = filteredProducts.length > 0
-        ? Math.ceil(filteredProducts.length / rowsPerPage) - 1
-        : 0
-      if (page > maxPage) {
-        setPage(0)
-      }
-    }
-  }, [debouncedSearchQuery, filteredProducts.length, page, rowsPerPage])
+  // Use server-filtered results directly
+  const displayedProducts = statistics?.results || []
 
   // Calculate metrics
   const calculateConversionRate = (views: number, purchases: number) => {
@@ -278,13 +265,13 @@ const ProductStatisticsViewPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading && filteredProducts.length === 0 ? (
+              {isLoading && displayedProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} align="center" sx={{ py: 8 }}>
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
-              ) : filteredProducts.length === 0 ? (
+              ) : displayedProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} align="center" sx={{ py: 8 }}>
                     <Typography color="text.secondary">
@@ -295,7 +282,7 @@ const ProductStatisticsViewPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((product) => {
+                displayedProducts.map((product) => {
                   const conversionRate = calculateConversionRate(product.view_count, product.purchase_count)
                   const cartConversion = calculateCartConversionRate(product.cart_add_count, product.purchase_count)
                   const abandonmentRate = calculateAbandonmentRate(product.cart_add_count, product.cart_remove_count)
@@ -392,7 +379,7 @@ const ProductStatisticsViewPage = () => {
         <TablePagination
           rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={debouncedSearchQuery ? filteredProducts.length : (statistics?.count || 0)}
+          count={statistics?.count || 0}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

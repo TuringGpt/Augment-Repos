@@ -32,6 +32,7 @@ export interface ProductStatisticsResponse {
 export interface ProductStatisticsParams {
   page?: number
   page_size?: number
+  search?: string
 }
 
 /**
