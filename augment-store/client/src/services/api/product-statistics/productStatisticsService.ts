@@ -37,7 +37,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch product statistics:', error)
+      // Don't log abort/cancel errors - they're expected during normal pagination/search
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch product statistics:', error)
+      }
       throw error
     }
   },
@@ -63,7 +67,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch product statistics by ID:', error)
+      // Don't log abort/cancel errors - they're expected during normal navigation
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch product statistics by ID:', error)
+      }
       throw error
     }
   },
@@ -90,7 +98,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch best selling products:', error)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch best selling products:', error)
+      }
       throw error
     }
   },
@@ -117,7 +129,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch most viewed products:', error)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch most viewed products:', error)
+      }
       throw error
     }
   },
@@ -144,7 +160,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch most added to cart products:', error)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch most added to cart products:', error)
+      }
       throw error
     }
   },
@@ -176,7 +196,11 @@ export const productStatisticsService = {
 
       return response
     } catch (error) {
-      console.error('Failed to fetch product performance:', error)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      const err = error as { name?: string }
+      if (err?.name !== 'AbortError' && err?.name !== 'CanceledError') {
+        console.error('Failed to fetch product performance:', error)
+      }
       throw error
     }
   },

@@ -176,8 +176,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch product statistics:', err)
+      // Don't log abort/cancel errors - they're expected when pagination changes
+      // The store layer handles error state appropriately
     }
   }
 
@@ -199,8 +199,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch best selling products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -222,8 +222,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch most viewed products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -245,8 +245,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch most added to cart products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -269,8 +269,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch product performance:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 

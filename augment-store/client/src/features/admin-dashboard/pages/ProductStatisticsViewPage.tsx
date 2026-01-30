@@ -101,7 +101,8 @@ const ProductStatisticsViewPage = () => {
         abortController.signal
       )
     } catch (err) {
-      console.error('Failed to fetch product statistics:', err)
+      // Don't log abort/cancel errors - they're expected when user types/paginates
+      // The store layer handles error state appropriately
     }
   }
 
