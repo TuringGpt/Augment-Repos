@@ -230,7 +230,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" color="error.main" fontWeight="medium">
+                        <Typography variant="body2" color="error" fontWeight="medium">
                           {customer.days_since_last_purchase.toLocaleString(localeString)}
                         </Typography>
                       </TableCell>
