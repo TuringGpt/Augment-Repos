@@ -123,6 +123,16 @@ const ProductStatisticsViewPage = () => {
     product.product_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   ) || []
 
+  // When search is active, reset to page 0 if current page exceeds filtered results
+  useEffect(() => {
+    if (debouncedSearchQuery && filteredProducts.length > 0) {
+      const maxPage = Math.ceil(filteredProducts.length / rowsPerPage) - 1
+      if (page > maxPage) {
+        setPage(0)
+      }
+    }
+  }, [debouncedSearchQuery, filteredProducts.length, page, rowsPerPage])
+
   // Calculate metrics
   const calculateConversionRate = (views: number, purchases: number) => {
     if (views === 0) return '0.00'
@@ -379,7 +389,7 @@ const ProductStatisticsViewPage = () => {
         <TablePagination
           rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={statistics?.count || 0}
+          count={debouncedSearchQuery ? filteredProducts.length : (statistics?.count || 0)}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
