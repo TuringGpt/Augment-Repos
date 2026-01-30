@@ -17,6 +17,7 @@ import {
   Warning as WarningIcon,
   TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material'
+import { parseISO, format } from 'date-fns'
 import { useTranslation } from '@hooks/useTranslation'
 import type { ChurnRiskResponse } from '@features/customer-retention/types'
 
@@ -38,10 +39,10 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
     return riskLevel === 'high' ? theme.palette.error.main : theme.palette.warning.main
   }
 
-  // Format date
+  // Format date - using parseISO for timezone-stable parsing of YYYY-MM-DD dates
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    const date = parseISO(dateString)
+    return format(date, 'MMM d, yyyy')
   }
 
   return (
