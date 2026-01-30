@@ -91,19 +91,16 @@ const ProductStatisticsViewPage = () => {
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
-    try {
-      await fetchStatistics(
-        {
-          page: page + 1, // API uses 1-based page numbering
-          page_size: rowsPerPage,
-          search: debouncedSearchQuery || undefined,
-        },
-        abortController.signal
-      )
-    } catch (err) {
-      // Don't log abort/cancel errors - they're expected when user types/paginates
-      // The store layer handles error state appropriately
-    }
+    // fetchStatistics handles all errors internally and sets error state in the store
+    // No need for try/catch here since it doesn't rethrow
+    await fetchStatistics(
+      {
+        page: page + 1, // API uses 1-based page numbering
+        page_size: rowsPerPage,
+        search: debouncedSearchQuery || undefined,
+      },
+      abortController.signal
+    )
   }
 
   const handleChangePage = (_event: unknown, newPage: number) => {
