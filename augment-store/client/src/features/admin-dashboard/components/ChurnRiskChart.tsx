@@ -231,7 +231,7 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" color="error.main" fontWeight="medium">
-                          {customer.days_since_last_purchase}
+                          {customer.days_since_last_purchase.toLocaleString(localeString)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -239,7 +239,9 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                           {formatDate(customer.last_purchase_date)}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">{customer.total_lifetime_orders}</TableCell>
+                      <TableCell align="right">
+                        {customer.total_lifetime_orders.toLocaleString(localeString)}
+                      </TableCell>
                       <TableCell align="right">
                         ${customer.total_lifetime_revenue.toLocaleString(localeString, {
                           minimumFractionDigits: 2,
@@ -248,7 +250,10 @@ const ChurnRiskChart = ({ data, isLoading = false }: ChurnRiskChartProps) => {
                       </TableCell>
                       <TableCell align="right">
                         {customer.previous_avg_days_between_orders > 0
-                          ? customer.previous_avg_days_between_orders.toFixed(0)
+                          ? customer.previous_avg_days_between_orders.toLocaleString(localeString, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })
                           : t('admin.churnRisk.notAvailable')}
                       </TableCell>
                     </TableRow>
