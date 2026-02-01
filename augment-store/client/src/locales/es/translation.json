@@ -833,6 +833,30 @@
         "noCategoryData": "No hay datos de preferencias de categoría disponibles para el período seleccionado",
         "noPaymentData": "No hay datos de métodos de pago disponibles para el período seleccionado"
       }
+    },
+    "churnRisk": {
+      "title": "Riesgo de Abandono de Clientes",
+      "noData": "No hay clientes en riesgo de abandono",
+      "notAvailable": "N/D",
+      "summary": {
+        "totalAtRisk": "Total en Riesgo",
+        "highRisk": "Alto Riesgo",
+        "mediumRisk": "Riesgo Medio",
+        "potentialRevenueAtRisk": "Ingresos Potenciales en Riesgo"
+      },
+      "table": {
+        "customer": "Cliente",
+        "lastPurchase": "Última Compra",
+        "daysInactive": "Días Inactivo",
+        "lifetimeOrders": "Pedidos Totales",
+        "lifetimeRevenue": "Ingresos Totales",
+        "riskLevel": "Nivel de Riesgo",
+        "avgDaysBetweenOrders": "Días Promedio Entre Pedidos"
+      },
+      "riskLevels": {
+        "high": "ALTO",
+        "medium": "MEDIO"
+      }
     }
   }
 }

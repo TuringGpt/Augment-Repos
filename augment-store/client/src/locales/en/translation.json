@@ -833,6 +833,30 @@
         "noCategoryData": "No category preference data available for the selected period",
         "noPaymentData": "No payment method data available for the selected period"
       }
+    },
+    "churnRisk": {
+      "title": "Customer Churn Risk",
+      "noData": "No customers at risk of churning",
+      "notAvailable": "N/A",
+      "summary": {
+        "totalAtRisk": "Total At Risk",
+        "highRisk": "High Risk",
+        "mediumRisk": "Medium Risk",
+        "potentialRevenueAtRisk": "Potential Revenue at Risk"
+      },
+      "table": {
+        "customer": "Customer",
+        "lastPurchase": "Last Purchase",
+        "daysInactive": "Days Inactive",
+        "lifetimeOrders": "Lifetime Orders",
+        "lifetimeRevenue": "Lifetime Revenue",
+        "riskLevel": "Risk Level",
+        "avgDaysBetweenOrders": "Avg Days Between Orders"
+      },
+      "riskLevels": {
+        "high": "HIGH",
+        "medium": "MEDIUM"
+      }
     }
   }
 }
