@@ -5,6 +5,7 @@ import AdminLayout from '@layouts/AdminLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
 import PublicRoute from '@components/PublicRoute'
 import AdminRoute from '@components/AdminRoute'
+import { ROUTES } from '@constants/index'
 
 // Placeholder pages - to be implemented
 import HomePage from '@features/products/product-list/components/HomePage'
@@ -114,7 +115,7 @@ const AppRoutes = () => {
           <Route path="/admin/products" element={<AdminProductsPage />} />
           <Route path="/admin/products/all" element={<AdminAllProductsPage />} />
           <Route path="/admin/products/statistics" element={<ProductStatisticsViewPage />} />
-          <Route path="/admin/products/statistics/:id" element={<ProductStatisticsDetailPage />} />
+          <Route path={ROUTES.ADMIN_PRODUCTS_STATISTICS_DETAIL} element={<ProductStatisticsDetailPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/brands" element={<AdminBrandsPage />} />
