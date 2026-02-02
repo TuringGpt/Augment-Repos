@@ -23,6 +23,7 @@ import { useProductStore } from '@store/productStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { MetricCard } from '@features/admin-dashboard/components'
 import { formatCurrency } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
 
 const ProductStatisticsDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -84,12 +85,12 @@ const ProductStatisticsDetailPage = () => {
   }, [id, fetchProductStatistics])
 
   const handleBack = () => {
-    navigate('/admin/products/statistics')
+    navigate(ROUTES.ADMIN_PRODUCTS_STATISTICS)
   }
 
   const handleViewProduct = () => {
     if (id) {
-      navigate(`/products/${id}`)
+      navigate(ROUTES.PRODUCT_DETAIL.replace(':id', id))
     }
   }
 
