@@ -428,6 +428,7 @@ const RegisterPage = () => {
                                 component={RouterLink}
                                 to="/terms"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 sx={{ color: Colors.primary.main }}
                               />
                             ),
@@ -436,6 +437,7 @@ const RegisterPage = () => {
                                 component={RouterLink}
                                 to="/privacy"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 sx={{ color: Colors.primary.main }}
                               />
                             ),
