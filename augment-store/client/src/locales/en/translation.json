@@ -179,6 +179,7 @@
       "waitingTitle": "Check Your Email",
       "instructions": "Please check your email and click the verification link to activate your account.",
       "notReceived": "Didn't receive the email?",
+      "notReceivedHelp": "Check your spam folder or contact support if you need assistance.",
       "resendButton": "Resend Verification Email",
       "backToLogin": "Back to Login",
       "verifying": "Verifying your email...",

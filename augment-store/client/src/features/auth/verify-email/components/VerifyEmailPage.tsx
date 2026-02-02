@@ -155,7 +155,9 @@ const VerifyEmailPage = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    {t('auth.verifyEmailPage.notReceived')}
+                    <strong>{t('auth.verifyEmailPage.notReceived')}</strong>
+                    <br />
+                    {t('auth.verifyEmailPage.notReceivedHelp')}
                   </Typography>
                 </Box>
               </Box>

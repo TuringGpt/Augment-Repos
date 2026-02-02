@@ -179,6 +179,7 @@
       "waitingTitle": "Überprüfen Sie Ihre E-Mail",
       "instructions": "Bitte überprüfen Sie Ihre E-Mail und klicken Sie auf den Verifizierungslink, um Ihr Konto zu aktivieren.",
       "notReceived": "E-Mail nicht erhalten?",
+      "notReceivedHelp": "Überprüfen Sie Ihren Spam-Ordner oder kontaktieren Sie den Support, wenn Sie Hilfe benötigen.",
       "resendButton": "Verifizierungs-E-Mail Erneut Senden",
       "backToLogin": "Zurück zur Anmeldung",
       "verifying": "Ihre E-Mail wird verifiziert...",
