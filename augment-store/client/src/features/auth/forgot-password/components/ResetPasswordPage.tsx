@@ -69,12 +69,12 @@ const ResetPasswordPage = () => {
     } else if (formData.newPassword.length < 8) {
       newErrors.newPassword = t('auth.resetPasswordPage.passwordTooShort')
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.newPassword)) {
-      newErrors.newPassword = 'Password must contain uppercase, lowercase, and number'
+      newErrors.newPassword = t('auth.resetPasswordPage.passwordComplexity')
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = t('auth.resetPasswordPage.confirmPasswordRequired')
     } else if (formData.newPassword !== formData.confirmPassword) {
       newErrors.confirmPassword = t('auth.resetPasswordPage.passwordMismatch')
     }

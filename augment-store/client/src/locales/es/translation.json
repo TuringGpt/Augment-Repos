@@ -164,6 +164,8 @@
       "resetButton": "Restablecer Contraseña",
       "passwordRequired": "La contraseña es requerida",
       "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordComplexity": "La contraseña debe contener mayúsculas, minúsculas y números",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña",
       "passwordMismatch": "Las contraseñas no coinciden",
       "successMessage": "¡Tu contraseña ha sido restablecida exitosamente!",
       "errorMessage": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo o solicita un nuevo enlace de restablecimiento.",

@@ -164,6 +164,8 @@
       "resetButton": "Reset Password",
       "passwordRequired": "Password is required",
       "passwordTooShort": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+      "confirmPasswordRequired": "Please confirm your password",
       "passwordMismatch": "Passwords do not match",
       "successMessage": "Your password has been reset successfully!",
       "errorMessage": "Failed to reset password. Please try again or request a new reset link.",

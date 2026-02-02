@@ -164,6 +164,8 @@
       "resetButton": "Réinitialiser le Mot de Passe",
       "passwordRequired": "Le mot de passe est requis",
       "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordComplexity": "Le mot de passe doit contenir des majuscules, des minuscules et des chiffres",
+      "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
       "successMessage": "Votre mot de passe a été réinitialisé avec succès!",
       "errorMessage": "Échec de la réinitialisation du mot de passe. Veuillez réessayer ou demander un nouveau lien de réinitialisation.",
