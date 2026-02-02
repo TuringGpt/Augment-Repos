@@ -121,6 +121,10 @@ const ProductStatisticsViewPage = () => {
     navigate(ROUTES.PRODUCT_DETAIL.replace(':id', productId))
   }
 
+  const handleViewStatistics = (productId: string) => {
+    navigate(ROUTES.ADMIN_PRODUCTS_STATISTICS_DETAIL.replace(':id', productId))
+  }
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
     // Page reset is handled by useEffect watching debouncedSearchQuery
@@ -365,15 +369,26 @@ const ProductStatisticsViewPage = () => {
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Tooltip title={t('admin.productStatistics.productStatisticsView.viewProduct')}>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => handleViewProduct(product.product_id)}
-                          >
-                            <VisibilityIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          <Tooltip title={t('admin.productStatistics.productStatisticsView.viewStatistics')}>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleViewStatistics(product.product_id)}
+                            >
+                              <AssessmentIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title={t('admin.productStatistics.productStatisticsView.viewProduct')}>
+                            <IconButton
+                              size="small"
+                              color="info"
+                              onClick={() => handleViewProduct(product.product_id)}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   )

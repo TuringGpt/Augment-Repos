@@ -95,7 +95,86 @@
     "emailVerification": "E-Mail-Verifizierung",
     "firstName": "Vorname",
     "lastName": "Nachname",
-    "fullName": "Vollständiger Name"
+    "fullName": "Vollständiger Name",
+    "loginPage": {
+      "title": "Willkommen Zurück",
+      "subtitle": "Melden Sie sich an, um zu Augment Store fortzufahren",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "forgotPasswordLink": "Passwort Vergessen?",
+      "signInButton": "Anmelden",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "noAccount": "Noch kein Konto?",
+      "signUpLink": "Registrieren",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "loginSuccess": "Anmeldung erfolgreich! Weiterleitung...",
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "registerPage": {
+      "title": "Konto Erstellen",
+      "subtitle": "Treten Sie Augment Store heute bei",
+      "firstNameLabel": "Vorname",
+      "lastNameLabel": "Nachname",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "agreeToTerms": "Ich stimme den <termsLink>Allgemeinen Geschäftsbedingungen</termsLink> und der <privacyLink>Datenschutzerklärung</privacyLink> zu",
+      "signUpButton": "Registrieren",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "haveAccount": "Bereits ein Konto?",
+      "signInLink": "Anmelden",
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "termsRequired": "Sie müssen den Allgemeinen Geschäftsbedingungen zustimmen",
+      "registerSuccess": "Registrierung erfolgreich! Weiterleitung zur E-Mail-Verifizierung...",
+      "registerFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "forgotPasswordPage": {
+      "title": "Passwort Vergessen?",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts",
+      "emailLabel": "E-Mail-Adresse",
+      "sendButton": "Anweisungen zum Zurücksetzen Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "successMessage": "Anweisungen zum Zurücksetzen des Passworts wurden an Ihre E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "errorMessage": "Fehler beim Senden der Anweisungen zum Zurücksetzen. Bitte versuchen Sie es erneut."
+    },
+    "resetPasswordPage": {
+      "title": "Passwort Zurücksetzen",
+      "subtitle": "Geben Sie Ihr neues Passwort unten ein",
+      "newPasswordLabel": "Neues Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "resetButton": "Passwort Zurücksetzen",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt!",
+      "errorMessage": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut oder fordern Sie einen neuen Link zum Zurücksetzen an.",
+      "invalidToken": "Ungültiger oder fehlender Token zum Zurücksetzen. Bitte fordern Sie ein neues Zurücksetzen des Passworts an.",
+      "redirecting": "Weiterleitung zur Anmeldung..."
+    },
+    "verifyEmailPage": {
+      "title": "Verifizieren Sie Ihre E-Mail",
+      "subtitle": "Wir haben einen Verifizierungslink an {{email}} gesendet",
+      "subtitleNoEmail": "Überprüfen Sie Ihre E-Mail zur Verifizierung",
+      "instructions": "Bitte überprüfen Sie Ihre E-Mail und klicken Sie auf den Verifizierungslink, um Ihr Konto zu aktivieren.",
+      "notReceived": "E-Mail nicht erhalten?",
+      "resendButton": "Verifizierungs-E-Mail Erneut Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "verifying": "Ihre E-Mail wird verifiziert...",
+      "successMessage": "Ihre E-Mail wurde erfolgreich verifiziert! Sie können sich jetzt anmelden.",
+      "errorMessage": "Fehler beim Verifizieren der E-Mail. Der Link ist möglicherweise ungültig oder abgelaufen.",
+      "resendSuccess": "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
+      "resendError": "Fehler beim erneuten Senden der Verifizierungs-E-Mail. Bitte versuchen Sie es erneut."
+    }
   },
   "product": {
     "products": "Produkte",
@@ -428,6 +507,31 @@
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Keine Produkt-ID angegeben",
+      "notFound": "Produktstatistiken nicht gefunden",
+      "viewProduct": "Produkt anzeigen",
+      "performanceMetrics": "Leistungsmetriken",
+      "summary": "Zusammenfassung",
+      "totalRevenue": "Gesamtumsatz",
+      "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "metrics": {
+        "views": "Gesamtansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "netAdditions": "Netto",
+        "cartRemovals": "Warenkorbentfernungen",
+        "purchases": "Gesamtkäufe",
+        "conversionRate": "Konversionsrate",
+        "viewsToPurchases": "Ansichten zu Käufen",
+        "cartConversionRate": "Warenkorb-Konversionsrate",
+        "cartToPurchases": "Warenkorb zu Käufen",
+        "abandonmentRate": "Abbruchrate",
+        "engagementScore": "Engagement-Score",
+        "viewsToCart": "Ansichten zu Warenkorb"
+      }
+    }
+  },
   "admin": {
     "panel": "Admin-Panel",
     "managementConsole": "Verwaltungskonsole",
@@ -588,6 +692,7 @@
         "abandonmentRate": "Abbruchrate",
         "actions": "Aktionen",
         "viewProduct": "Produkt Anzeigen",
+        "viewStatistics": "Detaillierte Statistiken anzeigen",
         "noData": "Keine Produktstatistiken verfügbar",
         "noResultsFound": "Keine Produkte gefunden, die Ihrer Suche entsprechen",
         "rowsPerPage": "Zeilen pro Seite"
@@ -853,6 +958,30 @@
       "emptyStates": {
         "noCategoryData": "Keine Kategoriepräferenzdaten für den ausgewählten Zeitraum verfügbar",
         "noPaymentData": "Keine Zahlungsmethodendaten für den ausgewählten Zeitraum verfügbar"
+      }
+    },
+    "churnRisk": {
+      "title": "Kundenabwanderungsrisiko",
+      "noData": "Keine Kunden mit Abwanderungsrisiko",
+      "notAvailable": "k. A.",
+      "summary": {
+        "totalAtRisk": "Gesamt Gefährdet",
+        "highRisk": "Hohes Risiko",
+        "mediumRisk": "Mittleres Risiko",
+        "potentialRevenueAtRisk": "Potenzielle Umsätze in Gefahr"
+      },
+      "table": {
+        "customer": "Kunde",
+        "lastPurchase": "Letzter Kauf",
+        "daysInactive": "Tage Inaktiv",
+        "lifetimeOrders": "Gesamtbestellungen",
+        "lifetimeRevenue": "Gesamtumsatz",
+        "riskLevel": "Risikoniveau",
+        "avgDaysBetweenOrders": "Durchschn. Tage Zwischen Bestellungen"
+      },
+      "riskLevels": {
+        "high": "HOCH",
+        "medium": "MITTEL"
       }
     }
   }

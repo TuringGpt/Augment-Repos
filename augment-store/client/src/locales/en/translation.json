@@ -95,7 +95,86 @@
     "emailVerification": "Email Verification",
     "firstName": "First Name",
     "lastName": "Last Name",
-    "fullName": "Full Name"
+    "fullName": "Full Name",
+    "loginPage": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to continue to Augment Store",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "forgotPasswordLink": "Forgot Password?",
+      "signInButton": "Sign In",
+      "continueAsGuest": "Continue as Guest",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign Up",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "loginSuccess": "Login successful! Redirecting...",
+      "loginFailed": "Login failed. Please try again."
+    },
+    "registerPage": {
+      "title": "Create Account",
+      "subtitle": "Join Augment Store today",
+      "firstNameLabel": "First Name",
+      "lastNameLabel": "Last Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "agreeToTerms": "I agree to the <termsLink>Terms and Conditions</termsLink> and <privacyLink>Privacy Policy</privacyLink>",
+      "signUpButton": "Sign Up",
+      "continueAsGuest": "Continue as Guest",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "termsRequired": "You must agree to the Terms and Conditions",
+      "registerSuccess": "Registration successful! Redirecting to email verification...",
+      "registerFailed": "Registration failed. Please try again."
+    },
+    "forgotPasswordPage": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email address and we'll send you instructions to reset your password",
+      "emailLabel": "Email Address",
+      "sendButton": "Send Reset Instructions",
+      "backToLogin": "Back to Login",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "successMessage": "Password reset instructions have been sent to your email address. Please check your inbox.",
+      "errorMessage": "Failed to send reset instructions. Please try again."
+    },
+    "resetPasswordPage": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password below",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "resetButton": "Reset Password",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "successMessage": "Your password has been reset successfully!",
+      "errorMessage": "Failed to reset password. Please try again or request a new reset link.",
+      "invalidToken": "Invalid or missing reset token. Please request a new password reset.",
+      "redirecting": "Redirecting to login..."
+    },
+    "verifyEmailPage": {
+      "title": "Verify Your Email",
+      "subtitle": "We've sent a verification link to {{email}}",
+      "subtitleNoEmail": "Check your email for verification",
+      "instructions": "Please check your email and click the verification link to activate your account.",
+      "notReceived": "Didn't receive the email?",
+      "resendButton": "Resend Verification Email",
+      "backToLogin": "Back to Login",
+      "verifying": "Verifying your email...",
+      "successMessage": "Your email has been verified successfully! You can now log in.",
+      "errorMessage": "Failed to verify email. The link may be invalid or expired.",
+      "resendSuccess": "Verification email sent! Please check your inbox.",
+      "resendError": "Failed to resend verification email. Please try again."
+    }
   },
   "product": {
     "products": "Products",
@@ -428,6 +507,31 @@
     "goHome": "Go to Home",
     "browseProducts": "Browse Products"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No product ID provided",
+      "notFound": "Product statistics not found",
+      "viewProduct": "View Product",
+      "performanceMetrics": "Performance Metrics",
+      "summary": "Summary",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "metrics": {
+        "views": "Total Views",
+        "cartAdditions": "Cart Additions",
+        "netAdditions": "Net",
+        "cartRemovals": "Cart Removals",
+        "purchases": "Total Purchases",
+        "conversionRate": "Conversion Rate",
+        "viewsToPurchases": "Views to Purchases",
+        "cartConversionRate": "Cart Conversion Rate",
+        "cartToPurchases": "Cart to Purchases",
+        "abandonmentRate": "Abandonment Rate",
+        "engagementScore": "Engagement Score",
+        "viewsToCart": "Views to Cart"
+      }
+    }
+  },
   "admin": {
     "panel": "Admin Panel",
     "managementConsole": "Management Console",
@@ -588,6 +692,7 @@
         "abandonmentRate": "Abandonment Rate",
         "actions": "Actions",
         "viewProduct": "View product details",
+        "viewStatistics": "View detailed statistics",
         "noData": "No product statistics available",
         "noResultsFound": "No products found matching your search",
         "rowsPerPage": "Rows per page"
@@ -853,6 +958,30 @@
       "emptyStates": {
         "noCategoryData": "No category preference data available for the selected period",
         "noPaymentData": "No payment method data available for the selected period"
+      }
+    },
+    "churnRisk": {
+      "title": "Customer Churn Risk",
+      "noData": "No customers at risk of churning",
+      "notAvailable": "N/A",
+      "summary": {
+        "totalAtRisk": "Total At Risk",
+        "highRisk": "High Risk",
+        "mediumRisk": "Medium Risk",
+        "potentialRevenueAtRisk": "Potential Revenue at Risk"
+      },
+      "table": {
+        "customer": "Customer",
+        "lastPurchase": "Last Purchase",
+        "daysInactive": "Days Inactive",
+        "lifetimeOrders": "Lifetime Orders",
+        "lifetimeRevenue": "Lifetime Revenue",
+        "riskLevel": "Risk Level",
+        "avgDaysBetweenOrders": "Avg Days Between Orders"
+      },
+      "riskLevels": {
+        "high": "HIGH",
+        "medium": "MEDIUM"
       }
     }
   }

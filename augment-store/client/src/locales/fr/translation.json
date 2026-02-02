@@ -95,7 +95,86 @@
     "emailVerification": "Vérification de l'Email",
     "firstName": "Prénom",
     "lastName": "Nom",
-    "fullName": "Nom Complet"
+    "fullName": "Nom Complet",
+    "loginPage": {
+      "title": "Bienvenue",
+      "subtitle": "Connectez-vous pour continuer sur Augment Store",
+      "emailLabel": "Adresse Email",
+      "passwordLabel": "Mot de Passe",
+      "forgotPasswordLink": "Mot de Passe Oublié?",
+      "signInButton": "Se Connecter",
+      "continueAsGuest": "Continuer en tant qu'Invité",
+      "noAccount": "Vous n'avez pas de compte?",
+      "signUpLink": "S'inscrire",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "passwordRequired": "Le mot de passe est requis",
+      "loginSuccess": "Connexion réussie! Redirection...",
+      "loginFailed": "Échec de la connexion. Veuillez réessayer."
+    },
+    "registerPage": {
+      "title": "Créer un Compte",
+      "subtitle": "Rejoignez Augment Store aujourd'hui",
+      "firstNameLabel": "Prénom",
+      "lastNameLabel": "Nom",
+      "emailLabel": "Adresse Email",
+      "passwordLabel": "Mot de Passe",
+      "confirmPasswordLabel": "Confirmer le Mot de Passe",
+      "agreeToTerms": "J'accepte les <termsLink>Conditions Générales</termsLink> et la <privacyLink>Politique de Confidentialité</privacyLink>",
+      "signUpButton": "S'inscrire",
+      "continueAsGuest": "Continuer en tant qu'Invité",
+      "haveAccount": "Vous avez déjà un compte?",
+      "signInLink": "Se Connecter",
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameRequired": "Le nom est requis",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "termsRequired": "Vous devez accepter les Conditions Générales",
+      "registerSuccess": "Inscription réussie! Redirection vers la vérification de l'email...",
+      "registerFailed": "Échec de l'inscription. Veuillez réessayer."
+    },
+    "forgotPasswordPage": {
+      "title": "Mot de Passe Oublié?",
+      "subtitle": "Entrez votre adresse email et nous vous enverrons des instructions pour réinitialiser votre mot de passe",
+      "emailLabel": "Adresse Email",
+      "sendButton": "Envoyer les Instructions de Réinitialisation",
+      "backToLogin": "Retour à la Connexion",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "successMessage": "Les instructions de réinitialisation du mot de passe ont été envoyées à votre adresse email. Veuillez vérifier votre boîte de réception.",
+      "errorMessage": "Échec de l'envoi des instructions de réinitialisation. Veuillez réessayer."
+    },
+    "resetPasswordPage": {
+      "title": "Réinitialiser le Mot de Passe",
+      "subtitle": "Entrez votre nouveau mot de passe ci-dessous",
+      "newPasswordLabel": "Nouveau Mot de Passe",
+      "confirmPasswordLabel": "Confirmer le Mot de Passe",
+      "resetButton": "Réinitialiser le Mot de Passe",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "successMessage": "Votre mot de passe a été réinitialisé avec succès!",
+      "errorMessage": "Échec de la réinitialisation du mot de passe. Veuillez réessayer ou demander un nouveau lien de réinitialisation.",
+      "invalidToken": "Jeton de réinitialisation invalide ou manquant. Veuillez demander une nouvelle réinitialisation de mot de passe.",
+      "redirecting": "Redirection vers la connexion..."
+    },
+    "verifyEmailPage": {
+      "title": "Vérifiez Votre Email",
+      "subtitle": "Nous avons envoyé un lien de vérification à {{email}}",
+      "subtitleNoEmail": "Vérifiez votre email pour la vérification",
+      "instructions": "Veuillez vérifier votre email et cliquer sur le lien de vérification pour activer votre compte.",
+      "notReceived": "Vous n'avez pas reçu l'email?",
+      "resendButton": "Renvoyer l'Email de Vérification",
+      "backToLogin": "Retour à la Connexion",
+      "verifying": "Vérification de votre email...",
+      "successMessage": "Votre email a été vérifié avec succès! Vous pouvez maintenant vous connecter.",
+      "errorMessage": "Échec de la vérification de l'email. Le lien peut être invalide ou expiré.",
+      "resendSuccess": "Email de vérification envoyé! Veuillez vérifier votre boîte de réception.",
+      "resendError": "Échec du renvoi de l'email de vérification. Veuillez réessayer."
+    }
   },
   "product": {
     "products": "Produits",
@@ -428,6 +507,31 @@
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Aucun ID de produit fourni",
+      "notFound": "Statistiques du produit non trouvées",
+      "viewProduct": "Voir le produit",
+      "performanceMetrics": "Métriques de performance",
+      "summary": "Résumé",
+      "totalRevenue": "Revenu total",
+      "averageOrderValue": "Valeur moyenne de commande",
+      "metrics": {
+        "views": "Vues totales",
+        "cartAdditions": "Ajouts au panier",
+        "netAdditions": "Net",
+        "cartRemovals": "Retraits du panier",
+        "purchases": "Achats totaux",
+        "conversionRate": "Taux de conversion",
+        "viewsToPurchases": "Vues vers achats",
+        "cartConversionRate": "Taux de conversion du panier",
+        "cartToPurchases": "Panier vers achats",
+        "abandonmentRate": "Taux d'abandon",
+        "engagementScore": "Score d'engagement",
+        "viewsToCart": "Vues vers panier"
+      }
+    }
+  },
   "admin": {
     "panel": "Panneau d'administration",
     "managementConsole": "Console de gestion",
@@ -588,6 +692,7 @@
         "abandonmentRate": "Taux d'Abandon",
         "actions": "Actions",
         "viewProduct": "Voir le Produit",
+        "viewStatistics": "Voir les statistiques détaillées",
         "noData": "Aucune statistique de produit disponible",
         "noResultsFound": "Aucun produit trouvé correspondant à votre recherche",
         "rowsPerPage": "Lignes par page"
@@ -853,6 +958,30 @@
       "emptyStates": {
         "noCategoryData": "Aucune donnée de préférence de catégorie disponible pour la période sélectionnée",
         "noPaymentData": "Aucune donnée de méthode de paiement disponible pour la période sélectionnée"
+      }
+    },
+    "churnRisk": {
+      "title": "Risque d'Attrition des Clients",
+      "noData": "Aucun client à risque d'attrition",
+      "notAvailable": "N/D",
+      "summary": {
+        "totalAtRisk": "Total à Risque",
+        "highRisk": "Risque Élevé",
+        "mediumRisk": "Risque Moyen",
+        "potentialRevenueAtRisk": "Revenus Potentiels à Risque"
+      },
+      "table": {
+        "customer": "Client",
+        "lastPurchase": "Dernier Achat",
+        "daysInactive": "Jours d'Inactivité",
+        "lifetimeOrders": "Commandes Totales",
+        "lifetimeRevenue": "Revenus Totaux",
+        "riskLevel": "Niveau de Risque",
+        "avgDaysBetweenOrders": "Jours Moyens Entre Commandes"
+      },
+      "riskLevels": {
+        "high": "ÉLEVÉ",
+        "medium": "MOYEN"
       }
     }
   }
