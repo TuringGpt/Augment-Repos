@@ -428,6 +428,31 @@
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Keine Produkt-ID angegeben",
+      "notFound": "Produktstatistiken nicht gefunden",
+      "viewProduct": "Produkt anzeigen",
+      "performanceMetrics": "Leistungsmetriken",
+      "summary": "Zusammenfassung",
+      "totalRevenue": "Gesamtumsatz",
+      "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "metrics": {
+        "views": "Gesamtansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "netAdditions": "Netto",
+        "cartRemovals": "Warenkorbentfernungen",
+        "purchases": "Gesamtkäufe",
+        "conversionRate": "Konversionsrate",
+        "viewsToPurchases": "Ansichten zu Käufen",
+        "cartConversionRate": "Warenkorb-Konversionsrate",
+        "cartToPurchases": "Warenkorb zu Käufen",
+        "abandonmentRate": "Abbruchrate",
+        "engagementScore": "Engagement-Score",
+        "viewsToCart": "Ansichten zu Warenkorb"
+      }
+    }
+  },
   "admin": {
     "panel": "Admin-Panel",
     "managementConsole": "Verwaltungskonsole",
@@ -588,6 +613,7 @@
         "abandonmentRate": "Abbruchrate",
         "actions": "Aktionen",
         "viewProduct": "Produkt Anzeigen",
+        "viewStatistics": "Detaillierte Statistiken anzeigen",
         "noData": "Keine Produktstatistiken verfügbar",
         "noResultsFound": "Keine Produkte gefunden, die Ihrer Suche entsprechen",
         "rowsPerPage": "Zeilen pro Seite"
