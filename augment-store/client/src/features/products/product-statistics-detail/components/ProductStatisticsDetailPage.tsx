@@ -25,6 +25,28 @@ import { MetricCard } from '@features/admin-dashboard/components'
 import { formatCurrency } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes from the store to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: (key: string) => string): string => {
+  const errorKeyMap: Record<string, string> = {
+    'PRODUCT_STATISTICS_LOAD_ERROR': 'productStatistics.detail.errorLoadStatistics',
+    'PRODUCT_STATISTICS_PERMISSION_DENIED': 'productStatistics.detail.errorPermissionDenied',
+    'PRODUCT_STATISTICS_AUTH_REQUIRED': 'productStatistics.detail.errorAuthRequired',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return translateFn(translationKey as any)
+  }
+
+  // Otherwise, return the error code as-is (may be a backend message or network error)
+  return errorCode
+}
+
 const ProductStatisticsDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -116,7 +138,7 @@ const ProductStatisticsDetailPage = () => {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {translateErrorCode(error, t)}
         </Alert>
         <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
           {t('common.back')}

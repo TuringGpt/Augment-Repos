@@ -437,6 +437,9 @@
       "summary": "Summary",
       "totalRevenue": "Total Revenue",
       "averageOrderValue": "Average Order Value",
+      "errorLoadStatistics": "Failed to load product statistics",
+      "errorPermissionDenied": "You do not have permission to view product statistics",
+      "errorAuthRequired": "Please log in to view product statistics",
       "metrics": {
         "views": "Total Views",
         "cartAdditions": "Cart Additions",
