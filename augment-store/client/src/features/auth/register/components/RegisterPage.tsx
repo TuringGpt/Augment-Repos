@@ -67,14 +67,14 @@ const RegisterPage = () => {
     if (!formData.firstName.trim()) {
       newErrors.firstName = t('auth.registerPage.firstNameRequired')
     } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = 'First name must be at least 2 characters'
+      newErrors.firstName = t('auth.registerPage.firstNameMinLength')
     }
 
     // Last name validation
     if (!formData.lastName.trim()) {
       newErrors.lastName = t('auth.registerPage.lastNameRequired')
     } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = 'Last name must be at least 2 characters'
+      newErrors.lastName = t('auth.registerPage.lastNameMinLength')
     }
 
     // Email validation
@@ -90,12 +90,12 @@ const RegisterPage = () => {
     } else if (formData.password.length < 8) {
       newErrors.password = t('auth.registerPage.passwordTooShort')
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase, lowercase, and number'
+      newErrors.password = t('auth.registerPage.passwordComplexity')
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = t('auth.registerPage.confirmPasswordRequired')
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = t('auth.registerPage.passwordMismatch')
     }
@@ -478,19 +478,19 @@ const RegisterPage = () => {
             {/* Password Requirements */}
             <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.light, borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary" component="div">
-                Password must contain:
+                {t('auth.registerPage.passwordRequirementsTitle')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • At least 8 characters
+                • {t('auth.registerPage.passwordRequirements8Chars')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One uppercase letter
+                • {t('auth.registerPage.passwordRequirementsUppercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One lowercase letter
+                • {t('auth.registerPage.passwordRequirementsLowercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One number
+                • {t('auth.registerPage.passwordRequirementsNumber')}
               </Typography>
             </Box>
 
