@@ -22,6 +22,8 @@ import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
 import type { RegisterRequest } from '@features/auth/types'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
 
 interface RegisterFormData extends RegisterRequest {
   confirmPassword: string
@@ -31,6 +33,7 @@ interface RegisterFormData extends RegisterRequest {
 const RegisterPage = () => {
   const navigate = useNavigate()
   const { setLoading, setError } = useAuthStore()
+  const { t } = useTranslation()
 
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
@@ -52,30 +55,30 @@ const RegisterPage = () => {
 
     // First name validation
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = t('auth.registerPage.firstNameRequired')
     } else if (formData.firstName.trim().length < 2) {
       newErrors.firstName = 'First name must be at least 2 characters'
     }
 
     // Last name validation
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = t('auth.registerPage.lastNameRequired')
     } else if (formData.lastName.trim().length < 2) {
       newErrors.lastName = 'Last name must be at least 2 characters'
     }
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('auth.registerPage.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('auth.registerPage.emailInvalid')
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t('auth.registerPage.passwordRequired')
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = t('auth.registerPage.passwordTooShort')
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password = 'Password must contain uppercase, lowercase, and number'
     }
@@ -84,12 +87,12 @@ const RegisterPage = () => {
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password'
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = t('auth.registerPage.passwordMismatch')
     }
 
     // Terms validation
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions'
+      newErrors.agreeToTerms = t('auth.registerPage.termsRequired')
     }
 
     setErrors(newErrors)
@@ -128,7 +131,7 @@ const RegisterPage = () => {
       await authService.register(registerData)
 
       // Show success message
-      setSuccessMessage('Registration successful! Redirecting to email verification...')
+      setSuccessMessage(t('auth.registerPage.registerSuccess'))
 
       // Redirect to email verification page with email as query param
       // Note: Keep form disabled during redirect to prevent duplicate submissions
@@ -137,7 +140,7 @@ const RegisterPage = () => {
       }, 1500)
     } catch (error) {
       // Enhanced error handling for Django backend responses
-      let errorMessage = 'Registration failed. Please try again.'
+      let errorMessage = t('auth.registerPage.registerFailed')
 
       const axiosError = error as {
         response?: {
@@ -219,13 +222,19 @@ const RegisterPage = () => {
               color: Colors.text.white,
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+              <LanguageSwitcher />
+            </Box>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Create Account
+              {t('auth.registerPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Join Augment Store today
+              {t('auth.registerPage.subtitle')}
             </Typography>
           </Box>
 
@@ -255,7 +264,7 @@ const RegisterPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="First Name"
+                    label={t('auth.registerPage.firstNameLabel')}
                     value={formData.firstName}
                     onChange={handleChange('firstName')}
                     error={!!errors.firstName}
@@ -275,7 +284,7 @@ const RegisterPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Last Name"
+                    label={t('auth.registerPage.lastNameLabel')}
                     value={formData.lastName}
                     onChange={handleChange('lastName')}
                     error={!!errors.lastName}
@@ -295,7 +304,7 @@ const RegisterPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Email Address"
+                    label={t('auth.registerPage.emailLabel')}
                     type="email"
                     value={formData.email}
                     onChange={handleChange('email')}
@@ -316,7 +325,7 @@ const RegisterPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Password"
+                    label={t('auth.registerPage.passwordLabel')}
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange('password')}
@@ -353,7 +362,7 @@ const RegisterPage = () => {
                   <TextField
                     fullWidth
                     size="small"
-                    label="Confirm Password"
+                    label={t('auth.registerPage.confirmPasswordLabel')}
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={handleChange('confirmPassword')}
@@ -401,24 +410,7 @@ const RegisterPage = () => {
                     }
                     label={
                       <Typography variant="body2" color={errors.agreeToTerms ? 'error' : 'inherit'}>
-                        I agree to the{' '}
-                        <Link
-                          component={RouterLink}
-                          to="/terms"
-                          target="_blank"
-                          sx={{ color: Colors.primary.main }}
-                        >
-                          Terms and Conditions
-                        </Link>{' '}
-                        and{' '}
-                        <Link
-                          component={RouterLink}
-                          to="/privacy"
-                          target="_blank"
-                          sx={{ color: Colors.primary.main }}
-                        >
-                          Privacy Policy
-                        </Link>
+                        {t('auth.registerPage.agreeToTerms')}
                       </Typography>
                     }
                   />
@@ -447,7 +439,7 @@ const RegisterPage = () => {
                   },
                 }}
               >
-                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.registerPage.signUpButton')}
               </Button>
             </form>
 
@@ -473,7 +465,7 @@ const RegisterPage = () => {
             {/* Sign In Link */}
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
+                {t('auth.registerPage.haveAccount')}{' '}
                 <Link
                   component={RouterLink}
                   to="/login"
@@ -484,7 +476,7 @@ const RegisterPage = () => {
                     '&:hover': { textDecoration: 'underline' },
                   }}
                 >
-                  Sign In
+                  {t('auth.registerPage.signInLink')}
                 </Link>
               </Typography>
             </Box>
