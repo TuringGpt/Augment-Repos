@@ -176,6 +176,7 @@
       "title": "Vérifiez Votre Email",
       "subtitle": "Nous avons envoyé un lien de vérification à {{email}}",
       "subtitleNoEmail": "Vérifiez votre email pour la vérification",
+      "waitingTitle": "Consultez Votre Email",
       "instructions": "Veuillez vérifier votre email et cliquer sur le lien de vérification pour activer votre compte.",
       "notReceived": "Vous n'avez pas reçu l'email?",
       "resendButton": "Renvoyer l'Email de Vérification",

@@ -176,6 +176,7 @@
       "title": "Verifica tu Correo Electrónico",
       "subtitle": "Hemos enviado un enlace de verificación a {{email}}",
       "subtitleNoEmail": "Revisa tu correo electrónico para la verificación",
+      "waitingTitle": "Revisa tu Correo Electrónico",
       "instructions": "Por favor revisa tu correo electrónico y haz clic en el enlace de verificación para activar tu cuenta.",
       "notReceived": "¿No recibiste el correo?",
       "resendButton": "Reenviar Correo de Verificación",

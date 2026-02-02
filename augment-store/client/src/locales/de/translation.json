@@ -176,6 +176,7 @@
       "title": "Verifizieren Sie Ihre E-Mail",
       "subtitle": "Wir haben einen Verifizierungslink an {{email}} gesendet",
       "subtitleNoEmail": "Überprüfen Sie Ihre E-Mail zur Verifizierung",
+      "waitingTitle": "Überprüfen Sie Ihre E-Mail",
       "instructions": "Bitte überprüfen Sie Ihre E-Mail und klicken Sie auf den Verifizierungslink, um Ihr Konto zu aktivieren.",
       "notReceived": "E-Mail nicht erhalten?",
       "resendButton": "Verifizierungs-E-Mail Erneut Senden",

@@ -176,6 +176,7 @@
       "title": "Verify Your Email",
       "subtitle": "We've sent a verification link to {{email}}",
       "subtitleNoEmail": "Check your email for verification",
+      "waitingTitle": "Check Your Email",
       "instructions": "Please check your email and click the verification link to activate your account.",
       "notReceived": "Didn't receive the email?",
       "resendButton": "Resend Verification Email",

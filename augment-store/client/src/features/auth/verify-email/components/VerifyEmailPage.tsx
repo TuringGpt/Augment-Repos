@@ -140,7 +140,7 @@ const VerifyEmailPage = () => {
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <CheckCircle sx={{ fontSize: 64, color: Colors.primary.main, mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold">
-                  {t('auth.verifyEmailPage.title')}
+                  {t('auth.verifyEmailPage.waitingTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {t('auth.verifyEmailPage.instructions')}
