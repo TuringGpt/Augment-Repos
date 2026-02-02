@@ -437,6 +437,9 @@
       "summary": "Resumen",
       "totalRevenue": "Ingresos totales",
       "averageOrderValue": "Valor promedio de pedido",
+      "errorLoadStatistics": "Error al cargar las estadísticas del producto",
+      "errorPermissionDenied": "No tiene permiso para ver las estadísticas del producto",
+      "errorAuthRequired": "Por favor, inicie sesión para ver las estadísticas del producto",
       "metrics": {
         "views": "Vistas totales",
         "cartAdditions": "Adiciones al carrito",

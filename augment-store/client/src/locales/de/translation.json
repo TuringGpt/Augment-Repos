@@ -437,6 +437,9 @@
       "summary": "Zusammenfassung",
       "totalRevenue": "Gesamtumsatz",
       "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "errorLoadStatistics": "Fehler beim Laden der Produktstatistiken",
+      "errorPermissionDenied": "Sie haben keine Berechtigung, Produktstatistiken anzuzeigen",
+      "errorAuthRequired": "Bitte melden Sie sich an, um Produktstatistiken anzuzeigen",
       "metrics": {
         "views": "Gesamtansichten",
         "cartAdditions": "Warenkorbhinzufügungen",
