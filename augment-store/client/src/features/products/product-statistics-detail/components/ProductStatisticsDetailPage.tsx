@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -29,6 +29,7 @@ const ProductStatisticsDetailPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const {
     fetchProductStatistics,
@@ -45,15 +46,41 @@ const ProductStatisticsDetailPage = () => {
     const loadStatistics = async () => {
       if (!id) return
 
+      // Abort previous request if any
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+
+      // Create new abort controller for this request
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+
       try {
         setLoading(true)
-        await fetchProductStatistics(id)
+        await fetchProductStatistics(id, abortController.signal)
+      } catch (error: unknown) {
+        // Ignore abort errors - they're expected during navigation
+        const err = error as { name?: string }
+        if (err?.name === 'AbortError' || err?.name === 'CanceledError') {
+          return
+        }
+        // Other errors are handled by the store
       } finally {
-        setLoading(false)
+        // Only update loading state if this request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
     loadStatistics()
+
+    // Cleanup: abort request on unmount or when id changes
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
   }, [id, fetchProductStatistics])
 
   const handleBack = () => {
