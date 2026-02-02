@@ -116,9 +116,9 @@ const LoginPage = () => {
 
         // Handle field-specific errors from Django
         if (data.email) {
-          errorMessage = `Email: ${data.email[0]}`
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
         } else if (data.password) {
-          errorMessage = `Password: ${data.password[0]}`
+          errorMessage = Array.isArray(data.password) ? data.password[0] : data.password
         } else if (data.details) {
           // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
           errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
