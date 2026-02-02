@@ -96,7 +96,7 @@ const VerifyEmailPage = () => {
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
               {email
                 ? t('auth.verifyEmailPage.subtitle', { email })
-                : t('auth.verifyEmailPage.checkEmail')}
+                : t('auth.verifyEmailPage.subtitleNoEmail')}
             </Typography>
           </Box>
 
@@ -140,7 +140,7 @@ const VerifyEmailPage = () => {
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <CheckCircle sx={{ fontSize: 64, color: Colors.primary.main, mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold">
-                  {t('auth.verifyEmailPage.checkEmailTitle')}
+                  {t('auth.verifyEmailPage.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   {t('auth.verifyEmailPage.instructions')}
@@ -155,9 +155,7 @@ const VerifyEmailPage = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    <strong>{t('auth.verifyEmailPage.didntReceive')}</strong>
-                    <br />
-                    {t('auth.verifyEmailPage.checkSpam')}
+                    {t('auth.verifyEmailPage.notReceived')}
                   </Typography>
                 </Box>
               </Box>
@@ -182,7 +180,7 @@ const VerifyEmailPage = () => {
                     },
                   }}
                 >
-                  {t('auth.verifyEmailPage.goToLogin')}
+                  {t('auth.verifyEmailPage.backToLogin')}
                 </Button>
               </Box>
             )}
