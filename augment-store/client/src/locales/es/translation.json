@@ -170,7 +170,12 @@
       "successMessage": "¡Tu contraseña ha sido restablecida exitosamente!",
       "errorMessage": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo o solicita un nuevo enlace de restablecimiento.",
       "invalidToken": "Token de restablecimiento inválido o faltante. Por favor solicita un nuevo restablecimiento de contraseña.",
-      "redirecting": "Redirigiendo al inicio de sesión..."
+      "redirecting": "Redirigiendo al inicio de sesión...",
+      "passwordRequirementsTitle": "La contraseña debe contener:",
+      "passwordRequirements8Chars": "Al menos 8 caracteres",
+      "passwordRequirementsUppercase": "Una letra mayúscula",
+      "passwordRequirementsLowercase": "Una letra minúscula",
+      "passwordRequirementsNumber": "Un número"
     },
     "verifyEmailPage": {
       "title": "Verifica tu Correo Electrónico",

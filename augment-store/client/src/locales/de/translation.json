@@ -170,7 +170,12 @@
       "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt!",
       "errorMessage": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut oder fordern Sie einen neuen Link zum Zurücksetzen an.",
       "invalidToken": "Ungültiger oder fehlender Token zum Zurücksetzen. Bitte fordern Sie ein neues Zurücksetzen des Passworts an.",
-      "redirecting": "Weiterleitung zur Anmeldung..."
+      "redirecting": "Weiterleitung zur Anmeldung...",
+      "passwordRequirementsTitle": "Passwort muss enthalten:",
+      "passwordRequirements8Chars": "Mindestens 8 Zeichen",
+      "passwordRequirementsUppercase": "Einen Großbuchstaben",
+      "passwordRequirementsLowercase": "Einen Kleinbuchstaben",
+      "passwordRequirementsNumber": "Eine Zahl"
     },
     "verifyEmailPage": {
       "title": "Verifizieren Sie Ihre E-Mail",

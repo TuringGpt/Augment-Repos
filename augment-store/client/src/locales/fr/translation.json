@@ -170,7 +170,12 @@
       "successMessage": "Votre mot de passe a été réinitialisé avec succès!",
       "errorMessage": "Échec de la réinitialisation du mot de passe. Veuillez réessayer ou demander un nouveau lien de réinitialisation.",
       "invalidToken": "Jeton de réinitialisation invalide ou manquant. Veuillez demander une nouvelle réinitialisation de mot de passe.",
-      "redirecting": "Redirection vers la connexion..."
+      "redirecting": "Redirection vers la connexion...",
+      "passwordRequirementsTitle": "Le mot de passe doit contenir:",
+      "passwordRequirements8Chars": "Au moins 8 caractères",
+      "passwordRequirementsUppercase": "Une lettre majuscule",
+      "passwordRequirementsLowercase": "Une lettre minuscule",
+      "passwordRequirementsNumber": "Un chiffre"
     },
     "verifyEmailPage": {
       "title": "Vérifiez Votre Email",

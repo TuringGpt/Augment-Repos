@@ -295,19 +295,19 @@ const ResetPasswordPage = () => {
             {/* Password Requirements */}
             <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.paper, borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary" component="div">
-                Password must contain:
+                {t('auth.resetPasswordPage.passwordRequirementsTitle')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • At least 8 characters
+                • {t('auth.resetPasswordPage.passwordRequirements8Chars')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One uppercase letter
+                • {t('auth.resetPasswordPage.passwordRequirementsUppercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One lowercase letter
+                • {t('auth.resetPasswordPage.passwordRequirementsLowercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One number
+                • {t('auth.resetPasswordPage.passwordRequirementsNumber')}
               </Typography>
             </Box>
           </Box>

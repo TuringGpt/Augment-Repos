@@ -170,7 +170,12 @@
       "successMessage": "Your password has been reset successfully!",
       "errorMessage": "Failed to reset password. Please try again or request a new reset link.",
       "invalidToken": "Invalid or missing reset token. Please request a new password reset.",
-      "redirecting": "Redirecting to login..."
+      "redirecting": "Redirecting to login...",
+      "passwordRequirementsTitle": "Password must contain:",
+      "passwordRequirements8Chars": "At least 8 characters",
+      "passwordRequirementsUppercase": "One uppercase letter",
+      "passwordRequirementsLowercase": "One lowercase letter",
+      "passwordRequirementsNumber": "One number"
     },
     "verifyEmailPage": {
       "title": "Verify Your Email",
