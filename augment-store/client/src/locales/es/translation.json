@@ -120,7 +120,7 @@
       "emailLabel": "Dirección de Correo Electrónico",
       "passwordLabel": "Contraseña",
       "confirmPasswordLabel": "Confirmar Contraseña",
-      "agreeToTerms": "Acepto los Términos y Condiciones",
+      "agreeToTerms": "Acepto los <termsLink>Términos y Condiciones</termsLink> y la <privacyLink>Política de Privacidad</privacyLink>",
       "signUpButton": "Registrarse",
       "continueAsGuest": "Continuar como Invitado",
       "haveAccount": "¿Ya tienes una cuenta?",

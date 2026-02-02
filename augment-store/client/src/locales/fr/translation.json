@@ -120,7 +120,7 @@
       "emailLabel": "Adresse Email",
       "passwordLabel": "Mot de Passe",
       "confirmPasswordLabel": "Confirmer le Mot de Passe",
-      "agreeToTerms": "J'accepte les Conditions Générales",
+      "agreeToTerms": "J'accepte les <termsLink>Conditions Générales</termsLink> et la <privacyLink>Politique de Confidentialité</privacyLink>",
       "signUpButton": "S'inscrire",
       "continueAsGuest": "Continuer en tant qu'Invité",
       "haveAccount": "Vous avez déjà un compte?",

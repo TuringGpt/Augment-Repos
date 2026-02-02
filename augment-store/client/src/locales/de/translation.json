@@ -120,7 +120,7 @@
       "emailLabel": "E-Mail-Adresse",
       "passwordLabel": "Passwort",
       "confirmPasswordLabel": "Passwort Bestätigen",
-      "agreeToTerms": "Ich stimme den Allgemeinen Geschäftsbedingungen zu",
+      "agreeToTerms": "Ich stimme den <termsLink>Allgemeinen Geschäftsbedingungen</termsLink> und der <privacyLink>Datenschutzerklärung</privacyLink> zu",
       "signUpButton": "Registrieren",
       "continueAsGuest": "Als Gast Fortfahren",
       "haveAccount": "Bereits ein Konto?",

@@ -18,6 +18,7 @@ import {
 } from '@mui/material'
 import { Visibility, VisibilityOff, Email, Lock, Person } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
@@ -28,6 +29,15 @@ import LanguageSwitcher from '@components/LanguageSwitcher'
 interface RegisterFormData extends RegisterRequest {
   confirmPassword: string
   agreeToTerms: boolean
+}
+
+interface RegisterFormErrors {
+  email?: string
+  password?: string
+  confirmPassword?: string
+  firstName?: string
+  lastName?: string
+  agreeToTerms?: string
 }
 
 const RegisterPage = () => {
@@ -45,13 +55,13 @@ const RegisterPage = () => {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [errors, setErrors] = useState<Partial<RegisterFormData>>({})
+  const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<RegisterFormData> = {}
+    const newErrors: RegisterFormErrors = {}
 
     // First name validation
     if (!formData.firstName.trim()) {
@@ -410,7 +420,27 @@ const RegisterPage = () => {
                     }
                     label={
                       <Typography variant="body2" color={errors.agreeToTerms ? 'error' : 'inherit'}>
-                        {t('auth.registerPage.agreeToTerms')}
+                        <Trans
+                          i18nKey="auth.registerPage.agreeToTerms"
+                          components={{
+                            termsLink: (
+                              <Link
+                                component={RouterLink}
+                                to="/terms"
+                                target="_blank"
+                                sx={{ color: Colors.primary.main }}
+                              />
+                            ),
+                            privacyLink: (
+                              <Link
+                                component={RouterLink}
+                                to="/privacy"
+                                target="_blank"
+                                sx={{ color: Colors.primary.main }}
+                              />
+                            ),
+                          }}
+                        />
                       </Typography>
                     }
                   />
