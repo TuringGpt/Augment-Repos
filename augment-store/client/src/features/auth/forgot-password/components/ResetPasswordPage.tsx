@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import { Visibility, VisibilityOff, Lock, CheckCircle } from '@mui/icons-material'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ResetPasswordRequest } from '@features/auth/types'
 import { parseApiError } from '@utils/errorUtils'
@@ -138,7 +137,7 @@ const ResetPasswordPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.blueIndigo,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -151,13 +150,14 @@ const ResetPasswordPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.blueIndigo,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
               position: 'relative',
@@ -280,11 +280,12 @@ const ResetPasswordPage = () => {
                 disabled={isSubmitting || !token}
                 sx={{
                   py: 1.5,
-                  background: Colors.gradient.blueIndigo,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.purpleViolet,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
@@ -293,7 +294,7 @@ const ResetPasswordPage = () => {
             </form>
 
             {/* Password Requirements */}
-            <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.paper, borderRadius: 1 }}>
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary" component="div">
                 {t('auth.resetPasswordPage.passwordRequirementsTitle')}
               </Typography>

@@ -12,7 +12,6 @@ import {
 } from '@mui/material'
 import { Email, CheckCircle, ArrowBack } from '@mui/icons-material'
 import { Link as RouterLink, useSearchParams } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { parseApiError } from '@utils/errorUtils'
 import { useTranslation } from '@hooks/useTranslation'
@@ -59,7 +58,7 @@ const VerifyEmailPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.blueIndigo,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -72,13 +71,14 @@ const VerifyEmailPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.blueIndigo,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
               position: 'relative',
@@ -138,7 +138,7 @@ const VerifyEmailPage = () => {
             {/* Default State - Waiting for verification */}
             {!isVerifying && !successMessage && !apiError && (
               <Box sx={{ textAlign: 'center', py: 2 }}>
-                <CheckCircle sx={{ fontSize: 64, color: Colors.primary.main, mb: 2 }} />
+                <CheckCircle sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold">
                   {t('auth.verifyEmailPage.waitingTitle')}
                 </Typography>
@@ -148,7 +148,7 @@ const VerifyEmailPage = () => {
 
                 <Box
                   sx={{
-                    bgcolor: Colors.background.light,
+                    bgcolor: 'action.hover',
                     p: 2,
                     borderRadius: 2,
                     mb: 3,
@@ -174,11 +174,12 @@ const VerifyEmailPage = () => {
                   fullWidth
                   sx={{
                     py: 1.5,
-                    background: Colors.gradient.blueIndigo,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
                     fontWeight: 'bold',
                     fontSize: '1rem',
                     '&:hover': {
-                      background: Colors.gradient.purpleViolet,
+                      bgcolor: 'primary.dark',
                     },
                   }}
                 >
@@ -193,7 +194,7 @@ const VerifyEmailPage = () => {
                 component={RouterLink}
                 to="/login"
                 sx={{
-                  color: Colors.primary.main,
+                  color: 'primary.main',
                   fontWeight: 'bold',
                   textDecoration: 'none',
                   display: 'inline-flex',
