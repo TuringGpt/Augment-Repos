@@ -19,6 +19,7 @@ import type { ForgotPasswordRequest } from '@features/auth/types'
 import { parseApiError } from '@utils/errorUtils'
 import { useTranslation } from '@hooks/useTranslation'
 import LanguageSwitcher from '@components/LanguageSwitcher'
+import ThemeToggle from '@components/ThemeToggle'
 
 const ForgotPasswordPage = () => {
   const { t } = useTranslation()
@@ -120,8 +121,9 @@ const ForgotPasswordPage = () => {
               position: 'relative',
             }}
           >
-            {/* Language Switcher */}
-            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+            {/* Theme Toggle and Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+              <ThemeToggle />
               <LanguageSwitcher />
             </Box>
 
