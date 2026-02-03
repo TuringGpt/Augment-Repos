@@ -14,6 +14,7 @@ import {
   Slide,
   useTheme,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { authService } from '@services/api/auth/authService'
@@ -21,7 +22,6 @@ import { useAuthStore } from '@store/authStore'
 import type { LoginRequest } from '@features/auth/types'
 import { useTranslation } from '@hooks/useTranslation'
 import LanguageSwitcher from '@components/LanguageSwitcher'
-import { Colors } from '@config/colors'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -145,7 +145,7 @@ const LoginPage = () => {
   }
 
   // Theme-derived hover background color for guest button
-  const guestButtonHoverBg = Colors.hexWithAlpha(
+  const guestButtonHoverBg = alpha(
     theme.palette.primary.main,
     theme.palette.mode === 'dark' ? 0.08 : 0.04
   )
