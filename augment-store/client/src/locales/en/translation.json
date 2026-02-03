@@ -65,7 +65,9 @@
     "products": "Browse products",
     "login": "Login to your account",
     "changeLanguage": "Change language",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "switchToDarkMode": "Switch to dark mode",
+    "switchToLightMode": "Switch to light mode"
   },
   "notifications": {
     "title": "Notifications",
