@@ -525,6 +525,34 @@
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Aucun ID de produit fourni",
+      "notFound": "Statistiques du produit non trouvées",
+      "viewProduct": "Voir le produit",
+      "performanceMetrics": "Métriques de performance",
+      "summary": "Résumé",
+      "totalRevenue": "Revenu total",
+      "averageOrderValue": "Valeur moyenne de commande",
+      "errorLoadStatistics": "Échec du chargement des statistiques du produit",
+      "errorPermissionDenied": "Vous n'avez pas la permission de voir les statistiques du produit",
+      "errorAuthRequired": "Veuillez vous connecter pour voir les statistiques du produit",
+      "metrics": {
+        "views": "Vues totales",
+        "cartAdditions": "Ajouts au panier",
+        "netAdditions": "Net",
+        "cartRemovals": "Retraits du panier",
+        "purchases": "Achats totaux",
+        "conversionRate": "Taux de conversion",
+        "viewsToPurchases": "Vues vers achats",
+        "cartConversionRate": "Taux de conversion du panier",
+        "cartToPurchases": "Panier vers achats",
+        "abandonmentRate": "Taux d'abandon",
+        "engagementScore": "Score d'engagement",
+        "viewsToCart": "Vues vers panier"
+      }
+    }
+  },
   "admin": {
     "panel": "Panneau d'administration",
     "managementConsole": "Console de gestion",
@@ -685,6 +713,7 @@
         "abandonmentRate": "Taux d'Abandon",
         "actions": "Actions",
         "viewProduct": "Voir le Produit",
+        "viewStatistics": "Voir les statistiques détaillées",
         "noData": "Aucune statistique de produit disponible",
         "noResultsFound": "Aucun produit trouvé correspondant à votre recherche",
         "rowsPerPage": "Lignes par page"

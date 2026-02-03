@@ -525,6 +525,34 @@
     "goHome": "Go to Home",
     "browseProducts": "Browse Products"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No product ID provided",
+      "notFound": "Product statistics not found",
+      "viewProduct": "View Product",
+      "performanceMetrics": "Performance Metrics",
+      "summary": "Summary",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "errorLoadStatistics": "Failed to load product statistics",
+      "errorPermissionDenied": "You do not have permission to view product statistics",
+      "errorAuthRequired": "Please log in to view product statistics",
+      "metrics": {
+        "views": "Total Views",
+        "cartAdditions": "Cart Additions",
+        "netAdditions": "Net",
+        "cartRemovals": "Cart Removals",
+        "purchases": "Total Purchases",
+        "conversionRate": "Conversion Rate",
+        "viewsToPurchases": "Views to Purchases",
+        "cartConversionRate": "Cart Conversion Rate",
+        "cartToPurchases": "Cart to Purchases",
+        "abandonmentRate": "Abandonment Rate",
+        "engagementScore": "Engagement Score",
+        "viewsToCart": "Views to Cart"
+      }
+    }
+  },
   "admin": {
     "panel": "Admin Panel",
     "managementConsole": "Management Console",
@@ -685,6 +713,7 @@
         "abandonmentRate": "Abandonment Rate",
         "actions": "Actions",
         "viewProduct": "View product details",
+        "viewStatistics": "View detailed statistics",
         "noData": "No product statistics available",
         "noResultsFound": "No products found matching your search",
         "rowsPerPage": "Rows per page"

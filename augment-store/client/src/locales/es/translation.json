@@ -525,6 +525,34 @@
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
   },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No se proporcionó ID de producto",
+      "notFound": "Estadísticas del producto no encontradas",
+      "viewProduct": "Ver producto",
+      "performanceMetrics": "Métricas de rendimiento",
+      "summary": "Resumen",
+      "totalRevenue": "Ingresos totales",
+      "averageOrderValue": "Valor promedio de pedido",
+      "errorLoadStatistics": "Error al cargar las estadísticas del producto",
+      "errorPermissionDenied": "No tiene permiso para ver las estadísticas del producto",
+      "errorAuthRequired": "Por favor, inicie sesión para ver las estadísticas del producto",
+      "metrics": {
+        "views": "Vistas totales",
+        "cartAdditions": "Adiciones al carrito",
+        "netAdditions": "Neto",
+        "cartRemovals": "Eliminaciones del carrito",
+        "purchases": "Compras totales",
+        "conversionRate": "Tasa de conversión",
+        "viewsToPurchases": "Vistas a compras",
+        "cartConversionRate": "Tasa de conversión del carrito",
+        "cartToPurchases": "Carrito a compras",
+        "abandonmentRate": "Tasa de abandono",
+        "engagementScore": "Puntuación de participación",
+        "viewsToCart": "Vistas a carrito"
+      }
+    }
+  },
   "admin": {
     "panel": "Panel de Administración",
     "managementConsole": "Consola de Gestión",
@@ -685,6 +713,7 @@
         "abandonmentRate": "Tasa de Abandono",
         "actions": "Acciones",
         "viewProduct": "Ver Producto",
+        "viewStatistics": "Ver estadísticas detalladas",
         "noData": "No hay estadísticas de productos disponibles",
         "noResultsFound": "No se encontraron productos que coincidan con su búsqueda",
         "rowsPerPage": "Filas por página"

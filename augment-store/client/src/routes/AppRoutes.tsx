@@ -5,6 +5,7 @@ import AdminLayout from '@layouts/AdminLayout'
 import ProtectedRoute from '@components/ProtectedRoute'
 import PublicRoute from '@components/PublicRoute'
 import AdminRoute from '@components/AdminRoute'
+import { ROUTES } from '@constants/index'
 
 // Placeholder pages - to be implemented
 import HomePage from '@features/products/product-list/components/HomePage'
@@ -39,6 +40,9 @@ import UnsubscribePage from '@features/newsletter/pages/UnsubscribePage'
 
 // Admin Dashboard pages
 import { AdminDashboardPage, AdminProductsPage, AdminAllProductsPage, AdminUsersPage, AdminCategoriesPage, AdminBrandsPage, AdminOrdersPage, AdminReportsPage, ProductStatisticsViewPage } from '@features/admin-dashboard/pages'
+
+// Product Statistics Detail page
+import ProductStatisticsDetailPage from '@features/products/product-statistics-detail/components/ProductStatisticsDetailPage'
 
 // Info pages
 import AboutPage from '@features/info/about/components/AboutPage'
@@ -111,6 +115,7 @@ const AppRoutes = () => {
           <Route path="/admin/products" element={<AdminProductsPage />} />
           <Route path="/admin/products/all" element={<AdminAllProductsPage />} />
           <Route path="/admin/products/statistics" element={<ProductStatisticsViewPage />} />
+          <Route path={ROUTES.ADMIN_PRODUCTS_STATISTICS_DETAIL} element={<ProductStatisticsDetailPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/brands" element={<AdminBrandsPage />} />
