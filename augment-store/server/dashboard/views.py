@@ -243,7 +243,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Optimization: Use DB aggregation
         revenue_data = completed_payments.aggregate(
-            total_revenue=Coalesce(Sum('amount'), Decimal('0.00')),
+            total_revenue=Coalesce(Sum('amount'), Decimal('0.00'), output_field=DecimalField()),
             paid_orders_count=Count('id')
         )
         
