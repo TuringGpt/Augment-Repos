@@ -146,7 +146,7 @@ const LoginPage = () => {
 
   // Theme-derived hover background color for guest button
   const guestButtonHoverBg = Colors.hexWithAlpha(
-    Colors.primary.main,
+    theme.palette.primary.main,
     theme.palette.mode === 'dark' ? 0.08 : 0.04
   )
 
