@@ -84,13 +84,8 @@ export function parseApiError(error: unknown, options: ParseErrorOptions = {}): 
       const fieldError = data[fieldName]
       if (fieldError) {
         // Handle both array and string formats
-        const errorText = Array.isArray(fieldError) ? fieldError[0] : fieldError
-        // Capitalize field name for display
-        const displayFieldName = fieldName
-          .split('_')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-        return `${displayFieldName}: ${errorText}`
+        // Return the error message directly without field name prefix to avoid mixed-language errors
+        return Array.isArray(fieldError) ? fieldError[0] : fieldError
       }
     }
 

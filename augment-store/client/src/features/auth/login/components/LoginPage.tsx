@@ -19,10 +19,13 @@ import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
 import type { LoginRequest } from '@features/auth/types'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
 
 const LoginPage = () => {
   const navigate = useNavigate()
   const { login: setAuthState, setLoading, setError } = useAuthStore()
+  const { t } = useTranslation()
 
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
@@ -39,14 +42,14 @@ const LoginPage = () => {
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('auth.loginPage.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('auth.loginPage.emailInvalid')
     }
 
     // Password validation - only check if provided, no length/strength requirements on login
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t('auth.loginPage.passwordRequired')
     }
 
     setErrors(newErrors)
@@ -81,7 +84,7 @@ const LoginPage = () => {
       const response = await authService.login(formData)
 
       // Show success message
-      setSuccessMessage('Login successful! Redirecting...')
+      setSuccessMessage(t('auth.loginPage.loginSuccess'))
 
       // Set auth state and redirect after a brief delay to show success message
       setAuthState(response.user, response.accessToken, response.refreshToken)
@@ -91,7 +94,7 @@ const LoginPage = () => {
       }, 1500)
     } catch (error) {
       // Enhanced error handling for Django backend responses
-      let errorMessage = 'Login failed. Please try again.'
+      let errorMessage = t('auth.loginPage.loginFailed')
 
       const axiosError = error as {
         response?: {
@@ -113,9 +116,9 @@ const LoginPage = () => {
 
         // Handle field-specific errors from Django
         if (data.email) {
-          errorMessage = `Email: ${data.email[0]}`
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
         } else if (data.password) {
-          errorMessage = `Password: ${data.password[0]}`
+          errorMessage = Array.isArray(data.password) ? data.password[0] : data.password
         } else if (data.details) {
           // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
           errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
@@ -168,13 +171,19 @@ const LoginPage = () => {
               color: Colors.text.white,
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+              <LanguageSwitcher />
+            </Box>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Welcome Back
+              {t('auth.loginPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Sign in to continue to Augment Store
+              {t('auth.loginPage.subtitle')}
             </Typography>
           </Box>
 
@@ -202,7 +211,7 @@ const LoginPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Email Address"
+                label={t('auth.loginPage.emailLabel')}
                 type="email"
                 value={formData.email}
                 onChange={handleChange('email')}
@@ -222,7 +231,7 @@ const LoginPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Password"
+                label={t('auth.loginPage.passwordLabel')}
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleChange('password')}
@@ -266,7 +275,7 @@ const LoginPage = () => {
                     '&:hover': { textDecoration: 'underline' },
                   }}
                 >
-                  Forgot Password?
+                  {t('auth.loginPage.forgotPasswordLink')}
                 </Link>
               </Box>
 
@@ -286,7 +295,7 @@ const LoginPage = () => {
                   },
                 }}
               >
-                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.loginPage.signInButton')}
               </Button>
             </form>
 
@@ -310,14 +319,14 @@ const LoginPage = () => {
                   },
                 }}
               >
-                Continue as Guest
+                {t('auth.loginPage.continueAsGuest')}
               </Button>
             </Box>
 
             {/* Sign Up Link */}
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
+                {t('auth.loginPage.noAccount')}{' '}
                 <Link
                   component={RouterLink}
                   to="/register"
@@ -328,7 +337,7 @@ const LoginPage = () => {
                     '&:hover': { textDecoration: 'underline' },
                   }}
                 >
-                  Sign Up
+                  {t('auth.loginPage.signUpLink')}
                 </Link>
               </Typography>
             </Box>

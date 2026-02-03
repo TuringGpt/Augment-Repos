@@ -15,10 +15,13 @@ import { Link as RouterLink, useSearchParams } from 'react-router-dom'
 import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { parseApiError } from '@utils/errorUtils'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams()
   const email = searchParams.get('email')
+  const { t } = useTranslation()
   const [isVerifying, setIsVerifying] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -38,10 +41,10 @@ const VerifyEmailPage = () => {
 
     try {
       await authService.verifyEmail(token)
-      setSuccessMessage('Your email has been verified successfully! You can now log in.')
+      setSuccessMessage(t('auth.verifyEmailPage.successMessage'))
     } catch (error) {
       const errorMessage = parseApiError(error, {
-        defaultMessage: 'Failed to verify email. The link may be invalid or expired.',
+        defaultMessage: t('auth.verifyEmailPage.errorMessage'),
       })
       setApiError(errorMessage)
     } finally {
@@ -78,16 +81,22 @@ const VerifyEmailPage = () => {
               color: Colors.text.white,
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+              <LanguageSwitcher />
+            </Box>
+
             <Email sx={{ fontSize: 64, mb: 2, opacity: 0.9 }} />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Verify Your Email
+              {t('auth.verifyEmailPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
               {email
-                ? `We've sent a verification link to ${email}`
-                : 'Check your email for verification'}
+                ? t('auth.verifyEmailPage.subtitle', { email })
+                : t('auth.verifyEmailPage.subtitleNoEmail')}
             </Typography>
           </Box>
 
@@ -121,7 +130,7 @@ const VerifyEmailPage = () => {
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress size={48} sx={{ mb: 2 }} />
                 <Typography variant="body1" color="text.secondary">
-                  Verifying your email...
+                  {t('auth.verifyEmailPage.verifying')}
                 </Typography>
               </Box>
             )}
@@ -131,11 +140,10 @@ const VerifyEmailPage = () => {
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <CheckCircle sx={{ fontSize: 64, color: Colors.primary.main, mb: 2 }} />
                 <Typography variant="h6" gutterBottom fontWeight="bold">
-                  Check Your Email
+                  {t('auth.verifyEmailPage.waitingTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  We've sent a verification link to your email address. Please click the link to
-                  verify your account and complete the registration process.
+                  {t('auth.verifyEmailPage.instructions')}
                 </Typography>
 
                 <Box
@@ -147,9 +155,9 @@ const VerifyEmailPage = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    <strong>Didn't receive the email?</strong>
+                    <strong>{t('auth.verifyEmailPage.notReceived')}</strong>
                     <br />
-                    Check your spam folder or contact support if you need assistance.
+                    {t('auth.verifyEmailPage.notReceivedHelp')}
                   </Typography>
                 </Box>
               </Box>
@@ -174,7 +182,7 @@ const VerifyEmailPage = () => {
                     },
                   }}
                 >
-                  Go to Login
+                  {t('auth.verifyEmailPage.backToLogin')}
                 </Button>
               </Box>
             )}
@@ -195,7 +203,7 @@ const VerifyEmailPage = () => {
                 }}
               >
                 <ArrowBack fontSize="small" />
-                Back to Login
+                {t('auth.verifyEmailPage.backToLogin')}
               </Link>
             </Box>
           </Box>

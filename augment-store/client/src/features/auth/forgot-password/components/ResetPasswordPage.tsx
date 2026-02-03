@@ -18,6 +18,8 @@ import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ResetPasswordRequest } from '@features/auth/types'
 import { parseApiError } from '@utils/errorUtils'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
 
 interface ResetPasswordFormData {
   newPassword: string
@@ -28,6 +30,7 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
+  const { t } = useTranslation()
 
   const [formData, setFormData] = useState<ResetPasswordFormData>({
     newPassword: '',
@@ -42,9 +45,9 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     if (!token) {
-      setApiError('Invalid or missing reset token. Please request a new password reset.')
+      setApiError(t('auth.resetPasswordPage.invalidToken'))
     }
-  }, [token])
+  }, [token, t])
 
   // Cleanup timeout on unmount to prevent navigation after component unmounts
   useEffect(() => {
@@ -62,18 +65,18 @@ const ResetPasswordPage = () => {
 
     // Password validation
     if (!formData.newPassword) {
-      newErrors.newPassword = 'Password is required'
+      newErrors.newPassword = t('auth.resetPasswordPage.passwordRequired')
     } else if (formData.newPassword.length < 8) {
-      newErrors.newPassword = 'Password must be at least 8 characters'
+      newErrors.newPassword = t('auth.resetPasswordPage.passwordTooShort')
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.newPassword)) {
-      newErrors.newPassword = 'Password must contain uppercase, lowercase, and number'
+      newErrors.newPassword = t('auth.resetPasswordPage.passwordComplexity')
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = t('auth.resetPasswordPage.confirmPasswordRequired')
     } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = t('auth.resetPasswordPage.passwordMismatch')
     }
 
     setErrors(newErrors)
@@ -97,7 +100,7 @@ const ResetPasswordPage = () => {
     e.preventDefault()
 
     if (!token) {
-      setApiError('Invalid or missing reset token. Please request a new password reset.')
+      setApiError(t('auth.resetPasswordPage.invalidToken'))
       return
     }
 
@@ -115,12 +118,12 @@ const ResetPasswordPage = () => {
         newPassword: formData.newPassword,
       }
       await authService.resetPassword(resetData)
-      setSuccessMessage('Your password has been reset successfully!')
+      setSuccessMessage(t('auth.resetPasswordPage.successMessage'))
       // Redirect handled by useEffect with cleanup
     } catch (error) {
       const errorMessage = parseApiError(error, {
         fieldNames: ['password', 'confirm_password'],
-        defaultMessage: 'Failed to reset password. Please try again or request a new reset link.',
+        defaultMessage: t('auth.resetPasswordPage.errorMessage'),
       })
       setApiError(errorMessage)
     } finally {
@@ -157,13 +160,19 @@ const ResetPasswordPage = () => {
               color: Colors.text.white,
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+              <LanguageSwitcher />
+            </Box>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Reset Password
+              {t('auth.resetPasswordPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Enter your new password below
+              {t('auth.resetPasswordPage.subtitle')}
             </Typography>
           </Box>
 
@@ -194,7 +203,7 @@ const ResetPasswordPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="New Password"
+                label={t('auth.resetPasswordPage.newPasswordLabel')}
                 type={showPassword ? 'text' : 'password'}
                 value={formData.newPassword}
                 onChange={handleChange('newPassword')}
@@ -230,7 +239,7 @@ const ResetPasswordPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Confirm New Password"
+                label={t('auth.resetPasswordPage.confirmPasswordLabel')}
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
                 onChange={handleChange('confirmPassword')}
@@ -279,26 +288,26 @@ const ResetPasswordPage = () => {
                   },
                 }}
               >
-                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Reset Password'}
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.resetPasswordPage.resetButton')}
               </Button>
             </form>
 
             {/* Password Requirements */}
             <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.paper, borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary" component="div">
-                Password must contain:
+                {t('auth.resetPasswordPage.passwordRequirementsTitle')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • At least 8 characters
+                • {t('auth.resetPasswordPage.passwordRequirements8Chars')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One uppercase letter
+                • {t('auth.resetPasswordPage.passwordRequirementsUppercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One lowercase letter
+                • {t('auth.resetPasswordPage.passwordRequirementsLowercase')}
               </Typography>
               <Typography variant="caption" color="text.secondary" component="div">
-                • One number
+                • {t('auth.resetPasswordPage.passwordRequirementsNumber')}
               </Typography>
             </Box>
           </Box>
