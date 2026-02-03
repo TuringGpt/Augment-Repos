@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
+from django.utils.decorators import method_decorator
+# [BUG]: Intentionally missing cache_page import
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
@@ -145,6 +147,7 @@ class FeaturedProductListView(ProductListView):
     def get_queryset(self):
         return super().get_queryset().filter(is_featured=True)
 
+@method_decorator(cache_page(60 * 15), name="dispatch")
 class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductSearchFilter
