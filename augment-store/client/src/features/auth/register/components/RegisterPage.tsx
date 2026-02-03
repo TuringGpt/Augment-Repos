@@ -19,7 +19,6 @@ import {
 import { Visibility, VisibilityOff, Email, Lock, Person } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Trans } from 'react-i18next'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
 import type { RegisterRequest } from '@features/auth/types'
@@ -210,7 +209,7 @@ const RegisterPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.blueIndigo,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -223,13 +222,14 @@ const RegisterPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.blueIndigo,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
               position: 'relative',
@@ -429,7 +429,7 @@ const RegisterPage = () => {
                                 to="/terms"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                sx={{ color: Colors.primary.main }}
+                                sx={{ color: 'primary.main' }}
                               />
                             ),
                             privacyLink: (
@@ -438,7 +438,7 @@ const RegisterPage = () => {
                                 to="/privacy"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                sx={{ color: Colors.primary.main }}
+                                sx={{ color: 'primary.main' }}
                               />
                             ),
                           }}
@@ -463,11 +463,12 @@ const RegisterPage = () => {
                 sx={{
                   mt: 3,
                   py: 1.5,
-                  background: Colors.gradient.blueIndigo,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.purpleViolet,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
@@ -476,7 +477,7 @@ const RegisterPage = () => {
             </form>
 
             {/* Password Requirements */}
-            <Box sx={{ mt: 3, p: 2, bgcolor: Colors.background.light, borderRadius: 1 }}>
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
               <Typography variant="caption" color="text.secondary" component="div">
                 {t('auth.registerPage.passwordRequirementsTitle')}
               </Typography>
@@ -502,7 +503,7 @@ const RegisterPage = () => {
                   component={RouterLink}
                   to="/login"
                   sx={{
-                    color: Colors.primary.main,
+                    color: 'primary.main',
                     fontWeight: 'bold',
                     textDecoration: 'none',
                     '&:hover': { textDecoration: 'underline' },

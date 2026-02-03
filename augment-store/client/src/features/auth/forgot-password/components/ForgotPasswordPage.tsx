@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import { Email, ArrowBack } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ForgotPasswordRequest } from '@features/auth/types'
 import { parseApiError } from '@utils/errorUtils'
@@ -95,7 +94,7 @@ const ForgotPasswordPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.purpleViolet,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -108,13 +107,14 @@ const ForgotPasswordPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.purpleViolet,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
               position: 'relative',
@@ -180,11 +180,12 @@ const ForgotPasswordPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  background: Colors.gradient.purpleViolet,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.blueIndigo,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
@@ -202,7 +203,7 @@ const ForgotPasswordPage = () => {
                 component={RouterLink}
                 to="/login"
                 sx={{
-                  color: Colors.primary.main,
+                  color: 'primary.main',
                   fontWeight: 'bold',
                   textDecoration: 'none',
                   display: 'inline-flex',

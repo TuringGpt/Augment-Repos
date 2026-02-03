@@ -12,10 +12,11 @@ import {
   CircularProgress,
   Fade,
   Slide,
+  useTheme,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
 import type { LoginRequest } from '@features/auth/types'
@@ -24,6 +25,7 @@ import LanguageSwitcher from '@components/LanguageSwitcher'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const theme = useTheme()
   const { login: setAuthState, setLoading, setError } = useAuthStore()
   const { t } = useTranslation()
 
@@ -142,6 +144,12 @@ const LoginPage = () => {
     }
   }
 
+  // Theme-derived hover background color for guest button
+  const guestButtonHoverBg = alpha(
+    theme.palette.primary.main,
+    theme.palette.mode === 'dark' ? 0.08 : 0.04
+  )
+
   return (
     <Box
       sx={{
@@ -149,7 +157,7 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.purpleViolet,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -162,13 +170,14 @@ const LoginPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.purpleViolet,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
               position: 'relative',
@@ -270,7 +279,7 @@ const LoginPage = () => {
                   to="/forgot-password"
                   variant="body2"
                   sx={{
-                    color: Colors.primary.main,
+                    color: 'primary.main',
                     textDecoration: 'none',
                     '&:hover': { textDecoration: 'underline' },
                   }}
@@ -287,11 +296,12 @@ const LoginPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  background: Colors.gradient.purpleViolet,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.blueIndigo,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
@@ -309,13 +319,13 @@ const LoginPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  borderColor: Colors.primary.main,
-                  color: Colors.primary.main,
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    borderColor: Colors.primary.dark,
-                    backgroundColor: 'rgba(124, 58, 237, 0.04)',
+                    borderColor: 'primary.dark',
+                    backgroundColor: guestButtonHoverBg,
                   },
                 }}
               >
@@ -331,7 +341,7 @@ const LoginPage = () => {
                   component={RouterLink}
                   to="/register"
                   sx={{
-                    color: Colors.primary.main,
+                    color: 'primary.main',
                     fontWeight: 'bold',
                     textDecoration: 'none',
                     '&:hover': { textDecoration: 'underline' },
