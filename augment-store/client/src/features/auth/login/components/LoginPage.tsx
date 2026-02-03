@@ -21,6 +21,7 @@ import { useAuthStore } from '@store/authStore'
 import type { LoginRequest } from '@features/auth/types'
 import { useTranslation } from '@hooks/useTranslation'
 import LanguageSwitcher from '@components/LanguageSwitcher'
+import { Colors } from '@config/colors'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -142,6 +143,12 @@ const LoginPage = () => {
       setLoading(false)
     }
   }
+
+  // Theme-derived hover background color for guest button
+  const guestButtonHoverBg = Colors.hexWithAlpha(
+    Colors.primary.main,
+    theme.palette.mode === 'dark' ? 0.08 : 0.04
+  )
 
   return (
     <Box
@@ -318,9 +325,7 @@ const LoginPage = () => {
                   fontSize: '1rem',
                   '&:hover': {
                     borderColor: 'primary.dark',
-                    backgroundColor: theme.palette.mode === 'dark'
-                      ? 'rgba(102, 126, 234, 0.08)'
-                      : 'rgba(102, 126, 234, 0.04)',
+                    backgroundColor: guestButtonHoverBg,
                   },
                 }}
               >
