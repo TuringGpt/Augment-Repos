@@ -120,7 +120,7 @@ class BaseProductView(AutoOptimizeMixin):
     """Base view for Product related operations with auto-optimization."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
-    auto_select_related = ['brand', 'category', 'created_by']
+    auto_select_related = ['brand', 'brand__image', 'created_by']
     auto_prefetch_related = ['images']
     queryset = Product.objects.all()
 
@@ -158,11 +158,16 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         queryset = queryset.filter(search_filter)
         
         if query:
-            SearchService.log_search(
-                query_string=query,
-                results_count=queryset.count(),
-                user=self.request.user
-            )
+            # Optimization: Run search logging in background to avoid blocking response
+            def log_search_background():
+                SearchService.log_search(
+                    query_string=query,
+                    results_count=queryset.count(),
+                    user=self.request.user
+                )
+            
+            import threading
+            threading.Thread(target=log_search_background).start()
             
         return queryset
 
