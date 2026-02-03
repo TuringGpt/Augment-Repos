@@ -241,13 +241,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             payment_status=Payment.PaymentStatus.PAID
         )
 
-        total_revenue = sum(
-            payment.amount for payment in completed_payments
-        ) if completed_payments.exists() else Decimal('0.00')
-
+        # Optimization: Use DB aggregation
+        revenue_data = completed_payments.aggregate(
+            total_revenue=Coalesce(Count('amount'), Decimal('0.00')),
+            paid_orders_count=Count('id')
+        )
+        
+        total_revenue = revenue_data['total_revenue']
+        
         # Average order value (based on paid orders only)
         # Use count of paid orders to match the revenue calculation
-        paid_orders_count = completed_payments.count()
+        paid_orders_count = revenue_data['paid_orders_count']
         avg_order_value = (total_revenue / paid_orders_count) if paid_orders_count > 0 else Decimal('0.00')
 
         # ===== CONVERSION FUNNEL =====
