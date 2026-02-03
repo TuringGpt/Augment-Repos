@@ -6,6 +6,8 @@ from carts.factory import SimpleCartItemFactory
 from dashboard.models import ProductStatistics, ProductView, CartAbandonment
 from datetime import timedelta
 from django.utils import timezone
+from decimal import Decimal
+from checkout.factory import PaymentFactory
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
@@ -703,3 +705,36 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # THEN we should get a 404 response
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_analytics_overview_revenue_aggregation(self):
+        """Test that analytics_overview correctly aggregates revenue using Sum (not Count)."""
+        # GIVEN: No payments initially
+        url = reverse("v1:product-statistics-analytics-overview")
+        
+        # WHEN: Call endpoint with no payments
+        response = self.member_client.get(url)
+        
+        # THEN: Should return 0.00 (Decimal)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Decimal(response.data['total_revenue']), Decimal('0.00'))
+        
+        # GIVEN: Create payments
+        # Payment 1: 100.00
+        # Payment 2: 50.50
+        # Total: 150.50
+        # Count: 2
+        # If it was using Count, it would return 2.
+        
+        PaymentFactory(amount=Decimal('100.00'), payment_status='paid', created_by=self.member_user)
+        PaymentFactory(amount=Decimal('50.50'), payment_status='paid', created_by=self.member_user)
+        # Add a pending payment to ensure it filters by status (assuming view logic filters by 'paid')
+        PaymentFactory(amount=Decimal('200.00'), payment_status='pending', created_by=self.member_user)
+        
+        # WHEN: Call endpoint again
+        response = self.member_client.get(url)
+        
+        # THEN: Should return sum of paid payments (150.50)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Ensure it is 150.50 (Sum) and NOT 2 (Count)
+        self.assertEqual(Decimal(response.data['total_revenue']), Decimal('150.50'))
+        self.assertEqual(response.data['paid_orders_count'], 2)
