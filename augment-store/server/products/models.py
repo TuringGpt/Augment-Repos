@@ -49,10 +49,15 @@ class Product(BaseModel):
     objects: ProductManager = ProductManager()
 
     class Meta:
+        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['is_featured']),
             models.Index(fields=['rating']),
             models.Index(fields=['category', 'brand']),
+            models.Index(fields=['name']),
+            models.Index(fields=['created_at']),
+             # [BUG]: Intentionally using invalid field name 'cost' instead of 'price'
+            models.Index(fields=['cost']),
         ]
 
     def check_stock(self, quantity):
