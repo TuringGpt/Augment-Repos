@@ -65,7 +65,9 @@
     "products": "Produkte durchsuchen",
     "login": "Bei Ihrem Konto anmelden",
     "changeLanguage": "Sprache ändern",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "switchToDarkMode": "Zum Dunkelmodus wechseln",
+    "switchToLightMode": "Zum Hellmodus wechseln"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -649,6 +651,16 @@
         "purchases": "Käufe",
         "count": "Anzahl",
         "noData": "Keine allgemeinen Statistiken verfügbar"
+      },
+      "healthCheck": {
+        "title": "API-Gesundheitsstatus",
+        "subtitle": "Überwachen Sie die Gesundheit und Verfügbarkeit der API",
+        "checking": "API-Gesundheit wird überprüft...",
+        "healthy": "Gesund",
+        "unhealthy": "Ungesund",
+        "allSystemsOperational": "Alle Systeme betriebsbereit",
+        "systemIssuesDetected": "Systemprobleme erkannt",
+        "status": "Status"
       }
     },
     "settings": "Einstellungen",

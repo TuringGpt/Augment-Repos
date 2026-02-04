@@ -1,8 +1,10 @@
 import { IconButton, Tooltip } from '@mui/material'
 import { Brightness4, Brightness7 } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { useThemeStore } from '@store/themeStore'
 
 const ThemeToggle = () => {
+  const { t } = useTranslation()
   const { mode, toggleMode } = useThemeStore()
 
   const handleToggle = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -62,14 +64,16 @@ const ThemeToggle = () => {
     }
   }
 
+  const tooltipText = mode === 'light' ? t('tooltip.switchToDarkMode') : t('tooltip.switchToLightMode')
+
   return (
-    <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+    <Tooltip title={tooltipText}>
       <IconButton
         color="inherit"
         onClick={handleToggle}
         role="switch"
         aria-checked={mode === 'dark'}
-        aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+        aria-label={tooltipText}
         sx={{
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
