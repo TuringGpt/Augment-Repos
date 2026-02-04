@@ -11,7 +11,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
 from django.utils.decorators import method_decorator
-# [BUG]: Intentionally missing cache_page import
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
