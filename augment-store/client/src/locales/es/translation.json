@@ -651,6 +651,16 @@
         "purchases": "Compras",
         "count": "Cantidad",
         "noData": "No hay estadísticas generales disponibles"
+      },
+      "healthCheck": {
+        "title": "Estado de Salud de la API",
+        "subtitle": "Monitorear la salud y disponibilidad de la API",
+        "checking": "Verificando salud de la API...",
+        "healthy": "Saludable",
+        "unhealthy": "No Saludable",
+        "allSystemsOperational": "Todos los sistemas operativos",
+        "systemIssuesDetected": "Problemas del sistema detectados",
+        "status": "Estado"
       }
     },
     "settings": "Configuración",
