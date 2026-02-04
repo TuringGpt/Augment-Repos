@@ -122,7 +122,7 @@ class CachedListMixin:
             return Response(cached)
 
         response = super().list(request, *args, **kwargs)
-        if 200 <= response.status_code < 300:
+        if response.status_code == 200:
             service.set(cache_key, response.data, ttl=self.cache_ttl)
         return response
     
@@ -186,7 +186,7 @@ class CachedRetrieveMixin:
             return Response(cached)
 
         response = super().retrieve(request, *args, **kwargs)
-        if 200 <= response.status_code < 300:
+        if response.status_code == 200:
             service.set(cache_key, response.data, ttl=self.cache_ttl)
         return response
 
