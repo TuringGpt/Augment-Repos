@@ -241,13 +241,17 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             payment_status=Payment.PaymentStatus.PAID
         )
 
-        total_revenue = sum(
-            payment.amount for payment in completed_payments
-        ) if completed_payments.exists() else Decimal('0.00')
+        # Optimization: Use DB aggregation
+        revenue_data = completed_payments.aggregate(
+            total_revenue=Coalesce(Sum('amount'), Decimal('0.00'), output_field=DecimalField(max_digits=19, decimal_places=2)),
+            paid_orders_count=Count('id')
+        )
+
+        total_revenue = revenue_data['total_revenue']
 
         # Average order value (based on paid orders only)
         # Use count of paid orders to match the revenue calculation
-        paid_orders_count = completed_payments.count()
+        paid_orders_count = revenue_data['paid_orders_count']
         avg_order_value = (total_revenue / paid_orders_count) if paid_orders_count > 0 else Decimal('0.00')
 
         # ===== CONVERSION FUNNEL =====
@@ -711,8 +715,8 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'customers': top_customers
         })
 
- 
- 
+
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def customer_segments(self, request):
         """
@@ -1088,7 +1092,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'category_preferences': category_preferences,
             'payment_method_distribution': payment_distribution
         })
-    
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def churn_risk(self, request):
         """
@@ -1201,7 +1205,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'potential_revenue_at_risk': float(potential_revenue)
             }
         })
-    
+
 
     @action(detail=False, methods=['get'])
     def new_vs_returning(self, request):
