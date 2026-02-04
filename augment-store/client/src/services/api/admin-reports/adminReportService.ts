@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { GeneralStatisticsResponse } from '@features/admin-reports/types'
+import type { GeneralStatisticsResponse, HealthCheckResponse } from '@features/admin-reports/types'
 import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 export const adminReportService = {
@@ -29,6 +29,35 @@ export const adminReportService = {
       // Log only sanitized error information to avoid leaking sensitive data
       // (e.g., Authorization headers in Axios config)
       console.error('Failed to fetch general statistics:', sanitizeErrorForLogging(error))
+      throw error
+    }
+  },
+
+  /**
+   * Check the health status of the API
+   *
+   * Note: This endpoint does not accept any query parameters.
+   * It returns the health status of the API.
+   *
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with health check data
+   */
+  getHealthCheck: async (
+    signal?: AbortSignal
+  ): Promise<HealthCheckResponse> => {
+    try {
+      const response = await apiClient.get<HealthCheckResponse>(
+        API_ENDPOINTS.HEALTH.CHECK,
+        {
+          signal,
+        }
+      )
+
+      return response
+    } catch (error) {
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch health check:', sanitizeErrorForLogging(error))
       throw error
     }
   },

@@ -15,7 +15,7 @@ import {
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useAdminReportsStore } from '@store/adminReportsStore'
-import { GeneralStatisticsChart } from '@features/admin-reports/components'
+import { GeneralStatisticsChart, HealthCheckCard } from '@features/admin-reports/components'
 
 /**
  * AdminReportsPage Component
@@ -27,21 +27,37 @@ import { GeneralStatisticsChart } from '@features/admin-reports/components'
 const AdminReportsPage = () => {
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
-  const { generalStatistics, isLoading, error, fetchGeneralStatistics, clearError } = useAdminReportsStore()
+  const {
+    generalStatistics,
+    isLoading,
+    error,
+    fetchGeneralStatistics,
+    clearError,
+    healthCheck,
+    isHealthCheckLoading,
+    healthCheckError,
+    fetchHealthCheck,
+    clearHealthCheckError,
+  } = useAdminReportsStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+  const healthCheckAbortControllerRef = useRef<AbortController | null>(null)
 
-  // Load general statistics on mount
+  // Load general statistics and health check on mount
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadGeneralStatistics()
+      loadHealthCheck()
     }
 
     // Cleanup function to abort requests on unmount
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
+      }
+      if (healthCheckAbortControllerRef.current) {
+        healthCheckAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,14 +79,37 @@ const AdminReportsPage = () => {
     fetchGeneralStatistics(abortControllerRef.current.signal)
   }
 
+  const loadHealthCheck = () => {
+    // Clear any stale error from previous visits to prevent brief flash of old error
+    clearHealthCheckError()
+
+    // Abort any existing request
+    if (healthCheckAbortControllerRef.current) {
+      healthCheckAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    healthCheckAbortControllerRef.current = new AbortController()
+
+    // Fetch health check
+    fetchHealthCheck(healthCheckAbortControllerRef.current.signal)
+  }
+
   const handleRefresh = () => {
     clearError()
+    clearHealthCheckError()
     loadGeneralStatistics()
+    loadHealthCheck()
   }
 
   const handleRetry = () => {
     clearError()
     loadGeneralStatistics()
+  }
+
+  const handleHealthCheckRetry = () => {
+    clearHealthCheckError()
+    loadHealthCheck()
   }
 
   return (
@@ -86,9 +125,9 @@ const AdminReportsPage = () => {
           </Box>
           <Button
             variant="outlined"
-            startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
+            startIcon={isLoading || isHealthCheckLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
             onClick={handleRefresh}
-            disabled={isLoading}
+            disabled={isLoading || isHealthCheckLoading}
           >
             {t('admin.dashboard.refresh')}
           </Button>
@@ -113,9 +152,17 @@ const AdminReportsPage = () => {
         </Alert>
       )}
 
-      {/* General Statistics Chart */}
+      {/* Health Check and General Statistics */}
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
+          <HealthCheckCard
+            data={healthCheck}
+            isLoading={isHealthCheckLoading}
+            error={healthCheckError}
+            onRetry={handleHealthCheckRetry}
+          />
+        </Grid>
+        <Grid item xs={12} md={8}>
           <GeneralStatisticsChart data={generalStatistics} isLoading={isLoading} />
         </Grid>
       </Grid>
