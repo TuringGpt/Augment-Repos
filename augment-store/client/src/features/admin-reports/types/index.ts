@@ -18,3 +18,15 @@ export interface GeneralStatisticsResponse {
   total_purchases: number
 }
 
+/**
+ * Health check response from the backend
+ * Endpoint: /health-check/
+ * (Combined with API_CONFIG.BASE_URL to form the full path)
+ *
+ * Note: This endpoint does not accept any query parameters.
+ * It returns the health status of the API.
+ */
+export interface HealthCheckResponse {
+  status: string
+}
+
