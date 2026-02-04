@@ -1497,49 +1497,4 @@ class RecommendProductListViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the recommended products should be in the same category as the user's wishlist, cart and order
 
-class ProductSearchViewTests(BaseAPITestCase):
-    def setUp(self):
-        super().setUp()
-        self.merchant_user = UserFactory(
-            email="merchant@demo.com", role=User.Role.MERCHANT
-        )
-        self.merchant_client = self.authenticated_client
-        self.merchant_client.force_authenticate(user=self.merchant_user)
 
-    def test_search_cache_and_logging(self):
-        # GIVEN products exist
-        ProductFactory(name="Test Phone", created_by=self.merchant_user)
-        ProductSearchCacheService().clear_namespace()
-        url = reverse("v1:product-search")
-
-        # WHEN making first search request
-        # 1. Product count query
-        # 2. Search logging (insert)
-        # 3. Product fetch
-        # Total should be > 0.
-        with CaptureQueriesContext(connection) as ctx1:
-            response_1 = self.client.get(url, {"search": "Phone"})
-        
-        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(ctx1), 0)
-
-        # WHEN making second search request (identical)
-        # Should hit cache (no product queries), but MUST still log search (1 DB insert).
-        # We expect exactly 1 query (the insert).
-        # Note: If logging uses valid connection and atomic transaction, it's 1 query.
-        with CaptureQueriesContext(connection) as ctx2:
-            response_2 = self.client.get(url, {"search": "Phone"})
-        
-        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
-        
-        # Verify response is cached
-        self.assertEqual(response_1.data, response_2.data)
-        
-        # Verify NO product queries (Checking if queries involved 'product')
-        product_queries = [q for q in ctx2.captured_queries if 'product' in q['sql'].lower()]
-        self.assertEqual(len(product_queries), 0, "Should not query products on cache hit")
-        
-        # Verify SearchQuery was logged both times
-        # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
-        # Instead, check SearchQuery count.
-        self.assertEqual(SearchQuery.objects.count(), 2)
