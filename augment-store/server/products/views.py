@@ -156,7 +156,7 @@ class ProductSearchView(CachedListMixin, AdvancedSearchMixin, BaseProductView, L
         query = (self.request.query_params.get('search') or "").strip()
         response = super().list(request, *args, **kwargs)
         
-        if query:
+        if query and response.status_code == 200:
             # Handle results count for both paginated (dict) and unpaginated (list) responses
             if isinstance(response.data, dict):
                 results_count = response.data.get('count', 0)
