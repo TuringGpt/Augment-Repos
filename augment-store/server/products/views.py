@@ -10,7 +10,6 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
-from django.utils.decorators import method_decorator
 
 from accounts.permissions import hasAdminOrMerchantRole
 from .models import Product, ProductBrand, ProductCategory
@@ -146,11 +145,38 @@ class FeaturedProductListView(ProductListView):
     def get_queryset(self):
         return super().get_queryset().filter(is_featured=True)
 
-@method_decorator(cache_page(60 * 15), name="dispatch")
-class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
+class ProductSearchView(CachedListMixin, AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
+    cache_ttl = 60 * 15
+
+    def list(self, request, *args, **kwargs):
+        query = (self.request.query_params.get('search') or "").strip()
+        if query:
+            # We must count results *after* filtering but *before* pagination/returning?
+            # Actually, to get accurate count we might need the queryset.
+            # But wait, if we cache, we don't run the queryset.
+            # Logging expected 'results_count'. If we hit cache, we might not know result count unless we cache it too.
+            # For now, let's log the query. Getting count on cache hit is expensive (requires DB query).
+            # The prompt implies logging is important. 
+            # If we utilize CachedListMixin, it caches response.data. response.data['count'] exists for paginated responses!
+            # So we can extract count from response even on cache hit?
+            # CachedListMixin.list returns Response(cached) or Response(new).
+            # So we can call super().list(), get response, then log.
+            pass
+            
+        response = super().list(request, *args, **kwargs)
+        
+        if query:
+             # Extract count from response data if possible, or use 0/None if not available
+            results_count = response.data.get('count', 0) if isinstance(response.data, dict) else 0
+            SearchService.log_search(
+                query_string=query,
+                results_count=results_count,
+                user=self.request.user
+            )
+        return response
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -159,13 +185,6 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         search_filter = self.get_search_query_filter(query)
         queryset = queryset.filter(search_filter)
         
-        if query:
-            SearchService.log_search(
-                query_string=query,
-                results_count=queryset.count(),
-                user=self.request.user
-            )
-            
         return queryset
 
 
