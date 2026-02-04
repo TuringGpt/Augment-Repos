@@ -51,9 +51,9 @@ class Product(BaseModel):
             models.Index(fields=['is_featured']),
             models.Index(fields=['rating']),
             models.Index(fields=['category', 'brand']),
-            models.Index(fields=['name']),
-            models.Index(fields=['created_at']),
-            models.Index(fields=['price']),
+            models.Index(fields=['name'], name='products_product_name_idx'),
+            models.Index(fields=['created_at'], name='products_product_created_at_idx'),
+            models.Index(fields=['price'], name='products_product_price_idx'),
         ]
 
     def check_stock(self, quantity):
