@@ -56,7 +56,6 @@ class Product(BaseModel):
             models.Index(fields=['category', 'brand']),
             models.Index(fields=['name']),
             models.Index(fields=['created_at']),
-             # [BUG]: Intentionally using invalid field name 'cost' instead of 'price'
             models.Index(fields=['cost']),
         ]
 
