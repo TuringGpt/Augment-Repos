@@ -125,9 +125,9 @@ const AdminReportsPage = () => {
           </Box>
           <Button
             variant="outlined"
-            startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
+            startIcon={isLoading || isHealthCheckLoading ? <CircularProgress size={16} /> : <RefreshIcon />}
             onClick={handleRefresh}
-            disabled={isLoading}
+            disabled={isLoading || isHealthCheckLoading}
           >
             {t('admin.dashboard.refresh')}
           </Button>

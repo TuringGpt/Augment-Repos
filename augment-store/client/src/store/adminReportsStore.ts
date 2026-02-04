@@ -151,14 +151,13 @@ export const useAdminReportsStore = create<AdminReportsState>((set) => ({
     fetchHealthCheckRequestCounter += 1
     const currentRequestId = fetchHealthCheckRequestCounter
 
+    // Set loading state and clear errors synchronously at request start
+    // This ensures admins don't see stale cached health status before the loading flag flips
+    set({ isHealthCheckLoading: true, healthCheckError: null })
+
     try {
       // Import adminReportService dynamically to avoid circular dependency
       const { adminReportService } = await import('@services/api/admin-reports/adminReportService')
-
-      // Only update loading state if this is still the most recent request
-      if (currentRequestId === fetchHealthCheckRequestCounter) {
-        set({ isHealthCheckLoading: true, healthCheckError: null })
-      }
 
       const data = await adminReportService.getHealthCheck(signal)
 
