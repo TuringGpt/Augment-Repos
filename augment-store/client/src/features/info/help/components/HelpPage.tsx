@@ -8,58 +8,51 @@ import {
   AccordionDetails,
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
+import { useTranslation } from '@hooks/useTranslation'
 
 const HelpPage = () => {
+  const { t } = useTranslation()
+
   const faqs = [
     {
-      question: 'How do I place an order?',
-      answer:
-        "Browse our products, add items to your cart, and proceed to checkout. You'll need to create an account or log in to complete your purchase.",
+      question: t('help.faqs.placeOrder.question'),
+      answer: t('help.faqs.placeOrder.answer'),
     },
     {
-      question: 'What payment methods do you accept?',
-      answer:
-        'We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and other secure payment methods.',
+      question: t('help.faqs.paymentMethods.question'),
+      answer: t('help.faqs.paymentMethods.answer'),
     },
     {
-      question: 'How can I track my order?',
-      answer:
-        'Once your order ships, you\'ll receive a tracking number via email. You can also view your order status in the "My Orders" section of your account.',
+      question: t('help.faqs.trackOrder.question'),
+      answer: t('help.faqs.trackOrder.answer'),
     },
     {
-      question: 'What is your return policy?',
-      answer:
-        'We offer a 30-day return policy for most items. Products must be unused and in original packaging. See our Returns page for full details.',
+      question: t('help.faqs.returnPolicy.question'),
+      answer: t('help.faqs.returnPolicy.answer'),
     },
     {
-      question: 'How long does shipping take?',
-      answer:
-        'Standard shipping typically takes 5-7 business days. Express shipping options are available at checkout for faster delivery.',
+      question: t('help.faqs.shippingTime.question'),
+      answer: t('help.faqs.shippingTime.answer'),
     },
     {
-      question: 'Do you ship internationally?',
-      answer:
-        'Yes, we ship to many countries worldwide. Shipping costs and delivery times vary by location. International orders may be subject to customs fees.',
+      question: t('help.faqs.international.question'),
+      answer: t('help.faqs.international.answer'),
     },
     {
-      question: 'How do I reset my password?',
-      answer:
-        'Click on "Forgot Password" on the login page. Enter your email address and we\'ll send you instructions to reset your password.',
+      question: t('help.faqs.resetPassword.question'),
+      answer: t('help.faqs.resetPassword.answer'),
     },
     {
-      question: 'Can I cancel or modify my order?',
-      answer:
-        'Orders can be cancelled or modified within 1 hour of placement. After that, please contact customer support for assistance.',
+      question: t('help.faqs.cancelOrder.question'),
+      answer: t('help.faqs.cancelOrder.answer'),
     },
     {
-      question: 'Are my payment details secure?',
-      answer:
-        'Yes, we use industry-standard SSL encryption to protect your payment information. We never store your full credit card details on our servers.',
+      question: t('help.faqs.paymentSecurity.question'),
+      answer: t('help.faqs.paymentSecurity.answer'),
     },
     {
-      question: 'How do I contact customer support?',
-      answer:
-        'You can reach us via email at support@augmentstore.com, by phone at +1 (555) 123-4567, or through our Contact page.',
+      question: t('help.faqs.contactSupport.question'),
+      answer: t('help.faqs.contactSupport.answer'),
     },
   ]
 
@@ -67,17 +60,16 @@ const HelpPage = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Paper elevation={2} sx={{ p: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
-          Help Center
+          {t('help.title')}
         </Typography>
 
         <Typography variant="body1" paragraph sx={{ mt: 2 }}>
-          Find answers to frequently asked questions below. If you need additional assistance,
-          please don't hesitate to contact our customer support team.
+          {t('help.description')}
         </Typography>
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h5" gutterBottom>
-            Frequently Asked Questions
+            {t('help.faqsTitle')}
           </Typography>
 
           {faqs.map((faq, index) => (
@@ -98,11 +90,10 @@ const HelpPage = () => {
 
         <Box sx={{ mt: 4, p: 3, bgcolor: 'primary.light', borderRadius: 1 }}>
           <Typography variant="h6" gutterBottom>
-            Still Need Help?
+            {t('help.stillNeedHelp.title')}
           </Typography>
           <Typography variant="body2">
-            If you couldn't find the answer you're looking for, our customer support team is ready
-            to assist you. Contact us via email, phone, or our contact form.
+            {t('help.stillNeedHelp.description')}
           </Typography>
         </Box>
       </Paper>
