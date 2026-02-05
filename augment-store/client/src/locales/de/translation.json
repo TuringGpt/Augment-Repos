@@ -528,6 +528,57 @@
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
   },
+  "help": {
+    "title": "Hilfezentrum",
+    "description": "Finden Sie unten Antworten auf häufig gestellte Fragen. Wenn Sie zusätzliche Unterstützung benötigen, zögern Sie nicht, unser Kundenservice-Team zu kontaktieren.",
+    "faqsTitle": "Häufig Gestellte Fragen",
+    "stillNeedHelp": {
+      "title": "Benötigen Sie Weitere Hilfe?",
+      "description": "Wenn Sie die gesuchte Antwort nicht finden konnten, steht Ihnen unser Kundenservice-Team gerne zur Verfügung. Kontaktieren Sie uns per E-Mail, Telefon oder über unser Kontaktformular."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "Wie gebe ich eine Bestellung auf?",
+        "answer": "Durchsuchen Sie unsere Produkte, fügen Sie Artikel zu Ihrem Warenkorb hinzu und gehen Sie zur Kasse. Sie müssen ein Konto erstellen oder sich anmelden, um Ihren Kauf abzuschließen."
+      },
+      "paymentMethods": {
+        "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, MasterCard, American Express), PayPal und andere sichere Zahlungsmethoden."
+      },
+      "trackOrder": {
+        "question": "Wie kann ich meine Bestellung verfolgen?",
+        "answer": "Sobald Ihre Bestellung versandt wurde, erhalten Sie eine Sendungsverfolgungsnummer per E-Mail. Sie können den Status Ihrer Bestellung auch im Bereich \"Meine Bestellungen\" Ihres Kontos einsehen."
+      },
+      "returnPolicy": {
+        "question": "Wie lautet Ihre Rückgaberichtlinie?",
+        "answer": "Wir bieten eine 30-tägige Rückgaberichtlinie für die meisten Artikel. Produkte müssen unbenutzt und in der Originalverpackung sein. Weitere Details finden Sie auf unserer Rückgabeseite."
+      },
+      "shippingTime": {
+        "question": "Wie lange dauert der Versand?",
+        "answer": "Der Standardversand dauert in der Regel 5-7 Werktage. Expressversandoptionen sind an der Kasse für eine schnellere Lieferung verfügbar."
+      },
+      "international": {
+        "question": "Versenden Sie international?",
+        "answer": "Ja, wir versenden in viele Länder weltweit. Versandkosten und Lieferzeiten variieren je nach Standort. Internationale Bestellungen können Zollgebühren unterliegen."
+      },
+      "resetPassword": {
+        "question": "Wie setze ich mein Passwort zurück?",
+        "answer": "Klicken Sie auf der Anmeldeseite auf \"Passwort vergessen\". Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts."
+      },
+      "cancelOrder": {
+        "question": "Kann ich meine Bestellung stornieren oder ändern?",
+        "answer": "Bestellungen können innerhalb von 1 Stunde nach der Aufgabe storniert oder geändert werden. Danach wenden Sie sich bitte an den Kundensupport für Unterstützung."
+      },
+      "paymentSecurity": {
+        "question": "Sind meine Zahlungsdaten sicher?",
+        "answer": "Ja, wir verwenden branchenübliche SSL-Verschlüsselung zum Schutz Ihrer Zahlungsinformationen. Wir speichern niemals Ihre vollständigen Kreditkartendaten auf unseren Servern."
+      },
+      "contactSupport": {
+        "question": "Wie kontaktiere ich den Kundensupport?",
+        "answer": "Sie können uns per E-Mail unter support@augmentstore.com, telefonisch unter +1 (555) 123-4567 oder über unsere Kontaktseite erreichen."
+      }
+    }
+  },
   "productStatistics": {
     "detail": {
       "noProductId": "Keine Produkt-ID angegeben",

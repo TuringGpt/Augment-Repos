@@ -528,6 +528,57 @@
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
   },
+  "help": {
+    "title": "Centre d'Aide",
+    "description": "Trouvez des réponses aux questions fréquemment posées ci-dessous. Si vous avez besoin d'une assistance supplémentaire, n'hésitez pas à contacter notre équipe de support client.",
+    "faqsTitle": "Questions Fréquemment Posées",
+    "stillNeedHelp": {
+      "title": "Besoin d'Aide Supplémentaire ?",
+      "description": "Si vous n'avez pas trouvé la réponse que vous cherchez, notre équipe de support client est prête à vous aider. Contactez-nous par e-mail, téléphone ou notre formulaire de contact."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "Comment passer une commande ?",
+        "answer": "Parcourez nos produits, ajoutez des articles à votre panier et procédez au paiement. Vous devrez créer un compte ou vous connecter pour finaliser votre achat."
+      },
+      "paymentMethods": {
+        "question": "Quels modes de paiement acceptez-vous ?",
+        "answer": "Nous acceptons toutes les principales cartes de crédit (Visa, MasterCard, American Express), PayPal et d'autres méthodes de paiement sécurisées."
+      },
+      "trackOrder": {
+        "question": "Comment puis-je suivre ma commande ?",
+        "answer": "Une fois votre commande expédiée, vous recevrez un numéro de suivi par e-mail. Vous pouvez également consulter l'état de votre commande dans la section \"Mes Commandes\" de votre compte."
+      },
+      "returnPolicy": {
+        "question": "Quelle est votre politique de retour ?",
+        "answer": "Nous offrons une politique de retour de 30 jours pour la plupart des articles. Les produits doivent être inutilisés et dans leur emballage d'origine. Consultez notre page Retours pour plus de détails."
+      },
+      "shippingTime": {
+        "question": "Combien de temps prend la livraison ?",
+        "answer": "La livraison standard prend généralement 5 à 7 jours ouvrables. Des options de livraison express sont disponibles lors du paiement pour une livraison plus rapide."
+      },
+      "international": {
+        "question": "Livrez-vous à l'international ?",
+        "answer": "Oui, nous livrons dans de nombreux pays du monde entier. Les frais de livraison et les délais varient selon l'emplacement. Les commandes internationales peuvent être soumises à des frais de douane."
+      },
+      "resetPassword": {
+        "question": "Comment réinitialiser mon mot de passe ?",
+        "answer": "Cliquez sur \"Mot de passe oublié\" sur la page de connexion. Entrez votre adresse e-mail et nous vous enverrons des instructions pour réinitialiser votre mot de passe."
+      },
+      "cancelOrder": {
+        "question": "Puis-je annuler ou modifier ma commande ?",
+        "answer": "Les commandes peuvent être annulées ou modifiées dans l'heure suivant leur passation. Après cela, veuillez contacter le support client pour obtenir de l'aide."
+      },
+      "paymentSecurity": {
+        "question": "Mes informations de paiement sont-elles sécurisées ?",
+        "answer": "Oui, nous utilisons le cryptage SSL standard de l'industrie pour protéger vos informations de paiement. Nous ne stockons jamais les détails complets de votre carte de crédit sur nos serveurs."
+      },
+      "contactSupport": {
+        "question": "Comment contacter le support client ?",
+        "answer": "Vous pouvez nous joindre par e-mail à support@augmentstore.com, par téléphone au +1 (555) 123-4567, ou via notre page de Contact."
+      }
+    }
+  },
   "productStatistics": {
     "detail": {
       "noProductId": "Aucun ID de produit fourni",
