@@ -1496,3 +1496,5 @@ class RecommendProductListViewTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the recommended products should be in the same category as the user's wishlist, cart and order
+
+
