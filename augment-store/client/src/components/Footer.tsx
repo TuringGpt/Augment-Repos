@@ -823,7 +823,7 @@ const Footer = () => {
             </Link>
             <Link
               component={RouterLink}
-              to="/cookies"
+              to="/privacy"
               color="inherit"
               underline="none"
               sx={{
