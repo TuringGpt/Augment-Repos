@@ -800,7 +800,7 @@ const Footer = () => {
                 },
               }}
             >
-              Privacy Policy
+              {t('footer.privacyPolicy')}
             </Link>
             <Link
               component={RouterLink}
@@ -819,7 +819,7 @@ const Footer = () => {
                 },
               }}
             >
-              Terms of Service
+              {t('footer.termsOfService')}
             </Link>
             <Link
               component={RouterLink}
@@ -838,7 +838,7 @@ const Footer = () => {
                 },
               }}
             >
-              Cookie Policy
+              {t('footer.cookiePolicy')}
             </Link>
           </Stack>
         </Box>
