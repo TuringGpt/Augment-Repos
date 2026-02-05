@@ -705,7 +705,7 @@ const Footer = () => {
                 />
                 <FormControl size="small">
                   <Select
-                    value={i18n.resolvedLanguage || i18n.language.split('-')[0]}
+                    value={(i18n.resolvedLanguage || i18n.language).split('-')[0]}
                     onChange={handleLanguageChange}
                     variant="standard"
                     sx={{
