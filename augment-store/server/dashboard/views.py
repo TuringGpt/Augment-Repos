@@ -248,7 +248,6 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         total_revenue = revenue_data['total_revenue']
-
         # Average order value (based on paid orders only)
         # Use count of paid orders to match the revenue calculation
         paid_orders_count = revenue_data['paid_orders_count']
