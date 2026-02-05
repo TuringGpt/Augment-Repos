@@ -38,7 +38,7 @@ const Footer = () => {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     // Check if View Transitions API is supported
-    if (!document.startViewTransition || prefersReducedMotion) {
+    if (typeof document === 'undefined' || !document.startViewTransition || prefersReducedMotion) {
       toggleMode()
       return
     }
@@ -708,7 +708,7 @@ const Footer = () => {
                     value={(i18n.resolvedLanguage || i18n.language).split('-')[0]}
                     onChange={handleLanguageChange}
                     variant="standard"
-                    aria-label="Change language"
+                    aria-label={t('tooltip.changeLanguage')}
                     sx={{
                       color: brandColors.footer.text,
                       fontSize: '0.875rem',
