@@ -1501,9 +1501,8 @@ class RecommendProductListViewTests(BaseAPITestCase):
 class ProductSearchViewTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
-        self.merchant_user = UserFactory(
-            email="merchant@demo.com", role=User.Role.MERCHANT
-        )
+        # Let factory generate unique email to avoid django_get_or_create conflicts
+        self.merchant_user = UserFactory(role=User.Role.MERCHANT)
         self.merchant_client = self.authenticated_client
         self.merchant_client.force_authenticate(user=self.merchant_user)
 
