@@ -1,5 +1,6 @@
 import { Container, Typography, Box, Paper, Alert } from '@mui/material'
 import { useTranslation } from '@hooks/useTranslation'
+import { CONTACT_INFO } from '@constants/index'
 
 const ReturnsPage = () => {
   const { t } = useTranslation()
@@ -82,7 +83,7 @@ const ReturnsPage = () => {
             {t('returns.exchanges.title')}
           </Typography>
           <Typography variant="body1" paragraph>
-            {t('returns.exchanges.policy')}
+            {t('returns.exchanges.policy', { supportEmail: CONTACT_INFO.SUPPORT_EMAIL })}
           </Typography>
         </Box>
 
@@ -103,7 +104,10 @@ const ReturnsPage = () => {
             {t('returns.needHelp.title')}
           </Typography>
           <Typography variant="body2">
-            {t('returns.needHelp.message')}
+            {t('returns.needHelp.message', {
+              supportEmail: CONTACT_INFO.SUPPORT_EMAIL,
+              supportPhone: CONTACT_INFO.SUPPORT_PHONE
+            })}
           </Typography>
         </Box>
       </Paper>

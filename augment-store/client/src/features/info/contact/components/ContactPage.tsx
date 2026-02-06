@@ -1,6 +1,7 @@
 import { Container, Typography, Box, Paper, Grid, TextField, Button } from '@mui/material'
 import { Email, Phone, LocationOn } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { CONTACT_INFO } from '@constants/index'
 
 const ContactPage = () => {
   const { t } = useTranslation()
@@ -50,7 +51,7 @@ const ContactPage = () => {
                 <Email sx={{ mr: 2, color: 'primary.main' }} />
                 <Box>
                   <Typography variant="subtitle2">{t('contact.email')}</Typography>
-                  <Typography variant="body2">support@augmentstore.com</Typography>
+                  <Typography variant="body2">{CONTACT_INFO.SUPPORT_EMAIL}</Typography>
                 </Box>
               </Box>
 
@@ -58,7 +59,7 @@ const ContactPage = () => {
                 <Phone sx={{ mr: 2, color: 'primary.main' }} />
                 <Box>
                   <Typography variant="subtitle2">{t('contact.phone')}</Typography>
-                  <Typography variant="body2">+1 (555) 123-4567</Typography>
+                  <Typography variant="body2">{CONTACT_INFO.SUPPORT_PHONE}</Typography>
                 </Box>
               </Box>
 

@@ -1111,7 +1111,7 @@
     },
     "exchanges": {
       "title": "Exchanges",
-      "policy": "We only replace items if they are defective or damaged. If you need to exchange an item for the same product, please contact us at support@augmentstore.com."
+      "policy": "We only replace items if they are defective or damaged. If you need to exchange an item for the same product, please contact us at {{supportEmail}}."
     },
     "shippingCosts": {
       "title": "Shipping Costs",
@@ -1120,7 +1120,7 @@
     },
     "needHelp": {
       "title": "Need Help?",
-      "message": "If you have any questions about our return policy, please contact our customer support team at support@augmentstore.com or call +1 (555) 123-4567."
+      "message": "If you have any questions about our return policy, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
     }
   }
 }

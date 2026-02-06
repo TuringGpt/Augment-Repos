@@ -1111,7 +1111,7 @@
     },
     "exchanges": {
       "title": "Échanges",
-      "policy": "Nous ne remplaçons les articles que s'ils sont défectueux ou endommagés. Si vous devez échanger un article pour le même produit, veuillez nous contacter à support@augmentstore.com."
+      "policy": "Nous ne remplaçons les articles que s'ils sont défectueux ou endommagés. Si vous devez échanger un article pour le même produit, veuillez nous contacter à {{supportEmail}}."
     },
     "shippingCosts": {
       "title": "Frais d'Expédition",
@@ -1120,7 +1120,7 @@
     },
     "needHelp": {
       "title": "Besoin d'Aide ?",
-      "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à support@augmentstore.com ou appelez le +1 (555) 123-4567."
+      "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
     }
   }
 }

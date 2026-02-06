@@ -1111,7 +1111,7 @@
     },
     "exchanges": {
       "title": "Umtausch",
-      "policy": "Wir ersetzen Artikel nur, wenn sie defekt oder beschädigt sind. Wenn Sie einen Artikel gegen dasselbe Produkt umtauschen müssen, kontaktieren Sie uns bitte unter support@augmentstore.com."
+      "policy": "Wir ersetzen Artikel nur, wenn sie defekt oder beschädigt sind. Wenn Sie einen Artikel gegen dasselbe Produkt umtauschen müssen, kontaktieren Sie uns bitte unter {{supportEmail}}."
     },
     "shippingCosts": {
       "title": "Versandkosten",
@@ -1120,7 +1120,7 @@
     },
     "needHelp": {
       "title": "Brauchen Sie Hilfe?",
-      "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter support@augmentstore.com oder rufen Sie +1 (555) 123-4567 an."
+      "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
     }
   }
 }

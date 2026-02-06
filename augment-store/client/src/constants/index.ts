@@ -58,6 +58,11 @@ export const PAYMENT_STATUS_LABELS = {
 
 export const POLLING_INTERVAL = 30000 // 30 seconds in milliseconds
 
+export const CONTACT_INFO = {
+  SUPPORT_EMAIL: 'support@augmentstore.com',
+  SUPPORT_PHONE: '+1 (555) 123-4567',
+} as const
+
 export const COUNTRIES = [
   { value: 'AF', label: 'Afghanistan' },
   { value: 'AX', label: 'Åland Islands' },
