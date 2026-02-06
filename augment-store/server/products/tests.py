@@ -1531,7 +1531,7 @@ class ProductSearchViewTests(BaseAPITestCase):
         # Verify first request was a cache MISS by checking for product SELECT query
         first_request_product_queries = [
             q for q in ctx1.captured_queries 
-            if 'from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower()
+            if q.get('sql') and ('from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower())
         ]
         self.assertGreater(len(first_request_product_queries), 0, "First request should query products_product (cache miss)")
 
@@ -1551,7 +1551,7 @@ class ProductSearchViewTests(BaseAPITestCase):
         # Exclude products_searchquery (INSERT for logging) - only check for SELECT FROM products_product
         product_select_queries = [
             q for q in ctx2.captured_queries 
-            if 'from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower()
+            if q.get('sql') and ('from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower())
         ]
         self.assertEqual(len(product_select_queries), 0, "Should not query products_product table on cache hit")
         
