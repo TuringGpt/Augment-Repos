@@ -1512,34 +1512,39 @@ class ProductSearchViewTests(BaseAPITestCase):
         ProductSearchCacheService().clear_namespace()
         url = reverse("v1:product-search")
 
-        # WHEN making first search request
+        # WHEN making first search request (authenticated)
         # 1. Product count query
         # 2. Search logging (insert)
         # 3. Product fetch
         # Total should be > 0.
         with CaptureQueriesContext(connection) as ctx1:
-            response_1 = self.client.get(url, {"search": "Phone"})
+            response_1 = self.merchant_client.get(url, {"search": "Phone"})
         
         self.assertEqual(response_1.status_code, status.HTTP_200_OK)
         self.assertGreater(len(ctx1), 0)
 
-        # WHEN making second search request (identical)
+        # WHEN making second search request (identical, authenticated)
         # Should hit cache (no product queries), but MUST still log search (1 DB insert).
         # We expect exactly 1 query (the insert).
         # Note: If logging uses valid connection and atomic transaction, it's 1 query.
         with CaptureQueriesContext(connection) as ctx2:
-            response_2 = self.client.get(url, {"search": "Phone"})
+            response_2 = self.merchant_client.get(url, {"search": "Phone"})
         
         self.assertEqual(response_2.status_code, status.HTTP_200_OK)
         
         # Verify response is cached
         self.assertEqual(response_1.data, response_2.data)
         
-        # Verify NO product queries (Checking if queries involved 'product')
-        product_queries = [q for q in ctx2.captured_queries if 'product' in q['sql'].lower()]
-        self.assertEqual(len(product_queries), 0, "Should not query products on cache hit")
+        # Verify NO product table SELECT queries on cache hit
+        # Exclude products_searchquery (INSERT for logging) - only check for SELECT FROM products_product
+        product_select_queries = [
+            q for q in ctx2.captured_queries 
+            if 'from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower()
+        ]
+        self.assertEqual(len(product_select_queries), 0, "Should not query products_product table on cache hit")
         
         # Verify SearchQuery was logged both times
         # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
         # Instead, check SearchQuery count.
         self.assertEqual(SearchQuery.objects.count(), 2)
+
