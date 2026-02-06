@@ -1527,7 +1527,13 @@ class ProductSearchViewTests(BaseAPITestCase):
             response_1 = self.merchant_client.get(url, {"search": "Phone"})
         
         self.assertEqual(response_1.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(ctx1), 0)
+        
+        # Verify first request was a cache MISS by checking for product SELECT query
+        first_request_product_queries = [
+            q for q in ctx1.captured_queries 
+            if 'from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower()
+        ]
+        self.assertGreater(len(first_request_product_queries), 0, "First request should query products_product (cache miss)")
 
         # WHEN making second search request (identical, authenticated)
         # Should hit cache (no product queries), but MUST still log search (1 DB insert).
