@@ -358,8 +358,8 @@
       "emailAddress": "Email Address",
       "phoneNumber": "Phone Number",
       "emailHelper": "We'll send your order confirmation here",
-      "phoneHelper": "Enter 10-15 digits. Format: +1 (555) 123-4567 or 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Enter 10-15 digits. Format: {{supportPhone}} or 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "Email is required",
         "emailInvalid": "Invalid email address",
@@ -575,7 +575,7 @@
       },
       "contactSupport": {
         "question": "How do I contact customer support?",
-        "answer": "You can reach us via email at support@augmentstore.com, by phone at +1 (555) 123-4567, or through our Contact page."
+        "answer": "You can reach us via email at {{supportEmail}}, by phone at {{supportPhone}}, or through our Contact page."
       }
     }
   },
