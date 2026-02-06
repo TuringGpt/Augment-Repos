@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { CONTACT_INFO } from '@constants/index'
 
 const ShippingPage = () => {
   const domesticRates = [
@@ -144,8 +145,8 @@ const ShippingPage = () => {
           </Typography>
           <Typography variant="body1" paragraph>
             If your package arrives damaged or goes missing during transit, please contact us
-            immediately at support@augmentstore.com. We will work with the carrier to resolve the
-            issue and ensure you receive your order.
+            immediately at {CONTACT_INFO.SUPPORT_EMAIL}. We will work with the carrier to resolve
+            the issue and ensure you receive your order.
           </Typography>
         </Box>
 
@@ -155,7 +156,8 @@ const ShippingPage = () => {
           </Typography>
           <Typography variant="body2">
             If you have any questions about shipping or need assistance with your order, please
-            contact our customer support team at support@augmentstore.com or call +1 (555) 123-4567.
+            contact our customer support team at {CONTACT_INFO.SUPPORT_EMAIL} or call{' '}
+            {CONTACT_INFO.SUPPORT_PHONE}.
           </Typography>
         </Box>
       </Paper>

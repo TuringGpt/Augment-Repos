@@ -358,8 +358,8 @@
       "emailAddress": "Adresse e-mail",
       "phoneNumber": "Numéro de téléphone",
       "emailHelper": "Nous enverrons votre confirmation de commande ici",
-      "phoneHelper": "Entrez 10-15 chiffres. Format: +1 (555) 123-4567 ou 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Entrez 10-15 chiffres. Format: {{supportPhone}} ou 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "L'e-mail est requis",
         "emailInvalid": "Adresse e-mail invalide",
@@ -575,7 +575,7 @@
       },
       "contactSupport": {
         "question": "Comment contacter le support client ?",
-        "answer": "Vous pouvez nous joindre par e-mail à support@augmentstore.com, par téléphone au +1 (555) 123-4567, ou via notre page de Contact."
+        "answer": "Vous pouvez nous joindre par e-mail à {{supportEmail}}, par téléphone au {{supportPhone}}, ou via notre page de Contact."
       }
     }
   },
@@ -1068,6 +1068,59 @@
         "high": "ÉLEVÉ",
         "medium": "MOYEN"
       }
+    }
+  },
+  "returns": {
+    "title": "Retours et Remboursements",
+    "satisfactionAlert": "Nous voulons que vous soyez entièrement satisfait de votre achat. Si vous n'êtes pas satisfait de votre commande, nous sommes là pour vous aider.",
+    "returnPolicy": {
+      "title": "Politique de Retour",
+      "intro": "Nous offrons une politique de retour de 30 jours pour la plupart des articles. Pour être éligible à un retour, votre article doit être :",
+      "conditions": {
+        "unused": "Non utilisé et dans le même état que vous l'avez reçu",
+        "originalPackaging": "Dans l'emballage d'origine",
+        "receipt": "Accompagné du reçu ou de la preuve d'achat"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Articles Non Retournables",
+      "intro": "Certains articles ne peuvent pas être retournés, notamment :",
+      "items": {
+        "perishable": "Produits périssables (nourriture, fleurs, etc.)",
+        "custom": "Articles personnalisés ou sur mesure",
+        "personalCare": "Articles de soins personnels (pour des raisons d'hygiène)",
+        "hazardous": "Matières dangereuses",
+        "giftCards": "Cartes-cadeaux",
+        "digital": "Logiciels téléchargeables ou produits numériques"
+      }
+    },
+    "howToReturn": {
+      "title": "Comment Retourner un Article",
+      "steps": {
+        "step1": "Connectez-vous à votre compte et accédez à \"Mes Commandes\"",
+        "step2": "Sélectionnez la commande contenant l'article que vous souhaitez retourner",
+        "step3": "Cliquez sur \"Demander un Retour\" et suivez les instructions",
+        "step4": "Emballez l'article en toute sécurité dans son emballage d'origine",
+        "step5": "Expédiez l'article à l'adresse fournie dans votre confirmation de retour"
+      }
+    },
+    "refunds": {
+      "title": "Remboursements",
+      "inspection": "Une fois que nous aurons reçu votre retour, nous inspecterons l'article et vous informerons de l'approbation ou du rejet de votre remboursement.",
+      "processing": "Si approuvé, votre remboursement sera traité et un crédit sera automatiquement appliqué à votre mode de paiement d'origine dans les 5 à 10 jours ouvrables."
+    },
+    "exchanges": {
+      "title": "Échanges",
+      "policy": "Nous ne remplaçons les articles que s'ils sont défectueux ou endommagés. Si vous devez échanger un article pour le même produit, veuillez nous contacter à {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Frais d'Expédition",
+      "customerResponsibility": "Vous serez responsable du paiement de vos propres frais d'expédition pour retourner votre article. Les frais d'expédition ne sont pas remboursables. Si vous recevez un remboursement, le coût de l'expédition de retour sera déduit de votre remboursement.",
+      "defectiveCoverage": "Si l'article était défectueux ou endommagé à l'arrivée, nous couvrirons les frais d'expédition de retour."
+    },
+    "needHelp": {
+      "title": "Besoin d'Aide ?",
+      "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
     }
   }
 }

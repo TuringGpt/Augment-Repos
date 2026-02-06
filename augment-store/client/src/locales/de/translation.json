@@ -358,8 +358,8 @@
       "emailAddress": "E-Mail-Adresse",
       "phoneNumber": "Telefonnummer",
       "emailHelper": "Wir senden Ihre Bestellbestätigung hierher",
-      "phoneHelper": "Geben Sie 10-15 Ziffern ein. Format: +1 (555) 123-4567 oder 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Geben Sie 10-15 Ziffern ein. Format: {{supportPhone}} oder 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "E-Mail ist erforderlich",
         "emailInvalid": "Ungültige E-Mail-Adresse",
@@ -575,7 +575,7 @@
       },
       "contactSupport": {
         "question": "Wie kontaktiere ich den Kundensupport?",
-        "answer": "Sie können uns per E-Mail unter support@augmentstore.com, telefonisch unter +1 (555) 123-4567 oder über unsere Kontaktseite erreichen."
+        "answer": "Sie können uns per E-Mail unter {{supportEmail}}, telefonisch unter {{supportPhone}} oder über unsere Kontaktseite erreichen."
       }
     }
   },
@@ -1068,6 +1068,59 @@
         "high": "HOCH",
         "medium": "MITTEL"
       }
+    }
+  },
+  "returns": {
+    "title": "Rücksendungen & Rückerstattungen",
+    "satisfactionAlert": "Wir möchten, dass Sie mit Ihrem Kauf vollständig zufrieden sind. Wenn Sie mit Ihrer Bestellung nicht zufrieden sind, sind wir hier, um zu helfen.",
+    "returnPolicy": {
+      "title": "Rückgaberichtlinie",
+      "intro": "Wir bieten eine 30-tägige Rückgaberichtlinie für die meisten Artikel an. Um für eine Rücksendung berechtigt zu sein, muss Ihr Artikel:",
+      "conditions": {
+        "unused": "Unbenutzt und in demselben Zustand sein, in dem Sie ihn erhalten haben",
+        "originalPackaging": "In der Originalverpackung sein",
+        "receipt": "Mit dem Kassenbon oder Kaufnachweis versehen sein"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Nicht Rücksendbare Artikel",
+      "intro": "Bestimmte Artikel können nicht zurückgegeben werden, einschließlich:",
+      "items": {
+        "perishable": "Verderbliche Waren (Lebensmittel, Blumen usw.)",
+        "custom": "Maßgefertigte oder personalisierte Artikel",
+        "personalCare": "Körperpflegeartikel (aus hygienischen Gründen)",
+        "hazardous": "Gefahrstoffe",
+        "giftCards": "Geschenkkarten",
+        "digital": "Herunterladbare Software oder digitale Produkte"
+      }
+    },
+    "howToReturn": {
+      "title": "So Senden Sie Einen Artikel Zurück",
+      "steps": {
+        "step1": "Melden Sie sich in Ihrem Konto an und gehen Sie zu \"Meine Bestellungen\"",
+        "step2": "Wählen Sie die Bestellung aus, die den Artikel enthält, den Sie zurücksenden möchten",
+        "step3": "Klicken Sie auf \"Rücksendung Anfordern\" und folgen Sie den Anweisungen",
+        "step4": "Verpacken Sie den Artikel sicher in seiner Originalverpackung",
+        "step5": "Senden Sie den Artikel an die in Ihrer Rücksendebestätigung angegebene Adresse"
+      }
+    },
+    "refunds": {
+      "title": "Rückerstattungen",
+      "inspection": "Sobald wir Ihre Rücksendung erhalten haben, werden wir den Artikel prüfen und Sie über die Genehmigung oder Ablehnung Ihrer Rückerstattung informieren.",
+      "processing": "Bei Genehmigung wird Ihre Rückerstattung bearbeitet und eine Gutschrift wird automatisch innerhalb von 5-10 Werktagen auf Ihre ursprüngliche Zahlungsmethode angewendet."
+    },
+    "exchanges": {
+      "title": "Umtausch",
+      "policy": "Wir ersetzen Artikel nur, wenn sie defekt oder beschädigt sind. Wenn Sie einen Artikel gegen dasselbe Produkt umtauschen müssen, kontaktieren Sie uns bitte unter {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Versandkosten",
+      "customerResponsibility": "Sie sind für die Zahlung Ihrer eigenen Versandkosten für die Rücksendung Ihres Artikels verantwortlich. Versandkosten sind nicht erstattungsfähig. Wenn Sie eine Rückerstattung erhalten, werden die Kosten für den Rückversand von Ihrer Rückerstattung abgezogen.",
+      "defectiveCoverage": "Wenn der Artikel bei Ankunft defekt oder beschädigt war, übernehmen wir die Rücksendekosten."
+    },
+    "needHelp": {
+      "title": "Brauchen Sie Hilfe?",
+      "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
     }
   }
 }
