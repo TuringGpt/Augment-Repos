@@ -1,5 +1,4 @@
 import { Box, Container, Typography, Paper } from '@mui/material'
-import { Colors } from '@config/colors'
 
 const TermsPage = () => {
   return (
@@ -11,7 +10,6 @@ const TermsPage = () => {
           gutterBottom
           sx={{
             fontWeight: 'bold',
-            color: Colors.text.primary,
             mb: 3,
           }}
         >
@@ -24,7 +22,7 @@ const TermsPage = () => {
 
         <Box sx={{ '& > *': { mb: 3 } }}>
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               1. Acceptance of Terms
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -35,7 +33,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               2. Use License
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -43,7 +41,7 @@ const TermsPage = () => {
               personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of
               title, and under this license you may not:
             </Typography>
-            <Box component="ul" sx={{ pl: 4, color: Colors.text.secondary }}>
+            <Box component="ul" sx={{ pl: 4, color: 'text.secondary' }}>
               <li>Modify or copy the materials</li>
               <li>Use the materials for any commercial purpose or for any public display</li>
               <li>Attempt to reverse engineer any software contained on our platform</li>
@@ -53,7 +51,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               3. Account Terms
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -66,7 +64,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               4. Product Information
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -77,7 +75,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               5. Pricing and Payment
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -92,7 +90,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               6. Shipping and Delivery
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -103,7 +101,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               7. Returns and Refunds
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -113,7 +111,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               8. Limitation of Liability
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -124,7 +122,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               9. Privacy
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -134,7 +132,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               10. Modifications to Terms
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -144,7 +142,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               11. Governing Law
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -154,7 +152,7 @@ const TermsPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               12. Contact Information
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>

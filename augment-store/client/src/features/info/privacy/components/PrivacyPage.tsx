@@ -1,5 +1,4 @@
 import { Box, Container, Typography, Paper } from '@mui/material'
-import { Colors } from '@config/colors'
 
 const PrivacyPage = () => {
   return (
@@ -11,7 +10,6 @@ const PrivacyPage = () => {
           gutterBottom
           sx={{
             fontWeight: 'bold',
-            color: Colors.text.primary,
             mb: 3,
           }}
         >
@@ -24,7 +22,7 @@ const PrivacyPage = () => {
 
         <Box sx={{ '& > *': { mb: 3 } }}>
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               1. Introduction
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -35,13 +33,13 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               2. Information We Collect
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
               We may collect, use, store and transfer different kinds of personal data about you:
             </Typography>
-            <Box component="ul" sx={{ pl: 4, color: Colors.text.secondary }}>
+            <Box component="ul" sx={{ pl: 4, color: 'text.secondary' }}>
               <li>
                 <strong>Identity Data:</strong> First name, last name, username or similar identifier
               </li>
@@ -69,14 +67,14 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               3. How We Use Your Information
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
               We will only use your personal data when the law allows us to. Most commonly, we will use your personal
               data in the following circumstances:
             </Typography>
-            <Box component="ul" sx={{ pl: 4, color: Colors.text.secondary }}>
+            <Box component="ul" sx={{ pl: 4, color: 'text.secondary' }}>
               <li>To process and deliver your orders</li>
               <li>To manage your account and provide customer support</li>
               <li>To send you important information regarding your purchases</li>
@@ -88,7 +86,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               4. Data Security
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -103,7 +101,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               5. Data Retention
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -113,14 +111,14 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               6. Your Legal Rights
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
               Under certain circumstances, you have rights under data protection laws in relation to your personal
               data:
             </Typography>
-            <Box component="ul" sx={{ pl: 4, color: Colors.text.secondary }}>
+            <Box component="ul" sx={{ pl: 4, color: 'text.secondary' }}>
               <li>Request access to your personal data</li>
               <li>Request correction of your personal data</li>
               <li>Request erasure of your personal data</li>
@@ -132,7 +130,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               7. Cookies
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -143,7 +141,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               8. Third-Party Links
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -154,7 +152,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               9. Children's Privacy
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -165,7 +163,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               10. Changes to This Privacy Policy
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
@@ -175,7 +173,7 @@ const PrivacyPage = () => {
           </Box>
 
           <Box>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: Colors.text.primary }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
               11. Contact Us
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
