@@ -16,14 +16,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='product',
-            index=models.Index(fields=['name'], name='products_product_name_idx'),
+            index=models.Index(fields=['name'], name='prod_name_idx'),
         ),
         migrations.AddIndex(
             model_name='product',
-            index=models.Index(fields=['created_at'], name='products_product_created_at_idx'),
+            index=models.Index(fields=['created_at'], name='prod_created_at_idx'),
         ),
         migrations.AddIndex(
             model_name='product',
-            index=models.Index(fields=['price'], name='products_product_price_idx'),
+            index=models.Index(fields=['price'], name='prod_price_idx'),
         ),
     ]
