@@ -27,9 +27,20 @@ from .serializers import (
 from .services import StripeService
 
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
 if typing.TYPE_CHECKING:
     from django.db.models.query import QuerySet
+
+class OrderCacheService(BaseCacheService):
+    OBJECT_NAME = "order"
+    VERSION = 1
+
+
+class PaymentCacheService(BaseCacheService):
+    OBJECT_NAME = "payment"
+    VERSION = 1
+
 
 class BaseOrderView(AutoOptimizeMixin):
     """Base view for Order related operations with auto-optimization."""
@@ -47,12 +58,15 @@ class BaseOrderView(AutoOptimizeMixin):
         return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 
 
-class CreateOrderView(BaseOrderView, CreateAPIView):
+class CreateOrderView(CacheInvalidatorMixin, BaseOrderView, CreateAPIView):
     serializer_class = CreateOrderSerializer
+    cache_service_class = OrderCacheService
 
 
-class OrderListView(BaseOrderView, ListAPIView):
+class OrderListView(CachedListMixin, BaseOrderView, ListAPIView):
     serializer_class = OrderListSerializer
+    cache_service_class = OrderCacheService
+    cache_ttl = 60 * 10
 
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
@@ -92,7 +106,7 @@ class BasePaymentView(AutoOptimizeMixin):
     """Base view for Payment related operations with auto-optimization."""
     permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
-    auto_select_related = ("order",)
+    auto_select_related = ("order", "order__created_by")
 
     def get_queryset(self) -> "QuerySet[Payment]":
         # Users can only see their own payments
