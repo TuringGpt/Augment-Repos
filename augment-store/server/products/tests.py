@@ -1509,8 +1509,13 @@ class ProductSearchViewTests(BaseAPITestCase):
     def test_search_cache_and_logging(self):
         # GIVEN products exist
         ProductFactory(name="Test Phone", created_by=self.merchant_user)
+        
+        # Clear cache - use both service clear and Django cache clear for LocMemCache compatibility
         ProductSearchCacheService().clear_namespace()
-        url = reverse("v1:product-search")
+        from django.core.cache import cache
+        cache.clear()
+        
+        url = reverse("v1:product_search")
 
         # WHEN making first search request (authenticated)
         # 1. Product count query
@@ -1547,4 +1552,3 @@ class ProductSearchViewTests(BaseAPITestCase):
         # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
         # Instead, check SearchQuery count.
         self.assertEqual(SearchQuery.objects.count(), 2)
-
