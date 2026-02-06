@@ -1069,5 +1069,58 @@
         "medium": "MEDIUM"
       }
     }
+  },
+  "returns": {
+    "title": "Returns & Refunds",
+    "satisfactionAlert": "We want you to be completely satisfied with your purchase. If you're not happy with your order, we're here to help.",
+    "returnPolicy": {
+      "title": "Return Policy",
+      "intro": "We offer a 30-day return policy for most items. To be eligible for a return, your item must be:",
+      "conditions": {
+        "unused": "Unused and in the same condition that you received it",
+        "originalPackaging": "In the original packaging",
+        "receipt": "Accompanied by the receipt or proof of purchase"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Non-Returnable Items",
+      "intro": "Certain items cannot be returned, including:",
+      "items": {
+        "perishable": "Perishable goods (food, flowers, etc.)",
+        "custom": "Custom or personalized items",
+        "personalCare": "Personal care items (for hygiene reasons)",
+        "hazardous": "Hazardous materials",
+        "giftCards": "Gift cards",
+        "digital": "Downloadable software or digital products"
+      }
+    },
+    "howToReturn": {
+      "title": "How to Return an Item",
+      "steps": {
+        "step1": "Log in to your account and go to \"My Orders\"",
+        "step2": "Select the order containing the item you wish to return",
+        "step3": "Click \"Request Return\" and follow the instructions",
+        "step4": "Pack the item securely in its original packaging",
+        "step5": "Ship the item to the address provided in your return confirmation"
+      }
+    },
+    "refunds": {
+      "title": "Refunds",
+      "inspection": "Once we receive your return, we will inspect the item and notify you of the approval or rejection of your refund.",
+      "processing": "If approved, your refund will be processed and a credit will automatically be applied to your original method of payment within 5-10 business days."
+    },
+    "exchanges": {
+      "title": "Exchanges",
+      "policy": "We only replace items if they are defective or damaged. If you need to exchange an item for the same product, please contact us at support@augmentstore.com."
+    },
+    "shippingCosts": {
+      "title": "Shipping Costs",
+      "customerResponsibility": "You will be responsible for paying your own shipping costs for returning your item. Shipping costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from your refund.",
+      "defectiveCoverage": "If the item was defective or damaged upon arrival, we will cover the return shipping costs."
+    },
+    "needHelp": {
+      "title": "Need Help?",
+      "message": "If you have any questions about our return policy, please contact our customer support team at support@augmentstore.com or call +1 (555) 123-4567."
+    }
   }
 }
