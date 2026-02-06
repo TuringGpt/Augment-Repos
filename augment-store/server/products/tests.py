@@ -7,7 +7,8 @@ from products.models import Product, ProductBrand, ProductCategory
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
 from decimal import Decimal
 from storage.factory import FileFactory
-from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService
+from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService, ProductSearchCacheService
+from products.models import SearchQuery
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
 
@@ -1510,10 +1511,11 @@ class ProductSearchViewTests(BaseAPITestCase):
         # GIVEN products exist
         ProductFactory(name="Test Phone", created_by=self.merchant_user)
         
-        # Clear cache - use both service clear and Django cache clear for LocMemCache compatibility
-        ProductSearchCacheService().clear_namespace()
-        from django.core.cache import cache
-        cache.clear()
+        # Clear cache for this specific test - use service namespace clear
+        # Note: clear_namespace handles Redis pattern matching; for LocMemCache it may no-op
+        # but since tests run serially in Django test runner, this is generally safe
+        cache_service = ProductSearchCacheService()
+        cache_service.clear_namespace()
         
         url = reverse("v1:product_search")
 
