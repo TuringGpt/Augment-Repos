@@ -120,7 +120,7 @@ class BaseProductView(AutoOptimizeMixin):
     """Base view for Product related operations with auto-optimization."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
-    auto_select_related = ['brand', 'category', 'created_by']
+    auto_select_related = ['brand', 'brand__image', 'category', 'category__image', 'created_by']
     auto_prefetch_related = ['images']
     queryset = Product.objects.all()
 
@@ -156,7 +156,7 @@ class ProductSearchView(CachedListMixin, AdvancedSearchMixin, BaseProductView, L
         query = (self.request.query_params.get('search') or "").strip()
         response = super().list(request, *args, **kwargs)
         
-        if query:
+        if query and response.status_code == 200:
             # Handle results count for both paginated (dict) and unpaginated (list) responses
             if isinstance(response.data, dict):
                 results_count = response.data.get('count', 0)

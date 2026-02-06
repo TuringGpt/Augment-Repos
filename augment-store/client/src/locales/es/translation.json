@@ -65,7 +65,9 @@
     "products": "Explorar productos",
     "login": "Iniciar sesión en tu cuenta",
     "changeLanguage": "Cambiar idioma",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "switchToDarkMode": "Cambiar a modo oscuro",
+    "switchToLightMode": "Cambiar a modo claro"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -463,6 +465,7 @@
     "contactUs": "Contáctanos",
     "termsOfService": "Términos de Servicio",
     "privacyPolicy": "Política de Privacidad",
+    "cookiePolicy": "Política de Cookies",
     "faq": "Preguntas Frecuentes",
     "support": "Soporte",
     "followUs": "Síguenos",
@@ -524,6 +527,57 @@
     "description": "La página que buscas no existe o ha sido movida. Por favor verifica la URL o regresa a la página de inicio.",
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
+    "faqsTitle": "Preguntas Frecuentes",
+    "stillNeedHelp": {
+      "title": "¿Aún Necesitas Ayuda?",
+      "description": "Si no pudiste encontrar la respuesta que buscas, nuestro equipo de soporte al cliente está listo para ayudarte. Contáctanos por correo electrónico, teléfono o nuestro formulario de contacto."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "¿Cómo hago un pedido?",
+        "answer": "Navega por nuestros productos, agrega artículos a tu carrito y procede al pago. Necesitarás crear una cuenta o iniciar sesión para completar tu compra."
+      },
+      "paymentMethods": {
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, MasterCard, American Express), PayPal y otros métodos de pago seguros."
+      },
+      "trackOrder": {
+        "question": "¿Cómo puedo rastrear mi pedido?",
+        "answer": "Una vez que tu pedido sea enviado, recibirás un número de seguimiento por correo electrónico. También puedes ver el estado de tu pedido en la sección \"Mis Pedidos\" de tu cuenta."
+      },
+      "returnPolicy": {
+        "question": "¿Cuál es su política de devoluciones?",
+        "answer": "Ofrecemos una política de devolución de 30 días para la mayoría de los artículos. Los productos deben estar sin usar y en su embalaje original. Consulta nuestra página de Devoluciones para más detalles."
+      },
+      "shippingTime": {
+        "question": "¿Cuánto tiempo tarda el envío?",
+        "answer": "El envío estándar generalmente toma de 5 a 7 días hábiles. Las opciones de envío exprés están disponibles en el pago para una entrega más rápida."
+      },
+      "international": {
+        "question": "¿Realizan envíos internacionales?",
+        "answer": "Sí, enviamos a muchos países de todo el mundo. Los costos de envío y los tiempos de entrega varían según la ubicación. Los pedidos internacionales pueden estar sujetos a tarifas aduaneras."
+      },
+      "resetPassword": {
+        "question": "¿Cómo restablezco mi contraseña?",
+        "answer": "Haz clic en \"Olvidé mi Contraseña\" en la página de inicio de sesión. Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña."
+      },
+      "cancelOrder": {
+        "question": "¿Puedo cancelar o modificar mi pedido?",
+        "answer": "Los pedidos se pueden cancelar o modificar dentro de 1 hora después de realizarlos. Después de eso, por favor contacta al soporte al cliente para obtener asistencia."
+      },
+      "paymentSecurity": {
+        "question": "¿Mis datos de pago están seguros?",
+        "answer": "Sí, utilizamos encriptación SSL estándar de la industria para proteger tu información de pago. Nunca almacenamos los detalles completos de tu tarjeta de crédito en nuestros servidores."
+      },
+      "contactSupport": {
+        "question": "¿Cómo contacto al soporte al cliente?",
+        "answer": "Puedes contactarnos por correo electrónico a support@augmentstore.com, por teléfono al +1 (555) 123-4567, o a través de nuestra página de Contacto."
+      }
+    }
   },
   "productStatistics": {
     "detail": {
@@ -649,6 +703,16 @@
         "purchases": "Compras",
         "count": "Cantidad",
         "noData": "No hay estadísticas generales disponibles"
+      },
+      "healthCheck": {
+        "title": "Estado de Salud de la API",
+        "subtitle": "Monitorear la salud y disponibilidad de la API",
+        "checking": "Verificando salud de la API...",
+        "healthy": "Saludable",
+        "unhealthy": "No Saludable",
+        "allSystemsOperational": "Todos los sistemas operativos",
+        "systemIssuesDetected": "Problemas del sistema detectados",
+        "status": "Estado"
       }
     },
     "settings": "Configuración",
