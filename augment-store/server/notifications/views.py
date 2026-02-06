@@ -5,6 +5,12 @@ from rest_framework import status
 from .models import Notification
 from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
+
+
+class NotificationCacheService(BaseCacheService):
+    OBJECT_NAME = "notification"
+    VERSION = 1
 
 
 class BaseNotificationView(AutoOptimizeMixin):
@@ -14,24 +20,30 @@ class BaseNotificationView(AutoOptimizeMixin):
     auto_select_related = ['user']
 
     def get_queryset(self):
-        return super().get_queryset().filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user).order_by('-created_at')
 
-class MarkAllAsReadView(BaseNotificationView, GenericAPIView):
+
+class MarkAllAsReadView(CacheInvalidatorMixin, BaseNotificationView, GenericAPIView):
     serializer_class = MarkAsReadSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = NotificationCacheService
 
     def patch(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         notifications = serializer.update(None, serializer.validated_data)
+        self.invalidate_cache()
         return Response(notifications, status=status.HTTP_200_OK)
 
-class ListNotificationView(BaseNotificationView, ListAPIView):
+
+class ListNotificationView(CachedListMixin, BaseNotificationView, ListAPIView):
     serializer_class = NotificationListSerializer
+    cache_service_class = NotificationCacheService
+    cache_ttl = 60 * 5
     
 
-class UpdateNotificationView(BaseNotificationView, RetrieveUpdateDestroyAPIView):
+class UpdateNotificationView(CacheInvalidatorMixin, BaseNotificationView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateNotificationSerializer
     permission_classes = [IsAuthenticated]
-
+    cache_service_class = NotificationCacheService
