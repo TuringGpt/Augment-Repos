@@ -7,13 +7,27 @@ from .models import Cart, CartItem, Wishlist
 from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
 from products.serializers import ProductListSerializer
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedRetrieveMixin, CachedListMixin, CacheInvalidatorMixin, BaseCacheService
+
+
+class CartCacheService(BaseCacheService):
+    OBJECT_NAME = "cart"
+    VERSION = 1
+
+
+class WishlistCacheService(BaseCacheService):
+    OBJECT_NAME = "wishlist"
+    VERSION = 1
+
 
 class BaseCartView:
     permission_classes = [IsAuthenticated]
 
 
-class CartDetailView(BaseCartView, RetrieveAPIView):
+class CartDetailView(CachedRetrieveMixin, BaseCartView, RetrieveAPIView):
     serializer_class = CartDetailSerializer
+    cache_service_class = CartCacheService
+    cache_ttl = 60 * 10
 
     def get_object(self):
         cart = Cart.objects.get_user_cart(self.request.user)
@@ -26,17 +40,21 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
         )
         return cart
 
-class BaseCartItemView(AutoOptimizeMixin):
+
+class BaseCartItemView(CacheInvalidatorMixin, AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
     queryset = CartItem.objects.all()
     auto_select_related = ['product', 'product__brand', 'product__category']
+    cache_service_class = CartCacheService
 
     def get_queryset(self):
         user_cart = Cart.objects.get_user_cart(self.request.user)
         return super().get_queryset().filter(carts=user_cart)
     
+
 class AddToCartView(BaseCartItemView, CreateAPIView):
     serializer_class = AddToCartSerializer
+
 
 class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
     serializer_class = UpdateCartItemSerializer
@@ -45,15 +63,18 @@ class UpdateCartItemView(BaseCartItemView, RetrieveUpdateDestroyAPIView):
 
 from products.models import Product
 
+
 class BaseWishlistView:
     permission_classes = [IsAuthenticated]
 
 
-class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView):
+class ListWishListProductsView(CachedListMixin, AutoOptimizeMixin, BaseWishlistView, ListAPIView):
     serializer_class = ProductListSerializer
     queryset = Product.objects.all()
     auto_select_related = ['brand', 'category', 'created_by']
     auto_prefetch_related = ['images']
+    cache_service_class = WishlistCacheService
+    cache_ttl = 60 * 15
 
     def get_queryset(self):
         return super().get_queryset().filter(
@@ -61,13 +82,15 @@ class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView)
         )
     
 
-class AddToWishlistView(BaseWishlistView, GenericAPIView):
+class AddToWishlistView(CacheInvalidatorMixin, BaseWishlistView, GenericAPIView):
     serializer_class = AddToWishlistSerializer
+    cache_service_class = WishlistCacheService
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        self.invalidate_cache()
 
         return Response(
             {
@@ -76,6 +99,7 @@ class AddToWishlistView(BaseWishlistView, GenericAPIView):
             }, 
             status=status.HTTP_200_OK
         )
+
 
 class RemoveFromWishlistView(BaseWishlistView, GenericAPIView):
     serializer_class = RemoveFromWishlistSerializer
