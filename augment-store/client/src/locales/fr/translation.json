@@ -1122,5 +1122,64 @@
       "title": "Besoin d'Aide ?",
       "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
     }
+  },
+  "shipping": {
+    "title": "Informations sur la Livraison",
+    "intro": "Nous proposons diverses options d'expédition pour répondre à vos besoins. Toutes les commandes sont traitées dans un délai de 1 à 2 jours ouvrables. Vous trouverez ci-dessous des informations détaillées sur nos options d'expédition et nos tarifs.",
+    "domesticShipping": {
+      "title": "Livraison Nationale (États-Unis)",
+      "freeShippingNote": "* Livraison standard gratuite pour les commandes de 50 $ ou plus"
+    },
+    "internationalShipping": {
+      "title": "Livraison Internationale",
+      "customsNote": "* Les commandes internationales peuvent être soumises à des frais de douane et des droits d'importation"
+    },
+    "table": {
+      "shippingMethod": "Méthode d'Expédition",
+      "deliveryTime": "Délai de Livraison",
+      "cost": "Coût",
+      "region": "Région",
+      "startingCost": "Coût de Départ"
+    },
+    "methods": {
+      "standard": "Livraison Standard",
+      "express": "Livraison Express",
+      "overnight": "Livraison du Jour au Lendemain"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 jours ouvrables",
+      "express": "2-3 jours ouvrables",
+      "overnight": "1 jour ouvrable",
+      "canada": "7-14 jours ouvrables",
+      "europe": "10-21 jours ouvrables",
+      "asia": "10-21 jours ouvrables",
+      "australia": "10-21 jours ouvrables",
+      "restOfWorld": "14-28 jours ouvrables"
+    },
+    "regions": {
+      "canada": "Canada",
+      "europe": "Europe",
+      "asia": "Asie",
+      "australia": "Australie",
+      "restOfWorld": "Reste du Monde"
+    },
+    "orderTracking": {
+      "title": "Suivi de Commande",
+      "paragraph1": "Une fois votre commande expédiée, vous recevrez un e-mail de confirmation avec un numéro de suivi. Vous pouvez utiliser ce numéro pour suivre votre colis sur le site Web du transporteur.",
+      "paragraph2": "Vous pouvez également consulter l'état de votre commande en vous connectant à votre compte et en visitant la page 'Mes Commandes'."
+    },
+    "restrictions": {
+      "title": "Restrictions d'Expédition",
+      "paragraph1": "Nous expédions actuellement vers la plupart des pays du monde. Cependant, il existe certaines restrictions basées sur les réglementations locales et les capacités d'expédition.",
+      "paragraph2": "Nous n'expédions pas vers les boîtes postales pour les expéditions internationales. Pour les expéditions nationales, certaines méthodes d'expédition peuvent ne pas être disponibles pour les boîtes postales."
+    },
+    "damagedOrLost": {
+      "title": "Colis Endommagés ou Perdus",
+      "paragraph": "Si votre colis arrive endommagé ou est perdu pendant le transport, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} dans les 7 jours suivant la date de livraison prévue. Nous travaillerons avec le transporteur pour résoudre le problème et nous assurer que vous recevez votre commande."
+    },
+    "questionsAboutShipping": {
+      "title": "Questions sur la Livraison ?",
+      "paragraph": "Si vous avez des questions sur nos options d'expédition ou si vous avez besoin d'aide avec votre commande, n'hésitez pas à contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
+    }
   }
 }
