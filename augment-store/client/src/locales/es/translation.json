@@ -1170,12 +1170,12 @@
     },
     "restrictions": {
       "title": "Restricciones de Envío",
-      "paragraph1": "Actualmente enviamos a la mayoría de los países del mundo. Sin embargo, hay algunas restricciones basadas en regulaciones locales y capacidades de envío.",
-      "paragraph2": "No enviamos a apartados postales para envíos internacionales. Para envíos nacionales, algunos métodos de envío pueden no estar disponibles para apartados postales."
+      "paragraph1": "Actualmente enviamos a la mayoría de los países del mundo. Sin embargo, algunos artículos pueden tener restricciones de envío debido al tamaño, peso o regulaciones locales. Estas restricciones se indicarán en la página del producto.",
+      "paragraph2": "No enviamos a apartados postales para ciertos artículos. Por favor, proporcione una dirección física para la entrega cuando sea posible."
     },
     "damagedOrLost": {
       "title": "Paquetes Dañados o Perdidos",
-      "paragraph": "Si su paquete llega dañado o se pierde durante el tránsito, comuníquese con nuestro equipo de atención al cliente en {{supportEmail}} dentro de los 7 días posteriores a la fecha de entrega esperada. Trabajaremos con el transportista para resolver el problema y asegurarnos de que reciba su pedido."
+      "paragraph": "Si su paquete llega dañado o se pierde durante el tránsito, comuníquese con nosotros inmediatamente en {{supportEmail}}. Trabajaremos con el transportista para resolver el problema y asegurarnos de que reciba su pedido."
     },
     "questionsAboutShipping": {
       "title": "¿Preguntas sobre el Envío?",
