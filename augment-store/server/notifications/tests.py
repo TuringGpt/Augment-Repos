@@ -6,6 +6,7 @@ from notifications.models import Notification
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
 from django.core.cache import cache
+from unittest.mock import patch
 
 class NotificationTests(BaseAPITestCase):
     def test_list_notifications(self):
@@ -98,9 +99,10 @@ class NotificationCacheTests(BaseAPITestCase):
 
     def _get_notification_queries(self, captured_queries):
         """Helper to find notification table queries in a database-agnostic way."""
+        table_name = self.notification_table.lower()
         return [
             q for q in captured_queries
-            if q.get('sql') and self.notification_table in q['sql'].lower()
+            if q.get('sql') and table_name in q['sql'].lower()
         ]
 
     def test_list_notifications_cached(self):
@@ -133,7 +135,8 @@ class NotificationCacheTests(BaseAPITestCase):
         self.assertLess(len(notification_queries_2), len(notification_queries_1), 
                         "Second request should have fewer DB queries (cache hit)")
 
-    def test_cache_invalidated_on_update(self):
+    @patch('notifications.views.NotificationCacheService.clear_namespace')
+    def test_cache_invalidated_on_update(self, mock_clear_namespace):
         # GIVEN an authenticated user with a notification
         self.authenticated_client.force_authenticate(user=self.user)
         notification = NotificationFactory(user=self.user, is_read=False)
@@ -147,17 +150,18 @@ class NotificationCacheTests(BaseAPITestCase):
         self.assertFalse(response_1.data["results"][0]["is_read"])
 
         # AND updating the notification (should invalidate cache)
-        self.authenticated_client.patch(update_url, {"is_read": True})
+        update_response = self.authenticated_client.patch(update_url, {"is_read": True})
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         
-        # Clear cache explicitly for LocMemCache compatibility
-        cache.clear()
+        # THEN cache invalidation should have been called
+        mock_clear_namespace.assert_called()
+        
+        # AND the database should reflect the update
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)
 
-        # THEN subsequent list should reflect the update
-        response_2 = self.authenticated_client.get(list_url)
-        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
-        self.assertTrue(response_2.data["results"][0]["is_read"])
-
-    def test_cache_invalidated_on_mark_all_read(self):
+    @patch('notifications.views.NotificationCacheService.clear_namespace')
+    def test_cache_invalidated_on_mark_all_read(self, mock_clear_namespace):
         # GIVEN an authenticated user with unread notifications
         self.authenticated_client.force_authenticate(user=self.user)
         NotificationFactory(user=self.user, is_read=False)
@@ -173,15 +177,14 @@ class NotificationCacheTests(BaseAPITestCase):
         self.assertEqual(unread_count_before, 2)
 
         # AND marking all as read (should invalidate cache)
-        self.authenticated_client.patch(mark_all_url, {"mark_all_as_read": True})
+        mark_response = self.authenticated_client.patch(mark_all_url, {"mark_all_as_read": True})
+        self.assertEqual(mark_response.status_code, status.HTTP_200_OK)
         
-        # Clear cache explicitly for LocMemCache compatibility
-        cache.clear()
-
-        # THEN subsequent list should show all as read
-        response_2 = self.authenticated_client.get(list_url)
-        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
-        unread_count_after = sum(1 for n in response_2.data["results"] if not n["is_read"])
-        self.assertEqual(unread_count_after, 0)
+        # THEN cache invalidation should have been called
+        mock_clear_namespace.assert_called()
+        
+        # AND the database should reflect the update
+        unread_in_db = Notification.objects.filter(user=self.user, is_read=False).count()
+        self.assertEqual(unread_in_db, 0)
 
 
