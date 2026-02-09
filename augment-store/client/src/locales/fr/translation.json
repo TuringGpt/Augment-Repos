@@ -1165,7 +1165,7 @@
     },
     "orderTracking": {
       "title": "Suivi de Commande",
-      "paragraph1": "Une fois votre commande expédiée, vous recevrez un e-mail de confirmation avec un numéro de suivi. Vous pouvez utiliser ce numéro pour suivre votre colis sur le site Web du transporteur.",
+      "paragraph1": "Une fois votre commande expédiée, vous recevrez un e-mail de confirmation avec un numéro de suivi. Vous pouvez suivre votre colis en utilisant ce numéro sur notre site Web ou sur le site Web du transporteur.",
       "paragraph2": "Vous pouvez également consulter l'état de votre commande en vous connectant à votre compte et en visitant la page 'Mes Commandes'."
     },
     "restrictions": {

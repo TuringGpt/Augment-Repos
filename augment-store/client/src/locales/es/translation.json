@@ -1165,7 +1165,7 @@
     },
     "orderTracking": {
       "title": "Seguimiento de Pedidos",
-      "paragraph1": "Una vez que su pedido haya sido enviado, recibirá un correo electrónico de confirmación con un número de seguimiento. Puede usar este número para rastrear su paquete en el sitio web del transportista.",
+      "paragraph1": "Una vez que su pedido haya sido enviado, recibirá un correo electrónico de confirmación con un número de seguimiento. Puede rastrear su paquete usando este número en nuestro sitio web o en el sitio web del transportista.",
       "paragraph2": "También puede ver el estado de su pedido iniciando sesión en su cuenta y visitando la página 'Mis Pedidos'."
     },
     "restrictions": {
