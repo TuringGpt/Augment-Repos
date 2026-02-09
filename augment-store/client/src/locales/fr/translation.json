@@ -1170,12 +1170,12 @@
     },
     "restrictions": {
       "title": "Restrictions d'Expédition",
-      "paragraph1": "Nous expédions actuellement vers la plupart des pays du monde. Cependant, il existe certaines restrictions basées sur les réglementations locales et les capacités d'expédition.",
-      "paragraph2": "Nous n'expédions pas vers les boîtes postales pour les expéditions internationales. Pour les expéditions nationales, certaines méthodes d'expédition peuvent ne pas être disponibles pour les boîtes postales."
+      "paragraph1": "Nous expédions actuellement vers la plupart des pays du monde. Cependant, certains articles peuvent avoir des restrictions d'expédition en raison de leur taille, poids ou des réglementations locales. Ces restrictions seront indiquées sur la page du produit.",
+      "paragraph2": "Nous n'expédions pas vers les boîtes postales pour certains articles. Veuillez fournir une adresse physique pour la livraison lorsque cela est possible."
     },
     "damagedOrLost": {
       "title": "Colis Endommagés ou Perdus",
-      "paragraph": "Si votre colis arrive endommagé ou est perdu pendant le transport, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} dans les 7 jours suivant la date de livraison prévue. Nous travaillerons avec le transporteur pour résoudre le problème et nous assurer que vous recevez votre commande."
+      "paragraph": "Si votre colis arrive endommagé ou est perdu pendant le transport, veuillez nous contacter immédiatement à {{supportEmail}}. Nous travaillerons avec le transporteur pour résoudre le problème et nous assurer que vous recevez votre commande."
     },
     "questionsAboutShipping": {
       "title": "Questions sur la Livraison ?",
