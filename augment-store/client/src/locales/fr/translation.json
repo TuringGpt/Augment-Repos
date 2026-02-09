@@ -1125,7 +1125,7 @@
   },
   "shipping": {
     "title": "Informations sur la Livraison",
-    "intro": "Nous proposons diverses options d'expédition pour répondre à vos besoins. Toutes les commandes sont traitées dans un délai de 1 à 2 jours ouvrables. Vous trouverez ci-dessous des informations détaillées sur nos options d'expédition et nos tarifs.",
+    "intro": "Nous proposons diverses options d'expédition pour répondre à vos besoins. Toutes les commandes sont traitées dans un délai de 1 à 2 jours ouvrables (hors week-ends et jours fériés).",
     "domesticShipping": {
       "title": "Livraison Nationale (États-Unis)",
       "freeShippingNote": "* Livraison standard gratuite pour les commandes de 50 $ ou plus"

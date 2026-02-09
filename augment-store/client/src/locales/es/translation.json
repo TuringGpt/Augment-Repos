@@ -1125,7 +1125,7 @@
   },
   "shipping": {
     "title": "Información de Envío",
-    "intro": "Ofrecemos varias opciones de envío para satisfacer sus necesidades. Todos los pedidos se procesan dentro de 1-2 días hábiles. A continuación encontrará información detallada sobre nuestras opciones de envío y tarifas.",
+    "intro": "Ofrecemos varias opciones de envío para satisfacer sus necesidades. Todos los pedidos se procesan dentro de 1-2 días hábiles (excluyendo fines de semana y días festivos).",
     "domesticShipping": {
       "title": "Envío Nacional (Estados Unidos)",
       "freeShippingNote": "* Envío estándar gratuito en pedidos de $50 o más"
