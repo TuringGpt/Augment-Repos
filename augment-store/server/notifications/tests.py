@@ -3,6 +3,9 @@ from django.urls import reverse
 from rest_framework import status
 from notifications.factories import NotificationFactory
 from notifications.models import Notification
+from django.test.utils import CaptureQueriesContext
+from django.db import connection
+from django.core.cache import cache
 
 class NotificationTests(BaseAPITestCase):
     def test_list_notifications(self):
@@ -87,7 +90,9 @@ class NotificationCacheTests(BaseAPITestCase):
         super().setUp()
         from notifications.views import NotificationCacheService
         self.cache_service = NotificationCacheService()
+        # Clear both namespace and full cache for LocMemCache compatibility
         self.cache_service.clear_namespace()
+        cache.clear()
 
     def test_list_notifications_cached(self):
         # GIVEN an authenticated user with notifications
@@ -97,16 +102,32 @@ class NotificationCacheTests(BaseAPITestCase):
 
         url = reverse("v1:notifications:list_notification")
 
-        # WHEN making first request
-        response_1 = self.authenticated_client.get(url)
+        # WHEN making first request (cache miss)
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.authenticated_client.get(url)
         self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        
+        # Verify first request hit the database (cache miss)
+        notification_queries_1 = [
+            q for q in ctx1.captured_queries
+            if q.get('sql') and 'notifications_notification' in q['sql'].lower()
+        ]
+        self.assertGreater(len(notification_queries_1), 0, "First request should query database (cache miss)")
 
-        # WHEN making second request
-        response_2 = self.authenticated_client.get(url)
+        # WHEN making second request (cache hit)
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.authenticated_client.get(url)
         self.assertEqual(response_2.status_code, status.HTTP_200_OK)
 
-        # THEN responses should be identical (cached)
+        # THEN responses should be identical
         self.assertEqual(response_1.data, response_2.data)
+        
+        # AND second request should NOT query notifications table (cache hit)
+        notification_queries_2 = [
+            q for q in ctx2.captured_queries
+            if q.get('sql') and 'from "notifications_notification"' in q['sql'].lower()
+        ]
+        self.assertEqual(len(notification_queries_2), 0, "Second request should not query database (cache hit)")
 
     def test_cache_invalidated_on_update(self):
         # GIVEN an authenticated user with a notification
