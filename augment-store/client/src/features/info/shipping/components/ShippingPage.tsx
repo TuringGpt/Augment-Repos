@@ -10,7 +10,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from '@hooks/useTranslation'
 import { CONTACT_INFO } from '@constants/index'
 
 const ShippingPage = () => {
