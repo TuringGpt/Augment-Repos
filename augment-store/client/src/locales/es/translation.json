@@ -65,7 +65,9 @@
     "products": "Explorar productos",
     "login": "Iniciar sesión en tu cuenta",
     "changeLanguage": "Cambiar idioma",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "switchToDarkMode": "Cambiar a modo oscuro",
+    "switchToLightMode": "Cambiar a modo claro"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -95,7 +97,104 @@
     "emailVerification": "Verificación de Correo",
     "firstName": "Nombre",
     "lastName": "Apellido",
-    "fullName": "Nombre Completo"
+    "fullName": "Nombre Completo",
+    "loginPage": {
+      "title": "Bienvenido de Nuevo",
+      "subtitle": "Inicia sesión para continuar en Augment Store",
+      "emailLabel": "Dirección de Correo Electrónico",
+      "passwordLabel": "Contraseña",
+      "forgotPasswordLink": "¿Olvidaste tu Contraseña?",
+      "signInButton": "Iniciar Sesión",
+      "continueAsGuest": "Continuar como Invitado",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUpLink": "Registrarse",
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo electrónico válida",
+      "passwordRequired": "La contraseña es requerida",
+      "loginSuccess": "¡Inicio de sesión exitoso! Redirigiendo...",
+      "loginFailed": "Error al iniciar sesión. Por favor, inténtalo de nuevo."
+    },
+    "registerPage": {
+      "title": "Crear Cuenta",
+      "subtitle": "Únete a Augment Store hoy",
+      "firstNameLabel": "Nombre",
+      "lastNameLabel": "Apellido",
+      "emailLabel": "Dirección de Correo Electrónico",
+      "passwordLabel": "Contraseña",
+      "confirmPasswordLabel": "Confirmar Contraseña",
+      "agreeToTerms": "Acepto los <termsLink>Términos y Condiciones</termsLink> y la <privacyLink>Política de Privacidad</privacyLink>",
+      "signUpButton": "Registrarse",
+      "continueAsGuest": "Continuar como Invitado",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signInLink": "Iniciar Sesión",
+      "firstNameRequired": "El nombre es requerido",
+      "firstNameMinLength": "El nombre debe tener al menos 2 caracteres",
+      "lastNameRequired": "El apellido es requerido",
+      "lastNameMinLength": "El apellido debe tener al menos 2 caracteres",
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo electrónico válida",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordComplexity": "La contraseña debe contener mayúsculas, minúsculas y números",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "termsRequired": "Debes aceptar los Términos y Condiciones",
+      "registerSuccess": "¡Registro exitoso! Redirigiendo a la verificación de correo...",
+      "registerFailed": "Error en el registro. Por favor, inténtalo de nuevo.",
+      "passwordRequirementsTitle": "La contraseña debe contener:",
+      "passwordRequirements8Chars": "Al menos 8 caracteres",
+      "passwordRequirementsUppercase": "Una letra mayúscula",
+      "passwordRequirementsLowercase": "Una letra minúscula",
+      "passwordRequirementsNumber": "Un número"
+    },
+    "forgotPasswordPage": {
+      "title": "¿Olvidaste tu Contraseña?",
+      "subtitle": "Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña",
+      "emailLabel": "Dirección de Correo Electrónico",
+      "sendButton": "Enviar Instrucciones de Restablecimiento",
+      "backToLogin": "Volver al Inicio de Sesión",
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo electrónico válida",
+      "successMessage": "Se han enviado las instrucciones de restablecimiento de contraseña a tu correo electrónico. Por favor revisa tu bandeja de entrada.",
+      "errorMessage": "Error al enviar las instrucciones de restablecimiento. Por favor, inténtalo de nuevo."
+    },
+    "resetPasswordPage": {
+      "title": "Restablecer Contraseña",
+      "subtitle": "Ingresa tu nueva contraseña a continuación",
+      "newPasswordLabel": "Nueva Contraseña",
+      "confirmPasswordLabel": "Confirmar Contraseña",
+      "resetButton": "Restablecer Contraseña",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "passwordComplexity": "La contraseña debe contener mayúsculas, minúsculas y números",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "successMessage": "¡Tu contraseña ha sido restablecida exitosamente!",
+      "errorMessage": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo o solicita un nuevo enlace de restablecimiento.",
+      "invalidToken": "Token de restablecimiento inválido o faltante. Por favor solicita un nuevo restablecimiento de contraseña.",
+      "redirecting": "Redirigiendo al inicio de sesión...",
+      "passwordRequirementsTitle": "La contraseña debe contener:",
+      "passwordRequirements8Chars": "Al menos 8 caracteres",
+      "passwordRequirementsUppercase": "Una letra mayúscula",
+      "passwordRequirementsLowercase": "Una letra minúscula",
+      "passwordRequirementsNumber": "Un número"
+    },
+    "verifyEmailPage": {
+      "title": "Verifica tu Correo Electrónico",
+      "subtitle": "Hemos enviado un enlace de verificación a {{email}}",
+      "subtitleNoEmail": "Revisa tu correo electrónico para la verificación",
+      "waitingTitle": "Revisa tu Correo Electrónico",
+      "instructions": "Por favor revisa tu correo electrónico y haz clic en el enlace de verificación para activar tu cuenta.",
+      "notReceived": "¿No recibiste el correo?",
+      "notReceivedHelp": "Revisa tu carpeta de spam o contacta a soporte si necesitas ayuda.",
+      "resendButton": "Reenviar Correo de Verificación",
+      "backToLogin": "Volver al Inicio de Sesión",
+      "verifying": "Verificando tu correo electrónico...",
+      "successMessage": "¡Tu correo electrónico ha sido verificado exitosamente! Ahora puedes iniciar sesión.",
+      "errorMessage": "Error al verificar el correo electrónico. El enlace puede ser inválido o haber expirado.",
+      "resendSuccess": "¡Correo de verificación enviado! Por favor revisa tu bandeja de entrada.",
+      "resendError": "Error al reenviar el correo de verificación. Por favor, inténtalo de nuevo."
+    }
   },
   "product": {
     "products": "Productos",
@@ -366,6 +465,7 @@
     "contactUs": "Contáctanos",
     "termsOfService": "Términos de Servicio",
     "privacyPolicy": "Política de Privacidad",
+    "cookiePolicy": "Política de Cookies",
     "faq": "Preguntas Frecuentes",
     "support": "Soporte",
     "followUs": "Síguenos",
@@ -427,6 +527,85 @@
     "description": "La página que buscas no existe o ha sido movida. Por favor verifica la URL o regresa a la página de inicio.",
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
+    "faqsTitle": "Preguntas Frecuentes",
+    "stillNeedHelp": {
+      "title": "¿Aún Necesitas Ayuda?",
+      "description": "Si no pudiste encontrar la respuesta que buscas, nuestro equipo de soporte al cliente está listo para ayudarte. Contáctanos por correo electrónico, teléfono o nuestro formulario de contacto."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "¿Cómo hago un pedido?",
+        "answer": "Navega por nuestros productos, agrega artículos a tu carrito y procede al pago. Necesitarás crear una cuenta o iniciar sesión para completar tu compra."
+      },
+      "paymentMethods": {
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, MasterCard, American Express), PayPal y otros métodos de pago seguros."
+      },
+      "trackOrder": {
+        "question": "¿Cómo puedo rastrear mi pedido?",
+        "answer": "Una vez que tu pedido sea enviado, recibirás un número de seguimiento por correo electrónico. También puedes ver el estado de tu pedido en la sección \"Mis Pedidos\" de tu cuenta."
+      },
+      "returnPolicy": {
+        "question": "¿Cuál es su política de devoluciones?",
+        "answer": "Ofrecemos una política de devolución de 30 días para la mayoría de los artículos. Los productos deben estar sin usar y en su embalaje original. Consulta nuestra página de Devoluciones para más detalles."
+      },
+      "shippingTime": {
+        "question": "¿Cuánto tiempo tarda el envío?",
+        "answer": "El envío estándar generalmente toma de 5 a 7 días hábiles. Las opciones de envío exprés están disponibles en el pago para una entrega más rápida."
+      },
+      "international": {
+        "question": "¿Realizan envíos internacionales?",
+        "answer": "Sí, enviamos a muchos países de todo el mundo. Los costos de envío y los tiempos de entrega varían según la ubicación. Los pedidos internacionales pueden estar sujetos a tarifas aduaneras."
+      },
+      "resetPassword": {
+        "question": "¿Cómo restablezco mi contraseña?",
+        "answer": "Haz clic en \"Olvidé mi Contraseña\" en la página de inicio de sesión. Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña."
+      },
+      "cancelOrder": {
+        "question": "¿Puedo cancelar o modificar mi pedido?",
+        "answer": "Los pedidos se pueden cancelar o modificar dentro de 1 hora después de realizarlos. Después de eso, por favor contacta al soporte al cliente para obtener asistencia."
+      },
+      "paymentSecurity": {
+        "question": "¿Mis datos de pago están seguros?",
+        "answer": "Sí, utilizamos encriptación SSL estándar de la industria para proteger tu información de pago. Nunca almacenamos los detalles completos de tu tarjeta de crédito en nuestros servidores."
+      },
+      "contactSupport": {
+        "question": "¿Cómo contacto al soporte al cliente?",
+        "answer": "Puedes contactarnos por correo electrónico a support@augmentstore.com, por teléfono al +1 (555) 123-4567, o a través de nuestra página de Contacto."
+      }
+    }
+  },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No se proporcionó ID de producto",
+      "notFound": "Estadísticas del producto no encontradas",
+      "viewProduct": "Ver producto",
+      "performanceMetrics": "Métricas de rendimiento",
+      "summary": "Resumen",
+      "totalRevenue": "Ingresos totales",
+      "averageOrderValue": "Valor promedio de pedido",
+      "errorLoadStatistics": "Error al cargar las estadísticas del producto",
+      "errorPermissionDenied": "No tiene permiso para ver las estadísticas del producto",
+      "errorAuthRequired": "Por favor, inicie sesión para ver las estadísticas del producto",
+      "metrics": {
+        "views": "Vistas totales",
+        "cartAdditions": "Adiciones al carrito",
+        "netAdditions": "Neto",
+        "cartRemovals": "Eliminaciones del carrito",
+        "purchases": "Compras totales",
+        "conversionRate": "Tasa de conversión",
+        "viewsToPurchases": "Vistas a compras",
+        "cartConversionRate": "Tasa de conversión del carrito",
+        "cartToPurchases": "Carrito a compras",
+        "abandonmentRate": "Tasa de abandono",
+        "engagementScore": "Puntuación de participación",
+        "viewsToCart": "Vistas a carrito"
+      }
+    }
   },
   "admin": {
     "panel": "Panel de Administración",
@@ -511,7 +690,30 @@
       "subtitle": "Ver y analizar informes comerciales completos",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "La página de informes del administrador está actualmente en desarrollo.",
-      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!",
+      "generalStats": {
+        "title": "Estadísticas Generales",
+        "subtitle": "Estadísticas agregadas de todos los productos",
+        "totalProducts": "Total de Productos Rastreados",
+        "totalViews": "Total de Vistas",
+        "totalCartAdditions": "Total de Adiciones al Carrito",
+        "totalPurchases": "Total de Compras",
+        "views": "Vistas",
+        "cartAdditions": "Adiciones al Carrito",
+        "purchases": "Compras",
+        "count": "Cantidad",
+        "noData": "No hay estadísticas generales disponibles"
+      },
+      "healthCheck": {
+        "title": "Estado de Salud de la API",
+        "subtitle": "Monitorear la salud y disponibilidad de la API",
+        "checking": "Verificando salud de la API...",
+        "healthy": "Saludable",
+        "unhealthy": "No Saludable",
+        "allSystemsOperational": "Todos los sistemas operativos",
+        "systemIssuesDetected": "Problemas del sistema detectados",
+        "status": "Estado"
+      }
     },
     "settings": "Configuración",
     "productStatistics": {
@@ -519,6 +721,7 @@
       "subtitle": "Ver análisis detallados y métricas de rendimiento de todos los productos",
       "refresh": "Actualizar estadísticas",
       "viewAllProducts": "Ver Todos los Productos",
+      "viewStatisticsTable": "Ver Tabla de Estadísticas",
       "noData": "No hay estadísticas de productos disponibles",
       "noDataOnPage": "No hay productos en esta página. Por favor, navegue a una página diferente.",
       "bestSelling": {
@@ -556,6 +759,27 @@
         "purchases": "Compras",
         "actions": "Acciones",
         "viewProduct": "Ver detalles del producto",
+        "rowsPerPage": "Filas por página"
+      },
+      "productStatisticsView": {
+        "title": "Estadísticas de Productos - Vista de Tabla",
+        "subtitle": "Análisis completo de métricas de rendimiento de productos con tasas de conversión calculadas",
+        "refresh": "Actualizar estadísticas",
+        "searchPlaceholder": "Buscar productos...",
+        "productName": "Nombre del Producto",
+        "price": "Precio",
+        "views": "Vistas",
+        "cartAdds": "Añadidos al Carrito",
+        "cartRemoves": "Eliminados del Carrito",
+        "purchases": "Compras",
+        "conversionRate": "Tasa de Conversión",
+        "cartConversion": "Conversión del Carrito",
+        "abandonmentRate": "Tasa de Abandono",
+        "actions": "Acciones",
+        "viewProduct": "Ver Producto",
+        "viewStatistics": "Ver estadísticas detalladas",
+        "noData": "No hay estadísticas de productos disponibles",
+        "noResultsFound": "No se encontraron productos que coincidan con su búsqueda",
         "rowsPerPage": "Filas por página"
       }
     },
@@ -819,6 +1043,30 @@
       "emptyStates": {
         "noCategoryData": "No hay datos de preferencias de categoría disponibles para el período seleccionado",
         "noPaymentData": "No hay datos de métodos de pago disponibles para el período seleccionado"
+      }
+    },
+    "churnRisk": {
+      "title": "Riesgo de Abandono de Clientes",
+      "noData": "No hay clientes en riesgo de abandono",
+      "notAvailable": "N/D",
+      "summary": {
+        "totalAtRisk": "Total en Riesgo",
+        "highRisk": "Alto Riesgo",
+        "mediumRisk": "Riesgo Medio",
+        "potentialRevenueAtRisk": "Ingresos Potenciales en Riesgo"
+      },
+      "table": {
+        "customer": "Cliente",
+        "lastPurchase": "Última Compra",
+        "daysInactive": "Días Inactivo",
+        "lifetimeOrders": "Pedidos Totales",
+        "lifetimeRevenue": "Ingresos Totales",
+        "riskLevel": "Nivel de Riesgo",
+        "avgDaysBetweenOrders": "Días Promedio Entre Pedidos"
+      },
+      "riskLevels": {
+        "high": "ALTO",
+        "medium": "MEDIO"
       }
     }
   }

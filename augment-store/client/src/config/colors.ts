@@ -206,9 +206,9 @@ export class Colors {
       text: '#ffffff',
     },
     footer: {
-      background: '#212121',
-      text: '#ffffff',
-      textSecondary: 'rgba(255, 255, 255, 0.7)',
+      background: '#f5f5f5',
+      text: 'rgba(0, 0, 0, 0.87)',
+      textSecondary: 'rgba(0, 0, 0, 0.6)',
     },
   } as const
 

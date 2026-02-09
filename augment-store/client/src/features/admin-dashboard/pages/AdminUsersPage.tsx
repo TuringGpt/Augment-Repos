@@ -21,6 +21,7 @@ import CustomerRetentionChart from '@features/admin-dashboard/components/Custome
 import CustomerSegmentsChart from '@features/admin-dashboard/components/CustomerSegmentsChart'
 import NewVsReturningChart from '@features/admin-dashboard/components/NewVsReturningChart'
 import CustomerPurchaseBehaviorChart from '@features/admin-dashboard/components/CustomerPurchaseBehaviorChart'
+import ChurnRiskChart from '@features/admin-dashboard/components/ChurnRiskChart'
 
 /**
  * AdminUsersPage Component
@@ -51,6 +52,11 @@ const AdminUsersPage = () => {
     customerPurchaseBehaviorError,
     fetchCustomerPurchaseBehavior,
     clearCustomerPurchaseBehaviorError,
+    churnRisk,
+    isChurnRiskLoading,
+    churnRiskError,
+    fetchChurnRisk,
+    clearChurnRiskError,
   } = useCustomerStatisticsStore()
 
   const [days, setDays] = useState(365)
@@ -58,6 +64,7 @@ const AdminUsersPage = () => {
   const segmentsAbortControllerRef = useRef<AbortController | null>(null)
   const newVsReturningAbortControllerRef = useRef<AbortController | null>(null)
   const purchaseBehaviorAbortControllerRef = useRef<AbortController | null>(null)
+  const churnRiskAbortControllerRef = useRef<AbortController | null>(null)
 
   // Load customer retention, segments, new vs returning, and purchase behavior data on mount and when days changes
   useEffect(() => {
@@ -85,6 +92,22 @@ const AdminUsersPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.role, days])
+
+  // Load churn risk data when authentication state or user role changes (independent of days filter)
+  // Churn risk uses fixed parameters (limit: 50, inactive_days: 60) and doesn't depend on the days filter
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      loadChurnRisk()
+    }
+
+    // Cleanup function to abort request on unmount
+    return () => {
+      if (churnRiskAbortControllerRef.current) {
+        churnRiskAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
 
   const loadCustomerRetention = () => {
     // Cancel any pending request
@@ -138,6 +161,19 @@ const AdminUsersPage = () => {
     fetchCustomerPurchaseBehavior({ days, limit: 20 }, purchaseBehaviorAbortControllerRef.current.signal)
   }
 
+  const loadChurnRisk = () => {
+    // Cancel any pending request
+    if (churnRiskAbortControllerRef.current) {
+      churnRiskAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    churnRiskAbortControllerRef.current = new AbortController()
+
+    // fetchChurnRisk handles all errors internally and doesn't rethrow
+    fetchChurnRisk({ limit: 50, inactive_days: 60 }, churnRiskAbortControllerRef.current.signal)
+  }
+
   const handleDaysChange = (newDays: number) => {
     setDays(newDays)
   }
@@ -147,6 +183,7 @@ const AdminUsersPage = () => {
     loadCustomerSegments()
     loadNewVsReturning()
     loadCustomerPurchaseBehavior()
+    loadChurnRisk()
   }
 
   // Check if user is authenticated and is an admin
@@ -206,7 +243,7 @@ const AdminUsersPage = () => {
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
-            disabled={isCustomerRetentionLoading || isCustomerSegmentsLoading || isNewVsReturningLoading || isCustomerPurchaseBehaviorLoading}
+            disabled={isCustomerRetentionLoading || isCustomerSegmentsLoading || isNewVsReturningLoading || isCustomerPurchaseBehaviorLoading || isChurnRiskLoading}
           >
             Refresh
           </Button>
@@ -232,6 +269,11 @@ const AdminUsersPage = () => {
       {customerPurchaseBehaviorError && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={clearCustomerPurchaseBehaviorError}>
           {customerPurchaseBehaviorError}
+        </Alert>
+      )}
+      {churnRiskError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearChurnRiskError}>
+          {churnRiskError}
         </Alert>
       )}
 
@@ -266,6 +308,14 @@ const AdminUsersPage = () => {
           <CustomerPurchaseBehaviorChart
             data={customerPurchaseBehavior}
             isLoading={isCustomerPurchaseBehaviorLoading}
+          />
+        </Grid>
+
+        {/* Churn Risk Chart */}
+        <Grid item xs={12}>
+          <ChurnRiskChart
+            data={churnRisk}
+            isLoading={isChurnRiskLoading}
           />
         </Grid>
       </Grid>

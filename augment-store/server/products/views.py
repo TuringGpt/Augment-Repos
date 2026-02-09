@@ -16,7 +16,7 @@ from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService
+from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 from core.search import AdvancedSearchMixin
@@ -120,7 +120,7 @@ class BaseProductView(AutoOptimizeMixin):
     """Base view for Product related operations with auto-optimization."""
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
-    auto_select_related = ['brand', 'category', 'created_by']
+    auto_select_related = ['brand', 'brand__image', 'category', 'category__image', 'created_by']
     auto_prefetch_related = ['images']
     queryset = Product.objects.all()
 
@@ -155,10 +155,32 @@ class FeaturedProductListView(ProductListView):
         return super().get_queryset().filter(is_featured=True)
 
 
-class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
+class ProductSearchView(CachedListMixin, AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductSearchFilter
     search_fields = ["name", "description", "brand__name", "category__name"]
+    cache_service_class = ProductSearchCacheService
+    cache_ttl = 60 * 15
+
+    def list(self, request, *args, **kwargs):
+        query = (self.request.query_params.get('search') or "").strip()
+        response = super().list(request, *args, **kwargs)
+        
+        if query and response.status_code == 200:
+            # Handle results count for both paginated (dict) and unpaginated (list) responses
+            if isinstance(response.data, dict):
+                results_count = response.data.get('count', 0)
+            elif isinstance(response.data, list):
+                results_count = len(response.data)
+            else:
+                results_count = 0
+
+            SearchService.log_search(
+                query_string=query,
+                results_count=results_count,
+                user=self.request.user
+            )
+        return response
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -167,13 +189,6 @@ class ProductSearchView(AdvancedSearchMixin, BaseProductView, ListAPIView):
         search_filter = self.get_search_query_filter(query)
         queryset = queryset.filter(search_filter)
         
-        if query:
-            SearchService.log_search(
-                query_string=query,
-                results_count=queryset.count(),
-                user=self.request.user
-            )
-            
         return queryset
 
 

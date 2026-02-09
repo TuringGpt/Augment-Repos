@@ -12,17 +12,23 @@ import {
   CircularProgress,
   Fade,
   Slide,
+  useTheme,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import { useAuthStore } from '@store/authStore'
 import type { LoginRequest } from '@features/auth/types'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
+import ThemeToggle from '@components/ThemeToggle'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const theme = useTheme()
   const { login: setAuthState, setLoading, setError } = useAuthStore()
+  const { t } = useTranslation()
 
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
@@ -39,14 +45,14 @@ const LoginPage = () => {
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('auth.loginPage.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('auth.loginPage.emailInvalid')
     }
 
     // Password validation - only check if provided, no length/strength requirements on login
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = t('auth.loginPage.passwordRequired')
     }
 
     setErrors(newErrors)
@@ -81,7 +87,7 @@ const LoginPage = () => {
       const response = await authService.login(formData)
 
       // Show success message
-      setSuccessMessage('Login successful! Redirecting...')
+      setSuccessMessage(t('auth.loginPage.loginSuccess'))
 
       // Set auth state and redirect after a brief delay to show success message
       setAuthState(response.user, response.accessToken, response.refreshToken)
@@ -91,7 +97,7 @@ const LoginPage = () => {
       }, 1500)
     } catch (error) {
       // Enhanced error handling for Django backend responses
-      let errorMessage = 'Login failed. Please try again.'
+      let errorMessage = t('auth.loginPage.loginFailed')
 
       const axiosError = error as {
         response?: {
@@ -113,9 +119,9 @@ const LoginPage = () => {
 
         // Handle field-specific errors from Django
         if (data.email) {
-          errorMessage = `Email: ${data.email[0]}`
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
         } else if (data.password) {
-          errorMessage = `Password: ${data.password[0]}`
+          errorMessage = Array.isArray(data.password) ? data.password[0] : data.password
         } else if (data.details) {
           // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
           errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
@@ -139,6 +145,12 @@ const LoginPage = () => {
     }
   }
 
+  // Theme-derived hover background color for guest button
+  const guestButtonHoverBg = alpha(
+    theme.palette.primary.main,
+    theme.palette.mode === 'dark' ? 0.08 : 0.04
+  )
+
   return (
     <Box
       sx={{
@@ -146,7 +158,7 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.purpleViolet,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -159,22 +171,30 @@ const LoginPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.purpleViolet,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Theme Toggle and Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </Box>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Welcome Back
+              {t('auth.loginPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Sign in to continue to Augment Store
+              {t('auth.loginPage.subtitle')}
             </Typography>
           </Box>
 
@@ -202,7 +222,7 @@ const LoginPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Email Address"
+                label={t('auth.loginPage.emailLabel')}
                 type="email"
                 value={formData.email}
                 onChange={handleChange('email')}
@@ -222,7 +242,7 @@ const LoginPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Password"
+                label={t('auth.loginPage.passwordLabel')}
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleChange('password')}
@@ -261,12 +281,12 @@ const LoginPage = () => {
                   to="/forgot-password"
                   variant="body2"
                   sx={{
-                    color: Colors.primary.main,
+                    color: 'primary.main',
                     textDecoration: 'none',
                     '&:hover': { textDecoration: 'underline' },
                   }}
                 >
-                  Forgot Password?
+                  {t('auth.loginPage.forgotPasswordLink')}
                 </Link>
               </Box>
 
@@ -278,15 +298,16 @@ const LoginPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  background: Colors.gradient.purpleViolet,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.blueIndigo,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
-                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.loginPage.signInButton')}
               </Button>
             </form>
 
@@ -300,35 +321,35 @@ const LoginPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  borderColor: Colors.primary.main,
-                  color: Colors.primary.main,
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    borderColor: Colors.primary.dark,
-                    backgroundColor: 'rgba(124, 58, 237, 0.04)',
+                    borderColor: 'primary.dark',
+                    backgroundColor: guestButtonHoverBg,
                   },
                 }}
               >
-                Continue as Guest
+                {t('auth.loginPage.continueAsGuest')}
               </Button>
             </Box>
 
             {/* Sign Up Link */}
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
+                {t('auth.loginPage.noAccount')}{' '}
                 <Link
                   component={RouterLink}
                   to="/register"
                   sx={{
-                    color: Colors.primary.main,
+                    color: 'primary.main',
                     fontWeight: 'bold',
                     textDecoration: 'none',
                     '&:hover': { textDecoration: 'underline' },
                   }}
                 >
-                  Sign Up
+                  {t('auth.loginPage.signUpLink')}
                 </Link>
               </Typography>
             </Box>

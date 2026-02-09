@@ -14,12 +14,15 @@ import {
 } from '@mui/material'
 import { Email, ArrowBack } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
-import { Colors } from '@config/colors'
 import { authService } from '@services/api/auth/authService'
 import type { ForgotPasswordRequest } from '@features/auth/types'
 import { parseApiError } from '@utils/errorUtils'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
+import ThemeToggle from '@components/ThemeToggle'
 
 const ForgotPasswordPage = () => {
+  const { t } = useTranslation()
   const [formData, setFormData] = useState<ForgotPasswordRequest>({
     email: '',
   })
@@ -33,9 +36,9 @@ const ForgotPasswordPage = () => {
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('auth.forgotPasswordPage.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('auth.forgotPasswordPage.emailInvalid')
     }
 
     setErrors(newErrors)
@@ -71,15 +74,13 @@ const ForgotPasswordPage = () => {
 
     try {
       await authService.forgotPassword(formData)
-      setSuccessMessage(
-        'Password reset instructions have been sent to your email address. Please check your inbox.'
-      )
+      setSuccessMessage(t('auth.forgotPasswordPage.successMessage'))
       // Clear the form
       setFormData({ email: '' })
     } catch (error) {
       const errorMessage = parseApiError(error, {
         fieldNames: ['email'],
-        defaultMessage: 'Failed to send reset instructions. Please try again.',
+        defaultMessage: t('auth.forgotPasswordPage.errorMessage'),
       })
       setApiError(errorMessage)
     } finally {
@@ -94,7 +95,7 @@ const ForgotPasswordPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: Colors.gradient.purpleViolet,
+        bgcolor: 'background.default',
         py: 4,
       }}
     >
@@ -107,22 +108,30 @@ const ForgotPasswordPage = () => {
             mx: 2,
             borderRadius: 3,
             overflow: 'hidden',
+            bgcolor: 'background.paper',
           }}
         >
           {/* Header Section */}
           <Box
             sx={{
-              background: Colors.gradient.purpleViolet,
-              color: Colors.text.white,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
               p: 4,
               textAlign: 'center',
+              position: 'relative',
             }}
           >
+            {/* Theme Toggle and Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </Box>
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Forgot Password?
+              {t('auth.forgotPasswordPage.title')}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              Enter your email address and we'll send you instructions to reset your password
+              {t('auth.forgotPasswordPage.subtitle')}
             </Typography>
           </Box>
 
@@ -148,7 +157,7 @@ const ForgotPasswordPage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Email Address"
+                label={t('auth.forgotPasswordPage.emailLabel')}
                 type="email"
                 value={formData.email}
                 onChange={handleChange('email')}
@@ -173,18 +182,19 @@ const ForgotPasswordPage = () => {
                 disabled={isSubmitting}
                 sx={{
                   py: 1.5,
-                  background: Colors.gradient.purpleViolet,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   '&:hover': {
-                    background: Colors.gradient.blueIndigo,
+                    bgcolor: 'primary.dark',
                   },
                 }}
               >
                 {isSubmitting ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  'Send Reset Instructions'
+                  t('auth.forgotPasswordPage.sendButton')
                 )}
               </Button>
             </form>
@@ -195,7 +205,7 @@ const ForgotPasswordPage = () => {
                 component={RouterLink}
                 to="/login"
                 sx={{
-                  color: Colors.primary.main,
+                  color: 'primary.main',
                   fontWeight: 'bold',
                   textDecoration: 'none',
                   display: 'inline-flex',
@@ -205,7 +215,7 @@ const ForgotPasswordPage = () => {
                 }}
               >
                 <ArrowBack fontSize="small" />
-                Back to Login
+                {t('auth.forgotPasswordPage.backToLogin')}
               </Link>
             </Box>
           </Box>

@@ -18,6 +18,10 @@ export const ROUTES = {
   SUPPORT_TICKET_DETAIL: '/support/tickets/:id',
   SUPPORT_CREATE: '/support/create',
   ADMIN_DASHBOARD: '/admin/dashboard',
+  ADMIN_PRODUCTS: '/admin/products',
+  ADMIN_PRODUCTS_ALL: '/admin/products/all',
+  ADMIN_PRODUCTS_STATISTICS: '/admin/products/statistics',
+  ADMIN_PRODUCTS_STATISTICS_DETAIL: '/admin/products/statistics/:id',
   LOGIN: '/login',
   REGISTER: '/register',
 } as const

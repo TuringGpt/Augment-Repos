@@ -65,7 +65,9 @@
     "products": "Produkte durchsuchen",
     "login": "Bei Ihrem Konto anmelden",
     "changeLanguage": "Sprache ändern",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "switchToDarkMode": "Zum Dunkelmodus wechseln",
+    "switchToLightMode": "Zum Hellmodus wechseln"
   },
   "notifications": {
     "title": "Benachrichtigungen",
@@ -95,7 +97,104 @@
     "emailVerification": "E-Mail-Verifizierung",
     "firstName": "Vorname",
     "lastName": "Nachname",
-    "fullName": "Vollständiger Name"
+    "fullName": "Vollständiger Name",
+    "loginPage": {
+      "title": "Willkommen Zurück",
+      "subtitle": "Melden Sie sich an, um zu Augment Store fortzufahren",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "forgotPasswordLink": "Passwort Vergessen?",
+      "signInButton": "Anmelden",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "noAccount": "Noch kein Konto?",
+      "signUpLink": "Registrieren",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "loginSuccess": "Anmeldung erfolgreich! Weiterleitung...",
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "registerPage": {
+      "title": "Konto Erstellen",
+      "subtitle": "Treten Sie Augment Store heute bei",
+      "firstNameLabel": "Vorname",
+      "lastNameLabel": "Nachname",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "agreeToTerms": "Ich stimme den <termsLink>Allgemeinen Geschäftsbedingungen</termsLink> und der <privacyLink>Datenschutzerklärung</privacyLink> zu",
+      "signUpButton": "Registrieren",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "haveAccount": "Bereits ein Konto?",
+      "signInLink": "Anmelden",
+      "firstNameRequired": "Vorname ist erforderlich",
+      "firstNameMinLength": "Vorname muss mindestens 2 Zeichen lang sein",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "lastNameMinLength": "Nachname muss mindestens 2 Zeichen lang sein",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordComplexity": "Passwort muss Groß-, Kleinbuchstaben und Zahlen enthalten",
+      "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "termsRequired": "Sie müssen den Allgemeinen Geschäftsbedingungen zustimmen",
+      "registerSuccess": "Registrierung erfolgreich! Weiterleitung zur E-Mail-Verifizierung...",
+      "registerFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "passwordRequirementsTitle": "Passwort muss enthalten:",
+      "passwordRequirements8Chars": "Mindestens 8 Zeichen",
+      "passwordRequirementsUppercase": "Einen Großbuchstaben",
+      "passwordRequirementsLowercase": "Einen Kleinbuchstaben",
+      "passwordRequirementsNumber": "Eine Zahl"
+    },
+    "forgotPasswordPage": {
+      "title": "Passwort Vergessen?",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts",
+      "emailLabel": "E-Mail-Adresse",
+      "sendButton": "Anweisungen zum Zurücksetzen Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "successMessage": "Anweisungen zum Zurücksetzen des Passworts wurden an Ihre E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "errorMessage": "Fehler beim Senden der Anweisungen zum Zurücksetzen. Bitte versuchen Sie es erneut."
+    },
+    "resetPasswordPage": {
+      "title": "Passwort Zurücksetzen",
+      "subtitle": "Geben Sie Ihr neues Passwort unten ein",
+      "newPasswordLabel": "Neues Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "resetButton": "Passwort Zurücksetzen",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordComplexity": "Passwort muss Großbuchstaben, Kleinbuchstaben und Zahlen enthalten",
+      "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt!",
+      "errorMessage": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut oder fordern Sie einen neuen Link zum Zurücksetzen an.",
+      "invalidToken": "Ungültiger oder fehlender Token zum Zurücksetzen. Bitte fordern Sie ein neues Zurücksetzen des Passworts an.",
+      "redirecting": "Weiterleitung zur Anmeldung...",
+      "passwordRequirementsTitle": "Passwort muss enthalten:",
+      "passwordRequirements8Chars": "Mindestens 8 Zeichen",
+      "passwordRequirementsUppercase": "Einen Großbuchstaben",
+      "passwordRequirementsLowercase": "Einen Kleinbuchstaben",
+      "passwordRequirementsNumber": "Eine Zahl"
+    },
+    "verifyEmailPage": {
+      "title": "Verifizieren Sie Ihre E-Mail",
+      "subtitle": "Wir haben einen Verifizierungslink an {{email}} gesendet",
+      "subtitleNoEmail": "Überprüfen Sie Ihre E-Mail zur Verifizierung",
+      "waitingTitle": "Überprüfen Sie Ihre E-Mail",
+      "instructions": "Bitte überprüfen Sie Ihre E-Mail und klicken Sie auf den Verifizierungslink, um Ihr Konto zu aktivieren.",
+      "notReceived": "E-Mail nicht erhalten?",
+      "notReceivedHelp": "Überprüfen Sie Ihren Spam-Ordner oder kontaktieren Sie den Support, wenn Sie Hilfe benötigen.",
+      "resendButton": "Verifizierungs-E-Mail Erneut Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "verifying": "Ihre E-Mail wird verifiziert...",
+      "successMessage": "Ihre E-Mail wurde erfolgreich verifiziert! Sie können sich jetzt anmelden.",
+      "errorMessage": "Fehler beim Verifizieren der E-Mail. Der Link ist möglicherweise ungültig oder abgelaufen.",
+      "resendSuccess": "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
+      "resendError": "Fehler beim erneuten Senden der Verifizierungs-E-Mail. Bitte versuchen Sie es erneut."
+    }
   },
   "product": {
     "products": "Produkte",
@@ -366,6 +465,7 @@
     "contactUs": "Kontaktieren Sie Uns",
     "termsOfService": "Nutzungsbedingungen",
     "privacyPolicy": "Datenschutzrichtlinie",
+    "cookiePolicy": "Cookie-Richtlinie",
     "faq": "FAQ",
     "support": "Support",
     "followUs": "Folgen Sie Uns",
@@ -427,6 +527,85 @@
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben. Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.",
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
+  },
+  "help": {
+    "title": "Hilfezentrum",
+    "description": "Finden Sie unten Antworten auf häufig gestellte Fragen. Wenn Sie zusätzliche Unterstützung benötigen, zögern Sie nicht, unser Kundenservice-Team zu kontaktieren.",
+    "faqsTitle": "Häufig Gestellte Fragen",
+    "stillNeedHelp": {
+      "title": "Benötigen Sie Weitere Hilfe?",
+      "description": "Wenn Sie die gesuchte Antwort nicht finden konnten, steht Ihnen unser Kundenservice-Team gerne zur Verfügung. Kontaktieren Sie uns per E-Mail, Telefon oder über unser Kontaktformular."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "Wie gebe ich eine Bestellung auf?",
+        "answer": "Durchsuchen Sie unsere Produkte, fügen Sie Artikel zu Ihrem Warenkorb hinzu und gehen Sie zur Kasse. Sie müssen ein Konto erstellen oder sich anmelden, um Ihren Kauf abzuschließen."
+      },
+      "paymentMethods": {
+        "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, MasterCard, American Express), PayPal und andere sichere Zahlungsmethoden."
+      },
+      "trackOrder": {
+        "question": "Wie kann ich meine Bestellung verfolgen?",
+        "answer": "Sobald Ihre Bestellung versandt wurde, erhalten Sie eine Sendungsverfolgungsnummer per E-Mail. Sie können den Status Ihrer Bestellung auch im Bereich \"Meine Bestellungen\" Ihres Kontos einsehen."
+      },
+      "returnPolicy": {
+        "question": "Wie lautet Ihre Rückgaberichtlinie?",
+        "answer": "Wir bieten eine 30-tägige Rückgaberichtlinie für die meisten Artikel. Produkte müssen unbenutzt und in der Originalverpackung sein. Weitere Details finden Sie auf unserer Rückgabeseite."
+      },
+      "shippingTime": {
+        "question": "Wie lange dauert der Versand?",
+        "answer": "Der Standardversand dauert in der Regel 5-7 Werktage. Expressversandoptionen sind an der Kasse für eine schnellere Lieferung verfügbar."
+      },
+      "international": {
+        "question": "Versenden Sie international?",
+        "answer": "Ja, wir versenden in viele Länder weltweit. Versandkosten und Lieferzeiten variieren je nach Standort. Internationale Bestellungen können Zollgebühren unterliegen."
+      },
+      "resetPassword": {
+        "question": "Wie setze ich mein Passwort zurück?",
+        "answer": "Klicken Sie auf der Anmeldeseite auf \"Passwort vergessen\". Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts."
+      },
+      "cancelOrder": {
+        "question": "Kann ich meine Bestellung stornieren oder ändern?",
+        "answer": "Bestellungen können innerhalb von 1 Stunde nach der Aufgabe storniert oder geändert werden. Danach wenden Sie sich bitte an den Kundensupport für Unterstützung."
+      },
+      "paymentSecurity": {
+        "question": "Sind meine Zahlungsdaten sicher?",
+        "answer": "Ja, wir verwenden branchenübliche SSL-Verschlüsselung zum Schutz Ihrer Zahlungsinformationen. Wir speichern niemals Ihre vollständigen Kreditkartendaten auf unseren Servern."
+      },
+      "contactSupport": {
+        "question": "Wie kontaktiere ich den Kundensupport?",
+        "answer": "Sie können uns per E-Mail unter support@augmentstore.com, telefonisch unter +1 (555) 123-4567 oder über unsere Kontaktseite erreichen."
+      }
+    }
+  },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Keine Produkt-ID angegeben",
+      "notFound": "Produktstatistiken nicht gefunden",
+      "viewProduct": "Produkt anzeigen",
+      "performanceMetrics": "Leistungsmetriken",
+      "summary": "Zusammenfassung",
+      "totalRevenue": "Gesamtumsatz",
+      "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "errorLoadStatistics": "Fehler beim Laden der Produktstatistiken",
+      "errorPermissionDenied": "Sie haben keine Berechtigung, Produktstatistiken anzuzeigen",
+      "errorAuthRequired": "Bitte melden Sie sich an, um Produktstatistiken anzuzeigen",
+      "metrics": {
+        "views": "Gesamtansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "netAdditions": "Netto",
+        "cartRemovals": "Warenkorbentfernungen",
+        "purchases": "Gesamtkäufe",
+        "conversionRate": "Konversionsrate",
+        "viewsToPurchases": "Ansichten zu Käufen",
+        "cartConversionRate": "Warenkorb-Konversionsrate",
+        "cartToPurchases": "Warenkorb zu Käufen",
+        "abandonmentRate": "Abbruchrate",
+        "engagementScore": "Engagement-Score",
+        "viewsToCart": "Ansichten zu Warenkorb"
+      }
+    }
   },
   "admin": {
     "panel": "Admin-Panel",
@@ -511,7 +690,30 @@
       "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
       "workInProgress": "In Arbeit",
       "underDevelopment": "Die Admin-Berichtsseite befindet sich derzeit in der Entwicklung.",
-      "checkBackSoon": "Schauen Sie bald wieder vorbei!"
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "generalStats": {
+        "title": "Allgemeine Statistiken",
+        "subtitle": "Aggregierte Statistiken über alle Produkte",
+        "totalProducts": "Gesamtzahl verfolgter Produkte",
+        "totalViews": "Gesamtaufrufe",
+        "totalCartAdditions": "Gesamtzahl Warenkorbhinzufügungen",
+        "totalPurchases": "Gesamtkäufe",
+        "views": "Aufrufe",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "noData": "Keine allgemeinen Statistiken verfügbar"
+      },
+      "healthCheck": {
+        "title": "API-Gesundheitsstatus",
+        "subtitle": "Überwachen Sie die Gesundheit und Verfügbarkeit der API",
+        "checking": "API-Gesundheit wird überprüft...",
+        "healthy": "Gesund",
+        "unhealthy": "Ungesund",
+        "allSystemsOperational": "Alle Systeme betriebsbereit",
+        "systemIssuesDetected": "Systemprobleme erkannt",
+        "status": "Status"
+      }
     },
     "settings": "Einstellungen",
     "productStatistics": {
@@ -519,6 +721,7 @@
       "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
       "refresh": "Statistiken aktualisieren",
       "viewAllProducts": "Alle Produkte anzeigen",
+      "viewStatisticsTable": "Statistiktabelle anzeigen",
       "noData": "Keine Produktstatistiken verfügbar",
       "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
       "bestSelling": {
@@ -556,6 +759,27 @@
         "purchases": "Käufe",
         "actions": "Aktionen",
         "viewProduct": "Produktdetails anzeigen",
+        "rowsPerPage": "Zeilen pro Seite"
+      },
+      "productStatisticsView": {
+        "title": "Produktstatistiken - Tabellenansicht",
+        "subtitle": "Umfassende Analyse der Produktleistungsmetriken mit berechneten Konversionsraten",
+        "refresh": "Statistiken aktualisieren",
+        "searchPlaceholder": "Produkte suchen...",
+        "productName": "Produktname",
+        "price": "Preis",
+        "views": "Aufrufe",
+        "cartAdds": "Zum Warenkorb Hinzugefügt",
+        "cartRemoves": "Aus Warenkorb Entfernt",
+        "purchases": "Käufe",
+        "conversionRate": "Konversionsrate",
+        "cartConversion": "Warenkorbkonversion",
+        "abandonmentRate": "Abbruchrate",
+        "actions": "Aktionen",
+        "viewProduct": "Produkt Anzeigen",
+        "viewStatistics": "Detaillierte Statistiken anzeigen",
+        "noData": "Keine Produktstatistiken verfügbar",
+        "noResultsFound": "Keine Produkte gefunden, die Ihrer Suche entsprechen",
         "rowsPerPage": "Zeilen pro Seite"
       }
     },
@@ -819,6 +1043,30 @@
       "emptyStates": {
         "noCategoryData": "Keine Kategoriepräferenzdaten für den ausgewählten Zeitraum verfügbar",
         "noPaymentData": "Keine Zahlungsmethodendaten für den ausgewählten Zeitraum verfügbar"
+      }
+    },
+    "churnRisk": {
+      "title": "Kundenabwanderungsrisiko",
+      "noData": "Keine Kunden mit Abwanderungsrisiko",
+      "notAvailable": "k. A.",
+      "summary": {
+        "totalAtRisk": "Gesamt Gefährdet",
+        "highRisk": "Hohes Risiko",
+        "mediumRisk": "Mittleres Risiko",
+        "potentialRevenueAtRisk": "Potenzielle Umsätze in Gefahr"
+      },
+      "table": {
+        "customer": "Kunde",
+        "lastPurchase": "Letzter Kauf",
+        "daysInactive": "Tage Inaktiv",
+        "lifetimeOrders": "Gesamtbestellungen",
+        "lifetimeRevenue": "Gesamtumsatz",
+        "riskLevel": "Risikoniveau",
+        "avgDaysBetweenOrders": "Durchschn. Tage Zwischen Bestellungen"
+      },
+      "riskLevels": {
+        "high": "HOCH",
+        "medium": "MITTEL"
       }
     }
   }

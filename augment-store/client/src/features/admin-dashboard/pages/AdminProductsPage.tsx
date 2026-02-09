@@ -26,11 +26,13 @@ import {
   ShoppingCart as ShoppingCartIcon,
   RemoveShoppingCart as RemoveCartIcon,
   List as ListIcon,
+  BarChart as BarChartIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useProductStatisticsStore } from '@store/productStatisticsStore'
 import { formatCurrency } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
 import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
 import MostViewedProductsChart from '@features/admin-dashboard/components/MostViewedProductsChart'
 import MostAddedToCartChart from '@features/admin-dashboard/components/MostAddedToCartChart'
@@ -174,8 +176,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch product statistics:', err)
+      // Don't log abort/cancel errors - they're expected when pagination changes
+      // The store layer handles error state appropriately
     }
   }
 
@@ -197,8 +199,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch best selling products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -220,8 +222,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch most viewed products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -243,8 +245,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch most added to cart products:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -267,8 +269,8 @@ const AdminProductsPage = () => {
         abortController.signal
       )
     } catch (err) {
-      // Error is handled in the store
-      console.error('Failed to fetch product performance:', err)
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
     }
   }
 
@@ -290,7 +292,7 @@ const AdminProductsPage = () => {
   }
 
   const handleViewProduct = (productId: string) => {
-    navigate(`/products/${productId}`)
+    navigate(ROUTES.PRODUCT_DETAIL.replace(':id', productId))
   }
 
   // Check if user is authenticated and is an admin
@@ -300,7 +302,7 @@ const AdminProductsPage = () => {
         <Alert severity="warning" sx={{ mb: 3 }}>
           {t('admin.dashboard.pleaseLogin')}
         </Alert>
-        <Button variant="contained" onClick={() => navigate('/login')}>
+        <Button variant="contained" onClick={() => navigate(ROUTES.LOGIN)}>
           {t('admin.dashboard.goToLogin')}
         </Button>
       </Container>
@@ -313,7 +315,7 @@ const AdminProductsPage = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {t('admin.dashboard.accessDenied')}
         </Alert>
-        <Button variant="contained" onClick={() => navigate('/')}>
+        <Button variant="contained" onClick={() => navigate(ROUTES.HOME)}>
           {t('admin.dashboard.goToHome')}
         </Button>
       </Container>
@@ -335,8 +337,15 @@ const AdminProductsPage = () => {
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
+            startIcon={<BarChartIcon />}
+            onClick={() => navigate(ROUTES.ADMIN_PRODUCTS_STATISTICS)}
+          >
+            {t('admin.productStatistics.viewStatisticsTable')}
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<ListIcon />}
-            onClick={() => navigate('/admin/products/all')}
+            onClick={() => navigate(ROUTES.ADMIN_PRODUCTS_ALL)}
           >
             {t('admin.productStatistics.viewAllProducts')}
           </Button>

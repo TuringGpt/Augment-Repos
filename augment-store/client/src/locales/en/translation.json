@@ -65,7 +65,9 @@
     "products": "Browse products",
     "login": "Login to your account",
     "changeLanguage": "Change language",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "switchToDarkMode": "Switch to dark mode",
+    "switchToLightMode": "Switch to light mode"
   },
   "notifications": {
     "title": "Notifications",
@@ -95,7 +97,104 @@
     "emailVerification": "Email Verification",
     "firstName": "First Name",
     "lastName": "Last Name",
-    "fullName": "Full Name"
+    "fullName": "Full Name",
+    "loginPage": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to continue to Augment Store",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "forgotPasswordLink": "Forgot Password?",
+      "signInButton": "Sign In",
+      "continueAsGuest": "Continue as Guest",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign Up",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "loginSuccess": "Login successful! Redirecting...",
+      "loginFailed": "Login failed. Please try again."
+    },
+    "registerPage": {
+      "title": "Create Account",
+      "subtitle": "Join Augment Store today",
+      "firstNameLabel": "First Name",
+      "lastNameLabel": "Last Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "agreeToTerms": "I agree to the <termsLink>Terms and Conditions</termsLink> and <privacyLink>Privacy Policy</privacyLink>",
+      "signUpButton": "Sign Up",
+      "continueAsGuest": "Continue as Guest",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "firstNameRequired": "First name is required",
+      "firstNameMinLength": "First name must be at least 2 characters",
+      "lastNameRequired": "Last name is required",
+      "lastNameMinLength": "Last name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "termsRequired": "You must agree to the Terms and Conditions",
+      "registerSuccess": "Registration successful! Redirecting to email verification...",
+      "registerFailed": "Registration failed. Please try again.",
+      "passwordRequirementsTitle": "Password must contain:",
+      "passwordRequirements8Chars": "At least 8 characters",
+      "passwordRequirementsUppercase": "One uppercase letter",
+      "passwordRequirementsLowercase": "One lowercase letter",
+      "passwordRequirementsNumber": "One number"
+    },
+    "forgotPasswordPage": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email address and we'll send you instructions to reset your password",
+      "emailLabel": "Email Address",
+      "sendButton": "Send Reset Instructions",
+      "backToLogin": "Back to Login",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "successMessage": "Password reset instructions have been sent to your email address. Please check your inbox.",
+      "errorMessage": "Failed to send reset instructions. Please try again."
+    },
+    "resetPasswordPage": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password below",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "resetButton": "Reset Password",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "successMessage": "Your password has been reset successfully!",
+      "errorMessage": "Failed to reset password. Please try again or request a new reset link.",
+      "invalidToken": "Invalid or missing reset token. Please request a new password reset.",
+      "redirecting": "Redirecting to login...",
+      "passwordRequirementsTitle": "Password must contain:",
+      "passwordRequirements8Chars": "At least 8 characters",
+      "passwordRequirementsUppercase": "One uppercase letter",
+      "passwordRequirementsLowercase": "One lowercase letter",
+      "passwordRequirementsNumber": "One number"
+    },
+    "verifyEmailPage": {
+      "title": "Verify Your Email",
+      "subtitle": "We've sent a verification link to {{email}}",
+      "subtitleNoEmail": "Check your email for verification",
+      "waitingTitle": "Check Your Email",
+      "instructions": "Please check your email and click the verification link to activate your account.",
+      "notReceived": "Didn't receive the email?",
+      "notReceivedHelp": "Check your spam folder or contact support if you need assistance.",
+      "resendButton": "Resend Verification Email",
+      "backToLogin": "Back to Login",
+      "verifying": "Verifying your email...",
+      "successMessage": "Your email has been verified successfully! You can now log in.",
+      "errorMessage": "Failed to verify email. The link may be invalid or expired.",
+      "resendSuccess": "Verification email sent! Please check your inbox.",
+      "resendError": "Failed to resend verification email. Please try again."
+    }
   },
   "product": {
     "products": "Products",
@@ -366,6 +465,7 @@
     "contactUs": "Contact Us",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
     "faq": "FAQ",
     "support": "Support",
     "followUs": "Follow Us",
@@ -427,6 +527,85 @@
     "description": "The page you are looking for doesn't exist or has been moved. Please check the URL or return to the home page.",
     "goHome": "Go to Home",
     "browseProducts": "Browse Products"
+  },
+  "help": {
+    "title": "Help Center",
+    "description": "Find answers to frequently asked questions below. If you need additional assistance, please don't hesitate to contact our customer support team.",
+    "faqsTitle": "Frequently Asked Questions",
+    "stillNeedHelp": {
+      "title": "Still Need Help?",
+      "description": "If you couldn't find the answer you're looking for, our customer support team is ready to assist you. Contact us via email, phone, or our contact form."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "How do I place an order?",
+        "answer": "Browse our products, add items to your cart, and proceed to checkout. You'll need to create an account or log in to complete your purchase."
+      },
+      "paymentMethods": {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and other secure payment methods."
+      },
+      "trackOrder": {
+        "question": "How can I track my order?",
+        "answer": "Once your order ships, you'll receive a tracking number via email. You can also view your order status in the \"My Orders\" section of your account."
+      },
+      "returnPolicy": {
+        "question": "What is your return policy?",
+        "answer": "We offer a 30-day return policy for most items. Products must be unused and in original packaging. See our Returns page for full details."
+      },
+      "shippingTime": {
+        "question": "How long does shipping take?",
+        "answer": "Standard shipping typically takes 5-7 business days. Express shipping options are available at checkout for faster delivery."
+      },
+      "international": {
+        "question": "Do you ship internationally?",
+        "answer": "Yes, we ship to many countries worldwide. Shipping costs and delivery times vary by location. International orders may be subject to customs fees."
+      },
+      "resetPassword": {
+        "question": "How do I reset my password?",
+        "answer": "Click on \"Forgot Password\" on the login page. Enter your email address and we'll send you instructions to reset your password."
+      },
+      "cancelOrder": {
+        "question": "Can I cancel or modify my order?",
+        "answer": "Orders can be cancelled or modified within 1 hour of placement. After that, please contact customer support for assistance."
+      },
+      "paymentSecurity": {
+        "question": "Are my payment details secure?",
+        "answer": "Yes, we use industry-standard SSL encryption to protect your payment information. We never store your full credit card details on our servers."
+      },
+      "contactSupport": {
+        "question": "How do I contact customer support?",
+        "answer": "You can reach us via email at support@augmentstore.com, by phone at +1 (555) 123-4567, or through our Contact page."
+      }
+    }
+  },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No product ID provided",
+      "notFound": "Product statistics not found",
+      "viewProduct": "View Product",
+      "performanceMetrics": "Performance Metrics",
+      "summary": "Summary",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "errorLoadStatistics": "Failed to load product statistics",
+      "errorPermissionDenied": "You do not have permission to view product statistics",
+      "errorAuthRequired": "Please log in to view product statistics",
+      "metrics": {
+        "views": "Total Views",
+        "cartAdditions": "Cart Additions",
+        "netAdditions": "Net",
+        "cartRemovals": "Cart Removals",
+        "purchases": "Total Purchases",
+        "conversionRate": "Conversion Rate",
+        "viewsToPurchases": "Views to Purchases",
+        "cartConversionRate": "Cart Conversion Rate",
+        "cartToPurchases": "Cart to Purchases",
+        "abandonmentRate": "Abandonment Rate",
+        "engagementScore": "Engagement Score",
+        "viewsToCart": "Views to Cart"
+      }
+    }
   },
   "admin": {
     "panel": "Admin Panel",
@@ -511,7 +690,30 @@
       "subtitle": "View and analyze comprehensive business reports",
       "workInProgress": "Work in Progress",
       "underDevelopment": "The admin reports page is currently under development.",
-      "checkBackSoon": "Check back soon for updates!"
+      "checkBackSoon": "Check back soon for updates!",
+      "generalStats": {
+        "title": "General Statistics",
+        "subtitle": "All-time aggregated statistics across all products",
+        "totalProducts": "Total Products Tracked",
+        "totalViews": "Total Views",
+        "totalCartAdditions": "Total Cart Additions",
+        "totalPurchases": "Total Purchases",
+        "views": "Views",
+        "cartAdditions": "Cart Additions",
+        "purchases": "Purchases",
+        "count": "Count",
+        "noData": "No general statistics available"
+      },
+      "healthCheck": {
+        "title": "API Health Status",
+        "subtitle": "Monitor the health and availability of the API",
+        "checking": "Checking API health...",
+        "healthy": "Healthy",
+        "unhealthy": "Unhealthy",
+        "allSystemsOperational": "All systems operational",
+        "systemIssuesDetected": "System issues detected",
+        "status": "Status"
+      }
     },
     "settings": "Settings",
     "productStatistics": {
@@ -519,6 +721,7 @@
       "subtitle": "View detailed analytics and performance metrics for all products",
       "refresh": "Refresh statistics",
       "viewAllProducts": "View All Products",
+      "viewStatisticsTable": "View Statistics Table",
       "noData": "No product statistics available",
       "noDataOnPage": "No products on this page. Please navigate to a different page.",
       "bestSelling": {
@@ -556,6 +759,27 @@
         "purchases": "Purchases",
         "actions": "Actions",
         "viewProduct": "View product details",
+        "rowsPerPage": "Rows per page"
+      },
+      "productStatisticsView": {
+        "title": "Product Statistics View",
+        "subtitle": "Comprehensive product performance metrics and analytics",
+        "refresh": "Refresh statistics",
+        "searchPlaceholder": "Search products by name...",
+        "productName": "Product Name",
+        "price": "Price",
+        "views": "Views",
+        "cartAdds": "Cart Adds",
+        "cartRemoves": "Cart Removes",
+        "purchases": "Purchases",
+        "conversionRate": "Conversion Rate",
+        "cartConversion": "Cart Conversion",
+        "abandonmentRate": "Abandonment Rate",
+        "actions": "Actions",
+        "viewProduct": "View product details",
+        "viewStatistics": "View detailed statistics",
+        "noData": "No product statistics available",
+        "noResultsFound": "No products found matching your search",
         "rowsPerPage": "Rows per page"
       }
     },
@@ -819,6 +1043,30 @@
       "emptyStates": {
         "noCategoryData": "No category preference data available for the selected period",
         "noPaymentData": "No payment method data available for the selected period"
+      }
+    },
+    "churnRisk": {
+      "title": "Customer Churn Risk",
+      "noData": "No customers at risk of churning",
+      "notAvailable": "N/A",
+      "summary": {
+        "totalAtRisk": "Total At Risk",
+        "highRisk": "High Risk",
+        "mediumRisk": "Medium Risk",
+        "potentialRevenueAtRisk": "Potential Revenue at Risk"
+      },
+      "table": {
+        "customer": "Customer",
+        "lastPurchase": "Last Purchase",
+        "daysInactive": "Days Inactive",
+        "lifetimeOrders": "Lifetime Orders",
+        "lifetimeRevenue": "Lifetime Revenue",
+        "riskLevel": "Risk Level",
+        "avgDaysBetweenOrders": "Avg Days Between Orders"
+      },
+      "riskLevels": {
+        "high": "HIGH",
+        "medium": "MEDIUM"
       }
     }
   }

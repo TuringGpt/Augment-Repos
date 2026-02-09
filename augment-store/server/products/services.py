@@ -105,3 +105,8 @@ class ProductCategoryCacheService(BaseCacheService):
 class ProductCacheService(BaseCacheService):
     OBJECT_NAME = "product"
     VERSION = 1
+
+
+class ProductSearchCacheService(BaseCacheService):
+    OBJECT_NAME = "product_search"
+    VERSION = 1
