@@ -1122,5 +1122,64 @@
       "title": "¿Necesita Ayuda?",
       "message": "Si tiene alguna pregunta sobre nuestra política de devoluciones, comuníquese con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
     }
+  },
+  "shipping": {
+    "title": "Información de Envío",
+    "intro": "Ofrecemos varias opciones de envío para satisfacer sus necesidades. Todos los pedidos se procesan dentro de 1-2 días hábiles (excluyendo fines de semana y días festivos).",
+    "domesticShipping": {
+      "title": "Envío Nacional (Estados Unidos)",
+      "freeShippingNote": "* Envío estándar gratuito en pedidos de $50 o más"
+    },
+    "internationalShipping": {
+      "title": "Envío Internacional",
+      "customsNote": "* Los pedidos internacionales pueden estar sujetos a tarifas aduaneras e impuestos de importación"
+    },
+    "table": {
+      "shippingMethod": "Método de Envío",
+      "deliveryTime": "Tiempo de Entrega",
+      "cost": "Costo",
+      "region": "Región",
+      "startingCost": "Costo Inicial"
+    },
+    "methods": {
+      "standard": "Envío Estándar",
+      "express": "Envío Express",
+      "overnight": "Envío Nocturno"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 días hábiles",
+      "express": "2-3 días hábiles",
+      "overnight": "1 día hábil",
+      "canada": "7-14 días hábiles",
+      "europe": "10-21 días hábiles",
+      "asia": "10-21 días hábiles",
+      "australia": "10-21 días hábiles",
+      "restOfWorld": "14-28 días hábiles"
+    },
+    "regions": {
+      "canada": "Canadá",
+      "europe": "Europa",
+      "asia": "Asia",
+      "australia": "Australia",
+      "restOfWorld": "Resto del Mundo"
+    },
+    "orderTracking": {
+      "title": "Seguimiento de Pedidos",
+      "paragraph1": "Una vez que su pedido haya sido enviado, recibirá un correo electrónico de confirmación con un número de seguimiento. Puede rastrear su paquete usando este número en nuestro sitio web o en el sitio web del transportista.",
+      "paragraph2": "También puede ver el estado de su pedido iniciando sesión en su cuenta y visitando la página 'Mis Pedidos'."
+    },
+    "restrictions": {
+      "title": "Restricciones de Envío",
+      "paragraph1": "Actualmente enviamos a la mayoría de los países del mundo. Sin embargo, algunos artículos pueden tener restricciones de envío debido al tamaño, peso o regulaciones locales. Estas restricciones se indicarán en la página del producto.",
+      "paragraph2": "No enviamos a apartados postales para ciertos artículos. Por favor, proporcione una dirección física para la entrega cuando sea posible."
+    },
+    "damagedOrLost": {
+      "title": "Paquetes Dañados o Perdidos",
+      "paragraph": "Si su paquete llega dañado o se pierde durante el tránsito, comuníquese con nosotros inmediatamente en {{supportEmail}}. Trabajaremos con el transportista para resolver el problema y asegurarnos de que reciba su pedido."
+    },
+    "questionsAboutShipping": {
+      "title": "¿Preguntas sobre el Envío?",
+      "paragraph": "Si tiene alguna pregunta sobre nuestras opciones de envío o necesita ayuda con su pedido, no dude en comunicarse con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
+    }
   }
 }

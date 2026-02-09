@@ -1122,5 +1122,64 @@
       "title": "Brauchen Sie Hilfe?",
       "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
     }
+  },
+  "shipping": {
+    "title": "Versandinformationen",
+    "intro": "Wir bieten verschiedene Versandoptionen an, um Ihren Bedürfnissen gerecht zu werden. Alle Bestellungen werden innerhalb von 1-2 Werktagen bearbeitet (ausgenommen Wochenenden und Feiertage).",
+    "domesticShipping": {
+      "title": "Inlandsversand (Vereinigte Staaten)",
+      "freeShippingNote": "* Kostenloser Standardversand bei Bestellungen ab 50 $ oder mehr"
+    },
+    "internationalShipping": {
+      "title": "Internationaler Versand",
+      "customsNote": "* Internationale Bestellungen können Zollgebühren und Einfuhrzöllen unterliegen"
+    },
+    "table": {
+      "shippingMethod": "Versandart",
+      "deliveryTime": "Lieferzeit",
+      "cost": "Kosten",
+      "region": "Region",
+      "startingCost": "Startkosten"
+    },
+    "methods": {
+      "standard": "Standardversand",
+      "express": "Expressversand",
+      "overnight": "Über-Nacht-Versand"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 Werktage",
+      "express": "2-3 Werktage",
+      "overnight": "1 Werktag",
+      "canada": "7-14 Werktage",
+      "europe": "10-21 Werktage",
+      "asia": "10-21 Werktage",
+      "australia": "10-21 Werktage",
+      "restOfWorld": "14-28 Werktage"
+    },
+    "regions": {
+      "canada": "Kanada",
+      "europe": "Europa",
+      "asia": "Asien",
+      "australia": "Australien",
+      "restOfWorld": "Rest der Welt"
+    },
+    "orderTracking": {
+      "title": "Sendungsverfolgung",
+      "paragraph1": "Sobald Ihre Bestellung versandt wurde, erhalten Sie eine Bestätigungs-E-Mail mit einer Sendungsverfolgungsnummer. Sie können Ihr Paket mit dieser Nummer auf unserer Website oder der Website des Versanddienstleisters verfolgen.",
+      "paragraph2": "Sie können Ihren Bestellstatus auch jederzeit einsehen, indem Sie sich in Ihr Konto einloggen und den Bereich \"Meine Bestellungen\" besuchen."
+    },
+    "restrictions": {
+      "title": "Versandbeschränkungen",
+      "paragraph1": "Wir versenden derzeit in die meisten Länder weltweit. Einige Artikel können jedoch aufgrund von Größe, Gewicht oder lokalen Vorschriften Versandbeschränkungen unterliegen. Diese Beschränkungen werden auf der Produktseite vermerkt.",
+      "paragraph2": "Wir versenden bestimmte Artikel nicht an Postfächer. Bitte geben Sie nach Möglichkeit eine physische Adresse für die Lieferung an."
+    },
+    "damagedOrLost": {
+      "title": "Beschädigte oder Verlorene Pakete",
+      "paragraph": "Wenn Ihr Paket beschädigt ankommt oder während des Transports verloren geht, kontaktieren Sie uns bitte umgehend unter {{supportEmail}}. Wir werden mit dem Versanddienstleister zusammenarbeiten, um das Problem zu lösen und sicherzustellen, dass Sie Ihre Bestellung erhalten."
+    },
+    "questionsAboutShipping": {
+      "title": "Fragen zum Versand?",
+      "paragraph": "Wenn Sie Fragen zum Versand haben oder Hilfe bei Ihrer Bestellung benötigen, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
+    }
   }
 }
