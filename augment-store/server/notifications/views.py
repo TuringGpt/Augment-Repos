@@ -40,7 +40,7 @@ class MarkAllAsReadView(CacheInvalidatorMixin, BaseNotificationView, GenericAPIV
 class ListNotificationView(CachedListMixin, BaseNotificationView, ListAPIView):
     serializer_class = NotificationListSerializer
     cache_service_class = NotificationCacheService
-    cache_ttl = 60 * 5
+    cache_ttl = 60  # 1 minute - keep short for timely notification updates
     
 
 class UpdateNotificationView(CacheInvalidatorMixin, BaseNotificationView, RetrieveUpdateDestroyAPIView):
