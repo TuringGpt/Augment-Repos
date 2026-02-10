@@ -33,6 +33,9 @@ import {
 } from '@mui/icons-material'
 import { Colors } from '@config/colors'
 
+// Fixed version date for terms and conditions
+const TERMS_LAST_UPDATED = '2/10/2026'
+
 interface Section {
   id: string
   title: string
@@ -266,7 +269,7 @@ const TermsPage = () => {
               Please read these terms carefully before using our service
             </Typography>
             <Chip
-              label={`Last Updated: ${new Date().toLocaleDateString()}`}
+              label={`Last Updated: ${TERMS_LAST_UPDATED}`}
               sx={{
                 backgroundColor: Colors.overlay.light20,
                 color: Colors.text.white,
