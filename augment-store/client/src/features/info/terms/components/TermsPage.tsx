@@ -301,52 +301,61 @@ const TermsPage = () => {
           </Typography>
           <Divider sx={{ mb: 3 }} />
 
-          {sections.map((section, index) => (
-            <Accordion
-              key={section.id}
-              expanded={expanded === section.id}
-              onChange={handleChange(section.id)}
-              sx={{
-                mb: 2,
-                borderRadius: 2,
-                '&:before': { display: 'none' },
-                boxShadow: expanded === section.id ? Colors.shadow.medium : Colors.shadow.light,
-                transition: 'all 0.3s ease',
-                backgroundColor: theme.palette.mode === 'dark' ? Colors.dark.background.elevated : Colors.neutral.white,
-              }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
+          {sections.map((section, index) => {
+            const panelId = `terms-panel-${section.id}`
+            const headerId = `terms-header-${section.id}`
+
+            return (
+              <Accordion
+                key={section.id}
+                expanded={expanded === section.id}
+                onChange={handleChange(section.id)}
                 sx={{
-                  '&:hover': {
-                    backgroundColor: alpha(Colors.primary.main, 0.05),
-                  },
+                  mb: 2,
                   borderRadius: 2,
+                  '&:before': { display: 'none' },
+                  boxShadow: expanded === section.id ? Colors.shadow.medium : Colors.shadow.light,
+                  transition: 'all 0.3s ease',
+                  backgroundColor: theme.palette.mode === 'dark' ? Colors.dark.background.elevated : Colors.neutral.white,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 40,
-                      height: 40,
-                      borderRadius: 2,
-                      backgroundColor: alpha(Colors.primary.main, 0.1),
-                      color: Colors.primary.main,
-                    }}
-                  >
-                    {section.icon}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  id={headerId}
+                  aria-controls={panelId}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: alpha(Colors.primary.main, 0.05),
+                    },
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 2,
+                        backgroundColor: alpha(Colors.primary.main, 0.1),
+                        color: Colors.primary.main,
+                      }}
+                    >
+                      {section.icon}
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                      {index + 1}. {section.title}
+                    </Typography>
                   </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
-                    {index + 1}. {section.title}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails sx={{ pt: 2, pb: 3, px: 3 }}>{section.content}</AccordionDetails>
-            </Accordion>
-          ))}
+                </AccordionSummary>
+                <AccordionDetails id={panelId} sx={{ pt: 2, pb: 3, px: 3 }}>
+                  {section.content}
+                </AccordionDetails>
+              </Accordion>
+            )
+          })}
         </Paper>
       </Container>
     </Box>
