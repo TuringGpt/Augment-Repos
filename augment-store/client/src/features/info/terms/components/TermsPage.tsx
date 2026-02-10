@@ -297,7 +297,7 @@ const TermsPage = () => {
               color: theme.palette.mode === 'dark' ? Colors.dark.text.primary : Colors.text.primary,
             }}
           >
-            Table of Contents
+            Terms and Conditions
           </Typography>
           <Divider sx={{ mb: 3 }} />
 
