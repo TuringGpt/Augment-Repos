@@ -5,8 +5,14 @@ from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, Un
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
-# Create your views here.
+
+class NewsletterCacheService(BaseCacheService):
+    OBJECT_NAME = "newsletter"
+    VERSION = 1
+
+
 class BaseNewsletterView(AutoOptimizeMixin):
     serializer_class = NewsletterSerializer
     queryset = Newsletter.objects.all()
@@ -14,16 +20,19 @@ class BaseNewsletterView(AutoOptimizeMixin):
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
 
-class NewsletterView(BaseNewsletterView, ListAPIView):
+class NewsletterView(CachedListMixin, BaseNewsletterView, ListAPIView):
     serializer_class = NewsletterSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = NewsletterCacheService
+    cache_ttl = 60 * 60
 
     def get_queryset(self):
         return super().get_queryset().filter(is_active=True)
 
-class SubscribeNewsletterView(BaseNewsletterView, CreateAPIView):
+class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateAPIView):
     serializer_class = SubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = NewsletterCacheService
 
 class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateAPIView):
     serializer_class = UnsubscribeNewsletterSerializer
