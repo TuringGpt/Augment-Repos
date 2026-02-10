@@ -1,6 +1,9 @@
 import json
 import hashlib
 import functools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 from django.core.cache import cache
@@ -95,8 +98,11 @@ class BaseCacheService:
             for key in redis_client.scan_iter(match=pattern):
                 redis_client.delete(key)
 
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(
+                "Cache namespace clear failed for %s: %s",
+                self.get_cache_namespace(), e
+            )
 
 
 class CachedListMixin:
