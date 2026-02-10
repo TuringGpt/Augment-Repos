@@ -144,6 +144,11 @@ export const API_ENDPOINTS = {
   HEALTH: {
     CHECK: '/health-check/',
   },
+
+  // Contact endpoints
+  CONTACT: {
+    CREATE: '/contact/create/',
+  },
 }
 
 // Stripe configuration
