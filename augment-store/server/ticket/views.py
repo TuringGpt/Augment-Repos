@@ -46,6 +46,14 @@ class TicketDetailView(TicketBaseView, RetrieveAPIView):
 class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = TicketUpdateSerializer
     cache_service_class = TicketCacheService
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        CommentCacheService().clear_namespace()
+
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
+        CommentCacheService().clear_namespace()
     
 class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
@@ -64,10 +72,15 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
         serialized_params = service._serialize_params(self.request.query_params)
         custom_key = f"{user_id}:{ticket_id}:{serialized_params}"
         return service.get_cache_key(custom_key=custom_key)
+
+    def list(self, request, *args, **kwargs):
+        # Validate ticket exists before serving cached data
+        ticket_id = self.kwargs.get("pk")
+        get_object_or_404(Ticket, id=ticket_id)
+        return super().list(request, *args, **kwargs)
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        get_object_or_404(Ticket, id=ticket_id)
         return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
     
 class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
