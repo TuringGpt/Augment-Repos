@@ -350,7 +350,7 @@ const TermsPage = () => {
                     </Typography>
                   </Box>
                 </AccordionSummary>
-                <AccordionDetails id={panelId} sx={{ pt: 2, pb: 3, px: 3 }}>
+                <AccordionDetails sx={{ pt: 2, pb: 3, px: 3 }}>
                   {section.content}
                 </AccordionDetails>
               </Accordion>
