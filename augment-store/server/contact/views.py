@@ -25,8 +25,9 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     cache_service_class = ContactCacheService
     cache_ttl = 60 * 30
 
-class CreateContactView(BaseContactView, CreateAPIView):
+class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
+    cache_service_class = ContactCacheService
 
 class ContactDetailView(CacheInvalidatorMixin, BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageSerializer

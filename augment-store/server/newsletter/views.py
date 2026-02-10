@@ -34,11 +34,12 @@ class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateA
     permission_classes = [IsAuthenticated]
     cache_service_class = NewsletterCacheService
 
-class UnsubscribeNewsletterView(BaseNewsletterView, RetrieveUpdateAPIView):
+class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, RetrieveUpdateAPIView):
     serializer_class = UnsubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = NewsletterCacheService
 
-class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
+class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView, UpdateAPIView):
     """
     Unsubscribe from newsletter using email address.
 
@@ -46,6 +47,7 @@ class UnsubscribeNewsletterByEmailView(BaseNewsletterView, UpdateAPIView):
     """
     serializer_class = UnsubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = NewsletterCacheService
 
     def get_object(self):
         email = self.request.data.get('email')
