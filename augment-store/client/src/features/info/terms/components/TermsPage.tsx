@@ -34,7 +34,7 @@ import {
 import { Colors } from '@config/colors'
 
 // Fixed version date for terms and conditions
-const TERMS_LAST_UPDATED = '2/10/2026'
+const TERMS_LAST_UPDATED = 'February 10, 2026'
 
 interface Section {
   id: string
