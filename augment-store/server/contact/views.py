@@ -1,6 +1,6 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer
@@ -13,8 +13,14 @@ class ContactCacheService(BaseCacheService):
     VERSION = 1
 
 
-class ContactFormThrottle(AnonRateThrottle):
+class ContactFormAnonThrottle(AnonRateThrottle):
+    scope = 'contact_form'
     rate = '5/min'
+
+
+class ContactFormUserThrottle(UserRateThrottle):
+    scope = 'contact_form_user'
+    rate = '10/min'
 
 
 class BaseContactView(AutoOptimizeMixin):
@@ -35,7 +41,7 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
 class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
     cache_service_class = ContactCacheService
-    throttle_classes = [ContactFormThrottle]
+    throttle_classes = [ContactFormAnonThrottle, ContactFormUserThrottle]
 
 class ContactDetailView(CacheInvalidatorMixin, BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageSerializer
