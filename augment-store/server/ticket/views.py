@@ -37,6 +37,7 @@ class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
         
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
+        self.invalidate_cache()
 
 class TicketDetailView(TicketBaseView, RetrieveAPIView):
     serializer_class = TicketDetailSerializer
@@ -68,9 +69,11 @@ class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
         ticket_id = self.kwargs.get("pk")
         ticket = get_object_or_404(Ticket, id=ticket_id)
         serializer.save(user=self.request.user, ticket=ticket)
+        self.invalidate_cache()
 
-class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
+class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
+    cache_service_class = CommentCacheService
     lookup_url_kwarg = 'comment_pk'
     http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
@@ -78,8 +81,9 @@ class CommentUpdateView(CommentBaseView, RetrieveUpdateDestroyAPIView):
         ticket_id = self.kwargs.get("pk")
         return super().get_queryset().filter(ticket_id=ticket_id)
     
-class CommentDeleteView(CommentBaseView, RetrieveUpdateDestroyAPIView):
+class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
+    cache_service_class = CommentCacheService
     lookup_url_kwarg = 'comment_pk'
     http_method_names = ['delete', 'options']
 
