@@ -5,6 +5,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDe
 from rest_framework.permissions import IsAuthenticated
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
+from django.core.cache import cache as django_cache
 
 
 class TicketCacheService(BaseCacheService):
@@ -59,11 +60,10 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
     def generate_cache_key(self):
         service = self.get_cache_service()
         ticket_id = self.kwargs.get("pk")
-        return service.get_cache_key(
-            user_id=getattr(self.request.user, "id", None),
-            query_params=self.request.query_params,
-            ticket_id=str(ticket_id)
-        )
+        user_id = getattr(self.request.user, "id", None)
+        serialized_params = service._serialize_params(self.request.query_params)
+        custom_key = f"{user_id}:{ticket_id}:{serialized_params}"
+        return service.get_cache_key(custom_key=custom_key)
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
