@@ -55,6 +55,15 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
     serializer_class = CommentSerializer
     cache_service_class = CommentCacheService
     cache_ttl = 60 * 15
+
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        ticket_id = self.kwargs.get("pk")
+        return service.get_cache_key(
+            user_id=getattr(self.request.user, "id", None),
+            query_params=self.request.query_params,
+            ticket_id=str(ticket_id)
+        )
     
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
