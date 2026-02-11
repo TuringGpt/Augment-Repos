@@ -58,13 +58,15 @@ class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
 
 
 
-class CreateProductBrandView(BaseBrandView, CreateAPIView):
+class CreateProductBrandView(CacheInvalidatorMixin, BaseBrandView, CreateAPIView):
     serializer_class = CreateProductBrandSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
 
-class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
+class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductCacheService
 
 
 # Category views
