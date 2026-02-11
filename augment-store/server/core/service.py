@@ -78,8 +78,11 @@ class BaseCacheService:
         Clears keys belonging to this cache namespace.
         Supports Redis (via django-redis) and LocMemCache (predominantly for testing).
         
-        :param custom_pattern: Optional glob string (e.g. "orders:*" or "user_123:*").
-                               If provided, it is appended to the full versioned namespace.
+        IMPORTANT: Because get_cache_key() hashes all custom keys and parameters into a 
+        fixed-length tail, pattern-based subsets (like "user_123:*") will NOT match stored 
+        keys. This method is primarily used to clear the entire versioned namespace.
+        
+        :param custom_pattern: Optional glob string. Note: mostly ineffective due to hashing.
         """
         try:
             # Check if we're using Redis (django-redis specific)
@@ -90,6 +93,7 @@ class BaseCacheService:
                 key_prefix = cache.client.make_key("")  # already includes : if used
 
                 # Namespace pattern WITHOUT prefix
+                # WARNING: custom_pattern is usually ineffective because keys are hashed
                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
                 
                 if custom_pattern:
@@ -105,6 +109,7 @@ class BaseCacheService:
             elif hasattr(cache, '_cache'):
                 import fnmatch
                 # We look for the namespace suffix in the keys
+                # WARNING: custom_pattern is usually ineffective because keys are hashed
                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
                 if custom_pattern:
                     namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
