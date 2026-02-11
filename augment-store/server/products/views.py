@@ -67,6 +67,7 @@ class CreateProductBrandView(CacheInvalidatorMixin, BaseBrandView, CreateAPIView
         super().invalidate_cache(custom_pattern)
         ProductCacheService().clear_namespace(custom_pattern=custom_pattern)
         ProductSearchCacheService().clear_namespace(custom_pattern=custom_pattern)
+        FeaturedProductCacheService().clear_namespace(custom_pattern=custom_pattern)
 
 class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
@@ -77,6 +78,7 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
         super().invalidate_cache(custom_pattern)
         ProductCacheService().clear_namespace(custom_pattern=custom_pattern)
         ProductSearchCacheService().clear_namespace(custom_pattern=custom_pattern)
+        FeaturedProductCacheService().clear_namespace(custom_pattern=custom_pattern)
 
 
 # Category views

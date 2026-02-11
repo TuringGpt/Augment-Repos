@@ -214,13 +214,15 @@ class MerchantCachingTests(BaseAPITestCase):
         # WHEN we fetch the merchant brand list
         # SHOULD hit DB
         with CaptureQueriesContext(connection) as queries:
-             self.client.get(merchant_url)
+             response = self.client.get(merchant_url)
+             self.assertEqual(response.status_code, 200)
              self.assertGreater(len(queries), 0)
 
         # WHEN we fetch the public brand list
         # SHOULD hit DB again (isolation test - different views/keys)
         with CaptureQueriesContext(connection) as queries:
-             self.client.get(public_url)
+             response = self.client.get(public_url)
+             self.assertEqual(response.status_code, 200)
              self.assertGreater(len(queries), 0)
 
     def test_merchant_product_list_cache_isolation(self):
