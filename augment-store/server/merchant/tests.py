@@ -147,10 +147,12 @@ class MerchantCachingTests(BaseAPITestCase):
         self.merchant_1 = UserFactory(role=User.Role.MERCHANT)
         self.merchant_2 = UserFactory(role=User.Role.MERCHANT)
         
-        # Check if caching is effectively enabled and supports invalidation (Redis-backed)
-        from django.core.cache import caches
-        cache_backend = str(caches['default'].__class__)
-        self.caching_enabled = "Redis" in cache_backend
+        # Check if caching backend supports the clear_namespace operation
+        from django.core.cache import cache
+        self.caching_enabled = (
+            (hasattr(cache, 'client') and hasattr(cache.client, 'get_client')) or 
+            hasattr(cache, '_cache')
+        )
 
     def test_merchant_brand_list_cache_isolation(self):
         # GIVEN two merchants with different brands
