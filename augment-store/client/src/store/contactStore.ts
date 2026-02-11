@@ -26,11 +26,11 @@ export const useContactStore = create<ContactState>((set) => ({
 
   // Actions
   submitContact: async (data: CreateContactRequest) => {
-    // Import contactService dynamically to avoid circular dependency
-    const { contactService } = await import('@services/api/contact/contactService')
-
     try {
       set({ isSubmitting: true, error: null, lastSubmittedContact: null })
+
+      // Import contactService dynamically to avoid circular dependency
+      const { contactService } = await import('@services/api/contact/contactService')
 
       const response = await contactService.createContact(data)
 
