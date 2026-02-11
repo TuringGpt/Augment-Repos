@@ -118,6 +118,9 @@ class BaseCacheService:
                         if fnmatch.fnmatch(key, f"*{namespace}"):
                             # Use pop directly to avoid re-mangling the key and deadlocks
                             cache._cache.pop(key, None)
+                            # Also clear expiration metadata if present to prevent leaks
+                            if hasattr(cache, '_expire_info'):
+                                cache._expire_info.pop(key, None)
 
         except Exception as e:
             logger.warning(

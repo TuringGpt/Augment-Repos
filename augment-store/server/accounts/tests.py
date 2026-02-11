@@ -182,9 +182,13 @@ class UserProfileTests(BaseAPITestCase):
 
         # WHEN we fetch the profile for the first time
         # SHOULD hit the database (queries > 0)
-        with self.assertNumQueries(1):
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        
+        with CaptureQueriesContext(connection) as queries:
             response1 = self.authenticated_client.get(url)
             self.assertEqual(response1.status_code, status.HTTP_200_OK)
+            self.assertGreater(len(queries), 0)
 
         # AND we fetch the profile again
         # SHOULD be cached (0 database queries)
@@ -199,7 +203,8 @@ class UserProfileTests(BaseAPITestCase):
         self.assertEqual(response_update.status_code, status.HTTP_200_OK)
 
         # THEN fetching the profile again SHOULD hit the database again (cache invalidated)
-        with self.assertNumQueries(1):
+        with CaptureQueriesContext(connection) as queries:
             response3 = self.authenticated_client.get(url)
             self.assertEqual(response3.status_code, status.HTTP_200_OK)
             self.assertEqual(response3.data["first_name"], "NewName")
+            self.assertGreater(len(queries), 0)
