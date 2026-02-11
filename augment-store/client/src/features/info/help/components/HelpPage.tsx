@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { CONTACT_INFO } from '@constants/index'
 
 const HelpPage = () => {
   const { t } = useTranslation()
@@ -52,7 +53,10 @@ const HelpPage = () => {
     },
     {
       question: t('help.faqs.contactSupport.question'),
-      answer: t('help.faqs.contactSupport.answer'),
+      answer: t('help.faqs.contactSupport.answer', {
+        supportEmail: CONTACT_INFO.SUPPORT_EMAIL,
+        supportPhone: CONTACT_INFO.SUPPORT_PHONE,
+      }),
     },
   ]
 

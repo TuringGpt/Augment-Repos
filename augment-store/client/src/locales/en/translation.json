@@ -358,8 +358,8 @@
       "emailAddress": "Email Address",
       "phoneNumber": "Phone Number",
       "emailHelper": "We'll send your order confirmation here",
-      "phoneHelper": "Enter 10-15 digits. Format: +1 (555) 123-4567 or 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Enter 10-15 digits. Format: {{supportPhone}} or 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "Email is required",
         "emailInvalid": "Invalid email address",
@@ -575,7 +575,7 @@
       },
       "contactSupport": {
         "question": "How do I contact customer support?",
-        "answer": "You can reach us via email at support@augmentstore.com, by phone at +1 (555) 123-4567, or through our Contact page."
+        "answer": "You can reach us via email at {{supportEmail}}, by phone at {{supportPhone}}, or through our Contact page."
       }
     }
   },
@@ -1068,6 +1068,118 @@
         "high": "HIGH",
         "medium": "MEDIUM"
       }
+    }
+  },
+  "returns": {
+    "title": "Returns & Refunds",
+    "satisfactionAlert": "We want you to be completely satisfied with your purchase. If you're not happy with your order, we're here to help.",
+    "returnPolicy": {
+      "title": "Return Policy",
+      "intro": "We offer a 30-day return policy for most items. To be eligible for a return, your item must be:",
+      "conditions": {
+        "unused": "Unused and in the same condition that you received it",
+        "originalPackaging": "In the original packaging",
+        "receipt": "Accompanied by the receipt or proof of purchase"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Non-Returnable Items",
+      "intro": "Certain items cannot be returned, including:",
+      "items": {
+        "perishable": "Perishable goods (food, flowers, etc.)",
+        "custom": "Custom or personalized items",
+        "personalCare": "Personal care items (for hygiene reasons)",
+        "hazardous": "Hazardous materials",
+        "giftCards": "Gift cards",
+        "digital": "Downloadable software or digital products"
+      }
+    },
+    "howToReturn": {
+      "title": "How to Return an Item",
+      "steps": {
+        "step1": "Log in to your account and go to \"My Orders\"",
+        "step2": "Select the order containing the item you wish to return",
+        "step3": "Click \"Request Return\" and follow the instructions",
+        "step4": "Pack the item securely in its original packaging",
+        "step5": "Ship the item to the address provided in your return confirmation"
+      }
+    },
+    "refunds": {
+      "title": "Refunds",
+      "inspection": "Once we receive your return, we will inspect the item and notify you of the approval or rejection of your refund.",
+      "processing": "If approved, your refund will be processed and a credit will automatically be applied to your original method of payment within 5-10 business days."
+    },
+    "exchanges": {
+      "title": "Exchanges",
+      "policy": "We only replace items if they are defective or damaged. If you need to exchange an item for the same product, please contact us at {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Shipping Costs",
+      "customerResponsibility": "You will be responsible for paying your own shipping costs for returning your item. Shipping costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from your refund.",
+      "defectiveCoverage": "If the item was defective or damaged upon arrival, we will cover the return shipping costs."
+    },
+    "needHelp": {
+      "title": "Need Help?",
+      "message": "If you have any questions about our return policy, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
+    }
+  },
+  "shipping": {
+    "title": "Shipping Information",
+    "intro": "We offer various shipping options to meet your needs. All orders are processed within 1-2 business days (excluding weekends and holidays).",
+    "domesticShipping": {
+      "title": "Domestic Shipping (United States)",
+      "freeShippingNote": "* Free standard shipping on orders of $50 or more"
+    },
+    "internationalShipping": {
+      "title": "International Shipping",
+      "customsNote": "* International orders may be subject to customs fees and import duties"
+    },
+    "table": {
+      "shippingMethod": "Shipping Method",
+      "deliveryTime": "Delivery Time",
+      "cost": "Cost",
+      "region": "Region",
+      "startingCost": "Starting Cost"
+    },
+    "methods": {
+      "standard": "Standard Shipping",
+      "express": "Express Shipping",
+      "overnight": "Overnight Shipping"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 business days",
+      "express": "2-3 business days",
+      "overnight": "1 business day",
+      "canada": "7-14 business days",
+      "europe": "10-21 business days",
+      "asia": "10-21 business days",
+      "australia": "10-21 business days",
+      "restOfWorld": "14-28 business days"
+    },
+    "regions": {
+      "canada": "Canada",
+      "europe": "Europe",
+      "asia": "Asia",
+      "australia": "Australia",
+      "restOfWorld": "Rest of World"
+    },
+    "orderTracking": {
+      "title": "Order Tracking",
+      "paragraph1": "Once your order has shipped, you will receive a confirmation email with a tracking number. You can track your package using this number on our website or the carrier's website.",
+      "paragraph2": "You can also view your order status anytime by logging into your account and visiting the \"My Orders\" section."
+    },
+    "restrictions": {
+      "title": "Shipping Restrictions",
+      "paragraph1": "We currently ship to most countries worldwide. However, some items may have shipping restrictions due to size, weight, or local regulations. These restrictions will be noted on the product page.",
+      "paragraph2": "We do not ship to P.O. boxes for certain items. Please provide a physical address for delivery when possible."
+    },
+    "damagedOrLost": {
+      "title": "Damaged or Lost Packages",
+      "paragraph": "If your package arrives damaged or goes missing during transit, please contact us immediately at {{supportEmail}}. We will work with the carrier to resolve the issue and ensure you receive your order."
+    },
+    "questionsAboutShipping": {
+      "title": "Questions About Shipping?",
+      "paragraph": "If you have any questions about shipping or need assistance with your order, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
     }
   }
 }
