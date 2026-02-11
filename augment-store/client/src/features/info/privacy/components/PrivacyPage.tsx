@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, ReactNode, SyntheticEvent } from 'react'
 import {
   Box,
   Container,
@@ -42,21 +42,21 @@ import { Colors } from '@config/colors'
 interface Section {
   id: string
   title: string
-  icon: React.ReactNode
-  content: React.ReactNode
+  icon: ReactNode
+  content: ReactNode
 }
 
 interface DataType {
   title: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
 }
 
 const PrivacyPage = () => {
   const theme = useTheme()
   const [expanded, setExpanded] = useState<string | false>('section-1')
 
-  const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false)
   }
 
