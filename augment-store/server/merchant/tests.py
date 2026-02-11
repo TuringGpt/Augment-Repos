@@ -184,6 +184,11 @@ class MerchantCachingTests(BaseAPITestCase):
         # Initial fetch to populate cache (using authenticated client)
         self.authenticated_client.get(url)
 
+        # AND fetch again (verify it's cached)
+        if self.caching_enabled:
+            with self.assertNumQueries(0):
+                self.authenticated_client.get(url)
+
         # WHEN a new brand is created
         create_url = reverse("v1:create_product_brand")
         self.authenticated_client.post(create_url, {"name": "Newly Created", "description": "Desc"})
@@ -248,6 +253,11 @@ class MerchantCachingTests(BaseAPITestCase):
 
          # Initial fetch to populate cache (authenticated)
          self.authenticated_client.get(url)
+         
+         # AND fetch again (verify it's cached)
+         if self.caching_enabled:
+             with self.assertNumQueries(0):
+                 self.authenticated_client.get(url)
 
          # WHEN a product is updated
          update_url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
