@@ -22,10 +22,15 @@ class CurrencyListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     cache_service_class = CurrencyCacheService
     cache_ttl = 60 * 60 * 24 * 30  # 30 days - currencies change rarely 
 
-class CreateCurrencyView(BaseCacheService, CreateAPIView):
+class CreateCurrencyView(CacheInvalidatorMixin, CreateAPIView):
     """
     Admin-only: Create a new currency.
     """
     serializer_class = ListCurrencySerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     queryset = Currency.objects.all()
+    cache_service_class = CurrencyCacheService
+
+    def perform_create(self, serializer):
+        serializer.save()
+        self.invalidate_cache()
