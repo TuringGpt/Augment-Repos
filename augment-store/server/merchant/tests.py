@@ -6,7 +6,7 @@ from accounts.models import User
 from django.urls import reverse
 from core.tests import BaseAPITestCase
 import uuid
-from products.services import ProductBrandCacheService, ProductCacheService
+from products.services import ProductBrandCacheService, ProductCacheService, ProductSearchCacheService
 from django.core.cache import cache
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
@@ -172,7 +172,8 @@ class MerchantCachingTests(BaseAPITestCase):
         # AND fetch again (cached if enabled)
         if self.caching_enabled:
             with self.assertNumQueries(0):
-                 self.client.get(url_1)
+                 response = self.client.get(url_1)
+                 self.assertEqual(response.status_code, 200)
 
         # WHEN we fetch merchant 2's brands
         # SHOULD NOT hit merchant 1's cache (isolation test)
@@ -197,7 +198,8 @@ class MerchantCachingTests(BaseAPITestCase):
         # AND fetch again (verify it's cached)
         if self.caching_enabled:
             with self.assertNumQueries(0):
-                self.authenticated_client.get(url)
+                response = self.authenticated_client.get(url)
+                self.assertEqual(response.status_code, 200)
 
         # WHEN a new brand is created
         create_url = reverse("v1:create_product_brand")
@@ -252,7 +254,10 @@ class MerchantCachingTests(BaseAPITestCase):
         # AND fetch again (cached if enabled)
         if self.caching_enabled:
             with self.assertNumQueries(0):
-                 self.client.get(url_1)
+                 response = self.client.get(url_1)
+                 self.assertEqual(response.status_code, 200)
+                 self.assertEqual(len(response.data["results"]), 1)
+                 self.assertEqual(response.data["results"][0]["name"], "P1")
 
         # WHEN we fetch merchant 2's products
         # SHOULD NOT hit merchant 1's cache
@@ -272,11 +277,11 @@ class MerchantCachingTests(BaseAPITestCase):
 
          # Initial fetch to populate cache (authenticated)
          self.authenticated_client.get(url)
-         
          # AND fetch again (verify it's cached)
          if self.caching_enabled:
              with self.assertNumQueries(0):
-                 self.authenticated_client.get(url)
+                 response = self.authenticated_client.get(url)
+                 self.assertEqual(response.status_code, 200)
 
          # WHEN a product is updated
          update_url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
