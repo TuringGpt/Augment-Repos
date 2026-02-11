@@ -6,6 +6,8 @@ from accounts.models import User
 from django.urls import reverse
 from core.tests import BaseAPITestCase
 import uuid
+from products.services import ProductBrandCacheService, ProductCacheService
+from django.core.cache import cache
 # Create your tests here.
 class MerchantBrandListViewTests(TestCase):
     
@@ -129,4 +131,115 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         url = reverse("v1:merchant:merchant_order_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
+
+
+class MerchantCachingTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        cache.clear()
+        self.merchant_1 = UserFactory(role=User.Role.MERCHANT)
+        self.merchant_2 = UserFactory(role=User.Role.MERCHANT)
+
+    def test_merchant_brand_list_cache_isolation(self):
+        # GIVEN two merchants with different brands
+        ProductBrandFactory(created_by=self.merchant_1, name="Merchant 1 Brand")
+        ProductBrandFactory(created_by=self.merchant_2, name="Merchant 2 Brand")
+
+        url_1 = reverse("v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_1.id)})
+        url_2 = reverse("v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_2.id)})
+
+        # WHEN we fetch merchant 1's brands
+        # SHOUL hit DB
+        with self.assertNumQueries(1):
+             response1 = self.client.get(url_1)
+             self.assertEqual(response1.status_code, 200)
+
+        # AND fetch again (cached)
+        with self.assertNumQueries(0):
+             self.client.get(url_1)
+
+        # WHEN we fetch merchant 2's brands
+        # SHOULD NOT hit merchant 1's cache (isolation test)
+        with self.assertNumQueries(1):
+             response2 = self.client.get(url_2)
+             self.assertEqual(response2.status_code, 200)
+             self.assertNotEqual(response1.data, response2.data)
+
+    def test_merchant_brand_list_invalidation(self):
+        # GIVEN a merchant has some brands cached
+        self.authenticated_client.force_authenticate(user=self.merchant_1)
+        url = reverse("v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_1.id)})
+        
+        ProductBrandFactory(created_by=self.merchant_1, name="Existing")
+        
+        # Initial fetch to populate cache
+        self.client.get(url)
+
+        # WHEN a new brand is created
+        create_url = reverse("v1:create_product_brand")
+        self.authenticated_client.post(create_url, {"name": "Newly Created", "description": "Desc"})
+
+        # THEN the next fetch SHOULD hit the database (cache invalidated)
+        with self.assertNumQueries(1):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(response.data["results"]), 2)
+
+    def test_merchant_vs_public_brand_list_isolation(self):
+        # GIVEN a merchant brand
+        ProductBrandFactory(created_by=self.merchant_1, name="Shared Service Brand")
+
+        merchant_url = reverse("v1:merchant:merchant_brand_list", kwargs={"pk": str(self.merchant_1.id)})
+        public_url = reverse("v1:product_brand_list")
+
+        # WHEN we fetch the merchant brand list
+        # SHOULD hit DB
+        with self.assertNumQueries(1):
+             self.client.get(merchant_url)
+
+        # WHEN we fetch the public brand list
+        # SHOULD hit DB again (isolation test - different views/keys)
+        with self.assertNumQueries(1):
+             self.client.get(public_url)
+
+    def test_merchant_product_list_cache_isolation(self):
+        # GIVEN two merchants with different products
+        brand = ProductBrandFactory(created_by=self.merchant_1)
+        ProductFactory(created_by=self.merchant_1, name="P1", brand=brand)
+        ProductFactory(created_by=self.merchant_2, name="P2", brand=brand)
+
+        url_1 = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_1.id)})
+        url_2 = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_2.id)})
+
+        # WHEN we fetch merchant 1's products
+        with self.assertNumQueries(1):
+             self.client.get(url_1)
+
+        # AND fetch again (cached)
+        with self.assertNumQueries(0):
+             self.client.get(url_1)
+
+        # WHEN we fetch merchant 2's products
+        # SHOULD NOT hit merchant 1's cache
+        with self.assertNumQueries(1):
+             self.client.get(url_2)
+
+    def test_merchant_product_list_invalidation(self):
+         # GIVEN a merchant has products cached
+         self.authenticated_client.force_authenticate(user=self.merchant_1)
+         url = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_1.id)})
+         brand = ProductBrandFactory(created_by=self.merchant_1)
+         product = ProductFactory(created_by=self.merchant_1, brand=brand, name="Old Name")
+
+         self.client.get(url)
+
+         # WHEN a product is updated
+         update_url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+         self.authenticated_client.patch(update_url, {"name": "Updated Name"})
+
+         # THEN the merchant list cache SHOULD be invalidated
+         with self.assertNumQueries(1):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["results"][0]["name"], "Updated Name")
     
