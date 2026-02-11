@@ -2,6 +2,11 @@ import { create } from 'zustand'
 import type { CreateContactRequest, CreateContactResponse } from '@services/api/contact/contactService'
 import { parseApiError } from '@utils/errorUtils'
 
+// Request counter to prevent race conditions when submitting contact form
+// When multiple submit calls are made in quick succession (e.g., double-click),
+// only the most recent request should update the state
+let submitRequestCounter = 0
+
 interface ContactState {
   // Loading states
   isSubmitting: boolean
@@ -26,15 +31,25 @@ export const useContactStore = create<ContactState>((set) => ({
 
   // Actions
   submitContact: async (data: CreateContactRequest) => {
-    try {
-      set({ isSubmitting: true, error: null, lastSubmittedContact: null })
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    submitRequestCounter += 1
+    const currentRequestId = submitRequestCounter
 
+    // Set loading state and clear stale data BEFORE any awaited work
+    set({ isSubmitting: true, error: null, lastSubmittedContact: null })
+
+    try {
       // Import contactService dynamically to avoid circular dependency
       const { contactService } = await import('@services/api/contact/contactService')
 
       const response = await contactService.createContact(data)
 
-      set({ lastSubmittedContact: response, error: null })
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === submitRequestCounter) {
+        set({ lastSubmittedContact: response, error: null })
+      }
 
       return response
     } catch (err) {
@@ -44,7 +59,11 @@ export const useContactStore = create<ContactState>((set) => ({
         defaultMessage: 'Failed to submit contact form. Please try again.',
       })
 
-      set({ error: errorMessage })
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === submitRequestCounter) {
+        set({ error: errorMessage })
+      }
+
       // Log only non-PII fields to avoid exposing sensitive user content
       const error = err as {
         response?: {
@@ -62,7 +81,10 @@ export const useContactStore = create<ContactState>((set) => ({
 
       throw err
     } finally {
-      set({ isSubmitting: false })
+      // Only clear loading state if this is still the most recent request
+      if (currentRequestId === submitRequestCounter) {
+        set({ isSubmitting: false })
+      }
     }
   },
 
