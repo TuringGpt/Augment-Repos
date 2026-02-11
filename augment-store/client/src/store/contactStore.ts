@@ -29,7 +29,7 @@ export const useContactStore = create<ContactState>((set) => ({
     const { contactService } = await import('@services/api/contact/contactService')
 
     try {
-      set({ isSubmitting: true, error: null })
+      set({ isSubmitting: true, error: null, lastSubmittedContact: null })
 
       const response = await contactService.createContact(data)
 
