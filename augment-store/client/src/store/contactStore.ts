@@ -38,8 +38,13 @@ export const useContactStore = create<ContactState>((set) => ({
       return response
     } catch (err) {
       const error = err as {
-        response?: { status?: number; data?: { message?: string } }
+        response?: {
+          status?: number
+          statusText?: string
+          data?: { message?: string }
+        }
         message?: string
+        name?: string
       }
 
       const errorMessage =
@@ -48,10 +53,11 @@ export const useContactStore = create<ContactState>((set) => ({
         'Failed to submit contact form. Please try again.'
 
       set({ error: errorMessage })
+      // Log only non-PII fields to avoid exposing sensitive user content
       console.error('Error submitting contact form:', {
-        error,
         status: error?.response?.status,
-        data: error?.response?.data,
+        statusText: error?.response?.statusText,
+        errorType: error?.name,
         message: errorMessage,
       })
 
