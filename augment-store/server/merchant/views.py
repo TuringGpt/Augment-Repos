@@ -22,6 +22,14 @@ class MerchantBrandListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     cache_service_class = ProductBrandCacheService
     cache_ttl = 60 * 60
 
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        object_id = self.kwargs.get("pk")
+        user_id = getattr(self.request.user, "id", None)
+        serialized_params = service._serialize_params(self.request.query_params)
+        custom_key = f"merchant_brands:{object_id}:{user_id}:{serialized_params}"
+        return service.get_cache_key(custom_key=custom_key)
+
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
         return super().get_queryset().filter(created_by=object_id)
@@ -35,6 +43,14 @@ class MerchantProductListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     queryset = Product.objects.all()
     cache_service_class = ProductCacheService
     cache_ttl = 60 * 30
+
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        object_id = self.kwargs.get("pk")
+        user_id = getattr(self.request.user, "id", None)
+        serialized_params = service._serialize_params(self.request.query_params)
+        custom_key = f"merchant_products:{object_id}:{user_id}:{serialized_params}"
+        return service.get_cache_key(custom_key=custom_key)
 
     def get_queryset(self):
         object_id = self.kwargs.get("pk")
