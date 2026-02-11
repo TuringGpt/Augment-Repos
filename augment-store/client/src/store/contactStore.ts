@@ -92,14 +92,18 @@ export const useContactStore = create<ContactState>((set) => ({
     // Invalidate any in-flight requests by incrementing the counter
     // This ensures late-resolving requests won't repopulate the error state
     submitRequestCounter += 1
-    set({ error: null })
+    // Always reset isSubmitting to prevent it from being stuck in true state
+    // if this is called while a request is in-flight
+    set({ error: null, isSubmitting: false })
   },
 
   clearLastSubmitted: () => {
     // Invalidate any in-flight requests by incrementing the counter
     // This ensures late-resolving requests won't repopulate the success state
     submitRequestCounter += 1
-    set({ lastSubmittedContact: null })
+    // Always reset isSubmitting to prevent it from being stuck in true state
+    // if this is called while a request is in-flight
+    set({ lastSubmittedContact: null, isSubmitting: false })
   },
 }))
 
