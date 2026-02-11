@@ -3,11 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import UserProfileSerializer, UpdateUserProfileSerializer
 from core.optimization import AutoOptimizeMixin
-from core.service import CachedRetrieveMixin
+from core.service import CachedRetrieveMixin, CacheInvalidatorMixin
 from .services import UserProfileCacheService
 
 
-class UserProfileView(CachedRetrieveMixin, AutoOptimizeMixin, RetrieveUpdateAPIView):
+class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMixin, RetrieveUpdateAPIView):
     """
     View for retrieving and updating the authenticated user's profile.
 
