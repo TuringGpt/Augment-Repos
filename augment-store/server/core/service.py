@@ -116,7 +116,8 @@ class BaseCacheService:
                         # Key usually looks like ":1:namespace:v1:hash" 
                         # We use fnmatch to match the pattern
                         if fnmatch.fnmatch(key, f"*{namespace}"):
-                            cache.delete(key)
+                            # Use pop directly to avoid re-mangling the key and deadlocks
+                            cache._cache.pop(key, None)
 
         except Exception as e:
             logger.warning(

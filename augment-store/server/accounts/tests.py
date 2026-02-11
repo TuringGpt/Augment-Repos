@@ -2,9 +2,13 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from rest_framework import status
 from django.urls import reverse
+from accounts.services import UserProfileCacheService
 
 
 class UserProfileTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        UserProfileCacheService().clear_namespace()
 
     def test_get_user_profile_authenticated(self):
         # GIVEN an authenticated user exists
@@ -171,9 +175,6 @@ class UserProfileTests(BaseAPITestCase):
         self.assertIn("mobile", response.data)
 
     def test_user_profile_caching(self):
-        from django.core.cache import cache
-        cache.clear()
-
         # GIVEN an authenticated user exists
         user = UserFactory(email="cachetest@example.com")
         self.authenticated_client.force_authenticate(user=user)
