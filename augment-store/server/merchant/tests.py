@@ -160,6 +160,8 @@ class MerchantCachingTests(BaseAPITestCase):
              response1 = self.client.get(url_1)
              self.assertEqual(response1.status_code, 200)
              self.assertGreater(len(queries), 0)
+             self.assertEqual(len(response1.data["results"]), 1)
+             self.assertEqual(response1.data["results"][0]["name"], "Merchant 1 Brand")
 
         # AND fetch again (cached if enabled)
         if self.caching_enabled:
@@ -172,6 +174,8 @@ class MerchantCachingTests(BaseAPITestCase):
              response2 = self.client.get(url_2)
              self.assertEqual(response2.status_code, 200)
              self.assertGreater(len(queries), 0)
+             self.assertEqual(len(response2.data["results"]), 1)
+             self.assertEqual(response2.data["results"][0]["name"], "Merchant 2 Brand")
              self.assertNotEqual(response1.data, response2.data)
 
     def test_merchant_brand_list_invalidation(self):
@@ -221,17 +225,21 @@ class MerchantCachingTests(BaseAPITestCase):
 
     def test_merchant_product_list_cache_isolation(self):
         # GIVEN two merchants with different products
-        brand = ProductBrandFactory(created_by=self.merchant_1)
-        ProductFactory(created_by=self.merchant_1, name="P1", brand=brand)
-        ProductFactory(created_by=self.merchant_2, name="P2", brand=brand)
+        brand1 = ProductBrandFactory(created_by=self.merchant_1)
+        brand2 = ProductBrandFactory(created_by=self.merchant_2)
+        ProductFactory(created_by=self.merchant_1, name="P1", brand=brand1)
+        ProductFactory(created_by=self.merchant_2, name="P2", brand=brand2)
 
         url_1 = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_1.id)})
         url_2 = reverse("v1:merchant:merchant_product_list", kwargs={"pk": str(self.merchant_2.id)})
 
         # WHEN we fetch merchant 1's products
         with CaptureQueriesContext(connection) as queries:
-             self.client.get(url_1)
+             response1 = self.client.get(url_1)
+             self.assertEqual(response1.status_code, 200)
              self.assertGreater(len(queries), 0)
+             self.assertEqual(len(response1.data["results"]), 1)
+             self.assertEqual(response1.data["results"][0]["name"], "P1")
 
         # AND fetch again (cached if enabled)
         if self.caching_enabled:
@@ -241,8 +249,11 @@ class MerchantCachingTests(BaseAPITestCase):
         # WHEN we fetch merchant 2's products
         # SHOULD NOT hit merchant 1's cache
         with CaptureQueriesContext(connection) as queries:
-             self.client.get(url_2)
+             response2 = self.client.get(url_2)
+             self.assertEqual(response2.status_code, 200)
              self.assertGreater(len(queries), 0)
+             self.assertEqual(len(response2.data["results"]), 1)
+             self.assertEqual(response2.data["results"][0]["name"], "P2")
 
     def test_merchant_product_list_invalidation(self):
          # GIVEN a merchant has products cached

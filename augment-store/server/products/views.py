@@ -63,10 +63,20 @@ class CreateProductBrandView(CacheInvalidatorMixin, BaseBrandView, CreateAPIView
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductBrandCacheService
 
+    def invalidate_cache(self, custom_pattern: str = None):
+        super().invalidate_cache(custom_pattern)
+        ProductCacheService().clear_namespace(custom_pattern=custom_pattern)
+        ProductSearchCacheService().clear_namespace(custom_pattern=custom_pattern)
+
 class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductBrandCacheService
+
+    def invalidate_cache(self, custom_pattern: str = None):
+        super().invalidate_cache(custom_pattern)
+        ProductCacheService().clear_namespace(custom_pattern=custom_pattern)
+        ProductSearchCacheService().clear_namespace(custom_pattern=custom_pattern)
 
 
 # Category views
