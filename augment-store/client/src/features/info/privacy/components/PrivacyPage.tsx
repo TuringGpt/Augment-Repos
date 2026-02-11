@@ -36,6 +36,7 @@ import {
   Shield as ShieldIcon,
   Lock as LockIcon,
   Visibility as VisibilityIcon,
+  Campaign as CampaignIcon,
 } from '@mui/icons-material'
 import { Colors } from '@config/colors'
 
@@ -90,6 +91,11 @@ const PrivacyPage = () => {
       title: 'Usage Data',
       description: 'Information about how you use our platform, products and services',
       icon: <VisibilityIcon />,
+    },
+    {
+      title: 'Marketing Data',
+      description: 'Your preferences in receiving marketing from us and your communication preferences',
+      icon: <CampaignIcon />,
     },
   ]
 
