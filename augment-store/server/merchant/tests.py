@@ -195,7 +195,8 @@ class MerchantCachingTests(BaseAPITestCase):
         ProductBrandFactory(created_by=self.merchant_1, name="Existing")
         
         # Initial fetch to populate cache (using authenticated client)
-        self.authenticated_client.get(url)
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 200)
 
         # AND fetch again (verify it's cached)
         if self.caching_enabled:
@@ -205,7 +206,8 @@ class MerchantCachingTests(BaseAPITestCase):
 
         # WHEN a new brand is created
         create_url = reverse("v1:create_product_brand")
-        self.authenticated_client.post(create_url, {"name": "Newly Created", "description": "Desc"})
+        response = self.authenticated_client.post(create_url, {"name": "Newly Created", "description": "Desc"})
+        self.assertEqual(response.status_code, 201)
 
         # THEN the next fetch SHOULD hit the database (cache invalidated)
         with CaptureQueriesContext(connection) as queries:
@@ -278,7 +280,8 @@ class MerchantCachingTests(BaseAPITestCase):
          product = ProductFactory(created_by=self.merchant_1, brand=brand, name="Old Name")
 
          # Initial fetch to populate cache (authenticated)
-         self.authenticated_client.get(url)
+         response = self.authenticated_client.get(url)
+         self.assertEqual(response.status_code, 200)
          # AND fetch again (verify it's cached)
          if self.caching_enabled:
              with self.assertNumQueries(0):
@@ -287,7 +290,8 @@ class MerchantCachingTests(BaseAPITestCase):
 
          # WHEN a product is updated
          update_url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
-         self.authenticated_client.patch(update_url, {"name": "Updated Name"})
+         response = self.authenticated_client.patch(update_url, {"name": "Updated Name"})
+         self.assertEqual(response.status_code, 200)
 
          # THEN the merchant list cache SHOULD be invalidated
          with CaptureQueriesContext(connection) as queries:

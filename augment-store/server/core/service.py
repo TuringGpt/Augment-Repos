@@ -74,29 +74,53 @@ class BaseCacheService:
 
     def clear_namespace(self, custom_pattern: str = None):
         """
-        Clears Redis keys belonging to this cache namespace.
+        Clears keys belonging to this cache namespace.
+        Supports Redis (via django-redis) and LocMemCache (predominantly for testing).
         
-        :param custom_pattern: Optional Redis glob string (e.g. "orders:*" or "user_123:*").
-                               If provided, it is appended to the full versioned namespace.
+        :param custom_pattern: Optional glob string. Note: mostly ineffective due to hashing.
         """
         try:
-            redis_client = cache.client.get_client(write=True)
+            # Check if it's a django-redis client
+            if hasattr(cache, 'client') and hasattr(cache.client, 'get_client'):
+                redis_client = cache.client.get_client(write=True)
 
-            # Get key prefix applied by django-redis (may be "")
-            key_prefix = cache.client.make_key("")  # already includes : if used
-            # make_key("") returns something like "myapp:" or "" (no prefix)
+                # Get key prefix applied by django-redis (may be "")
+                key_prefix = cache.client.make_key("")  # already includes : if used
 
-            # Namespace pattern WITHOUT prefix
-            namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+                # Namespace pattern WITHOUT prefix
+                namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+                
+                if custom_pattern:
+                     namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
+
+                # Final pattern INCLUDING prefix
+                pattern = f"{key_prefix}{namespace}"
+
+                for key in redis_client.scan_iter(match=pattern):
+                    redis_client.delete(key)
             
-            if custom_pattern:
-                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
-
-            # Final pattern INCLUDING prefix
-            pattern = f"{key_prefix}{namespace}"
-
-            for key in redis_client.scan_iter(match=pattern):
-                redis_client.delete(key)
+            # Fallback for LocMemCache (usually for tests)
+            elif hasattr(cache, '_cache'):
+                import fnmatch
+                import threading
+                # We look for the namespace suffix in the keys
+                # WARNING: custom_pattern is usually ineffective because keys are hashed
+                namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+                if custom_pattern:
+                    namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
+                
+                # LocMemCache uses a simple dict with a lock
+                lock = getattr(cache, '_lock', threading.RLock())
+                with lock:
+                    for key in list(cache._cache.keys()):
+                        # Key usually looks like ":1:namespace:v1:hash" 
+                        # We use fnmatch to match the pattern
+                        if fnmatch.fnmatch(key, f"*{namespace}"):
+                            # Use pop directly to avoid re-mangling the key and deadlocks
+                            cache._cache.pop(key, None)
+                            # Also clear expiration metadata if present to prevent leaks
+                            if hasattr(cache, '_expire_info'):
+                                cache._expire_info.pop(key, None)
 
         except Exception as e:
             logger.warning(
