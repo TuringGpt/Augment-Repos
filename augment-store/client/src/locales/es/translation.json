@@ -358,8 +358,8 @@
       "emailAddress": "Dirección de correo electrónico",
       "phoneNumber": "Número de teléfono",
       "emailHelper": "Enviaremos tu confirmación de pedido aquí",
-      "phoneHelper": "Ingresa 10-15 dígitos. Formato: +1 (555) 123-4567 o 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Ingresa 10-15 dígitos. Formato: {{supportPhone}} o 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "El correo electrónico es requerido",
         "emailInvalid": "Dirección de correo electrónico inválida",
@@ -575,7 +575,7 @@
       },
       "contactSupport": {
         "question": "¿Cómo contacto al soporte al cliente?",
-        "answer": "Puedes contactarnos por correo electrónico a support@augmentstore.com, por teléfono al +1 (555) 123-4567, o a través de nuestra página de Contacto."
+        "answer": "Puedes contactarnos por correo electrónico a {{supportEmail}}, por teléfono al {{supportPhone}}, o a través de nuestra página de Contacto."
       }
     }
   },
@@ -1068,6 +1068,118 @@
         "high": "ALTO",
         "medium": "MEDIO"
       }
+    }
+  },
+  "returns": {
+    "title": "Devoluciones y Reembolsos",
+    "satisfactionAlert": "Queremos que esté completamente satisfecho con su compra. Si no está contento con su pedido, estamos aquí para ayudarle.",
+    "returnPolicy": {
+      "title": "Política de Devoluciones",
+      "intro": "Ofrecemos una política de devolución de 30 días para la mayoría de los artículos. Para ser elegible para una devolución, su artículo debe estar:",
+      "conditions": {
+        "unused": "Sin usar y en las mismas condiciones en que lo recibió",
+        "originalPackaging": "En el embalaje original",
+        "receipt": "Acompañado del recibo o comprobante de compra"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Artículos No Retornables",
+      "intro": "Ciertos artículos no se pueden devolver, incluyendo:",
+      "items": {
+        "perishable": "Productos perecederos (alimentos, flores, etc.)",
+        "custom": "Artículos personalizados o hechos a medida",
+        "personalCare": "Artículos de cuidado personal (por razones de higiene)",
+        "hazardous": "Materiales peligrosos",
+        "giftCards": "Tarjetas de regalo",
+        "digital": "Software descargable o productos digitales"
+      }
+    },
+    "howToReturn": {
+      "title": "Cómo Devolver un Artículo",
+      "steps": {
+        "step1": "Inicie sesión en su cuenta y vaya a \"Mis Pedidos\"",
+        "step2": "Seleccione el pedido que contiene el artículo que desea devolver",
+        "step3": "Haga clic en \"Solicitar Devolución\" y siga las instrucciones",
+        "step4": "Empaque el artículo de forma segura en su embalaje original",
+        "step5": "Envíe el artículo a la dirección proporcionada en su confirmación de devolución"
+      }
+    },
+    "refunds": {
+      "title": "Reembolsos",
+      "inspection": "Una vez que recibamos su devolución, inspeccionaremos el artículo y le notificaremos la aprobación o rechazo de su reembolso.",
+      "processing": "Si se aprueba, su reembolso se procesará y se aplicará automáticamente un crédito a su método de pago original dentro de 5-10 días hábiles."
+    },
+    "exchanges": {
+      "title": "Intercambios",
+      "policy": "Solo reemplazamos artículos si están defectuosos o dañados. Si necesita intercambiar un artículo por el mismo producto, contáctenos en {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Costos de Envío",
+      "customerResponsibility": "Usted será responsable de pagar sus propios costos de envío para devolver su artículo. Los costos de envío no son reembolsables. Si recibe un reembolso, el costo del envío de devolución se deducirá de su reembolso.",
+      "defectiveCoverage": "Si el artículo estaba defectuoso o dañado al llegar, cubriremos los costos de envío de devolución."
+    },
+    "needHelp": {
+      "title": "¿Necesita Ayuda?",
+      "message": "Si tiene alguna pregunta sobre nuestra política de devoluciones, comuníquese con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
+    }
+  },
+  "shipping": {
+    "title": "Información de Envío",
+    "intro": "Ofrecemos varias opciones de envío para satisfacer sus necesidades. Todos los pedidos se procesan dentro de 1-2 días hábiles (excluyendo fines de semana y días festivos).",
+    "domesticShipping": {
+      "title": "Envío Nacional (Estados Unidos)",
+      "freeShippingNote": "* Envío estándar gratuito en pedidos de $50 o más"
+    },
+    "internationalShipping": {
+      "title": "Envío Internacional",
+      "customsNote": "* Los pedidos internacionales pueden estar sujetos a tarifas aduaneras e impuestos de importación"
+    },
+    "table": {
+      "shippingMethod": "Método de Envío",
+      "deliveryTime": "Tiempo de Entrega",
+      "cost": "Costo",
+      "region": "Región",
+      "startingCost": "Costo Inicial"
+    },
+    "methods": {
+      "standard": "Envío Estándar",
+      "express": "Envío Express",
+      "overnight": "Envío Nocturno"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 días hábiles",
+      "express": "2-3 días hábiles",
+      "overnight": "1 día hábil",
+      "canada": "7-14 días hábiles",
+      "europe": "10-21 días hábiles",
+      "asia": "10-21 días hábiles",
+      "australia": "10-21 días hábiles",
+      "restOfWorld": "14-28 días hábiles"
+    },
+    "regions": {
+      "canada": "Canadá",
+      "europe": "Europa",
+      "asia": "Asia",
+      "australia": "Australia",
+      "restOfWorld": "Resto del Mundo"
+    },
+    "orderTracking": {
+      "title": "Seguimiento de Pedidos",
+      "paragraph1": "Una vez que su pedido haya sido enviado, recibirá un correo electrónico de confirmación con un número de seguimiento. Puede rastrear su paquete usando este número en nuestro sitio web o en el sitio web del transportista.",
+      "paragraph2": "También puede ver el estado de su pedido iniciando sesión en su cuenta y visitando la página 'Mis Pedidos'."
+    },
+    "restrictions": {
+      "title": "Restricciones de Envío",
+      "paragraph1": "Actualmente enviamos a la mayoría de los países del mundo. Sin embargo, algunos artículos pueden tener restricciones de envío debido al tamaño, peso o regulaciones locales. Estas restricciones se indicarán en la página del producto.",
+      "paragraph2": "No enviamos a apartados postales para ciertos artículos. Por favor, proporcione una dirección física para la entrega cuando sea posible."
+    },
+    "damagedOrLost": {
+      "title": "Paquetes Dañados o Perdidos",
+      "paragraph": "Si su paquete llega dañado o se pierde durante el tránsito, comuníquese con nosotros inmediatamente en {{supportEmail}}. Trabajaremos con el transportista para resolver el problema y asegurarnos de que reciba su pedido."
+    },
+    "questionsAboutShipping": {
+      "title": "¿Preguntas sobre el Envío?",
+      "paragraph": "Si tiene alguna pregunta sobre nuestras opciones de envío o necesita ayuda con su pedido, no dude en comunicarse con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
     }
   }
 }
