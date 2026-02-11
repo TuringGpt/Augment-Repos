@@ -57,7 +57,7 @@ const PrivacyPage = () => {
   const theme = useTheme()
   const [expanded, setExpanded] = useState<string | false>('section-1')
 
-  const handleChange = (panel: string) => (_event: SyntheticEvent, isExpanded: boolean) => {
+  const handleChange = (panel: string) => (_: SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false)
   }
 
