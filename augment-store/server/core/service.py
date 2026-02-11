@@ -72,12 +72,10 @@ class BaseCacheService:
         cache.delete(key)
 
 
-    def clear_namespace(self, custom_pattern: str = None):
+    def clear_namespace(self):
         """
         Clears keys belonging to this cache namespace.
         Supports Redis (via django-redis) and LocMemCache (predominantly for testing).
-        
-        :param custom_pattern: Optional glob string. Note: mostly ineffective due to hashing.
         """
         try:
             # Check if it's a django-redis client
@@ -89,9 +87,6 @@ class BaseCacheService:
 
                 # Namespace pattern WITHOUT prefix
                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
-                
-                if custom_pattern:
-                     namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
 
                 # Final pattern INCLUDING prefix
                 pattern = f"{key_prefix}{namespace}"
@@ -104,10 +99,7 @@ class BaseCacheService:
                 import fnmatch
                 import threading
                 # We look for the namespace suffix in the keys
-                # WARNING: custom_pattern is usually ineffective because keys are hashed
                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
-                if custom_pattern:
-                    namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
                 
                 # LocMemCache uses a simple dict with a lock
                 lock = getattr(cache, '_lock', threading.RLock())
@@ -163,14 +155,12 @@ class CacheInvalidatorMixin:
     def get_cache_service(self):
         return self.cache_service_class()
 
-    def invalidate_cache(self, custom_pattern: str = None):
+    def invalidate_cache(self):
         """
-        Invalidates the cache for the service.
-        
-        :param custom_pattern: Optional Redis glob string (e.g. "prefix:*").
+        Invalidates the cache for the service by clearing the entire namespace.
         """
         service = self.get_cache_service()
-        service.clear_namespace(custom_pattern=custom_pattern)
+        service.clear_namespace()
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
