@@ -138,13 +138,19 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
 class MerchantCachingTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
-        cache.clear()
+        # Only clear relevant namespaces to prevent flakiness in parallel tests
+        ProductBrandCacheService().clear_namespace()
+        ProductCacheService().clear_namespace()
+        from products.views import FeaturedProductCacheService
+        FeaturedProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
         self.merchant_1 = UserFactory(role=User.Role.MERCHANT)
         self.merchant_2 = UserFactory(role=User.Role.MERCHANT)
         
-        # Check if caching is effectively enabled (not DummyCache)
+        # Check if caching is effectively enabled and supports invalidation (Redis-backed)
         from django.core.cache import caches
-        self.caching_enabled = "DummyCache" not in str(caches['default'].__class__)
+        cache_backend = str(caches['default'].__class__)
+        self.caching_enabled = "Redis" in cache_backend
 
     def test_merchant_brand_list_cache_isolation(self):
         # GIVEN two merchants with different brands
