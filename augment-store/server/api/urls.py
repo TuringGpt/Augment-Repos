@@ -34,4 +34,5 @@ urlpatterns = [
     path('wishlist/', include('carts.urls_wishlist')),
     path('notifications/', include('notifications.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('currencies/', include('currencies.urls')),
 ]
