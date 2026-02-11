@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { CreateContactRequest, CreateContactResponse } from '@services/api/contact/contactService'
+import { parseApiError } from '@utils/errorUtils'
 
 interface ContactState {
   // Loading states
@@ -37,23 +38,21 @@ export const useContactStore = create<ContactState>((set) => ({
 
       return response
     } catch (err) {
+      // Use parseApiError to handle DRF/Axios errors with proper priority order
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['name', 'email', 'subject', 'message'],
+        defaultMessage: 'Failed to submit contact form. Please try again.',
+      })
+
+      set({ error: errorMessage })
+      // Log only non-PII fields to avoid exposing sensitive user content
       const error = err as {
         response?: {
           status?: number
           statusText?: string
-          data?: { message?: string }
         }
-        message?: string
         name?: string
       }
-
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to submit contact form. Please try again.'
-
-      set({ error: errorMessage })
-      // Log only non-PII fields to avoid exposing sensitive user content
       console.error('Error submitting contact form:', {
         status: error?.response?.status,
         statusText: error?.response?.statusText,
