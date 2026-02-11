@@ -88,8 +88,18 @@ export const useContactStore = create<ContactState>((set) => ({
     }
   },
 
-  clearError: () => set({ error: null }),
+  clearError: () => {
+    // Invalidate any in-flight requests by incrementing the counter
+    // This ensures late-resolving requests won't repopulate the error state
+    submitRequestCounter += 1
+    set({ error: null })
+  },
 
-  clearLastSubmitted: () => set({ lastSubmittedContact: null }),
+  clearLastSubmitted: () => {
+    // Invalidate any in-flight requests by incrementing the counter
+    // This ensures late-resolving requests won't repopulate the success state
+    submitRequestCounter += 1
+    set({ lastSubmittedContact: null })
+  },
 }))
 
