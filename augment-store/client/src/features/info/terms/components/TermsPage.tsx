@@ -46,6 +46,9 @@ const TermsPage = () => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState<string | false>('section-1')
 
+  // Extract date for interpolation to avoid TypeScript compiler bug
+  const lastUpdatedDate = t('terms.lastUpdatedDate')
+
   const handleChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false)
   }
@@ -251,7 +254,7 @@ const TermsPage = () => {
               {t('terms.subtitle')}
             </Typography>
             <Chip
-              label={`${t('terms.lastUpdated')}: ${t('terms.lastUpdatedDate')}`}
+              label={t('terms.lastUpdatedLabel', { date: lastUpdatedDate })}
               sx={{
                 backgroundColor: Colors.overlay.light20,
                 color: Colors.text.white,

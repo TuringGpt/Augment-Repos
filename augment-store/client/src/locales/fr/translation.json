@@ -532,6 +532,7 @@
     "title": "Conditions Générales",
     "lastUpdated": "Dernière Mise à Jour",
     "lastUpdatedDate": "10 février 2026",
+    "lastUpdatedLabel": "Dernière Mise à Jour : {{date}}",
     "subtitle": "Veuillez lire attentivement ces conditions avant d'utiliser notre service",
     "sections": {
       "acceptance": {

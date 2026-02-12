@@ -532,6 +532,7 @@
     "title": "Allgemeine Geschäftsbedingungen",
     "lastUpdated": "Zuletzt Aktualisiert",
     "lastUpdatedDate": "10. Februar 2026",
+    "lastUpdatedLabel": "Zuletzt Aktualisiert: {{date}}",
     "subtitle": "Bitte lesen Sie diese Bedingungen sorgfältig durch, bevor Sie unseren Service nutzen",
     "sections": {
       "acceptance": {

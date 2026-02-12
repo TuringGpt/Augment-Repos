@@ -532,6 +532,7 @@
     "title": "Términos y Condiciones",
     "lastUpdated": "Última Actualización",
     "lastUpdatedDate": "10 de febrero de 2026",
+    "lastUpdatedLabel": "Última Actualización: {{date}}",
     "subtitle": "Por favor, lea estos términos cuidadosamente antes de usar nuestro servicio",
     "sections": {
       "acceptance": {
