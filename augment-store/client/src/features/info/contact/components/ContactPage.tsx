@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Container,
   Typography,
@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { CONTACT_INFO } from '@constants/index'
+import { useContactStore } from '@store/contactStore'
 
 interface FormData {
   name: string
@@ -49,6 +50,10 @@ interface FormErrors {
 const ContactPage = () => {
   const { t } = useTranslation()
   const theme = useTheme()
+
+  // Contact store
+  const { submitContact, isSubmitting, error: storeError, lastSubmittedContact, clearError } = useContactStore()
+
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -56,8 +61,6 @@ const ContactPage = () => {
     message: '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -86,11 +89,22 @@ const ContactPage = () => {
     return Object.keys(newErrors).length === 0
   }
 
+  // Clear store error when component unmounts
+  useEffect(() => {
+    return () => {
+      clearError()
+    }
+  }, [clearError])
+
   const handleChange = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
+    }
+    // Clear store error when user starts typing
+    if (storeError) {
+      clearError()
     }
   }
 
@@ -101,19 +115,21 @@ const ContactPage = () => {
       return
     }
 
-    setIsSubmitting(true)
+    try {
+      // Submit contact form via store
+      await submitContact({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      })
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setSubmitSuccess(true)
+      // Clear form on success
       setFormData({ name: '', email: '', subject: '', message: '' })
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false)
-      }, 5000)
-    }, 1500)
+    } catch (err) {
+      // Error is handled by the store
+      console.error('Failed to submit contact form:', err)
+    }
   }
 
   const contactMethods = [
@@ -203,15 +219,26 @@ const ContactPage = () => {
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
 
-                {submitSuccess && (
-                  <Fade in={submitSuccess}>
+                {lastSubmittedContact && (
+                  <Fade in={!!lastSubmittedContact}>
                     <Alert
                       severity="success"
                       icon={<CheckCircle />}
                       sx={{ mb: 3, borderRadius: 2 }}
-                      onClose={() => setSubmitSuccess(false)}
                     >
                       Thank you for contacting us! We'll get back to you soon.
+                    </Alert>
+                  </Fade>
+                )}
+
+                {storeError && (
+                  <Fade in={!!storeError}>
+                    <Alert
+                      severity="error"
+                      sx={{ mb: 3, borderRadius: 2 }}
+                      onClose={() => clearError()}
+                    >
+                      {storeError}
                     </Alert>
                   </Fade>
                 )}
