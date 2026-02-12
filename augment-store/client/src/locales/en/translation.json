@@ -528,6 +528,70 @@
     "goHome": "Go to Home",
     "browseProducts": "Browse Products"
   },
+  "terms": {
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last Updated",
+    "subtitle": "Please read these terms carefully before using our service",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By accessing and using this e-commerce platform (\"Service\"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service."
+      },
+      "useLicense": {
+        "title": "2. Use License",
+        "intro": "Permission is granted to temporarily access the materials (information or software) on our platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:",
+        "restrictions": {
+          "modify": "Modify or copy the materials",
+          "commercial": "Use the materials for any commercial purpose or for any public display",
+          "reverseEngineer": "Attempt to reverse engineer any software contained on our platform",
+          "removeCopyright": "Remove any copyright or other proprietary notations from the materials",
+          "transfer": "Transfer the materials to another person or \"mirror\" the materials on any other server"
+        }
+      },
+      "accountTerms": {
+        "title": "3. Account Terms",
+        "security": "You are responsible for maintaining the security of your account and password. We cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.",
+        "responsibility": "You are responsible for all content posted and activity that occurs under your account."
+      },
+      "productInfo": {
+        "title": "4. Product Information",
+        "content": "We strive to provide accurate product descriptions and pricing. However, we do not warrant that product descriptions, pricing, or other content is accurate, complete, reliable, current, or error-free. If a product offered by us is not as described, your sole remedy is to return it in unused condition."
+      },
+      "pricing": {
+        "title": "5. Pricing and Payment",
+        "changes": "All prices are subject to change without notice. We reserve the right to modify or discontinue products without notice. We shall not be liable to you or any third party for any modification, price change, suspension, or discontinuance of any product.",
+        "payment": "Payment must be received by us before your order is dispatched. We accept various payment methods as indicated during checkout."
+      },
+      "shipping": {
+        "title": "6. Shipping and Delivery",
+        "content": "We will arrange for shipment of ordered products to you. Please check the individual product page for specific delivery options. Title and risk of loss pass to you upon our delivery to the carrier. Shipping and handling charges are non-refundable."
+      },
+      "returns": {
+        "title": "7. Returns and Refunds",
+        "content": "Please review our Returns Policy for detailed information about returns and refunds. In general, items may be returned within 30 days of receipt in their original condition."
+      },
+      "liability": {
+        "title": "8. Limitation of Liability",
+        "content": "In no event shall our company or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our platform."
+      },
+      "privacy": {
+        "title": "9. Privacy",
+        "content": "Your use of our Service is also governed by our Privacy Policy. Please review our Privacy Policy, which also governs the Service and informs users of our data collection practices."
+      },
+      "modifications": {
+        "title": "10. Modifications to Terms",
+        "content": "We reserve the right to revise these terms of service at any time without notice. By using this Service you are agreeing to be bound by the then current version of these terms of service."
+      },
+      "governingLaw": {
+        "title": "11. Governing Law",
+        "content": "These terms and conditions are governed by and construed in accordance with the laws and you irrevocably submit to the exclusive jurisdiction of the courts in that location."
+      },
+      "contact": {
+        "title": "12. Contact Information",
+        "content": "If you have any questions about these Terms and Conditions, please contact us through our Contact page."
+      }
+    }
+  },
   "help": {
     "title": "Help Center",
     "description": "Find answers to frequently asked questions below. If you need additional assistance, please don't hesitate to contact our customer support team.",

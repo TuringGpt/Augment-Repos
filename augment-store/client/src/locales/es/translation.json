@@ -528,6 +528,70 @@
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
   },
+  "terms": {
+    "title": "Términos y Condiciones",
+    "lastUpdated": "Última Actualización",
+    "subtitle": "Por favor, lea estos términos cuidadosamente antes de usar nuestro servicio",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceptación de Términos",
+        "content": "Al acceder y utilizar esta plataforma de comercio electrónico (\"Servicio\"), usted acepta y se compromete a cumplir con los términos y disposiciones de este acuerdo. Si no está de acuerdo con lo anterior, por favor no utilice este servicio."
+      },
+      "useLicense": {
+        "title": "2. Licencia de Uso",
+        "intro": "Se otorga permiso para acceder temporalmente a los materiales (información o software) en nuestra plataforma solo para visualización personal y no comercial. Esta es la concesión de una licencia, no una transferencia de título, y bajo esta licencia usted no puede:",
+        "restrictions": {
+          "modify": "Modificar o copiar los materiales",
+          "commercial": "Usar los materiales para cualquier propósito comercial o exhibición pública",
+          "reverseEngineer": "Intentar realizar ingeniería inversa de cualquier software contenido en nuestra plataforma",
+          "removeCopyright": "Eliminar cualquier aviso de derechos de autor u otras notaciones de propiedad de los materiales",
+          "transfer": "Transferir los materiales a otra persona o \"reflejar\" los materiales en cualquier otro servidor"
+        }
+      },
+      "accountTerms": {
+        "title": "3. Términos de Cuenta",
+        "security": "Usted es responsable de mantener la seguridad de su cuenta y contraseña. No podemos y no seremos responsables de ninguna pérdida o daño por su incumplimiento de esta obligación de seguridad.",
+        "responsibility": "Usted es responsable de todo el contenido publicado y la actividad que ocurra bajo su cuenta."
+      },
+      "productInfo": {
+        "title": "4. Información del Producto",
+        "content": "Nos esforzamos por proporcionar descripciones y precios precisos de los productos. Sin embargo, no garantizamos que las descripciones de productos, precios u otro contenido sean precisos, completos, confiables, actuales o libres de errores. Si un producto ofrecido por nosotros no es como se describe, su único recurso es devolverlo en condiciones sin usar."
+      },
+      "pricing": {
+        "title": "5. Precios y Pago",
+        "changes": "Todos los precios están sujetos a cambios sin previo aviso. Nos reservamos el derecho de modificar o descontinuar productos sin previo aviso. No seremos responsables ante usted o cualquier tercero por cualquier modificación, cambio de precio, suspensión o descontinuación de cualquier producto.",
+        "payment": "El pago debe ser recibido por nosotros antes de que se despache su pedido. Aceptamos varios métodos de pago según se indica durante el proceso de pago."
+      },
+      "shipping": {
+        "title": "6. Envío y Entrega",
+        "content": "Organizaremos el envío de los productos pedidos a usted. Por favor, consulte la página del producto individual para opciones de entrega específicas. El título y el riesgo de pérdida pasan a usted al momento de nuestra entrega al transportista. Los cargos de envío y manejo no son reembolsables."
+      },
+      "returns": {
+        "title": "7. Devoluciones y Reembolsos",
+        "content": "Por favor, revise nuestra Política de Devoluciones para obtener información detallada sobre devoluciones y reembolsos. En general, los artículos pueden devolverse dentro de los 30 días posteriores a la recepción en su condición original."
+      },
+      "liability": {
+        "title": "8. Limitación de Responsabilidad",
+        "content": "En ningún caso nuestra empresa o sus proveedores serán responsables de ningún daño (incluyendo, sin limitación, daños por pérdida de datos o ganancias, o debido a interrupción del negocio) que surja del uso o la imposibilidad de usar los materiales en nuestra plataforma."
+      },
+      "privacy": {
+        "title": "9. Privacidad",
+        "content": "Su uso de nuestro Servicio también está regido por nuestra Política de Privacidad. Por favor, revise nuestra Política de Privacidad, que también rige el Servicio e informa a los usuarios sobre nuestras prácticas de recopilación de datos."
+      },
+      "modifications": {
+        "title": "10. Modificaciones a los Términos",
+        "content": "Nos reservamos el derecho de revisar estos términos de servicio en cualquier momento sin previo aviso. Al usar este Servicio, usted acepta estar sujeto a la versión actual de estos términos de servicio."
+      },
+      "governingLaw": {
+        "title": "11. Ley Aplicable",
+        "content": "Estos términos y condiciones se rigen e interpretan de acuerdo con las leyes y usted se somete irrevocablemente a la jurisdicción exclusiva de los tribunales en esa ubicación."
+      },
+      "contact": {
+        "title": "12. Información de Contacto",
+        "content": "Si tiene alguna pregunta sobre estos Términos y Condiciones, por favor contáctenos a través de nuestra página de Contacto."
+      }
+    }
+  },
   "help": {
     "title": "Centro de Ayuda",
     "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
