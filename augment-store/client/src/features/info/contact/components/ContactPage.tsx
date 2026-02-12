@@ -128,7 +128,6 @@ const ContactPage = () => {
       setFormData({ name: '', email: '', subject: '', message: '' })
     } catch (err) {
       // Error is handled by the store
-      console.error('Failed to submit contact form:', err)
     }
   }
 
