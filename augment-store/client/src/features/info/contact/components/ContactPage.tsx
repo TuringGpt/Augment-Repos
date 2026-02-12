@@ -52,7 +52,7 @@ const ContactPage = () => {
   const theme = useTheme()
 
   // Contact store
-  const { submitContact, isSubmitting, error: storeError, lastSubmittedContact, clearError } = useContactStore()
+  const { submitContact, isSubmitting, error: storeError, lastSubmittedContact, clearError, clearLastSubmitted } = useContactStore()
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -89,12 +89,13 @@ const ContactPage = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  // Clear store error when component unmounts
+  // Clear store error and success state when component unmounts
   useEffect(() => {
     return () => {
       clearError()
+      clearLastSubmitted()
     }
-  }, [clearError])
+  }, [clearError, clearLastSubmitted])
 
   const handleChange = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }))
@@ -224,6 +225,7 @@ const ContactPage = () => {
                       severity="success"
                       icon={<CheckCircle />}
                       sx={{ mb: 3, borderRadius: 2 }}
+                      onClose={() => clearLastSubmitted()}
                     >
                       Thank you for contacting us! We'll get back to you soon.
                     </Alert>
