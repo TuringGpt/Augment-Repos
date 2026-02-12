@@ -34,9 +34,6 @@ import {
 import { Colors } from '@config/colors'
 import { useTranslation } from '@hooks/useTranslation'
 
-// Fixed version date for terms and conditions
-const TERMS_LAST_UPDATED = 'February 10, 2026'
-
 interface Section {
   id: string
   title: string
@@ -254,7 +251,7 @@ const TermsPage = () => {
               {t('terms.subtitle')}
             </Typography>
             <Chip
-              label={`${t('terms.lastUpdated')}: ${TERMS_LAST_UPDATED}`}
+              label={`${t('terms.lastUpdated')}: ${t('terms.lastUpdatedDate')}`}
               sx={{
                 backgroundColor: Colors.overlay.light20,
                 color: Colors.text.white,
