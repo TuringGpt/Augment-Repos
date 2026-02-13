@@ -528,6 +528,72 @@
     "goHome": "Zur Startseite",
     "browseProducts": "Produkte durchsuchen"
   },
+  "terms": {
+    "title": "Allgemeine Geschäftsbedingungen",
+    "lastUpdated": "Zuletzt Aktualisiert",
+    "lastUpdatedDate": "10. Februar 2026",
+    "lastUpdatedLabel": "Zuletzt Aktualisiert: {{date}}",
+    "subtitle": "Bitte lesen Sie diese Bedingungen sorgfältig durch, bevor Sie unseren Service nutzen",
+    "sections": {
+      "acceptance": {
+        "title": "Annahme der Bedingungen",
+        "content": "Durch den Zugriff auf und die Nutzung dieser E-Commerce-Plattform (\"Service\") akzeptieren Sie die Bedingungen und Bestimmungen dieser Vereinbarung und verpflichten sich, diese einzuhalten. Wenn Sie mit dem oben Genannten nicht einverstanden sind, nutzen Sie diesen Service bitte nicht."
+      },
+      "useLicense": {
+        "title": "Nutzungslizenz",
+        "intro": "Es wird die Erlaubnis erteilt, vorübergehend auf die Materialien (Informationen oder Software) auf unserer Plattform nur zur persönlichen, nicht-kommerziellen vorübergehenden Ansicht zuzugreifen. Dies ist die Gewährung einer Lizenz, keine Übertragung des Eigentums, und unter dieser Lizenz dürfen Sie nicht:",
+        "restrictions": {
+          "modify": "Die Materialien ändern oder kopieren",
+          "commercial": "Die Materialien für kommerzielle Zwecke oder öffentliche Ausstellungen verwenden",
+          "reverseEngineer": "Versuchen, Software auf unserer Plattform zurückzuentwickeln",
+          "removeCopyright": "Urheberrechts- oder andere Eigentumshinweise von den Materialien entfernen",
+          "transfer": "Die Materialien an eine andere Person übertragen oder die Materialien auf einem anderen Server \"spiegeln\""
+        }
+      },
+      "accountTerms": {
+        "title": "Kontobedingungen",
+        "security": "Sie sind für die Aufrechterhaltung der Sicherheit Ihres Kontos und Passworts verantwortlich. Wir können und werden nicht für Verluste oder Schäden haftbar gemacht werden, die durch Ihre Nichteinhaltung dieser Sicherheitsverpflichtung entstehen.",
+        "responsibility": "Sie sind für alle Inhalte und Aktivitäten verantwortlich, die unter Ihrem Konto stattfinden."
+      },
+      "productInfo": {
+        "title": "Produktinformationen",
+        "content": "Wir bemühen uns, genaue Produktbeschreibungen und Preise bereitzustellen. Wir garantieren jedoch nicht, dass Produktbeschreibungen, Preise oder andere Inhalte genau, vollständig, zuverlässig, aktuell oder fehlerfrei sind. Wenn ein von uns angebotenes Produkt nicht wie beschrieben ist, besteht Ihr einziger Rechtsbehelf darin, es in unbenutztem Zustand zurückzugeben."
+      },
+      "pricing": {
+        "title": "Preise und Zahlung",
+        "changes": "Alle Preise können ohne Vorankündigung geändert werden. Wir behalten uns das Recht vor, Produkte ohne Vorankündigung zu ändern oder einzustellen. Wir haften Ihnen oder Dritten gegenüber nicht für Änderungen, Preisänderungen, Aussetzungen oder Einstellungen von Produkten.",
+        "payment": "Die Zahlung muss bei uns eingegangen sein, bevor Ihre Bestellung versandt wird. Wir akzeptieren verschiedene Zahlungsmethoden, wie beim Bezahlvorgang angegeben."
+      },
+      "shipping": {
+        "title": "Versand und Lieferung",
+        "content": "Wir organisieren den Versand der bestellten Produkte an Sie. Bitte überprüfen Sie die einzelne Produktseite für spezifische Lieferoptionen. Eigentum und Verlustrisiko gehen bei unserer Übergabe an den Spediteur auf Sie über. Versand- und Bearbeitungsgebühren sind nicht erstattungsfähig."
+      },
+      "returns": {
+        "title": "Rücksendungen und Rückerstattungen",
+        "content": "Bitte lesen Sie unsere Rückgaberichtlinie für detaillierte Informationen zu Rücksendungen und Rückerstattungen. Im Allgemeinen können Artikel innerhalb von 30 Tagen nach Erhalt in ihrem Originalzustand zurückgegeben werden."
+      },
+      "liability": {
+        "title": "Haftungsbeschränkung",
+        "content": "In keinem Fall haften unser Unternehmen oder seine Lieferanten für Schäden (einschließlich, aber nicht beschränkt auf Schäden durch Datenverlust oder Gewinnausfall oder aufgrund von Geschäftsunterbrechungen), die sich aus der Nutzung oder der Unmöglichkeit der Nutzung der Materialien auf unserer Plattform ergeben."
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "content": "Ihre Nutzung unseres Services unterliegt auch unserer Datenschutzrichtlinie. Bitte lesen Sie unsere Datenschutzrichtlinie, die auch den Service regelt und Benutzer über unsere Datenerfassungspraktiken informiert."
+      },
+      "modifications": {
+        "title": "Änderungen der Bedingungen",
+        "content": "Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit ohne Vorankündigung zu überarbeiten. Durch die Nutzung dieses Services erklären Sie sich damit einverstanden, an die jeweils aktuelle Version dieser Nutzungsbedingungen gebunden zu sein."
+      },
+      "governingLaw": {
+        "title": "Anwendbares Recht",
+        "content": "Diese Geschäftsbedingungen unterliegen den Gesetzen und werden in Übereinstimmung mit diesen ausgelegt, und Sie unterwerfen sich unwiderruflich der ausschließlichen Gerichtsbarkeit der Gerichte an diesem Ort."
+      },
+      "contact": {
+        "title": "Kontaktinformationen",
+        "content": "Wenn Sie Fragen zu diesen Allgemeinen Geschäftsbedingungen haben, kontaktieren Sie uns bitte über unsere Kontaktseite."
+      }
+    }
+  },
   "help": {
     "title": "Hilfezentrum",
     "description": "Finden Sie unten Antworten auf häufig gestellte Fragen. Wenn Sie zusätzliche Unterstützung benötigen, zögern Sie nicht, unser Kundenservice-Team zu kontaktieren.",
