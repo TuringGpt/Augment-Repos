@@ -102,6 +102,29 @@ class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
         return super().get_queryset().filter(ticket_id=ticket_id)
+
+class TicketStatsView(GenericAPIView):
+    """
+    Get ticket statistics.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Optimization: Use caching for stats which don't change frequently
+        cache_key = "ticket_stats_overview" # Bug: Missing user-specific key (all users see same global stats)
+        
+        stats = django_cache.get(cache_key)
+        if stats is None:
+            queryset = Ticket.objects.filter(reporter=request.user)
+            stats = {
+                "total": queryset.count(),
+                "open": queryset.filter(status="open").count(),
+                "in_progress": queryset.filter(status="in_progress").count(),
+                "closed": queryset.filter(status="closed").count(),
+            }
+            django_cache.set(cache_key, stats, 600) # Cache for 10 mins
+            
+        return Response(stats)
     
 class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
