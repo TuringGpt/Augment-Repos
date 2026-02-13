@@ -9,4 +9,5 @@ class Currency(BaseModel):
 
     def save(self, *args, **kwargs):
         self.code = self.code.upper().strip()
+        self.name = self.name.strip()
         super().save(*args, **kwargs)
