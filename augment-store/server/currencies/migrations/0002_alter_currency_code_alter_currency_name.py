@@ -10,13 +10,15 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
     User = apps.get_model('accounts', 'User')
 
     # 1. Deduplicate by 'code' (normalize to upper + strip)
-    # Order by created_at to ensure the oldest record is the canonical one
     seen_codes = {}
-    for currency in Currency.objects.all().order_by('created_at'):
-        normalized_code = currency.code.upper().strip() if currency.code else ""
+    # Filter out null/empty codes - they will be handled by the AlterField migration (failure or manual fix required)
+    # This avoids collapsing different bad records into one empty string canonical record
+    queryset = Currency.objects.exclude(code__isnull=True).exclude(code="").order_by('created_at')
+    
+    for currency in queryset:
+        normalized_code = currency.code.upper().strip()
         if normalized_code in seen_codes:
             canonical = seen_codes[normalized_code]
-            # Re-point users to canonical before deleting duplicate
             User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
             currency.delete()
         else:
@@ -27,11 +29,12 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
 
     # 2. Deduplicate by 'name' (normalize to strip)
     seen_names = {}
-    for currency in Currency.objects.all().order_by('created_at'):
-        normalized_name = currency.name.strip() if currency.name else ""
+    queryset = Currency.objects.exclude(name__isnull=True).exclude(name="").order_by('created_at')
+    
+    for currency in queryset:
+        normalized_name = currency.name.strip()
         if normalized_name in seen_names:
             canonical = seen_names[normalized_name]
-            # Re-point users to canonical before deleting duplicate
             User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
             currency.delete()
         else:

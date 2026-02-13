@@ -1,5 +1,7 @@
+from django.db import IntegrityError
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from accounts.permissions import hasAdminRole
 from .models import Currency
 from .serializers import ListCurrencySerializer, CreateCurrencySerializer
@@ -32,4 +34,10 @@ class CreateCurrencyView(CacheInvalidatorMixin, CreateAPIView):
     cache_service_class = CurrencyCacheService
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        try:
+            super().perform_create(serializer)
+        except IntegrityError:
+            # Handle race conditions where uniqueness check passes but DB save fails
+            raise ValidationError({
+                "detail": "A currency with this name or code already exists."
+            })
