@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material'
 import { z } from 'zod'
 import OrderSummary from '@/features/checkout/components/OrderSummary'
-import { COUNTRIES } from '@constants/index'
+import { COUNTRIES, CONTACT_INFO } from '@constants/index'
 import { userService } from '@services/api/user/userService'
 import { useAuthStore } from '@store/authStore'
 import { useTranslation } from '@hooks/useTranslation'
@@ -503,9 +503,13 @@ const CheckoutPage = () => {
                     helperText={
                       touched.phone && errors.phone
                         ? errors.phone
-                        : t('checkout.contactForm.phoneHelper')
+                        : t('checkout.contactForm.phoneHelper', {
+                            supportPhone: CONTACT_INFO.SUPPORT_PHONE,
+                          })
                     }
-                    placeholder={t('checkout.contactForm.phonePlaceholder')}
+                    placeholder={t('checkout.contactForm.phonePlaceholder', {
+                      supportPhone: CONTACT_INFO.SUPPORT_PHONE,
+                    })}
                     required
                     variant="outlined"
                     sx={{ bgcolor: 'background.paper' }}

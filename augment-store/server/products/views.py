@@ -58,13 +58,27 @@ class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
 
 
 
-class CreateProductBrandView(BaseBrandView, CreateAPIView):
+class CreateProductBrandView(CacheInvalidatorMixin, BaseBrandView, CreateAPIView):
     serializer_class = CreateProductBrandSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
 
-class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
+
+class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
+
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
 
 
 # Category views
@@ -141,9 +155,19 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+
+class FeaturedProductCacheService(ProductCacheService):
+    OBJECT_NAME = "featured_products"
+    VERSION = 1
+
+
 class FeaturedProductListView(ProductListView):
+    cache_service_class = FeaturedProductCacheService
+    cache_ttl = 60 * 60
+
     def get_queryset(self):
         return super().get_queryset().filter(is_featured=True)
+
 
 class ProductSearchView(CachedListMixin, AdvancedSearchMixin, BaseProductView, ListAPIView):
     filter_backends = [DjangoFilterBackend]
@@ -187,21 +211,28 @@ class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        FeaturedProductCacheService().clear_namespace()
+
 
 class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductCacheService
 
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        FeaturedProductCacheService().clear_namespace()
+
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
-    
 
     
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
-        # Return a lazy queryset from the service directly to preserve ordering and DB-level pagination
         product_service = ProductService()
         return product_service.recommend_products_for_user(self.request.user)
+
