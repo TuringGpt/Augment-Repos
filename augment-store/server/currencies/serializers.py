@@ -15,6 +15,9 @@ class CreateCurrencySerializer(serializers.ModelSerializer):
 
     def validate_code(self, value):
         normalized = value.upper().strip()
+        if not normalized:
+            raise serializers.ValidationError("Currency code cannot be empty.")
+            
         # Check uniqueness manually to handle normalization before DB check
         qs = Currency.objects.filter(code__iexact=normalized)
         if self.instance:
@@ -25,6 +28,9 @@ class CreateCurrencySerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         normalized = value.strip()
+        if not normalized:
+            raise serializers.ValidationError("Currency name cannot be empty.")
+            
         qs = Currency.objects.filter(name__iexact=normalized)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)

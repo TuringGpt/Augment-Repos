@@ -12,26 +12,26 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
     def deduplicate_field(field_name, normalize_func):
         seen_items = {}
         # Order by is_deleted (False first) then created_at (oldest first)
-        # This ensures we keep an active record as canonical if possible
         queryset = Currency.objects.all().order_by('is_deleted', 'created_at')
         
         for currency in queryset:
             val = getattr(currency, field_name)
-            if val is None:
-                continue
             
-            normalized_val = normalize_func(val)
-            # Skip entries that are effectively empty after normalization
+            # Normalize and handle missing/empty values
+            normalized_val = normalize_func(val) if val is not None else ""
+            
+            # If normalized value is empty, it's invalid for a unique=True constraint.
+            # We delete it (repointing users to null) to allow the migration to succeed.
             if not normalized_val:
+                User.objects.filter(preferred_currency=currency).update(preferred_currency=None)
+                currency.delete()
                 continue
                 
             if normalized_val in seen_items:
                 canonical = seen_items[normalized_val]
-                # Re-point users to canonical before deleting duplicate
                 User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
                 currency.delete()
             else:
-                # Normalize the canonical record itself if needed
                 if val != normalized_val:
                     setattr(currency, field_name, normalized_val)
                     currency.save()
