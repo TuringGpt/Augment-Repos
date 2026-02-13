@@ -511,10 +511,21 @@
     "contactInformation": "Kontaktinformationen",
     "phone": "Telefon",
     "address": "Adresse",
+    "addressValue": "123 Commerce Street\nSan Francisco, CA 94102\nVereinigte Staaten",
     "businessHours": "Geschäftszeiten",
     "mondayFriday": "Montag - Freitag: 9:00 - 18:00 Uhr PST",
     "saturday": "Samstag: 10:00 - 16:00 Uhr PST",
-    "sunday": "Sonntag: Geschlossen"
+    "sunday": "Sonntag: Geschlossen",
+    "successMessage": "Vielen Dank für Ihre Kontaktaufnahme! Wir werden uns bald bei Ihnen melden.",
+    "sending": "Wird gesendet...",
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "subjectRequired": "Betreff ist erforderlich",
+      "messageRequired": "Nachricht ist erforderlich",
+      "messageMinLength": "Die Nachricht muss mindestens 10 Zeichen lang sein"
+    }
   },
   "sidebar": {
     "menu": "Menü",
