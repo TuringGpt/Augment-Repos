@@ -1,6 +1,9 @@
 import json
 import hashlib
 import functools
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 from django.core.cache import cache
@@ -69,34 +72,53 @@ class BaseCacheService:
         cache.delete(key)
 
 
-    def clear_namespace(self, custom_pattern: str = None):
+    def clear_namespace(self):
         """
-        Clears Redis keys belonging to this cache namespace.
-        
-        :param custom_pattern: Optional Redis glob string (e.g. "orders:*" or "user_123:*").
-                               If provided, it is appended to the full versioned namespace.
+        Clears keys belonging to this cache namespace.
+        Supports Redis (via django-redis) and LocMemCache (predominantly for testing).
         """
         try:
-            redis_client = cache.client.get_client(write=True)
+            # Check if it's a django-redis client
+            if hasattr(cache, 'client') and hasattr(cache.client, 'get_client'):
+                redis_client = cache.client.get_client(write=True)
 
-            # Get key prefix applied by django-redis (may be "")
-            key_prefix = cache.client.make_key("")  # already includes : if used
-            # make_key("") returns something like "myapp:" or "" (no prefix)
+                # Get key prefix applied by django-redis (may be "")
+                key_prefix = cache.client.make_key("")  # already includes : if used
 
-            # Namespace pattern WITHOUT prefix
-            namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+                # Namespace pattern WITHOUT prefix
+                namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+
+                # Final pattern INCLUDING prefix
+                pattern = f"{key_prefix}{namespace}"
+
+                for key in redis_client.scan_iter(match=pattern):
+                    redis_client.delete(key)
             
-            if custom_pattern:
-                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:{custom_pattern}"
+            # Fallback for LocMemCache (usually for tests)
+            elif hasattr(cache, '_cache'):
+                import fnmatch
+                import threading
+                # We look for the namespace suffix in the keys
+                namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
+                
+                # LocMemCache uses a simple dict with a lock
+                lock = getattr(cache, '_lock', threading.RLock())
+                with lock:
+                    for key in list(cache._cache.keys()):
+                        # Key usually looks like ":1:namespace:v1:hash" 
+                        # We use fnmatch to match the pattern
+                        if fnmatch.fnmatch(key, f"*{namespace}"):
+                            # Use pop directly to avoid re-mangling the key and deadlocks
+                            cache._cache.pop(key, None)
+                            # Also clear expiration metadata if present to prevent leaks
+                            if hasattr(cache, '_expire_info'):
+                                cache._expire_info.pop(key, None)
 
-            # Final pattern INCLUDING prefix
-            pattern = f"{key_prefix}{namespace}"
-
-            for key in redis_client.scan_iter(match=pattern):
-                redis_client.delete(key)
-
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(
+                "Cache namespace clear failed for %s: %s",
+                self.get_cache_namespace(), e
+            )
 
 
 class CachedListMixin:
@@ -122,7 +144,8 @@ class CachedListMixin:
             return Response(cached)
 
         response = super().list(request, *args, **kwargs)
-        service.set(cache_key, response.data, ttl=self.cache_ttl)
+        if response.status_code == 200:
+            service.set(cache_key, response.data, ttl=self.cache_ttl)
         return response
     
 
@@ -132,14 +155,12 @@ class CacheInvalidatorMixin:
     def get_cache_service(self):
         return self.cache_service_class()
 
-    def invalidate_cache(self, custom_pattern: str = None):
+    def invalidate_cache(self):
         """
-        Invalidates the cache for the service.
-        
-        :param custom_pattern: Optional Redis glob string (e.g. "prefix:*").
+        Invalidates the cache for the service by clearing the entire namespace.
         """
         service = self.get_cache_service()
-        service.clear_namespace(custom_pattern=custom_pattern)
+        service.clear_namespace()
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
@@ -185,7 +206,8 @@ class CachedRetrieveMixin:
             return Response(cached)
 
         response = super().retrieve(request, *args, **kwargs)
-        service.set(cache_key, response.data, ttl=self.cache_ttl)
+        if response.status_code == 200:
+            service.set(cache_key, response.data, ttl=self.cache_ttl)
         return response
 
 

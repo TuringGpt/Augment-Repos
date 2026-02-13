@@ -24,6 +24,7 @@ import { useAuthStore } from '@store/authStore'
 import type { RegisterRequest } from '@features/auth/types'
 import { useTranslation } from '@hooks/useTranslation'
 import LanguageSwitcher from '@components/LanguageSwitcher'
+import ThemeToggle from '@components/ThemeToggle'
 
 interface RegisterFormData extends RegisterRequest {
   confirmPassword: string
@@ -235,8 +236,9 @@ const RegisterPage = () => {
               position: 'relative',
             }}
           >
-            {/* Language Switcher */}
-            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+            {/* Theme Toggle and Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+              <ThemeToggle />
               <LanguageSwitcher />
             </Box>
 

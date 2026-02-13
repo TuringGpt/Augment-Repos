@@ -139,6 +139,16 @@ export const API_ENDPOINTS = {
     CUSTOMER_PURCHASE_BEHAVIOR: '/dashboard/statistics/customer_purchase_behavior/',
     CHURN_RISK: '/dashboard/statistics/churn_risk/',
   },
+
+  // Health Check endpoint
+  HEALTH: {
+    CHECK: '/health-check/',
+  },
+
+  // Contact endpoints
+  CONTACT: {
+    CREATE: '/contact/create/',
+  },
 }
 
 // Stripe configuration

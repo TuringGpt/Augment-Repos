@@ -7,7 +7,8 @@ from products.models import Product, ProductBrand, ProductCategory
 from products.factory import ProductBrandFactory, ProductCategoryFactory, ProductFactory
 from decimal import Decimal
 from storage.factory import FileFactory
-from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService
+from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService, ProductSearchCacheService
+from products.models import SearchQuery
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
 
@@ -1496,3 +1497,65 @@ class RecommendProductListViewTests(BaseAPITestCase):
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the recommended products should be in the same category as the user's wishlist, cart and order
+
+class ProductSearchViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        # Let factory generate unique email to avoid django_get_or_create conflicts
+        self.merchant_user = UserFactory(role=User.Role.MERCHANT)
+        self.merchant_client = self.authenticated_client
+        self.merchant_client.force_authenticate(user=self.merchant_user)
+
+    def test_search_cache_and_logging(self):
+        # GIVEN products exist
+        ProductFactory(name="Test Phone", created_by=self.merchant_user)
+        
+        # Clear cache for this specific test - use service namespace clear
+        # Note: clear_namespace handles Redis pattern matching; for LocMemCache it may no-op
+        # but since tests run serially in Django test runner, this is generally safe
+        cache_service = ProductSearchCacheService()
+        cache_service.clear_namespace()
+        
+        url = reverse("v1:product_search")
+
+        # WHEN making first search request (authenticated)
+        # 1. Product count query
+        # 2. Search logging (insert)
+        # 3. Product fetch
+        # Total should be > 0.
+        with CaptureQueriesContext(connection) as ctx1:
+            response_1 = self.merchant_client.get(url, {"search": "Phone"})
+        
+        self.assertEqual(response_1.status_code, status.HTTP_200_OK)
+        
+        # Verify first request was a cache MISS by checking for product SELECT query
+        first_request_product_queries = [
+            q for q in ctx1.captured_queries 
+            if q.get('sql') and ('from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower())
+        ]
+        self.assertGreater(len(first_request_product_queries), 0, "First request should query products_product (cache miss)")
+
+        # WHEN making second search request (identical, authenticated)
+        # Should hit cache (no product queries), but MUST still log search (1 DB insert).
+        # We expect exactly 1 query (the insert).
+        # Note: If logging uses valid connection and atomic transaction, it's 1 query.
+        with CaptureQueriesContext(connection) as ctx2:
+            response_2 = self.merchant_client.get(url, {"search": "Phone"})
+        
+        self.assertEqual(response_2.status_code, status.HTTP_200_OK)
+        
+        # Verify response is cached
+        self.assertEqual(response_1.data, response_2.data)
+        
+        # Verify NO product table SELECT queries on cache hit
+        # Exclude products_searchquery (INSERT for logging) - only check for SELECT FROM products_product
+        product_select_queries = [
+            q for q in ctx2.captured_queries 
+            if q.get('sql') and ('from "products_product"' in q['sql'].lower() or 'from products_product' in q['sql'].lower())
+        ]
+        self.assertEqual(len(product_select_queries), 0, "Should not query products_product table on cache hit")
+        
+        # Verify SearchQuery was logged both times
+        # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
+        # Instead, check SearchQuery count.
+        self.assertEqual(SearchQuery.objects.count(), 2)

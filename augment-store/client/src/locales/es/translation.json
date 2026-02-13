@@ -65,7 +65,9 @@
     "products": "Explorar productos",
     "login": "Iniciar sesión en tu cuenta",
     "changeLanguage": "Cambiar idioma",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "switchToDarkMode": "Cambiar a modo oscuro",
+    "switchToLightMode": "Cambiar a modo claro"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -356,8 +358,8 @@
       "emailAddress": "Dirección de correo electrónico",
       "phoneNumber": "Número de teléfono",
       "emailHelper": "Enviaremos tu confirmación de pedido aquí",
-      "phoneHelper": "Ingresa 10-15 dígitos. Formato: +1 (555) 123-4567 o 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Ingresa 10-15 dígitos. Formato: {{supportPhone}} o 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "El correo electrónico es requerido",
         "emailInvalid": "Dirección de correo electrónico inválida",
@@ -463,6 +465,7 @@
     "contactUs": "Contáctanos",
     "termsOfService": "Términos de Servicio",
     "privacyPolicy": "Política de Privacidad",
+    "cookiePolicy": "Política de Cookies",
     "faq": "Preguntas Frecuentes",
     "support": "Soporte",
     "followUs": "Síguenos",
@@ -524,6 +527,123 @@
     "description": "La página que buscas no existe o ha sido movida. Por favor verifica la URL o regresa a la página de inicio.",
     "goHome": "Ir al Inicio",
     "browseProducts": "Explorar Productos"
+  },
+  "terms": {
+    "title": "Términos y Condiciones",
+    "lastUpdated": "Última Actualización",
+    "lastUpdatedDate": "10 de febrero de 2026",
+    "lastUpdatedLabel": "Última Actualización: {{date}}",
+    "subtitle": "Por favor, lea estos términos cuidadosamente antes de usar nuestro servicio",
+    "sections": {
+      "acceptance": {
+        "title": "Aceptación de Términos",
+        "content": "Al acceder y utilizar esta plataforma de comercio electrónico (\"Servicio\"), usted acepta y se compromete a cumplir con los términos y disposiciones de este acuerdo. Si no está de acuerdo con lo anterior, por favor no utilice este servicio."
+      },
+      "useLicense": {
+        "title": "Licencia de Uso",
+        "intro": "Se otorga permiso para acceder temporalmente a los materiales (información o software) en nuestra plataforma solo para visualización personal y no comercial. Esta es la concesión de una licencia, no una transferencia de título, y bajo esta licencia usted no puede:",
+        "restrictions": {
+          "modify": "Modificar o copiar los materiales",
+          "commercial": "Usar los materiales para cualquier propósito comercial o exhibición pública",
+          "reverseEngineer": "Intentar realizar ingeniería inversa de cualquier software contenido en nuestra plataforma",
+          "removeCopyright": "Eliminar cualquier aviso de derechos de autor u otras notaciones de propiedad de los materiales",
+          "transfer": "Transferir los materiales a otra persona o \"reflejar\" los materiales en cualquier otro servidor"
+        }
+      },
+      "accountTerms": {
+        "title": "Términos de Cuenta",
+        "security": "Usted es responsable de mantener la seguridad de su cuenta y contraseña. No podemos y no seremos responsables de ninguna pérdida o daño por su incumplimiento de esta obligación de seguridad.",
+        "responsibility": "Usted es responsable de todo el contenido publicado y la actividad que ocurra bajo su cuenta."
+      },
+      "productInfo": {
+        "title": "Información del Producto",
+        "content": "Nos esforzamos por proporcionar descripciones y precios precisos de los productos. Sin embargo, no garantizamos que las descripciones de productos, precios u otro contenido sean precisos, completos, confiables, actuales o libres de errores. Si un producto ofrecido por nosotros no es como se describe, su único recurso es devolverlo en condiciones sin usar."
+      },
+      "pricing": {
+        "title": "Precios y Pago",
+        "changes": "Todos los precios están sujetos a cambios sin previo aviso. Nos reservamos el derecho de modificar o descontinuar productos sin previo aviso. No seremos responsables ante usted o cualquier tercero por cualquier modificación, cambio de precio, suspensión o descontinuación de cualquier producto.",
+        "payment": "El pago debe ser recibido por nosotros antes de que se despache su pedido. Aceptamos varios métodos de pago según se indica durante el proceso de pago."
+      },
+      "shipping": {
+        "title": "Envío y Entrega",
+        "content": "Organizaremos el envío de los productos pedidos a usted. Por favor, consulte la página del producto individual para opciones de entrega específicas. El título y el riesgo de pérdida pasan a usted al momento de nuestra entrega al transportista. Los cargos de envío y manejo no son reembolsables."
+      },
+      "returns": {
+        "title": "Devoluciones y Reembolsos",
+        "content": "Por favor, revise nuestra Política de Devoluciones para obtener información detallada sobre devoluciones y reembolsos. En general, los artículos pueden devolverse dentro de los 30 días posteriores a la recepción en su condición original."
+      },
+      "liability": {
+        "title": "Limitación de Responsabilidad",
+        "content": "En ningún caso nuestra empresa o sus proveedores serán responsables de ningún daño (incluyendo, sin limitación, daños por pérdida de datos o ganancias, o debido a interrupción del negocio) que surja del uso o la imposibilidad de usar los materiales en nuestra plataforma."
+      },
+      "privacy": {
+        "title": "Privacidad",
+        "content": "Su uso de nuestro Servicio también está regido por nuestra Política de Privacidad. Por favor, revise nuestra Política de Privacidad, que también rige el Servicio e informa a los usuarios sobre nuestras prácticas de recopilación de datos."
+      },
+      "modifications": {
+        "title": "Modificaciones a los Términos",
+        "content": "Nos reservamos el derecho de revisar estos términos de servicio en cualquier momento sin previo aviso. Al usar este Servicio, usted acepta estar sujeto a la versión actual de estos términos de servicio."
+      },
+      "governingLaw": {
+        "title": "Ley Aplicable",
+        "content": "Estos términos y condiciones se rigen e interpretan de acuerdo con las leyes y usted se somete irrevocablemente a la jurisdicción exclusiva de los tribunales en esa ubicación."
+      },
+      "contact": {
+        "title": "Información de Contacto",
+        "content": "Si tiene alguna pregunta sobre estos Términos y Condiciones, por favor contáctenos a través de nuestra página de Contacto."
+      }
+    }
+  },
+  "help": {
+    "title": "Centro de Ayuda",
+    "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
+    "faqsTitle": "Preguntas Frecuentes",
+    "stillNeedHelp": {
+      "title": "¿Aún Necesitas Ayuda?",
+      "description": "Si no pudiste encontrar la respuesta que buscas, nuestro equipo de soporte al cliente está listo para ayudarte. Contáctanos por correo electrónico, teléfono o nuestro formulario de contacto."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "¿Cómo hago un pedido?",
+        "answer": "Navega por nuestros productos, agrega artículos a tu carrito y procede al pago. Necesitarás crear una cuenta o iniciar sesión para completar tu compra."
+      },
+      "paymentMethods": {
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, MasterCard, American Express), PayPal y otros métodos de pago seguros."
+      },
+      "trackOrder": {
+        "question": "¿Cómo puedo rastrear mi pedido?",
+        "answer": "Una vez que tu pedido sea enviado, recibirás un número de seguimiento por correo electrónico. También puedes ver el estado de tu pedido en la sección \"Mis Pedidos\" de tu cuenta."
+      },
+      "returnPolicy": {
+        "question": "¿Cuál es su política de devoluciones?",
+        "answer": "Ofrecemos una política de devolución de 30 días para la mayoría de los artículos. Los productos deben estar sin usar y en su embalaje original. Consulta nuestra página de Devoluciones para más detalles."
+      },
+      "shippingTime": {
+        "question": "¿Cuánto tiempo tarda el envío?",
+        "answer": "El envío estándar generalmente toma de 5 a 7 días hábiles. Las opciones de envío exprés están disponibles en el pago para una entrega más rápida."
+      },
+      "international": {
+        "question": "¿Realizan envíos internacionales?",
+        "answer": "Sí, enviamos a muchos países de todo el mundo. Los costos de envío y los tiempos de entrega varían según la ubicación. Los pedidos internacionales pueden estar sujetos a tarifas aduaneras."
+      },
+      "resetPassword": {
+        "question": "¿Cómo restablezco mi contraseña?",
+        "answer": "Haz clic en \"Olvidé mi Contraseña\" en la página de inicio de sesión. Ingresa tu dirección de correo electrónico y te enviaremos instrucciones para restablecer tu contraseña."
+      },
+      "cancelOrder": {
+        "question": "¿Puedo cancelar o modificar mi pedido?",
+        "answer": "Los pedidos se pueden cancelar o modificar dentro de 1 hora después de realizarlos. Después de eso, por favor contacta al soporte al cliente para obtener asistencia."
+      },
+      "paymentSecurity": {
+        "question": "¿Mis datos de pago están seguros?",
+        "answer": "Sí, utilizamos encriptación SSL estándar de la industria para proteger tu información de pago. Nunca almacenamos los detalles completos de tu tarjeta de crédito en nuestros servidores."
+      },
+      "contactSupport": {
+        "question": "¿Cómo contacto al soporte al cliente?",
+        "answer": "Puedes contactarnos por correo electrónico a {{supportEmail}}, por teléfono al {{supportPhone}}, o a través de nuestra página de Contacto."
+      }
+    }
   },
   "productStatistics": {
     "detail": {
@@ -649,6 +769,16 @@
         "purchases": "Compras",
         "count": "Cantidad",
         "noData": "No hay estadísticas generales disponibles"
+      },
+      "healthCheck": {
+        "title": "Estado de Salud de la API",
+        "subtitle": "Monitorear la salud y disponibilidad de la API",
+        "checking": "Verificando salud de la API...",
+        "healthy": "Saludable",
+        "unhealthy": "No Saludable",
+        "allSystemsOperational": "Todos los sistemas operativos",
+        "systemIssuesDetected": "Problemas del sistema detectados",
+        "status": "Estado"
       }
     },
     "settings": "Configuración",
@@ -1004,6 +1134,118 @@
         "high": "ALTO",
         "medium": "MEDIO"
       }
+    }
+  },
+  "returns": {
+    "title": "Devoluciones y Reembolsos",
+    "satisfactionAlert": "Queremos que esté completamente satisfecho con su compra. Si no está contento con su pedido, estamos aquí para ayudarle.",
+    "returnPolicy": {
+      "title": "Política de Devoluciones",
+      "intro": "Ofrecemos una política de devolución de 30 días para la mayoría de los artículos. Para ser elegible para una devolución, su artículo debe estar:",
+      "conditions": {
+        "unused": "Sin usar y en las mismas condiciones en que lo recibió",
+        "originalPackaging": "En el embalaje original",
+        "receipt": "Acompañado del recibo o comprobante de compra"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Artículos No Retornables",
+      "intro": "Ciertos artículos no se pueden devolver, incluyendo:",
+      "items": {
+        "perishable": "Productos perecederos (alimentos, flores, etc.)",
+        "custom": "Artículos personalizados o hechos a medida",
+        "personalCare": "Artículos de cuidado personal (por razones de higiene)",
+        "hazardous": "Materiales peligrosos",
+        "giftCards": "Tarjetas de regalo",
+        "digital": "Software descargable o productos digitales"
+      }
+    },
+    "howToReturn": {
+      "title": "Cómo Devolver un Artículo",
+      "steps": {
+        "step1": "Inicie sesión en su cuenta y vaya a \"Mis Pedidos\"",
+        "step2": "Seleccione el pedido que contiene el artículo que desea devolver",
+        "step3": "Haga clic en \"Solicitar Devolución\" y siga las instrucciones",
+        "step4": "Empaque el artículo de forma segura en su embalaje original",
+        "step5": "Envíe el artículo a la dirección proporcionada en su confirmación de devolución"
+      }
+    },
+    "refunds": {
+      "title": "Reembolsos",
+      "inspection": "Una vez que recibamos su devolución, inspeccionaremos el artículo y le notificaremos la aprobación o rechazo de su reembolso.",
+      "processing": "Si se aprueba, su reembolso se procesará y se aplicará automáticamente un crédito a su método de pago original dentro de 5-10 días hábiles."
+    },
+    "exchanges": {
+      "title": "Intercambios",
+      "policy": "Solo reemplazamos artículos si están defectuosos o dañados. Si necesita intercambiar un artículo por el mismo producto, contáctenos en {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Costos de Envío",
+      "customerResponsibility": "Usted será responsable de pagar sus propios costos de envío para devolver su artículo. Los costos de envío no son reembolsables. Si recibe un reembolso, el costo del envío de devolución se deducirá de su reembolso.",
+      "defectiveCoverage": "Si el artículo estaba defectuoso o dañado al llegar, cubriremos los costos de envío de devolución."
+    },
+    "needHelp": {
+      "title": "¿Necesita Ayuda?",
+      "message": "Si tiene alguna pregunta sobre nuestra política de devoluciones, comuníquese con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
+    }
+  },
+  "shipping": {
+    "title": "Información de Envío",
+    "intro": "Ofrecemos varias opciones de envío para satisfacer sus necesidades. Todos los pedidos se procesan dentro de 1-2 días hábiles (excluyendo fines de semana y días festivos).",
+    "domesticShipping": {
+      "title": "Envío Nacional (Estados Unidos)",
+      "freeShippingNote": "* Envío estándar gratuito en pedidos de $50 o más"
+    },
+    "internationalShipping": {
+      "title": "Envío Internacional",
+      "customsNote": "* Los pedidos internacionales pueden estar sujetos a tarifas aduaneras e impuestos de importación"
+    },
+    "table": {
+      "shippingMethod": "Método de Envío",
+      "deliveryTime": "Tiempo de Entrega",
+      "cost": "Costo",
+      "region": "Región",
+      "startingCost": "Costo Inicial"
+    },
+    "methods": {
+      "standard": "Envío Estándar",
+      "express": "Envío Express",
+      "overnight": "Envío Nocturno"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 días hábiles",
+      "express": "2-3 días hábiles",
+      "overnight": "1 día hábil",
+      "canada": "7-14 días hábiles",
+      "europe": "10-21 días hábiles",
+      "asia": "10-21 días hábiles",
+      "australia": "10-21 días hábiles",
+      "restOfWorld": "14-28 días hábiles"
+    },
+    "regions": {
+      "canada": "Canadá",
+      "europe": "Europa",
+      "asia": "Asia",
+      "australia": "Australia",
+      "restOfWorld": "Resto del Mundo"
+    },
+    "orderTracking": {
+      "title": "Seguimiento de Pedidos",
+      "paragraph1": "Una vez que su pedido haya sido enviado, recibirá un correo electrónico de confirmación con un número de seguimiento. Puede rastrear su paquete usando este número en nuestro sitio web o en el sitio web del transportista.",
+      "paragraph2": "También puede ver el estado de su pedido iniciando sesión en su cuenta y visitando la página 'Mis Pedidos'."
+    },
+    "restrictions": {
+      "title": "Restricciones de Envío",
+      "paragraph1": "Actualmente enviamos a la mayoría de los países del mundo. Sin embargo, algunos artículos pueden tener restricciones de envío debido al tamaño, peso o regulaciones locales. Estas restricciones se indicarán en la página del producto.",
+      "paragraph2": "No enviamos a apartados postales para ciertos artículos. Por favor, proporcione una dirección física para la entrega cuando sea posible."
+    },
+    "damagedOrLost": {
+      "title": "Paquetes Dañados o Perdidos",
+      "paragraph": "Si su paquete llega dañado o se pierde durante el tránsito, comuníquese con nosotros inmediatamente en {{supportEmail}}. Trabajaremos con el transportista para resolver el problema y asegurarnos de que reciba su pedido."
+    },
+    "questionsAboutShipping": {
+      "title": "¿Preguntas sobre el Envío?",
+      "paragraph": "Si tiene alguna pregunta sobre nuestras opciones de envío o necesita ayuda con su pedido, no dude en comunicarse con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
     }
   }
 }
