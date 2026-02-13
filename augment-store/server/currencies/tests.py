@@ -17,8 +17,9 @@ class CurrencyAPITests(APITestCase):
             password="password123",
             role=User.Role.MEMBER
         )
-        self.list_url = reverse('currencies:currency_list')
-        self.create_url = reverse('currencies:create_currency')
+        # Fix: Using correct namespaced URL names (v1:currencies:...)
+        self.list_url = reverse('v1:currencies:currency_list')
+        self.create_url = reverse('v1:currencies:create_currency')
         
         # Ensure cache is clean
         CurrencyCacheService().clear_namespace()
