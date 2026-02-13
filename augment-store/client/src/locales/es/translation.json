@@ -460,6 +460,107 @@
     "currentPassword": "Contraseña Actual",
     "newPassword": "Nueva Contraseña"
   },
+  "privacy": {
+    "pageTitle": "Política de Privacidad",
+    "pageSubtitle": "Su privacidad es importante para nosotros. Conozca cómo recopilamos, usamos y protegemos sus datos.",
+    "lastUpdated": "Última actualización: {{date}}",
+    "tableOfContents": "Tabla de Contenidos",
+    "dataTypes": {
+      "identity": {
+        "title": "Datos de Identidad",
+        "description": "Nombre, apellido, nombre de usuario o identificador similar"
+      },
+      "contact": {
+        "title": "Datos de Contacto",
+        "description": "Dirección de correo electrónico, números de teléfono, dirección de facturación, dirección de entrega"
+      },
+      "financial": {
+        "title": "Datos Financieros",
+        "description": "Detalles de tarjetas de pago (procesados de forma segura por nuestros proveedores de pago)"
+      },
+      "transaction": {
+        "title": "Datos de Transacción",
+        "description": "Detalles sobre pagos y productos que ha comprado de nosotros"
+      },
+      "technical": {
+        "title": "Datos Técnicos",
+        "description": "Dirección IP, tipo y versión del navegador, configuración de zona horaria, sistema operativo"
+      },
+      "usage": {
+        "title": "Datos de Uso",
+        "description": "Información sobre cómo utiliza nuestra plataforma, productos y servicios"
+      },
+      "marketing": {
+        "title": "Datos de Marketing",
+        "description": "Sus preferencias para recibir marketing de nosotros y sus preferencias de comunicación"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Introducción",
+        "content": "Respetamos su privacidad y estamos comprometidos a proteger sus datos personales. Esta política de privacidad le informará sobre cómo cuidamos sus datos personales cuando visita nuestra plataforma y le informará sobre sus derechos de privacidad y cómo la ley lo protege."
+      },
+      "informationWeCollect": {
+        "title": "Información que Recopilamos",
+        "intro": "Podemos recopilar, usar, almacenar y transferir diferentes tipos de datos personales sobre usted:"
+      },
+      "howWeUse": {
+        "title": "Cómo Usamos Su Información",
+        "intro": "Solo usaremos sus datos personales cuando la ley nos lo permita. Más comúnmente, usaremos sus datos personales en las siguientes circunstancias:",
+        "purposes": {
+          "processOrders": "Para procesar y entregar sus pedidos",
+          "manageAccount": "Para administrar su cuenta y proporcionar atención al cliente",
+          "sendInfo": "Para enviarle información importante sobre sus compras",
+          "improve": "Para mejorar nuestra plataforma y servicios",
+          "personalize": "Para personalizar su experiencia",
+          "marketing": "Para enviarle comunicaciones de marketing (con su consentimiento)",
+          "fraud": "Para detectar y prevenir fraudes"
+        }
+      },
+      "dataSecurity": {
+        "title": "Seguridad de Datos",
+        "paragraph1": "Hemos implementado medidas de seguridad apropiadas para evitar que sus datos personales se pierdan accidentalmente, se usen o accedan de manera no autorizada, se alteren o se divulguen. Limitamos el acceso a sus datos personales a aquellos empleados, agentes, contratistas y otros terceros que tengan una necesidad comercial de conocerlos.",
+        "paragraph2": "Todas las transacciones de pago están encriptadas usando tecnología SSL. No almacenamos detalles completos de tarjetas de pago en nuestros servidores."
+      },
+      "dataRetention": {
+        "title": "Retención de Datos",
+        "content": "Solo conservaremos sus datos personales durante el tiempo necesario para cumplir con los propósitos para los que los recopilamos, incluidos los propósitos de satisfacer cualquier requisito legal, contable o de informes."
+      },
+      "yourRights": {
+        "title": "Sus Derechos Legales",
+        "intro": "Bajo ciertas circunstancias, tiene derechos bajo las leyes de protección de datos en relación con sus datos personales:",
+        "rights": {
+          "access": "Solicitar acceso a sus datos personales",
+          "correction": "Solicitar corrección de sus datos personales",
+          "erasure": "Solicitar eliminación de sus datos personales",
+          "object": "Oponerse al procesamiento de sus datos personales",
+          "restriction": "Solicitar restricción del procesamiento de sus datos personales",
+          "transfer": "Solicitar transferencia de sus datos personales",
+          "withdraw": "Derecho a retirar el consentimiento"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Nuestra plataforma utiliza cookies para distinguirlo de otros usuarios. Esto nos ayuda a brindarle una buena experiencia cuando navega por nuestra plataforma y también nos permite mejorar nuestro sitio. Una cookie es un pequeño archivo de letras y números que almacenamos en su navegador o en el disco duro de su computadora."
+      },
+      "thirdPartyLinks": {
+        "title": "Enlaces de Terceros",
+        "content": "Nuestra plataforma puede incluir enlaces a sitios web, complementos y aplicaciones de terceros. Hacer clic en esos enlaces o habilitar esas conexiones puede permitir que terceros recopilen o compartan datos sobre usted. No controlamos estos sitios web de terceros y no somos responsables de sus declaraciones de privacidad."
+      },
+      "childrenPrivacy": {
+        "title": "Privacidad de los Niños",
+        "content": "Nuestro Servicio no está destinado a niños menores de 13 años. No recopilamos intencionalmente información personal de niños menores de 13 años. Si usted es padre o tutor y sabe que su hijo nos ha proporcionado datos personales, contáctenos."
+      },
+      "changes": {
+        "title": "Cambios a Esta Política de Privacidad",
+        "content": "Podemos actualizar nuestra Política de Privacidad de vez en cuando. Le notificaremos cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de \"Última actualización\" en la parte superior de esta Política de Privacidad."
+      },
+      "contact": {
+        "title": "Contáctenos",
+        "content": "Si tiene alguna pregunta sobre esta Política de Privacidad o nuestras prácticas de privacidad, contáctenos a través de nuestra página de Contacto."
+      }
+    }
+  },
   "footer": {
     "aboutUs": "Sobre Nosotros",
     "contactUs": "Contáctanos",

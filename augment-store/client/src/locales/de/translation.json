@@ -460,6 +460,107 @@
     "currentPassword": "Aktuelles Passwort",
     "newPassword": "Neues Passwort"
   },
+  "privacy": {
+    "pageTitle": "Datenschutzrichtlinie",
+    "pageSubtitle": "Ihre Privatsphäre ist uns wichtig. Erfahren Sie, wie wir Ihre Daten sammeln, verwenden und schützen.",
+    "lastUpdated": "Zuletzt aktualisiert: {{date}}",
+    "tableOfContents": "Inhaltsverzeichnis",
+    "dataTypes": {
+      "identity": {
+        "title": "Identitätsdaten",
+        "description": "Vorname, Nachname, Benutzername oder ähnliche Kennung"
+      },
+      "contact": {
+        "title": "Kontaktdaten",
+        "description": "E-Mail-Adresse, Telefonnummern, Rechnungsadresse, Lieferadresse"
+      },
+      "financial": {
+        "title": "Finanzdaten",
+        "description": "Zahlungskartendetails (sicher von unseren Zahlungsanbietern verarbeitet)"
+      },
+      "transaction": {
+        "title": "Transaktionsdaten",
+        "description": "Details zu Zahlungen und Produkten, die Sie bei uns gekauft haben"
+      },
+      "technical": {
+        "title": "Technische Daten",
+        "description": "IP-Adresse, Browsertyp und -version, Zeitzoneneinstellung, Betriebssystem"
+      },
+      "usage": {
+        "title": "Nutzungsdaten",
+        "description": "Informationen darüber, wie Sie unsere Plattform, Produkte und Dienstleistungen nutzen"
+      },
+      "marketing": {
+        "title": "Marketingdaten",
+        "description": "Ihre Präferenzen für den Erhalt von Marketing von uns und Ihre Kommunikationspräferenzen"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Einführung",
+        "content": "Wir respektieren Ihre Privatsphäre und verpflichten uns, Ihre persönlichen Daten zu schützen. Diese Datenschutzrichtlinie informiert Sie darüber, wie wir Ihre persönlichen Daten pflegen, wenn Sie unsere Plattform besuchen, und informiert Sie über Ihre Datenschutzrechte und wie das Gesetz Sie schützt."
+      },
+      "informationWeCollect": {
+        "title": "Informationen, die Wir Sammeln",
+        "intro": "Wir können verschiedene Arten von persönlichen Daten über Sie sammeln, verwenden, speichern und übertragen:"
+      },
+      "howWeUse": {
+        "title": "Wie Wir Ihre Informationen Verwenden",
+        "intro": "Wir werden Ihre persönlichen Daten nur verwenden, wenn das Gesetz es uns erlaubt. Am häufigsten werden wir Ihre persönlichen Daten unter folgenden Umständen verwenden:",
+        "purposes": {
+          "processOrders": "Um Ihre Bestellungen zu bearbeiten und zu liefern",
+          "manageAccount": "Um Ihr Konto zu verwalten und Kundensupport zu bieten",
+          "sendInfo": "Um Ihnen wichtige Informationen zu Ihren Käufen zu senden",
+          "improve": "Um unsere Plattform und Dienstleistungen zu verbessern",
+          "personalize": "Um Ihre Erfahrung zu personalisieren",
+          "marketing": "Um Ihnen Marketingkommunikation zu senden (mit Ihrer Zustimmung)",
+          "fraud": "Um Betrug zu erkennen und zu verhindern"
+        }
+      },
+      "dataSecurity": {
+        "title": "Datensicherheit",
+        "paragraph1": "Wir haben angemessene Sicherheitsmaßnahmen ergriffen, um zu verhindern, dass Ihre persönlichen Daten versehentlich verloren gehen, unbefugt verwendet oder darauf zugegriffen wird, geändert oder offengelegt werden. Wir beschränken den Zugriff auf Ihre persönlichen Daten auf diejenigen Mitarbeiter, Vertreter, Auftragnehmer und andere Dritte, die ein geschäftliches Bedürfnis haben, sie zu kennen.",
+        "paragraph2": "Alle Zahlungstransaktionen werden mit SSL-Technologie verschlüsselt. Wir speichern keine vollständigen Zahlungskartendetails auf unseren Servern."
+      },
+      "dataRetention": {
+        "title": "Datenspeicherung",
+        "content": "Wir werden Ihre persönlichen Daten nur so lange aufbewahren, wie es notwendig ist, um die Zwecke zu erfüllen, für die wir sie gesammelt haben, einschließlich der Zwecke zur Erfüllung gesetzlicher, buchhalterischer oder Berichtspflichten."
+      },
+      "yourRights": {
+        "title": "Ihre Gesetzlichen Rechte",
+        "intro": "Unter bestimmten Umständen haben Sie Rechte gemäß den Datenschutzgesetzen in Bezug auf Ihre persönlichen Daten:",
+        "rights": {
+          "access": "Zugriff auf Ihre persönlichen Daten anfordern",
+          "correction": "Korrektur Ihrer persönlichen Daten anfordern",
+          "erasure": "Löschung Ihrer persönlichen Daten anfordern",
+          "object": "Der Verarbeitung Ihrer persönlichen Daten widersprechen",
+          "restriction": "Einschränkung der Verarbeitung Ihrer persönlichen Daten anfordern",
+          "transfer": "Übertragung Ihrer persönlichen Daten anfordern",
+          "withdraw": "Recht auf Widerruf der Einwilligung"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Unsere Plattform verwendet Cookies, um Sie von anderen Benutzern zu unterscheiden. Dies hilft uns, Ihnen eine gute Erfahrung beim Durchsuchen unserer Plattform zu bieten und ermöglicht es uns auch, unsere Website zu verbessern. Ein Cookie ist eine kleine Datei aus Buchstaben und Zahlen, die wir in Ihrem Browser oder auf der Festplatte Ihres Computers speichern."
+      },
+      "thirdPartyLinks": {
+        "title": "Links zu Dritten",
+        "content": "Unsere Plattform kann Links zu Websites, Plug-ins und Anwendungen von Drittanbietern enthalten. Durch Klicken auf diese Links oder Aktivieren dieser Verbindungen können Dritte Daten über Sie sammeln oder teilen. Wir kontrollieren diese Websites von Drittanbietern nicht und sind nicht für deren Datenschutzerklärungen verantwortlich."
+      },
+      "childrenPrivacy": {
+        "title": "Datenschutz für Kinder",
+        "content": "Unser Service richtet sich nicht an Kinder unter 13 Jahren. Wir sammeln wissentlich keine persönlichen Informationen von Kindern unter 13 Jahren. Wenn Sie Elternteil oder Erziehungsberechtigter sind und wissen, dass Ihr Kind uns persönliche Daten zur Verfügung gestellt hat, kontaktieren Sie uns bitte."
+      },
+      "changes": {
+        "title": "Änderungen an Dieser Datenschutzrichtlinie",
+        "content": "Wir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über alle Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" oben in dieser Datenschutzrichtlinie aktualisieren."
+      },
+      "contact": {
+        "title": "Kontaktieren Sie Uns",
+        "content": "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder unseren Datenschutzpraktiken haben, kontaktieren Sie uns bitte über unsere Kontaktseite."
+      }
+    }
+  },
   "footer": {
     "aboutUs": "Über Uns",
     "contactUs": "Kontaktieren Sie Uns",

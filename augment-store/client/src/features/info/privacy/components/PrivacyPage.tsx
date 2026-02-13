@@ -39,6 +39,7 @@ import {
   Campaign as CampaignIcon,
 } from '@mui/icons-material'
 import { Colors } from '@config/colors'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface Section {
   id: string
@@ -55,6 +56,7 @@ interface DataType {
 
 const PrivacyPage = () => {
   const theme = useTheme()
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState<string | false>('section-1')
 
   const handleChange = (panel: string) => (_: SyntheticEvent, isExpanded: boolean) => {
@@ -63,38 +65,38 @@ const PrivacyPage = () => {
 
   const dataTypes: DataType[] = [
     {
-      title: 'Identity Data',
-      description: 'First name, last name, username or similar identifier',
+      title: t('privacy.dataTypes.identity.title'),
+      description: t('privacy.dataTypes.identity.description'),
       icon: <VerifiedUserIcon />,
     },
     {
-      title: 'Contact Data',
-      description: 'Email address, telephone numbers, billing address, delivery address',
+      title: t('privacy.dataTypes.contact.title'),
+      description: t('privacy.dataTypes.contact.description'),
       icon: <ContactIcon />,
     },
     {
-      title: 'Financial Data',
-      description: 'Payment card details (processed securely by our payment providers)',
+      title: t('privacy.dataTypes.financial.title'),
+      description: t('privacy.dataTypes.financial.description'),
       icon: <LockIcon />,
     },
     {
-      title: 'Transaction Data',
-      description: 'Details about payments and products you have purchased from us',
+      title: t('privacy.dataTypes.transaction.title'),
+      description: t('privacy.dataTypes.transaction.description'),
       icon: <ShieldIcon />,
     },
     {
-      title: 'Technical Data',
-      description: 'IP address, browser type and version, time zone setting, operating system',
+      title: t('privacy.dataTypes.technical.title'),
+      description: t('privacy.dataTypes.technical.description'),
       icon: <SettingsIcon />,
     },
     {
-      title: 'Usage Data',
-      description: 'Information about how you use our platform, products and services',
+      title: t('privacy.dataTypes.usage.title'),
+      description: t('privacy.dataTypes.usage.description'),
       icon: <VisibilityIcon />,
     },
     {
-      title: 'Marketing Data',
-      description: 'Your preferences in receiving marketing from us and your communication preferences',
+      title: t('privacy.dataTypes.marketing.title'),
+      description: t('privacy.dataTypes.marketing.description'),
       icon: <CampaignIcon />,
     },
   ]
@@ -102,24 +104,22 @@ const PrivacyPage = () => {
   const sections: Section[] = [
     {
       id: 'section-1',
-      title: 'Introduction',
+      title: t('privacy.sections.introduction.title'),
       icon: <PrivacyIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          We respect your privacy and are committed to protecting your personal data. This privacy policy will inform
-          you about how we look after your personal data when you visit our platform and tell you about your privacy
-          rights and how the law protects you.
+          {t('privacy.sections.introduction.content')}
         </Typography>
       ),
     },
     {
       id: 'section-2',
-      title: 'Information We Collect',
+      title: t('privacy.sections.informationWeCollect.title'),
       icon: <InfoIcon />,
       content: (
         <>
           <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8, mb: 3 }}>
-            We may collect, use, store and transfer different kinds of personal data about you:
+            {t('privacy.sections.informationWeCollect.intro')}
           </Typography>
           <Grid container spacing={2}>
             {dataTypes.map((dataType, index) => (
@@ -173,23 +173,22 @@ const PrivacyPage = () => {
     },
     {
       id: 'section-3',
-      title: 'How We Use Your Information',
+      title: t('privacy.sections.howWeUse.title'),
       icon: <SettingsIcon />,
       content: (
         <>
           <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8 }}>
-            We will only use your personal data when the law allows us to. Most commonly, we will use your personal
-            data in the following circumstances:
+            {t('privacy.sections.howWeUse.intro')}
           </Typography>
           <List dense>
             {[
-              'To process and deliver your orders',
-              'To manage your account and provide customer support',
-              'To send you important information regarding your purchases',
-              'To improve our platform and services',
-              'To personalize your experience',
-              'To send you marketing communications (with your consent)',
-              'To detect and prevent fraud',
+              t('privacy.sections.howWeUse.purposes.processOrders'),
+              t('privacy.sections.howWeUse.purposes.manageAccount'),
+              t('privacy.sections.howWeUse.purposes.sendInfo'),
+              t('privacy.sections.howWeUse.purposes.improve'),
+              t('privacy.sections.howWeUse.purposes.personalize'),
+              t('privacy.sections.howWeUse.purposes.marketing'),
+              t('privacy.sections.howWeUse.purposes.fraud'),
             ].map((item, index) => (
               <ListItem key={index}>
                 <ListItemIcon sx={{ minWidth: 36 }}>
@@ -204,51 +203,47 @@ const PrivacyPage = () => {
     },
     {
       id: 'section-4',
-      title: 'Data Security',
+      title: t('privacy.sections.dataSecurity.title'),
       icon: <SecurityIcon />,
       content: (
         <>
           <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8 }}>
-            We have put in place appropriate security measures to prevent your personal data from being accidentally
-            lost, used or accessed in an unauthorized way, altered or disclosed. We limit access to your personal data
-            to those employees, agents, contractors and other third parties who have a business need to know.
+            {t('privacy.sections.dataSecurity.paragraph1')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-            All payment transactions are encrypted using SSL technology. We do not store complete payment card details
-            on our servers.
+            {t('privacy.sections.dataSecurity.paragraph2')}
           </Typography>
         </>
       ),
     },
     {
       id: 'section-5',
-      title: 'Data Retention',
+      title: t('privacy.sections.dataRetention.title'),
       icon: <ScheduleIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          We will only retain your personal data for as long as necessary to fulfill the purposes we collected it for,
-          including for the purposes of satisfying any legal, accounting, or reporting requirements.
+          {t('privacy.sections.dataRetention.content')}
         </Typography>
       ),
     },
     {
       id: 'section-6',
-      title: 'Your Legal Rights',
+      title: t('privacy.sections.yourRights.title'),
       icon: <VerifiedUserIcon />,
       content: (
         <>
           <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8 }}>
-            Under certain circumstances, you have rights under data protection laws in relation to your personal data:
+            {t('privacy.sections.yourRights.intro')}
           </Typography>
           <List dense>
             {[
-              'Request access to your personal data',
-              'Request correction of your personal data',
-              'Request erasure of your personal data',
-              'Object to processing of your personal data',
-              'Request restriction of processing your personal data',
-              'Request transfer of your personal data',
-              'Right to withdraw consent',
+              t('privacy.sections.yourRights.rights.access'),
+              t('privacy.sections.yourRights.rights.correction'),
+              t('privacy.sections.yourRights.rights.erasure'),
+              t('privacy.sections.yourRights.rights.object'),
+              t('privacy.sections.yourRights.rights.restriction'),
+              t('privacy.sections.yourRights.rights.transfer'),
+              t('privacy.sections.yourRights.rights.withdraw'),
             ].map((item, index) => (
               <ListItem key={index}>
                 <ListItemIcon sx={{ minWidth: 36 }}>
@@ -263,59 +258,51 @@ const PrivacyPage = () => {
     },
     {
       id: 'section-7',
-      title: 'Cookies',
+      title: t('privacy.sections.cookies.title'),
       icon: <CookieIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          Our platform uses cookies to distinguish you from other users. This helps us to provide you with a good
-          experience when you browse our platform and also allows us to improve our site. A cookie is a small file of
-          letters and numbers that we store on your browser or the hard drive of your computer.
+          {t('privacy.sections.cookies.content')}
         </Typography>
       ),
     },
     {
       id: 'section-8',
-      title: 'Third-Party Links',
+      title: t('privacy.sections.thirdPartyLinks.title'),
       icon: <LinkIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          Our platform may include links to third-party websites, plug-ins and applications. Clicking on those links or
-          enabling those connections may allow third parties to collect or share data about you. We do not control these
-          third-party websites and are not responsible for their privacy statements.
+          {t('privacy.sections.thirdPartyLinks.content')}
         </Typography>
       ),
     },
     {
       id: 'section-9',
-      title: "Children's Privacy",
+      title: t('privacy.sections.childrenPrivacy.title'),
       icon: <ChildCareIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          Our Service is not intended for children under 13 years of age. We do not knowingly collect personal
-          information from children under 13. If you are a parent or guardian and you are aware that your child has
-          provided us with personal data, please contact us.
+          {t('privacy.sections.childrenPrivacy.content')}
         </Typography>
       ),
     },
     {
       id: 'section-10',
-      title: 'Changes to This Privacy Policy',
+      title: t('privacy.sections.changes.title'),
       icon: <UpdateIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new
-          Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy Policy.
+          {t('privacy.sections.changes.content')}
         </Typography>
       ),
     },
     {
       id: 'section-11',
-      title: 'Contact Us',
+      title: t('privacy.sections.contact.title'),
       icon: <ContactIcon />,
       content: (
         <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
-          If you have any questions about this Privacy Policy or our privacy practices, please contact us through our
-          Contact page.
+          {t('privacy.sections.contact.content')}
         </Typography>
       ),
     },
@@ -377,14 +364,14 @@ const PrivacyPage = () => {
                   fontSize: { xs: '2rem', md: '2.5rem' },
                 }}
               >
-                Privacy Policy
+                {t('privacy.pageTitle')}
               </Typography>
             </Box>
             <Typography variant="body1" sx={{ opacity: 0.95, mb: 2, fontSize: '1.1rem' }}>
-              Your privacy is important to us. Learn how we collect, use, and protect your data.
+              {t('privacy.pageSubtitle')}
             </Typography>
             <Chip
-              label={`Last Updated: ${new Date().toLocaleDateString()}`}
+              label={t('privacy.lastUpdated', { date: new Date().toLocaleDateString() })}
               sx={{
                 backgroundColor: Colors.overlay.light20,
                 color: Colors.text.white,
@@ -412,7 +399,7 @@ const PrivacyPage = () => {
               color: theme.palette.mode === 'dark' ? Colors.dark.text.primary : Colors.text.primary,
             }}
           >
-            Table of Contents
+            {t('privacy.tableOfContents')}
           </Typography>
           <Divider sx={{ mb: 3 }} />
 
