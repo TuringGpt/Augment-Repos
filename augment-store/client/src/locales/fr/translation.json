@@ -358,8 +358,8 @@
       "emailAddress": "Adresse e-mail",
       "phoneNumber": "Numéro de téléphone",
       "emailHelper": "Nous enverrons votre confirmation de commande ici",
-      "phoneHelper": "Entrez 10-15 chiffres. Format: +1 (555) 123-4567 ou 5551234567",
-      "phonePlaceholder": "+1 (555) 123-4567",
+      "phoneHelper": "Entrez 10-15 chiffres. Format: {{supportPhone}} ou 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
       "errors": {
         "emailRequired": "L'e-mail est requis",
         "emailInvalid": "Adresse e-mail invalide",
@@ -528,6 +528,72 @@
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
   },
+  "terms": {
+    "title": "Conditions Générales",
+    "lastUpdated": "Dernière Mise à Jour",
+    "lastUpdatedDate": "10 février 2026",
+    "lastUpdatedLabel": "Dernière Mise à Jour : {{date}}",
+    "subtitle": "Veuillez lire attentivement ces conditions avant d'utiliser notre service",
+    "sections": {
+      "acceptance": {
+        "title": "Acceptation des Conditions",
+        "content": "En accédant et en utilisant cette plateforme de commerce électronique (\"Service\"), vous acceptez et vous engagez à respecter les termes et dispositions de cet accord. Si vous n'êtes pas d'accord avec ce qui précède, veuillez ne pas utiliser ce service."
+      },
+      "useLicense": {
+        "title": "Licence d'Utilisation",
+        "intro": "L'autorisation est accordée d'accéder temporairement aux matériaux (informations ou logiciels) sur notre plateforme uniquement pour une visualisation personnelle et non commerciale. Il s'agit de l'octroi d'une licence, et non d'un transfert de titre, et sous cette licence, vous ne pouvez pas:",
+        "restrictions": {
+          "modify": "Modifier ou copier les matériaux",
+          "commercial": "Utiliser les matériaux à des fins commerciales ou pour toute exposition publique",
+          "reverseEngineer": "Tenter de faire de l'ingénierie inverse de tout logiciel contenu sur notre plateforme",
+          "removeCopyright": "Supprimer tout avis de droit d'auteur ou autres notations de propriété des matériaux",
+          "transfer": "Transférer les matériaux à une autre personne ou \"refléter\" les matériaux sur un autre serveur"
+        }
+      },
+      "accountTerms": {
+        "title": "Conditions de Compte",
+        "security": "Vous êtes responsable du maintien de la sécurité de votre compte et de votre mot de passe. Nous ne pouvons pas et ne serons pas responsables de toute perte ou dommage résultant de votre non-respect de cette obligation de sécurité.",
+        "responsibility": "Vous êtes responsable de tout le contenu publié et de l'activité qui se produit sous votre compte."
+      },
+      "productInfo": {
+        "title": "Informations sur les Produits",
+        "content": "Nous nous efforçons de fournir des descriptions et des prix de produits précis. Cependant, nous ne garantissons pas que les descriptions de produits, les prix ou tout autre contenu soient exacts, complets, fiables, à jour ou exempts d'erreurs. Si un produit que nous proposons n'est pas conforme à la description, votre seul recours est de le retourner dans un état non utilisé."
+      },
+      "pricing": {
+        "title": "Prix et Paiement",
+        "changes": "Tous les prix sont sujets à modification sans préavis. Nous nous réservons le droit de modifier ou d'interrompre des produits sans préavis. Nous ne serons pas responsables envers vous ou tout tiers pour toute modification, changement de prix, suspension ou interruption de tout produit.",
+        "payment": "Le paiement doit être reçu par nous avant l'expédition de votre commande. Nous acceptons divers modes de paiement comme indiqué lors du paiement."
+      },
+      "shipping": {
+        "title": "Expédition et Livraison",
+        "content": "Nous organiserons l'expédition des produits commandés vers vous. Veuillez consulter la page du produit individuel pour les options de livraison spécifiques. Le titre et le risque de perte vous sont transférés lors de notre livraison au transporteur. Les frais d'expédition et de manutention ne sont pas remboursables."
+      },
+      "returns": {
+        "title": "Retours et Remboursements",
+        "content": "Veuillez consulter notre Politique de Retours pour des informations détaillées sur les retours et les remboursements. En général, les articles peuvent être retournés dans les 30 jours suivant la réception dans leur état d'origine."
+      },
+      "liability": {
+        "title": "Limitation de Responsabilité",
+        "content": "En aucun cas notre société ou ses fournisseurs ne seront responsables de tout dommage (y compris, sans limitation, les dommages pour perte de données ou de profit, ou en raison d'une interruption d'activité) résultant de l'utilisation ou de l'impossibilité d'utiliser les matériaux sur notre plateforme."
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "content": "Votre utilisation de notre Service est également régie par notre Politique de Confidentialité. Veuillez consulter notre Politique de Confidentialité, qui régit également le Service et informe les utilisateurs de nos pratiques de collecte de données."
+      },
+      "modifications": {
+        "title": "Modifications des Conditions",
+        "content": "Nous nous réservons le droit de réviser ces conditions d'utilisation à tout moment sans préavis. En utilisant ce Service, vous acceptez d'être lié par la version actuelle de ces conditions d'utilisation."
+      },
+      "governingLaw": {
+        "title": "Loi Applicable",
+        "content": "Ces termes et conditions sont régis et interprétés conformément aux lois et vous vous soumettez irrévocablement à la juridiction exclusive des tribunaux de cet endroit."
+      },
+      "contact": {
+        "title": "Informations de Contact",
+        "content": "Si vous avez des questions concernant ces Conditions Générales, veuillez nous contacter via notre page de Contact."
+      }
+    }
+  },
   "help": {
     "title": "Centre d'Aide",
     "description": "Trouvez des réponses aux questions fréquemment posées ci-dessous. Si vous avez besoin d'une assistance supplémentaire, n'hésitez pas à contacter notre équipe de support client.",
@@ -575,7 +641,7 @@
       },
       "contactSupport": {
         "question": "Comment contacter le support client ?",
-        "answer": "Vous pouvez nous joindre par e-mail à support@augmentstore.com, par téléphone au +1 (555) 123-4567, ou via notre page de Contact."
+        "answer": "Vous pouvez nous joindre par e-mail à {{supportEmail}}, par téléphone au {{supportPhone}}, ou via notre page de Contact."
       }
     }
   },
@@ -1068,6 +1134,118 @@
         "high": "ÉLEVÉ",
         "medium": "MOYEN"
       }
+    }
+  },
+  "returns": {
+    "title": "Retours et Remboursements",
+    "satisfactionAlert": "Nous voulons que vous soyez entièrement satisfait de votre achat. Si vous n'êtes pas satisfait de votre commande, nous sommes là pour vous aider.",
+    "returnPolicy": {
+      "title": "Politique de Retour",
+      "intro": "Nous offrons une politique de retour de 30 jours pour la plupart des articles. Pour être éligible à un retour, votre article doit être :",
+      "conditions": {
+        "unused": "Non utilisé et dans le même état que vous l'avez reçu",
+        "originalPackaging": "Dans l'emballage d'origine",
+        "receipt": "Accompagné du reçu ou de la preuve d'achat"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Articles Non Retournables",
+      "intro": "Certains articles ne peuvent pas être retournés, notamment :",
+      "items": {
+        "perishable": "Produits périssables (nourriture, fleurs, etc.)",
+        "custom": "Articles personnalisés ou sur mesure",
+        "personalCare": "Articles de soins personnels (pour des raisons d'hygiène)",
+        "hazardous": "Matières dangereuses",
+        "giftCards": "Cartes-cadeaux",
+        "digital": "Logiciels téléchargeables ou produits numériques"
+      }
+    },
+    "howToReturn": {
+      "title": "Comment Retourner un Article",
+      "steps": {
+        "step1": "Connectez-vous à votre compte et accédez à \"Mes Commandes\"",
+        "step2": "Sélectionnez la commande contenant l'article que vous souhaitez retourner",
+        "step3": "Cliquez sur \"Demander un Retour\" et suivez les instructions",
+        "step4": "Emballez l'article en toute sécurité dans son emballage d'origine",
+        "step5": "Expédiez l'article à l'adresse fournie dans votre confirmation de retour"
+      }
+    },
+    "refunds": {
+      "title": "Remboursements",
+      "inspection": "Une fois que nous aurons reçu votre retour, nous inspecterons l'article et vous informerons de l'approbation ou du rejet de votre remboursement.",
+      "processing": "Si approuvé, votre remboursement sera traité et un crédit sera automatiquement appliqué à votre mode de paiement d'origine dans les 5 à 10 jours ouvrables."
+    },
+    "exchanges": {
+      "title": "Échanges",
+      "policy": "Nous ne remplaçons les articles que s'ils sont défectueux ou endommagés. Si vous devez échanger un article pour le même produit, veuillez nous contacter à {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Frais d'Expédition",
+      "customerResponsibility": "Vous serez responsable du paiement de vos propres frais d'expédition pour retourner votre article. Les frais d'expédition ne sont pas remboursables. Si vous recevez un remboursement, le coût de l'expédition de retour sera déduit de votre remboursement.",
+      "defectiveCoverage": "Si l'article était défectueux ou endommagé à l'arrivée, nous couvrirons les frais d'expédition de retour."
+    },
+    "needHelp": {
+      "title": "Besoin d'Aide ?",
+      "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
+    }
+  },
+  "shipping": {
+    "title": "Informations sur la Livraison",
+    "intro": "Nous proposons diverses options d'expédition pour répondre à vos besoins. Toutes les commandes sont traitées dans un délai de 1 à 2 jours ouvrables (hors week-ends et jours fériés).",
+    "domesticShipping": {
+      "title": "Livraison Nationale (États-Unis)",
+      "freeShippingNote": "* Livraison standard gratuite pour les commandes de 50 $ ou plus"
+    },
+    "internationalShipping": {
+      "title": "Livraison Internationale",
+      "customsNote": "* Les commandes internationales peuvent être soumises à des frais de douane et des droits d'importation"
+    },
+    "table": {
+      "shippingMethod": "Méthode d'Expédition",
+      "deliveryTime": "Délai de Livraison",
+      "cost": "Coût",
+      "region": "Région",
+      "startingCost": "Coût de Départ"
+    },
+    "methods": {
+      "standard": "Livraison Standard",
+      "express": "Livraison Express",
+      "overnight": "Livraison du Jour au Lendemain"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 jours ouvrables",
+      "express": "2-3 jours ouvrables",
+      "overnight": "1 jour ouvrable",
+      "canada": "7-14 jours ouvrables",
+      "europe": "10-21 jours ouvrables",
+      "asia": "10-21 jours ouvrables",
+      "australia": "10-21 jours ouvrables",
+      "restOfWorld": "14-28 jours ouvrables"
+    },
+    "regions": {
+      "canada": "Canada",
+      "europe": "Europe",
+      "asia": "Asie",
+      "australia": "Australie",
+      "restOfWorld": "Reste du Monde"
+    },
+    "orderTracking": {
+      "title": "Suivi de Commande",
+      "paragraph1": "Une fois votre commande expédiée, vous recevrez un e-mail de confirmation avec un numéro de suivi. Vous pouvez suivre votre colis en utilisant ce numéro sur notre site Web ou sur le site Web du transporteur.",
+      "paragraph2": "Vous pouvez également consulter l'état de votre commande en vous connectant à votre compte et en visitant la page 'Mes Commandes'."
+    },
+    "restrictions": {
+      "title": "Restrictions d'Expédition",
+      "paragraph1": "Nous expédions actuellement vers la plupart des pays du monde. Cependant, certains articles peuvent avoir des restrictions d'expédition en raison de leur taille, poids ou des réglementations locales. Ces restrictions seront indiquées sur la page du produit.",
+      "paragraph2": "Nous n'expédions pas vers les boîtes postales pour certains articles. Veuillez fournir une adresse physique pour la livraison lorsque cela est possible."
+    },
+    "damagedOrLost": {
+      "title": "Colis Endommagés ou Perdus",
+      "paragraph": "Si votre colis arrive endommagé ou est perdu pendant le transport, veuillez nous contacter immédiatement à {{supportEmail}}. Nous travaillerons avec le transporteur pour résoudre le problème et nous assurer que vous recevez votre commande."
+    },
+    "questionsAboutShipping": {
+      "title": "Questions sur la Livraison ?",
+      "paragraph": "Si vous avez des questions sur nos options d'expédition ou si vous avez besoin d'aide avec votre commande, n'hésitez pas à contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
     }
   }
 }

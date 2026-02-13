@@ -29,11 +29,8 @@ class ProductCategory(MPTTModel, BaseModel):
     
 
 class ProductManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().order_by('-created_at')
-    
     def get_user_products(self, user):
-        return self.get_queryset().filter(created_by=user).order_by('-created_at')
+        return self.get_queryset().filter(created_by=user)
 
 class Product(BaseModel):
     name = models.CharField(max_length=255)
@@ -49,10 +46,14 @@ class Product(BaseModel):
     objects: ProductManager = ProductManager()
 
     class Meta:
+        ordering = ['-created_at']
         indexes = [
             models.Index(fields=['is_featured']),
             models.Index(fields=['rating']),
             models.Index(fields=['category', 'brand']),
+            models.Index(fields=['name'], name='prod_name_idx'),
+            models.Index(fields=['created_at'], name='prod_created_at_idx'),
+            models.Index(fields=['price'], name='prod_price_idx'),
         ]
 
     def check_stock(self, quantity):
