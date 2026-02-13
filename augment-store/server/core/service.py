@@ -212,9 +212,9 @@ class CachedRetrieveMixin:
 
 
 def cache_response(ttl=None, key_prefix=None):
-    \"\"\"
+    """
     Decorator for caching DRF ViewSet actions (returning Response objects).
-    \"\"\"
+    """
     def decorator(view_func):
         @functools.wraps(view_func)
         def _wrapped_view(view_instance, request, *args, **kwargs):
