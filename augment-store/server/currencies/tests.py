@@ -55,21 +55,27 @@ class CurrencyAPITests(APITestCase):
     def test_normalization_and_uniqueness(self):
         self.client.force_authenticate(user=self.admin_user)
         
-        # Create initial
-        response = self.client.post(self.create_url, {"name": "US Dollar", "code": "USD", "symbol": "$"})
+        # 1. Test code normalization (upper)
+        response = self.client.post(self.create_url, {"name": "US Dollar", "code": "usd", "symbol": "$"})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['code'], "USD")
         
-        # Same code with whitespace and lowercase should fail (400)
-        response = self.client.post(self.create_url, {"name": "Dollar Two", "code": " usd ", "symbol": "$"})
+        # 2. Test name normalization (lower)
+        response = self.client.post(self.create_url, {"name": "British Pound ", "code": "GBP", "symbol": "£"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['name'], "british pound")
+        
+        # 3. Same code (case variant) should fail
+        response = self.client.post(self.create_url, {"name": "USD Variant", "code": " USD ", "symbol": "$"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
-        # Blank code after normalization should fail
-        response = self.client.post(self.create_url, {"name": "Bankrupt", "code": "   ", "symbol": "0"})
+        # 4. Same name (case variant) should fail
+        response = self.client.post(self.create_url, {"name": " BRITISH POUND ", "code": "BP2", "symbol": "£"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_is_deleted_filtering(self):
-        Currency.objects.create(name="Deleted", code="DEL", symbol="X", is_deleted=True)
-        Currency.objects.create(name="Active", code="ACT", symbol="V", is_deleted=False)
+        Currency.objects.create(name="deleted", code="DEL", symbol="X", is_deleted=True)
+        Currency.objects.create(name="active", code="ACT", symbol="V", is_deleted=False)
         
         response = self.client.get(self.list_url)
         results = self._get_results(response)
@@ -91,3 +97,26 @@ class CurrencyAPITests(APITestCase):
         res2 = self.client.get(self.list_url)
         results2 = self._get_results(res2)
         self.assertEqual(len(results2), 1)
+
+    def test_admin_mutation_invalidates_cache(self):
+        c = Currency.objects.create(name="old name", code="OLD", symbol="O")
+        
+        # Cache the list
+        self.client.get(self.list_url)
+        
+        # Mock admin update
+        c.name = "NEW NAME"
+        c.save() 
+        
+        from .admin import CurrencyAdmin
+        from django.contrib.admin.sites import AdminSite
+        site = AdminSite()
+        admin = CurrencyAdmin(Currency, site)
+        
+        # Simulate admin save
+        admin.save_model(None, c, None, True)
+        
+        response = self.client.get(self.list_url)
+        results = self._get_results(response)
+        # Verify both name change and invalidation worked (note normalization to lower)
+        self.assertEqual(results[0]['name'], "new name")

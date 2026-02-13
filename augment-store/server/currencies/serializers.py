@@ -27,11 +27,11 @@ class CreateCurrencySerializer(serializers.ModelSerializer):
         return normalized
 
     def validate_name(self, value):
-        normalized = value.strip()
+        normalized = value.strip().lower()
         if not normalized:
             raise serializers.ValidationError("Currency name cannot be empty.")
             
-        qs = Currency.objects.filter(name__iexact=normalized)
+        qs = Currency.objects.filter(name=normalized)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():

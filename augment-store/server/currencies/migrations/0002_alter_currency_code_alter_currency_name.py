@@ -8,8 +8,9 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
 
     def deduplicate_field(field_name, tracking_func, save_normalization_func):
         seen_items = {}
-        # Order by is_deleted (False first) then created_at (oldest first)
-        queryset = Currency.objects.all().order_by('is_deleted', 'created_at')
+        # Order by is_deleted (False first), then created_at (oldest first), 
+        # then id as a stable tiebreaker for determinism.
+        queryset = Currency.objects.all().order_by('is_deleted', 'created_at', 'id')
         
         for currency in queryset:
             val = getattr(currency, field_name)
@@ -45,12 +46,12 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
         lambda x: x.upper().strip()
     )
 
-    # 2. Deduplicate by 'name': Strip + Lower for tracking, but only Strip for saving
-    # This preserves the original case of the oldest active record while preventing case variants
+    # 2. Deduplicate by 'name': Strip + Lower for both tracking and saving
+    # This aligns the DB content with case-insensitive uniqueness rules
     deduplicate_field(
         'name', 
         lambda x: x.strip().lower(), 
-        lambda x: x.strip()
+        lambda x: x.strip().lower()
     )
 
 class Migration(migrations.Migration):

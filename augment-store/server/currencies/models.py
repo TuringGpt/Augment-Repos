@@ -11,5 +11,5 @@ class Currency(BaseModel):
         if self.code:
             self.code = self.code.upper().strip()
         if self.name:
-            self.name = self.name.strip()
+            self.name = self.name.strip().lower()
         super().save(*args, **kwargs)
