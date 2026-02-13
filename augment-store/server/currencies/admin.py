@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Currency
-from .views import CurrencyCacheService
+from .services import CurrencyCacheService
 
 
 @admin.register(Currency)

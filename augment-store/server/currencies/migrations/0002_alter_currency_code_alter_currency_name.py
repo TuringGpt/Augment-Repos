@@ -1,7 +1,4 @@
 # Generated manually on 2026-02-13
-# Includes data cleanup for duplicates before applying uniqueness constraints
-# Ensures dependent rows (User.preferred_currency) are re-pointed to canonical records
-# Deduplication is deterministic (prefers non-deleted, then oldest record)
 
 from django.db import migrations, models
 
@@ -9,39 +6,52 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
     Currency = apps.get_model('currencies', 'Currency')
     User = apps.get_model('accounts', 'User')
 
-    def deduplicate_field(field_name, normalize_func):
+    def deduplicate_field(field_name, tracking_func, save_normalization_func):
         seen_items = {}
         # Order by is_deleted (False first) then created_at (oldest first)
         queryset = Currency.objects.all().order_by('is_deleted', 'created_at')
         
         for currency in queryset:
             val = getattr(currency, field_name)
+            if val is None:
+                # Missing values are unusable for unique fields
+                User.objects.filter(preferred_currency=currency).update(preferred_currency=None)
+                currency.delete()
+                continue
             
-            # Normalize and handle missing/empty values
-            normalized_val = normalize_func(val) if val is not None else ""
-            
-            # If normalized value is empty, it's invalid for a unique=True constraint.
-            # We delete it (repointing users to null) to allow the migration to succeed.
-            if not normalized_val:
+            tracking_key = tracking_func(val)
+            # If tracking key is empty, it's invalid for a unique=True constraint.
+            if not tracking_key:
                 User.objects.filter(preferred_currency=currency).update(preferred_currency=None)
                 currency.delete()
                 continue
                 
-            if normalized_val in seen_items:
-                canonical = seen_items[normalized_val]
+            if tracking_key in seen_items:
+                canonical = seen_items[tracking_key]
                 User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
                 currency.delete()
             else:
-                if val != normalized_val:
-                    setattr(currency, field_name, normalized_val)
+                # Apply the canonical normalization (e.g. strip or upper)
+                new_val = save_normalization_func(val)
+                if val != new_val:
+                    setattr(currency, field_name, new_val)
                     currency.save()
-                seen_items[normalized_val] = currency
+                seen_items[tracking_key] = currency
 
-    # 1. Deduplicate by 'code' (normalize to upper + strip)
-    deduplicate_field('code', lambda x: x.upper().strip())
+    # 1. Deduplicate by 'code': Upper + Strip for both tracking and saving
+    deduplicate_field(
+        'code', 
+        lambda x: x.upper().strip(), 
+        lambda x: x.upper().strip()
+    )
 
-    # 2. Deduplicate by 'name' (normalize to strip)
-    deduplicate_field('name', lambda x: x.strip())
+    # 2. Deduplicate by 'name': Strip + Lower for tracking, but only Strip for saving
+    # This preserves the original case of the oldest active record while preventing case variants
+    deduplicate_field(
+        'name', 
+        lambda x: x.strip().lower(), 
+        lambda x: x.strip()
+    )
 
 class Migration(migrations.Migration):
 

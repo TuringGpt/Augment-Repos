@@ -5,13 +5,9 @@ from rest_framework.exceptions import ValidationError
 from accounts.permissions import hasAdminRole
 from .models import Currency
 from .serializers import ListCurrencySerializer, CreateCurrencySerializer
+from .services import CurrencyCacheService
 from core.optimization import AutoOptimizeMixin
-from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
-
-
-class CurrencyCacheService(BaseCacheService):
-    OBJECT_NAME = "currency"
-    VERSION = 1
+from core.service import CachedListMixin, CacheInvalidatorMixin
 
 
 class CurrencyListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):

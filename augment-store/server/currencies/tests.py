@@ -3,19 +3,19 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from accounts.models import User
 from .models import Currency
-from .views import CurrencyCacheService
+from .services import CurrencyCacheService
 
 class CurrencyAPITests(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(
             email="admin@example.com",
             password="password123",
-            role="admin"
+            role=User.Role.ADMIN
         )
         self.regular_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
-            role="customer"
+            role=User.Role.MEMBER
         )
         self.list_url = reverse('currencies:currency_list')
         self.create_url = reverse('currencies:create_currency')
@@ -56,7 +56,8 @@ class CurrencyAPITests(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
         
         # Create initial
-        self.client.post(self.create_url, {"name": "US Dollar", "code": "USD", "symbol": "$"})
+        response = self.client.post(self.create_url, {"name": "US Dollar", "code": "USD", "symbol": "$"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
         # Same code with whitespace and lowercase should fail (400)
         response = self.client.post(self.create_url, {"name": "Dollar Two", "code": " usd ", "symbol": "$"})
