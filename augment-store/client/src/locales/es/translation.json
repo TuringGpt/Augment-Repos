@@ -464,6 +464,7 @@
     "pageTitle": "Política de Privacidad",
     "pageSubtitle": "Su privacidad es importante para nosotros. Conozca cómo recopilamos, usamos y protegemos sus datos.",
     "lastUpdated": "Última actualización: {{date}}",
+    "lastUpdatedDate": "10 de febrero de 2026",
     "tableOfContents": "Tabla de Contenidos",
     "dataTypes": {
       "identity": {

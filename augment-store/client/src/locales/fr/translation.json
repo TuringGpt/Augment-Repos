@@ -464,6 +464,7 @@
     "pageTitle": "Politique de Confidentialité",
     "pageSubtitle": "Votre vie privée est importante pour nous. Découvrez comment nous collectons, utilisons et protégeons vos données.",
     "lastUpdated": "Dernière mise à jour : {{date}}",
+    "lastUpdatedDate": "10 février 2026",
     "tableOfContents": "Table des Matières",
     "dataTypes": {
       "identity": {

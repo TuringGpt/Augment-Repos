@@ -464,6 +464,7 @@
     "pageTitle": "Privacy Policy",
     "pageSubtitle": "Your privacy is important to us. Learn how we collect, use, and protect your data.",
     "lastUpdated": "Last Updated: {{date}}",
+    "lastUpdatedDate": "February 10, 2026",
     "tableOfContents": "Table of Contents",
     "dataTypes": {
       "identity": {

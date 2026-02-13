@@ -464,6 +464,7 @@
     "pageTitle": "Datenschutzrichtlinie",
     "pageSubtitle": "Ihre Privatsphäre ist uns wichtig. Erfahren Sie, wie wir Ihre Daten sammeln, verwenden und schützen.",
     "lastUpdated": "Zuletzt aktualisiert: {{date}}",
+    "lastUpdatedDate": "10. Februar 2026",
     "tableOfContents": "Inhaltsverzeichnis",
     "dataTypes": {
       "identity": {

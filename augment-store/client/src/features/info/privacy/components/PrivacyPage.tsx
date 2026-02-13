@@ -59,6 +59,9 @@ const PrivacyPage = () => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState<string | false>('section-1')
 
+  // Extract date for interpolation to avoid TypeScript compiler bug
+  const lastUpdatedDate = t('privacy.lastUpdatedDate')
+
   const handleChange = (panel: string) => (_: SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false)
   }
@@ -371,7 +374,7 @@ const PrivacyPage = () => {
               {t('privacy.pageSubtitle')}
             </Typography>
             <Chip
-              label={t('privacy.lastUpdated', { date: new Date().toLocaleDateString() })}
+              label={t('privacy.lastUpdated', { date: lastUpdatedDate })}
               sx={{
                 backgroundColor: Colors.overlay.light20,
                 color: Colors.text.white,
