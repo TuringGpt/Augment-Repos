@@ -38,7 +38,6 @@ class BaseOrderView(AutoOptimizeMixin):
     auto_select_related = ("shipping_address", "billing_address", "contact_information", "created_by")
     auto_prefetch_related = (
         'items__product__brand',
-        # [BUG]: Typo in prefetch path
         'items__product__categry',
         'items__product__images'
     )
