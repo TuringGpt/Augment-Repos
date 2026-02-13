@@ -9,11 +9,21 @@ class CurrencyAdmin(admin.ModelAdmin):
     search_fields = ["name", "code", "symbol"]
     list_filter = ["is_deleted"]
 
+    def _invalidate_cache(self):
+        CurrencyCacheService().clear_namespace()
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        # Invalidate cache on any admin change
-        CurrencyCacheService().clear_namespace()
+        self._invalidate_cache()
 
     def delete_model(self, request, obj):
         super().delete_model(request, obj)
-        CurrencyCacheService().clear_namespace()
+        self._invalidate_cache()
+
+    def delete_queryset(self, request, queryset):
+        super().delete_queryset(request, queryset)
+        self._invalidate_cache()
+
+    def save_formset(self, request, form, formset, change):
+        super().save_formset(request, form, formset, change)
+        self._invalidate_cache()

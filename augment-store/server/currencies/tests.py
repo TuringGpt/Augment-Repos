@@ -17,8 +17,9 @@ class CurrencyAPITests(APITestCase):
             password="password123",
             role="customer"
         )
-        self.list_url = reverse('currency-list')
-        self.create_url = reverse('currency-create')
+        # Fix: Using correct namespaced URL names
+        self.list_url = reverse('currencies:currency_list')
+        self.create_url = reverse('currencies:create_currency')
         
         # Ensure cache is clean
         CurrencyCacheService().clear_namespace()
@@ -89,12 +90,7 @@ class CurrencyAPITests(APITestCase):
         
         # Mock admin update
         c.name = "New Name"
-        c.save() # This calls model save, but we need admin invalidation test
-        
-        # In reality, admin.py's save_model does the extra step. 
-        # But we can simulate the clear_namespace call or check the admin code directly.
-        # Here we'll just check if the model save works as expected.
-        # (Model save doesn't invalidate by default, admin/mixin does)
+        c.save() 
         
         from .admin import CurrencyAdmin
         from django.contrib.admin.sites import AdminSite

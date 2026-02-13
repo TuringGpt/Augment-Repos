@@ -1,7 +1,7 @@
 # Generated manually on 2026-02-13
 # Includes data cleanup for duplicates before applying uniqueness constraints
 # Ensures dependent rows (User.preferred_currency) are re-pointed to canonical records
-# Deduplication is deterministic (oldest record is kept)
+# Deduplication is deterministic (prefers non-deleted, then oldest record)
 
 from django.db import migrations, models
 
@@ -9,39 +9,39 @@ def repoint_and_cleanup_duplicates(apps, schema_editor):
     Currency = apps.get_model('currencies', 'Currency')
     User = apps.get_model('accounts', 'User')
 
+    def deduplicate_field(field_name, normalize_func):
+        seen_items = {}
+        # Order by is_deleted (False first) then created_at (oldest first)
+        # This ensures we keep an active record as canonical if possible
+        queryset = Currency.objects.all().order_by('is_deleted', 'created_at')
+        
+        for currency in queryset:
+            val = getattr(currency, field_name)
+            if val is None:
+                continue
+            
+            normalized_val = normalize_func(val)
+            # Skip entries that are effectively empty after normalization
+            if not normalized_val:
+                continue
+                
+            if normalized_val in seen_items:
+                canonical = seen_items[normalized_val]
+                # Re-point users to canonical before deleting duplicate
+                User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
+                currency.delete()
+            else:
+                # Normalize the canonical record itself if needed
+                if val != normalized_val:
+                    setattr(currency, field_name, normalized_val)
+                    currency.save()
+                seen_items[normalized_val] = currency
+
     # 1. Deduplicate by 'code' (normalize to upper + strip)
-    seen_codes = {}
-    # Filter out null/empty codes - they will be handled by the AlterField migration (failure or manual fix required)
-    # This avoids collapsing different bad records into one empty string canonical record
-    queryset = Currency.objects.exclude(code__isnull=True).exclude(code="").order_by('created_at')
-    
-    for currency in queryset:
-        normalized_code = currency.code.upper().strip()
-        if normalized_code in seen_codes:
-            canonical = seen_codes[normalized_code]
-            User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
-            currency.delete()
-        else:
-            if currency.code != normalized_code:
-                currency.code = normalized_code
-                currency.save()
-            seen_codes[normalized_code] = currency
+    deduplicate_field('code', lambda x: x.upper().strip())
 
     # 2. Deduplicate by 'name' (normalize to strip)
-    seen_names = {}
-    queryset = Currency.objects.exclude(name__isnull=True).exclude(name="").order_by('created_at')
-    
-    for currency in queryset:
-        normalized_name = currency.name.strip()
-        if normalized_name in seen_names:
-            canonical = seen_names[normalized_name]
-            User.objects.filter(preferred_currency=currency).update(preferred_currency=canonical)
-            currency.delete()
-        else:
-            if currency.name != normalized_name:
-                currency.name = normalized_name
-                currency.save()
-            seen_names[normalized_name] = currency
+    deduplicate_field('name', lambda x: x.strip())
 
 class Migration(migrations.Migration):
 
