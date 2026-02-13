@@ -107,7 +107,7 @@ class BaseCacheService:
                     for key in list(cache._cache.keys()):
                         # Key usually looks like ":1:namespace:v1:hash" 
                         # We use fnmatch to match the pattern
-                        if fnmatch.fnmatch(key, f"*{namespace}"):
+                        if fnmatch.fnmatch(key, f"{namespace}*"):
                             # Use pop directly to avoid re-mangling the key and deadlocks
                             cache._cache.pop(key, None)
                             # Also clear expiration metadata if present to prevent leaks

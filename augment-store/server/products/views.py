@@ -74,12 +74,6 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductBrandCacheService
 
-    def invalidate_cache(self):
-        super().invalidate_cache()
-        ProductCacheService().clear_namespace()
-        ProductSearchCacheService().clear_namespace()
-        FeaturedProductCacheService().clear_namespace()
-
 
 # Category views
 
