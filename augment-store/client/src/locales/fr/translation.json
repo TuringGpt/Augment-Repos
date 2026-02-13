@@ -528,6 +528,72 @@
     "goHome": "Aller à l'accueil",
     "browseProducts": "Parcourir les produits"
   },
+  "terms": {
+    "title": "Conditions Générales",
+    "lastUpdated": "Dernière Mise à Jour",
+    "lastUpdatedDate": "10 février 2026",
+    "lastUpdatedLabel": "Dernière Mise à Jour : {{date}}",
+    "subtitle": "Veuillez lire attentivement ces conditions avant d'utiliser notre service",
+    "sections": {
+      "acceptance": {
+        "title": "Acceptation des Conditions",
+        "content": "En accédant et en utilisant cette plateforme de commerce électronique (\"Service\"), vous acceptez et vous engagez à respecter les termes et dispositions de cet accord. Si vous n'êtes pas d'accord avec ce qui précède, veuillez ne pas utiliser ce service."
+      },
+      "useLicense": {
+        "title": "Licence d'Utilisation",
+        "intro": "L'autorisation est accordée d'accéder temporairement aux matériaux (informations ou logiciels) sur notre plateforme uniquement pour une visualisation personnelle et non commerciale. Il s'agit de l'octroi d'une licence, et non d'un transfert de titre, et sous cette licence, vous ne pouvez pas:",
+        "restrictions": {
+          "modify": "Modifier ou copier les matériaux",
+          "commercial": "Utiliser les matériaux à des fins commerciales ou pour toute exposition publique",
+          "reverseEngineer": "Tenter de faire de l'ingénierie inverse de tout logiciel contenu sur notre plateforme",
+          "removeCopyright": "Supprimer tout avis de droit d'auteur ou autres notations de propriété des matériaux",
+          "transfer": "Transférer les matériaux à une autre personne ou \"refléter\" les matériaux sur un autre serveur"
+        }
+      },
+      "accountTerms": {
+        "title": "Conditions de Compte",
+        "security": "Vous êtes responsable du maintien de la sécurité de votre compte et de votre mot de passe. Nous ne pouvons pas et ne serons pas responsables de toute perte ou dommage résultant de votre non-respect de cette obligation de sécurité.",
+        "responsibility": "Vous êtes responsable de tout le contenu publié et de l'activité qui se produit sous votre compte."
+      },
+      "productInfo": {
+        "title": "Informations sur les Produits",
+        "content": "Nous nous efforçons de fournir des descriptions et des prix de produits précis. Cependant, nous ne garantissons pas que les descriptions de produits, les prix ou tout autre contenu soient exacts, complets, fiables, à jour ou exempts d'erreurs. Si un produit que nous proposons n'est pas conforme à la description, votre seul recours est de le retourner dans un état non utilisé."
+      },
+      "pricing": {
+        "title": "Prix et Paiement",
+        "changes": "Tous les prix sont sujets à modification sans préavis. Nous nous réservons le droit de modifier ou d'interrompre des produits sans préavis. Nous ne serons pas responsables envers vous ou tout tiers pour toute modification, changement de prix, suspension ou interruption de tout produit.",
+        "payment": "Le paiement doit être reçu par nous avant l'expédition de votre commande. Nous acceptons divers modes de paiement comme indiqué lors du paiement."
+      },
+      "shipping": {
+        "title": "Expédition et Livraison",
+        "content": "Nous organiserons l'expédition des produits commandés vers vous. Veuillez consulter la page du produit individuel pour les options de livraison spécifiques. Le titre et le risque de perte vous sont transférés lors de notre livraison au transporteur. Les frais d'expédition et de manutention ne sont pas remboursables."
+      },
+      "returns": {
+        "title": "Retours et Remboursements",
+        "content": "Veuillez consulter notre Politique de Retours pour des informations détaillées sur les retours et les remboursements. En général, les articles peuvent être retournés dans les 30 jours suivant la réception dans leur état d'origine."
+      },
+      "liability": {
+        "title": "Limitation de Responsabilité",
+        "content": "En aucun cas notre société ou ses fournisseurs ne seront responsables de tout dommage (y compris, sans limitation, les dommages pour perte de données ou de profit, ou en raison d'une interruption d'activité) résultant de l'utilisation ou de l'impossibilité d'utiliser les matériaux sur notre plateforme."
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "content": "Votre utilisation de notre Service est également régie par notre Politique de Confidentialité. Veuillez consulter notre Politique de Confidentialité, qui régit également le Service et informe les utilisateurs de nos pratiques de collecte de données."
+      },
+      "modifications": {
+        "title": "Modifications des Conditions",
+        "content": "Nous nous réservons le droit de réviser ces conditions d'utilisation à tout moment sans préavis. En utilisant ce Service, vous acceptez d'être lié par la version actuelle de ces conditions d'utilisation."
+      },
+      "governingLaw": {
+        "title": "Loi Applicable",
+        "content": "Ces termes et conditions sont régis et interprétés conformément aux lois et vous vous soumettez irrévocablement à la juridiction exclusive des tribunaux de cet endroit."
+      },
+      "contact": {
+        "title": "Informations de Contact",
+        "content": "Si vous avez des questions concernant ces Conditions Générales, veuillez nous contacter via notre page de Contact."
+      }
+    }
+  },
   "help": {
     "title": "Centre d'Aide",
     "description": "Trouvez des réponses aux questions fréquemment posées ci-dessous. Si vous avez besoin d'une assistance supplémentaire, n'hésitez pas à contacter notre équipe de support client.",

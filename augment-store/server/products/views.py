@@ -58,13 +58,27 @@ class ProductBrandListView(CachedListMixin, BaseBrandView, ListAPIView):
 
 
 
-class CreateProductBrandView(BaseBrandView, CreateAPIView):
+class CreateProductBrandView(CacheInvalidatorMixin, BaseBrandView, CreateAPIView):
     serializer_class = CreateProductBrandSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
 
-class ProductBrandDetailView(BaseBrandView, RetrieveUpdateDestroyAPIView):
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
+
+class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
+    cache_service_class = ProductBrandCacheService
+
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
 
 
 # Category views
@@ -197,9 +211,9 @@ class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     serializer_class = CreateProductSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
-    def invalidate_cache(self, custom_pattern: str = None):
-        super().invalidate_cache(custom_pattern)
-        FeaturedProductCacheService().clear_namespace(custom_pattern=custom_pattern)
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        FeaturedProductCacheService().clear_namespace()
 
 
 class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
@@ -207,9 +221,9 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductCacheService
 
-    def invalidate_cache(self, custom_pattern: str = None):
-        super().invalidate_cache(custom_pattern)
-        FeaturedProductCacheService().clear_namespace(custom_pattern=custom_pattern)
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        FeaturedProductCacheService().clear_namespace()
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
