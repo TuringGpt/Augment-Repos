@@ -22,8 +22,7 @@ class CartDetailView(BaseCartView, RetrieveAPIView):
             [cart], 
             'items__product__brand',
             'items__product__category',
-            'items__product__images',
-            'items__product__created_by'
+            'items__product__images'
         )
         return cart
 
