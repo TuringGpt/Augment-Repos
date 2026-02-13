@@ -34,9 +34,25 @@ class FileSerializer(serializers.ModelSerializer):
         return obj.file.url
 
 class FileListSerializer(serializers.ModelSerializer):
+    file = serializers.SerializerMethodField()
+
     class Meta:
         model = File
         fields = ["id", "file"]
+
+    def get_file(self, obj: File):
+        from core.service import BaseCacheService
+        service = BaseCacheService()
+        cache_key = service.get_cache_key(custom_key=f"file_meta:{obj.id}")
+        
+        data = service.get(cache_key)
+        if data is None:
+            if not obj.file: return None
+            data = obj.file.url
+            # Intentional Bug: TTL is a string instead of integer
+            service.set(cache_key, data, ttl="3600") 
+            
+        return data
 
 
 class StartDirectFileUploadSerializer( serializers.Serializer):
