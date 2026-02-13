@@ -8,6 +8,8 @@ class Currency(BaseModel):
     symbol = models.CharField(max_length=255)
 
     def save(self, *args, **kwargs):
-        self.code = self.code.upper().strip()
-        self.name = self.name.strip()
+        if self.code:
+            self.code = self.code.upper().strip()
+        if self.name:
+            self.name = self.name.strip()
         super().save(*args, **kwargs)
