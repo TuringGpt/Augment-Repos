@@ -294,6 +294,8 @@ const ReturnsPage = () => {
             <Divider sx={{ mb: 3 }} />
             <Stepper
               orientation="vertical"
+              nonLinear
+              activeStep={-1}
               sx={{
                 '& .MuiStepConnector-root': {
                   marginLeft: '20px',
