@@ -308,24 +308,56 @@ const ReturnsPage = () => {
               }}
             >
               {returnSteps.map((step, index) => {
-                const CustomStepIcon = (props: StepIconProps) => (
-                  <Box
-                    className={props.className}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `2px solid ${theme.palette.primary.main}`,
-                      color: theme.palette.primary.main,
-                    }}
-                  >
-                    {step.icon}
-                  </Box>
-                )
+                const CustomStepIcon = (props: StepIconProps) => {
+                  const { active, completed, error, className } = props
+
+                  return (
+                    <Box
+                      className={className}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        bgcolor: completed
+                          ? theme.palette.primary.main
+                          : error
+                          ? alpha(theme.palette.error.main, 0.1)
+                          : active
+                          ? alpha(theme.palette.primary.main, 0.2)
+                          : alpha(theme.palette.primary.main, 0.1),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `2px solid ${
+                          error
+                            ? theme.palette.error.main
+                            : completed || active
+                            ? theme.palette.primary.main
+                            : alpha(theme.palette.primary.main, 0.5)
+                        }`,
+                        color: completed
+                          ? theme.palette.primary.contrastText
+                          : error
+                          ? theme.palette.error.main
+                          : theme.palette.primary.main,
+                        transition: theme.transitions.create(['background-color', 'border-color', 'color'], {
+                          duration: theme.transitions.duration.short,
+                        }),
+                      }}
+                      aria-label={
+                        completed
+                          ? 'Completed step'
+                          : error
+                          ? 'Step with error'
+                          : active
+                          ? 'Active step'
+                          : 'Inactive step'
+                      }
+                    >
+                      {step.icon}
+                    </Box>
+                  )
+                }
 
                 return (
                 <Step key={index}>
