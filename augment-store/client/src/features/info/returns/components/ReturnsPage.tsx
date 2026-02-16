@@ -326,7 +326,7 @@ const ReturnsPage = () => {
                 )
 
                 return (
-                <Step key={index} active={true} completed={false}>
+                <Step key={index}>
                   <StepLabel
                     StepIconComponent={CustomStepIcon}
                     sx={{
