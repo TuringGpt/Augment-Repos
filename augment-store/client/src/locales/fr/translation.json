@@ -460,6 +460,108 @@
     "currentPassword": "Mot de Passe Actuel",
     "newPassword": "Nouveau Mot de Passe"
   },
+  "privacy": {
+    "pageTitle": "Politique de Confidentialité",
+    "pageSubtitle": "Votre vie privée est importante pour nous. Découvrez comment nous collectons, utilisons et protégeons vos données.",
+    "lastUpdated": "Dernière mise à jour : {{date}}",
+    "lastUpdatedDate": "10 février 2026",
+    "tableOfContents": "Table des Matières",
+    "dataTypes": {
+      "identity": {
+        "title": "Données d'Identité",
+        "description": "Prénom, nom, nom d'utilisateur ou identifiant similaire"
+      },
+      "contact": {
+        "title": "Données de Contact",
+        "description": "Adresse e-mail, numéros de téléphone, adresse de facturation, adresse de livraison"
+      },
+      "financial": {
+        "title": "Données Financières",
+        "description": "Détails de carte de paiement (traités en toute sécurité par nos fournisseurs de paiement)"
+      },
+      "transaction": {
+        "title": "Données de Transaction",
+        "description": "Détails sur les paiements et les produits que vous avez achetés chez nous"
+      },
+      "technical": {
+        "title": "Données Techniques",
+        "description": "Adresse IP, type et version du navigateur, paramètres de fuseau horaire, système d'exploitation"
+      },
+      "usage": {
+        "title": "Données d'Utilisation",
+        "description": "Informations sur la façon dont vous utilisez notre plateforme, nos produits et services"
+      },
+      "marketing": {
+        "title": "Données Marketing",
+        "description": "Vos préférences pour recevoir du marketing de notre part et vos préférences de communication"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Introduction",
+        "content": "Nous respectons votre vie privée et nous nous engageons à protéger vos données personnelles. Cette politique de confidentialité vous informera sur la façon dont nous prenons soin de vos données personnelles lorsque vous visitez notre plateforme et vous informera de vos droits en matière de confidentialité et de la façon dont la loi vous protège."
+      },
+      "informationWeCollect": {
+        "title": "Informations que Nous Collectons",
+        "intro": "Nous pouvons collecter, utiliser, stocker et transférer différents types de données personnelles vous concernant :"
+      },
+      "howWeUse": {
+        "title": "Comment Nous Utilisons Vos Informations",
+        "intro": "Nous n'utiliserons vos données personnelles que lorsque la loi nous le permet. Le plus souvent, nous utiliserons vos données personnelles dans les circonstances suivantes :",
+        "purposes": {
+          "processOrders": "Pour traiter et livrer vos commandes",
+          "manageAccount": "Pour gérer votre compte et fournir un support client",
+          "sendInfo": "Pour vous envoyer des informations importantes concernant vos achats",
+          "improve": "Pour améliorer notre plateforme et nos services",
+          "personalize": "Pour personnaliser votre expérience",
+          "marketing": "Pour vous envoyer des communications marketing (avec votre consentement)",
+          "fraud": "Pour détecter et prévenir la fraude"
+        }
+      },
+      "dataSecurity": {
+        "title": "Sécurité des Données",
+        "paragraph1": "Nous avons mis en place des mesures de sécurité appropriées pour empêcher que vos données personnelles ne soient accidentellement perdues, utilisées ou consultées de manière non autorisée, modifiées ou divulguées. Nous limitons l'accès à vos données personnelles aux employés, agents, sous-traitants et autres tiers qui ont un besoin professionnel de les connaître.",
+        "paragraph2": "Toutes les transactions de paiement sont cryptées à l'aide de la technologie SSL. Nous ne stockons pas les détails complets des cartes de paiement sur nos serveurs."
+      },
+      "dataRetention": {
+        "title": "Conservation des Données",
+        "content": "Nous ne conserverons vos données personnelles que le temps nécessaire pour remplir les objectifs pour lesquels nous les avons collectées, y compris aux fins de satisfaire à toute exigence légale, comptable ou de déclaration."
+      },
+      "yourRights": {
+        "title": "Vos Droits Légaux",
+        "intro": "Dans certaines circonstances, vous disposez de droits en vertu des lois sur la protection des données concernant vos données personnelles :",
+        "rights": {
+          "access": "Demander l'accès à vos données personnelles",
+          "correction": "Demander la correction de vos données personnelles",
+          "erasure": "Demander l'effacement de vos données personnelles",
+          "object": "S'opposer au traitement de vos données personnelles",
+          "restriction": "Demander la restriction du traitement de vos données personnelles",
+          "transfer": "Demander le transfert de vos données personnelles",
+          "withdraw": "Droit de retirer le consentement"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Notre plateforme utilise des cookies pour vous distinguer des autres utilisateurs. Cela nous aide à vous offrir une bonne expérience lorsque vous naviguez sur notre plateforme et nous permet également d'améliorer notre site. Un cookie est un petit fichier de lettres et de chiffres que nous stockons sur votre navigateur ou sur le disque dur de votre ordinateur."
+      },
+      "thirdPartyLinks": {
+        "title": "Liens Tiers",
+        "content": "Notre plateforme peut inclure des liens vers des sites Web, des plug-ins et des applications tiers. Cliquer sur ces liens ou activer ces connexions peut permettre à des tiers de collecter ou de partager des données vous concernant. Nous ne contrôlons pas ces sites Web tiers et ne sommes pas responsables de leurs déclarations de confidentialité."
+      },
+      "childrenPrivacy": {
+        "title": "Confidentialité des Enfants",
+        "content": "Notre Service n'est pas destiné aux enfants de moins de 13 ans. Nous ne collectons pas sciemment d'informations personnelles auprès d'enfants de moins de 13 ans. Si vous êtes parent ou tuteur et que vous savez que votre enfant nous a fourni des données personnelles, veuillez nous contacter."
+      },
+      "changes": {
+        "title": "Modifications de Cette Politique de Confidentialité",
+        "content": "Nous pouvons mettre à jour notre Politique de Confidentialité de temps en temps. Nous vous informerons de tout changement en publiant la nouvelle Politique de Confidentialité sur cette page et en mettant à jour la date de \"Dernière mise à jour\" en haut de cette Politique de Confidentialité."
+      },
+      "contact": {
+        "title": "Nous Contacter",
+        "content": "Si vous avez des questions sur cette Politique de Confidentialité ou sur nos pratiques de confidentialité, veuillez nous contacter via notre page de Contact."
+      }
+    }
+  },
   "footer": {
     "aboutUs": "À Propos",
     "contactUs": "Nous contacter",
