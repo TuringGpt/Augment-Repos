@@ -23,7 +23,35 @@ export interface CreateContactResponse {
   created_at: string
 }
 
+/**
+ * Contact item in list response
+ */
+export interface ContactItem {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  created_at: string
+}
+
+/**
+ * Contact list response from backend
+ */
+export interface ContactListResponse {
+  contacts: ContactItem[]
+}
+
 export const contactService = {
+  /**
+   * Get all contact messages
+   * @returns Promise with list of contacts
+   * @throws Error if the API request fails
+   */
+  getContacts: async (): Promise<ContactListResponse> => {
+    return apiClient.get<ContactListResponse>(API_ENDPOINTS.CONTACT.LIST)
+  },
+
   /**
    * Create a new contact message
    * @param data - Contact form data

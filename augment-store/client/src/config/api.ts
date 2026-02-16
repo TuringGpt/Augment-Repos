@@ -147,6 +147,7 @@ export const API_ENDPOINTS = {
 
   // Contact endpoints
   CONTACT: {
+    LIST: '/contact/',
     CREATE: '/contact/create/',
   },
 }
