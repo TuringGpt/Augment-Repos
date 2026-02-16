@@ -37,9 +37,13 @@ export interface ContactItem {
 
 /**
  * Contact list response from backend
+ * DRF ListAPIView returns paginated response with count, next, previous, results
  */
 export interface ContactListResponse {
-  contacts: ContactItem[]
+  count: number
+  next: string | null
+  previous: string | null
+  results: ContactItem[]
 }
 
 export const contactService = {
