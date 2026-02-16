@@ -1187,6 +1187,10 @@
     "needHelp": {
       "title": "Need Help?",
       "message": "If you have any questions about our return policy, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
+    },
+    "contact": {
+      "email": "Email",
+      "phone": "Phone"
     }
   },
   "shipping": {

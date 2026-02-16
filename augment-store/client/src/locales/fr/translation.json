@@ -1187,6 +1187,10 @@
     "needHelp": {
       "title": "Besoin d'Aide ?",
       "message": "Si vous avez des questions sur notre politique de retour, veuillez contacter notre équipe d'assistance clientèle à {{supportEmail}} ou appelez le {{supportPhone}}."
+    },
+    "contact": {
+      "email": "E-mail",
+      "phone": "Téléphone"
     }
   },
   "shipping": {

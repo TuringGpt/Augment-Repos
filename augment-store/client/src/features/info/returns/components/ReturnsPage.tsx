@@ -518,7 +518,7 @@ const ReturnsPage = () => {
                   </Box>
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                      Email
+                      {t('returns.contact.email')}
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {CONTACT_INFO.SUPPORT_EMAIL}
@@ -540,7 +540,7 @@ const ReturnsPage = () => {
                   </Box>
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                      Phone
+                      {t('returns.contact.phone')}
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {CONTACT_INFO.SUPPORT_PHONE}

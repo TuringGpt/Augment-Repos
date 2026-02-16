@@ -1187,6 +1187,10 @@
     "needHelp": {
       "title": "Brauchen Sie Hilfe?",
       "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
+    },
+    "contact": {
+      "email": "E-Mail",
+      "phone": "Telefon"
     }
   },
   "shipping": {
