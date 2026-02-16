@@ -20,6 +20,7 @@ import {
   StepLabel,
   StepContent,
   Chip,
+  StepIconProps,
 } from '@mui/material'
 import {
   AssignmentReturn,
@@ -304,26 +305,30 @@ const ReturnsPage = () => {
                 },
               }}
             >
-              {returnSteps.map((step, index) => (
+              {returnSteps.map((step, index) => {
+                const CustomStepIcon = (props: StepIconProps) => (
+                  <Box
+                    className={props.className}
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `2px solid ${theme.palette.primary.main}`,
+                      color: theme.palette.primary.main,
+                    }}
+                  >
+                    {step.icon}
+                  </Box>
+                )
+
+                return (
                 <Step key={index} active={true} completed={false}>
                   <StepLabel
-                    StepIconComponent={() => (
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '50%',
-                          bgcolor: alpha(theme.palette.primary.main, 0.1),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: `2px solid ${theme.palette.primary.main}`,
-                          color: theme.palette.primary.main,
-                        }}
-                      >
-                        {step.icon}
-                      </Box>
-                    )}
+                    StepIconComponent={CustomStepIcon}
                     sx={{
                       '& .MuiStepLabel-iconContainer': {
                         paddingRight: '12px',
@@ -344,7 +349,8 @@ const ReturnsPage = () => {
                     <Box sx={{ pb: 1 }} />
                   </StepContent>
                 </Step>
-              ))}
+                )
+              })}
             </Stepper>
           </Paper>
         </Slide>
