@@ -48,8 +48,10 @@ export interface ContactListResponse {
 
 export const contactService = {
   /**
-   * Get all contact messages
-   * @returns Promise with list of contacts
+   * Get contact messages (paginated)
+   * Returns the first page of contact messages. Use the `next` field in the response
+   * to fetch subsequent pages if available.
+   * @returns Promise with paginated list of contacts (includes count, next, previous, results)
    * @throws Error if the API request fails
    */
   getContacts: async (): Promise<ContactListResponse> => {
