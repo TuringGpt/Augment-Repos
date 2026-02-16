@@ -1300,6 +1300,16 @@
     "needHelp": {
       "title": "¿Necesita Ayuda?",
       "message": "Si tiene alguna pregunta sobre nuestra política de devoluciones, comuníquese con nuestro equipo de atención al cliente en {{supportEmail}} o llame al {{supportPhone}}."
+    },
+    "contact": {
+      "email": "Correo Electrónico",
+      "phone": "Teléfono"
+    },
+    "stepStatus": {
+      "completed": "Paso completado",
+      "active": "Paso activo",
+      "error": "Paso con error",
+      "inactive": "Paso inactivo"
     }
   },
   "shipping": {
