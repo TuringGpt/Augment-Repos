@@ -66,23 +66,23 @@ const ContactPage = () => {
     const newErrors: FormErrors = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = t('contact.validation.nameRequired')
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('contact.validation.emailRequired')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('contact.validation.emailInvalid')
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required'
+      newErrors.subject = t('contact.validation.subjectRequired')
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'Message is required'
+      newErrors.message = t('contact.validation.messageRequired')
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters'
+      newErrors.message = t('contact.validation.messageMinLength')
     }
 
     setErrors(newErrors)
@@ -150,7 +150,7 @@ const ContactPage = () => {
     {
       icon: LocationOn,
       title: t('contact.address'),
-      value: '123 Commerce Street\nSan Francisco, CA 94102\nUnited States',
+      value: t('contact.addressValue'),
       color: theme.palette.info.main,
       bgColor: alpha(theme.palette.info.main, 0.1),
     },
@@ -227,7 +227,7 @@ const ContactPage = () => {
                       sx={{ mb: 3, borderRadius: 2 }}
                       onClose={() => clearLastSubmitted()}
                     >
-                      Thank you for contacting us! We'll get back to you soon.
+                      {t('contact.successMessage')}
                     </Alert>
                   </Fade>
                 )}
@@ -341,7 +341,7 @@ const ContactPage = () => {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    {isSubmitting ? 'Sending...' : t('contact.sendMessage')}
+                    {isSubmitting ? t('contact.sending') : t('contact.sendMessage')}
                   </Button>
                 </Box>
               </Paper>

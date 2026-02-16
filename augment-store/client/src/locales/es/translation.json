@@ -613,10 +613,21 @@
     "contactInformation": "Información de Contacto",
     "phone": "Teléfono",
     "address": "Dirección",
+    "addressValue": "123 Commerce Street\nSan Francisco, CA 94102\nEstados Unidos",
     "businessHours": "Horario de Atención",
     "mondayFriday": "Lunes - Viernes: 9:00 AM - 6:00 PM PST",
     "saturday": "Sábado: 10:00 AM - 4:00 PM PST",
-    "sunday": "Domingo: Cerrado"
+    "sunday": "Domingo: Cerrado",
+    "successMessage": "¡Gracias por contactarnos! Te responderemos pronto.",
+    "sending": "Enviando...",
+    "validation": {
+      "nameRequired": "El nombre es requerido",
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo electrónico válida",
+      "subjectRequired": "El asunto es requerido",
+      "messageRequired": "El mensaje es requerido",
+      "messageMinLength": "El mensaje debe tener al menos 10 caracteres"
+    }
   },
   "sidebar": {
     "menu": "Menú",
