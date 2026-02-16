@@ -1191,6 +1191,12 @@
     "contact": {
       "email": "E-Mail",
       "phone": "Telefon"
+    },
+    "stepStatus": {
+      "completed": "Abgeschlossener Schritt",
+      "active": "Aktiver Schritt",
+      "error": "Schritt mit Fehler",
+      "inactive": "Inaktiver Schritt"
     }
   },
   "shipping": {

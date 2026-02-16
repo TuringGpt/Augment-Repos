@@ -346,12 +346,12 @@ const ReturnsPage = () => {
                       }}
                       aria-label={
                         completed
-                          ? 'Completed step'
+                          ? t('returns.stepStatus.completed')
                           : error
-                          ? 'Step with error'
+                          ? t('returns.stepStatus.error')
                           : active
-                          ? 'Active step'
-                          : 'Inactive step'
+                          ? t('returns.stepStatus.active')
+                          : t('returns.stepStatus.inactive')
                       }
                     >
                       {step.icon}
