@@ -483,7 +483,7 @@ const HelpPage = () => {
                     fullWidth
                     variant="outlined"
                     startIcon={<Phone />}
-                    href={`tel:${CONTACT_INFO.SUPPORT_PHONE}`}
+                    href={`tel:${CONTACT_INFO.SUPPORT_PHONE.replace(/[\s()-]/g, '')}`}
                     sx={{
                       borderColor: 'white',
                       color: 'white',
