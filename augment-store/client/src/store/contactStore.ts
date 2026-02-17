@@ -169,7 +169,8 @@ export const useContactStore = create<ContactState>((set) => ({
         message: errorMessage,
       })
 
-      throw err
+      // Do not rethrow - error is already persisted to store state
+      // This prevents unhandled promise rejections when called from useEffect without await/catch
     } finally {
       // Only clear loading state if this is still the most recent request
       if (currentRequestId === fetchRequestCounter) {
