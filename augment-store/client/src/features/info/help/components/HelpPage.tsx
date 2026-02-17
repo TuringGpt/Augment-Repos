@@ -243,6 +243,9 @@ const HelpPage = () => {
               placeholder="Search for help..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              inputProps={{
+                'aria-label': 'Search for help',
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
