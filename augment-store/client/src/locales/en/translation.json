@@ -460,6 +460,108 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password"
   },
+  "privacy": {
+    "pageTitle": "Privacy Policy",
+    "pageSubtitle": "Your privacy is important to us. Learn how we collect, use, and protect your data.",
+    "lastUpdated": "Last Updated: {{date}}",
+    "lastUpdatedDate": "February 10, 2026",
+    "tableOfContents": "Table of Contents",
+    "dataTypes": {
+      "identity": {
+        "title": "Identity Data",
+        "description": "First name, last name, username or similar identifier"
+      },
+      "contact": {
+        "title": "Contact Data",
+        "description": "Email address, telephone numbers, billing address, delivery address"
+      },
+      "financial": {
+        "title": "Financial Data",
+        "description": "Payment card details (processed securely by our payment providers)"
+      },
+      "transaction": {
+        "title": "Transaction Data",
+        "description": "Details about payments and products you have purchased from us"
+      },
+      "technical": {
+        "title": "Technical Data",
+        "description": "IP address, browser type and version, time zone setting, operating system"
+      },
+      "usage": {
+        "title": "Usage Data",
+        "description": "Information about how you use our platform, products and services"
+      },
+      "marketing": {
+        "title": "Marketing Data",
+        "description": "Your preferences in receiving marketing from us and your communication preferences"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Introduction",
+        "content": "We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our platform and tell you about your privacy rights and how the law protects you."
+      },
+      "informationWeCollect": {
+        "title": "Information We Collect",
+        "intro": "We may collect, use, store and transfer different kinds of personal data about you:"
+      },
+      "howWeUse": {
+        "title": "How We Use Your Information",
+        "intro": "We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:",
+        "purposes": {
+          "processOrders": "To process and deliver your orders",
+          "manageAccount": "To manage your account and provide customer support",
+          "sendInfo": "To send you important information regarding your purchases",
+          "improve": "To improve our platform and services",
+          "personalize": "To personalize your experience",
+          "marketing": "To send you marketing communications (with your consent)",
+          "fraud": "To detect and prevent fraud"
+        }
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "paragraph1": "We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way, altered or disclosed. We limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.",
+        "paragraph2": "All payment transactions are encrypted using SSL technology. We do not store complete payment card details on our servers."
+      },
+      "dataRetention": {
+        "title": "Data Retention",
+        "content": "We will only retain your personal data for as long as necessary to fulfill the purposes we collected it for, including for the purposes of satisfying any legal, accounting, or reporting requirements."
+      },
+      "yourRights": {
+        "title": "Your Legal Rights",
+        "intro": "Under certain circumstances, you have rights under data protection laws in relation to your personal data:",
+        "rights": {
+          "access": "Request access to your personal data",
+          "correction": "Request correction of your personal data",
+          "erasure": "Request erasure of your personal data",
+          "object": "Object to processing of your personal data",
+          "restriction": "Request restriction of processing your personal data",
+          "transfer": "Request transfer of your personal data",
+          "withdraw": "Right to withdraw consent"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Our platform uses cookies to distinguish you from other users. This helps us to provide you with a good experience when you browse our platform and also allows us to improve our site. A cookie is a small file of letters and numbers that we store on your browser or the hard drive of your computer."
+      },
+      "thirdPartyLinks": {
+        "title": "Third-Party Links",
+        "content": "Our platform may include links to third-party websites, plug-ins and applications. Clicking on those links or enabling those connections may allow third parties to collect or share data about you. We do not control these third-party websites and are not responsible for their privacy statements."
+      },
+      "childrenPrivacy": {
+        "title": "Children's Privacy",
+        "content": "Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with personal data, please contact us."
+      },
+      "changes": {
+        "title": "Changes to This Privacy Policy",
+        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last Updated\" date at the top of this Privacy Policy."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "If you have any questions about this Privacy Policy or our privacy practices, please contact us through our Contact page."
+      }
+    }
+  },
   "footer": {
     "aboutUs": "About Us",
     "contactUs": "Contact Us",
@@ -511,10 +613,21 @@
     "contactInformation": "Contact Information",
     "phone": "Phone",
     "address": "Address",
+    "addressValue": "123 Commerce Street\nSan Francisco, CA 94102\nUnited States",
     "businessHours": "Business Hours",
     "mondayFriday": "Monday - Friday: 9:00 AM - 6:00 PM PST",
     "saturday": "Saturday: 10:00 AM - 4:00 PM PST",
-    "sunday": "Sunday: Closed"
+    "sunday": "Sunday: Closed",
+    "successMessage": "Thank you for contacting us! We'll get back to you soon.",
+    "sending": "Sending...",
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "messageMinLength": "Message must be at least 10 characters"
+    }
   },
   "sidebar": {
     "menu": "Menu",
@@ -1187,6 +1300,16 @@
     "needHelp": {
       "title": "Need Help?",
       "message": "If you have any questions about our return policy, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
+    },
+    "contact": {
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "stepStatus": {
+      "completed": "Completed step",
+      "active": "Active step",
+      "error": "Step with error",
+      "inactive": "Inactive step"
     }
   },
   "shipping": {

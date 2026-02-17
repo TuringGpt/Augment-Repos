@@ -3,9 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import UserProfileSerializer, UpdateUserProfileSerializer
 from core.optimization import AutoOptimizeMixin
+from core.service import CachedRetrieveMixin, CacheInvalidatorMixin
+from .services import UserProfileCacheService
 
 
-class UserProfileView(AutoOptimizeMixin, RetrieveUpdateAPIView):
+class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMixin, RetrieveUpdateAPIView):
     """
     View for retrieving and updating the authenticated user's profile.
 
@@ -14,6 +16,8 @@ class UserProfileView(AutoOptimizeMixin, RetrieveUpdateAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
+    cache_service_class = UserProfileCacheService
+    cache_ttl = 60 * 10
     auto_select_related = ['profile_image', 'preferred_currency']
     queryset = User.objects.all()
 
