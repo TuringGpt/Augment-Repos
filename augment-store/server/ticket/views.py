@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
+from django.db.models import Count, Q
 
 
 class TicketCacheService(BaseCacheService):
@@ -130,14 +131,14 @@ class TicketStatsView(GenericAPIView):
         
         stats = django_cache.get(cache_key)
         if stats is None:
-            queryset = Ticket.objects.filter(reporter=request.user)
-            total = queryset.count()
-            known_counts = {s: queryset.filter(status=s).count() for s in self.KNOWN_STATUSES}
-            known_sum = sum(known_counts.values())
+            aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
+                total=Count("id"),
+                **{s: Count("id", filter=Q(status=s)) for s in self.KNOWN_STATUSES},
+            )
+            known_sum = sum(aggregates[s] for s in self.KNOWN_STATUSES)
             stats = {
-                "total": total,
-                **known_counts,
-                "other": total - known_sum,
+                **aggregates,
+                "other": aggregates["total"] - known_sum,
             }
             django_cache.set(cache_key, stats, 600)
             

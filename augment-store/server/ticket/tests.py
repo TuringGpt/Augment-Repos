@@ -169,9 +169,10 @@ class TicketStatsTests(BaseAPITestCase):
         # Re-authenticate since we overwrote self.user after BaseAPITestCase.setUp()
         self.authenticated_client.force_authenticate(user=self.user)
         self.stats_url = reverse("v1:ticket:ticket_stats")
-        # Clear cache to prevent cross-test leakage
-        from django.core.cache import cache
-        cache.clear()
+        # Clear only the stats cache keys for our test users
+        from django.core.cache import cache as django_cache
+        django_cache.delete(f"ticket_stats:{self.user.id}")
+        django_cache.delete(f"ticket_stats:{self.other_user.id}")
 
     def test_stats_per_user_scoping(self):
         # Create tickets for two different users
