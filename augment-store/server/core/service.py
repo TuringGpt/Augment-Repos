@@ -2,6 +2,7 @@ import json
 import hashlib
 import functools
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,6 @@ class BaseCacheService:
             # Fallback for LocMemCache (usually for tests)
             elif hasattr(cache, '_cache'):
                 import fnmatch
-                import threading
                 # We look for the namespace suffix in the keys
                 namespace = f"{self.get_cache_namespace()}:v{self.VERSION}:*"
                 
