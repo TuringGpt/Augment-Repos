@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
 from .models import Ticket, Comment
 from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
@@ -105,13 +106,12 @@ class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
 
 class TicketStatsView(GenericAPIView):
     """
-    Get ticket statistics.
+    Get ticket statistics for the current user.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Optimization: Use caching for stats which don't change frequently
-        cache_key = "ticket_stats_overview"
+        cache_key = f"ticket_stats:{request.user.id}"
         
         stats = django_cache.get(cache_key)
         if stats is None:
@@ -120,9 +120,10 @@ class TicketStatsView(GenericAPIView):
                 "total": queryset.count(),
                 "open": queryset.filter(status="open").count(),
                 "in_progress": queryset.filter(status="in_progress").count(),
+                "resolved": queryset.filter(status="resolved").count(),
                 "closed": queryset.filter(status="closed").count(),
             }
-            django_cache.set(cache_key, stats, 600) # Cache for 10 mins
+            django_cache.set(cache_key, stats, 600)
             
         return Response(stats)
     
