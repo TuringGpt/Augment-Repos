@@ -61,7 +61,6 @@ class NewsletterStatusView(GenericAPIView):
             return Response({"error": "Email is required"}, status=400)
             
         service = NewsletterStatusCacheService()
-        # Bug: Missing .lower() normalization for cache key
         cache_key = service.get_cache_key(custom_key=f"status:{email}")
         
         is_subscribed = service.get(cache_key)
