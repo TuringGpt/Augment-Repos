@@ -188,3 +188,55 @@ class NotificationCacheTests(BaseAPITestCase):
         self.assertEqual(unread_in_db, 0)
 
 
+class UnreadNotificationCountTests(BaseAPITestCase):
+    """Tests for unread notification count endpoint."""
+
+    def setUp(self):
+        super().setUp()
+        from notifications.views import NotificationCountCacheService
+        NotificationCountCacheService().clear_namespace()
+        cache.clear()
+        self.count_url = reverse("v1:notifications:unread_notification_count")
+
+    def test_unread_count_returns_correct_value(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=True)
+
+        response = self.authenticated_client.get(self.count_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["unread_count"], 2)
+
+    def test_unread_count_updates_after_mark_as_read(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        NotificationFactory(user=self.user, is_read=False)
+        NotificationFactory(user=self.user, is_read=False)
+
+        # Prime the cache
+        response = self.authenticated_client.get(self.count_url)
+        self.assertEqual(response.data["unread_count"], 2)
+
+        # Mark all as read
+        mark_url = reverse("v1:notifications:mark_all_as_read")
+        self.authenticated_client.patch(mark_url, {"mark_all_as_read": True})
+
+        # Count should now be 0
+        response = self.authenticated_client.get(self.count_url)
+        self.assertEqual(response.data["unread_count"], 0)
+
+    def test_unread_count_updates_after_delete(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        notification = NotificationFactory(user=self.user, is_read=False)
+
+        # Prime the cache
+        response = self.authenticated_client.get(self.count_url)
+        self.assertEqual(response.data["unread_count"], 1)
+
+        # Delete the notification
+        delete_url = reverse("v1:notifications:update_notification", kwargs={"pk": str(notification.id)})
+        self.authenticated_client.delete(delete_url)
+
+        # Count should now be 0
+        response = self.authenticated_client.get(self.count_url)
+        self.assertEqual(response.data["unread_count"], 0)

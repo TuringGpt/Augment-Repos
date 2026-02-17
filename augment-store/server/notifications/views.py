@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Notification
-from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer
+from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer, UnreadCountSerializer
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
@@ -53,6 +53,8 @@ class UnreadNotificationCountView(BaseNotificationView, RetrieveAPIView):
     """
     Get unread notification count for the current user.
     """
+    serializer_class = UnreadCountSerializer
+
     def get(self, request, *args, **kwargs):
         service = NotificationCountCacheService()
         user_id = request.user.id
