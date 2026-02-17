@@ -41,6 +41,7 @@ import { CONTACT_INFO, ROUTES } from '@constants/index'
 import { Colors } from '@config/colors'
 
 interface FAQ {
+  id: string
   question: string
   answer: string
   category: string
@@ -56,60 +57,70 @@ const HelpPage = () => {
 
   const faqs: FAQ[] = [
     {
+      id: 'place-order',
       question: t('help.faqs.placeOrder.question'),
       answer: t('help.faqs.placeOrder.answer'),
       category: 'orders',
       icon: ShoppingCart,
     },
     {
+      id: 'payment-methods',
       question: t('help.faqs.paymentMethods.question'),
       answer: t('help.faqs.paymentMethods.answer'),
       category: 'payment',
       icon: Payment,
     },
     {
+      id: 'track-order',
       question: t('help.faqs.trackOrder.question'),
       answer: t('help.faqs.trackOrder.answer'),
       category: 'orders',
       icon: LocalShipping,
     },
     {
+      id: 'return-policy',
       question: t('help.faqs.returnPolicy.question'),
       answer: t('help.faqs.returnPolicy.answer'),
       category: 'returns',
       icon: AssignmentReturn,
     },
     {
+      id: 'shipping-time',
       question: t('help.faqs.shippingTime.question'),
       answer: t('help.faqs.shippingTime.answer'),
       category: 'shipping',
       icon: LocalShipping,
     },
     {
+      id: 'international-shipping',
       question: t('help.faqs.international.question'),
       answer: t('help.faqs.international.answer'),
       category: 'shipping',
       icon: LocalShipping,
     },
     {
+      id: 'reset-password',
       question: t('help.faqs.resetPassword.question'),
       answer: t('help.faqs.resetPassword.answer'),
       category: 'account',
       icon: AccountCircle,
     },
     {
+      id: 'cancel-order',
       question: t('help.faqs.cancelOrder.question'),
       answer: t('help.faqs.cancelOrder.answer'),
       category: 'orders',
       icon: ShoppingCart,
     },
     {
+      id: 'payment-security',
       question: t('help.faqs.paymentSecurity.question'),
       answer: t('help.faqs.paymentSecurity.answer'),
       category: 'payment',
       icon: Security,
     },
     {
+      id: 'contact-support',
       question: t('help.faqs.contactSupport.question'),
       answer: t('help.faqs.contactSupport.answer', {
         supportEmail: CONTACT_INFO.SUPPORT_EMAIL,
@@ -337,13 +348,13 @@ const HelpPage = () => {
               </Box>
             ) : (
               <Box>
-                {filteredFaqs.map((faq, index) => {
+                {filteredFaqs.map((faq) => {
                   const Icon = faq.icon
                   return (
                     <Accordion
-                      key={index}
-                      expanded={expandedPanel === `panel${index}`}
-                      onChange={handleAccordionChange(`panel${index}`)}
+                      key={faq.id}
+                      expanded={expandedPanel === faq.id}
+                      onChange={handleAccordionChange(faq.id)}
                       sx={{
                         mb: 2,
                         borderRadius: 2,
