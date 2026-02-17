@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TicketListView, TicketCreateView, TicketDetailView, TicketUpdateView, CommentListView, CommentCreateView, CommentUpdateView, CommentDeleteView
+from .views import TicketListView, TicketCreateView, TicketDetailView, TicketUpdateView, TicketStatsView, CommentListView, CommentCreateView, CommentUpdateView, CommentDeleteView
 
 
 app_name = 'ticket'
@@ -14,4 +14,5 @@ urlpatterns = [
     path('<uuid:pk>/comments/<uuid:comment_pk>/update/', CommentUpdateView.as_view(), name='update_comment'),   
     path('<uuid:pk>/comments/<uuid:comment_pk>/delete/', CommentDeleteView.as_view(), name='delete_comment'),
     path('<uuid:pk>/delete/', TicketUpdateView.as_view(), name='delete_ticket'),
+    path('stats/', TicketStatsView.as_view(), name='ticket_stats'),
 ]

@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
 from .models import Ticket, Comment
 from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
+from django.db.models import Count, Q
 
 
 class TicketCacheService(BaseCacheService):
@@ -32,6 +34,10 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
         return super().get_queryset().order_by('-created_at')
     
 
+def _invalidate_stats_cache(user):
+    django_cache.delete(f"ticket_stats:{user.id}")
+
+
 class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
     serializer_class = TicketCreateSerializer
     cache_service_class = TicketCacheService
@@ -39,6 +45,7 @@ class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
         self.invalidate_cache()
+        _invalidate_stats_cache(self.request.user)
 
 class TicketDetailView(TicketBaseView, RetrieveAPIView):
     serializer_class = TicketDetailSerializer
@@ -48,12 +55,21 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
     cache_service_class = TicketCacheService
 
     def perform_update(self, serializer):
+        instance = serializer.instance
+        reporter = instance.reporter
         super().perform_update(serializer)
         CommentCacheService().clear_namespace()
+        _invalidate_stats_cache(self.request.user)
+        if reporter != self.request.user:
+            _invalidate_stats_cache(reporter)
 
     def perform_destroy(self, instance):
+        reporter = instance.reporter
         super().perform_destroy(instance)
         CommentCacheService().clear_namespace()
+        _invalidate_stats_cache(self.request.user)
+        if reporter != self.request.user:
+            _invalidate_stats_cache(reporter)
     
 class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
@@ -102,6 +118,31 @@ class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
         return super().get_queryset().filter(ticket_id=ticket_id)
+
+class TicketStatsView(GenericAPIView):
+    """
+    Get ticket statistics for the current user.
+    """
+    permission_classes = [IsAuthenticated]
+    KNOWN_STATUSES = ["open", "in_progress", "resolved", "closed"]
+
+    def get(self, request, *args, **kwargs):
+        cache_key = f"ticket_stats:{request.user.id}"
+        
+        stats = django_cache.get(cache_key)
+        if stats is None:
+            aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
+                total=Count("id"),
+                **{s: Count("id", filter=Q(status=s)) for s in self.KNOWN_STATUSES},
+            )
+            known_sum = sum(aggregates[s] for s in self.KNOWN_STATUSES)
+            stats = {
+                **aggregates,
+                "other": aggregates["total"] - known_sum,
+            }
+            django_cache.set(cache_key, stats, 600)
+            
+        return Response(stats)
     
 class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
