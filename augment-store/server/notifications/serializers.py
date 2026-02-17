@@ -7,6 +7,11 @@ class NotificationListSerializer(serializers.ModelSerializer):
         model = Notification
         fields = "__all__"
 
+
+class UnreadCountSerializer(serializers.Serializer):
+    unread_count = serializers.IntegerField(read_only=True)
+
+
 class UpdateNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
