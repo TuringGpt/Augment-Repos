@@ -54,14 +54,21 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
     cache_service_class = TicketCacheService
 
     def perform_update(self, serializer):
+        instance = serializer.instance
+        reporter = instance.reporter
         super().perform_update(serializer)
         CommentCacheService().clear_namespace()
         _invalidate_stats_cache(self.request.user)
+        if reporter != self.request.user:
+            _invalidate_stats_cache(reporter)
 
     def perform_destroy(self, instance):
+        reporter = instance.reporter
         super().perform_destroy(instance)
         CommentCacheService().clear_namespace()
         _invalidate_stats_cache(self.request.user)
+        if reporter != self.request.user:
+            _invalidate_stats_cache(reporter)
     
 class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]

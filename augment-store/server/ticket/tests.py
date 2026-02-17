@@ -166,7 +166,12 @@ class TicketStatsTests(BaseAPITestCase):
             password="testpassword",
             is_active=True,
         )
+        # Re-authenticate since we overwrote self.user after BaseAPITestCase.setUp()
+        self.authenticated_client.force_authenticate(user=self.user)
         self.stats_url = reverse("v1:ticket:ticket_stats")
+        # Clear cache to prevent cross-test leakage
+        from django.core.cache import cache
+        cache.clear()
 
     def test_stats_per_user_scoping(self):
         # Create tickets for two different users
@@ -214,7 +219,8 @@ class TicketStatsTests(BaseAPITestCase):
             "priority": "high",
             "assignee": str(self.user.id),
         }
-        self.authenticated_client.post(create_url, payload)
+        create_response = self.authenticated_client.post(create_url, payload)
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
         # Stats should reflect the new ticket (cache was invalidated)
         response = self.authenticated_client.get(self.stats_url)
