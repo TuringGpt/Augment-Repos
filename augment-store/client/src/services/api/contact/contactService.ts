@@ -23,7 +23,41 @@ export interface CreateContactResponse {
   created_at: string
 }
 
+/**
+ * Contact item in list response
+ */
+export interface ContactItem {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  created_at: string
+}
+
+/**
+ * Contact list response from backend
+ * DRF ListAPIView returns paginated response with count, next, previous, results
+ */
+export interface ContactListResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: ContactItem[]
+}
+
 export const contactService = {
+  /**
+   * Get contact messages (paginated)
+   * Returns the first page of contact messages. Use the `next` field in the response
+   * to fetch subsequent pages if available.
+   * @returns Promise with paginated list of contacts (includes count, next, previous, results)
+   * @throws Error if the API request fails
+   */
+  getContacts: async (): Promise<ContactListResponse> => {
+    return apiClient.get<ContactListResponse>(API_ENDPOINTS.CONTACT.LIST)
+  },
+
   /**
    * Create a new contact message
    * @param data - Contact form data
