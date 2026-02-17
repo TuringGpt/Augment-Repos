@@ -2,9 +2,13 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from rest_framework import status
 from django.urls import reverse
+from accounts.services import UserProfileCacheService
 
 
 class UserProfileTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        UserProfileCacheService().clear_namespace()
 
     def test_get_user_profile_authenticated(self):
         # GIVEN an authenticated user exists
@@ -169,4 +173,38 @@ class UserProfileTests(BaseAPITestCase):
         # THEN we should get a 400 Bad Request response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("mobile", response.data)
-        # self.assertF
+
+    def test_user_profile_caching(self):
+        # GIVEN an authenticated user exists
+        user = UserFactory(email="cachetest@example.com")
+        self.authenticated_client.force_authenticate(user=user)
+        url = reverse("v1:user_profile")
+
+        # WHEN we fetch the profile for the first time
+        # SHOULD hit the database (queries > 0)
+        from django.test.utils import CaptureQueriesContext
+        from django.db import connection
+        
+        with CaptureQueriesContext(connection) as queries:
+            response1 = self.authenticated_client.get(url)
+            self.assertEqual(response1.status_code, status.HTTP_200_OK)
+            self.assertGreater(len(queries), 0)
+
+        # AND we fetch the profile again
+        # SHOULD be cached (0 database queries)
+        with self.assertNumQueries(0):
+            response2 = self.authenticated_client.get(url)
+            self.assertEqual(response2.status_code, status.HTTP_200_OK)
+            self.assertEqual(response1.data, response2.data)
+
+        # WHEN we update the profile
+        payload = {"first_name": "NewName"}
+        response_update = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response_update.status_code, status.HTTP_200_OK)
+
+        # THEN fetching the profile again SHOULD hit the database again (cache invalidated)
+        with CaptureQueriesContext(connection) as queries:
+            response3 = self.authenticated_client.get(url)
+            self.assertEqual(response3.status_code, status.HTTP_200_OK)
+            self.assertEqual(response3.data["first_name"], "NewName")
+            self.assertGreater(len(queries), 0)
