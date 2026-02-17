@@ -128,7 +128,8 @@ export const useContactStore = create<ContactState>((set) => ({
     fetchRequestCounter += 1
     const currentRequestId = fetchRequestCounter
 
-    // Set loading state and clear stale data BEFORE any awaited work
+    // Set loading state and clear any previous errors BEFORE any awaited work
+    // Note: contacts are kept to show previous data while reloading
     set({ isLoading: true, fetchError: null })
 
     try {
