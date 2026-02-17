@@ -33,6 +33,10 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
         return super().get_queryset().order_by('-created_at')
     
 
+def _invalidate_stats_cache(user):
+    django_cache.delete(f"ticket_stats:{user.id}")
+
+
 class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
     serializer_class = TicketCreateSerializer
     cache_service_class = TicketCacheService
@@ -40,6 +44,7 @@ class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
         self.invalidate_cache()
+        _invalidate_stats_cache(self.request.user)
 
 class TicketDetailView(TicketBaseView, RetrieveAPIView):
     serializer_class = TicketDetailSerializer
@@ -51,10 +56,12 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
     def perform_update(self, serializer):
         super().perform_update(serializer)
         CommentCacheService().clear_namespace()
+        _invalidate_stats_cache(self.request.user)
 
     def perform_destroy(self, instance):
         super().perform_destroy(instance)
         CommentCacheService().clear_namespace()
+        _invalidate_stats_cache(self.request.user)
     
 class CommentBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
@@ -109,6 +116,7 @@ class TicketStatsView(GenericAPIView):
     Get ticket statistics for the current user.
     """
     permission_classes = [IsAuthenticated]
+    KNOWN_STATUSES = ["open", "in_progress", "resolved", "closed"]
 
     def get(self, request, *args, **kwargs):
         cache_key = f"ticket_stats:{request.user.id}"
@@ -116,12 +124,13 @@ class TicketStatsView(GenericAPIView):
         stats = django_cache.get(cache_key)
         if stats is None:
             queryset = Ticket.objects.filter(reporter=request.user)
+            total = queryset.count()
+            known_counts = {s: queryset.filter(status=s).count() for s in self.KNOWN_STATUSES}
+            known_sum = sum(known_counts.values())
             stats = {
-                "total": queryset.count(),
-                "open": queryset.filter(status="open").count(),
-                "in_progress": queryset.filter(status="in_progress").count(),
-                "resolved": queryset.filter(status="resolved").count(),
-                "closed": queryset.filter(status="closed").count(),
+                "total": total,
+                **known_counts,
+                "other": total - known_sum,
             }
             django_cache.set(cache_key, stats, 600)
             

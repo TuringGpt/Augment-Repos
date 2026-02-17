@@ -150,3 +150,73 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         comments = response.data.get("results", [])
         self.assertFalse(any(c["id"] == str(self.comment.id) for c in comments))
+
+
+class TicketStatsTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.user = UserFactory(
+            email="stats@example.com",
+            password="testpassword",
+            is_active=True,
+        )
+        self.other_user = UserFactory(
+            email="other@example.com",
+            password="testpassword",
+            is_active=True,
+        )
+        self.stats_url = reverse("v1:ticket:ticket_stats")
+
+    def test_stats_per_user_scoping(self):
+        # Create tickets for two different users
+        TicketFactory(reporter=self.user, assignee=self.user, status="open")
+        TicketFactory(reporter=self.user, assignee=self.user, status="closed")
+        TicketFactory(reporter=self.other_user, assignee=self.other_user, status="open")
+
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Only the authenticated user's tickets should appear
+        self.assertEqual(response.data["total"], 2)
+        self.assertEqual(response.data["open"], 1)
+        self.assertEqual(response.data["closed"], 1)
+
+    def test_stats_all_known_statuses(self):
+        for s in ["open", "in_progress", "resolved", "closed"]:
+            TicketFactory(reporter=self.user, assignee=self.user, status=s)
+
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 4)
+        self.assertEqual(response.data["open"], 1)
+        self.assertEqual(response.data["in_progress"], 1)
+        self.assertEqual(response.data["resolved"], 1)
+        self.assertEqual(response.data["closed"], 1)
+        self.assertEqual(response.data["other"], 0)
+
+    def test_stats_other_bucket(self):
+        TicketFactory(reporter=self.user, assignee=self.user, status="unknown_status")
+
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 1)
+        self.assertEqual(response.data["other"], 1)
+
+    def test_stats_cache_invalidation_on_create(self):
+        # Prime the cache with empty stats
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 0)
+
+        # Create a ticket via the API
+        create_url = reverse("v1:ticket:create_ticket")
+        payload = {
+            "title": "New",
+            "description": "Desc",
+            "status": "open",
+            "priority": "high",
+            "assignee": str(self.user.id),
+        }
+        self.authenticated_client.post(create_url, payload)
+
+        # Stats should reflect the new ticket (cache was invalidated)
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 1)
+        self.assertEqual(response.data["open"], 1)
