@@ -24,6 +24,13 @@ export const ROUTES = {
   ADMIN_PRODUCTS_STATISTICS_DETAIL: '/admin/products/statistics/:id',
   LOGIN: '/login',
   REGISTER: '/register',
+  ABOUT: '/about',
+  CONTACT: '/contact',
+  HELP: '/help',
+  RETURNS: '/returns',
+  SHIPPING: '/shipping',
+  TERMS: '/terms',
+  PRIVACY: '/privacy',
 } as const
 
 export const STORAGE_KEYS = {
