@@ -111,7 +111,7 @@ class TicketStatsView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         # Optimization: Use caching for stats which don't change frequently
-        cache_key = "ticket_stats_overview" # Bug: Missing user-specific key (all users see same global stats)
+        cache_key = "ticket_stats_overview"
         
         stats = django_cache.get(cache_key)
         if stats is None:
