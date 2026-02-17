@@ -49,7 +49,6 @@ class FileListSerializer(serializers.ModelSerializer):
         if data is None:
             if not obj.file: return None
             data = obj.file.url
-            # Intentional Bug: TTL is a string instead of integer
             service.set(cache_key, data, ttl="3600") 
             
         return data
