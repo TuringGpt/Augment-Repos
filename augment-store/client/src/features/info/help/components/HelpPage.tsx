@@ -10,6 +10,7 @@ import {
   Grid,
   Card,
   CardContent,
+  CardActionArea,
   TextField,
   InputAdornment,
   Button,
@@ -274,7 +275,6 @@ const HelpPage = () => {
                     <Card
                       sx={{
                         height: '100%',
-                        cursor: 'pointer',
                         transition: 'all 0.3s ease',
                         borderRadius: 3,
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -284,30 +284,39 @@ const HelpPage = () => {
                           borderColor: card.color,
                         },
                       }}
-                      onClick={card.action}
                     >
-                      <CardContent sx={{ p: 3 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 64,
-                            height: 64,
-                            borderRadius: 2,
-                            bgcolor: alpha(card.color, 0.1),
-                            mb: 2,
-                          }}
-                        >
-                          <Icon sx={{ fontSize: 32, color: card.color }} />
-                        </Box>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
-                          {card.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {card.description}
-                        </Typography>
-                      </CardContent>
+                      <CardActionArea
+                        onClick={card.action}
+                        sx={{
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'stretch',
+                        }}
+                      >
+                        <CardContent sx={{ p: 3 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 64,
+                              height: 64,
+                              borderRadius: 2,
+                              bgcolor: alpha(card.color, 0.1),
+                              mb: 2,
+                            }}
+                          >
+                            <Icon sx={{ fontSize: 32, color: card.color }} />
+                          </Box>
+                          <Typography variant="h6" fontWeight="bold" gutterBottom>
+                            {card.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {card.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
                     </Card>
                   </Grid>
                 )
