@@ -711,6 +711,26 @@
     "title": "Centre d'Aide",
     "description": "Trouvez des réponses aux questions fréquemment posées ci-dessous. Si vous avez besoin d'une assistance supplémentaire, n'hésitez pas à contacter notre équipe de support client.",
     "faqsTitle": "Questions Fréquemment Posées",
+    "searchPlaceholder": "Rechercher de l'aide...",
+    "quickHelp": "Aide Rapide",
+    "noResultsFound": "Aucun résultat trouvé pour \"{{query}}\"",
+    "tryDifferentKeywords": "Essayez de rechercher avec des mots-clés différents",
+    "contactUs": "Contactez-nous",
+    "emailUs": "Envoyez-nous un E-mail",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Suivre Votre Commande",
+        "description": "Vérifiez l'état de votre commande en temps réel"
+      },
+      "returnsRefunds": {
+        "title": "Retours et Remboursements",
+        "description": "Découvrez notre politique et processus de retour"
+      },
+      "contactSupport": {
+        "title": "Contacter le Support",
+        "description": "Entrez en contact avec notre équipe de support"
+      }
+    },
     "stillNeedHelp": {
       "title": "Besoin d'Aide Supplémentaire ?",
       "description": "Si vous n'avez pas trouvé la réponse que vous cherchez, notre équipe de support client est prête à vous aider. Contactez-nous par e-mail, téléphone ou notre formulaire de contact."

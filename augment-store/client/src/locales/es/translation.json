@@ -711,6 +711,26 @@
     "title": "Centro de Ayuda",
     "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
     "faqsTitle": "Preguntas Frecuentes",
+    "searchPlaceholder": "Buscar ayuda...",
+    "quickHelp": "Ayuda Rápida",
+    "noResultsFound": "No se encontraron resultados para \"{{query}}\"",
+    "tryDifferentKeywords": "Intenta buscar con diferentes palabras clave",
+    "contactUs": "Contáctanos",
+    "emailUs": "Envíanos un Correo",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Rastrea tu Pedido",
+        "description": "Verifica el estado de tu pedido en tiempo real"
+      },
+      "returnsRefunds": {
+        "title": "Devoluciones y Reembolsos",
+        "description": "Conoce nuestra política y proceso de devoluciones"
+      },
+      "contactSupport": {
+        "title": "Contactar Soporte",
+        "description": "Ponte en contacto con nuestro equipo de soporte"
+      }
+    },
     "stillNeedHelp": {
       "title": "¿Aún Necesitas Ayuda?",
       "description": "Si no pudiste encontrar la respuesta que buscas, nuestro equipo de soporte al cliente está listo para ayudarte. Contáctanos por correo electrónico, teléfono o nuestro formulario de contacto."

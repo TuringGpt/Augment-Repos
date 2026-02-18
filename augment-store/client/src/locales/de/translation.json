@@ -711,6 +711,26 @@
     "title": "Hilfezentrum",
     "description": "Finden Sie unten Antworten auf häufig gestellte Fragen. Wenn Sie zusätzliche Unterstützung benötigen, zögern Sie nicht, unser Kundenservice-Team zu kontaktieren.",
     "faqsTitle": "Häufig Gestellte Fragen",
+    "searchPlaceholder": "Nach Hilfe suchen...",
+    "quickHelp": "Schnelle Hilfe",
+    "noResultsFound": "Keine Ergebnisse gefunden für \"{{query}}\"",
+    "tryDifferentKeywords": "Versuchen Sie es mit anderen Suchbegriffen",
+    "contactUs": "Kontaktieren Sie Uns",
+    "emailUs": "Senden Sie Uns eine E-Mail",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Bestellung Verfolgen",
+        "description": "Überprüfen Sie den Status Ihrer Bestellung in Echtzeit"
+      },
+      "returnsRefunds": {
+        "title": "Rücksendungen & Rückerstattungen",
+        "description": "Erfahren Sie mehr über unsere Rückgaberichtlinie und den Prozess"
+      },
+      "contactSupport": {
+        "title": "Support Kontaktieren",
+        "description": "Nehmen Sie Kontakt mit unserem Support-Team auf"
+      }
+    },
     "stillNeedHelp": {
       "title": "Benötigen Sie Weitere Hilfe?",
       "description": "Wenn Sie die gesuchte Antwort nicht finden konnten, steht Ihnen unser Kundenservice-Team gerne zur Verfügung. Kontaktieren Sie uns per E-Mail, Telefon oder über unser Kontaktformular."

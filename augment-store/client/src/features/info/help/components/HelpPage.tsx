@@ -134,22 +134,22 @@ const HelpPage = () => {
 
   const quickHelpCards = [
     {
-      title: 'Track Your Order',
-      description: 'Check the status of your order in real-time',
+      title: t('help.quickHelpCards.trackOrder.title'),
+      description: t('help.quickHelpCards.trackOrder.description'),
       icon: LocalShipping,
       color: theme.palette.info.main,
       action: () => navigate(ROUTES.ORDERS),
     },
     {
-      title: 'Returns & Refunds',
-      description: 'Learn about our return policy and process',
+      title: t('help.quickHelpCards.returnsRefunds.title'),
+      description: t('help.quickHelpCards.returnsRefunds.description'),
       icon: AssignmentReturn,
       color: theme.palette.warning.main,
       action: () => navigate(ROUTES.RETURNS),
     },
     {
-      title: 'Contact Support',
-      description: 'Get in touch with our support team',
+      title: t('help.quickHelpCards.contactSupport.title'),
+      description: t('help.quickHelpCards.contactSupport.description'),
       icon: ContactSupport,
       color: theme.palette.success.main,
       action: () => navigate(ROUTES.CONTACT),
@@ -240,11 +240,11 @@ const HelpPage = () => {
           >
             <TextField
               fullWidth
-              placeholder="Search for help..."
+              placeholder={t('help.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               inputProps={{
-                'aria-label': 'Search for help',
+                'aria-label': t('help.searchPlaceholder'),
               }}
               InputProps={{
                 startAdornment: (
@@ -268,7 +268,7 @@ const HelpPage = () => {
         <Fade in timeout={1000}>
           <Box sx={{ mb: 6 }}>
             <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
-              Quick Help
+              {t('help.quickHelp')}
             </Typography>
             <Grid container spacing={3}>
               {quickHelpCards.map((card, index) => {
@@ -352,10 +352,10 @@ const HelpPage = () => {
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <HelpOutline sx={{ fontSize: 64, color: theme.palette.text.disabled, mb: 2 }} />
                 <Typography variant="h6" color="text.secondary">
-                  No results found for "{searchQuery}"
+                  {t('help.noResultsFound', { query: searchQuery })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Try searching with different keywords
+                  {t('help.tryDifferentKeywords')}
                 </Typography>
               </Box>
             ) : (
@@ -487,7 +487,7 @@ const HelpPage = () => {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Contact Us
+                    {t('help.contactUs')}
                   </Button>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -529,7 +529,7 @@ const HelpPage = () => {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Email Us
+                    {t('help.emailUs')}
                   </Button>
                 </Grid>
               </Grid>
