@@ -3,13 +3,25 @@ import {
   Typography,
   Box,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  Chip,
+  Alert,
 } from '@mui/material'
+import {
+  LocalShipping as LocalShippingIcon,
+  Public as PublicIcon,
+  TrackChanges as TrackChangesIcon,
+  Block as BlockIcon,
+  ReportProblem as ReportProblemIcon,
+  HelpOutline as HelpOutlineIcon,
+  Speed as SpeedIcon,
+  Flight as FlightIcon,
+  AccessTime as AccessTimeIcon,
+  AttachMoney as AttachMoneyIcon,
+} from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { CONTACT_INFO } from '@constants/index'
 
@@ -17,9 +29,27 @@ const ShippingPage = () => {
   const { t } = useTranslation()
 
   const domesticRates = [
-    { method: t('shipping.methods.standard'), time: t('shipping.deliveryTimes.standard'), cost: '$5.99' },
-    { method: t('shipping.methods.express'), time: t('shipping.deliveryTimes.express'), cost: '$12.99' },
-    { method: t('shipping.methods.overnight'), time: t('shipping.deliveryTimes.overnight'), cost: '$24.99' },
+    {
+      method: t('shipping.methods.standard'),
+      time: t('shipping.deliveryTimes.standard'),
+      cost: '$5.99',
+      icon: <LocalShippingIcon sx={{ fontSize: 40 }} />,
+      color: 'primary.main',
+    },
+    {
+      method: t('shipping.methods.express'),
+      time: t('shipping.deliveryTimes.express'),
+      cost: '$12.99',
+      icon: <SpeedIcon sx={{ fontSize: 40 }} />,
+      color: 'secondary.main',
+    },
+    {
+      method: t('shipping.methods.overnight'),
+      time: t('shipping.deliveryTimes.overnight'),
+      cost: '$24.99',
+      icon: <FlightIcon sx={{ fontSize: 40 }} />,
+      color: 'error.main',
+    },
   ]
 
   const internationalRates = [
@@ -31,130 +61,194 @@ const ShippingPage = () => {
   ]
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper elevation={2} sx={{ p: 4 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: 6 }}>
+      {/* Hero Section */}
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
           {t('shipping.title')}
         </Typography>
-
-        <Typography variant="body1" paragraph sx={{ mt: 2 }}>
+        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto', mt: 2 }}>
           {t('shipping.intro')}
         </Typography>
+      </Box>
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
+      {/* Domestic Shipping Section */}
+      <Box sx={{ mb: 6 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <LocalShippingIcon color="primary" sx={{ fontSize: 32 }} />
+          <Typography variant="h4" fontWeight={600}>
             {t('shipping.domesticShipping.title')}
           </Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <strong>{t('shipping.table.shippingMethod')}</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>{t('shipping.table.deliveryTime')}</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>{t('shipping.table.cost')}</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {domesticRates.map((rate, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{rate.method}</TableCell>
-                    <TableCell>{rate.time}</TableCell>
-                    <TableCell>{rate.cost}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Typography variant="body2" sx={{ mt: 2 }} color="text.secondary">
-            {t('shipping.domesticShipping.freeShippingNote')}
-          </Typography>
         </Box>
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
+        <Grid container spacing={3}>
+          {domesticRates.map((rate, index) => (
+            <Grid item xs={12} md={4} key={index}>
+              <Card
+                elevation={3}
+                sx={{
+                  height: '100%',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                <CardContent sx={{ textAlign: 'center', p: 4 }}>
+                  <Box sx={{ color: rate.color, mb: 2 }}>{rate.icon}</Box>
+                  <Typography variant="h5" fontWeight={600} gutterBottom>
+                    {rate.method}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
+                    <AccessTimeIcon color="action" fontSize="small" />
+                    <Typography variant="body1" color="text.secondary">
+                      {rate.time}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    <AttachMoneyIcon color="success" fontSize="small" />
+                    <Typography variant="h4" fontWeight={700} color="primary">
+                      {rate.cost}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Alert severity="info" icon={<LocalShippingIcon />} sx={{ mt: 3 }}>
+          <Typography variant="body2">{t('shipping.domesticShipping.freeShippingNote')}</Typography>
+        </Alert>
+      </Box>
+
+      {/* International Shipping Section */}
+      <Box sx={{ mb: 6 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <PublicIcon color="primary" sx={{ fontSize: 32 }} />
+          <Typography variant="h4" fontWeight={600}>
             {t('shipping.internationalShipping.title')}
           </Typography>
-          <TableContainer sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <strong>{t('shipping.table.region')}</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>{t('shipping.table.deliveryTime')}</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>{t('shipping.table.startingCost')}</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {internationalRates.map((rate, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{rate.region}</TableCell>
-                    <TableCell>{rate.time}</TableCell>
-                    <TableCell>{rate.cost}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Typography variant="body2" sx={{ mt: 2 }} color="text.secondary">
-            {t('shipping.internationalShipping.customsNote')}
-          </Typography>
         </Box>
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            {t('shipping.orderTracking.title')}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {t('shipping.orderTracking.paragraph1')}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {t('shipping.orderTracking.paragraph2')}
-          </Typography>
-        </Box>
+        <Paper elevation={2} sx={{ overflow: 'hidden' }}>
+          {internationalRates.map((rate, index) => (
+            <Box
+              key={index}
+              sx={{
+                p: 3,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: index < internationalRates.length - 1 ? '1px solid' : 'none',
+                borderColor: 'divider',
+                transition: 'background-color 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" fontWeight={600}>
+                  {rate.region}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AccessTimeIcon color="action" fontSize="small" />
+                <Typography variant="body1" color="text.secondary">
+                  {rate.time}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1, textAlign: 'right' }}>
+                <Chip
+                  label={`From ${rate.cost}`}
+                  color="primary"
+                  variant="outlined"
+                  sx={{ fontWeight: 600, fontSize: '1rem', px: 1 }}
+                />
+              </Box>
+            </Box>
+          ))}
+        </Paper>
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            {t('shipping.restrictions.title')}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {t('shipping.restrictions.paragraph1')}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {t('shipping.restrictions.paragraph2')}
-          </Typography>
-        </Box>
+        <Alert severity="warning" icon={<PublicIcon />} sx={{ mt: 3 }}>
+          <Typography variant="body2">{t('shipping.internationalShipping.customsNote')}</Typography>
+        </Alert>
+      </Box>
 
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
-            {t('shipping.damagedOrLost.title')}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {t('shipping.damagedOrLost.paragraph', { supportEmail: CONTACT_INFO.SUPPORT_EMAIL })}
-          </Typography>
-        </Box>
+      {/* Additional Information Grid */}
+      <Grid container spacing={4}>
+        {/* Order Tracking */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 4, height: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <TrackChangesIcon color="primary" sx={{ fontSize: 32 }} />
+              <Typography variant="h5" fontWeight={600}>
+                {t('shipping.orderTracking.title')}
+              </Typography>
+            </Box>
+            <Typography variant="body1" paragraph>
+              {t('shipping.orderTracking.paragraph1')}
+            </Typography>
+            <Typography variant="body1">{t('shipping.orderTracking.paragraph2')}</Typography>
+          </Paper>
+        </Grid>
 
-        <Box sx={{ mt: 4, p: 3, bgcolor: 'info.light', borderRadius: 1 }}>
-          <Typography variant="h6" gutterBottom>
-            {t('shipping.questionsAboutShipping.title')}
-          </Typography>
-          <Typography variant="body2">
-            {t('shipping.questionsAboutShipping.paragraph', {
-              supportEmail: CONTACT_INFO.SUPPORT_EMAIL,
-              supportPhone: CONTACT_INFO.SUPPORT_PHONE,
-            })}
-          </Typography>
-        </Box>
+        {/* Shipping Restrictions */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={2} sx={{ p: 4, height: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <BlockIcon color="error" sx={{ fontSize: 32 }} />
+              <Typography variant="h5" fontWeight={600}>
+                {t('shipping.restrictions.title')}
+              </Typography>
+            </Box>
+            <Typography variant="body1" paragraph>
+              {t('shipping.restrictions.paragraph1')}
+            </Typography>
+            <Typography variant="body1">{t('shipping.restrictions.paragraph2')}</Typography>
+          </Paper>
+        </Grid>
+
+        {/* Damaged or Lost Packages */}
+        <Grid item xs={12}>
+          <Paper elevation={2} sx={{ p: 4, bgcolor: 'warning.light' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <ReportProblemIcon sx={{ fontSize: 32, color: 'warning.dark' }} />
+              <Typography variant="h5" fontWeight={600} color="warning.dark">
+                {t('shipping.damagedOrLost.title')}
+              </Typography>
+            </Box>
+            <Typography variant="body1" color="warning.dark">
+              {t('shipping.damagedOrLost.paragraph', { supportEmail: CONTACT_INFO.SUPPORT_EMAIL })}
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Contact Section */}
+      <Paper
+        elevation={3}
+        sx={{
+          mt: 6,
+          p: 4,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          textAlign: 'center',
+        }}
+      >
+        <HelpOutlineIcon sx={{ fontSize: 48, mb: 2 }} />
+        <Typography variant="h5" fontWeight={600} gutterBottom>
+          {t('shipping.questionsAboutShipping.title')}
+        </Typography>
+        <Typography variant="body1">
+          {t('shipping.questionsAboutShipping.paragraph', {
+            supportEmail: CONTACT_INFO.SUPPORT_EMAIL,
+            supportPhone: CONTACT_INFO.SUPPORT_PHONE,
+          })}
+        </Typography>
       </Paper>
     </Container>
   )
