@@ -15,7 +15,11 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
         return value.strip().lower()
 
     def create(self, validated_data):
-        return Newsletter.objects.create(**validated_data)
+        newsletter, created = Newsletter.objects.update_or_create(
+            email=validated_data["email"],
+            defaults={"is_active": True},
+        )
+        return newsletter
     
 class UnsubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
