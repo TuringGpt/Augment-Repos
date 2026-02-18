@@ -163,7 +163,7 @@ const ShippingPage = () => {
               </Box>
               <Box sx={{ flex: 1, textAlign: 'right' }}>
                 <Chip
-                  label={`From ${rate.cost}`}
+                  label={t('shipping.fromCost', { cost: rate.cost })}
                   color="primary"
                   variant="outlined"
                   sx={{ fontWeight: 600, fontSize: '1rem', px: 1 }}

@@ -1330,6 +1330,7 @@
       "region": "Région",
       "startingCost": "Coût de Départ"
     },
+    "fromCost": "À partir de {{cost}}",
     "methods": {
       "standard": "Livraison Standard",
       "express": "Livraison Express",
