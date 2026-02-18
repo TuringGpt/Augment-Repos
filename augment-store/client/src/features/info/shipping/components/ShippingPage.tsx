@@ -82,8 +82,8 @@ const ShippingPage = () => {
         </Box>
 
         <Grid container spacing={3}>
-          {domesticRates.map((rate, index) => (
-            <Grid item xs={12} md={4} key={index}>
+          {domesticRates.map((rate) => (
+            <Grid item xs={12} md={4} key={rate.method}>
               <Card
                 elevation={3}
                 sx={{
@@ -136,7 +136,7 @@ const ShippingPage = () => {
         <Paper elevation={2} sx={{ overflow: 'hidden' }}>
           {internationalRates.map((rate, index) => (
             <Box
-              key={index}
+              key={rate.region}
               sx={{
                 p: 3,
                 display: 'flex',
