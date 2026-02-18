@@ -19,6 +19,15 @@ class NewsletterStatusCacheService(BaseCacheService):
     VERSION = 1
 
 
+def _invalidate_status_cache(email):
+    """Invalidate the cached subscription status for a specific email."""
+    if email:
+        normalized = email.strip().lower()
+        service = NewsletterStatusCacheService()
+        cache_key = service.get_cache_key(custom_key=f"status:{normalized}")
+        service.delete(cache_key)
+
+
 class BaseNewsletterView(AutoOptimizeMixin):
     serializer_class = NewsletterSerializer
     queryset = Newsletter.objects.all()
@@ -42,21 +51,32 @@ class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateA
     permission_classes = [AllowAny]
     cache_service_class = NewsletterCacheService
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        self.invalidate_cache()
+        _invalidate_status_cache(instance.email)
+
 
 class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, RetrieveUpdateAPIView):
     serializer_class = UnsubscribeNewsletterSerializer
     permission_classes = [IsAuthenticated]
     cache_service_class = NewsletterCacheService
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.invalidate_cache()
+        _invalidate_status_cache(instance.email)
+
 
 class NewsletterStatusView(GenericAPIView):
     """
     Check if an email is subscribed to the newsletter.
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    throttle_scope = "newsletter_status"
     
     def get(self, request, *args, **kwargs):
-        email = request.query_params.get('email')
+        email = request.query_params.get('email', '').strip().lower()
         if not email:
             return Response({"error": "Email is required"}, status=400)
             
@@ -74,9 +94,10 @@ class NewsletterStatusView(GenericAPIView):
 class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView, UpdateAPIView):
     """
     Unsubscribe from newsletter using email address.
+    Requires authentication to prevent unauthorized unsubscription.
     """
     serializer_class = UnsubscribeNewsletterSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     cache_service_class = NewsletterCacheService
 
     def get_object(self):
@@ -86,3 +107,8 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
 
         newsletter = get_object_or_404(Newsletter, email=email)
         return newsletter
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.invalidate_cache()
+        _invalidate_status_cache(instance.email)
