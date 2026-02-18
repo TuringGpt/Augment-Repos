@@ -711,6 +711,27 @@
     "title": "Help Center",
     "description": "Find answers to frequently asked questions below. If you need additional assistance, please don't hesitate to contact our customer support team.",
     "faqsTitle": "Frequently Asked Questions",
+    "searchPlaceholder": "Search for help...",
+    "searchAriaLabel": "Search help articles",
+    "quickHelp": "Quick Help",
+    "noResultsFound": "No results found for \"{{query}}\"",
+    "tryDifferentKeywords": "Try searching with different keywords",
+    "contactUs": "Contact Us",
+    "emailUs": "Email Us",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Track Your Order",
+        "description": "Check the status of your order in real-time"
+      },
+      "returnsRefunds": {
+        "title": "Returns & Refunds",
+        "description": "Learn about our return policy and process"
+      },
+      "contactSupport": {
+        "title": "Contact Support",
+        "description": "Get in touch with our support team"
+      }
+    },
     "stillNeedHelp": {
       "title": "Still Need Help?",
       "description": "If you couldn't find the answer you're looking for, our customer support team is ready to assist you. Contact us via email, phone, or our contact form."
