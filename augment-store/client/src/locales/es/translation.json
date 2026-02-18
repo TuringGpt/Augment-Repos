@@ -1351,6 +1351,7 @@
       "region": "Región",
       "startingCost": "Costo Inicial"
     },
+    "fromCost": "Desde {{cost}}",
     "methods": {
       "standard": "Envío Estándar",
       "express": "Envío Express",

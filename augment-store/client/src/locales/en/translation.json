@@ -1351,6 +1351,7 @@
       "region": "Region",
       "startingCost": "Starting Cost"
     },
+    "fromCost": "From {{cost}}",
     "methods": {
       "standard": "Standard Shipping",
       "express": "Express Shipping",
