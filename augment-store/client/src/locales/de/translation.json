@@ -716,8 +716,8 @@
     "quickHelp": "Schnelle Hilfe",
     "noResultsFound": "Keine Ergebnisse gefunden für \"{{query}}\"",
     "tryDifferentKeywords": "Versuchen Sie es mit anderen Suchbegriffen",
-    "contactUs": "Kontaktieren Sie Uns",
-    "emailUs": "Senden Sie Uns eine E-Mail",
+    "contactUs": "Kontaktieren Sie uns",
+    "emailUs": "Senden Sie uns eine E-Mail",
     "quickHelpCards": {
       "trackOrder": {
         "title": "Bestellung Verfolgen",
