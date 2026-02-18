@@ -5,3 +5,8 @@ from core.models import BaseModel
 class Newsletter(BaseModel):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)

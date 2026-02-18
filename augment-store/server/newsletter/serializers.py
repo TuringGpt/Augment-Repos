@@ -11,6 +11,9 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
         model = Newsletter
         fields = ["email"]
 
+    def validate_email(self, value):
+        return value.strip().lower()
+
     def create(self, validated_data):
         return Newsletter.objects.create(**validated_data)
     
