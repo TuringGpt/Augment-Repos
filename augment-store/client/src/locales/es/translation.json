@@ -712,6 +712,7 @@
     "description": "Encuentra respuestas a las preguntas frecuentes a continuación. Si necesitas asistencia adicional, no dudes en contactar a nuestro equipo de soporte al cliente.",
     "faqsTitle": "Preguntas Frecuentes",
     "searchPlaceholder": "Buscar ayuda...",
+    "searchAriaLabel": "Buscar artículos de ayuda",
     "quickHelp": "Ayuda Rápida",
     "noResultsFound": "No se encontraron resultados para \"{{query}}\"",
     "tryDifferentKeywords": "Intenta buscar con diferentes palabras clave",

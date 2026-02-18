@@ -712,6 +712,7 @@
     "description": "Trouvez des réponses aux questions fréquemment posées ci-dessous. Si vous avez besoin d'une assistance supplémentaire, n'hésitez pas à contacter notre équipe de support client.",
     "faqsTitle": "Questions Fréquemment Posées",
     "searchPlaceholder": "Rechercher de l'aide...",
+    "searchAriaLabel": "Rechercher des articles d'aide",
     "quickHelp": "Aide Rapide",
     "noResultsFound": "Aucun résultat trouvé pour \"{{query}}\"",
     "tryDifferentKeywords": "Essayez de rechercher avec des mots-clés différents",

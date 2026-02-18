@@ -244,7 +244,7 @@ const HelpPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               inputProps={{
-                'aria-label': t('help.searchPlaceholder'),
+                'aria-label': t('help.searchAriaLabel'),
               }}
               InputProps={{
                 startAdornment: (
