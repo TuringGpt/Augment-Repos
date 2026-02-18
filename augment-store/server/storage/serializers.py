@@ -43,7 +43,8 @@ class FileListSerializer(serializers.ModelSerializer):
     def get_file(self, obj: File):
         from core.service import BaseCacheService
         service = BaseCacheService()
-        cache_key = service.get_cache_key(custom_key=f"file_meta:{obj.id}")
+        ts = int(obj.updated_at.timestamp()) if obj.updated_at else 0
+        cache_key = service.get_cache_key(custom_key=f"file_meta:{obj.id}:{ts}")
         
         data = service.get(cache_key)
         if data is None:
