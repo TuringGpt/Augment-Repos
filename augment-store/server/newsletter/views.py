@@ -5,6 +5,7 @@ from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
+from rest_framework.throttling import ScopedRateThrottle
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
@@ -73,6 +74,7 @@ class NewsletterStatusView(GenericAPIView):
     Check if an email is subscribed to the newsletter.
     """
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
     throttle_scope = "newsletter_status"
     
     def get(self, request, *args, **kwargs):
@@ -85,7 +87,7 @@ class NewsletterStatusView(GenericAPIView):
         
         is_subscribed = service.get(cache_key)
         if is_subscribed is None:
-            is_subscribed = Newsletter.objects.filter(email=email, is_active=True).exists()
+            is_subscribed = Newsletter.objects.filter(email__iexact=email, is_active=True).exists()
             service.set(cache_key, is_subscribed, ttl=3600)
             
         return Response({"is_subscribed": is_subscribed})
@@ -101,11 +103,11 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
     cache_service_class = NewsletterCacheService
 
     def get_object(self):
-        email = self.request.data.get('email')
+        email = self.request.data.get('email', '').strip().lower()
         if not email:
             raise ValidationError({'email': 'Email is required'})
 
-        newsletter = get_object_or_404(Newsletter, email=email)
+        newsletter = get_object_or_404(Newsletter, email__iexact=email)
         return newsletter
 
     def perform_update(self, serializer):
