@@ -49,7 +49,7 @@ class FileListSerializer(serializers.ModelSerializer):
         if data is None:
             if not obj.file: return None
             data = obj.file.url
-            service.set(cache_key, data, ttl="3600") 
+            service.set(cache_key, data, ttl=3600) 
             
         return data
 
