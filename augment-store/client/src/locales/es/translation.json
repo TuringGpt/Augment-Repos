@@ -901,6 +901,7 @@
     "brands": "Marcas",
     "users": "Usuarios",
     "reports": "Informes",
+    "contactMessages": "Mensajes de Contacto",
     "reportsPage": {
       "title": "Informes",
       "subtitle": "Ver y analizar informes comerciales completos",
@@ -929,6 +930,21 @@
         "allSystemsOperational": "Todos los sistemas operativos",
         "systemIssuesDetected": "Problemas del sistema detectados",
         "status": "Estado"
+      }
+    },
+    "contactMessagesPage": {
+      "title": "Mensajes de Contacto",
+      "subtitle": "Ver y gestionar todos los envíos del formulario de contacto",
+      "refresh": "Actualizar",
+      "totalMessages": "Total de Mensajes: {{count}} mensaje",
+      "totalMessages_other": "Total de Mensajes: {{count}} mensajes",
+      "noMessages": "Aún no hay mensajes de contacto",
+      "table": {
+        "name": "Nombre",
+        "email": "Correo Electrónico",
+        "subject": "Asunto",
+        "message": "Mensaje",
+        "date": "Fecha"
       }
     },
     "settings": "Configuración",
