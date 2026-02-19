@@ -92,7 +92,7 @@ const AdminContactMessagesPage = () => {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (refreshTimeoutRef.current) {
+      if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
       }
     }
@@ -101,7 +101,7 @@ const AdminContactMessagesPage = () => {
   const handleRefresh = () => {
     setIsLoading(true)
     // Clear any existing timeout
-    if (refreshTimeoutRef.current) {
+    if (refreshTimeoutRef.current !== null) {
       clearTimeout(refreshTimeoutRef.current)
     }
     // Simulate loading
