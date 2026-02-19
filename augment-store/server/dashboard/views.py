@@ -230,8 +230,12 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Order metrics
         orders_in_period = Order.objects.filter(created_at__gte=cutoff_date)
-        total_orders = orders_in_period.count()
-        completed_orders = orders_in_period.filter(status=Order.OrderStatus.COMPLETED).count()
+        order_counts = orders_in_period.aggregate(
+             total=Count('id'),
+             completed=Count('id', filter=Q(status=Order.OrderStatus.COMPLETED))
+        )
+        total_orders = order_counts['total']
+        completed_orders = order_counts['completed']
 
         # Revenue calculation (from completed orders using actual charged amounts)
         # Use Payment.amount as the source of truth for actual charged amounts
@@ -243,7 +247,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Optimization: Use DB aggregation
         revenue_data = completed_payments.aggregate(
-            total_revenue=Coalesce(Sum('amount'), Decimal('0.00'), output_field=DecimalField(max_digits=19, decimal_places=2)),
+            total_revenue=Sum('amount'),
             paid_orders_count=Count('id')
         )
 
