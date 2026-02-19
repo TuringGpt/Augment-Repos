@@ -82,7 +82,7 @@ const DUMMY_CONTACTS = [
 const AdminContactMessagesPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // State for dummy data simulation
   const [isLoading, setIsLoading] = useState(false)
@@ -117,6 +117,19 @@ const AdminContactMessagesPage = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleString()
+  }
+
+  // Wait for persisted state to rehydrate before checking auth state
+  // This prevents showing misleading "please login" or "access denied" UI
+  // during the brief hydration period on initial page load
+  if (!hasHydrated || authLoading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
   }
 
   // Check if user is authenticated and is an admin
