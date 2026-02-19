@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -86,11 +86,28 @@ const AdminContactMessagesPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [contacts] = useState(DUMMY_CONTACTS)
 
+  // Ref to store the timeout ID for cleanup
+  const refreshTimeoutRef = useRef<number | null>(null)
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handleRefresh = () => {
     setIsLoading(true)
+    // Clear any existing timeout
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current)
+    }
     // Simulate loading
-    setTimeout(() => {
+    refreshTimeoutRef.current = setTimeout(() => {
       setIsLoading(false)
+      refreshTimeoutRef.current = null
     }, 500)
   }
 
