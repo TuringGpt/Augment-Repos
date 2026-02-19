@@ -157,3 +157,20 @@ class ContactTests(BaseAPITestCase):
 
 
 
+
+    def test_create_contact_message_ignores_status(self):
+        # GIVEN an unauthenticated user exists
+        # WHEN we make a post request to create a contact message with a specific status
+        url = reverse("v1:create_contact")
+        payload = {
+            "name": "Test Name",
+            "email": "test@example.com",
+            "message": "Test Message",
+            "status": ContactMessage.Status.RESOLVED # Attempt to set status to resolved
+        }
+        response = self.client.post(url, payload)
+        # THEN we should get a 201 response
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # AND the contact message should be created with the default status (UNREAD)
+        contact_message = ContactMessage.objects.get(name="Test Name")
+        self.assertEqual(contact_message.status, ContactMessage.Status.UNREAD)
