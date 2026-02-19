@@ -885,6 +885,7 @@
     "brands": "Brands",
     "users": "Users",
     "reports": "Reports",
+    "contactMessages": "Contact Messages",
     "reportsPage": {
       "title": "Reports",
       "subtitle": "View and analyze comprehensive business reports",
@@ -913,6 +914,20 @@
         "allSystemsOperational": "All systems operational",
         "systemIssuesDetected": "System issues detected",
         "status": "Status"
+      }
+    },
+    "contactMessagesPage": {
+      "title": "Contact Messages",
+      "subtitle": "View and manage all contact form submissions",
+      "refresh": "Refresh",
+      "totalMessages": "Total Messages: {{count}}",
+      "noMessages": "No contact messages yet",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "subject": "Subject",
+        "message": "Message",
+        "date": "Date"
       }
     },
     "settings": "Settings",

@@ -885,6 +885,7 @@
     "brands": "Marken",
     "users": "Benutzer",
     "reports": "Berichte",
+    "contactMessages": "Kontaktnachrichten",
     "reportsPage": {
       "title": "Berichte",
       "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
@@ -913,6 +914,20 @@
         "allSystemsOperational": "Alle Systeme betriebsbereit",
         "systemIssuesDetected": "Systemprobleme erkannt",
         "status": "Status"
+      }
+    },
+    "contactMessagesPage": {
+      "title": "Kontaktnachrichten",
+      "subtitle": "Alle Kontaktformular-Einsendungen anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "totalMessages": "Gesamtnachrichten: {{count}}",
+      "noMessages": "Noch keine Kontaktnachrichten",
+      "table": {
+        "name": "Name",
+        "email": "E-Mail",
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "date": "Datum"
       }
     },
     "settings": "Einstellungen",

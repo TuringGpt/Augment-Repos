@@ -10,6 +10,7 @@ import {
   Assessment as ReportsIcon,
   Settings as SettingsIcon,
   Store as BrandsIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import Header from '@components/Header'
@@ -23,7 +24,7 @@ import { ROUTES } from '@constants/index'
 const DRAWER_WIDTH = 260
 
 interface NavItem {
-  labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.settings'
+  labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.contactMessages' | 'admin.settings'
   path: string
   icon: React.ReactNode
   activePaths?: string[] // Additional paths that should make this item active
@@ -70,6 +71,11 @@ const AdminLayout = () => {
       labelKey: 'admin.reports',
       path: '/admin/reports',
       icon: <ReportsIcon />,
+    },
+    {
+      labelKey: 'admin.contactMessages',
+      path: '/admin/contact-messages',
+      icon: <EmailIcon />,
     },
     {
       labelKey: 'admin.settings',
