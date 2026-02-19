@@ -162,14 +162,16 @@ const AdminContactMessagesPage = () => {
           </Typography>
         </Box>
         <Tooltip title={t('admin.contactMessagesPage.refresh')}>
-          <IconButton
-            onClick={handleRefresh}
-            color="primary"
-            disabled={isLoading}
-            aria-label={t('admin.contactMessagesPage.refresh')}
-          >
-            <RefreshIcon />
-          </IconButton>
+          <span>
+            <IconButton
+              onClick={handleRefresh}
+              color="primary"
+              disabled={isLoading}
+              aria-label={t('admin.contactMessagesPage.refresh')}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
 
