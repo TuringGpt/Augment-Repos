@@ -920,7 +920,8 @@
       "title": "Messages de Contact",
       "subtitle": "Voir et gérer toutes les soumissions du formulaire de contact",
       "refresh": "Actualiser",
-      "totalMessages": "Total des Messages : {{count}}",
+      "totalMessages": "Total des Messages : {{count}} message",
+      "totalMessages_other": "Total des Messages : {{count}} messages",
       "noMessages": "Aucun message de contact pour le moment",
       "table": {
         "name": "Nom",

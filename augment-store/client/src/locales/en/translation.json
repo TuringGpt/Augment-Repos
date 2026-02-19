@@ -920,7 +920,8 @@
       "title": "Contact Messages",
       "subtitle": "View and manage all contact form submissions",
       "refresh": "Refresh",
-      "totalMessages": "Total Messages: {{count}}",
+      "totalMessages": "Total Messages: {{count}} message",
+      "totalMessages_other": "Total Messages: {{count}} messages",
       "noMessages": "No contact messages yet",
       "table": {
         "name": "Name",

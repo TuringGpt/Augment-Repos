@@ -920,7 +920,8 @@
       "title": "Kontaktnachrichten",
       "subtitle": "Alle Kontaktformular-Einsendungen anzeigen und verwalten",
       "refresh": "Aktualisieren",
-      "totalMessages": "Gesamtnachrichten: {{count}}",
+      "totalMessages": "Gesamtnachrichten: {{count}} Nachricht",
+      "totalMessages_other": "Gesamtnachrichten: {{count}} Nachrichten",
       "noMessages": "Noch keine Kontaktnachrichten",
       "table": {
         "name": "Name",
