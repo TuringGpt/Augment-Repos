@@ -601,6 +601,22 @@
       "successMessage": "¡Suscripción cancelada exitosamente! Ya no recibirás nuestro boletín."
     }
   },
+  "about": {
+    "title": "Acerca de Augment Store",
+    "ourStory": "Nuestra Historia",
+    "ourStoryContent": "Bienvenido a Augment Store, tu destino de confianza para productos de calidad y servicio excepcional. Estamos comprometidos a brindar a nuestros clientes la mejor experiencia de compra posible.",
+    "ourMission": "Nuestra Misión",
+    "ourMissionContent": "Nuestra misión es ofrecer productos de alta calidad a precios competitivos mientras mantenemos los más altos estándares de servicio al cliente. Creemos en construir relaciones duraderas con nuestros clientes a través de la confianza, la transparencia y la excelencia.",
+    "whyChooseUs": "Por Qué Elegirnos",
+    "reasons": {
+      "wideSelection": "Amplia selección de productos de calidad",
+      "competitivePricing": "Precios competitivos",
+      "fastShipping": "Envío rápido y confiable",
+      "excellentSupport": "Excelente atención al cliente",
+      "securePayment": "Procesamiento de pagos seguro",
+      "easyReturns": "Devoluciones e intercambios fáciles"
+    }
+  },
   "contact": {
     "title": "Contáctanos",
     "getInTouch": "Ponte en Contacto",
