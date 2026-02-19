@@ -74,8 +74,10 @@ const DUMMY_CONTACTS = [
  * Admin page for viewing all contact messages submitted by users
  * Currently using dummy data for demonstration purposes
  *
- * Note: Authentication and admin role checks are handled by the AdminRoute guard.
- * This component will only render for authenticated admin users.
+ * Note: This component uses defense-in-depth for access control:
+ * 1. Primary enforcement: AdminRoute guard redirects non-admin users to home
+ * 2. Secondary enforcement: Component-level checks render login/access-denied states
+ *    (These provide graceful fallback UI in case the component is rendered outside the guard)
  */
 const AdminContactMessagesPage = () => {
   const navigate = useNavigate()
