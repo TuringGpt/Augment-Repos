@@ -135,14 +135,15 @@ class BaseProductView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = ProductListSerializer
     auto_select_related = ['brand', 'brand__image', 'category', 'category__image', 'created_by']
-    auto_prefetch_related = ['images']
+    auto_prefetch_related = ['images', 'variants', 'variants__attributes']
     queryset = Product.objects.all()
 
     def get_queryset(self) -> "QuerySet[Product]":
         queryset = super().get_queryset()
         user: "User" = self.request.user
         
-        if (self.request.method in SAFE_METHODS) or user.is_admin:
+    
+        if user.is_admin:
             return queryset
     
         return queryset.filter(created_by=user)
@@ -212,7 +213,6 @@ class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
 
     def invalidate_cache(self):
-        super().invalidate_cache()
         FeaturedProductCacheService().clear_namespace()
 
 
