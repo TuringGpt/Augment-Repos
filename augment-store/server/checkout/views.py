@@ -39,12 +39,13 @@ class BaseOrderView(AutoOptimizeMixin):
     auto_prefetch_related = (
         'items__product__brand',
         'items__product__category',
-        'items__product__images'
+        'items__product__images',
+        'items__product__variants'
     )
 
     def get_queryset(self) -> "QuerySet[Order]":
         # Users can only see their own orders
-        return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
+        return super().get_queryset().order_by('-created_at')
 
 
 class CreateOrderView(BaseOrderView, CreateAPIView):
