@@ -32,6 +32,10 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # AND a ContactMessage object should be created in the database
         self.assertTrue(ContactMessage.objects.filter(name="Test Name").exists())
+        # AND the response should contain created_at and status fields
+        self.assertIn("created_at", response.data)
+        self.assertIn("status", response.data)
+        self.assertEqual(response.data["status"], ContactMessage.Status.UNREAD)
 
     def test_list_contact_messages(self):
         # GIVEN an authenticated admin exists
@@ -56,6 +60,10 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(len(response.data.get("results", [])), 2)
         self.assertEqual(response.data["results"][0]["name"], "Test Name 2")
         self.assertEqual(response.data["results"][1]["name"], "Test Name 1")
+        # AND each contact message should have created_at and status fields
+        for result in response.data["results"]:
+            self.assertIn("created_at", result)
+            self.assertIn("status", result)
         
     def test_retrieve_contact_message(self):
         # GIVEN an authenticated admin exists
@@ -73,6 +81,9 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # AND the response should contain the contact message details
         self.assertEqual(response.data["name"], "Test Name")
+        # AND the response should contain created_at and status fields
+        self.assertIn("created_at", response.data)
+        self.assertIn("status", response.data)
 
     def test_delete_contact_message(self):
         # GIVEN an authenticated admin exists
@@ -111,6 +122,30 @@ class ContactTests(BaseAPITestCase):
         # AND the contact message should be updated in the database
         contact_message.refresh_from_db()
         self.assertEqual(contact_message.name, "Updated Name")
+
+    def test_update_contact_message_status(self):
+        # GIVEN an authenticated admin exists
+        self.authenticated_client.force_authenticate(user=self.admin)
+        # AND a contact message exists in the database with unread status
+        contact_message = ContactMessageFactory(
+            name="Test Name",
+            email="test@example.com",
+            message="Test Message",
+        )
+        self.assertEqual(contact_message.status, ContactMessage.Status.UNREAD)
+        # WHEN we make a patch request to update the status to read
+        url = reverse("v1:contact_detail", kwargs={"pk": str(contact_message.id)})
+        payload = {
+            "status": ContactMessage.Status.READ,
+        }
+        response = self.authenticated_client.patch(url, payload)
+        # THEN we should get a 200 response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # AND the contact message status should be updated in the database
+        contact_message.refresh_from_db()
+        self.assertEqual(contact_message.status, ContactMessage.Status.READ)
+        # AND the response should contain the updated status
+        self.assertEqual(response.data["status"], ContactMessage.Status.READ)
 
     def test_list_contact_message_unauthenticated(self):
         # GIVEN an unauthenticated user exists

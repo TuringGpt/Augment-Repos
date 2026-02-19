@@ -4,4 +4,5 @@ from .models import ContactMessage
 class ContactMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactMessage
-        fields = ["id", "name", "email", "message"]
+        fields = ["id", "name", "email", "message", "created_at", "status"]
+        read_only_fields = ["created_at"]
