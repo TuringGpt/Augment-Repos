@@ -435,7 +435,7 @@ const ProfilePage = () => {
       </Paper>
 
       {/* Support Button - Visible on mobile */}
-      <Box sx={{ mt: 3, display: { xs: 'block', md: 'a' } }}>
+      <Box sx={{ mt: 3, display: { xs: 'block', md: 'none' } }}>
         <Button
           fullWidth
           variant="outlined"
