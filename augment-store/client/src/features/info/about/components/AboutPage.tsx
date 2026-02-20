@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { Colors } from '@config/colors'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 interface FeatureCard {
   icon: ReactNode
