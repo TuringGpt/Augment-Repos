@@ -17,7 +17,6 @@ import {
   Security as SecurityIcon,
   AttachMoney as MoneyIcon,
   Autorenew as AutorenewIcon,
-  TrendingUp as TrendingUpIcon,
   People as PeopleIcon,
   Star as StarIcon,
   Verified as VerifiedIcon,
