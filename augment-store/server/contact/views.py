@@ -3,14 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
-from .serializers import ContactMessageSerializer
+from .serializers import ContactMessageSerializer, ContactMessageAdminSerializer
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
 
 class ContactCacheService(BaseCacheService):
     OBJECT_NAME = "contact"
-    VERSION = 1
+    VERSION = 2  # Incremented due to added fields: created_at, status
 
 
 class ContactFormAnonThrottle(AnonRateThrottle):
@@ -44,6 +44,6 @@ class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     throttle_classes = [ContactFormAnonThrottle, ContactFormUserThrottle]
 
 class ContactDetailView(CacheInvalidatorMixin, BaseContactView, RetrieveUpdateDestroyAPIView):
-    serializer_class = ContactMessageSerializer
+    serializer_class = ContactMessageAdminSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = ContactCacheService
