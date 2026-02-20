@@ -137,6 +137,11 @@ const AdminContactMessagesPage = () => {
 
   // Drawer handlers
   const handleViewDetails = (contact: typeof DUMMY_CONTACTS[0]) => {
+    // Clear any pending close timeout to avoid race condition
+    if (drawerCloseTimeoutRef.current !== null) {
+      clearTimeout(drawerCloseTimeoutRef.current)
+      drawerCloseTimeoutRef.current = null
+    }
     setSelectedContact(contact)
     setIsDetailsDrawerOpen(true)
   }
