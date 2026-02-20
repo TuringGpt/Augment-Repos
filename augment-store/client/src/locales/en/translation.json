@@ -939,12 +939,16 @@
       "totalMessages": "Total Messages: {{count}} message",
       "totalMessages_other": "Total Messages: {{count}} messages",
       "noMessages": "No contact messages yet",
+      "viewDetails": "View Details",
+      "messageDetails": "Message Details",
       "table": {
         "name": "Name",
         "email": "Email",
         "subject": "Subject",
         "message": "Message",
-        "date": "Date"
+        "date": "Date",
+        "actions": "Actions",
+        "id": "Message ID"
       }
     },
     "settings": "Settings",

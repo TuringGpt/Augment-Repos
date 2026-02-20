@@ -939,12 +939,16 @@
       "totalMessages": "Gesamtnachrichten: {{count}} Nachricht",
       "totalMessages_other": "Gesamtnachrichten: {{count}} Nachrichten",
       "noMessages": "Noch keine Kontaktnachrichten",
+      "viewDetails": "Details anzeigen",
+      "messageDetails": "Nachrichtendetails",
       "table": {
         "name": "Name",
         "email": "E-Mail",
         "subject": "Betreff",
         "message": "Nachricht",
-        "date": "Datum"
+        "date": "Datum",
+        "actions": "Aktionen",
+        "id": "Nachrichten-ID"
       }
     },
     "settings": "Einstellungen",
