@@ -39,8 +39,7 @@ class BaseOrderView(AutoOptimizeMixin):
     auto_prefetch_related = (
         'items__product__brand',
         'items__product__category',
-        'items__product__images',
-        'items__product__variants'
+        'items__product__images'
     )
 
     def get_queryset(self) -> "QuerySet[Order]":
