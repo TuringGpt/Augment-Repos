@@ -19,6 +19,7 @@ import {
   Chip,
   Drawer,
   Divider,
+  useTheme,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -90,6 +91,7 @@ const DUMMY_CONTACTS = [
 const AdminContactMessagesPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const theme = useTheme()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // State for dummy data simulation
@@ -103,6 +105,10 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
+
+  // Get the drawer transition duration from theme
+  // MUI Drawer uses 'leavingScreen' duration for exit transitions
+  const drawerTransitionDuration = theme.transitions.duration.leavingScreen
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -154,10 +160,11 @@ const AdminContactMessagesPage = () => {
     }
     // Delay clearing selectedContact until after the drawer close animation completes
     // This prevents the drawer content from disappearing during the transition
+    // Use the theme's leavingScreen duration to match the Drawer's exit transition
     drawerCloseTimeoutRef.current = setTimeout(() => {
       setSelectedContact(null)
       drawerCloseTimeoutRef.current = null
-    }, 300) // Material-UI Drawer default transition duration is ~225-300ms
+    }, drawerTransitionDuration)
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -358,6 +365,10 @@ const AdminContactMessagesPage = () => {
         anchor="right"
         open={isDetailsDrawerOpen}
         onClose={handleCloseDetailsDrawer}
+        transitionDuration={{
+          enter: theme.transitions.duration.enteringScreen,
+          exit: theme.transitions.duration.leavingScreen,
+        }}
         sx={{
           '& .MuiDrawer-paper': {
             width: { xs: '100%', sm: 500, md: 600 },
