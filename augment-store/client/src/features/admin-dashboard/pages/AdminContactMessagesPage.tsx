@@ -364,7 +364,11 @@ const AdminContactMessagesPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.contactMessagesPage.messageDetails')}
             </Typography>
-            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }}>
+            <IconButton
+              onClick={handleCloseDetailsDrawer}
+              sx={{ color: 'white' }}
+              aria-label={t('common.close')}
+            >
               <CloseIcon />
             </IconButton>
           </Box>
