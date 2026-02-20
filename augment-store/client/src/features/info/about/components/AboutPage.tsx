@@ -10,6 +10,7 @@ import {
   Fade,
   Chip,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import {
   Inventory as InventoryIcon,
   LocalShipping as ShippingIcon,
@@ -194,7 +195,7 @@ const AboutPage = () => {
                         display: 'inline-flex',
                         p: 2,
                         borderRadius: '50%',
-                        backgroundColor: Colors.hexWithAlpha(stat.color, 0.1),
+                        backgroundColor: alpha(stat.color, 0.1),
                         color: stat.color,
                         mb: 2,
                       }}
@@ -357,7 +358,7 @@ const AboutPage = () => {
                           display: 'inline-flex',
                           p: 2,
                           borderRadius: 2,
-                          backgroundColor: Colors.hexWithAlpha(theme.palette.primary.main, 0.1),
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
                           color: theme.palette.primary.main,
                           mb: 2,
                         }}
