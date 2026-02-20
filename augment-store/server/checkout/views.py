@@ -45,7 +45,7 @@ class BaseOrderView(AutoOptimizeMixin):
 
     def get_queryset(self) -> "QuerySet[Order]":
         # Users can only see their own orders
-        return super().get_queryset().order_by('-created_at')
+        return super().get_queryset().filter(created_by=self.request.user).order_by('-created_at')
 
 
 class CreateOrderView(BaseOrderView, CreateAPIView):
