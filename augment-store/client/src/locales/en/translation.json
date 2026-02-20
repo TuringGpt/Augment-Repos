@@ -603,18 +603,32 @@
   },
   "about": {
     "title": "About Augment Store",
+    "subtitle": "Your trusted destination for quality products and exceptional service",
+    "established": "Established 2020",
     "ourStory": "Our Story",
     "ourStoryContent": "Welcome to Augment Store, your trusted destination for quality products and exceptional service. We are committed to providing our customers with the best shopping experience possible.",
     "ourMission": "Our Mission",
     "ourMissionContent": "Our mission is to deliver high-quality products at competitive prices while maintaining the highest standards of customer service. We believe in building lasting relationships with our customers through trust, transparency, and excellence.",
     "whyChooseUs": "Why Choose Us",
+    "stats": {
+      "happyCustomers": "Happy Customers",
+      "products": "Products",
+      "averageRating": "Average Rating",
+      "satisfactionRate": "Satisfaction Rate"
+    },
     "reasons": {
       "wideSelection": "Wide selection of quality products",
+      "wideSelectionDesc": "Discover thousands of products across multiple categories",
       "competitivePricing": "Competitive pricing",
+      "competitivePricingDesc": "Best prices guaranteed with regular deals and discounts",
       "fastShipping": "Fast and reliable shipping",
+      "fastShippingDesc": "Quick delivery to your doorstep with real-time tracking",
       "excellentSupport": "Excellent customer support",
+      "excellentSupportDesc": "24/7 customer support ready to help you anytime",
       "securePayment": "Secure payment processing",
-      "easyReturns": "Easy returns and exchanges"
+      "securePaymentDesc": "Safe and encrypted payment processing for your peace of mind",
+      "easyReturns": "Easy returns and exchanges",
+      "easyReturnsDesc": "Hassle-free returns and exchanges within 30 days"
     }
   },
   "contact": {
