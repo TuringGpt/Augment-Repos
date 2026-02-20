@@ -100,14 +100,18 @@ const AdminContactMessagesPage = () => {
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<typeof DUMMY_CONTACTS[0] | null>(null)
 
-  // Ref to store the timeout ID for cleanup
+  // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
+  const drawerCloseTimeoutRef = useRef<number | null>(null)
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
+      }
+      if (drawerCloseTimeoutRef.current !== null) {
+        clearTimeout(drawerCloseTimeoutRef.current)
       }
     }
   }, [])
@@ -139,7 +143,16 @@ const AdminContactMessagesPage = () => {
 
   const handleCloseDetailsDrawer = () => {
     setIsDetailsDrawerOpen(false)
-    setSelectedContact(null)
+    // Clear any existing timeout
+    if (drawerCloseTimeoutRef.current !== null) {
+      clearTimeout(drawerCloseTimeoutRef.current)
+    }
+    // Delay clearing selectedContact until after the drawer close animation completes
+    // This prevents the drawer content from disappearing during the transition
+    drawerCloseTimeoutRef.current = setTimeout(() => {
+      setSelectedContact(null)
+      drawerCloseTimeoutRef.current = null
+    }, 300) // Material-UI Drawer default transition duration is ~225-300ms
   }
 
   // Wait for persisted state to rehydrate before checking auth state
