@@ -603,18 +603,32 @@
   },
   "about": {
     "title": "Über Augment Store",
+    "subtitle": "Ihr vertrauenswürdiges Ziel für Qualitätsprodukte und außergewöhnlichen Service",
+    "established": "Gegründet 2020",
     "ourStory": "Unsere Geschichte",
     "ourStoryContent": "Willkommen bei Augment Store, Ihrem vertrauenswürdigen Ziel für Qualitätsprodukte und außergewöhnlichen Service. Wir sind bestrebt, unseren Kunden das bestmögliche Einkaufserlebnis zu bieten.",
     "ourMission": "Unsere Mission",
     "ourMissionContent": "Unsere Mission ist es, qualitativ hochwertige Produkte zu wettbewerbsfähigen Preisen zu liefern und dabei die höchsten Standards im Kundenservice aufrechtzuerhalten. Wir glauben daran, dauerhafte Beziehungen zu unseren Kunden durch Vertrauen, Transparenz und Exzellenz aufzubauen.",
     "whyChooseUs": "Warum uns wählen",
+    "stats": {
+      "happyCustomers": "Zufriedene Kunden",
+      "products": "Produkte",
+      "averageRating": "Durchschnittliche Bewertung",
+      "satisfactionRate": "Zufriedenheitsrate"
+    },
     "reasons": {
       "wideSelection": "Große Auswahl an Qualitätsprodukten",
+      "wideSelectionDesc": "Entdecken Sie Tausende von Produkten in mehreren Kategorien",
       "competitivePricing": "Wettbewerbsfähige Preise",
+      "competitivePricingDesc": "Beste Preise garantiert mit regelmäßigen Angeboten und Rabatten",
       "fastShipping": "Schneller und zuverlässiger Versand",
+      "fastShippingDesc": "Schnelle Lieferung an Ihre Haustür mit Echtzeit-Tracking",
       "excellentSupport": "Exzellenter Kundensupport",
+      "excellentSupportDesc": "24/7 Kundensupport bereit, Ihnen jederzeit zu helfen",
       "securePayment": "Sichere Zahlungsabwicklung",
-      "easyReturns": "Einfache Rücksendungen und Umtausch"
+      "securePaymentDesc": "Sichere und verschlüsselte Zahlungsabwicklung für Ihre Sicherheit",
+      "easyReturns": "Einfache Rücksendungen und Umtausch",
+      "easyReturnsDesc": "Problemlose Rücksendungen und Umtausch innerhalb von 30 Tagen"
     }
   },
   "contact": {

@@ -603,18 +603,32 @@
   },
   "about": {
     "title": "À Propos d'Augment Store",
+    "subtitle": "Votre destination de confiance pour des produits de qualité et un service exceptionnel",
+    "established": "Établi en 2020",
     "ourStory": "Notre Histoire",
     "ourStoryContent": "Bienvenue chez Augment Store, votre destination de confiance pour des produits de qualité et un service exceptionnel. Nous nous engageons à offrir à nos clients la meilleure expérience d'achat possible.",
     "ourMission": "Notre Mission",
     "ourMissionContent": "Notre mission est de fournir des produits de haute qualité à des prix compétitifs tout en maintenant les normes les plus élevées de service client. Nous croyons en la construction de relations durables avec nos clients grâce à la confiance, la transparence et l'excellence.",
     "whyChooseUs": "Pourquoi Nous Choisir",
+    "stats": {
+      "happyCustomers": "Clients Satisfaits",
+      "products": "Produits",
+      "averageRating": "Note Moyenne",
+      "satisfactionRate": "Taux de Satisfaction"
+    },
     "reasons": {
       "wideSelection": "Large sélection de produits de qualité",
+      "wideSelectionDesc": "Découvrez des milliers de produits dans plusieurs catégories",
       "competitivePricing": "Prix compétitifs",
+      "competitivePricingDesc": "Meilleurs prix garantis avec des offres et réductions régulières",
       "fastShipping": "Livraison rapide et fiable",
+      "fastShippingDesc": "Livraison rapide à votre porte avec suivi en temps réel",
       "excellentSupport": "Excellent support client",
+      "excellentSupportDesc": "Support client 24/7 prêt à vous aider à tout moment",
       "securePayment": "Traitement des paiements sécurisé",
-      "easyReturns": "Retours et échanges faciles"
+      "securePaymentDesc": "Traitement des paiements sûr et crypté pour votre tranquillité d'esprit",
+      "easyReturns": "Retours et échanges faciles",
+      "easyReturnsDesc": "Retours et échanges sans tracas dans les 30 jours"
     }
   },
   "contact": {
