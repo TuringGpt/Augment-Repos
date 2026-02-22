@@ -17,10 +17,19 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  Drawer,
+  Divider,
+  useTheme,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
   Email as EmailIcon,
+  Close as CloseIcon,
+  Visibility as VisibilityIcon,
+  Person as PersonIcon,
+  Subject as SubjectIcon,
+  Message as MessageIcon,
+  AccessTime as AccessTimeIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -82,20 +91,33 @@ const DUMMY_CONTACTS = [
 const AdminContactMessagesPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const theme = useTheme()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // State for dummy data simulation
   const [isLoading, setIsLoading] = useState(false)
   const [contacts] = useState(DUMMY_CONTACTS)
 
-  // Ref to store the timeout ID for cleanup
-  const refreshTimeoutRef = useRef<number | null>(null)
+  // Drawer state
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<typeof DUMMY_CONTACTS[0] | null>(null)
 
-  // Cleanup timeout on unmount
+  // Ref to store the timeout IDs for cleanup
+  const refreshTimeoutRef = useRef<number | null>(null)
+  const drawerCloseTimeoutRef = useRef<number | null>(null)
+
+  // Get the drawer transition duration from theme
+  // MUI Drawer uses 'leavingScreen' duration for exit transitions
+  const drawerTransitionDuration = theme.transitions.duration.leavingScreen
+
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
+      }
+      if (drawerCloseTimeoutRef.current !== null) {
+        clearTimeout(drawerCloseTimeoutRef.current)
       }
     }
   }, [])
@@ -117,6 +139,32 @@ const AdminContactMessagesPage = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleString()
+  }
+
+  // Drawer handlers
+  const handleViewDetails = (contact: typeof DUMMY_CONTACTS[0]) => {
+    // Clear any pending close timeout to avoid race condition
+    if (drawerCloseTimeoutRef.current !== null) {
+      clearTimeout(drawerCloseTimeoutRef.current)
+      drawerCloseTimeoutRef.current = null
+    }
+    setSelectedContact(contact)
+    setIsDetailsDrawerOpen(true)
+  }
+
+  const handleCloseDetailsDrawer = () => {
+    setIsDetailsDrawerOpen(false)
+    // Clear any existing timeout
+    if (drawerCloseTimeoutRef.current !== null) {
+      clearTimeout(drawerCloseTimeoutRef.current)
+    }
+    // Delay clearing selectedContact until after the drawer close animation completes
+    // This prevents the drawer content from disappearing during the transition
+    // Use the theme's leavingScreen duration to match the Drawer's exit transition
+    drawerCloseTimeoutRef.current = setTimeout(() => {
+      setSelectedContact(null)
+      drawerCloseTimeoutRef.current = null
+    }, drawerTransitionDuration)
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -210,6 +258,7 @@ const AdminContactMessagesPage = () => {
                   <TableCell>{t('admin.contactMessagesPage.table.subject')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.message')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.date')}</TableCell>
+                  <TableCell align="center">{t('admin.contactMessagesPage.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -282,6 +331,20 @@ const AdminContactMessagesPage = () => {
                         sx={{ fontSize: '0.75rem' }}
                       />
                     </TableCell>
+
+                    {/* Actions */}
+                    <TableCell align="center">
+                      <Tooltip title={t('admin.contactMessagesPage.viewDetails')}>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleViewDetails(contact)}
+                          aria-label={t('admin.contactMessagesPage.viewDetails')}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -296,6 +359,186 @@ const AdminContactMessagesPage = () => {
           </Typography>
         </Paper>
       )}
+
+      {/* Contact Message Details Drawer */}
+      <Drawer
+        anchor="right"
+        open={isDetailsDrawerOpen}
+        onClose={handleCloseDetailsDrawer}
+        transitionDuration={{
+          enter: theme.transitions.duration.enteringScreen,
+          exit: theme.transitions.duration.leavingScreen,
+        }}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.contactMessagesPage.messageDetails')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseDetailsDrawer}
+              sx={{ color: 'white' }}
+              aria-label={t('common.close')}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Details Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {selectedContact && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Contact Name */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <PersonIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.name')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body1" sx={{ pl: 3.5 }}>
+                    {selectedContact.name}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                {/* Contact Email */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <EmailIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.email')}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      pl: 3.5,
+                      fontFamily: 'monospace',
+                      fontSize: '0.95rem',
+                      color: 'primary.main'
+                    }}
+                  >
+                    {selectedContact.email}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                {/* Subject */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <SubjectIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.subject')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body1" sx={{ pl: 3.5, fontWeight: 500 }}>
+                    {selectedContact.subject}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                {/* Message */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <MessageIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.message')}
+                    </Typography>
+                  </Box>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      ml: 3.5,
+                      bgcolor: 'background.default',
+                      borderRadius: 1
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        lineHeight: 1.7
+                      }}
+                    >
+                      {selectedContact.message}
+                    </Typography>
+                  </Paper>
+                </Box>
+
+                <Divider />
+
+                {/* Date */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <AccessTimeIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.date')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ pl: 3.5 }}>
+                    {formatDate(selectedContact.created_at)}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                {/* Message ID */}
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {t('admin.contactMessagesPage.table.id')}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.85rem',
+                      color: 'text.secondary'
+                    }}
+                  >
+                    {selectedContact.id}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseDetailsDrawer}
+            >
+              {t('common.close')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }
