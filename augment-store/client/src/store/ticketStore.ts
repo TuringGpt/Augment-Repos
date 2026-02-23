@@ -195,6 +195,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
   fetchTicketById: async (id: string) => {
     const requestId = ++fetchTicketRequestCounter
+    // Invalidate any in-flight fetchComments requests to prevent stale comments
+    // from a previous ticket being populated after navigation
+    fetchCommentsRequestCounter++
 
     try {
       set({
