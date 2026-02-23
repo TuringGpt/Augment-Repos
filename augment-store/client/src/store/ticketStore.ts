@@ -79,6 +79,12 @@ let fetchTicketsRequestCounter = 0
 let fetchTicketRequestCounter = 0
 let fetchCommentsRequestCounter = 0
 
+// Request counters for mutation operations to prevent stale error state
+// Only the latest operation of each type should be able to set error state
+let createCommentRequestCounter = 0
+let updateCommentRequestCounter = 0
+let deleteCommentRequestCounter = 0
+
 // In-flight operation counters for mutation operations
 // For mutations, we need to track how many operations are in-flight to prevent
 // overlapping requests from prematurely clearing the loading state
@@ -478,6 +484,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchTicketRequestCounter++
     // Invalidate any in-flight fetchComments requests to prevent stale UI state
     fetchCommentsRequestCounter++
+    // Invalidate any in-flight mutation requests to prevent stale error UI
+    createCommentRequestCounter++
+    updateCommentRequestCounter++
+    deleteCommentRequestCounter++
 
     set({
       selectedTicket: null,
@@ -593,6 +603,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   createComment: async (ticketId: string, content: string) => {
+    // Assign a unique request ID to this operation to prevent race conditions on error state
+    const requestId = ++createCommentRequestCounter
     // Increment in-flight counter and set loading state
     incrementMutation(ticketId, 'create')
     set({ isCreatingComment: true, createCommentError: null })
@@ -628,16 +640,18 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to create comment'
 
       // Only update error state if the ticketId matches the currently selected ticket
+      // AND this is still the latest createComment request (prevent stale errors)
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+      const isLatestRequest = requestId === createCommentRequestCounter
 
       // Decrement counter and update loading state
       decrementMutation(ticketId, 'create')
 
-      if (isCurrentTicket) {
+      if (isCurrentTicket && isLatestRequest) {
         set({ createCommentError: errorMessage, isCreatingComment: getTotalMutationsForTicket(ticketId) > 0 })
       } else {
-        // Reset loading flag for operations on non-current tickets
+        // Reset loading flag for operations on non-current tickets or stale requests
         set({ isCreatingComment: getTotalMutationsForTicket(ticketId) > 0 })
       }
 
@@ -646,6 +660,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   updateComment: async (ticketId: string, commentId: string, data: UpdateCommentRequest) => {
+    // Assign a unique request ID to this operation to prevent race conditions on error state
+    const requestId = ++updateCommentRequestCounter
     // Increment in-flight counter and set loading state
     incrementMutation(ticketId, 'update')
     set({ isUpdatingComment: true, updateCommentError: null })
@@ -682,16 +698,18 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to update comment'
 
       // Only update error state if the ticketId matches the currently selected ticket
+      // AND this is still the latest updateComment request (prevent stale errors)
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+      const isLatestRequest = requestId === updateCommentRequestCounter
 
       // Decrement counter and update loading state
       decrementMutation(ticketId, 'update')
 
-      if (isCurrentTicket) {
+      if (isCurrentTicket && isLatestRequest) {
         set({ updateCommentError: errorMessage, isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0 })
       } else {
-        // Reset loading flag for operations on non-current tickets
+        // Reset loading flag for operations on non-current tickets or stale requests
         set({ isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0 })
       }
 
@@ -700,6 +718,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   deleteComment: async (ticketId: string, commentId: string) => {
+    // Assign a unique request ID to this operation to prevent race conditions on error state
+    const requestId = ++deleteCommentRequestCounter
     // Increment in-flight counter and set loading state
     incrementMutation(ticketId, 'delete')
     set({ isDeletingComment: true, deleteCommentError: null })
@@ -733,16 +753,18 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment'
 
       // Only update error state if the ticketId matches the currently selected ticket
+      // AND this is still the latest deleteComment request (prevent stale errors)
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+      const isLatestRequest = requestId === deleteCommentRequestCounter
 
       // Decrement counter and update loading state
       decrementMutation(ticketId, 'delete')
 
-      if (isCurrentTicket) {
+      if (isCurrentTicket && isLatestRequest) {
         set({ deleteCommentError: errorMessage, isDeletingComment: getTotalMutationsForTicket(ticketId) > 0 })
       } else {
-        // Reset loading flag for operations on non-current tickets
+        // Reset loading flag for operations on non-current tickets or stale requests
         set({ isDeletingComment: getTotalMutationsForTicket(ticketId) > 0 })
       }
 
@@ -753,6 +775,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   clearComments: () => {
     // Invalidate any in-flight fetchComments requests to prevent stale UI state
     fetchCommentsRequestCounter++
+    // Invalidate any in-flight mutation requests to prevent stale error UI
+    createCommentRequestCounter++
+    updateCommentRequestCounter++
+    deleteCommentRequestCounter++
 
     set({
       comments: [],
@@ -760,8 +786,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       currentCommentsTicketId: null,
       // Reset loading flag to prevent perpetual loading state if invalidation happens during in-flight fetch
       isFetchingComments: false,
-      // Reset error state to prevent stale error UI
+      // Reset error states to prevent stale error UI
       fetchCommentsError: null,
+      createCommentError: null,
+      updateCommentError: null,
+      deleteCommentError: null,
     })
   },
 }))
