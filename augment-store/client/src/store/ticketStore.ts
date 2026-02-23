@@ -38,15 +38,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { page: _, ...filters } = params ?? {}
 
+    // Only update lastFilters if new filter keys are explicitly provided
+    // This prevents overwriting existing filters when only page is changed
+    const hasNewFilters = Object.keys(filters).length > 0
+    const updatedFilters = hasNewFilters ? filters : state.lastFilters
+
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null, lastFilters: filters })
+    set({ isLoading: true, error: null, lastFilters: updatedFilters })
 
     try {
       const response = await ticketService.getTickets({
-        ...params,
+        ...updatedFilters,
         page: currentPage,
       })
 
@@ -86,7 +91,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
         // If the requested page was out of range and we have tickets, refetch the valid page
         if (validPage !== currentPage && calculatedTotalPages > 0) {
-          return await get().fetchTickets({ ...params, page: validPage })
+          return await get().fetchTickets({ ...updatedFilters, page: validPage })
         }
 
         set({
