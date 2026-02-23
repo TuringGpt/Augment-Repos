@@ -125,8 +125,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Only update state if this is still the latest request
       if (requestId !== fetchTicketsRequestCounter) {
-        // Reset loading flag for stale requests to prevent stuck loading state
-        set({ isFetchingTickets: false })
+        // Don't clear loading flag for stale requests - a newer request is still in-flight
         return response
       }
 
@@ -150,11 +149,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to fetch tickets:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tickets'
 
+      // Only update error state and clear loading flag if this is still the latest request
       if (requestId === fetchTicketsRequestCounter) {
         set({ fetchTicketsError: errorMessage, isFetchingTickets: false })
-      } else {
-        // Reset loading flag for stale requests to prevent stuck loading state
-        set({ isFetchingTickets: false })
       }
 
       throw error
@@ -171,8 +168,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Only update state if this is still the latest request
       if (requestId !== fetchTicketRequestCounter) {
-        // Reset loading flag for stale requests to prevent stuck loading state
-        set({ isFetchingTicket: false })
+        // Don't clear loading flag for stale requests - a newer request is still in-flight
         return ticket
       }
 
@@ -186,11 +182,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to fetch ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch ticket'
 
+      // Only update error state and clear loading flag if this is still the latest request
       if (requestId === fetchTicketRequestCounter) {
         set({ fetchTicketError: errorMessage, isFetchingTicket: false })
-      } else {
-        // Reset loading flag for stale requests to prevent stuck loading state
-        set({ isFetchingTicket: false })
       }
 
       throw error
