@@ -438,6 +438,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const comment = await ticketService.createComment(ticketId, { content })
 
+      // Only update state if the user is still viewing the same ticket
+      const currentState = get()
+      const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+
+      if (!isCurrentTicket) {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isCreatingComment: false })
+        return comment
+      }
+
       // Add the new comment to the beginning of the list (backend returns comments ordered by -created_at)
       set((state) => ({
         comments: [comment, ...state.comments],
@@ -459,6 +469,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set({ isUpdatingComment: true, updateCommentError: null })
 
       const updatedComment = await ticketService.updateComment(ticketId, commentId, data)
+
+      // Only update state if the user is still viewing the same ticket
+      const currentState = get()
+      const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+
+      if (!isCurrentTicket) {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isUpdatingComment: false })
+        return updatedComment
+      }
 
       // Update the comment in the list
       set((state) => ({
@@ -482,6 +502,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set({ isDeletingComment: true, deleteCommentError: null })
 
       await ticketService.deleteComment(ticketId, commentId)
+
+      // Only update state if the user is still viewing the same ticket
+      const currentState = get()
+      const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+
+      if (!isCurrentTicket) {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isDeletingComment: false })
+        return
+      }
 
       // Remove the comment from the list
       set((state) => ({
