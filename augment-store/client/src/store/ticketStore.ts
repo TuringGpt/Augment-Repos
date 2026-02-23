@@ -560,12 +560,31 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       }
 
       // Check if there are any in-flight comment mutations for THIS ticket
-      // If so, don't overwrite the comments array to prevent losing optimistic updates
+      // If so, merge the fetched comments with the current state to preserve optimistic updates
       // This is scoped to the same ticketId to avoid blocking fetchComments for other tickets
       if (hasTicketMutations(ticketId)) {
-        // Only update the loading flag, but don't replace the comments array
-        // The mutations will update the comments array when they complete
-        set({ isFetchingComments: false })
+        // Merge fetched comments with current state to preserve optimistic updates
+        // while still hydrating the thread with server data
+        const currentComments = currentState.comments
+        const fetchedComments = response.results
+
+        // Create a map of fetched comment IDs for quick lookup
+        const fetchedCommentIds = new Set(fetchedComments.map(c => c.id))
+
+        // Find optimistic updates (comments in current state that aren't in fetched results)
+        // These are likely newly created comments that haven't been confirmed by the server yet
+        const optimisticUpdates = currentComments.filter(c => !fetchedCommentIds.has(c.id))
+
+        // Merge: optimistic updates first (they're newer), then fetched comments
+        // This preserves the order where newest comments appear first
+        const mergedComments = [...optimisticUpdates, ...fetchedComments]
+
+        set({
+          comments: mergedComments,
+          totalComments: response.count,
+          currentCommentsTicketId: ticketId,
+          isFetchingComments: false,
+        })
         return response
       }
 
