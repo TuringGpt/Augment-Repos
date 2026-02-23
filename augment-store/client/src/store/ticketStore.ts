@@ -379,6 +379,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       },
       // Reset loading flag to prevent perpetual loading state if invalidation happens during in-flight fetch
       isFetchingTickets: false,
+      // Reset error states to prevent stale error UI after clearing tickets
+      fetchTicketsError: null,
+      createTicketError: null,
+      updateTicketError: null,
+      deleteTicketError: null,
     })
   },
 
