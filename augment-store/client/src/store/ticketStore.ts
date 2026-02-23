@@ -213,6 +213,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         currentCommentsTicketId: null,
         // Reset loading flag to prevent stuck loading state when invalidating in-flight comment fetches
         isFetchingComments: false,
+        fetchCommentsError: null,
       })
 
       const ticket = await ticketService.getTicketById(id)
