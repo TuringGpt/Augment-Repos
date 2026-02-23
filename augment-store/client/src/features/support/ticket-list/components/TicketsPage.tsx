@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Box,
   Chip,
@@ -43,58 +43,79 @@ const TicketsPage = () => {
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Request counter to track the latest fetch request
+  // Prevents stale responses from overwriting newer state
+  const requestCounterRef = useRef(0)
+
   // Reset page to 1 when filters or search query changes
   useEffect(() => {
     setPage(1)
   }, [statusFilter, priorityFilter, searchQuery])
 
   const loadTickets = useCallback(async () => {
+    // Increment counter and capture the current request ID
+    requestCounterRef.current += 1
+    const requestId = requestCounterRef.current
+
+    // Capture the current page value at the time of the request
+    const currentPage = page
+
     setIsLoading(true)
     setError(null)
 
     try {
       const response = await ticketService.getTickets({
-        page,
+        page: currentPage,
         status: statusFilter || undefined,
         priority: priorityFilter || undefined,
         search: searchQuery || undefined,
       })
 
-      setTickets(response.results)
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === requestCounterRef.current) {
+        setTickets(response.results)
 
-      // Calculate total pages dynamically from response data
-      // This handles backend pagination size changes and different environments
-      let calculatedTotalPages: number
+        // Calculate total pages dynamically from response data
+        // This handles backend pagination size changes and different environments
+        let calculatedTotalPages: number
 
-      if (response.count === 0) {
-        // Edge case: empty results should show 1 page (not 0) for pagination UI compatibility
-        calculatedTotalPages = 1
-      } else if (response.results.length > 0) {
-        // Derive page size from actual results length (works for all pages except possibly the last)
-        // For the last page, this might underestimate, but we can use the presence of 'next' to refine
-        const derivedPageSize = response.results.length
+        if (response.count === 0) {
+          // Edge case: empty results should show 1 page (not 0) for pagination UI compatibility
+          calculatedTotalPages = 1
+        } else if (response.results.length > 0) {
+          // Derive page size from actual results length (works for all pages except possibly the last)
+          // For the last page, this might underestimate, but we can use the presence of 'next' to refine
+          const derivedPageSize = response.results.length
 
-        // If there's a next page, we know we're not on the last page, so use derivedPageSize
-        // If there's no next page, we're on the last page, so calculate based on total count
-        if (response.next) {
-          calculatedTotalPages = Math.ceil(response.count / derivedPageSize)
+          // If there's a next page, we know we're not on the last page, so use derivedPageSize
+          // If there's no next page, we're on the last page, so calculate based on total count
+          if (response.next) {
+            calculatedTotalPages = Math.ceil(response.count / derivedPageSize)
+          } else {
+            // On the last page: calculate page size from previous pages
+            // totalPages = currentPage, and pageSize = count / (currentPage - 1) for previous pages
+            // But simpler: if we're on last page, totalPages = currentPage
+            calculatedTotalPages = currentPage
+          }
         } else {
-          // On the last page: calculate page size from previous pages
-          // totalPages = currentPage, and pageSize = count / (currentPage - 1) for previous pages
-          // But simpler: if we're on last page, totalPages = currentPage
-          calculatedTotalPages = page
+          // Fallback: shouldn't happen (count > 0 but results empty), but handle gracefully
+          calculatedTotalPages = 1
         }
-      } else {
-        // Fallback: shouldn't happen (count > 0 but results empty), but handle gracefully
-        calculatedTotalPages = 1
-      }
 
-      setTotalPages(calculatedTotalPages)
+        setTotalPages(calculatedTotalPages)
+      }
     } catch (err) {
-      console.error('Failed to load tickets:', err)
-      setError('Failed to load tickets. Please try again.')
+      // Only update error state if this is still the latest request
+      if (requestId === requestCounterRef.current) {
+        console.error('Failed to load tickets:', err)
+        setError('Failed to load tickets. Please try again.')
+      }
     } finally {
-      setIsLoading(false)
+      // Only update loading state if this is still the latest request
+      if (requestId === requestCounterRef.current) {
+        setIsLoading(false)
+      }
     }
   }, [page, statusFilter, priorityFilter, searchQuery])
 
