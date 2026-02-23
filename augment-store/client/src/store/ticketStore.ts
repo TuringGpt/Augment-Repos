@@ -1,0 +1,405 @@
+import { create } from 'zustand'
+import { ticketService } from '@services/api'
+import type {
+  Ticket,
+  TicketListItem,
+  TicketListResponse,
+  CreateTicketRequest,
+  UpdateTicketRequest,
+  Comment,
+  CommentListResponse,
+  CreateCommentRequest,
+  UpdateCommentRequest,
+  TicketFilterParams,
+} from '@features/support/types'
+
+interface TicketState {
+  // Tickets list state
+  tickets: TicketListItem[]
+  totalTickets: number
+  currentPage: number
+  totalPages: number
+  
+  // Single ticket detail
+  selectedTicket: Ticket | null
+  
+  // Comments for selected ticket
+  comments: Comment[]
+  totalComments: number
+  
+  // Filter params
+  filterParams: TicketFilterParams
+  
+  // Loading states
+  isFetchingTickets: boolean
+  isFetchingTicket: boolean
+  isCreatingTicket: boolean
+  isUpdatingTicket: boolean
+  isDeletingTicket: boolean
+  isFetchingComments: boolean
+  isCreatingComment: boolean
+  isUpdatingComment: boolean
+  isDeletingComment: boolean
+  
+  // Error states
+  fetchTicketsError: string | null
+  fetchTicketError: string | null
+  createTicketError: string | null
+  updateTicketError: string | null
+  deleteTicketError: string | null
+  fetchCommentsError: string | null
+  createCommentError: string | null
+  updateCommentError: string | null
+  deleteCommentError: string | null
+  
+  // Actions - Tickets
+  fetchTickets: (params?: TicketFilterParams) => Promise<TicketListResponse>
+  fetchTicketById: (id: string) => Promise<Ticket>
+  createTicket: (data: CreateTicketRequest) => Promise<Ticket>
+  updateTicket: (id: string, data: UpdateTicketRequest) => Promise<Ticket>
+  deleteTicket: (id: string) => Promise<void>
+  setFilterParams: (params: Partial<TicketFilterParams>) => void
+  clearSelectedTicket: () => void
+  clearTickets: () => void
+  setPage: (page: number) => void
+  
+  // Actions - Comments
+  fetchComments: (ticketId: string) => Promise<CommentListResponse>
+  createComment: (ticketId: string, content: string) => Promise<Comment>
+  updateComment: (ticketId: string, commentId: string, data: UpdateCommentRequest) => Promise<Comment>
+  deleteComment: (ticketId: string, commentId: string) => Promise<void>
+  clearComments: () => void
+}
+
+// Request counter to prevent race conditions
+let fetchTicketsRequestCounter = 0
+let fetchTicketRequestCounter = 0
+
+export const useTicketStore = create<TicketState>((set, get) => ({
+  // Initial state
+  tickets: [],
+  totalTickets: 0,
+  currentPage: 1,
+  totalPages: 1,
+  selectedTicket: null,
+  comments: [],
+  totalComments: 0,
+  filterParams: {
+    page: 1,
+  },
+  
+  // Loading states
+  isFetchingTickets: false,
+  isFetchingTicket: false,
+  isCreatingTicket: false,
+  isUpdatingTicket: false,
+  isDeletingTicket: false,
+  isFetchingComments: false,
+  isCreatingComment: false,
+  isUpdatingComment: false,
+  isDeletingComment: false,
+  
+  // Error states
+  fetchTicketsError: null,
+  fetchTicketError: null,
+  createTicketError: null,
+  updateTicketError: null,
+  deleteTicketError: null,
+  fetchCommentsError: null,
+  createCommentError: null,
+  updateCommentError: null,
+  deleteCommentError: null,
+  
+  // Actions - Tickets
+  fetchTickets: async (params?: TicketFilterParams) => {
+    const requestId = ++fetchTicketsRequestCounter
+
+    try {
+      set({ isFetchingTickets: true, fetchTicketsError: null })
+
+      const mergedParams = { ...get().filterParams, ...params }
+      const response = await ticketService.getTickets(mergedParams)
+
+      // Only update state if this is still the latest request
+      if (requestId !== fetchTicketsRequestCounter) {
+        return response
+      }
+
+      // Calculate total pages using backend page size (100)
+      const backendPageSize = 100
+      const totalPages = Math.ceil(response.count / backendPageSize)
+
+      set({
+        tickets: response.results,
+        totalTickets: response.count,
+        totalPages,
+        currentPage: mergedParams.page || 1,
+        filterParams: mergedParams,
+        isFetchingTickets: false,
+      })
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tickets'
+
+      if (requestId === fetchTicketsRequestCounter) {
+        set({ fetchTicketsError: errorMessage, isFetchingTickets: false })
+      }
+
+      throw error
+    }
+  },
+
+  fetchTicketById: async (id: string) => {
+    const requestId = ++fetchTicketRequestCounter
+
+    try {
+      set({ isFetchingTicket: true, fetchTicketError: null })
+
+      const ticket = await ticketService.getTicketById(id)
+
+      // Only update state if this is still the latest request
+      if (requestId !== fetchTicketRequestCounter) {
+        return ticket
+      }
+
+      set({
+        selectedTicket: ticket,
+        isFetchingTicket: false,
+      })
+
+      return ticket
+    } catch (error) {
+      console.error('Failed to fetch ticket:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch ticket'
+
+      if (requestId === fetchTicketRequestCounter) {
+        set({ fetchTicketError: errorMessage, isFetchingTicket: false })
+      }
+
+      throw error
+    }
+  },
+
+  createTicket: async (data: CreateTicketRequest) => {
+    try {
+      set({ isCreatingTicket: true, createTicketError: null })
+
+      const ticket = await ticketService.createTicket(data)
+
+      // Add the new ticket to the beginning of the list
+      set((state) => {
+        const backendPageSize = 100
+        const newTotal = state.totalTickets + 1
+        const newTotalPages = Math.ceil(newTotal / backendPageSize)
+
+        // Convert Ticket to TicketListItem (remove optional fields)
+        const ticketListItem: TicketListItem = {
+          id: ticket.id,
+          title: ticket.title,
+          description: ticket.description,
+          status: ticket.status,
+          priority: ticket.priority,
+          assignee: ticket.assignee,
+          reporter: ticket.reporter,
+        }
+
+        const updatedTickets = [ticketListItem, ...state.tickets].slice(0, backendPageSize)
+
+        return {
+          tickets: updatedTickets,
+          totalTickets: newTotal,
+          totalPages: newTotalPages,
+          isCreatingTicket: false,
+        }
+      })
+
+      return ticket
+    } catch (error) {
+      console.error('Failed to create ticket:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create ticket'
+      set({ createTicketError: errorMessage, isCreatingTicket: false })
+      throw error
+    }
+  },
+
+  updateTicket: async (id: string, data: UpdateTicketRequest) => {
+    try {
+      set({ isUpdatingTicket: true, updateTicketError: null })
+
+      const updatedTicket = await ticketService.updateTicket(id, data)
+
+      // Update the ticket in the list
+      set((state) => ({
+        tickets: state.tickets.map((ticket) =>
+          ticket.id === id
+            ? {
+                id: updatedTicket.id,
+                title: updatedTicket.title,
+                description: updatedTicket.description,
+                status: updatedTicket.status,
+                priority: updatedTicket.priority,
+                assignee: updatedTicket.assignee,
+                reporter: updatedTicket.reporter,
+              }
+            : ticket
+        ),
+        selectedTicket: state.selectedTicket?.id === id ? updatedTicket : state.selectedTicket,
+        isUpdatingTicket: false,
+      }))
+
+      return updatedTicket
+    } catch (error) {
+      console.error('Failed to update ticket:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update ticket'
+      set({ updateTicketError: errorMessage, isUpdatingTicket: false })
+      throw error
+    }
+  },
+
+  deleteTicket: async (id: string) => {
+    try {
+      set({ isDeletingTicket: true, deleteTicketError: null })
+
+      await ticketService.deleteTicket(id)
+
+      // Remove the ticket from the list
+      set((state) => {
+        const newTotal = state.totalTickets - 1
+        const backendPageSize = 100
+        const newTotalPages = Math.ceil(newTotal / backendPageSize)
+
+        return {
+          tickets: state.tickets.filter((ticket) => ticket.id !== id),
+          totalTickets: newTotal,
+          totalPages: newTotalPages,
+          selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+          isDeletingTicket: false,
+        }
+      })
+    } catch (error) {
+      console.error('Failed to delete ticket:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
+      set({ deleteTicketError: errorMessage, isDeletingTicket: false })
+      throw error
+    }
+  },
+
+  setFilterParams: (params: Partial<TicketFilterParams>) => {
+    set((state) => ({
+      filterParams: { ...state.filterParams, ...params },
+    }))
+  },
+
+  clearSelectedTicket: () => set({ selectedTicket: null }),
+
+  clearTickets: () =>
+    set({
+      tickets: [],
+      totalTickets: 0,
+      currentPage: 1,
+      totalPages: 1,
+    }),
+
+  setPage: (page: number) => {
+    set({ currentPage: page })
+    get().fetchTickets({ page }).catch((error) => {
+      console.error('Error fetching tickets on page change:', error)
+    })
+  },
+
+  // Actions - Comments
+  fetchComments: async (ticketId: string) => {
+    try {
+      set({ isFetchingComments: true, fetchCommentsError: null })
+
+      const response = await ticketService.getComments(ticketId)
+
+      set({
+        comments: response.results,
+        totalComments: response.count,
+        isFetchingComments: false,
+      })
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch comments:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch comments'
+      set({ fetchCommentsError: errorMessage, isFetchingComments: false })
+      throw error
+    }
+  },
+
+  createComment: async (ticketId: string, content: string) => {
+    try {
+      set({ isCreatingComment: true, createCommentError: null })
+
+      const comment = await ticketService.createComment(ticketId, { content })
+
+      // Add the new comment to the list
+      set((state) => ({
+        comments: [...state.comments, comment],
+        totalComments: state.totalComments + 1,
+        isCreatingComment: false,
+      }))
+
+      return comment
+    } catch (error) {
+      console.error('Failed to create comment:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create comment'
+      set({ createCommentError: errorMessage, isCreatingComment: false })
+      throw error
+    }
+  },
+
+  updateComment: async (ticketId: string, commentId: string, data: UpdateCommentRequest) => {
+    try {
+      set({ isUpdatingComment: true, updateCommentError: null })
+
+      const updatedComment = await ticketService.updateComment(ticketId, commentId, data)
+
+      // Update the comment in the list
+      set((state) => ({
+        comments: state.comments.map((comment) =>
+          comment.id === commentId ? updatedComment : comment
+        ),
+        isUpdatingComment: false,
+      }))
+
+      return updatedComment
+    } catch (error) {
+      console.error('Failed to update comment:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update comment'
+      set({ updateCommentError: errorMessage, isUpdatingComment: false })
+      throw error
+    }
+  },
+
+  deleteComment: async (ticketId: string, commentId: string) => {
+    try {
+      set({ isDeletingComment: true, deleteCommentError: null })
+
+      await ticketService.deleteComment(ticketId, commentId)
+
+      // Remove the comment from the list
+      set((state) => ({
+        comments: state.comments.filter((comment) => comment.id !== commentId),
+        totalComments: state.totalComments - 1,
+        isDeletingComment: false,
+      }))
+    } catch (error) {
+      console.error('Failed to delete comment:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment'
+      set({ deleteCommentError: errorMessage, isDeletingComment: false })
+      throw error
+    }
+  },
+
+  clearComments: () =>
+    set({
+      comments: [],
+      totalComments: 0,
+    }),
+}))
+
