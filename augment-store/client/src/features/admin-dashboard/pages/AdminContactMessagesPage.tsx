@@ -114,6 +114,7 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
+  const markAsReadTimeoutRef = useRef<number | null>(null)
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -127,6 +128,9 @@ const AdminContactMessagesPage = () => {
       }
       if (drawerCloseTimeoutRef.current !== null) {
         clearTimeout(drawerCloseTimeoutRef.current)
+      }
+      if (markAsReadTimeoutRef.current !== null) {
+        clearTimeout(markAsReadTimeoutRef.current)
       }
     }
   }, [])
@@ -199,14 +203,19 @@ const AdminContactMessagesPage = () => {
       )
     )
 
+    // Clear any existing timeout
+    if (markAsReadTimeoutRef.current !== null) {
+      clearTimeout(markAsReadTimeoutRef.current)
+    }
     // Simulate API call with timeout (dummy handler)
-    setTimeout(() => {
+    markAsReadTimeoutRef.current = setTimeout(() => {
       // Remove from marking set using functional update to avoid stale closure
       setMarkingAsRead((prev) => {
         const finalMarkingAsRead = new Set(prev)
         finalMarkingAsRead.delete(contactId)
         return finalMarkingAsRead
       })
+      markAsReadTimeoutRef.current = null
     }, 500)
   }
 
