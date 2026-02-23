@@ -116,10 +116,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           return await get().fetchTickets({ ...updatedFilters, page: validPage }, recursionDepth + 1)
         }
 
+        // When recursion limit is hit, we keep the data from currentPage (even if out of range)
+        // So we must set page to currentPage to match the displayed data, not validPage
         set({
           tickets: response.results,
           total: response.count,
-          page: validPage,
+          page: currentPage,
           totalPages: calculatedTotalPages,
           isLoading: false,
         })
