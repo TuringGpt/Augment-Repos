@@ -79,6 +79,13 @@ let fetchTicketsRequestCounter = 0
 let fetchTicketRequestCounter = 0
 let fetchCommentsRequestCounter = 0
 
+// In-flight operation counters for mutation operations
+// For mutations, we need to track how many operations are in-flight to prevent
+// overlapping requests from prematurely clearing the loading state
+let createCommentInFlightCount = 0
+let updateCommentInFlightCount = 0
+let deleteCommentInFlightCount = 0
+
 // For mutation operations (create/update/delete), we don't use global counters
 // because each operation is independent and should succeed.
 // We only check if the operation is for the currently selected ticket.
@@ -541,9 +548,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   createComment: async (ticketId: string, content: string) => {
-    try {
-      set({ isCreatingComment: true, createCommentError: null })
+    // Increment in-flight counter and set loading state
+    createCommentInFlightCount++
+    set({ isCreatingComment: true, createCommentError: null })
 
+    try {
       const comment = await ticketService.createComment(ticketId, { content })
 
       // Only update state if the ticketId matches the currently selected ticket
@@ -552,16 +561,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
       if (!isCurrentTicket) {
-        // Reset loading flag for operations on non-current tickets
-        set({ isCreatingComment: false })
+        // Decrement counter and update loading state
+        createCommentInFlightCount--
+        set({ isCreatingComment: createCommentInFlightCount > 0 })
         return comment
       }
 
       // Add the new comment to the beginning of the list (backend returns comments ordered by -created_at)
+      // Decrement counter and update loading state
+      createCommentInFlightCount--
       set((state) => ({
         comments: [comment, ...state.comments],
         totalComments: state.totalComments + 1,
-        isCreatingComment: false,
+        isCreatingComment: createCommentInFlightCount > 0,
       }))
 
       return comment
@@ -573,11 +585,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
+      // Decrement counter and update loading state
+      createCommentInFlightCount--
+
       if (isCurrentTicket) {
-        set({ createCommentError: errorMessage, isCreatingComment: false })
+        set({ createCommentError: errorMessage, isCreatingComment: createCommentInFlightCount > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets
-        set({ isCreatingComment: false })
+        set({ isCreatingComment: createCommentInFlightCount > 0 })
       }
 
       throw error
@@ -585,9 +600,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   updateComment: async (ticketId: string, commentId: string, data: UpdateCommentRequest) => {
-    try {
-      set({ isUpdatingComment: true, updateCommentError: null })
+    // Increment in-flight counter and set loading state
+    updateCommentInFlightCount++
+    set({ isUpdatingComment: true, updateCommentError: null })
 
+    try {
       const updatedComment = await ticketService.updateComment(ticketId, commentId, data)
 
       // Only update state if the ticketId matches the currently selected ticket
@@ -596,17 +613,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
       if (!isCurrentTicket) {
-        // Reset loading flag for operations on non-current tickets
-        set({ isUpdatingComment: false })
+        // Decrement counter and update loading state
+        updateCommentInFlightCount--
+        set({ isUpdatingComment: updateCommentInFlightCount > 0 })
         return updatedComment
       }
 
       // Update the comment in the list
+      // Decrement counter and update loading state
+      updateCommentInFlightCount--
       set((state) => ({
         comments: state.comments.map((comment) =>
           comment.id === commentId ? updatedComment : comment
         ),
-        isUpdatingComment: false,
+        isUpdatingComment: updateCommentInFlightCount > 0,
       }))
 
       return updatedComment
@@ -618,11 +638,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
+      // Decrement counter and update loading state
+      updateCommentInFlightCount--
+
       if (isCurrentTicket) {
-        set({ updateCommentError: errorMessage, isUpdatingComment: false })
+        set({ updateCommentError: errorMessage, isUpdatingComment: updateCommentInFlightCount > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets
-        set({ isUpdatingComment: false })
+        set({ isUpdatingComment: updateCommentInFlightCount > 0 })
       }
 
       throw error
@@ -630,9 +653,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   deleteComment: async (ticketId: string, commentId: string) => {
-    try {
-      set({ isDeletingComment: true, deleteCommentError: null })
+    // Increment in-flight counter and set loading state
+    deleteCommentInFlightCount++
+    set({ isDeletingComment: true, deleteCommentError: null })
 
+    try {
       await ticketService.deleteComment(ticketId, commentId)
 
       // Only update state if the ticketId matches the currently selected ticket
@@ -641,16 +666,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
       if (!isCurrentTicket) {
-        // Reset loading flag for operations on non-current tickets
-        set({ isDeletingComment: false })
+        // Decrement counter and update loading state
+        deleteCommentInFlightCount--
+        set({ isDeletingComment: deleteCommentInFlightCount > 0 })
         return
       }
 
       // Remove the comment from the list
+      // Decrement counter and update loading state
+      deleteCommentInFlightCount--
       set((state) => ({
         comments: state.comments.filter((comment) => comment.id !== commentId),
         totalComments: Math.max(0, state.totalComments - 1),
-        isDeletingComment: false,
+        isDeletingComment: deleteCommentInFlightCount > 0,
       }))
     } catch (error) {
       console.error('Failed to delete comment:', error)
@@ -660,11 +688,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const currentState = get()
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
+      // Decrement counter and update loading state
+      deleteCommentInFlightCount--
+
       if (isCurrentTicket) {
-        set({ deleteCommentError: errorMessage, isDeletingComment: false })
+        set({ deleteCommentError: errorMessage, isDeletingComment: deleteCommentInFlightCount > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets
-        set({ isDeletingComment: false })
+        set({ isDeletingComment: deleteCommentInFlightCount > 0 })
       }
 
       throw error
