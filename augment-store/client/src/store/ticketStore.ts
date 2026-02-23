@@ -310,13 +310,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     currentCommentsTicketId: null,
   }),
 
-  clearTickets: () =>
+  clearTickets: () => {
+    // Invalidate any in-flight fetchTickets requests
+    ++fetchTicketsRequestCounter
+
     set({
       tickets: [],
       totalTickets: 0,
       currentPage: 1,
       totalPages: 1,
-    }),
+      filterParams: {
+        page: 1,
+      },
+    })
+  },
 
   setPage: (page: number) => {
     set({ currentPage: page })
