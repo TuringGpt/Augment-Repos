@@ -12,7 +12,7 @@ interface TicketState {
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last-used filters (excluding page)
 
   // Actions
-  fetchTickets: (params?: TicketFilterParams) => Promise<void>
+  fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
 }
@@ -20,6 +20,10 @@ interface TicketState {
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
+
+// Maximum recursion depth for out-of-range page handling
+// Prevents excessive sequential requests when a far-out page is requested
+const MAX_RECURSION_DEPTH = 1
 
 export const useTicketStore = create<TicketState>((set, get) => ({
   tickets: [],
@@ -30,7 +34,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   error: null,
   lastFilters: {}, // Initialize with empty filters
 
-  fetchTickets: async (params?: TicketFilterParams) => {
+  fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
     const currentPage = params?.page ?? state.page
 
@@ -107,8 +111,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         const validPage = Math.max(1, Math.min(currentPage, calculatedTotalPages))
 
         // If the requested page was out of range and we have tickets, refetch the valid page
-        if (validPage !== currentPage && calculatedTotalPages > 0) {
-          return await get().fetchTickets({ ...updatedFilters, page: validPage })
+        // Use recursion depth limit to prevent excessive sequential requests for far-out pages
+        if (validPage !== currentPage && calculatedTotalPages > 0 && recursionDepth < MAX_RECURSION_DEPTH) {
+          return await get().fetchTickets({ ...updatedFilters, page: validPage }, recursionDepth + 1)
         }
 
         set({
