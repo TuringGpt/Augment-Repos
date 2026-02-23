@@ -26,6 +26,7 @@ interface TicketState {
   // Comments for selected ticket
   comments: Comment[]
   totalComments: number
+  currentCommentsTicketId: string | null // Track which ticket the current comments belong to
   
   // Filter params
   filterParams: TicketFilterParams
@@ -85,6 +86,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   selectedTicket: null,
   comments: [],
   totalComments: 0,
+  currentCommentsTicketId: null,
   filterParams: {
     page: 1,
   },
@@ -301,7 +303,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }))
   },
 
-  clearSelectedTicket: () => set({ selectedTicket: null }),
+  clearSelectedTicket: () => set({
+    selectedTicket: null,
+    comments: [],
+    totalComments: 0,
+    currentCommentsTicketId: null,
+  }),
 
   clearTickets: () =>
     set({
@@ -327,14 +334,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const response = await ticketService.getComments(ticketId)
 
-      // Only update state if this is still the latest request
-      if (requestId !== fetchCommentsRequestCounter) {
+      // Only update state if this is still the latest request AND
+      // the ticketId matches the currently selected ticket (guard against stale responses)
+      const currentState = get()
+      const isLatestRequest = requestId === fetchCommentsRequestCounter
+      const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+
+      if (!isLatestRequest || !isCurrentTicket) {
         return response
       }
 
       set({
         comments: response.results,
         totalComments: response.count,
+        currentCommentsTicketId: ticketId,
         isFetchingComments: false,
       })
 
@@ -343,7 +356,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to fetch comments:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch comments'
 
-      if (requestId === fetchCommentsRequestCounter) {
+      // Only update error state if this is still the latest request AND
+      // the ticketId matches the currently selected ticket
+      const currentState = get()
+      const isLatestRequest = requestId === fetchCommentsRequestCounter
+      const isCurrentTicket = currentState.selectedTicket?.id === ticketId
+
+      if (isLatestRequest && isCurrentTicket) {
         set({ fetchCommentsError: errorMessage, isFetchingComments: false })
       }
 
@@ -420,6 +439,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     set({
       comments: [],
       totalComments: 0,
+      currentCommentsTicketId: null,
     }),
 }))
 
