@@ -405,7 +405,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Remove the comment from the list
       set((state) => ({
         comments: state.comments.filter((comment) => comment.id !== commentId),
-        totalComments: state.totalComments - 1,
+        totalComments: Math.max(0, state.totalComments - 1),
         isDeletingComment: false,
       }))
     } catch (error) {
