@@ -110,14 +110,15 @@ const TicketsPage = () => {
         // This can happen when requesting an out-of-range page
         const validPage = Math.max(1, Math.min(currentPage, calculatedTotalPages))
 
+        // Update totalPages before potential early return to keep UI state consistent
+        setTotalPages(calculatedTotalPages)
+
         // If the requested page was out of range, refetch the valid page
         if (validPage !== currentPage && calculatedTotalPages > 0) {
           // Update page state and trigger refetch via useEffect
           setPage(validPage)
           return
         }
-
-        setTotalPages(calculatedTotalPages)
       }
     } catch (err) {
       // Only update error state if this is still the latest request
