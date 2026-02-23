@@ -193,30 +193,48 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const ticket = await ticketService.createTicket(data)
 
-      // Add the new ticket to the beginning of the list
+      // Only optimistically update the list if we're on the first page with no filters/search
+      // Otherwise, the new ticket should appear on page 1, not the current page
       set((state) => {
         const backendPageSize = 100
         const newTotal = state.totalTickets + 1
         const newTotalPages = Math.ceil(newTotal / backendPageSize)
 
-        // Convert Ticket to TicketListItem (remove optional fields)
-        const ticketListItem: TicketListItem = {
-          id: ticket.id,
-          title: ticket.title,
-          description: ticket.description,
-          status: ticket.status,
-          priority: ticket.priority,
-          assignee: ticket.assignee,
-          reporter: ticket.reporter,
-        }
+        // Check if we're on the first page with no filters applied
+        const isFirstPage = state.currentPage === 1
+        const hasNoFilters = !state.filterParams.status &&
+                            !state.filterParams.priority &&
+                            !state.filterParams.search
 
-        const updatedTickets = [ticketListItem, ...state.tickets].slice(0, backendPageSize)
+        // Only prepend the ticket if we're on page 1 with no filters
+        // Otherwise, just update the counts and let the user refetch
+        if (isFirstPage && hasNoFilters) {
+          // Convert Ticket to TicketListItem (remove optional fields)
+          const ticketListItem: TicketListItem = {
+            id: ticket.id,
+            title: ticket.title,
+            description: ticket.description,
+            status: ticket.status,
+            priority: ticket.priority,
+            assignee: ticket.assignee,
+            reporter: ticket.reporter,
+          }
 
-        return {
-          tickets: updatedTickets,
-          totalTickets: newTotal,
-          totalPages: newTotalPages,
-          isCreatingTicket: false,
+          const updatedTickets = [ticketListItem, ...state.tickets].slice(0, backendPageSize)
+
+          return {
+            tickets: updatedTickets,
+            totalTickets: newTotal,
+            totalPages: newTotalPages,
+            isCreatingTicket: false,
+          }
+        } else {
+          // Just update the counts without modifying the ticket list
+          return {
+            totalTickets: newTotal,
+            totalPages: newTotalPages,
+            isCreatingTicket: false,
+          }
         }
       })
 
