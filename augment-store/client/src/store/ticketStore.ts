@@ -137,7 +137,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
   setPage: (page: number) => {
     const state = get()
-    set({ page })
+    // Don't update page state here - let fetchTickets update it on success
+    // This prevents page/tickets mismatch if the fetch fails
     // Preserve last-used filters when changing pages
     get().fetchTickets({ ...state.lastFilters, page })
   },
