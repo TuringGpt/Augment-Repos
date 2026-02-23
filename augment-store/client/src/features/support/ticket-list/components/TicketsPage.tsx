@@ -99,8 +99,22 @@ const TicketsPage = () => {
             calculatedTotalPages = currentPage
           }
         } else {
-          // Fallback: shouldn't happen (count > 0 but results empty), but handle gracefully
-          calculatedTotalPages = 1
+          // Fallback: count > 0 but results empty (out-of-range page)
+          // Calculate total pages based on a reasonable default page size
+          // Use 10 as default page size (common pagination default)
+          const defaultPageSize = 10
+          calculatedTotalPages = Math.ceil(response.count / defaultPageSize)
+        }
+
+        // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
+        // This can happen when requesting an out-of-range page
+        const validPage = Math.max(1, Math.min(currentPage, calculatedTotalPages))
+
+        // If the requested page was out of range, refetch the valid page
+        if (validPage !== currentPage && calculatedTotalPages > 0) {
+          // Update page state and trigger refetch via useEffect
+          setPage(validPage)
+          return
         }
 
         setTotalPages(calculatedTotalPages)
