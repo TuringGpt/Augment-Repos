@@ -322,8 +322,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       })
 
       // If the page was clamped (e.g., deleted last item on last page), refetch to get correct data
+      // Handle refetch failure separately from delete operation to avoid misleading "delete failed" UI state
       if (newCurrentPage !== state.currentPage && newTotal > 0) {
-        await get().fetchTickets({ page: newCurrentPage })
+        try {
+          await get().fetchTickets({ page: newCurrentPage })
+        } catch (refetchError) {
+          // Log the refetch error but don't throw - the delete operation succeeded
+          console.error('Failed to refetch tickets after delete:', refetchError)
+        }
       }
     } catch (error) {
       console.error('Failed to delete ticket:', error)
