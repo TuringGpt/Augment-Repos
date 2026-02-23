@@ -268,16 +268,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Remove the ticket from the list
       set((state) => {
-        const newTotal = state.totalTickets - 1
+        // Clamp totalTickets to >= 0 to prevent underflow on double-delete/stale UI
+        const newTotal = Math.max(0, state.totalTickets - 1)
         const backendPageSize = 100
         // Clamp totalPages to at least 1 to avoid impossible pagination state
         // when deleting the last ticket (newTotal becomes 0)
         const newTotalPages = Math.max(1, Math.ceil(newTotal / backendPageSize))
+        // Ensure currentPage doesn't exceed totalPages after deletion
+        const newCurrentPage = Math.min(state.currentPage, newTotalPages)
 
         return {
           tickets: state.tickets.filter((ticket) => ticket.id !== id),
           totalTickets: newTotal,
           totalPages: newTotalPages,
+          currentPage: newCurrentPage,
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
           isDeletingTicket: false,
         }
