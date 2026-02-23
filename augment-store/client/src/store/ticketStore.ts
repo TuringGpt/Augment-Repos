@@ -74,6 +74,7 @@ interface TicketState {
 // Request counter to prevent race conditions
 let fetchTicketsRequestCounter = 0
 let fetchTicketRequestCounter = 0
+let fetchCommentsRequestCounter = 0
 
 export const useTicketStore = create<TicketState>((set, get) => ({
   // Initial state
@@ -319,10 +320,17 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
   // Actions - Comments
   fetchComments: async (ticketId: string) => {
+    const requestId = ++fetchCommentsRequestCounter
+
     try {
       set({ isFetchingComments: true, fetchCommentsError: null })
 
       const response = await ticketService.getComments(ticketId)
+
+      // Only update state if this is still the latest request
+      if (requestId !== fetchCommentsRequestCounter) {
+        return response
+      }
 
       set({
         comments: response.results,
@@ -334,7 +342,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     } catch (error) {
       console.error('Failed to fetch comments:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch comments'
-      set({ fetchCommentsError: errorMessage, isFetchingComments: false })
+
+      if (requestId === fetchCommentsRequestCounter) {
+        set({ fetchCommentsError: errorMessage, isFetchingComments: false })
+      }
+
       throw error
     }
   },
