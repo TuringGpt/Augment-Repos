@@ -41,7 +41,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // Only update lastFilters if new filter parameters are explicitly provided
     // This prevents overwriting existing filters when only page is changed
     // Note: We check if any filter keys exist (not their values) to allow clearing filters
-    // with empty strings (e.g., { search: '' } should clear the search filter)
+    // with empty strings (e.g., { search: '' } or { status: '' } should clear those filters)
     const hasNewFilters = Object.keys(filters).some(
       (key) => {
         const value = filters[key as keyof typeof filters]
@@ -50,7 +50,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         return value !== undefined
       }
     )
-    const updatedFilters = hasNewFilters ? filters : state.lastFilters
+
+    // When new filters are provided, merge them with lastFilters to allow partial updates
+    // Empty strings will override previous values, effectively clearing those filters
+    // This allows callers to update one filter (e.g., status) without affecting others (e.g., search)
+    // and also allows clearing filters by passing empty strings
+    const updatedFilters = hasNewFilters ? { ...state.lastFilters, ...filters } : state.lastFilters
 
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
