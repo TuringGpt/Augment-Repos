@@ -100,10 +100,10 @@ const TicketsPage = () => {
           }
         } else {
           // Fallback: count > 0 but results empty (out-of-range page)
-          // Calculate total pages based on a reasonable default page size
-          // Use 10 as default page size (common pagination default)
-          const defaultPageSize = 10
-          calculatedTotalPages = Math.ceil(response.count / defaultPageSize)
+          // We don't know the backend page size, so we can't accurately calculate total pages
+          // Instead, set calculatedTotalPages to ensure we trigger a refetch to a valid page
+          // Setting it to currentPage - 1 guarantees validPage < currentPage, triggering the refetch
+          calculatedTotalPages = Math.max(1, currentPage - 1)
         }
 
         // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
