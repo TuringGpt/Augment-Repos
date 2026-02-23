@@ -260,8 +260,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Otherwise, the new ticket should appear on page 1, not the current page
       set((state) => {
         const backendPageSize = 100
-        const newTotal = state.totalTickets + 1
-        const newTotalPages = Math.ceil(newTotal / backendPageSize)
 
         // Check if we're on the first page with no filters applied
         const isFirstPage = state.currentPage === 1
@@ -269,34 +267,47 @@ export const useTicketStore = create<TicketState>((set, get) => ({
                             !state.filterParams.priority &&
                             !state.filterParams.search
 
-        // Only prepend the ticket if we're on page 1 with no filters
-        // Otherwise, just update the counts and let the user refetch
-        if (isFirstPage && hasNoFilters) {
-          // Convert CreateTicketResponse to TicketListItem
-          // The response is guaranteed to have id and reporter from the backend
-          const ticketListItem: TicketListItem = {
-            id: ticket.id,
-            title: ticket.title,
-            description: ticket.description,
-            status: ticket.status,
-            priority: ticket.priority,
-            assignee: ticket.assignee,
-            reporter: ticket.reporter,
-          }
+        // Only update counts and list if we have no filters
+        // When filters are active, totalTickets/totalPages represent filtered counts
+        // and we can't reliably update them without knowing if the new ticket matches the filters
+        if (hasNoFilters) {
+          const newTotal = state.totalTickets + 1
+          const newTotalPages = Math.ceil(newTotal / backendPageSize)
 
-          const updatedTickets = [ticketListItem, ...state.tickets].slice(0, backendPageSize)
+          // Only prepend the ticket if we're on page 1
+          if (isFirstPage) {
+            // Convert CreateTicketResponse to TicketListItem
+            // The response is guaranteed to have id and reporter from the backend
+            const ticketListItem: TicketListItem = {
+              id: ticket.id,
+              title: ticket.title,
+              description: ticket.description,
+              status: ticket.status,
+              priority: ticket.priority,
+              assignee: ticket.assignee,
+              reporter: ticket.reporter,
+            }
 
-          return {
-            tickets: updatedTickets,
-            totalTickets: newTotal,
-            totalPages: newTotalPages,
-            isCreatingTicket: false,
+            const updatedTickets = [ticketListItem, ...state.tickets].slice(0, backendPageSize)
+
+            return {
+              tickets: updatedTickets,
+              totalTickets: newTotal,
+              totalPages: newTotalPages,
+              isCreatingTicket: false,
+            }
+          } else {
+            // Not on page 1, just update the counts
+            return {
+              totalTickets: newTotal,
+              totalPages: newTotalPages,
+              isCreatingTicket: false,
+            }
           }
         } else {
-          // Just update the counts without modifying the ticket list
+          // Filters are active - don't update counts or list
+          // The user will need to refetch to see the new ticket if it matches their filters
           return {
-            totalTickets: newTotal,
-            totalPages: newTotalPages,
             isCreatingTicket: false,
           }
         }
