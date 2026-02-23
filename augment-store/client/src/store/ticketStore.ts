@@ -372,12 +372,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Remove the ticket from the list and update pagination
       const state = get()
 
-      // Check if the deleted ticket is actually in the current list
-      const ticketExistsInList = state.tickets.some((ticket) => ticket.id === id)
-
-      // Only decrement totalTickets and recompute pagination if the ticket was in the current list
-      // This prevents drift when deleting from a detail view while the list is filtered differently
-      const newTotal = ticketExistsInList ? Math.max(0, state.totalTickets - 1) : state.totalTickets
+      // Always decrement totalTickets since the backend deletion succeeded
+      // Even if the ticket isn't in the current page, it was deleted from the backend
+      const newTotal = Math.max(0, state.totalTickets - 1)
       const backendPageSize = 100
       // Clamp totalPages to at least 1 to avoid impossible pagination state
       // when deleting the last ticket (newTotal becomes 0)
