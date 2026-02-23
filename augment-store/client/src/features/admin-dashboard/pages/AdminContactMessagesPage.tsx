@@ -397,7 +397,7 @@ const AdminContactMessagesPage = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        {!contact.is_read && (
+                        {(!contact.is_read || markingAsRead.has(contact.id)) && (
                           <Tooltip title={t('admin.contactMessagesPage.markAsRead')}>
                             <span>
                               <IconButton
