@@ -42,24 +42,23 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { page: _, ...filters } = params ?? {}
 
+    // Filter out undefined values to prevent them from overwriting lastFilters
+    // Only keep keys with defined values (including empty strings, which are used to clear filters)
+    const definedFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== undefined)
+    ) as Omit<TicketFilterParams, 'page'>
+
     // Only update lastFilters if new filter parameters are explicitly provided
     // This prevents overwriting existing filters when only page is changed
     // Note: We check if any filter keys exist (not their values) to allow clearing filters
     // with empty strings (e.g., { search: '' } or { status: '' } should clear those filters)
-    const hasNewFilters = Object.keys(filters).some(
-      (key) => {
-        const value = filters[key as keyof typeof filters]
-        // Consider a filter "new" if it's explicitly provided (even if empty string)
-        // Only exclude undefined values, which indicate the filter wasn't provided at all
-        return value !== undefined
-      }
-    )
+    const hasNewFilters = Object.keys(definedFilters).length > 0
 
     // When new filters are provided, merge them with lastFilters to allow partial updates
     // Empty strings will override previous values, effectively clearing those filters
     // This allows callers to update one filter (e.g., status) without affecting others (e.g., search)
     // and also allows clearing filters by passing empty strings
-    const updatedFilters = hasNewFilters ? { ...state.lastFilters, ...filters } : state.lastFilters
+    const updatedFilters = hasNewFilters ? { ...state.lastFilters, ...definedFilters } : state.lastFilters
 
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
