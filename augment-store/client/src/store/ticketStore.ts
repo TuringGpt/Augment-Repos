@@ -141,12 +141,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // when count is 0 (which would yield 0 pages but currentPage is 1)
       const totalPages = Math.max(1, Math.ceil(response.count / backendPageSize))
 
+      // Clamp currentPage to valid range [1, totalPages] to avoid invalid pagination state
+      // (e.g., when filters reduce count, requested page may exceed totalPages)
+      const requestedPage = mergedParams.page || 1
+      const clampedPage = Math.min(Math.max(1, requestedPage), totalPages)
+
+      // Update filterParams.page to match the clamped page to keep state consistent
+      const normalizedParams = { ...mergedParams, page: clampedPage }
+
       set({
         tickets: response.results,
         totalTickets: response.count,
         totalPages,
-        currentPage: mergedParams.page || 1,
-        filterParams: mergedParams,
+        currentPage: clampedPage,
+        filterParams: normalizedParams,
         isFetchingTickets: false,
       })
 
