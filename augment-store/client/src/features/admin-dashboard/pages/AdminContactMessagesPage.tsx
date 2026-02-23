@@ -185,10 +185,12 @@ const AdminContactMessagesPage = () => {
       return
     }
 
-    // Add to marking set
-    const newMarkingAsRead = new Set(markingAsRead)
-    newMarkingAsRead.add(contactId)
-    setMarkingAsRead(newMarkingAsRead)
+    // Add to marking set using functional update to avoid stale closure
+    setMarkingAsRead((prev) => {
+      const newMarkingAsRead = new Set(prev)
+      newMarkingAsRead.add(contactId)
+      return newMarkingAsRead
+    })
 
     // Optimistically update the UI
     setContacts((prevContacts) =>
@@ -199,10 +201,12 @@ const AdminContactMessagesPage = () => {
 
     // Simulate API call with timeout (dummy handler)
     setTimeout(() => {
-      // Remove from marking set
-      const finalMarkingAsRead = new Set(markingAsRead)
-      finalMarkingAsRead.delete(contactId)
-      setMarkingAsRead(finalMarkingAsRead)
+      // Remove from marking set using functional update to avoid stale closure
+      setMarkingAsRead((prev) => {
+        const finalMarkingAsRead = new Set(prev)
+        finalMarkingAsRead.delete(contactId)
+        return finalMarkingAsRead
+      })
     }, 500)
   }
 
