@@ -127,7 +127,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Calculate total pages using backend page size (100)
       const backendPageSize = 100
-      const totalPages = Math.ceil(response.count / backendPageSize)
+      // Clamp totalPages to at least 1 to avoid impossible pagination state
+      // when count is 0 (which would yield 0 pages but currentPage is 1)
+      const totalPages = Math.max(1, Math.ceil(response.count / backendPageSize))
 
       set({
         tickets: response.results,
@@ -268,7 +270,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set((state) => {
         const newTotal = state.totalTickets - 1
         const backendPageSize = 100
-        const newTotalPages = Math.ceil(newTotal / backendPageSize)
+        // Clamp totalPages to at least 1 to avoid impossible pagination state
+        // when deleting the last ticket (newTotal becomes 0)
+        const newTotalPages = Math.max(1, Math.ceil(newTotal / backendPageSize))
 
         return {
           tickets: state.tickets.filter((ticket) => ticket.id !== id),
