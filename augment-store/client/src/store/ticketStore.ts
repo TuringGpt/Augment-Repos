@@ -130,6 +130,24 @@ const getTotalMutationsForTicket = (ticketId: string): number => {
   return mutations.create + mutations.update + mutations.delete
 }
 
+const getCreateMutationsForTicket = (ticketId: string): number => {
+  const mutations = commentMutationsInFlight.get(ticketId)
+  if (!mutations) return 0
+  return mutations.create
+}
+
+const getUpdateMutationsForTicket = (ticketId: string): number => {
+  const mutations = commentMutationsInFlight.get(ticketId)
+  if (!mutations) return 0
+  return mutations.update
+}
+
+const getDeleteMutationsForTicket = (ticketId: string): number => {
+  const mutations = commentMutationsInFlight.get(ticketId)
+  if (!mutations) return 0
+  return mutations.delete
+}
+
 // For mutation operations (create/update/delete), we don't use global counters
 // because each operation is independent and should succeed.
 // We only check if the operation is for the currently selected ticket.
@@ -639,7 +657,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       if (!isCurrentTicket) {
         // Decrement counter and update loading state
         decrementMutation(ticketId, 'create')
-        set({ isCreatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isCreatingComment: getCreateMutationsForTicket(ticketId) > 0 })
         return comment
       }
 
@@ -650,7 +668,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         comments: [comment, ...state.comments],
         totalComments: state.totalComments + 1,
         currentCommentsTicketId: ticketId,
-        isCreatingComment: getTotalMutationsForTicket(ticketId) > 0,
+        isCreatingComment: getCreateMutationsForTicket(ticketId) > 0,
       }))
 
       return comment
@@ -668,10 +686,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       decrementMutation(ticketId, 'create')
 
       if (isCurrentTicket && isLatestRequest) {
-        set({ createCommentError: errorMessage, isCreatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ createCommentError: errorMessage, isCreatingComment: getCreateMutationsForTicket(ticketId) > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets or stale requests
-        set({ isCreatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isCreatingComment: getCreateMutationsForTicket(ticketId) > 0 })
       }
 
       throw error
@@ -696,7 +714,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       if (!isCurrentTicket) {
         // Decrement counter and update loading state
         decrementMutation(ticketId, 'update')
-        set({ isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isUpdatingComment: getUpdateMutationsForTicket(ticketId) > 0 })
         return updatedComment
       }
 
@@ -708,7 +726,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           comment.id === commentId ? updatedComment : comment
         ),
         currentCommentsTicketId: ticketId,
-        isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0,
+        isUpdatingComment: getUpdateMutationsForTicket(ticketId) > 0,
       }))
 
       return updatedComment
@@ -726,10 +744,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       decrementMutation(ticketId, 'update')
 
       if (isCurrentTicket && isLatestRequest) {
-        set({ updateCommentError: errorMessage, isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ updateCommentError: errorMessage, isUpdatingComment: getUpdateMutationsForTicket(ticketId) > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets or stale requests
-        set({ isUpdatingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isUpdatingComment: getUpdateMutationsForTicket(ticketId) > 0 })
       }
 
       throw error
@@ -754,7 +772,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       if (!isCurrentTicket) {
         // Decrement counter and update loading state
         decrementMutation(ticketId, 'delete')
-        set({ isDeletingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isDeletingComment: getDeleteMutationsForTicket(ticketId) > 0 })
         return
       }
 
@@ -765,7 +783,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         comments: state.comments.filter((comment) => comment.id !== commentId),
         totalComments: Math.max(0, state.totalComments - 1),
         currentCommentsTicketId: ticketId,
-        isDeletingComment: getTotalMutationsForTicket(ticketId) > 0,
+        isDeletingComment: getDeleteMutationsForTicket(ticketId) > 0,
       }))
     } catch (error) {
       console.error('Failed to delete comment:', error)
@@ -781,10 +799,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       decrementMutation(ticketId, 'delete')
 
       if (isCurrentTicket && isLatestRequest) {
-        set({ deleteCommentError: errorMessage, isDeletingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ deleteCommentError: errorMessage, isDeletingComment: getDeleteMutationsForTicket(ticketId) > 0 })
       } else {
         // Reset loading flag for operations on non-current tickets or stale requests
-        set({ isDeletingComment: getTotalMutationsForTicket(ticketId) > 0 })
+        set({ isDeletingComment: getDeleteMutationsForTicket(ticketId) > 0 })
       }
 
       throw error
