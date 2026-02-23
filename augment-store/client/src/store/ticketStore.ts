@@ -74,10 +74,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           calculatedTotalPages = 1
         }
 
+        // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
+        // This can happen when filters/deletions reduce count and currentPage exceeds totalPages
+        const validPage = Math.max(1, Math.min(currentPage, calculatedTotalPages))
+
+        // If the requested page was out of range and we have tickets, refetch the valid page
+        if (validPage !== currentPage && calculatedTotalPages > 0) {
+          return await get().fetchTickets({ ...params, page: validPage })
+        }
+
         set({
           tickets: response.results,
           total: response.count,
-          page: currentPage,
+          page: validPage,
           totalPages: calculatedTotalPages,
           isLoading: false,
         })
