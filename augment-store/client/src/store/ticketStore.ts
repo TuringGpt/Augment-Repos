@@ -244,7 +244,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Stale request - suppress the error to avoid spurious error UI from outdated fetches
       // A newer request is in-flight or has already completed
       // Return a minimal ticket object to satisfy the return type (caller should ignore this)
-      return { id, title: '', description: '', status: 'open', priority: 'medium', reporter: '', created_at: '', updated_at: '' } as Ticket
+      return { id, title: '', description: '', status: 'open', priority: 'medium', assignee: null, reporter: '', created_at: '', updated_at: '' } as Ticket
     }
   },
 
