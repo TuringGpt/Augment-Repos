@@ -287,26 +287,34 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       await ticketService.deleteTicket(id)
 
-      // Remove the ticket from the list
-      set((state) => {
-        // Clamp totalTickets to >= 0 to prevent underflow on double-delete/stale UI
-        const newTotal = Math.max(0, state.totalTickets - 1)
-        const backendPageSize = 100
-        // Clamp totalPages to at least 1 to avoid impossible pagination state
-        // when deleting the last ticket (newTotal becomes 0)
-        const newTotalPages = Math.max(1, Math.ceil(newTotal / backendPageSize))
-        // Ensure currentPage doesn't exceed totalPages after deletion
-        const newCurrentPage = Math.min(state.currentPage, newTotalPages)
+      // Remove the ticket from the list and update pagination
+      const state = get()
 
-        return {
-          tickets: state.tickets.filter((ticket) => ticket.id !== id),
-          totalTickets: newTotal,
-          totalPages: newTotalPages,
-          currentPage: newCurrentPage,
-          selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
-          isDeletingTicket: false,
-        }
+      // Clamp totalTickets to >= 0 to prevent underflow on double-delete/stale UI
+      const newTotal = Math.max(0, state.totalTickets - 1)
+      const backendPageSize = 100
+      // Clamp totalPages to at least 1 to avoid impossible pagination state
+      // when deleting the last ticket (newTotal becomes 0)
+      const newTotalPages = Math.max(1, Math.ceil(newTotal / backendPageSize))
+      // Ensure currentPage doesn't exceed totalPages after deletion
+      const newCurrentPage = Math.min(state.currentPage, newTotalPages)
+
+      set({
+        tickets: state.tickets.filter((ticket) => ticket.id !== id),
+        totalTickets: newTotal,
+        totalPages: newTotalPages,
+        currentPage: newCurrentPage,
+        // Update filterParams.page to match the clamped currentPage
+        // This prevents the UI from pointing at a page that no longer exists
+        filterParams: { ...state.filterParams, page: newCurrentPage },
+        selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+        isDeletingTicket: false,
       })
+
+      // If the page was clamped (e.g., deleted last item on last page), refetch to get correct data
+      if (newCurrentPage !== state.currentPage && newTotal > 0) {
+        await get().fetchTickets({ page: newCurrentPage })
+      }
     } catch (error) {
       console.error('Failed to delete ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
