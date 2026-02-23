@@ -90,8 +90,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
             calculatedTotalPages = currentPage
           }
         } else {
-          // Fallback: shouldn't happen (count > 0 but results empty), but handle gracefully
-          calculatedTotalPages = 1
+          // Fallback: count > 0 but results empty (out-of-range page)
+          // Calculate total pages based on a reasonable default page size
+          // Use 10 as default page size (common pagination default)
+          const defaultPageSize = 10
+          calculatedTotalPages = Math.ceil(response.count / defaultPageSize)
         }
 
         // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
