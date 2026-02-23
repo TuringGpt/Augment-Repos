@@ -602,11 +602,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }
   },
 
-  clearComments: () =>
+  clearComments: () => {
+    // Invalidate any in-flight fetchComments requests to prevent stale UI state
+    fetchCommentsRequestCounter++
+
     set({
       comments: [],
       totalComments: 0,
       currentCommentsTicketId: null,
-    }),
+      // Reset loading flag to prevent perpetual loading state if invalidation happens during in-flight fetch
+      isFetchingComments: false,
+      // Reset error state to prevent stale error UI
+      fetchCommentsError: null,
+    })
+  },
 }))
 
