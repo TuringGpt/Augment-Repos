@@ -374,7 +374,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   setPage: (page: number) => {
-    set({ currentPage: page })
+    // Don't update currentPage immediately - let fetchTickets update it on success
+    // This prevents pagination state from getting out of sync if the fetch fails
     get().fetchTickets({ page }).catch((error) => {
       console.error('Error fetching tickets on page change:', error)
     })
