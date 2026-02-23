@@ -303,12 +303,17 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }))
   },
 
-  clearSelectedTicket: () => set({
-    selectedTicket: null,
-    comments: [],
-    totalComments: 0,
-    currentCommentsTicketId: null,
-  }),
+  clearSelectedTicket: () => {
+    // Invalidate any in-flight fetchTicketById requests to prevent stale UI state
+    fetchTicketRequestCounter++
+
+    set({
+      selectedTicket: null,
+      comments: [],
+      totalComments: 0,
+      currentCommentsTicketId: null,
+    })
+  },
 
   clearTickets: () => {
     // Invalidate any in-flight fetchTickets requests
