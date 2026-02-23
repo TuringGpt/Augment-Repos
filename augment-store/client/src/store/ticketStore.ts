@@ -382,6 +382,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         comments: isDeletingSelectedTicket ? [] : state.comments,
         totalComments: isDeletingSelectedTicket ? 0 : state.totalComments,
         currentCommentsTicketId: isDeletingSelectedTicket ? null : state.currentCommentsTicketId,
+        // Reset loading and error flags to prevent stuck loading state when invalidating in-flight requests
+        // Similar to clearSelectedTicket(), this ensures stale responses won't leave the UI in a loading state
+        isFetchingComments: isDeletingSelectedTicket ? false : state.isFetchingComments,
+        fetchCommentsError: isDeletingSelectedTicket ? null : state.fetchCommentsError,
         isDeletingTicket: false,
       })
 
