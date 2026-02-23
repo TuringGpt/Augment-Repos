@@ -68,7 +68,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null, lastFilters: updatedFilters })
+    set({ isLoading: true, error: null })
 
     try {
       const response = await ticketService.getTickets({
@@ -121,16 +121,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         // When recursion limit is hit or page is in range, update state
         // Use validPage (clamped to [1, totalPages]) to maintain pagination invariants (page <= totalPages)
         // This prevents the store from ending up with page > totalPages (e.g., page=999, totalPages=10)
+        // Only update lastFilters on successful fetch to prevent failed filter states from being committed
         set({
           tickets: response.results,
           total: response.count,
           page: validPage,
           totalPages: calculatedTotalPages,
           isLoading: false,
+          lastFilters: updatedFilters,
         })
       }
     } catch (error) {
       // Only update error state if this is still the latest request
+      // Do NOT update lastFilters here - keep the last known-good filter state
       if (requestId === fetchRequestCounter) {
         set({
           error: error instanceof Error ? error.message : 'Failed to fetch tickets',
