@@ -584,6 +584,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set((state) => ({
         comments: [comment, ...state.comments],
         totalComments: state.totalComments + 1,
+        currentCommentsTicketId: ticketId,
         isCreatingComment: createCommentInFlightCount > 0,
       }))
 
@@ -637,6 +638,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         comments: state.comments.map((comment) =>
           comment.id === commentId ? updatedComment : comment
         ),
+        currentCommentsTicketId: ticketId,
         isUpdatingComment: updateCommentInFlightCount > 0,
       }))
 
@@ -689,6 +691,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set((state) => ({
         comments: state.comments.filter((comment) => comment.id !== commentId),
         totalComments: Math.max(0, state.totalComments - 1),
+        currentCommentsTicketId: ticketId,
         isDeletingComment: deleteCommentInFlightCount > 0,
       }))
     } catch (error) {
