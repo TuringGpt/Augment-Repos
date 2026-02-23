@@ -342,12 +342,17 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   clearSelectedTicket: () => {
     // Invalidate any in-flight fetchTicketById requests to prevent stale UI state
     fetchTicketRequestCounter++
+    // Invalidate any in-flight fetchComments requests to prevent stale UI state
+    fetchCommentsRequestCounter++
 
     set({
       selectedTicket: null,
       comments: [],
       totalComments: 0,
       currentCommentsTicketId: null,
+      // Reset loading flags to prevent perpetual loading state if invalidation happens during in-flight fetch
+      isFetchingTicket: false,
+      isFetchingComments: false,
     })
   },
 
@@ -363,6 +368,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       filterParams: {
         page: 1,
       },
+      // Reset loading flag to prevent perpetual loading state if invalidation happens during in-flight fetch
+      isFetchingTickets: false,
     })
   },
 
