@@ -38,13 +38,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { page: _, ...filters } = params ?? {}
 
-    // Only update lastFilters if new filter keys with defined/non-empty values are provided
-    // This prevents overwriting existing filters when only page is changed or when
-    // callers pass undefined/empty values (e.g., { status: undefined, search: '' })
+    // Only update lastFilters if new filter parameters are explicitly provided
+    // This prevents overwriting existing filters when only page is changed
+    // Note: We check if any filter keys exist (not their values) to allow clearing filters
+    // with empty strings (e.g., { search: '' } should clear the search filter)
     const hasNewFilters = Object.keys(filters).some(
       (key) => {
         const value = filters[key as keyof typeof filters]
-        return value !== undefined && value !== ''
+        // Consider a filter "new" if it's explicitly provided (even if empty string)
+        // Only exclude undefined values, which indicate the filter wasn't provided at all
+        return value !== undefined
       }
     )
     const updatedFilters = hasNewFilters ? filters : state.lastFilters
