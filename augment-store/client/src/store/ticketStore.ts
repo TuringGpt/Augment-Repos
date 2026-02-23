@@ -187,9 +187,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Only update error state and clear loading flag if this is still the latest request
       if (requestId === fetchTicketsRequestCounter) {
         set({ fetchTicketsError: errorMessage, isFetchingTickets: false })
+        // Only throw if this is the latest request - stale requests should be suppressed
+        throw error
       }
 
-      throw error
+      // Stale request - suppress the error to avoid spurious error UI from outdated fetches
+      // A newer request is in-flight or has already completed
+      return { results: [], count: 0, next: null, previous: null }
     }
   },
 
@@ -230,9 +234,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Only update error state and clear loading flag if this is still the latest request
       if (requestId === fetchTicketRequestCounter) {
         set({ fetchTicketError: errorMessage, isFetchingTicket: false })
+        // Only throw if this is the latest request - stale requests should be suppressed
+        throw error
       }
 
-      throw error
+      // Stale request - suppress the error to avoid spurious error UI from outdated fetches
+      // A newer request is in-flight or has already completed
+      // Return a minimal ticket object to satisfy the return type (caller should ignore this)
+      return { id, title: '', description: '', status: 'open', priority: 'medium', reporter: '', created_at: '', updated_at: '' } as Ticket
     }
   },
 
@@ -500,12 +509,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       if (isLatestRequest && isCurrentTicket) {
         set({ fetchCommentsError: errorMessage, isFetchingComments: false })
+        // Only throw if this is the latest request for the current ticket
+        throw error
       } else if (isLatestRequest) {
         // Reset loading flag for stale/canceled requests to prevent stuck loading state
         set({ isFetchingComments: false })
       }
 
-      throw error
+      // Stale request - suppress the error to avoid spurious error UI from outdated fetches
+      // A newer request is in-flight or has already completed, or the ticket has changed
+      return { results: [], count: 0, next: null, previous: null }
     }
   },
 
