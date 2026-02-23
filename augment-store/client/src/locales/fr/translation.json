@@ -955,6 +955,7 @@
       "noMessages": "Aucun message de contact pour le moment",
       "viewDetails": "Voir les Détails",
       "messageDetails": "Détails du Message",
+      "markAsRead": "Marquer comme lu",
       "table": {
         "name": "Nom",
         "email": "E-mail",

@@ -955,6 +955,7 @@
       "noMessages": "Noch keine Kontaktnachrichten",
       "viewDetails": "Details anzeigen",
       "messageDetails": "Nachrichtendetails",
+      "markAsRead": "Als gelesen markieren",
       "table": {
         "name": "Name",
         "email": "E-Mail",
