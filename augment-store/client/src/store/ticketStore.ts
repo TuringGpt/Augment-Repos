@@ -9,7 +9,8 @@ interface TicketState {
   totalPages: number
   isLoading: boolean
   error: string | null
-  lastFilters: Omit<TicketFilterParams, 'page'> // Store last-used filters (excluding page)
+  lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
+  pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
 
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
@@ -37,6 +38,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   isLoading: false,
   error: null,
   lastFilters: {}, // Initialize with empty filters
+  pendingFilters: {}, // Initialize with empty filters
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -68,7 +70,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null })
+    // Update pendingFilters immediately to prevent race conditions in setPage()
+    // This ensures that if setPage() is called while this request is in-flight,
+    // it will use the latest requested filters (not stale lastFilters)
+    set({ isLoading: true, error: null, pendingFilters: updatedFilters })
 
     try {
       const response = await ticketService.getTickets({
@@ -156,6 +161,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       isLoading: false,
       error: null,
       lastFilters: {}, // Reset filters when clearing tickets
+      pendingFilters: {}, // Reset pending filters when clearing tickets
     })
   },
 
@@ -163,8 +169,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     const state = get()
     // Don't update page state here - let fetchTickets update it on success
     // This prevents page/tickets mismatch if the fetch fails
-    // Preserve last-used filters when changing pages
-    get().fetchTickets({ ...state.lastFilters, page })
+    // Use pendingFilters (not lastFilters) to prevent race conditions:
+    // If a new-filter request is in-flight, pendingFilters contains the latest requested filters,
+    // while lastFilters still contains the old committed filters. Using pendingFilters ensures
+    // we page with the correct (latest) filters even if the previous request hasn't completed yet.
+    get().fetchTickets({ ...state.pendingFilters, page })
   },
 }))
 
