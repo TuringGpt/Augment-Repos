@@ -357,9 +357,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const comment = await ticketService.createComment(ticketId, { content })
 
-      // Add the new comment to the list
+      // Add the new comment to the beginning of the list (backend returns comments ordered by -created_at)
       set((state) => ({
-        comments: [...state.comments, comment],
+        comments: [comment, ...state.comments],
         totalComments: state.totalComments + 1,
         isCreatingComment: false,
       }))
