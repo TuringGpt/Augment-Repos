@@ -176,7 +176,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     const requestId = ++fetchTicketRequestCounter
 
     try {
-      set({ isFetchingTicket: true, fetchTicketError: null })
+      set({
+        isFetchingTicket: true,
+        fetchTicketError: null,
+        // Clear comments state to prevent showing stale comments from previous ticket
+        comments: [],
+        totalComments: 0,
+        currentCommentsTicketId: null,
+      })
 
       const ticket = await ticketService.getTicketById(id)
 
