@@ -114,7 +114,7 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
-  const markAsReadTimeoutRef = useRef<number | null>(null)
+  const markAsReadTimeoutsRef = useRef<Map<string, number>>(new Map())
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -122,6 +122,9 @@ const AdminContactMessagesPage = () => {
 
   // Cleanup timeouts on unmount
   useEffect(() => {
+    // Capture the current ref values for cleanup
+    const markAsReadTimeouts = markAsReadTimeoutsRef.current
+
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
@@ -129,9 +132,11 @@ const AdminContactMessagesPage = () => {
       if (drawerCloseTimeoutRef.current !== null) {
         clearTimeout(drawerCloseTimeoutRef.current)
       }
-      if (markAsReadTimeoutRef.current !== null) {
-        clearTimeout(markAsReadTimeoutRef.current)
-      }
+      // Clear all mark-as-read timeouts
+      markAsReadTimeouts.forEach((timeoutId) => {
+        clearTimeout(timeoutId)
+      })
+      markAsReadTimeouts.clear()
     }
   }, [])
 
@@ -203,20 +208,26 @@ const AdminContactMessagesPage = () => {
       )
     )
 
-    // Clear any existing timeout
-    if (markAsReadTimeoutRef.current !== null) {
-      clearTimeout(markAsReadTimeoutRef.current)
+    // Clear any existing timeout for this specific contact
+    const existingTimeout = markAsReadTimeoutsRef.current.get(contactId)
+    if (existingTimeout !== undefined) {
+      clearTimeout(existingTimeout)
     }
+
     // Simulate API call with timeout (dummy handler)
-    markAsReadTimeoutRef.current = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       // Remove from marking set using functional update to avoid stale closure
       setMarkingAsRead((prev) => {
         const finalMarkingAsRead = new Set(prev)
         finalMarkingAsRead.delete(contactId)
         return finalMarkingAsRead
       })
-      markAsReadTimeoutRef.current = null
+      // Clean up the timeout from the map
+      markAsReadTimeoutsRef.current.delete(contactId)
     }, 500)
+
+    // Store the timeout ID for this contact
+    markAsReadTimeoutsRef.current.set(contactId, timeoutId)
   }
 
   // Wait for persisted state to rehydrate before checking auth state
