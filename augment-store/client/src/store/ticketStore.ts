@@ -25,7 +25,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   tickets: [],
   total: 0,
   page: 1,
-  totalPages: 0,
+  totalPages: 1,
   isLoading: false,
   error: null,
   lastFilters: {}, // Initialize with empty filters
@@ -122,7 +122,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       tickets: [],
       total: 0,
       page: 1,
-      totalPages: 0,
+      totalPages: 1,
       isLoading: false,
       error: null,
       lastFilters: {}, // Reset filters when clearing tickets
