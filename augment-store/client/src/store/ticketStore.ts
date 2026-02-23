@@ -327,6 +327,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Ensure currentPage doesn't exceed totalPages after deletion
       const newCurrentPage = Math.min(state.currentPage, newTotalPages)
 
+      // Check if we're deleting the currently selected ticket
+      const isDeletingSelectedTicket = state.selectedTicket?.id === id
+
+      // If deleting the currently selected ticket, invalidate any in-flight comment fetches
+      if (isDeletingSelectedTicket) {
+        fetchCommentsRequestCounter++
+      }
+
       set({
         tickets: state.tickets.filter((ticket) => ticket.id !== id),
         totalTickets: newTotal,
@@ -335,7 +343,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         // Update filterParams.page to match the clamped currentPage
         // This prevents the UI from pointing at a page that no longer exists
         filterParams: { ...state.filterParams, page: newCurrentPage },
-        selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+        selectedTicket: isDeletingSelectedTicket ? null : state.selectedTicket,
+        // Clear comment state when deleting the currently selected ticket
+        // to prevent inconsistent "no ticket selected but comments present" state
+        comments: isDeletingSelectedTicket ? [] : state.comments,
+        totalComments: isDeletingSelectedTicket ? 0 : state.totalComments,
+        currentCommentsTicketId: isDeletingSelectedTicket ? null : state.currentCommentsTicketId,
         isDeletingTicket: false,
       })
 
