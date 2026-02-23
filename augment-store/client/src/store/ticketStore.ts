@@ -127,7 +127,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       set({ isFetchingTickets: true, fetchTicketsError: null })
 
       const mergedParams = { ...get().filterParams, ...params }
-      const response = await ticketService.getTickets(mergedParams)
+
+      // First, get the current total count to determine valid page range
+      // We need to make an initial request to know the total count
+      // However, to avoid the issue of requesting an out-of-range page,
+      // we'll clamp the page to a reasonable minimum (1) before the request
+      const requestedPage = mergedParams.page || 1
+      const safeRequestedPage = Math.max(1, requestedPage)
+      const requestParams = { ...mergedParams, page: safeRequestedPage }
+
+      const response = await ticketService.getTickets(requestParams)
 
       // Only update state if this is still the latest request
       if (requestId !== fetchTicketsRequestCounter) {
@@ -143,8 +152,32 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Clamp currentPage to valid range [1, totalPages] to avoid invalid pagination state
       // (e.g., when filters reduce count, requested page may exceed totalPages)
-      const requestedPage = mergedParams.page || 1
       const clampedPage = Math.min(Math.max(1, requestedPage), totalPages)
+
+      // If the clamped page differs from what we requested, we need to refetch
+      if (clampedPage !== safeRequestedPage) {
+        const clampedRequestParams = { ...mergedParams, page: clampedPage }
+        const clampedResponse = await ticketService.getTickets(clampedRequestParams)
+
+        // Check again if this is still the latest request after the second fetch
+        if (requestId !== fetchTicketsRequestCounter) {
+          return clampedResponse
+        }
+
+        // Update filterParams.page to match the clamped page to keep state consistent
+        const normalizedParams = { ...mergedParams, page: clampedPage }
+
+        set({
+          tickets: clampedResponse.results,
+          totalTickets: clampedResponse.count,
+          totalPages,
+          currentPage: clampedPage,
+          filterParams: normalizedParams,
+          isFetchingTickets: false,
+        })
+
+        return clampedResponse
+      }
 
       // Update filterParams.page to match the clamped page to keep state consistent
       const normalizedParams = { ...mergedParams, page: clampedPage }
