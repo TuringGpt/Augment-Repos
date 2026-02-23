@@ -28,13 +28,12 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { ticketService } from '@services/api'
-import type { Ticket, TicketStatus, TicketPriority } from '@features/support/types'
-import { formatDate } from '@utils/formatters'
+import type { TicketListItem, TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 
 const TicketsPage = () => {
   const navigate = useNavigate()
-  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [tickets, setTickets] = useState<TicketListItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
@@ -301,12 +300,6 @@ const TicketsPage = () => {
                   <TableCell>
                     <Typography fontWeight="bold">Priority</Typography>
                   </TableCell>
-                  <TableCell>
-                    <Typography fontWeight="bold">Created</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography fontWeight="bold">Updated</Typography>
-                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -342,12 +335,6 @@ const TicketsPage = () => {
                         color={getPriorityColor(ticket.priority)}
                         size="small"
                       />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{formatDate(ticket.created_at)}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{formatDate(ticket.updated_at)}</Typography>
                     </TableCell>
                   </TableRow>
                 ))}
