@@ -25,6 +25,10 @@ let fetchRequestCounter = 0
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
 
+// Backend page size - fixed in Django REST_FRAMEWORK settings (server/core/settings.py)
+// Used to calculate total pages when results are empty (out-of-range page)
+const BACKEND_PAGE_SIZE = 100
+
 export const useTicketStore = create<TicketState>((set, get) => ({
   tickets: [],
   total: 0,
@@ -99,10 +103,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           }
         } else {
           // Fallback: count > 0 but results empty (out-of-range page)
-          // We don't know the backend page size, so we can't accurately calculate total pages
-          // Instead, set calculatedTotalPages to ensure we trigger a refetch to a valid page
-          // Setting it to currentPage - 1 guarantees validPage < currentPage, triggering the refetch
-          calculatedTotalPages = Math.max(1, currentPage - 1)
+          // Calculate total pages using the known backend page size
+          // This ensures totalPages is always accurate regardless of which page is requested
+          calculatedTotalPages = Math.ceil(response.count / BACKEND_PAGE_SIZE)
         }
 
         // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
@@ -115,12 +118,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           return await get().fetchTickets({ ...updatedFilters, page: validPage }, recursionDepth + 1)
         }
 
-        // When recursion limit is hit, we keep the data from currentPage (even if out of range)
-        // So we must set page to currentPage to match the displayed data, not validPage
+        // When recursion limit is hit or page is in range, update state
+        // Use validPage (clamped to [1, totalPages]) to maintain pagination invariants (page <= totalPages)
+        // This prevents the store from ending up with page > totalPages (e.g., page=999, totalPages=10)
         set({
           tickets: response.results,
           total: response.count,
-          page: currentPage,
+          page: validPage,
           totalPages: calculatedTotalPages,
           isLoading: false,
         })
