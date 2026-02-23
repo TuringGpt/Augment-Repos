@@ -265,17 +265,17 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const updatedTicket = await ticketService.updateTicket(id, data)
 
       // Update the ticket in the list
+      // Merge with existing ticket to preserve read-only fields (id, reporter)
+      // that may be omitted by write serializers
       set((state) => ({
         tickets: state.tickets.map((ticket) =>
           ticket.id === id
             ? {
-                id: updatedTicket.id,
-                title: updatedTicket.title,
-                description: updatedTicket.description,
-                status: updatedTicket.status,
-                priority: updatedTicket.priority,
-                assignee: updatedTicket.assignee,
-                reporter: updatedTicket.reporter,
+                ...ticket,
+                ...updatedTicket,
+                // Ensure id and reporter are never overwritten with undefined
+                id: updatedTicket.id ?? ticket.id,
+                reporter: updatedTicket.reporter ?? ticket.reporter,
               }
             : ticket
         ),
