@@ -125,6 +125,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Only update state if this is still the latest request
       if (requestId !== fetchTicketsRequestCounter) {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isFetchingTickets: false })
         return response
       }
 
@@ -150,6 +152,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       if (requestId === fetchTicketsRequestCounter) {
         set({ fetchTicketsError: errorMessage, isFetchingTickets: false })
+      } else {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isFetchingTickets: false })
       }
 
       throw error
@@ -166,6 +171,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Only update state if this is still the latest request
       if (requestId !== fetchTicketRequestCounter) {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isFetchingTicket: false })
         return ticket
       }
 
@@ -181,6 +188,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       if (requestId === fetchTicketRequestCounter) {
         set({ fetchTicketError: errorMessage, isFetchingTicket: false })
+      } else {
+        // Reset loading flag for stale requests to prevent stuck loading state
+        set({ isFetchingTicket: false })
       }
 
       throw error
@@ -379,6 +389,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
       if (!isLatestRequest || !isCurrentTicket) {
+        // Reset loading flag for stale/canceled requests to prevent stuck loading state
+        if (isLatestRequest) {
+          set({ isFetchingComments: false })
+        }
         return response
       }
 
@@ -402,6 +416,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       if (isLatestRequest && isCurrentTicket) {
         set({ fetchCommentsError: errorMessage, isFetchingComments: false })
+      } else if (isLatestRequest) {
+        // Reset loading flag for stale/canceled requests to prevent stuck loading state
+        set({ isFetchingComments: false })
       }
 
       throw error
