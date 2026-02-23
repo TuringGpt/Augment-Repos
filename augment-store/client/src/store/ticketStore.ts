@@ -73,13 +73,15 @@ interface TicketState {
   clearComments: () => void
 }
 
-// Request counter to prevent race conditions
+// Request counter to prevent race conditions for fetch operations
+// For fetch operations, only the latest request should update state (latest wins)
 let fetchTicketsRequestCounter = 0
 let fetchTicketRequestCounter = 0
 let fetchCommentsRequestCounter = 0
-let createCommentRequestCounter = 0
-let updateCommentRequestCounter = 0
-let deleteCommentRequestCounter = 0
+
+// For mutation operations (create/update/delete), we don't use global counters
+// because each operation is independent and should succeed.
+// We only check if the operation is for the currently selected ticket.
 
 export const useTicketStore = create<TicketState>((set, get) => ({
   // Initial state
@@ -452,25 +454,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   createComment: async (ticketId: string, content: string) => {
-    const requestId = ++createCommentRequestCounter
-
     try {
       set({ isCreatingComment: true, createCommentError: null })
 
       const comment = await ticketService.createComment(ticketId, { content })
 
-      // Only update state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket (guard against stale responses)
+      // Only update state if the ticketId matches the currently selected ticket
+      // (guard against stale responses when user switches tickets)
       const currentState = get()
-      const isLatestRequest = requestId === createCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (!isLatestRequest || !isCurrentTicket) {
-        // Reset loading flag for stale/canceled requests to prevent stuck loading state
-        if (isLatestRequest) {
-          set({ isCreatingComment: false })
-        }
-        // Don't clear loading flag for stale requests - a newer request is still in-flight
+      if (!isCurrentTicket) {
+        // Reset loading flag for operations on non-current tickets
+        set({ isCreatingComment: false })
         return comment
       }
 
@@ -486,16 +482,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to create comment:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to create comment'
 
-      // Only update error state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket
+      // Only update error state if the ticketId matches the currently selected ticket
       const currentState = get()
-      const isLatestRequest = requestId === createCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (isLatestRequest && isCurrentTicket) {
+      if (isCurrentTicket) {
         set({ createCommentError: errorMessage, isCreatingComment: false })
-      } else if (isLatestRequest) {
-        // Reset loading flag for stale requests to prevent stuck loading state
+      } else {
+        // Reset loading flag for operations on non-current tickets
         set({ isCreatingComment: false })
       }
 
@@ -504,25 +498,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   updateComment: async (ticketId: string, commentId: string, data: UpdateCommentRequest) => {
-    const requestId = ++updateCommentRequestCounter
-
     try {
       set({ isUpdatingComment: true, updateCommentError: null })
 
       const updatedComment = await ticketService.updateComment(ticketId, commentId, data)
 
-      // Only update state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket (guard against stale responses)
+      // Only update state if the ticketId matches the currently selected ticket
+      // (guard against stale responses when user switches tickets)
       const currentState = get()
-      const isLatestRequest = requestId === updateCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (!isLatestRequest || !isCurrentTicket) {
-        // Reset loading flag for stale/canceled requests to prevent stuck loading state
-        if (isLatestRequest) {
-          set({ isUpdatingComment: false })
-        }
-        // Don't clear loading flag for stale requests - a newer request is still in-flight
+      if (!isCurrentTicket) {
+        // Reset loading flag for operations on non-current tickets
+        set({ isUpdatingComment: false })
         return updatedComment
       }
 
@@ -539,16 +527,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to update comment:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to update comment'
 
-      // Only update error state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket
+      // Only update error state if the ticketId matches the currently selected ticket
       const currentState = get()
-      const isLatestRequest = requestId === updateCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (isLatestRequest && isCurrentTicket) {
+      if (isCurrentTicket) {
         set({ updateCommentError: errorMessage, isUpdatingComment: false })
-      } else if (isLatestRequest) {
-        // Reset loading flag for stale requests to prevent stuck loading state
+      } else {
+        // Reset loading flag for operations on non-current tickets
         set({ isUpdatingComment: false })
       }
 
@@ -557,25 +543,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   deleteComment: async (ticketId: string, commentId: string) => {
-    const requestId = ++deleteCommentRequestCounter
-
     try {
       set({ isDeletingComment: true, deleteCommentError: null })
 
       await ticketService.deleteComment(ticketId, commentId)
 
-      // Only update state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket (guard against stale responses)
+      // Only update state if the ticketId matches the currently selected ticket
+      // (guard against stale responses when user switches tickets)
       const currentState = get()
-      const isLatestRequest = requestId === deleteCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (!isLatestRequest || !isCurrentTicket) {
-        // Reset loading flag for stale/canceled requests to prevent stuck loading state
-        if (isLatestRequest) {
-          set({ isDeletingComment: false })
-        }
-        // Don't clear loading flag for stale requests - a newer request is still in-flight
+      if (!isCurrentTicket) {
+        // Reset loading flag for operations on non-current tickets
+        set({ isDeletingComment: false })
         return
       }
 
@@ -589,16 +569,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       console.error('Failed to delete comment:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment'
 
-      // Only update error state if this is still the latest request AND
-      // the ticketId matches the currently selected ticket
+      // Only update error state if the ticketId matches the currently selected ticket
       const currentState = get()
-      const isLatestRequest = requestId === deleteCommentRequestCounter
       const isCurrentTicket = currentState.selectedTicket?.id === ticketId
 
-      if (isLatestRequest && isCurrentTicket) {
+      if (isCurrentTicket) {
         set({ deleteCommentError: errorMessage, isDeletingComment: false })
-      } else if (isLatestRequest) {
-        // Reset loading flag for stale requests to prevent stuck loading state
+      } else {
+        // Reset loading flag for operations on non-current tickets
         set({ isDeletingComment: false })
       }
 
