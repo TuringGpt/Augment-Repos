@@ -511,6 +511,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         return response
       }
 
+      // Check if there are any in-flight comment mutations
+      // If so, don't overwrite the comments array to prevent losing optimistic updates
+      const hasInFlightMutations =
+        createCommentInFlightCount > 0 ||
+        updateCommentInFlightCount > 0 ||
+        deleteCommentInFlightCount > 0
+
+      if (hasInFlightMutations) {
+        // Only update the loading flag, but don't replace the comments array
+        // The mutations will update the comments array when they complete
+        set({ isFetchingComments: false })
+        return response
+      }
+
       set({
         comments: response.results,
         totalComments: response.count,
