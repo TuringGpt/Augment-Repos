@@ -9,6 +9,7 @@ interface TicketState {
   totalPages: number
   isLoading: boolean
   error: string | null
+  lastFilters: Omit<TicketFilterParams, 'page'> // Store last-used filters (excluding page)
 
   // Actions
   fetchTickets: (params?: TicketFilterParams) => Promise<void>
@@ -27,16 +28,21 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   totalPages: 0,
   isLoading: false,
   error: null,
+  lastFilters: {}, // Initialize with empty filters
 
   fetchTickets: async (params?: TicketFilterParams) => {
     const state = get()
     const currentPage = params?.page ?? state.page
 
+    // Extract and save filter parameters (excluding page) for future use
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { page: _, ...filters } = params ?? {}
+
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null })
+    set({ isLoading: true, error: null, lastFilters: filters })
 
     try {
       const response = await ticketService.getTickets({
@@ -114,12 +120,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       totalPages: 0,
       isLoading: false,
       error: null,
+      lastFilters: {}, // Reset filters when clearing tickets
     })
   },
 
   setPage: (page: number) => {
+    const state = get()
     set({ page })
-    get().fetchTickets({ page })
+    // Preserve last-used filters when changing pages
+    get().fetchTickets({ ...state.lastFilters, page })
   },
 }))
 
