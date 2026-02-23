@@ -4,6 +4,7 @@ import type {
   Ticket,
   TicketListResponse,
   CreateTicketRequest,
+  CreateTicketResponse,
   UpdateTicketRequest,
   Comment,
   CommentListResponse,
@@ -46,9 +47,11 @@ export const ticketService = {
 
   /**
    * Create a new support ticket
+   * Note: Backend may return only CreateTicketResponse fields (write-serializer pattern)
+   * which includes id and reporter but may not include optional timestamp fields
    */
-  createTicket: async (data: CreateTicketRequest): Promise<Ticket> => {
-    return apiClient.post<Ticket>(API_ENDPOINTS.SUPPORT.TICKETS.CREATE, data)
+  createTicket: async (data: CreateTicketRequest): Promise<CreateTicketResponse> => {
+    return apiClient.post<CreateTicketResponse>(API_ENDPOINTS.SUPPORT.TICKETS.CREATE, data)
   },
 
   /**
