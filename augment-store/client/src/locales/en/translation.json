@@ -1017,6 +1017,13 @@
       }
     },
     "settings": "Settings",
+    "settingsPage": {
+      "title": "Settings",
+      "subtitle": "Manage application settings and configurations",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "The admin settings page is currently under development.",
+      "checkBackSoon": "Check back soon for updates!"
+    },
     "productStatistics": {
       "title": "Product Statistics",
       "subtitle": "View detailed analytics and performance metrics for all products",
