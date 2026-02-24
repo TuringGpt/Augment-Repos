@@ -966,6 +966,13 @@
       }
     },
     "settings": "Einstellungen",
+    "settingsPage": {
+      "title": "Einstellungen",
+      "subtitle": "Anwendungseinstellungen und Konfigurationen verwalten",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Die Admin-Einstellungsseite befindet sich derzeit in der Entwicklung.",
+      "checkBackSoon": "Schauen Sie bald wieder vorbei für Updates!"
+    },
     "productStatistics": {
       "title": "Produktstatistiken",
       "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
