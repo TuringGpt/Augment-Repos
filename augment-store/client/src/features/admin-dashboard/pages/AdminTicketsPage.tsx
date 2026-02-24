@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import {
   Container,
   Typography,
@@ -6,6 +7,8 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Alert,
+  Button,
 } from '@mui/material'
 import {
   ConfirmationNumber as TicketIcon,
@@ -40,6 +43,7 @@ const DUMMY_STATS = {
  */
 const AdminTicketsPage = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -54,10 +58,28 @@ const AdminTicketsPage = () => {
   }
 
   // Check if user is authenticated and is an admin
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography color="error">Access Denied</Typography>
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          {t('admin.dashboard.pleaseLogin')}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/login')}>
+          {t('admin.dashboard.goToLogin')}
+        </Button>
+      </Container>
+    )
+  }
+
+  if (user?.role !== 'admin') {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {t('admin.dashboard.accessDenied')}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/')}>
+          {t('admin.dashboard.goToHome')}
+        </Button>
       </Container>
     )
   }
