@@ -30,6 +30,7 @@ import {
   Subject as SubjectIcon,
   Message as MessageIcon,
   AccessTime as AccessTimeIcon,
+  MarkEmailRead as MarkEmailReadIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -43,6 +44,7 @@ const DUMMY_CONTACTS = [
     subject: 'Question about product availability',
     message: 'Hi, I would like to know if the wireless headphones are still in stock. I am interested in purchasing 2 units.',
     created_at: '2026-02-18T14:30:00Z',
+    is_read: false,
   },
   {
     id: '2',
@@ -51,6 +53,7 @@ const DUMMY_CONTACTS = [
     subject: 'Shipping inquiry',
     message: 'Hello, I placed an order last week and haven\'t received any tracking information yet. Can you please help?',
     created_at: '2026-02-17T10:15:00Z',
+    is_read: true,
   },
   {
     id: '3',
@@ -59,6 +62,7 @@ const DUMMY_CONTACTS = [
     subject: 'Product return request',
     message: 'I received a damaged item and would like to return it for a refund or replacement. Order number: #12345',
     created_at: '2026-02-16T16:45:00Z',
+    is_read: false,
   },
   {
     id: '4',
@@ -67,6 +71,7 @@ const DUMMY_CONTACTS = [
     subject: 'Partnership opportunity',
     message: 'We are interested in partnering with your company for bulk orders. Please contact us to discuss further.',
     created_at: '2026-02-15T09:20:00Z',
+    is_read: true,
   },
   {
     id: '5',
@@ -75,6 +80,7 @@ const DUMMY_CONTACTS = [
     subject: 'Technical support needed',
     message: 'I am having trouble setting up my new device. The instructions are unclear. Can someone assist me?',
     created_at: '2026-02-14T13:00:00Z',
+    is_read: false,
   },
 ]
 
@@ -96,15 +102,19 @@ const AdminContactMessagesPage = () => {
 
   // State for dummy data simulation
   const [isLoading, setIsLoading] = useState(false)
-  const [contacts] = useState(DUMMY_CONTACTS)
+  const [contacts, setContacts] = useState(DUMMY_CONTACTS)
 
   // Drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<typeof DUMMY_CONTACTS[0] | null>(null)
 
+  // Track which contacts are being marked as read
+  const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set())
+
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
+  const markAsReadTimeoutsRef = useRef<Map<string, number>>(new Map())
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -112,6 +122,9 @@ const AdminContactMessagesPage = () => {
 
   // Cleanup timeouts on unmount
   useEffect(() => {
+    // Capture the current ref values for cleanup
+    const markAsReadTimeouts = markAsReadTimeoutsRef.current
+
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
@@ -119,6 +132,11 @@ const AdminContactMessagesPage = () => {
       if (drawerCloseTimeoutRef.current !== null) {
         clearTimeout(drawerCloseTimeoutRef.current)
       }
+      // Clear all mark-as-read timeouts
+      markAsReadTimeouts.forEach((timeoutId) => {
+        clearTimeout(timeoutId)
+      })
+      markAsReadTimeouts.clear()
     }
   }, [])
 
@@ -165,6 +183,51 @@ const AdminContactMessagesPage = () => {
       setSelectedContact(null)
       drawerCloseTimeoutRef.current = null
     }, drawerTransitionDuration)
+  }
+
+  const handleMarkAsRead = async (contactId: string, event: React.MouseEvent) => {
+    // Prevent row click event from firing
+    event.stopPropagation()
+
+    // Don't mark if already being marked
+    if (markingAsRead.has(contactId)) {
+      return
+    }
+
+    // Add to marking set using functional update to avoid stale closure
+    setMarkingAsRead((prev) => {
+      const newMarkingAsRead = new Set(prev)
+      newMarkingAsRead.add(contactId)
+      return newMarkingAsRead
+    })
+
+    // Optimistically update the UI
+    setContacts((prevContacts) =>
+      prevContacts.map((contact) =>
+        contact.id === contactId ? { ...contact, is_read: true } : contact
+      )
+    )
+
+    // Clear any existing timeout for this specific contact
+    const existingTimeout = markAsReadTimeoutsRef.current.get(contactId)
+    if (existingTimeout !== undefined) {
+      clearTimeout(existingTimeout)
+    }
+
+    // Simulate API call with timeout (dummy handler)
+    const timeoutId = setTimeout(() => {
+      // Remove from marking set using functional update to avoid stale closure
+      setMarkingAsRead((prev) => {
+        const finalMarkingAsRead = new Set(prev)
+        finalMarkingAsRead.delete(contactId)
+        return finalMarkingAsRead
+      })
+      // Clean up the timeout from the map
+      markAsReadTimeoutsRef.current.delete(contactId)
+    }, 500)
+
+    // Store the timeout ID for this contact
+    markAsReadTimeoutsRef.current.set(contactId, timeoutId)
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -334,16 +397,37 @@ const AdminContactMessagesPage = () => {
 
                     {/* Actions */}
                     <TableCell align="center">
-                      <Tooltip title={t('admin.contactMessagesPage.viewDetails')}>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleViewDetails(contact)}
-                          aria-label={t('admin.contactMessagesPage.viewDetails')}
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                        <Tooltip title={t('admin.contactMessagesPage.viewDetails')}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleViewDetails(contact)}
+                            aria-label={t('admin.contactMessagesPage.viewDetails')}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {(!contact.is_read || markingAsRead.has(contact.id)) && (
+                          <Tooltip title={t('admin.contactMessagesPage.markAsRead')}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={(e) => handleMarkAsRead(contact.id, e)}
+                                disabled={markingAsRead.has(contact.id)}
+                                aria-label={t('admin.contactMessagesPage.markAsRead')}
+                              >
+                                {markingAsRead.has(contact.id) ? (
+                                  <CircularProgress size={16} />
+                                ) : (
+                                  <MarkEmailReadIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
