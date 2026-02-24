@@ -55,10 +55,12 @@ class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView)
     serializer_class = ProductListSerializer
     queryset = Product.objects.all()
     auto_select_related = ['brand', 'category', 'created_by']
-    auto_prefetch_related = ['images', 'variants', 'variants__attributes']
+    auto_prefetch_related = ['images']
 
     def get_queryset(self):
-        return super().get_queryset()
+        return super().get_queryset().filter(
+            wishlist__user=self.request.user
+        )
     
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
@@ -86,7 +88,7 @@ class RemoveFromWishlistView(BaseWishlistView, GenericAPIView):
 
         product_ids = serializer.validated_data["product_ids"]
         user = self.request.user
-        wishlist = Wishlist.objects.get(user=user)
+        wishlist = Wishlist.objects.get_user_wishlist(user)
         wishlist.products.remove(*product_ids)
 
         return Response(
