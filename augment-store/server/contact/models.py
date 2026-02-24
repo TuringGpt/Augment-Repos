@@ -1,7 +1,6 @@
 from django.db import models
 from core.models import BaseModel
 
-# Create your models here.
 class ContactMessage(BaseModel):
     class Status(models.TextChoices):
         UNREAD = 'unread', 'Unread'
@@ -10,6 +9,7 @@ class ContactMessage(BaseModel):
 
     name = models.CharField(max_length=255)
     email = models.EmailField()
+    subject = models.CharField(max_length=50, default="")
     message = models.TextField()
     status = models.CharField(
         max_length=20,
