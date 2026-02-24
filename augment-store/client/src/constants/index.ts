@@ -22,6 +22,7 @@ export const ROUTES = {
   ADMIN_PRODUCTS_ALL: '/admin/products/all',
   ADMIN_PRODUCTS_STATISTICS: '/admin/products/statistics',
   ADMIN_PRODUCTS_STATISTICS_DETAIL: '/admin/products/statistics/:id',
+  ADMIN_TICKETS: '/admin/tickets',
   LOGIN: '/login',
   REGISTER: '/register',
   ABOUT: '/about',
