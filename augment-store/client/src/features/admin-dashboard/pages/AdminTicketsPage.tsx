@@ -5,6 +5,7 @@ import {
   Grid,
   Card,
   CardContent,
+  CircularProgress,
 } from '@mui/material'
 import {
   ConfirmationNumber as TicketIcon,
@@ -46,7 +47,7 @@ const AdminTicketsPage = () => {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <Typography>Loading...</Typography>
+          <CircularProgress />
         </Box>
       </Container>
     )
