@@ -57,7 +57,20 @@ const AdminSettingsPage = () => {
     )
   }
 
-  if (user?.role !== 'admin') {
+  // Handle transient state where isAuthenticated is true but user is still null
+  // (e.g., during user profile fetch or corrupted persisted state)
+  // Show loading state instead of misleading "access denied" message
+  if (!user) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
+  }
+
+  if (user.role !== 'admin') {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
