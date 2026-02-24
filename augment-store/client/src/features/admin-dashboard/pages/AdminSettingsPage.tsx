@@ -28,12 +28,12 @@ import { useAuthStore } from '@store/authStore'
 const AdminSettingsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
+  const { user, isAuthenticated, hasHydrated } = useAuthStore()
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
   // during the brief hydration period on initial page load
-  if (!hasHydrated || authLoading) {
+  if (!hasHydrated) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
