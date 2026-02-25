@@ -27,6 +27,10 @@ interface TicketState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
+// Request counter to track the latest create ticket request
+// Prevents race conditions when createTicket is triggered multiple times concurrently
+let createRequestCounter = 0
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -187,18 +191,37 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // Use separate isCreating/createError state to avoid race conditions with fetchTickets
     // This prevents createTicket from clearing error or setting isLoading to false
     // while a fetchTickets request is still in-flight
+
+    // Increment counter and capture the current request ID
+    // This prevents concurrent createTicket calls from causing incorrect UI state
+    // (e.g., double-submit, retries) where the first request finishing would set
+    // isCreating to false while another request is still in-flight
+    createRequestCounter += 1
+    const requestId = createRequestCounter
+
     set({ isCreating: true, createError: null })
 
     try {
       const ticket = await ticketService.createTicket(data)
-      set({ isCreating: false })
+
+      // Only update state if this is still the latest request
+      // This prevents earlier requests from overwriting state after a newer request completes
+      if (requestId === createRequestCounter) {
+        set({ isCreating: false })
+      }
+
       return ticket
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create ticket'
-      set({
-        createError: errorMessage,
-        isCreating: false,
-      })
+
+      // Only update error state if this is still the latest request
+      if (requestId === createRequestCounter) {
+        set({
+          createError: errorMessage,
+          isCreating: false,
+        })
+      }
+
       // Throw a normalized Error that matches the store's error state
       throw new Error(errorMessage)
     }
