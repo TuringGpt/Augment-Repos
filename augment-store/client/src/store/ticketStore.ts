@@ -28,9 +28,10 @@ interface TicketState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
-// Request counter to track the latest create ticket request
-// Prevents race conditions when createTicket is triggered multiple times concurrently
-let createRequestCounter = 0
+// In-flight counter to track concurrent create ticket requests
+// Ensures isCreating reflects "any create in progress" rather than just the latest request
+// This prevents isCreating from becoming false while earlier requests are still in-flight
+let createInFlightCount = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -193,21 +194,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents createTicket from clearing error or setting isLoading to false
     // while a fetchTickets request is still in-flight
 
-    // Increment counter and capture the current request ID
-    // This prevents concurrent createTicket calls from causing incorrect UI state
-    // (e.g., double-submit, retries) where the first request finishing would set
-    // isCreating to false while another request is still in-flight
-    createRequestCounter += 1
-    const requestId = createRequestCounter
+    // Increment in-flight count to track concurrent create requests
+    // This ensures isCreating reflects "any create in progress" rather than just the latest request
+    // When the count goes from 0 to 1, set isCreating to true
+    // When the count goes back to 0, set isCreating to false
+    createInFlightCount += 1
+    const isFirstRequest = createInFlightCount === 1
 
-    set({ isCreating: true, createError: null })
+    // Only set isCreating to true and clear error for the first concurrent request
+    // Subsequent concurrent requests don't need to update these flags
+    if (isFirstRequest) {
+      set({ isCreating: true, createError: null })
+    }
 
     try {
       const ticket = await ticketService.createTicket(data)
 
-      // Only update state if this is still the latest request
-      // This prevents earlier requests from overwriting state after a newer request completes
-      if (requestId === createRequestCounter) {
+      // Decrement in-flight count when request completes
+      // Only set isCreating to false when all requests have completed (count reaches 0)
+      createInFlightCount -= 1
+      if (createInFlightCount === 0) {
         set({ isCreating: false })
       }
 
@@ -218,8 +224,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'Failed to create ticket',
       })
 
-      // Only update error state if this is still the latest request
-      if (requestId === createRequestCounter) {
+      // Decrement in-flight count when request fails
+      // Only update error state and isCreating when all requests have completed
+      createInFlightCount -= 1
+      if (createInFlightCount === 0) {
         set({
           createError: errorMessage,
           isCreating: false,
