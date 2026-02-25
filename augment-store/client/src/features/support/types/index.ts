@@ -102,3 +102,16 @@ export interface TicketFilterParams {
   page?: number
   search?: string
 }
+
+// Ticket statistics response
+export interface TicketStatsResponse {
+  total_tickets: number
+  open_tickets: number
+  in_progress_tickets: number
+  resolved_tickets: number
+  closed_tickets: number
+  urgent_tickets: number
+  high_priority_tickets: number
+  medium_priority_tickets: number
+  low_priority_tickets: number
+}

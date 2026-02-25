@@ -10,6 +10,7 @@ import type {
   CreateCommentRequest,
   UpdateCommentRequest,
   TicketFilterParams,
+  TicketStatsResponse,
 } from '@features/support/types'
 
 export const ticketService = {
@@ -105,5 +106,12 @@ export const ticketService = {
    */
   deleteComment: async (ticketId: string, commentId: string): Promise<void> => {
     return apiClient.delete(API_ENDPOINTS.SUPPORT.COMMENTS.DELETE(ticketId, commentId))
+  },
+
+  /**
+   * Get ticket statistics
+   */
+  getTicketStats: async (): Promise<TicketStatsResponse> => {
+    return apiClient.get<TicketStatsResponse>(API_ENDPOINTS.SUPPORT.TICKETS.STATS)
   },
 }

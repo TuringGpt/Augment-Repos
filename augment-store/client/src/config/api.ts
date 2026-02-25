@@ -98,6 +98,7 @@ export const API_ENDPOINTS = {
       DETAIL: (id: string) => `/support/tickets/${id}/`,
       UPDATE: (id: string) => `/support/tickets/${id}/update/`,
       DELETE: (id: string) => `/support/tickets/${id}/update/`,
+      STATS: '/support/tickets/stats/',
     },
     COMMENTS: {
       LIST: (ticketId: string) => `/support/tickets/${ticketId}/comments/`,
