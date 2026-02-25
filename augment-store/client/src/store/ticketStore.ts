@@ -12,6 +12,10 @@ interface TicketState {
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
   pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
 
+  // Separate state for create ticket action to avoid race conditions with fetchTickets
+  isCreating: boolean
+  createError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -40,6 +44,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   error: null,
   lastFilters: {}, // Initialize with empty filters
   pendingFilters: {}, // Initialize with empty filters
+  isCreating: false,
+  createError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -178,17 +184,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   createTicket: async (data: CreateTicketRequest): Promise<Ticket> => {
-    set({ isLoading: true, error: null })
+    // Use separate isCreating/createError state to avoid race conditions with fetchTickets
+    // This prevents createTicket from clearing error or setting isLoading to false
+    // while a fetchTickets request is still in-flight
+    set({ isCreating: true, createError: null })
 
     try {
       const ticket = await ticketService.createTicket(data)
-      set({ isLoading: false })
+      set({ isCreating: false })
       return ticket
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create ticket'
       set({
-        error: errorMessage,
-        isLoading: false,
+        createError: errorMessage,
+        isCreating: false,
       })
       throw error
     }
