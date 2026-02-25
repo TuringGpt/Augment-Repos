@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
+import { parseApiError } from '@utils/errorUtils'
 import type { TicketListItem, TicketFilterParams, CreateTicketRequest, Ticket } from '@features/support/types'
 
 interface TicketState {
@@ -212,7 +213,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       return ticket
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create ticket'
+      // Use parseApiError to extract user-friendly error message from API response
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to create ticket',
+      })
 
       // Only update error state if this is still the latest request
       if (requestId === createRequestCounter) {
@@ -222,8 +226,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         })
       }
 
-      // Throw a normalized Error that matches the store's error state
-      throw new Error(errorMessage)
+      // Re-throw the original error to preserve stack trace and debugging info
+      // The store's createError state contains the normalized user-friendly message
+      throw error
     }
   },
 }))
