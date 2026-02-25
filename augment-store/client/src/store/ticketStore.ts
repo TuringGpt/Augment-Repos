@@ -218,7 +218,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       return ticket
     } catch (error) {
       // Use parseApiError to extract user-friendly error message from API response
+      // Pass field names to extract field-specific DRF validation errors (e.g., { title: [...] })
       const errorMessage = parseApiError(error, {
+        fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
         defaultMessage: 'Failed to create ticket',
       })
 
