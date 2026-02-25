@@ -199,7 +199,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         createError: errorMessage,
         isCreating: false,
       })
-      throw error
+      // Throw a normalized Error that matches the store's error state
+      throw new Error(errorMessage)
     }
   },
 }))
