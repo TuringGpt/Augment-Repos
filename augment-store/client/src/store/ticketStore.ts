@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
-import type { TicketListItem, TicketFilterParams } from '@features/support/types'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, Ticket } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -16,6 +16,7 @@ interface TicketState {
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
+  createTicket: (data: CreateTicketRequest) => Promise<Ticket>
 }
 
 // Request counter to track the latest fetch request
@@ -174,6 +175,23 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // while lastFilters still contains the old committed filters. Using pendingFilters ensures
     // we page with the correct (latest) filters even if the previous request hasn't completed yet.
     get().fetchTickets({ ...state.pendingFilters, page })
+  },
+
+  createTicket: async (data: CreateTicketRequest): Promise<Ticket> => {
+    set({ isLoading: true, error: null })
+
+    try {
+      const ticket = await ticketService.createTicket(data)
+      set({ isLoading: false })
+      return ticket
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create ticket'
+      set({
+        error: errorMessage,
+        isLoading: false,
+      })
+      throw error
+    }
   },
 }))
 
