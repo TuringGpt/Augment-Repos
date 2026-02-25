@@ -210,9 +210,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     try {
       const ticket = await ticketService.createTicket(data)
 
-      // Decrement in-flight count when request completes
       // Only set isCreating to false when all requests have completed (count reaches 0)
-      createInFlightCount -= 1
       if (createInFlightCount === 0) {
         set({ isCreating: false })
       }
@@ -224,9 +222,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'Failed to create ticket',
       })
 
-      // Decrement in-flight count when request fails
       // Only update error state and isCreating when all requests have completed
-      createInFlightCount -= 1
       if (createInFlightCount === 0) {
         set({
           createError: errorMessage,
@@ -237,6 +233,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Re-throw the original error to preserve stack trace and debugging info
       // The store's createError state contains the normalized user-friendly message
       throw error
+    } finally {
+      // Decrement in-flight count in finally block to ensure it always happens
+      // even if parseApiError or any other code in try/catch throws
+      createInFlightCount -= 1
     }
   },
 }))
