@@ -26,7 +26,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ["id", "ticket", "user", "content", "created_at", "updated_at", "is_deleted"]
+        fields = ["id", "ticket", "user", "content", "created_at", "updated_at"]
 
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
