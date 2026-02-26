@@ -14,6 +14,7 @@ class TicketTests(BaseAPITestCase):
             password="testpassword",
             is_active=True,
         )
+        self.authenticated_client.force_authenticate(user=self.user)
         self.user2 = UserFactory(
             email="test2@example.com",
             password="testpassword",

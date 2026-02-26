@@ -5,7 +5,8 @@ VALID_PRIORITIES = ['low', 'medium', 'high', 'urgent']
 
 def normalize_priority(apps, schema_editor):
     Ticket = apps.get_model('ticket', 'Ticket')
-    Ticket.objects.filter(
+    db_alias = schema_editor.connection.alias
+    Ticket.objects.using(db_alias).filter(
         Q(priority__isnull=True) | Q(priority='') | ~Q(priority__in=VALID_PRIORITIES)
     ).update(priority='low')
 
