@@ -4,7 +4,8 @@ VALID_STATUSES = ['open', 'in_progress', 'resolved', 'closed']
 
 def normalize_status(apps, schema_editor):
     Ticket = apps.get_model('ticket', 'Ticket')
-    Ticket.objects.exclude(status__in=VALID_STATUSES).update(status='open')
+    db_alias = schema_editor.connection.alias
+    Ticket.objects.using(db_alias).exclude(status__in=VALID_STATUSES).update(status='open')
 
 class Migration(migrations.Migration):
 
