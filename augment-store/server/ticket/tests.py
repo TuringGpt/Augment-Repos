@@ -56,6 +56,7 @@ class TicketTests(BaseAPITestCase):
         }
         response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
 
     def test_list_tickets(self):
         url = reverse("v1:ticket:ticket_list")
