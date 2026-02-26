@@ -57,6 +57,7 @@ class TicketTests(BaseAPITestCase):
         }
         response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("priority", response.data)
 
     def test_create_ticket_default_priority(self):
         url = reverse("v1:ticket:create_ticket")
