@@ -75,6 +75,22 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["assignee"], self.user.id)  
         self.assertEqual(response.data["reporter"], self.user.id)  
 
+    def test_ticket_detail_excludes_is_deleted(self):
+        url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("is_deleted", response.data)
+        self.assertIn("created_at", response.data)
+        self.assertIn("updated_at", response.data)
+
+    def test_list_tickets_includes_created_at(self):
+        url = reverse("v1:ticket:ticket_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for result in response.data.get("results", []):
+            self.assertIn("created_at", result)
+            self.assertNotIn("is_deleted", result)
+
     def test_update_ticket(self):
         # GIVEN an authenticated user exists
         # WHEN we make a put request to update ticket details
@@ -122,6 +138,14 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["results"][0]["content"], "Test Content")
         self.assertEqual(response.data["results"][0]["user"], self.user.id)
         self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
+    
+    def test_list_comments_excludes_is_deleted(self):
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for comment in response.data.get("results", []):
+            self.assertNotIn("is_deleted", comment)
+            self.assertIn("created_at", comment)
     
     def test_delete_ticket(self):
         # GIVEN an authenticated user exists
