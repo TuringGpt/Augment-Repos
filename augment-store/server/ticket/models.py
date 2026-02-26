@@ -2,11 +2,20 @@ from django.db import models
 from accounts.models import User
 from core.models import BaseModel
 
-# Create your models here.
 class Ticket(BaseModel):
+    class Status(models.TextChoices):
+        OPEN = 'open', 'Open'
+        IN_PROGRESS = 'in_progress', 'In Progress'
+        RESOLVED = 'resolved', 'Resolved'
+        CLOSED = 'closed', 'Closed'
+
     title = models.CharField(max_length=255)
     description = models.TextField()
-    status = models.CharField(max_length=255)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.OPEN
+    )
     priority = models.CharField(max_length=255)
     assignee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_tickets')
