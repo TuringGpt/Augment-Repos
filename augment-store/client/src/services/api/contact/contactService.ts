@@ -2,6 +2,12 @@ import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 
 /**
+ * Contact message status type
+ * Constrained to match backend API contract
+ */
+export type ContactStatus = 'unread' | 'read' | 'resolved'
+
+/**
  * Contact form request data
  */
 export interface CreateContactRequest {
@@ -33,7 +39,7 @@ export interface ContactItem {
   subject: string
   message: string
   created_at: string
-  status?: string
+  status?: ContactStatus
 }
 
 /**
@@ -45,7 +51,7 @@ export interface UpdateContactRequest {
   email?: string
   subject?: string
   message?: string
-  status?: 'unread' | 'read' | 'resolved'
+  status?: ContactStatus
 }
 
 /**
@@ -58,7 +64,7 @@ export interface UpdateContactResponse {
   subject: string
   message: string
   created_at: string
-  status: string
+  status: ContactStatus
 }
 
 /**
