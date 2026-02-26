@@ -44,6 +44,7 @@ class TicketTests(BaseAPITestCase):
         }
         response = self.authenticated_client.post(url, payload) 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["priority"], Ticket.Priority.MEDIUM)
 
     def test_create_ticket_with_invalid_priority(self):
         url = reverse("v1:ticket:create_ticket")

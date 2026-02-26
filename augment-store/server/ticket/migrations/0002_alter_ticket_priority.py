@@ -1,10 +1,13 @@
 from django.db import migrations, models
+from django.db.models import Q
 
 VALID_PRIORITIES = ['low', 'medium', 'high', 'urgent']
 
 def normalize_priority(apps, schema_editor):
     Ticket = apps.get_model('ticket', 'Ticket')
-    Ticket.objects.exclude(priority__in=VALID_PRIORITIES).update(priority='low')
+    Ticket.objects.filter(
+        Q(priority__isnull=True) | Q(priority='') | ~Q(priority__in=VALID_PRIORITIES)
+    ).update(priority='low')
 
 class Migration(migrations.Migration):
 
