@@ -1,5 +1,10 @@
 from django.db import migrations, models
 
+VALID_STATUSES = ['open', 'in_progress', 'resolved', 'closed']
+
+def normalize_status(apps, schema_editor):
+    Ticket = apps.get_model('ticket', 'Ticket')
+    Ticket.objects.exclude(status__in=VALID_STATUSES).update(status='open')
 
 class Migration(migrations.Migration):
 
@@ -8,6 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(normalize_status, migrations.RunPython.noop),
         migrations.AlterField(
             model_name='ticket',
             name='status',
