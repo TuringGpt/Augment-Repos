@@ -9,7 +9,7 @@ class ContactMessage(BaseModel):
 
     name = models.CharField(max_length=255)
     email = models.EmailField()
-    subject = models.CharField(max_length=50, default="")
+    subject = models.CharField(max_length=255, default="")
     message = models.TextField()
     status = models.CharField(
         max_length=20,

@@ -30,8 +30,10 @@ class ContactTests(BaseAPITestCase):
         self.assertTrue(ContactMessage.objects.filter(name="Test Name").exists())
         self.assertIn("created_at", response.data)
         self.assertIn("status", response.data)
-        self.assertIn("subject", response.data)
+        self.assertEqual(response.data["subject"], "Test Subject")
         self.assertEqual(response.data["status"], ContactMessage.Status.UNREAD)
+        contact_message = ContactMessage.objects.get(name="Test Name")
+        self.assertEqual(contact_message.subject, "Test Subject")
 
     def test_list_contact_messages(self):
         self.authenticated_client.force_authenticate(user=self.admin)
@@ -56,7 +58,8 @@ class ContactTests(BaseAPITestCase):
         for result in response.data["results"]:
             self.assertIn("created_at", result)
             self.assertIn("status", result)
-            self.assertIn("subject", result)
+        self.assertEqual(response.data["results"][0]["subject"], "Subject 2")
+        self.assertEqual(response.data["results"][1]["subject"], "Subject 1")
         
     def test_retrieve_contact_message(self):
         self.authenticated_client.force_authenticate(user=self.admin)
@@ -72,7 +75,7 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.data["name"], "Test Name")
         self.assertIn("created_at", response.data)
         self.assertIn("status", response.data)
-        self.assertIn("subject", response.data)
+        self.assertEqual(response.data["subject"], "Test Subject")
 
     def test_delete_contact_message(self):
         self.authenticated_client.force_authenticate(user=self.admin)

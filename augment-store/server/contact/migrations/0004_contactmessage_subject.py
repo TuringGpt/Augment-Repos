@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='contactmessage',
             name='subject',
-            field=models.CharField(default='', max_length=50),
+            field=models.CharField(default='', max_length=255),
         ),
     ]
