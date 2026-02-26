@@ -27,6 +27,7 @@ export interface CreateContactResponse {
   subject: string
   message: string
   created_at: string
+  status: ContactStatus
 }
 
 /**
@@ -39,7 +40,7 @@ export interface ContactItem {
   subject: string
   message: string
   created_at: string
-  status?: ContactStatus
+  status: ContactStatus
 }
 
 /**
