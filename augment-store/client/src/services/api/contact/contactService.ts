@@ -33,6 +33,32 @@ export interface ContactItem {
   subject: string
   message: string
   created_at: string
+  status?: string
+}
+
+/**
+ * Update contact message request data
+ * All fields are optional for partial updates (PATCH)
+ */
+export interface UpdateContactRequest {
+  name?: string
+  email?: string
+  subject?: string
+  message?: string
+  status?: 'unread' | 'read' | 'resolved'
+}
+
+/**
+ * Update contact message response from backend
+ */
+export interface UpdateContactResponse {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  created_at: string
+  status: string
 }
 
 /**
@@ -66,6 +92,17 @@ export const contactService = {
    */
   createContact: async (data: CreateContactRequest): Promise<CreateContactResponse> => {
     return apiClient.post<CreateContactResponse>(API_ENDPOINTS.CONTACT.CREATE, data)
+  },
+
+  /**
+   * Update an existing contact message
+   * @param id - Contact message ID to update
+   * @param data - Partial contact message data to update
+   * @returns Promise with updated contact message response
+   * @throws Error if the API request fails
+   */
+  updateContact: async (id: string, data: UpdateContactRequest): Promise<UpdateContactResponse> => {
+    return apiClient.patch<UpdateContactResponse>(API_ENDPOINTS.CONTACT.UPDATE(id), data)
   },
 }
 
