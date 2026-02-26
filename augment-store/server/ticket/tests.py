@@ -67,7 +67,7 @@ class TicketTests(BaseAPITestCase):
         }
         response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn("priority", response.data)
+        self.assertEqual(response.data["priority"], Ticket.Priority.LOW)
 
     def test_list_tickets(self):
         url = reverse("v1:ticket:ticket_list")
@@ -82,6 +82,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["id"], str(self.ticket.id))  
         self.assertEqual(response.data["title"], "Test Title")  
         self.assertEqual(response.data["description"], "Test Description")  
+        self.assertEqual(response.data["status"], "Test Status")
         self.assertEqual(response.data["priority"], Ticket.Priority.HIGH)  
         self.assertEqual(response.data["assignee"], self.user.id)  
         self.assertEqual(response.data["reporter"], self.user.id)  
@@ -99,6 +100,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Updated Title")  
         self.assertEqual(response.data["description"], "Updated Description")  
+        self.assertEqual(response.data["status"], "Updated Status")
         self.assertEqual(response.data["priority"], Ticket.Priority.URGENT)  
         self.assertEqual(response.data["assignee"], self.user2.id)
 
