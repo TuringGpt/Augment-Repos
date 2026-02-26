@@ -1,12 +1,14 @@
 from factory.django import DjangoModelFactory
 from factory import Faker, SubFactory
+from factory.fuzzy import FuzzyChoice
 from accounts.factory import UserFactory
+from ticket.models import Ticket
 
 class TicketFactory(DjangoModelFactory):
     title = Faker("sentence", nb_words=5)
     description = Faker("text", max_nb_chars=500)
     status = Faker("word")
-    priority = Faker("word")
+    priority = FuzzyChoice(Ticket.Priority.values)
     assignee = SubFactory(UserFactory)
     reporter = SubFactory(UserFactory)
 
