@@ -70,6 +70,24 @@ class NewsletterTests(BaseAPITestCase):
         url = reverse("v1:newsletter")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
-        return
-    
-    
+
+    def test_list_newsletter_response_fields(self):
+        url = reverse("v1:newsletter")
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        result = results[0]
+        self.assertIn("id", result)
+        self.assertIn("email", result)
+        self.assertIn("is_active", result)
+        self.assertIn("created_at", result)
+
+    def test_unsubscribe_response_includes_is_active(self):
+        url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.newsletter_id)})
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.patch(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("is_active", response.data)
+        self.assertFalse(response.data["is_active"])
