@@ -10,7 +10,7 @@ from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheServic
 
 class NotificationCacheService(BaseCacheService):
     OBJECT_NAME = "notification"
-    VERSION = 1
+    VERSION = 2
 
 
 class NotificationCountCacheService(BaseCacheService):
