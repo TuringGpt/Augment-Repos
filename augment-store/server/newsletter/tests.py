@@ -100,7 +100,7 @@ class NewsletterTests(BaseAPITestCase):
         url = reverse("v1:newsletter_status")
         response = self.authenticated_client.get(url, {"email": "test@example.com"})
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.data["is_subscribed"])
+        self.assertTrue(response.data["is_subscribed"])
 
     def test_newsletter_status_not_subscribed(self):
         url = reverse("v1:newsletter_status")
