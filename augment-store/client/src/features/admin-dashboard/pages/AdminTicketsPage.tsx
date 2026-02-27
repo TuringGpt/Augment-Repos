@@ -396,7 +396,9 @@ const AdminTicketsPage = () => {
         <Paper sx={{ p: 8, textAlign: 'center' }}>
           <TicketIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            {t('admin.ticketsPage.noTicketsFound')}
+            {searchQuery || statusFilter || priorityFilter
+              ? t('admin.ticketsPage.noTicketsFound')
+              : t('admin.ticketsPage.noTickets')}
           </Typography>
           <Typography color="text.secondary">
             {searchQuery || statusFilter || priorityFilter
