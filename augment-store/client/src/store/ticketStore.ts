@@ -12,6 +12,7 @@ interface TicketState {
   error: string | null
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
   pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
+  pendingPage: number // Store latest requested page (even if in-flight or failed)
 
   // Separate state for create ticket action to avoid race conditions with fetchTickets
   isCreating: boolean
@@ -50,6 +51,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   error: null,
   lastFilters: {}, // Initialize with empty filters
   pendingFilters: {}, // Initialize with empty filters
+  pendingPage: 1, // Initialize with page 1
   isCreating: false,
   createError: null,
 
@@ -83,10 +85,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    // Update pendingFilters immediately to prevent race conditions in setPage()
+    // Update pendingFilters and pendingPage immediately to prevent race conditions in setPage()
     // This ensures that if setPage() is called while this request is in-flight,
     // it will use the latest requested filters (not stale lastFilters)
-    set({ isLoading: true, error: null, pendingFilters: updatedFilters })
+    // Also update pendingPage so the Retry button can retry the correct page if this request fails
+    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage })
 
     try {
       const response = await ticketService.getTickets({
@@ -175,6 +178,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       error: null,
       lastFilters: {}, // Reset filters when clearing tickets
       pendingFilters: {}, // Reset pending filters when clearing tickets
+      pendingPage: 1, // Reset pending page when clearing tickets
     })
   },
 

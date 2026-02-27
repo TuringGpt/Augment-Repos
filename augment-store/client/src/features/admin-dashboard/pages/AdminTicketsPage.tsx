@@ -71,6 +71,7 @@ const AdminTicketsPage = () => {
     tickets,
     page,
     totalPages,
+    pendingPage,
     isLoading: ticketsLoading,
     error: ticketsError,
     fetchTickets,
@@ -403,7 +404,7 @@ const AdminTicketsPage = () => {
           <Button
             onClick={() =>
               fetchTickets({
-                page,
+                page: pendingPage,
                 status: statusFilter,
                 priority: priorityFilter,
                 search: searchQuery,
