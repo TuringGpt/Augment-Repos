@@ -378,7 +378,17 @@ const AdminTicketsPage = () => {
           <Typography color="error" variant="h6">
             {ticketsError}
           </Typography>
-          <Button onClick={() => fetchTickets()} sx={{ mt: 2 }}>
+          <Button
+            onClick={() =>
+              fetchTickets({
+                page: 1,
+                status: statusFilter || undefined,
+                priority: priorityFilter || undefined,
+                search: searchQuery || undefined,
+              })
+            }
+            sx={{ mt: 2 }}
+          >
             {t('common.retry')}
           </Button>
         </Paper>
