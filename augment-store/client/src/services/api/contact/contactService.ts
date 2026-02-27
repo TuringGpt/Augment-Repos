@@ -2,6 +2,12 @@ import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 
 /**
+ * Contact message status type
+ * Constrained to match backend API contract
+ */
+export type ContactStatus = 'unread' | 'read' | 'resolved'
+
+/**
  * Contact form request data
  */
 export interface CreateContactRequest {
@@ -21,6 +27,7 @@ export interface CreateContactResponse {
   subject: string
   message: string
   created_at: string
+  status: ContactStatus
 }
 
 /**
@@ -33,6 +40,32 @@ export interface ContactItem {
   subject: string
   message: string
   created_at: string
+  status: ContactStatus
+}
+
+/**
+ * Update contact message request data
+ * All fields are optional for partial updates (PATCH)
+ */
+export interface UpdateContactRequest {
+  name?: string
+  email?: string
+  subject?: string
+  message?: string
+  status?: ContactStatus
+}
+
+/**
+ * Update contact message response from backend
+ */
+export interface UpdateContactResponse {
+  id: string
+  name: string
+  email: string
+  subject: string
+  message: string
+  created_at: string
+  status: ContactStatus
 }
 
 /**
@@ -75,6 +108,17 @@ export const contactService = {
    */
   deleteContact: async (id: string): Promise<void> => {
     return apiClient.delete<void>(API_ENDPOINTS.CONTACT.DELETE(id))
+  },
+
+  /**
+   * Update an existing contact message
+   * @param id - Contact message ID to update
+   * @param data - Partial contact message data to update
+   * @returns Promise with updated contact message response
+   * @throws Error if the API request fails
+   */
+  updateContact: async (id: string, data: UpdateContactRequest): Promise<UpdateContactResponse> => {
+    return apiClient.patch<UpdateContactResponse>(API_ENDPOINTS.CONTACT.UPDATE(id), data)
   },
 }
 
