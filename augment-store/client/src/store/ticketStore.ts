@@ -13,6 +13,11 @@ interface TicketState {
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
   pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
 
+  // Single ticket detail
+  selectedTicket: Ticket | null
+  isFetchingTicket: boolean
+  fetchTicketError: string | null
+
   // Separate state for create ticket action to avoid race conditions with fetchTickets
   isCreating: boolean
   createError: string | null
@@ -22,11 +27,18 @@ interface TicketState {
   clearTickets: () => void
   setPage: (page: number) => void
   createTicket: (data: CreateTicketRequest) => Promise<Ticket>
+  getTicketById: (id: string) => Promise<Ticket>
+  clearSelectedTicket: () => void
 }
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
+
+// Request counter to prevent race conditions in getTicketById
+// When multiple getTicketById calls are made in quick succession,
+// only the most recent request should update the selectedTicket state
+let fetchTicketRequestCounter = 0
 
 // In-flight counter to track concurrent create ticket requests
 // Ensures isCreating reflects "any create in progress" rather than just the latest request
@@ -50,6 +62,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   error: null,
   lastFilters: {}, // Initialize with empty filters
   pendingFilters: {}, // Initialize with empty filters
+  selectedTicket: null,
+  isFetchingTicket: false,
+  fetchTicketError: null,
   isCreating: false,
   createError: null,
 
@@ -240,6 +255,50 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // even if parseApiError or any other code in try/catch throws
       createInFlightCount -= 1
     }
+  },
+
+  getTicketById: async (id: string) => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchTicketRequestCounter += 1
+    const currentRequestId = fetchTicketRequestCounter
+
+    // Set loading state and clear stale data BEFORE any awaited work
+    set({ isFetchingTicket: true, fetchTicketError: null, selectedTicket: null })
+
+    try {
+      const ticket = await ticketService.getTicketById(id)
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchTicketRequestCounter) {
+        set({ selectedTicket: ticket })
+      }
+
+      return ticket
+    } catch (error) {
+      console.error('Failed to fetch ticket:', error)
+
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchTicketRequestCounter) {
+        const errorMessage = 'Failed to fetch ticket. Please try again.'
+        set({ fetchTicketError: errorMessage })
+      }
+
+      throw error
+    } finally {
+      // Only clear loading state if this is still the most recent request
+      if (currentRequestId === fetchTicketRequestCounter) {
+        set({ isFetchingTicket: false })
+      }
+    }
+  },
+
+  clearSelectedTicket: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchTicketRequestCounter += 1
+    set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false })
   },
 }))
 
