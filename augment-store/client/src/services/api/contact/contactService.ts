@@ -102,6 +102,15 @@ export const contactService = {
   },
 
   /**
+   * Delete a contact message by ID
+   * @param id - Contact ID to delete
+   * @throws Error if the API request fails
+   */
+  deleteContact: async (id: string): Promise<void> => {
+    return apiClient.delete<void>(API_ENDPOINTS.CONTACT.DELETE(id))
+  },
+
+  /**
    * Update an existing contact message
    * @param id - Contact message ID to update
    * @param data - Partial contact message data to update
