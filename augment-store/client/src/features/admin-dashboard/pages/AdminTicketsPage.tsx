@@ -87,9 +87,9 @@ const AdminTicketsPage = () => {
     if (isAuthenticated && user?.role === 'admin') {
       fetchTickets({
         page: 1,
-        status: statusFilter || undefined,
-        priority: priorityFilter || undefined,
-        search: searchQuery || undefined,
+        status: statusFilter,
+        priority: priorityFilter,
+        search: searchQuery,
       })
     }
   }, [isAuthenticated, user?.role, statusFilter, priorityFilter, searchQuery, fetchTickets])
@@ -382,9 +382,9 @@ const AdminTicketsPage = () => {
             onClick={() =>
               fetchTickets({
                 page: 1,
-                status: statusFilter || undefined,
-                priority: priorityFilter || undefined,
-                search: searchQuery || undefined,
+                status: statusFilter,
+                priority: priorityFilter,
+                search: searchQuery,
               })
             }
             sx={{ mt: 2 }}
