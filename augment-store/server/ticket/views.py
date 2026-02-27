@@ -124,18 +124,18 @@ class TicketStatsView(GenericAPIView):
     Get ticket statistics for the current user.
     """
     permission_classes = [IsAuthenticated]
-    KNOWN_STATUSES = ["open", "in_progress", "resolved", "closed"]
 
     def get(self, request, *args, **kwargs):
         cache_key = f"ticket_stats:{request.user.id}"
         
         stats = django_cache.get(cache_key)
         if stats is None:
+            known_statuses = Ticket.Status.values
             aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
                 total=Count("id"),
-                **{s: Count("id", filter=Q(status=s)) for s in self.KNOWN_STATUSES},
+                **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
             )
-            known_sum = sum(aggregates[s] for s in self.KNOWN_STATUSES)
+            known_sum = sum(aggregates[s] for s in known_statuses)
             stats = {
                 **aggregates,
                 "other": aggregates["total"] - known_sum,
