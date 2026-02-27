@@ -67,5 +67,14 @@ export const contactService = {
   createContact: async (data: CreateContactRequest): Promise<CreateContactResponse> => {
     return apiClient.post<CreateContactResponse>(API_ENDPOINTS.CONTACT.CREATE, data)
   },
+
+  /**
+   * Delete a contact message by ID
+   * @param id - Contact ID to delete
+   * @throws Error if the API request fails
+   */
+  deleteContact: async (id: string): Promise<void> => {
+    return apiClient.delete(API_ENDPOINTS.CONTACT.DELETE(id))
+  },
 }
 
