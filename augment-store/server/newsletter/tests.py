@@ -23,6 +23,9 @@ class NewsletterTests(BaseAPITestCase):
             id=self.newsletter_id,
             email="test@example.com",
         )
+        from newsletter.views import NewsletterStatusCacheService, NewsletterCacheService
+        NewsletterStatusCacheService().clear_namespace()
+        NewsletterCacheService().clear_namespace()
     
     def test_subscribe_newsletter(self):
         url = reverse("v1:create_newsletter")
