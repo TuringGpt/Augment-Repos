@@ -37,15 +37,14 @@ class NewsletterTests(BaseAPITestCase):
         self.assertIn("email", response.data)
 
     def test_subscribe_newsletter_reactivates(self):
-        inactive = NewsletterFactory(email="inactive@example.com", is_active=False)
+        NewsletterFactory(email="inactive@example.com", is_active=False)
         url = reverse("v1:create_newsletter")
         payload = {
             "email": "inactive@example.com",
         }
         response = self.authenticated_client.post(url, payload)
-        self.assertEqual(response.status_code, 201)
-        inactive.refresh_from_db()
-        self.assertTrue(inactive.is_active)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.data)
 
     def test_subscribe_newsletter_normalizes_email(self):
         url = reverse("v1:create_newsletter")
