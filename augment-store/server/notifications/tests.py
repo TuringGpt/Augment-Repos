@@ -26,6 +26,19 @@ class NotificationTests(BaseAPITestCase):
         # AND the response should contain the notifications
         self.assertEqual(len(response.data.get("results", [])), 2)
 
+    def test_list_notifications_field_presence(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        NotificationFactory(user=self.user)
+        url = reverse("v1:notifications:list_notification")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result = response.data["results"][0]
+        self.assertIn("id", result)
+        self.assertIn("title", result)
+        self.assertIn("is_read", result)
+        self.assertIn("created_at", result)
+        self.assertNotIn("is_deleted", result)
+
     def test_mark_notification_as_read(self):
         # GIVEN an authenticated user exists 
         self.authenticated_client.force_authenticate(user=self.user)
