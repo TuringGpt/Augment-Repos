@@ -32,7 +32,9 @@ class NotificationTests(BaseAPITestCase):
         url = reverse("v1:notifications:list_notification")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        result = response.data["results"][0]
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        result = results[0]
         self.assertIn("id", result)
         self.assertIn("title", result)
         self.assertIn("is_read", result)
