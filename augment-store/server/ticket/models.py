@@ -9,6 +9,12 @@ class Ticket(BaseModel):
         RESOLVED = 'resolved', 'Resolved'
         CLOSED = 'closed', 'Closed'
 
+    class Priority(models.TextChoices):
+        LOW = 'low', 'Low'
+        MEDIUM = 'medium', 'Medium'
+        HIGH = 'high', 'High'
+        URGENT = 'urgent', 'Urgent'
+
     title = models.CharField(max_length=255)
     description = models.TextField()
     status = models.CharField(
@@ -16,7 +22,11 @@ class Ticket(BaseModel):
         choices=Status.choices,
         default=Status.OPEN
     )
-    priority = models.CharField(max_length=255)
+    priority = models.CharField(
+        max_length=20,
+        choices=Priority.choices,
+        default=Priority.LOW
+    )
     assignee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_tickets')
 

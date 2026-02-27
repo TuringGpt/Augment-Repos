@@ -1017,6 +1017,13 @@
       }
     },
     "settings": "Paramètres",
+    "settingsPage": {
+      "title": "Paramètres",
+      "subtitle": "Gérer les paramètres et configurations de l'application",
+      "workInProgress": "Travaux en Cours",
+      "underDevelopment": "La page des paramètres d'administration est actuellement en développement.",
+      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+    },
     "productStatistics": {
       "title": "Statistiques des produits",
       "subtitle": "Voir les analyses détaillées et les métriques de performance de tous les produits",

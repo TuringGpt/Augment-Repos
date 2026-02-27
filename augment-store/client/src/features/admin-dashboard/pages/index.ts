@@ -9,4 +9,5 @@ export { default as AdminReportsPage } from './AdminReportsPage'
 export { default as AdminContactMessagesPage } from './AdminContactMessagesPage'
 export { default as AdminTicketsPage } from './AdminTicketsPage'
 export { default as ProductStatisticsViewPage } from './ProductStatisticsViewPage'
+export { default as AdminSettingsPage } from './AdminSettingsPage'
 

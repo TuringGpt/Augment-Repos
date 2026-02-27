@@ -1017,6 +1017,13 @@
       }
     },
     "settings": "Configuración",
+    "settingsPage": {
+      "title": "Configuración",
+      "subtitle": "Gestionar configuraciones y ajustes de la aplicación",
+      "workInProgress": "Trabajo en Progreso",
+      "underDevelopment": "La página de configuración de administración está actualmente en desarrollo.",
+      "checkBackSoon": "¡Vuelva pronto para ver las actualizaciones!"
+    },
     "productStatistics": {
       "title": "Estadísticas de productos",
       "subtitle": "Ver análisis detallados y métricas de rendimiento de todos los productos",

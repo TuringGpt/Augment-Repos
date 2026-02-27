@@ -24,7 +24,7 @@ class TicketTests(BaseAPITestCase):
             title="Test Title",
             description="Test Description",
             status=Ticket.Status.OPEN,
-            priority="Test Priority",
+            priority=Ticket.Priority.HIGH,
             assignee=self.user,
             reporter=self.user,
         )
@@ -40,11 +40,37 @@ class TicketTests(BaseAPITestCase):
             "title": "New Ticket",
             "description": "New Ticket Description",
             "status": Ticket.Status.OPEN,
-            "priority": "New Ticket Priority",
+            "priority": Ticket.Priority.MEDIUM,
             "assignee": str(self.user.id),
         }
         response = self.authenticated_client.post(url, payload) 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["priority"], Ticket.Priority.MEDIUM)
+
+    def test_create_ticket_with_invalid_priority(self):
+        url = reverse("v1:ticket:create_ticket")
+        payload = {
+            "title": "Bad Ticket",
+            "description": "Bad Description",
+            "status": Ticket.Status.OPEN,
+            "priority": "not_a_valid_priority",
+            "assignee": str(self.user.id),
+        }
+        response = self.authenticated_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("priority", response.data)
+
+    def test_create_ticket_default_priority(self):
+        url = reverse("v1:ticket:create_ticket")
+        payload = {
+            "title": "Default Priority Ticket",
+            "description": "Should get default priority",
+            "status": Ticket.Status.OPEN,
+            "assignee": str(self.user.id),
+        }
+        response = self.authenticated_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["priority"], Ticket.Priority.LOW)
 
     def test_create_ticket_with_invalid_status(self):
         url = reverse("v1:ticket:create_ticket")
@@ -52,7 +78,7 @@ class TicketTests(BaseAPITestCase):
             "title": "Bad Ticket",
             "description": "Bad Description",
             "status": "not_a_valid_status",
-            "priority": "low",
+            "priority": Ticket.Priority.LOW,
             "assignee": str(self.user.id),
         }
         response = self.authenticated_client.post(url, payload)
@@ -73,9 +99,25 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["title"], "Test Title")  
         self.assertEqual(response.data["description"], "Test Description")  
         self.assertEqual(response.data["status"], Ticket.Status.OPEN)  
-        self.assertEqual(response.data["priority"], "Test Priority")  
+        self.assertEqual(response.data["priority"], Ticket.Priority.HIGH)  
         self.assertEqual(response.data["assignee"], self.user.id)  
         self.assertEqual(response.data["reporter"], self.user.id)  
+
+    def test_ticket_detail_excludes_is_deleted(self):
+        url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn("is_deleted", response.data)
+        self.assertIn("created_at", response.data)
+        self.assertIn("updated_at", response.data)
+
+    def test_list_tickets_includes_created_at(self):
+        url = reverse("v1:ticket:ticket_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for result in response.data.get("results", []):
+            self.assertIn("created_at", result)
+            self.assertNotIn("is_deleted", result)
 
     def test_update_ticket(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
@@ -83,7 +125,7 @@ class TicketTests(BaseAPITestCase):
             "title": "Updated Title",
             "description": "Updated Description",
             "status": Ticket.Status.IN_PROGRESS,
-            "priority": "Updated Priority",
+            "priority": Ticket.Priority.URGENT,
             "assignee": self.user2.id,
         }
         response = self.authenticated_client.put(url, payload)
@@ -91,7 +133,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["title"], "Updated Title")  
         self.assertEqual(response.data["description"], "Updated Description")  
         self.assertEqual(response.data["status"], Ticket.Status.IN_PROGRESS)  
-        self.assertEqual(response.data["priority"], "Updated Priority")  
+        self.assertEqual(response.data["priority"], Ticket.Priority.URGENT)  
         self.assertEqual(response.data["assignee"], self.user2.id)
 
     def test_add_comment(self):
@@ -112,6 +154,14 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["results"][0]["content"], "Test Content")
         self.assertEqual(response.data["results"][0]["user"], self.user.id)
         self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
+    
+    def test_list_comments_excludes_is_deleted(self):
+        url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for comment in response.data.get("results", []):
+            self.assertNotIn("is_deleted", comment)
+            self.assertIn("created_at", comment)
     
     def test_delete_ticket(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
@@ -191,7 +241,7 @@ class TicketStatsTests(BaseAPITestCase):
             "title": "New",
             "description": "Desc",
             "status": Ticket.Status.OPEN,
-            "priority": "high",
+            "priority": Ticket.Priority.HIGH,
             "assignee": str(self.user.id),
         }
         create_response = self.authenticated_client.post(create_url, payload)

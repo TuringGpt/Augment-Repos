@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
-import type { TicketListItem, TicketFilterParams } from '@features/support/types'
+import { parseApiError } from '@utils/errorUtils'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, Ticket } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -12,15 +13,25 @@ interface TicketState {
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
   pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
 
+  // Separate state for create ticket action to avoid race conditions with fetchTickets
+  isCreating: boolean
+  createError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
+  createTicket: (data: CreateTicketRequest) => Promise<Ticket>
 }
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
+
+// In-flight counter to track concurrent create ticket requests
+// Ensures isCreating reflects "any create in progress" rather than just the latest request
+// This prevents isCreating from becoming false while earlier requests are still in-flight
+let createInFlightCount = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -39,6 +50,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   error: null,
   lastFilters: {}, // Initialize with empty filters
   pendingFilters: {}, // Initialize with empty filters
+  isCreating: false,
+  createError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -174,6 +187,59 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // while lastFilters still contains the old committed filters. Using pendingFilters ensures
     // we page with the correct (latest) filters even if the previous request hasn't completed yet.
     get().fetchTickets({ ...state.pendingFilters, page })
+  },
+
+  createTicket: async (data: CreateTicketRequest): Promise<Ticket> => {
+    // Use separate isCreating/createError state to avoid race conditions with fetchTickets
+    // This prevents createTicket from clearing error or setting isLoading to false
+    // while a fetchTickets request is still in-flight
+
+    // Increment in-flight count to track concurrent create requests
+    // This ensures isCreating reflects "any create in progress" rather than just the latest request
+    // When the count goes from 0 to 1, set isCreating to true
+    // When the count goes back to 0, set isCreating to false
+    createInFlightCount += 1
+    const isFirstRequest = createInFlightCount === 1
+
+    // Only set isCreating to true and clear error for the first concurrent request
+    // Subsequent concurrent requests don't need to update these flags
+    if (isFirstRequest) {
+      set({ isCreating: true, createError: null })
+    }
+
+    try {
+      const ticket = await ticketService.createTicket(data)
+
+      // Only set isCreating to false when all requests have completed (count reaches 0)
+      if (createInFlightCount === 0) {
+        set({ isCreating: false })
+      }
+
+      return ticket
+    } catch (error) {
+      // Use parseApiError to extract user-friendly error message from API response
+      // Pass field names to extract field-specific DRF validation errors (e.g., { title: [...] })
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
+        defaultMessage: 'Failed to create ticket',
+      })
+
+      // Only update error state and isCreating when all requests have completed
+      if (createInFlightCount === 0) {
+        set({
+          createError: errorMessage,
+          isCreating: false,
+        })
+      }
+
+      // Re-throw the original error to preserve stack trace and debugging info
+      // The store's createError state contains the normalized user-friendly message
+      throw error
+    } finally {
+      // Decrement in-flight count in finally block to ensure it always happens
+      // even if parseApiError or any other code in try/catch throws
+      createInFlightCount -= 1
+    }
   },
 }))
 

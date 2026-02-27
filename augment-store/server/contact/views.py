@@ -10,7 +10,7 @@ from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheServic
 
 class ContactCacheService(BaseCacheService):
     OBJECT_NAME = "contact"
-    VERSION = 2  # Incremented due to added fields: created_at, status
+    VERSION = 3
 
 
 class ContactFormAnonThrottle(AnonRateThrottle):

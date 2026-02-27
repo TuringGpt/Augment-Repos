@@ -8,7 +8,7 @@ class TicketFactory(DjangoModelFactory):
     title = Faker("sentence", nb_words=5)
     description = Faker("text", max_nb_chars=500)
     status = FuzzyChoice(Ticket.Status.values)
-    priority = Faker("word")
+    priority = FuzzyChoice(Ticket.Priority.values)
     assignee = SubFactory(UserFactory)
     reporter = SubFactory(UserFactory)
 
