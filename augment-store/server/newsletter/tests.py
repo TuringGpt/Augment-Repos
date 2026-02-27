@@ -112,3 +112,12 @@ class NewsletterTests(BaseAPITestCase):
         url = reverse("v1:newsletter_status")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 400)
+
+    def test_subscribe_newsletter_anonymous(self):
+        url = reverse("v1:create_newsletter")
+        payload = {
+            "email": "anonymous@example.com",
+        }
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Newsletter.objects.filter(email="anonymous@example.com").exists())
