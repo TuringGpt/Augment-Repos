@@ -381,7 +381,7 @@ const AdminTicketsPage = () => {
           <Button
             onClick={() =>
               fetchTickets({
-                page: 1,
+                page,
                 status: statusFilter,
                 priority: priorityFilter,
                 search: searchQuery,
