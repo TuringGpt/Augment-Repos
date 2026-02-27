@@ -74,7 +74,7 @@ export const contactService = {
    * @throws Error if the API request fails
    */
   deleteContact: async (id: string): Promise<void> => {
-    return apiClient.delete(API_ENDPOINTS.CONTACT.DELETE(id))
+    return apiClient.delete<void>(API_ENDPOINTS.CONTACT.DELETE(id))
   },
 }
 
