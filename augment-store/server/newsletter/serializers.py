@@ -25,6 +25,7 @@ class UnsubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
         fields = ["email", "is_active"]
+        read_only_fields = ["is_active"]
 
     def update(self, instance, validated_data):
         instance.is_active = False
