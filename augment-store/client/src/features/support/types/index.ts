@@ -97,8 +97,8 @@ export interface CommentListResponse {
 
 // Filter and search params
 export interface TicketFilterParams {
-  status?: TicketStatus
-  priority?: TicketPriority
+  status?: TicketStatus | ''
+  priority?: TicketPriority | ''
   page?: number
   search?: string
 }
