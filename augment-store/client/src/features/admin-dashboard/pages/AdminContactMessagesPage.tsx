@@ -122,10 +122,13 @@ const AdminContactMessagesPage = () => {
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
   const drawerTransitionDuration = theme.transitions.duration.leavingScreen
 
-  // Fetch contacts on mount
+  // Fetch contacts only when authenticated and authorized
+  // This prevents unnecessary/unauthorized fetches before auth checks complete
   useEffect(() => {
-    getContacts()
-  }, [getContacts])
+    if (hasHydrated && !authLoading && isAuthenticated && user?.role === 'admin') {
+      getContacts()
+    }
+  }, [hasHydrated, authLoading, isAuthenticated, user?.role, getContacts])
 
   // Cleanup timeouts on unmount
   useEffect(() => {
