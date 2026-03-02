@@ -252,17 +252,18 @@ export const useContactStore = create<ContactState>((set) => ({
 
         // Update the contact in the contacts list if it exists
         set((state) => {
-          if (state.contacts) {
-            return {
-              contacts: {
-                ...state.contacts,
-                results: state.contacts.results.map((contact) =>
-                  contact.id === id ? response : contact
-                ),
-              },
-            }
+          // Avoid no-op update when contacts is null to prevent spurious re-renders
+          if (!state.contacts) {
+            return state
           }
-          return {}
+          return {
+            contacts: {
+              ...state.contacts,
+              results: state.contacts.results.map((contact) =>
+                contact.id === id ? response : contact
+              ),
+            },
+          }
         })
       }
 
