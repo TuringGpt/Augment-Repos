@@ -323,7 +323,7 @@ const AdminContactMessagesPage = () => {
         <Box>
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Typography variant="body2">
-              {t('admin.contactMessagesPage.totalMessages', { count: contacts.length })}
+              {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
             </Typography>
           </Paper>
           <TableContainer component={Paper}>
