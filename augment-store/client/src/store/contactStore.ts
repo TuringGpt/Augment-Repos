@@ -207,6 +207,11 @@ export const useContactStore = create<ContactState>((set) => ({
       if (currentRequestId === updateRequestCounter) {
         set({ lastUpdatedContact: response, updateError: null })
 
+        // Invalidate any in-flight getContacts() requests to prevent them from
+        // overwriting the just-updated contact with stale data
+        // This ensures concurrent/in-flight fetch requests are discarded
+        fetchRequestCounter += 1
+
         // Update the contact in the contacts list if it exists
         set((state) => {
           if (state.contacts) {
