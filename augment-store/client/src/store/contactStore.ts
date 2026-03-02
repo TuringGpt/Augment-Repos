@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { CreateContactRequest, CreateContactResponse, ContactListResponse, UpdateContactRequest, UpdateContactResponse } from '@services/api/contact/contactService'
-import { parseApiError } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to prevent race conditions when submitting contact form
 // When multiple submit calls are made in quick succession (e.g., double-click),
@@ -94,20 +94,8 @@ export const useContactStore = create<ContactState>((set) => ({
         set({ error: errorMessage })
       }
 
-      // Log only non-PII fields to avoid exposing sensitive user content
-      const error = err as {
-        response?: {
-          status?: number
-          statusText?: string
-        }
-        name?: string
-      }
-      console.error('Error submitting contact form:', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        errorType: error?.name,
-        message: errorMessage,
-      })
+      // Log only sanitized error information to avoid exposing PII
+      console.error('Error submitting contact form:', sanitizeErrorForLogging(err, 'Failed to submit contact form'))
 
       throw err
     } finally {
@@ -168,20 +156,8 @@ export const useContactStore = create<ContactState>((set) => ({
         set({ fetchError: errorMessage })
       }
 
-      // Log error for debugging
-      const error = err as {
-        response?: {
-          status?: number
-          statusText?: string
-        }
-        name?: string
-      }
-      console.error('Error fetching contacts:', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        errorType: error?.name,
-        message: errorMessage,
-      })
+      // Log only sanitized error information to avoid exposing PII
+      console.error('Error fetching contacts:', sanitizeErrorForLogging(err, 'Failed to fetch contacts'))
 
       // Do not rethrow - error is already persisted to store state
       // This prevents unhandled promise rejections when called from useEffect without await/catch
@@ -260,20 +236,8 @@ export const useContactStore = create<ContactState>((set) => ({
         set({ updateError: errorMessage })
       }
 
-      // Log only non-PII fields to avoid exposing sensitive user content
-      const error = err as {
-        response?: {
-          status?: number
-          statusText?: string
-        }
-        name?: string
-      }
-      console.error('Error updating contact:', {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        errorType: error?.name,
-        message: errorMessage,
-      })
+      // Log only sanitized error information to avoid exposing PII
+      console.error('Error updating contact:', sanitizeErrorForLogging(err, 'Failed to update contact'))
 
       throw err
     } finally {
