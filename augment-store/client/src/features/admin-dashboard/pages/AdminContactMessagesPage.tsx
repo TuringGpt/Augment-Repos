@@ -295,8 +295,26 @@ const AdminContactMessagesPage = () => {
         </Tooltip>
       </Box>
 
-      {/* Loading State */}
-      {isLoading ? (
+      {/* Error State */}
+      {fetchError ? (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRefresh}
+              startIcon={<RefreshIcon />}
+            >
+              {t('admin.contactMessagesPage.retry')}
+            </Button>
+          }
+        >
+          {fetchError}
+        </Alert>
+      ) : /* Loading State */
+      isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>

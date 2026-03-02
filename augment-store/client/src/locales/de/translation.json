@@ -951,6 +951,7 @@
       "title": "Kontaktnachrichten",
       "subtitle": "Alle Kontaktformular-Einsendungen anzeigen und verwalten",
       "refresh": "Aktualisieren",
+      "retry": "Erneut versuchen",
       "totalMessages": "Gesamtnachrichten: {{count}} Nachricht",
       "totalMessages_other": "Gesamtnachrichten: {{count}} Nachrichten",
       "noMessages": "Noch keine Kontaktnachrichten",
