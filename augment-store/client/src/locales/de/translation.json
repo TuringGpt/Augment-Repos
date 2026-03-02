@@ -962,6 +962,7 @@
         "email": "E-Mail",
         "subject": "Betreff",
         "message": "Nachricht",
+        "status": "Status",
         "date": "Datum",
         "actions": "Aktionen",
         "id": "Nachrichten-ID"

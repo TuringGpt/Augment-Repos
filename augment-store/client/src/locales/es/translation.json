@@ -962,6 +962,7 @@
         "email": "Correo Electrónico",
         "subject": "Asunto",
         "message": "Mensaje",
+        "status": "Estado",
         "date": "Fecha",
         "actions": "Acciones",
         "id": "ID del Mensaje"

@@ -150,11 +150,8 @@ export const API_ENDPOINTS = {
   CONTACT: {
     LIST: '/contact/',
     CREATE: '/contact/create/',
-<<<<<<< feat/delete-contact-endpoint
     DELETE: (id: string) => `/contact/${id}/`,
-=======
     UPDATE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
->>>>>>> augment
   },
 }
 
