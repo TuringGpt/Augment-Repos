@@ -212,7 +212,8 @@ export const useContactStore = create<ContactState>((set) => ({
    * // Call the update and handle potential rejections
    * updateContact(contactId, { status: 'read' }).catch((error) => {
    *   // Error is already handled by the store, but we catch to prevent unhandled rejection
-   *   console.error('Update failed:', error)
+   *   // Use updateError from store state instead of logging raw error to avoid exposing sensitive data
+   *   console.error('Update failed - check updateError state for details')
    * })
    *
    * // Use store state for UI updates
