@@ -209,8 +209,11 @@ export const useContactStore = create<ContactState>((set) => ({
    * ```tsx
    * const { updateContact, lastUpdatedContact, updateError, isUpdating } = useContactStore()
    *
-   * // Call the update (don't rely on the returned value)
-   * updateContact(contactId, { status: 'read' })
+   * // Call the update and handle potential rejections
+   * updateContact(contactId, { status: 'read' }).catch((error) => {
+   *   // Error is already handled by the store, but we catch to prevent unhandled rejection
+   *   console.error('Update failed:', error)
+   * })
    *
    * // Use store state for UI updates
    * if (isUpdating) return <Spinner />
