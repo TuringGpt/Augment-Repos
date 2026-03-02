@@ -34,6 +34,8 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useContactStore } from '@store/contactStore'
+import type { ContactItem } from '@services/api/contact/contactService'
 
 // Dummy contact messages data
 const DUMMY_CONTACTS = [
@@ -100,13 +102,13 @@ const AdminContactMessagesPage = () => {
   const theme = useTheme()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
-  // State for dummy data simulation
-  const [isLoading, setIsLoading] = useState(false)
-  const [contacts, setContacts] = useState(DUMMY_CONTACTS)
+  // Contact store
+  const { contacts: contactsData, isLoading, fetchError, getContacts } = useContactStore()
+  const contacts = contactsData?.results || []
 
   // Drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
-  const [selectedContact, setSelectedContact] = useState<typeof DUMMY_CONTACTS[0] | null>(null)
+  const [selectedContact, setSelectedContact] = useState<ContactItem | null>(null)
 
   // Track which contacts are being marked as read
   const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set())
@@ -119,6 +121,14 @@ const AdminContactMessagesPage = () => {
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
   const drawerTransitionDuration = theme.transitions.duration.leavingScreen
+
+  // Fetch contacts only when authenticated and authorized
+  // This prevents unnecessary/unauthorized fetches before auth checks complete
+  useEffect(() => {
+    if (hasHydrated && !authLoading && isAuthenticated && user?.role === 'admin') {
+      getContacts()
+    }
+  }, [hasHydrated, authLoading, isAuthenticated, user?.role, getContacts])
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -141,16 +151,7 @@ const AdminContactMessagesPage = () => {
   }, [])
 
   const handleRefresh = () => {
-    setIsLoading(true)
-    // Clear any existing timeout
-    if (refreshTimeoutRef.current !== null) {
-      clearTimeout(refreshTimeoutRef.current)
-    }
-    // Simulate loading
-    refreshTimeoutRef.current = setTimeout(() => {
-      setIsLoading(false)
-      refreshTimeoutRef.current = null
-    }, 500)
+    getContacts()
   }
 
   // Format date for display
@@ -160,7 +161,7 @@ const AdminContactMessagesPage = () => {
   }
 
   // Drawer handlers
-  const handleViewDetails = (contact: typeof DUMMY_CONTACTS[0]) => {
+  const handleViewDetails = (contact: ContactItem) => {
     // Clear any pending close timeout to avoid race condition
     if (drawerCloseTimeoutRef.current !== null) {
       clearTimeout(drawerCloseTimeoutRef.current)
@@ -201,13 +202,6 @@ const AdminContactMessagesPage = () => {
       return newMarkingAsRead
     })
 
-    // Optimistically update the UI
-    setContacts((prevContacts) =>
-      prevContacts.map((contact) =>
-        contact.id === contactId ? { ...contact, is_read: true } : contact
-      )
-    )
-
     // Clear any existing timeout for this specific contact
     const existingTimeout = markAsReadTimeoutsRef.current.get(contactId)
     if (existingTimeout !== undefined) {
@@ -216,6 +210,8 @@ const AdminContactMessagesPage = () => {
 
     // Simulate API call with timeout (dummy handler)
     const timeoutId = setTimeout(() => {
+      // Refresh contacts to get updated data
+      getContacts()
       // Remove from marking set using functional update to avoid stale closure
       setMarkingAsRead((prev) => {
         const finalMarkingAsRead = new Set(prev)
@@ -299,8 +295,26 @@ const AdminContactMessagesPage = () => {
         </Tooltip>
       </Box>
 
-      {/* Loading State */}
-      {isLoading ? (
+      {/* Error State */}
+      {fetchError ? (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRefresh}
+              startIcon={<RefreshIcon />}
+            >
+              {t('admin.contactMessagesPage.retry')}
+            </Button>
+          }
+        >
+          {fetchError}
+        </Alert>
+      ) : /* Loading State - treat null contactsData as initial loading to avoid flicker */
+      isLoading || contactsData === null ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
@@ -309,7 +323,7 @@ const AdminContactMessagesPage = () => {
         <Box>
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Typography variant="body2">
-              {t('admin.contactMessagesPage.totalMessages', { count: contacts.length })}
+              {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
             </Typography>
           </Paper>
           <TableContainer component={Paper}>
@@ -320,6 +334,7 @@ const AdminContactMessagesPage = () => {
                   <TableCell>{t('admin.contactMessagesPage.table.email')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.subject')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.message')}</TableCell>
+                  <TableCell>{t('admin.contactMessagesPage.table.status')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.date')}</TableCell>
                   <TableCell align="center">{t('admin.contactMessagesPage.table.actions')}</TableCell>
                 </TableRow>
@@ -385,6 +400,26 @@ const AdminContactMessagesPage = () => {
                       </Typography>
                     </TableCell>
 
+                    {/* Status */}
+                    <TableCell>
+                      <Chip
+                        label={contact.status}
+                        size="small"
+                        color={
+                          contact.status === 'unread'
+                            ? 'error'
+                            : contact.status === 'read'
+                            ? 'warning'
+                            : 'success'
+                        }
+                        sx={{
+                          fontSize: '0.75rem',
+                          textTransform: 'capitalize',
+                          minWidth: 80
+                        }}
+                      />
+                    </TableCell>
+
                     {/* Date */}
                     <TableCell>
                       <Chip
@@ -408,7 +443,7 @@ const AdminContactMessagesPage = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        {(!contact.is_read || markingAsRead.has(contact.id)) && (
+                        {(contact.status === 'unread' || markingAsRead.has(contact.id)) && (
                           <Tooltip title={t('admin.contactMessagesPage.markAsRead')}>
                             <span>
                               <IconButton

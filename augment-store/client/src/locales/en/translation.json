@@ -951,6 +951,7 @@
       "title": "Contact Messages",
       "subtitle": "View and manage all contact form submissions",
       "refresh": "Refresh",
+      "retry": "Retry",
       "totalMessages": "Total Messages: {{count}} message",
       "totalMessages_other": "Total Messages: {{count}} messages",
       "noMessages": "No contact messages yet",
@@ -962,6 +963,7 @@
         "email": "Email",
         "subject": "Subject",
         "message": "Message",
+        "status": "Status",
         "date": "Date",
         "actions": "Actions",
         "id": "Message ID"
