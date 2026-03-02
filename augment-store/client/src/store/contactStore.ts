@@ -187,6 +187,41 @@ export const useContactStore = create<ContactState>((set) => ({
     set({ contacts: null, fetchError: null, isLoading: false })
   },
 
+  /**
+   * Updates a contact by ID.
+   *
+   * **IMPORTANT - Race Condition Handling:**
+   * This method uses a request counter to handle concurrent calls. If multiple
+   * updateContact() calls are made rapidly, only the most recent request will
+   * update the store state (isUpdating, updateError, lastUpdatedContact, contacts).
+   *
+   * However, ALL requests will complete and return their responses. This means:
+   * - If a request becomes stale (a newer request was made), the promise still
+   *   resolves with the API response, but the store state is NOT updated.
+   * - Callers should NOT rely on the returned promise value for UI state.
+   * - Instead, callers should use the store's reactive state:
+   *   - `lastUpdatedContact` for the most recent successful update
+   *   - `contacts.results` for the updated contact in the list
+   *   - `updateError` for error messages
+   *   - `isUpdating` for loading state
+   *
+   * **Example Usage:**
+   * ```tsx
+   * const { updateContact, lastUpdatedContact, updateError, isUpdating } = useContactStore()
+   *
+   * // Call the update (don't rely on the returned value)
+   * updateContact(contactId, { status: 'read' })
+   *
+   * // Use store state for UI updates
+   * if (isUpdating) return <Spinner />
+   * if (updateError) return <Error message={updateError} />
+   * if (lastUpdatedContact) return <Success contact={lastUpdatedContact} />
+   * ```
+   *
+   * @param id - Contact ID to update
+   * @param data - Partial contact data to update
+   * @returns Promise that resolves with the API response (may be stale if superseded)
+   */
   updateContact: async (id: string, data: UpdateContactRequest) => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
