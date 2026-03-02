@@ -313,8 +313,8 @@ const AdminContactMessagesPage = () => {
         >
           {fetchError}
         </Alert>
-      ) : /* Loading State */
-      isLoading ? (
+      ) : /* Loading State - treat null contactsData as initial loading to avoid flicker */
+      isLoading || contactsData === null ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
