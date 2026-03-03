@@ -304,13 +304,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // those requests won't clear isFetchingTicket in their finally block (since their
       // currentRequestId won't match the new fetchTicketRequestCounter).
       // To prevent the UI from being stuck in a loading state, we manually clear it here.
-      set({ isFetchingTicket: false })
-
-      // Update selectedTicket if it's the same ticket being updated
-      const state = get()
-      if (state.selectedTicket?.id === id) {
-        set({ selectedTicket: ticket })
-      }
+      // We also set selectedTicket to the updated ticket to ensure the UI shows the fresh data,
+      // even if an in-flight getTicketById had set selectedTicket to null before awaiting.
+      set({ isFetchingTicket: false, selectedTicket: ticket })
 
       // Only set isUpdating to false when all requests have completed
       // Check if count is 1 (this is the last request) since decrement happens in finally
