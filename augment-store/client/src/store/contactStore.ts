@@ -462,10 +462,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
             },
           }
         })
-      }
 
-      // Log only sanitized error information to avoid exposing PII
-      console.error('Error updating contact:', sanitizeErrorForLogging(err, 'Failed to update contact'))
+        // Log only sanitized error information to avoid exposing PII
+        // Only log for non-stale requests to prevent noisy logs during rapid superseding updates
+        console.error('Error updating contact:', sanitizeErrorForLogging(err, 'Failed to update contact'))
+      }
 
       throw err
     }
