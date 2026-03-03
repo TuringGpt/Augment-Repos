@@ -205,6 +205,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Invalidate any in-flight requests by incrementing the counter
     // This ensures late-resolving requests won't repopulate the contacts state
     fetchRequestCounter += 1
+    // Invalidate all in-flight submitContact() requests by incrementing the counter
+    // This prevents in-flight submits from writing PII back to lastSubmittedContact
+    // after logout/clearContacts has been called
+    submitRequestCounter += 1
     // Invalidate all in-flight updateContact() requests by incrementing their counters
     // This prevents in-flight updates from writing PII back to originalContactStates
     // and lastUpdatedContact after logout/clearContacts has been called
@@ -216,13 +220,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Always reset isLoading to prevent it from being stuck in true state
     // if this is called while a request is in-flight
     // Also clear update-related state to prevent PII retention and stale UI
+    // Also clear submit-related state to prevent PII retention from in-flight submitContact() calls
     set({
       contacts: null,
       fetchError: null,
       isLoading: false,
       lastUpdatedContact: null,
       updateError: null,
-      updatingContactIds: new Set<string>()
+      updatingContactIds: new Set<string>(),
+      isSubmitting: false,
+      error: null,
+      lastSubmittedContact: null
     })
   },
 
@@ -472,26 +480,30 @@ export const useContactStore = create<ContactState>((set, get) => ({
 // Subscribe to auth state changes and clear contacts when user logs out
 // This prevents retaining PII (name, email, message) in the originalContactStates Map
 // after logout, addressing security concerns about module-scoped state retention
-import('@store/authStore').then(({ useAuthStore }) => {
-  let previousAuthState = useAuthStore.getState().isAuthenticated
+import('@store/authStore')
+  .then(({ useAuthStore }) => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated
 
-  const unsubscribe = useAuthStore.subscribe((state) => {
-    const currentAuthState = state.isAuthenticated
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const currentAuthState = state.isAuthenticated
 
-    // Detect transition from authenticated to unauthenticated
-    if (previousAuthState === true && currentAuthState === false) {
-      console.log('🔒 User logged out - clearing contacts and PII from memory')
-      useContactStore.getState().clearContacts()
-    }
+      // Detect transition from authenticated to unauthenticated
+      if (previousAuthState === true && currentAuthState === false) {
+        console.log('🔒 User logged out - clearing contacts and PII from memory')
+        useContactStore.getState().clearContacts()
+      }
 
-    previousAuthState = currentAuthState
-  })
-
-  // Clean up subscription on HMR module disposal to prevent memory leaks
-  if (import.meta.hot) {
-    import.meta.hot.dispose(() => {
-      unsubscribe()
+      previousAuthState = currentAuthState
     })
-  }
-})
+
+    // Clean up subscription on HMR module disposal to prevent memory leaks
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        unsubscribe()
+      })
+    }
+  })
+  .catch((error) => {
+    console.error('Failed to load authStore for logout cleanup subscription:', error)
+  })
 
