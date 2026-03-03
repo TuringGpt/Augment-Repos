@@ -337,10 +337,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // to prevent them from overwriting the just-updated contact with stale data
         // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
         // This prevents invalidating user-triggered refreshes that started after this update
-        // Also reset isLoading to prevent it from being stuck true if invalidated
-        // fetch requests skip their finally block
         if (fetchRequestCounter === fetchCounterAtUpdateStart) {
           fetchRequestCounter += 1
+          // Reset isLoading to prevent it from being stuck true when invalidated
+          // fetch requests skip their finally block (request id no longer matches)
+          set({ isLoading: false })
         }
 
         // Update with the actual API response
