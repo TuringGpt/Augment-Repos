@@ -118,6 +118,9 @@ const AdminContactMessagesPage = () => {
   const drawerCloseTimeoutRef = useRef<number | null>(null)
   // Track mount state to prevent state updates after unmount
   const isMountedRef = useRef<boolean>(true)
+  // Ref-based in-flight guard to prevent double-click race conditions
+  // Unlike React state, refs update synchronously and can't be bypassed by rapid clicks
+  const inFlightUpdatesRef = useRef<Set<string>>(new Set())
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -191,11 +194,17 @@ const AdminContactMessagesPage = () => {
     // Prevent row click event from firing
     event.stopPropagation()
 
-    // Don't mark if already being marked
-    if (markingAsRead.has(contactId)) {
+    // Ref-based guard: Check if update is already in-flight for this contact
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (inFlightUpdatesRef.current.has(contactId)) {
       return
     }
 
+    // Mark as in-flight immediately (synchronous update)
+    inFlightUpdatesRef.current.add(contactId)
+
+    // Also update React state for UI feedback (asynchronous update)
     // Add to marking set using functional update to avoid stale closure
     setMarkingAsRead((prev) => {
       const newMarkingAsRead = new Set(prev)
@@ -211,6 +220,9 @@ const AdminContactMessagesPage = () => {
       // The store will set updateError which could be displayed if needed
       console.error('Failed to mark contact as read - check updateError state for details')
     } finally {
+      // Remove from in-flight set (synchronous update)
+      inFlightUpdatesRef.current.delete(contactId)
+
       // Only update state if component is still mounted to prevent React warnings
       if (isMountedRef.current) {
         // Remove from marking set using functional update to avoid stale closure
