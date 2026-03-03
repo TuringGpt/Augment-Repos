@@ -96,7 +96,9 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url, {"status": Ticket.Status.OPEN})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for ticket in response.data.get("results", []):
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for ticket in results:
             self.assertEqual(ticket["status"], Ticket.Status.OPEN)
 
     def test_list_tickets_filter_by_status_no_match(self):
