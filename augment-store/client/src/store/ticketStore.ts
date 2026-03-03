@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
 import { parseApiError } from '@utils/errorUtils'
-import type { TicketListItem, TicketFilterParams, CreateTicketRequest, Ticket } from '@features/support/types'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -23,11 +23,16 @@ interface TicketState {
   isCreating: boolean
   createError: string | null
 
+  // Separate state for update ticket action to avoid race conditions with fetchTickets
+  isUpdating: boolean
+  updateError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
   createTicket: (data: CreateTicketRequest) => Promise<Ticket>
+  updateTicket: (id: string, data: UpdateTicketRequest) => Promise<Ticket>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
 }
@@ -45,6 +50,11 @@ let fetchTicketRequestCounter = 0
 // Ensures isCreating reflects "any create in progress" rather than just the latest request
 // This prevents isCreating from becoming false while earlier requests are still in-flight
 let createInFlightCount = 0
+
+// In-flight counter to track concurrent update ticket requests
+// Ensures isUpdating reflects "any update in progress" rather than just the latest request
+// This prevents isUpdating from becoming false while earlier requests are still in-flight
+let updateInFlightCount = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -69,6 +79,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   fetchTicketError: null,
   isCreating: false,
   createError: null,
+  isUpdating: false,
+  updateError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -258,6 +270,65 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Decrement in-flight count in finally block to ensure it always happens
       // even if parseApiError or any other code in try/catch throws
       createInFlightCount -= 1
+    }
+  },
+
+  updateTicket: async (id: string, data: UpdateTicketRequest): Promise<Ticket> => {
+    // Use separate isUpdating/updateError state to avoid race conditions with fetchTickets
+    // This prevents updateTicket from clearing error or setting isLoading to false
+    // while a fetchTickets request is still in-flight
+
+    // Increment in-flight count to track concurrent update requests
+    // This ensures isUpdating reflects "any update in progress" rather than just the latest request
+    // When the count goes from 0 to 1, set isUpdating to true
+    // When the count goes back to 0, set isUpdating to false
+    updateInFlightCount += 1
+    const isFirstRequest = updateInFlightCount === 1
+
+    // Only set isUpdating to true and clear error for the first concurrent request
+    // Subsequent concurrent requests don't need to update these flags
+    if (isFirstRequest) {
+      set({ isUpdating: true, updateError: null })
+    }
+
+    try {
+      const ticket = await ticketService.updateTicket(id, data)
+
+      // Update selectedTicket if it's the same ticket being updated
+      const state = get()
+      if (state.selectedTicket?.id === id) {
+        set({ selectedTicket: ticket })
+      }
+
+      // Only set isUpdating to false when all requests have completed (count reaches 0)
+      if (updateInFlightCount === 0) {
+        set({ isUpdating: false })
+      }
+
+      return ticket
+    } catch (error) {
+      // Use parseApiError to extract user-friendly error message from API response
+      // Pass field names to extract field-specific DRF validation errors (e.g., { title: [...] })
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
+        defaultMessage: 'Failed to update ticket',
+      })
+
+      // Only update error state and isUpdating when all requests have completed
+      if (updateInFlightCount === 0) {
+        set({
+          updateError: errorMessage,
+          isUpdating: false,
+        })
+      }
+
+      // Re-throw the original error to preserve stack trace and debugging info
+      // The store's updateError state contains the normalized user-friendly message
+      throw error
+    } finally {
+      // Decrement in-flight count in finally block to ensure it always happens
+      // even if parseApiError or any other code in try/catch throws
+      updateInFlightCount -= 1
     }
   },
 
