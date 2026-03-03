@@ -300,8 +300,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         set({ selectedTicket: ticket })
       }
 
-      // Only set isUpdating to false when all requests have completed (count reaches 0)
-      if (updateInFlightCount === 0) {
+      // Only set isUpdating to false when all requests have completed
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (updateInFlightCount === 1) {
         set({ isUpdating: false })
       }
 
@@ -315,7 +316,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       })
 
       // Only update error state and isUpdating when all requests have completed
-      if (updateInFlightCount === 0) {
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (updateInFlightCount === 1) {
         set({
           updateError: errorMessage,
           isUpdating: false,
