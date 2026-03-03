@@ -205,11 +205,25 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Invalidate any in-flight requests by incrementing the counter
     // This ensures late-resolving requests won't repopulate the contacts state
     fetchRequestCounter += 1
+    // Invalidate all in-flight updateContact() requests by incrementing their counters
+    // This prevents in-flight updates from writing PII back to originalContactStates
+    // and lastUpdatedContact after logout/clearContacts has been called
+    updateRequestCounters.forEach((value, key) => {
+      updateRequestCounters.set(key, value + 1)
+    })
     // Clear the original contact states since we're clearing all contacts
     originalContactStates.clear()
     // Always reset isLoading to prevent it from being stuck in true state
     // if this is called while a request is in-flight
-    set({ contacts: null, fetchError: null, isLoading: false })
+    // Also clear update-related state to prevent PII retention and stale UI
+    set({
+      contacts: null,
+      fetchError: null,
+      isLoading: false,
+      lastUpdatedContact: null,
+      updateError: null,
+      updatingContactIds: new Set<string>()
+    })
   },
 
   /**
