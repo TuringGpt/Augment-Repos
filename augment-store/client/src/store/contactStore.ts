@@ -355,7 +355,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
               lastUpdatedContact: response,
               updateError: null,
               updatingContactIds: newUpdatingContactIds,
-              isLoading: false,
             }
           }
 
@@ -363,7 +362,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
             lastUpdatedContact: response,
             updateError: null,
             updatingContactIds: newUpdatingContactIds,
-            isLoading: false,
             contacts: {
               ...state.contacts,
               results: state.contacts.results.map((contact) =>
