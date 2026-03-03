@@ -23,7 +23,9 @@ interface ContactState {
   // Loading states
   isSubmitting: boolean
   isLoading: boolean
-  isUpdating: boolean
+  // Track which contact IDs are currently being updated
+  // This allows concurrent updates to different contacts without race conditions
+  updatingContactIds: Set<string>
 
   // Error states
   error: string | null
@@ -47,13 +49,15 @@ interface ContactState {
   clearLastSubmitted: () => void
   clearLastUpdated: () => void
   clearContacts: () => void
+  // Helper to check if a specific contact is being updated
+  isContactUpdating: (id: string) => boolean
 }
 
 export const useContactStore = create<ContactState>((set, get) => ({
   // Initial state
   isSubmitting: false,
   isLoading: false,
-  isUpdating: false,
+  updatingContactIds: new Set<string>(),
   error: null,
   fetchError: null,
   updateError: null,
@@ -207,7 +211,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
    *
    * **Example Usage:**
    * ```tsx
-   * const { updateContact, lastUpdatedContact, updateError, isUpdating } = useContactStore()
+   * const { updateContact, lastUpdatedContact, updateError, isContactUpdating } = useContactStore()
    *
    * // Call the update and handle potential rejections
    * updateContact(contactId, { status: 'read' }).catch((error) => {
@@ -216,8 +220,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
    *   console.error('Update failed - check updateError state for details')
    * })
    *
-   * // Use store state for UI updates
-   * if (isUpdating) return <Spinner />
+   * // Use store state for UI updates - check if specific contact is being updated
+   * if (isContactUpdating(contactId)) return <Spinner />
    * if (updateError) return <Error message={updateError} />
    * if (lastUpdatedContact) return <Success contact={lastUpdatedContact} />
    * ```
@@ -243,9 +247,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // are updated concurrently, preventing race conditions where later updates
     // could overwrite earlier ones
     set((state) => {
+      // Add this contact ID to the set of contacts being updated
+      const newUpdatingContactIds = new Set(state.updatingContactIds)
+      newUpdatingContactIds.add(id)
+
       // Avoid no-op update when contacts is null to prevent spurious re-renders
       if (!state.contacts || !originalContact) {
-        return { isUpdating: true, updateError: null, lastUpdatedContact: null }
+        return {
+          updatingContactIds: newUpdatingContactIds,
+          updateError: null,
+          lastUpdatedContact: null
+        }
       }
 
       // Create optimistic updated contact by merging the update data
@@ -253,7 +265,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
       const optimisticContact: ContactItem = { ...originalContact, ...data }
 
       return {
-        isUpdating: true,
+        updatingContactIds: newUpdatingContactIds,
         updateError: null,
         lastUpdatedContact: null,
         contacts: {
@@ -283,12 +295,16 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
         // Update with the actual API response
         set((state) => {
+          // Remove this contact ID from the set of contacts being updated
+          const newUpdatingContactIds = new Set(state.updatingContactIds)
+          newUpdatingContactIds.delete(id)
+
           // Avoid no-op update when contacts is null to prevent spurious re-renders
           if (!state.contacts) {
             return {
               lastUpdatedContact: response,
               updateError: null,
-              isUpdating: false,
+              updatingContactIds: newUpdatingContactIds,
               isLoading: false,
             }
           }
@@ -296,7 +312,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
           return {
             lastUpdatedContact: response,
             updateError: null,
-            isUpdating: false,
+            updatingContactIds: newUpdatingContactIds,
             isLoading: false,
             contacts: {
               ...state.contacts,
@@ -320,18 +336,22 @@ export const useContactStore = create<ContactState>((set, get) => ({
         })
 
         set((state) => {
+          // Remove this contact ID from the set of contacts being updated
+          const newUpdatingContactIds = new Set(state.updatingContactIds)
+          newUpdatingContactIds.delete(id)
+
           // Avoid no-op update when contacts is null to prevent spurious re-renders
           if (!state.contacts || !originalContact) {
             return {
               updateError: errorMessage,
-              isUpdating: false,
+              updatingContactIds: newUpdatingContactIds,
             }
           }
 
           // Revert the contact back to its original state
           return {
             updateError: errorMessage,
-            isUpdating: false,
+            updatingContactIds: newUpdatingContactIds,
             contacts: {
               ...state.contacts,
               results: state.contacts.results.map((contact) =>
@@ -353,18 +373,23 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Invalidate any in-flight requests by clearing all contact counters
     // This ensures late-resolving requests won't repopulate the error state
     updateRequestCounters.clear()
-    // Always reset isUpdating to prevent it from being stuck in true state
-    // if this is called while a request is in-flight
-    set({ updateError: null, isUpdating: false })
+    // Clear all updating contact IDs to prevent them from being stuck in updating state
+    // if this is called while requests are in-flight
+    set({ updateError: null, updatingContactIds: new Set<string>() })
   },
 
   clearLastUpdated: () => {
     // Invalidate any in-flight requests by clearing all contact counters
     // This ensures late-resolving requests won't repopulate the success state
     updateRequestCounters.clear()
-    // Always reset isUpdating to prevent it from being stuck in true state
-    // if this is called while a request is in-flight
-    set({ lastUpdatedContact: null, isUpdating: false })
+    // Clear all updating contact IDs to prevent them from being stuck in updating state
+    // if this is called while requests are in-flight
+    set({ lastUpdatedContact: null, updatingContactIds: new Set<string>() })
+  },
+
+  // Helper to check if a specific contact is being updated
+  isContactUpdating: (id: string) => {
+    return get().updatingContactIds.has(id)
   },
 }))
 
