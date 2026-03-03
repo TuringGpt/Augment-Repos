@@ -300,6 +300,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // a race condition where the stale fetch overwrites the updated data
       fetchTicketRequestCounter += 1
 
+      // When we invalidate in-flight getTicketById requests by bumping the counter,
+      // those requests won't clear isFetchingTicket in their finally block (since their
+      // currentRequestId won't match the new fetchTicketRequestCounter).
+      // To prevent the UI from being stuck in a loading state, we manually clear it here.
+      set({ isFetchingTicket: false })
+
       // Update selectedTicket if it's the same ticket being updated
       const state = get()
       if (state.selectedTicket?.id === id) {
