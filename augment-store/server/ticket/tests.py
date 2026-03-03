@@ -96,7 +96,9 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:user_tickets")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for ticket in response.data.get("results", []):
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for ticket in results:
             self.assertEqual(ticket["reporter"], self.user.id)
 
     def test_user_tickets_excludes_others(self):
@@ -113,7 +115,8 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_tickets_returns_all(self):
-        admin_user = UserFactory(is_staff=True)
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
         self.authenticated_client.force_authenticate(user=admin_user)
         TicketFactory(reporter=self.user2, assignee=self.user2)
         url = reverse("v1:ticket:admin_tickets")
@@ -122,21 +125,32 @@ class TicketTests(BaseAPITestCase):
         self.assertGreaterEqual(len(response.data.get("results", [])), 2)
 
     def test_admin_tickets_filter_by_user(self):
-        admin_user = UserFactory(is_staff=True)
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
         self.authenticated_client.force_authenticate(user=admin_user)
         TicketFactory(reporter=self.user2, assignee=self.user2)
         url = reverse("v1:ticket:admin_tickets")
         response = self.authenticated_client.get(url, {"user_id": str(self.user2.id)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for ticket in response.data.get("results", []):
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for ticket in results:
             self.assertEqual(ticket["reporter"], self.user2.id)
 
     def test_admin_tickets_invalid_user_id(self):
-        admin_user = UserFactory(is_staff=True)
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
         self.authenticated_client.force_authenticate(user=admin_user)
         url = reverse("v1:ticket:admin_tickets")
         response = self.authenticated_client.get(url, {"user_id": "not-a-uuid"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_tickets_staff_without_role_forbidden(self):
+        staff_user = UserFactory(is_staff=True)
+        self.authenticated_client.force_authenticate(user=staff_user)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_ticket_detail(self):
         url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])

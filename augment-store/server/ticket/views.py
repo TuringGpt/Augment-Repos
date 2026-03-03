@@ -2,9 +2,10 @@ from django.shortcuts import get_object_or_404
 from .models import Ticket, Comment
 from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpdateSerializer, TicketDetailSerializer, CommentSerializer, CommentCreateSerializer, CommentUpdateSerializer
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
@@ -46,7 +47,7 @@ class UserTicketsView(TicketBaseView, ListAPIView):
 
 class AdminTicketsView(TicketBaseView, ListAPIView):
     serializer_class = TicketListSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [hasAdminRole]
 
     def get_queryset(self):
         queryset = super().get_queryset().order_by('-created_at')
