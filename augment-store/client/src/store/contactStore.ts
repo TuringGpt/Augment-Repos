@@ -319,6 +319,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
       const response = await contactService.updateContact(id, data)
 
+      // Always update the stored server state when a request succeeds, even if stale
+      // This prevents rollbacks from reverting to a state older than what's on the server
+      // Example: Request A succeeds (server now has state A), Request B is in-flight,
+      // we must store state A so if B fails, rollback uses A (server state), not pre-A state
+      originalContactStates.set(id, response)
+
       // Only update state if this is still the most recent request for this contact
       // If a newer request has been made for this contact, discard this response
       if (currentRequestId === updateRequestCounters.get(id)) {
@@ -328,10 +334,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // Also reset isLoading to prevent it from being stuck true if invalidated
         // fetch requests skip their finally block
         fetchRequestCounter += 1
-
-        // Store the new server state for future rollbacks
-        // This ensures subsequent failed updates rollback to this confirmed server state
-        originalContactStates.set(id, response)
 
         // Update with the actual API response
         set((state) => {
