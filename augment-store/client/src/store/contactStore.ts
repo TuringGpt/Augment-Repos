@@ -259,6 +259,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
     updateRequestCounters.set(id, currentCounter)
     const currentRequestId = currentCounter
 
+    // Capture the current fetchRequestCounter at the start of this update
+    // This allows us to invalidate only getContacts() calls that started BEFORE this update
+    // preventing invalidation of newer fetches that started after this update began
+    const fetchCounterAtUpdateStart = fetchRequestCounter
+
     // Get the original server state for rollback
     // We use the stored original state from the Map instead of the current state
     // to prevent rolling back to an optimistic state if multiple requests fail
@@ -328,12 +333,15 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // Only update state if this is still the most recent request for this contact
       // If a newer request has been made for this contact, discard this response
       if (currentRequestId === updateRequestCounters.get(id)) {
-        // Invalidate any in-flight getContacts() requests to prevent them from
-        // overwriting the just-updated contact with stale data
-        // This ensures concurrent/in-flight fetch requests are discarded
+        // Invalidate any in-flight getContacts() requests that started BEFORE this update
+        // to prevent them from overwriting the just-updated contact with stale data
+        // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
+        // This prevents invalidating user-triggered refreshes that started after this update
         // Also reset isLoading to prevent it from being stuck true if invalidated
         // fetch requests skip their finally block
-        fetchRequestCounter += 1
+        if (fetchRequestCounter === fetchCounterAtUpdateStart) {
+          fetchRequestCounter += 1
+        }
 
         // Update with the actual API response
         set((state) => {
