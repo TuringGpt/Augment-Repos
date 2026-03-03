@@ -297,6 +297,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Update selectedTicket if it's the same ticket being updated
       const state = get()
       if (state.selectedTicket?.id === id) {
+        // Increment fetchTicketRequestCounter to invalidate any in-flight getTicketById requests
+        // This prevents stale ticket data from overwriting the freshly updated ticket
+        // Similar to how clearSelectedTicket invalidates in-flight requests
+        fetchTicketRequestCounter += 1
         set({ selectedTicket: ticket })
       }
 
