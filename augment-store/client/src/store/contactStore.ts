@@ -372,20 +372,27 @@ export const useContactStore = create<ContactState>((set, get) => ({
   },
 
   clearUpdateError: () => {
-    // Clear the error state and updating contact IDs
-    // Note: We do NOT clear updateRequestCounters here because doing so would prevent
-    // in-flight requests from completing their error handling (the request ID check
-    // at line 335 would fail), leaving optimistic updates stuck if the request fails
-    set({ updateError: null, updatingContactIds: new Set<string>() })
+    // Clear the error state
+    // Note: We do NOT clear updateRequestCounters or updatingContactIds here because:
+    // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
+    //    their error handling (the request ID check at line 335 would fail), leaving
+    //    optimistic updates stuck if the request fails
+    // 2. Clearing updatingContactIds would make isContactUpdating() report false while
+    //    requests are still in-flight, potentially re-enabling UI actions/spinners
+    //    prematurely. In-flight requests will properly remove their IDs when they complete.
+    set({ updateError: null })
   },
 
   clearLastUpdated: () => {
-    // Clear the success state and updating contact IDs
-    // Note: We do NOT clear updateRequestCounters here because doing so would prevent
-    // in-flight requests from completing their success handling (the request ID check
-    // at line 288 would fail), potentially leaving optimistic updates stuck if the
-    // request completes after this is called
-    set({ lastUpdatedContact: null, updatingContactIds: new Set<string>() })
+    // Clear the success state
+    // Note: We do NOT clear updateRequestCounters or updatingContactIds here because:
+    // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
+    //    their success handling (the request ID check at line 288 would fail), potentially
+    //    leaving optimistic updates stuck if the request completes after this is called
+    // 2. Clearing updatingContactIds would make isContactUpdating() report false while
+    //    requests are still in-flight, potentially re-enabling UI actions/spinners
+    //    prematurely. In-flight requests will properly remove their IDs when they complete.
+    set({ lastUpdatedContact: null })
   },
 
   // Helper to check if a specific contact is being updated
