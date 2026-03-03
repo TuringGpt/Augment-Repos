@@ -32,7 +32,28 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
+
+class UserTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            reporter=self.request.user
+        ).order_by('-created_at')
+
+
+class AdminTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('-created_at')
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            queryset = queryset.filter(reporter_id=user_id)
+        return queryset
+
 
 def _invalidate_stats_cache(user):
     django_cache.delete(f"ticket_stats:{user.id}")
