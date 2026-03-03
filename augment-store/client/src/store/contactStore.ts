@@ -466,11 +466,8 @@ import('@store/authStore').then(({ useAuthStore }) => {
 
     // Detect transition from authenticated to unauthenticated
     if (previousAuthState === true && currentAuthState === false) {
-      const currentContacts = useContactStore.getState().contacts
-      if (currentContacts && currentContacts.results.length > 0) {
-        console.log('🔒 User logged out - clearing contacts and PII from memory')
-        useContactStore.getState().clearContacts()
-      }
+      console.log('🔒 User logged out - clearing contacts and PII from memory')
+      useContactStore.getState().clearContacts()
     }
 
     previousAuthState = currentAuthState
