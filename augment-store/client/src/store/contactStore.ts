@@ -42,11 +42,13 @@ interface ContactState {
   // Error states
   error: string | null
   fetchError: string | null
-  updateError: string | null
+  // Track update errors per contact ID to prevent concurrent updates from clearing each other's errors
+  updateErrors: Map<string, string>
 
   // Success state
   lastSubmittedContact: CreateContactResponse | null
-  lastUpdatedContact: UpdateContactResponse | null
+  // Track last updated contact per contact ID to prevent concurrent updates from clearing each other's success states
+  lastUpdatedContacts: Map<string, UpdateContactResponse>
 
   // Data state
   contacts: ContactListResponse | null
@@ -57,9 +59,9 @@ interface ContactState {
   updateContact: (id: string, data: UpdateContactRequest) => Promise<UpdateContactResponse>
   clearError: () => void
   clearFetchError: () => void
-  clearUpdateError: () => void
+  clearUpdateError: (id?: string) => void
   clearLastSubmitted: () => void
-  clearLastUpdated: () => void
+  clearLastUpdated: (id?: string) => void
   clearContacts: () => void
 }
 
@@ -70,9 +72,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
   updatingContactIds: new Set<string>(),
   error: null,
   fetchError: null,
-  updateError: null,
+  updateErrors: new Map(),
   lastSubmittedContact: null,
-  lastUpdatedContact: null,
+  lastUpdatedContacts: new Map(),
   contacts: null,
 
   // Actions
@@ -225,8 +227,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
       contacts: null,
       fetchError: null,
       isLoading: false,
-      lastUpdatedContact: null,
-      updateError: null,
+      lastUpdatedContacts: new Map(),
+      updateErrors: new Map(),
       updatingContactIds: new Set<string>(),
       isSubmitting: false,
       error: null,
@@ -254,8 +256,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
    * ```tsx
    * // Subscribe to the reactive slice for a specific contact's updating state
    * const isUpdating = useContactStore((s) => s.updatingContactIds.has(contactId))
-   * const updateError = useContactStore((s) => s.updateError)
-   * const lastUpdatedContact = useContactStore((s) => s.lastUpdatedContact)
+   * const updateError = useContactStore((s) => s.updateErrors.get(contactId))
+   * const lastUpdatedContact = useContactStore((s) => s.lastUpdatedContacts.get(contactId))
    * const updateContact = useContactStore((s) => s.updateContact)
    *
    * // Call the update and handle potential rejections
@@ -311,12 +313,19 @@ export const useContactStore = create<ContactState>((set, get) => ({
       const newUpdatingContactIds = new Set(state.updatingContactIds)
       newUpdatingContactIds.add(id)
 
+      // Clear any previous error/success for this specific contact
+      // This prevents stale feedback from previous updates to the same contact
+      const newUpdateErrors = new Map(state.updateErrors)
+      newUpdateErrors.delete(id)
+      const newLastUpdatedContacts = new Map(state.lastUpdatedContacts)
+      newLastUpdatedContacts.delete(id)
+
       // Avoid no-op update when contacts is null to prevent spurious re-renders
       if (!state.contacts || !originalContact) {
         return {
           updatingContactIds: newUpdatingContactIds,
-          updateError: null,
-          lastUpdatedContact: null
+          updateErrors: newUpdateErrors,
+          lastUpdatedContacts: newLastUpdatedContacts
         }
       }
 
@@ -331,8 +340,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
       return {
         updatingContactIds: newUpdatingContactIds,
-        updateError: null,
-        lastUpdatedContact: null,
+        updateErrors: newUpdateErrors,
+        lastUpdatedContacts: newLastUpdatedContacts,
         contacts: {
           ...state.contacts,
           results: state.contacts.results.map((contact) =>
@@ -375,18 +384,26 @@ export const useContactStore = create<ContactState>((set, get) => ({
           const newUpdatingContactIds = new Set(state.updatingContactIds)
           newUpdatingContactIds.delete(id)
 
+          // Set success state for this specific contact
+          const newLastUpdatedContacts = new Map(state.lastUpdatedContacts)
+          newLastUpdatedContacts.set(id, response)
+
+          // Clear any error for this specific contact
+          const newUpdateErrors = new Map(state.updateErrors)
+          newUpdateErrors.delete(id)
+
           // Avoid no-op update when contacts is null to prevent spurious re-renders
           if (!state.contacts) {
             return {
-              lastUpdatedContact: response,
-              updateError: null,
+              lastUpdatedContacts: newLastUpdatedContacts,
+              updateErrors: newUpdateErrors,
               updatingContactIds: newUpdatingContactIds,
             }
           }
 
           return {
-            lastUpdatedContact: response,
-            updateError: null,
+            lastUpdatedContacts: newLastUpdatedContacts,
+            updateErrors: newUpdateErrors,
             updatingContactIds: newUpdatingContactIds,
             contacts: {
               ...state.contacts,
@@ -414,6 +431,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
           const newUpdatingContactIds = new Set(state.updatingContactIds)
           newUpdatingContactIds.delete(id)
 
+          // Set error state for this specific contact
+          const newUpdateErrors = new Map(state.updateErrors)
+          newUpdateErrors.set(id, errorMessage)
+
           // Get the latest confirmed server state from the Map at rollback time
           // This ensures we rollback to the most recent server state, even if an earlier
           // in-flight request succeeded and updated the Map before this request failed
@@ -422,7 +443,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // Avoid no-op update when contacts is null to prevent spurious re-renders
           if (!state.contacts || !rollbackContact) {
             return {
-              updateError: errorMessage,
+              updateErrors: newUpdateErrors,
               updatingContactIds: newUpdatingContactIds,
             }
           }
@@ -431,7 +452,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // rollbackContact comes from the Map at rollback time, ensuring we rollback to the last
           // confirmed server state, not an optimistic state from a concurrent request
           return {
-            updateError: errorMessage,
+            updateErrors: newUpdateErrors,
             updatingContactIds: newUpdatingContactIds,
             contacts: {
               ...state.contacts,
@@ -450,30 +471,50 @@ export const useContactStore = create<ContactState>((set, get) => ({
     }
   },
 
-  clearUpdateError: () => {
-    // Clear the error state
+  clearUpdateError: (id?: string) => {
+    // Clear the error state for a specific contact or all contacts
     // Note: We do NOT clear updateRequestCounters or updatingContactIds here because:
     // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
-    //    their error handling (the request ID check at line 335 would fail), leaving
+    //    their error handling (the request ID check would fail), leaving
     //    optimistic updates stuck if the request fails
     // 2. Clearing updatingContactIds would prevent components subscribed to
     //    updatingContactIds.has(id) from showing loading state while requests are still
     //    in-flight, potentially re-enabling UI actions/spinners prematurely.
     //    In-flight requests will properly remove their IDs when they complete.
-    set({ updateError: null })
+    set((state) => {
+      if (id) {
+        // Clear error for specific contact
+        const newUpdateErrors = new Map(state.updateErrors)
+        newUpdateErrors.delete(id)
+        return { updateErrors: newUpdateErrors }
+      } else {
+        // Clear all errors
+        return { updateErrors: new Map() }
+      }
+    })
   },
 
-  clearLastUpdated: () => {
-    // Clear the success state
+  clearLastUpdated: (id?: string) => {
+    // Clear the success state for a specific contact or all contacts
     // Note: We do NOT clear updateRequestCounters or updatingContactIds here because:
     // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
-    //    their success handling (the request ID check at line 288 would fail), potentially
+    //    their success handling (the request ID check would fail), potentially
     //    leaving optimistic updates stuck if the request completes after this is called
     // 2. Clearing updatingContactIds would prevent components subscribed to
     //    updatingContactIds.has(id) from showing loading state while requests are still
     //    in-flight, potentially re-enabling UI actions/spinners prematurely.
     //    In-flight requests will properly remove their IDs when they complete.
-    set({ lastUpdatedContact: null })
+    set((state) => {
+      if (id) {
+        // Clear success for specific contact
+        const newLastUpdatedContacts = new Map(state.lastUpdatedContacts)
+        newLastUpdatedContacts.delete(id)
+        return { lastUpdatedContacts: newLastUpdatedContacts }
+      } else {
+        // Clear all success states
+        return { lastUpdatedContacts: new Map() }
+      }
+    })
   },
 }))
 
