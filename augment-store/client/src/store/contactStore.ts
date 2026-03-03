@@ -17,6 +17,8 @@ let fetchRequestCounter = 0
 // while preventing race conditions for updates to the same contact
 // When multiple update calls are made to the SAME contact in quick succession,
 // only the most recent request for that contact should update the state
+// Counters are never deleted to prevent request ID reuse which could allow stale
+// responses to incorrectly pass the currentRequestId check
 const updateRequestCounters = new Map<string, number>()
 
 interface ContactState {
@@ -293,10 +295,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // fetch requests skip their finally block
         fetchRequestCounter += 1
 
-        // Clean up the counter for this contact to prevent unbounded memory growth
-        // We only need the counter while there are concurrent requests for the same contact
-        updateRequestCounters.delete(id)
-
         // Update with the actual API response
         set((state) => {
           // Remove this contact ID from the set of contacts being updated
@@ -338,10 +336,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
           fieldNames: ['name', 'email', 'subject', 'message', 'status'],
           defaultMessage: 'Failed to update contact. Please try again.',
         })
-
-        // Clean up the counter for this contact to prevent unbounded memory growth
-        // We only need the counter while there are concurrent requests for the same contact
-        updateRequestCounters.delete(id)
 
         set((state) => {
           // Remove this contact ID from the set of contacts being updated
