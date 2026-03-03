@@ -326,15 +326,16 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
       const response = await contactService.updateContact(id, data)
 
-      // Always update the stored server state when a request succeeds, even if stale
-      // This prevents rollbacks from reverting to a state older than what's on the server
-      // Example: Request A succeeds (server now has state A), Request B is in-flight,
-      // we must store state A so if B fails, rollback uses A (server state), not pre-A state
-      originalContactStates.set(id, response)
-
       // Only update state if this is still the most recent request for this contact
       // If a newer request has been made for this contact, discard this response
       if (currentRequestId === updateRequestCounters.get(id)) {
+        // Update the stored server state when a request succeeds
+        // This prevents rollbacks from reverting to a state older than what's on the server
+        // Example: Request A succeeds (server now has state A), Request B is in-flight,
+        // we must store state A so if B fails, rollback uses A (server state), not pre-A state
+        // IMPORTANT: Only update for current requests to prevent stale responses from
+        // writing PII back to memory after logout/clearContacts has been called
+        originalContactStates.set(id, response)
         // Invalidate any in-flight getContacts() requests that started BEFORE this update
         // to prevent them from overwriting the just-updated contact with stale data
         // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
@@ -453,4 +454,33 @@ export const useContactStore = create<ContactState>((set, get) => ({
     set({ lastUpdatedContact: null })
   },
 }))
+
+// Subscribe to auth state changes and clear contacts when user logs out
+// This prevents retaining PII (name, email, message) in the originalContactStates Map
+// after logout, addressing security concerns about module-scoped state retention
+import('@store/authStore').then(({ useAuthStore }) => {
+  let previousAuthState = useAuthStore.getState().isAuthenticated
+
+  const unsubscribe = useAuthStore.subscribe((state) => {
+    const currentAuthState = state.isAuthenticated
+
+    // Detect transition from authenticated to unauthenticated
+    if (previousAuthState === true && currentAuthState === false) {
+      const currentContacts = useContactStore.getState().contacts
+      if (currentContacts && currentContacts.results.length > 0) {
+        console.log('🔒 User logged out - clearing contacts and PII from memory')
+        useContactStore.getState().clearContacts()
+      }
+    }
+
+    previousAuthState = currentAuthState
+  })
+
+  // Clean up subscription on HMR module disposal to prevent memory leaks
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      unsubscribe()
+    })
+  }
+})
 
