@@ -382,8 +382,13 @@ export const useContactStore = create<ContactState>((set, get) => ({
           const newUpdatingContactIds = new Set(state.updatingContactIds)
           newUpdatingContactIds.delete(id)
 
+          // Get the latest confirmed server state from the Map at rollback time
+          // This ensures we rollback to the most recent server state, even if an earlier
+          // in-flight request succeeded and updated the Map before this request failed
+          const rollbackContact = originalContactStates.get(id)
+
           // Avoid no-op update when contacts is null to prevent spurious re-renders
-          if (!state.contacts || !originalContact) {
+          if (!state.contacts || !rollbackContact) {
             return {
               updateError: errorMessage,
               updatingContactIds: newUpdatingContactIds,
@@ -391,7 +396,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
           }
 
           // Revert the contact back to its original server state
-          // originalContact comes from the Map, ensuring we rollback to the last
+          // rollbackContact comes from the Map at rollback time, ensuring we rollback to the last
           // confirmed server state, not an optimistic state from a concurrent request
           return {
             updateError: errorMessage,
@@ -399,7 +404,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
             contacts: {
               ...state.contacts,
               results: state.contacts.results.map((contact) =>
-                contact.id === id ? originalContact : contact
+                contact.id === id ? rollbackContact : contact
               ),
             },
           }
