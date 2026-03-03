@@ -293,6 +293,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // fetch requests skip their finally block
         fetchRequestCounter += 1
 
+        // Clean up the counter for this contact to prevent unbounded memory growth
+        // We only need the counter while there are concurrent requests for the same contact
+        updateRequestCounters.delete(id)
+
         // Update with the actual API response
         set((state) => {
           // Remove this contact ID from the set of contacts being updated
@@ -334,6 +338,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
           fieldNames: ['name', 'email', 'subject', 'message', 'status'],
           defaultMessage: 'Failed to update contact. Please try again.',
         })
+
+        // Clean up the counter for this contact to prevent unbounded memory growth
+        // We only need the counter while there are concurrent requests for the same contact
+        updateRequestCounters.delete(id)
 
         set((state) => {
           // Remove this contact ID from the set of contacts being updated
