@@ -21,6 +21,16 @@ let fetchRequestCounter = 0
 // responses to incorrectly pass the currentRequestId check
 const updateRequestCounters = new Map<string, number>()
 
+// Map to store the original server state for each contact ID
+// This prevents rollback to optimistic states when multiple requests fail
+// When request A optimistically updates, then request B starts and both fail,
+// request B's rollback should revert to the original server state, not request A's optimistic state
+// This map is updated when:
+// 1. Contacts are fetched (getContacts) - stores the server state for all contacts
+// 2. A contact update succeeds - stores the new server state for that contact
+// 3. Contacts are cleared - the map is cleared
+const originalContactStates = new Map<string, ContactItem>()
+
 interface ContactState {
   // Loading states
   isSubmitting: boolean
@@ -151,6 +161,13 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchRequestCounter) {
+        // Update the originalContactStates Map with the fresh server state
+        // This ensures future rollbacks use the correct server state
+        originalContactStates.clear()
+        response.results.forEach((contact) => {
+          originalContactStates.set(contact.id, contact)
+        })
+
         set({ contacts: response, fetchError: null })
       }
     } catch (err) {
@@ -190,6 +207,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Invalidate any in-flight requests by incrementing the counter
     // This ensures late-resolving requests won't repopulate the contacts state
     fetchRequestCounter += 1
+    // Clear the original contact states since we're clearing all contacts
+    originalContactStates.clear()
     // Always reset isLoading to prevent it from being stuck in true state
     // if this is called while a request is in-flight
     set({ contacts: null, fetchError: null, isLoading: false })
@@ -240,9 +259,19 @@ export const useContactStore = create<ContactState>((set, get) => ({
     updateRequestCounters.set(id, currentCounter)
     const currentRequestId = currentCounter
 
-    // Get current state to save for potential rollback
-    const currentState = get()
-    const originalContact = currentState.contacts?.results.find((contact) => contact.id === id)
+    // Get the original server state for rollback
+    // We use the stored original state from the Map instead of the current state
+    // to prevent rolling back to an optimistic state if multiple requests fail
+    // If not in the Map yet, fall back to current state (first update for this contact)
+    let originalContact = originalContactStates.get(id)
+    if (!originalContact) {
+      const currentState = get()
+      originalContact = currentState.contacts?.results.find((contact) => contact.id === id)
+      // Store it in the Map for future updates
+      if (originalContact) {
+        originalContactStates.set(id, originalContact)
+      }
+    }
 
     // OPTIMISTIC UPDATE: Update the contact list immediately before the API call
     // This ensures the UI reflects the change instantly, even when multiple contacts
@@ -294,6 +323,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // Also reset isLoading to prevent it from being stuck true if invalidated
         // fetch requests skip their finally block
         fetchRequestCounter += 1
+
+        // Store the new server state for future rollbacks
+        // This ensures subsequent failed updates rollback to this confirmed server state
+        originalContactStates.set(id, response)
 
         // Update with the actual API response
         set((state) => {
@@ -350,7 +383,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
             }
           }
 
-          // Revert the contact back to its original state
+          // Revert the contact back to its original server state
+          // originalContact comes from the Map, ensuring we rollback to the last
+          // confirmed server state, not an optimistic state from a concurrent request
           return {
             updateError: errorMessage,
             updatingContactIds: newUpdatingContactIds,
