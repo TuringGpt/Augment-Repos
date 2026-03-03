@@ -107,7 +107,14 @@ class TicketTests(BaseAPITestCase):
         ticket_ids = [t["id"] for t in response.data.get("results", [])]
         self.assertNotIn(str(other_ticket.id), ticket_ids)
 
+    def test_admin_tickets_forbidden_for_non_admin(self):
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_admin_tickets_returns_all(self):
+        admin_user = UserFactory(is_staff=True)
+        self.authenticated_client.force_authenticate(user=admin_user)
         TicketFactory(reporter=self.user2, assignee=self.user2)
         url = reverse("v1:ticket:admin_tickets")
         response = self.authenticated_client.get(url)
@@ -115,12 +122,21 @@ class TicketTests(BaseAPITestCase):
         self.assertGreaterEqual(len(response.data.get("results", [])), 2)
 
     def test_admin_tickets_filter_by_user(self):
+        admin_user = UserFactory(is_staff=True)
+        self.authenticated_client.force_authenticate(user=admin_user)
         TicketFactory(reporter=self.user2, assignee=self.user2)
         url = reverse("v1:ticket:admin_tickets")
         response = self.authenticated_client.get(url, {"user_id": str(self.user2.id)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for ticket in response.data.get("results", []):
             self.assertEqual(ticket["reporter"], self.user2.id)
+
+    def test_admin_tickets_invalid_user_id(self):
+        admin_user = UserFactory(is_staff=True)
+        self.authenticated_client.force_authenticate(user=admin_user)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url, {"user_id": "not-a-uuid"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     
     def test_ticket_detail(self):
         url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
