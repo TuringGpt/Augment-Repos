@@ -61,8 +61,6 @@ interface ContactState {
   clearLastSubmitted: () => void
   clearLastUpdated: () => void
   clearContacts: () => void
-  // Helper to check if a specific contact is being updated
-  isContactUpdating: (id: string) => boolean
 }
 
 export const useContactStore = create<ContactState>((set, get) => ({
@@ -232,7 +230,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
    *
    * **Example Usage:**
    * ```tsx
-   * const { updateContact, lastUpdatedContact, updateError, isContactUpdating } = useContactStore()
+   * // Subscribe to the reactive slice for a specific contact's updating state
+   * const isUpdating = useContactStore((s) => s.updatingContactIds.has(contactId))
+   * const updateError = useContactStore((s) => s.updateError)
+   * const lastUpdatedContact = useContactStore((s) => s.lastUpdatedContact)
+   * const updateContact = useContactStore((s) => s.updateContact)
    *
    * // Call the update and handle potential rejections
    * updateContact(contactId, { status: 'read' }).catch((error) => {
@@ -241,8 +243,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
    *   console.error('Update failed - check updateError state for details')
    * })
    *
-   * // Use store state for UI updates - check if specific contact is being updated
-   * if (isContactUpdating(contactId)) return <Spinner />
+   * // Use store state for UI updates - subscribe to reactive slices
+   * if (isUpdating) return <Spinner />
    * if (updateError) return <Error message={updateError} />
    * if (lastUpdatedContact) return <Success contact={lastUpdatedContact} />
    * ```
@@ -431,9 +433,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
     //    their error handling (the request ID check at line 335 would fail), leaving
     //    optimistic updates stuck if the request fails
-    // 2. Clearing updatingContactIds would make isContactUpdating() report false while
-    //    requests are still in-flight, potentially re-enabling UI actions/spinners
-    //    prematurely. In-flight requests will properly remove their IDs when they complete.
+    // 2. Clearing updatingContactIds would prevent components subscribed to
+    //    updatingContactIds.has(id) from showing loading state while requests are still
+    //    in-flight, potentially re-enabling UI actions/spinners prematurely.
+    //    In-flight requests will properly remove their IDs when they complete.
     set({ updateError: null })
   },
 
@@ -443,15 +446,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // 1. Clearing updateRequestCounters would prevent in-flight requests from completing
     //    their success handling (the request ID check at line 288 would fail), potentially
     //    leaving optimistic updates stuck if the request completes after this is called
-    // 2. Clearing updatingContactIds would make isContactUpdating() report false while
-    //    requests are still in-flight, potentially re-enabling UI actions/spinners
-    //    prematurely. In-flight requests will properly remove their IDs when they complete.
+    // 2. Clearing updatingContactIds would prevent components subscribed to
+    //    updatingContactIds.has(id) from showing loading state while requests are still
+    //    in-flight, potentially re-enabling UI actions/spinners prematurely.
+    //    In-flight requests will properly remove their IDs when they complete.
     set({ lastUpdatedContact: null })
-  },
-
-  // Helper to check if a specific contact is being updated
-  isContactUpdating: (id: string) => {
-    return get().updatingContactIds.has(id)
   },
 }))
 
