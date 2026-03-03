@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CreateContactRequest, CreateContactResponse, ContactListResponse, UpdateContactRequest, UpdateContactResponse } from '@services/api/contact/contactService'
+import type { CreateContactRequest, CreateContactResponse, ContactListResponse, UpdateContactRequest, UpdateContactResponse, ContactItem } from '@services/api/contact/contactService'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to prevent race conditions when submitting contact form
@@ -49,7 +49,7 @@ interface ContactState {
   clearContacts: () => void
 }
 
-export const useContactStore = create<ContactState>((set) => ({
+export const useContactStore = create<ContactState>((set, get) => ({
   // Initial state
   isSubmitting: false,
   isLoading: false,
@@ -190,27 +190,20 @@ export const useContactStore = create<ContactState>((set) => ({
   },
 
   /**
-   * Updates a contact by ID.
+   * Updates a contact by ID with optimistic updates.
    *
    * **IMPORTANT - Race Condition Handling:**
-   * This method uses a per-contact-ID request counter to handle concurrent calls.
+   * This method uses optimistic updates to ensure the UI reflects changes immediately,
+   * even when multiple contacts are updated concurrently.
+   *
    * - Updates to DIFFERENT contacts can proceed concurrently without interfering
    * - Updates to the SAME contact are serialized: only the most recent request
    *   for that specific contact will update the store state
+   * - The contact list is updated IMMEDIATELY (optimistically) before the API call
+   * - If the API call fails, the optimistic update is rolled back
    *
-   * If multiple updateContact() calls are made rapidly for the SAME contact,
-   * only the most recent request will update the store state (isUpdating,
-   * updateError, lastUpdatedContact, contacts).
-   *
-   * However, ALL requests will complete and return their responses. This means:
-   * - If a request becomes stale (a newer request was made for the same contact),
-   *   the promise still resolves with the API response, but the store state is NOT updated.
-   * - Callers should NOT rely on the returned promise value for UI state.
-   * - Instead, callers should use the store's reactive state:
-   *   - `lastUpdatedContact` for the most recent successful update
-   *   - `contacts.results` for the updated contact in the list
-   *   - `updateError` for error messages
-   *   - `isUpdating` for loading state
+   * This approach prevents race conditions where concurrent updates to different contacts
+   * could overwrite each other's changes in the contacts list.
    *
    * **Example Usage:**
    * ```tsx
@@ -241,8 +234,36 @@ export const useContactStore = create<ContactState>((set) => ({
     updateRequestCounters.set(id, currentCounter)
     const currentRequestId = currentCounter
 
-    // Set loading state and clear stale data BEFORE any awaited work
-    set({ isUpdating: true, updateError: null, lastUpdatedContact: null })
+    // Get current state to save for potential rollback
+    const currentState = get()
+    const originalContact = currentState.contacts?.results.find((contact) => contact.id === id)
+
+    // OPTIMISTIC UPDATE: Update the contact list immediately before the API call
+    // This ensures the UI reflects the change instantly, even when multiple contacts
+    // are updated concurrently, preventing race conditions where later updates
+    // could overwrite earlier ones
+    set((state) => {
+      // Avoid no-op update when contacts is null to prevent spurious re-renders
+      if (!state.contacts || !originalContact) {
+        return { isUpdating: true, updateError: null, lastUpdatedContact: null }
+      }
+
+      // Create optimistic updated contact by merging the update data
+      // Type assertion is safe because we're merging partial update into full contact
+      const optimisticContact: ContactItem = { ...originalContact, ...data }
+
+      return {
+        isUpdating: true,
+        updateError: null,
+        lastUpdatedContact: null,
+        contacts: {
+          ...state.contacts,
+          results: state.contacts.results.map((contact) =>
+            contact.id === id ? optimisticContact : contact
+          ),
+        },
+      }
+    })
 
     try {
       // Import contactService dynamically to avoid circular dependency
@@ -253,23 +274,30 @@ export const useContactStore = create<ContactState>((set) => ({
       // Only update state if this is still the most recent request for this contact
       // If a newer request has been made for this contact, discard this response
       if (currentRequestId === updateRequestCounters.get(id)) {
-        set({ lastUpdatedContact: response, updateError: null })
-
         // Invalidate any in-flight getContacts() requests to prevent them from
         // overwriting the just-updated contact with stale data
         // This ensures concurrent/in-flight fetch requests are discarded
         // Also reset isLoading to prevent it from being stuck true if invalidated
         // fetch requests skip their finally block
         fetchRequestCounter += 1
-        set({ isLoading: false })
 
-        // Update the contact in the contacts list if it exists
+        // Update with the actual API response
         set((state) => {
           // Avoid no-op update when contacts is null to prevent spurious re-renders
           if (!state.contacts) {
-            return state
+            return {
+              lastUpdatedContact: response,
+              updateError: null,
+              isUpdating: false,
+              isLoading: false,
+            }
           }
+
           return {
+            lastUpdatedContact: response,
+            updateError: null,
+            isUpdating: false,
+            isLoading: false,
             contacts: {
               ...state.contacts,
               results: state.contacts.results.map((contact) =>
@@ -282,26 +310,42 @@ export const useContactStore = create<ContactState>((set) => ({
 
       return response
     } catch (err) {
-      // Use parseApiError to handle DRF/Axios errors with proper priority order
-      const errorMessage = parseApiError(err, {
-        fieldNames: ['name', 'email', 'subject', 'message', 'status'],
-        defaultMessage: 'Failed to update contact. Please try again.',
-      })
-
-      // Only update error state if this is still the most recent request for this contact
+      // ROLLBACK: Revert the optimistic update on error
+      // Only rollback if this is still the most recent request for this contact
       if (currentRequestId === updateRequestCounters.get(id)) {
-        set({ updateError: errorMessage })
+        // Use parseApiError to handle DRF/Axios errors with proper priority order
+        const errorMessage = parseApiError(err, {
+          fieldNames: ['name', 'email', 'subject', 'message', 'status'],
+          defaultMessage: 'Failed to update contact. Please try again.',
+        })
+
+        set((state) => {
+          // Avoid no-op update when contacts is null to prevent spurious re-renders
+          if (!state.contacts || !originalContact) {
+            return {
+              updateError: errorMessage,
+              isUpdating: false,
+            }
+          }
+
+          // Revert the contact back to its original state
+          return {
+            updateError: errorMessage,
+            isUpdating: false,
+            contacts: {
+              ...state.contacts,
+              results: state.contacts.results.map((contact) =>
+                contact.id === id ? originalContact : contact
+              ),
+            },
+          }
+        })
       }
 
       // Log only sanitized error information to avoid exposing PII
       console.error('Error updating contact:', sanitizeErrorForLogging(err, 'Failed to update contact'))
 
       throw err
-    } finally {
-      // Only clear loading state if this is still the most recent request for this contact
-      if (currentRequestId === updateRequestCounters.get(id)) {
-        set({ isUpdating: false })
-      }
     }
   },
 
