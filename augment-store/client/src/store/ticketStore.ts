@@ -275,7 +275,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
   updateTicket: async (id: string, data: UpdateTicketRequest): Promise<Ticket> => {
     // Use separate isUpdating/updateError state to avoid race conditions with fetchTickets
-    // This prevents updateTicket from clearing error or setting isLoading to false
+    // This prevents updateTicket from clearing updateError or setting isUpdating to false
     // while a fetchTickets request is still in-flight
 
     // Increment in-flight count to track concurrent update requests
