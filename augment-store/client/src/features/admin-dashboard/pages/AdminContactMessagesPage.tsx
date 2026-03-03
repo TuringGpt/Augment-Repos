@@ -103,7 +103,7 @@ const AdminContactMessagesPage = () => {
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // Contact store
-  const { contacts: contactsData, isLoading, fetchError, getContacts } = useContactStore()
+  const { contacts: contactsData, isLoading, fetchError, getContacts, updateContact } = useContactStore()
   const contacts = contactsData?.results || []
 
   // Drawer state
@@ -116,7 +116,6 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
-  const markAsReadTimeoutsRef = useRef<Map<string, number>>(new Map())
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -132,9 +131,6 @@ const AdminContactMessagesPage = () => {
 
   // Cleanup timeouts on unmount
   useEffect(() => {
-    // Capture the current ref values for cleanup
-    const markAsReadTimeouts = markAsReadTimeoutsRef.current
-
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
@@ -142,11 +138,6 @@ const AdminContactMessagesPage = () => {
       if (drawerCloseTimeoutRef.current !== null) {
         clearTimeout(drawerCloseTimeoutRef.current)
       }
-      // Clear all mark-as-read timeouts
-      markAsReadTimeouts.forEach((timeoutId) => {
-        clearTimeout(timeoutId)
-      })
-      markAsReadTimeouts.clear()
     }
   }, [])
 
@@ -202,28 +193,21 @@ const AdminContactMessagesPage = () => {
       return newMarkingAsRead
     })
 
-    // Clear any existing timeout for this specific contact
-    const existingTimeout = markAsReadTimeoutsRef.current.get(contactId)
-    if (existingTimeout !== undefined) {
-      clearTimeout(existingTimeout)
-    }
-
-    // Simulate API call with timeout (dummy handler)
-    const timeoutId = setTimeout(() => {
-      // Refresh contacts to get updated data
-      getContacts()
+    try {
+      // Call the updateContact store action to mark as read
+      await updateContact(contactId, { status: 'read' })
+    } catch (error) {
+      // Error is already handled by the store, but we catch to prevent unhandled rejection
+      // The store will set updateError which could be displayed if needed
+      console.error('Failed to mark contact as read - check updateError state for details')
+    } finally {
       // Remove from marking set using functional update to avoid stale closure
       setMarkingAsRead((prev) => {
         const finalMarkingAsRead = new Set(prev)
         finalMarkingAsRead.delete(contactId)
         return finalMarkingAsRead
       })
-      // Clean up the timeout from the map
-      markAsReadTimeoutsRef.current.delete(contactId)
-    }, 500)
-
-    // Store the timeout ID for this contact
-    markAsReadTimeoutsRef.current.set(contactId, timeoutId)
+    }
   }
 
   // Wait for persisted state to rehydrate before checking auth state
