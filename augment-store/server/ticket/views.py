@@ -31,8 +31,13 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
     cache_ttl = 60 * 10
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-created_at')
-    
+        queryset = super().get_queryset().order_by('-created_at')
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset
 
 def _invalidate_stats_cache(user):
     django_cache.delete(f"ticket_stats:{user.id}")
