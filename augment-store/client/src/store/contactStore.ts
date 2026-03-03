@@ -292,8 +292,13 @@ export const useContactStore = create<ContactState>((set, get) => ({
       }
 
       // Create optimistic updated contact by merging the update data
+      // Filter out undefined values to prevent clobbering existing fields when callers
+      // pass keys set to undefined (e.g., from form serialization)
+      const definedData = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) => value !== undefined)
+      ) as Partial<ContactItem>
       // Type assertion is safe because we're merging partial update into full contact
-      const optimisticContact: ContactItem = { ...originalContact, ...data }
+      const optimisticContact: ContactItem = { ...originalContact, ...definedData }
 
       return {
         updatingContactIds: newUpdatingContactIds,
