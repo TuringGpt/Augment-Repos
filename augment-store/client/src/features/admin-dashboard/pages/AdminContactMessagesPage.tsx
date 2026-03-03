@@ -116,6 +116,8 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
+  // Track mount state to prevent state updates after unmount
+  const isMountedRef = useRef<boolean>(true)
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -128,6 +130,14 @@ const AdminContactMessagesPage = () => {
       getContacts()
     }
   }, [hasHydrated, authLoading, isAuthenticated, user?.role, getContacts])
+
+  // Track mount/unmount state to prevent state updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -201,12 +211,15 @@ const AdminContactMessagesPage = () => {
       // The store will set updateError which could be displayed if needed
       console.error('Failed to mark contact as read - check updateError state for details')
     } finally {
-      // Remove from marking set using functional update to avoid stale closure
-      setMarkingAsRead((prev) => {
-        const finalMarkingAsRead = new Set(prev)
-        finalMarkingAsRead.delete(contactId)
-        return finalMarkingAsRead
-      })
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Remove from marking set using functional update to avoid stale closure
+        setMarkingAsRead((prev) => {
+          const finalMarkingAsRead = new Set(prev)
+          finalMarkingAsRead.delete(contactId)
+          return finalMarkingAsRead
+        })
+      }
     }
   }
 
