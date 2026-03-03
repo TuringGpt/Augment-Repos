@@ -12,10 +12,12 @@ let submitRequestCounter = 0
 // only the most recent request should update the state
 let fetchRequestCounter = 0
 
-// Request counter to prevent race conditions when updating contacts
-// When multiple update calls are made in quick succession,
-// only the most recent request should update the state
-let updateRequestCounter = 0
+// Request counter map to prevent race conditions when updating contacts
+// Tracks request counters per contact ID to allow concurrent updates to different contacts
+// while preventing race conditions for updates to the same contact
+// When multiple update calls are made to the SAME contact in quick succession,
+// only the most recent request for that contact should update the state
+const updateRequestCounters = new Map<string, number>()
 
 interface ContactState {
   // Loading states
@@ -191,13 +193,18 @@ export const useContactStore = create<ContactState>((set) => ({
    * Updates a contact by ID.
    *
    * **IMPORTANT - Race Condition Handling:**
-   * This method uses a request counter to handle concurrent calls. If multiple
-   * updateContact() calls are made rapidly, only the most recent request will
-   * update the store state (isUpdating, updateError, lastUpdatedContact, contacts).
+   * This method uses a per-contact-ID request counter to handle concurrent calls.
+   * - Updates to DIFFERENT contacts can proceed concurrently without interfering
+   * - Updates to the SAME contact are serialized: only the most recent request
+   *   for that specific contact will update the store state
+   *
+   * If multiple updateContact() calls are made rapidly for the SAME contact,
+   * only the most recent request will update the store state (isUpdating,
+   * updateError, lastUpdatedContact, contacts).
    *
    * However, ALL requests will complete and return their responses. This means:
-   * - If a request becomes stale (a newer request was made), the promise still
-   *   resolves with the API response, but the store state is NOT updated.
+   * - If a request becomes stale (a newer request was made for the same contact),
+   *   the promise still resolves with the API response, but the store state is NOT updated.
    * - Callers should NOT rely on the returned promise value for UI state.
    * - Instead, callers should use the store's reactive state:
    *   - `lastUpdatedContact` for the most recent successful update
@@ -227,10 +234,12 @@ export const useContactStore = create<ContactState>((set) => ({
    * @returns Promise that resolves with the API response (may be stale if superseded)
    */
   updateContact: async (id: string, data: UpdateContactRequest) => {
-    // Increment counter to track this request
-    // This prevents race conditions when multiple calls are made rapidly
-    updateRequestCounter += 1
-    const currentRequestId = updateRequestCounter
+    // Increment counter for this specific contact ID to track this request
+    // This prevents race conditions when multiple calls are made rapidly to the SAME contact
+    // while allowing concurrent updates to DIFFERENT contacts
+    const currentCounter = (updateRequestCounters.get(id) ?? 0) + 1
+    updateRequestCounters.set(id, currentCounter)
+    const currentRequestId = currentCounter
 
     // Set loading state and clear stale data BEFORE any awaited work
     set({ isUpdating: true, updateError: null, lastUpdatedContact: null })
@@ -241,9 +250,9 @@ export const useContactStore = create<ContactState>((set) => ({
 
       const response = await contactService.updateContact(id, data)
 
-      // Only update state if this is still the most recent request
-      // If a newer request has been made, discard this response
-      if (currentRequestId === updateRequestCounter) {
+      // Only update state if this is still the most recent request for this contact
+      // If a newer request has been made for this contact, discard this response
+      if (currentRequestId === updateRequestCounters.get(id)) {
         set({ lastUpdatedContact: response, updateError: null })
 
         // Invalidate any in-flight getContacts() requests to prevent them from
@@ -279,8 +288,8 @@ export const useContactStore = create<ContactState>((set) => ({
         defaultMessage: 'Failed to update contact. Please try again.',
       })
 
-      // Only update error state if this is still the most recent request
-      if (currentRequestId === updateRequestCounter) {
+      // Only update error state if this is still the most recent request for this contact
+      if (currentRequestId === updateRequestCounters.get(id)) {
         set({ updateError: errorMessage })
       }
 
@@ -289,26 +298,26 @@ export const useContactStore = create<ContactState>((set) => ({
 
       throw err
     } finally {
-      // Only clear loading state if this is still the most recent request
-      if (currentRequestId === updateRequestCounter) {
+      // Only clear loading state if this is still the most recent request for this contact
+      if (currentRequestId === updateRequestCounters.get(id)) {
         set({ isUpdating: false })
       }
     }
   },
 
   clearUpdateError: () => {
-    // Invalidate any in-flight requests by incrementing the counter
+    // Invalidate any in-flight requests by clearing all contact counters
     // This ensures late-resolving requests won't repopulate the error state
-    updateRequestCounter += 1
+    updateRequestCounters.clear()
     // Always reset isUpdating to prevent it from being stuck in true state
     // if this is called while a request is in-flight
     set({ updateError: null, isUpdating: false })
   },
 
   clearLastUpdated: () => {
-    // Invalidate any in-flight requests by incrementing the counter
+    // Invalidate any in-flight requests by clearing all contact counters
     // This ensures late-resolving requests won't repopulate the success state
-    updateRequestCounter += 1
+    updateRequestCounters.clear()
     // Always reset isUpdating to prevent it from being stuck in true state
     // if this is called while a request is in-flight
     set({ lastUpdatedContact: null, isUpdating: false })
