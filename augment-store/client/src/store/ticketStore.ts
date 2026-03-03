@@ -18,6 +18,7 @@ interface TicketState {
   selectedTicket: Ticket | null
   isFetchingTicket: boolean
   fetchTicketError: string | null
+  fetchingTicketId: string | null // Track which ticket ID is currently being fetched
 
   // Separate state for create ticket action to avoid race conditions with fetchTickets
   isCreating: boolean
@@ -77,6 +78,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   selectedTicket: null,
   isFetchingTicket: false,
   fetchTicketError: null,
+  fetchingTicketId: null,
   isCreating: false,
   createError: null,
   isUpdating: false,
@@ -293,20 +295,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     try {
       const ticket = await ticketService.updateTicket(id, data)
 
-      // Increment fetchTicketRequestCounter to invalidate any in-flight getTicketById requests for this ticket
-      // This prevents stale ticket data from overwriting the freshly updated ticket
-      // We do this based on the updated ticket's id, not the current selectedTicket state,
-      // because getTicketById sets selectedTicket to null before awaiting, which could cause
-      // a race condition where the stale fetch overwrites the updated data
-      fetchTicketRequestCounter += 1
+      // Only invalidate in-flight getTicketById requests if we're updating the same ticket
+      // that's currently being fetched. This prevents updateTicket(id) from clobbering
+      // unrelated ticket-detail fetches (e.g., user navigates to a different ticket while
+      // an update is finishing).
+      const state = get()
+      const isUpdatingSameTicket = state.fetchingTicketId === id
 
-      // When we invalidate in-flight getTicketById requests by bumping the counter,
-      // those requests won't clear isFetchingTicket in their finally block (since their
-      // currentRequestId won't match the new fetchTicketRequestCounter).
-      // To prevent the UI from being stuck in a loading state, we manually clear it here.
-      // We also set selectedTicket to the updated ticket to ensure the UI shows the fresh data,
-      // even if an in-flight getTicketById had set selectedTicket to null before awaiting.
-      set({ isFetchingTicket: false, selectedTicket: ticket })
+      if (isUpdatingSameTicket) {
+        // Increment fetchTicketRequestCounter to invalidate the in-flight getTicketById request
+        // This prevents stale ticket data from overwriting the freshly updated ticket
+        fetchTicketRequestCounter += 1
+
+        // When we invalidate in-flight getTicketById requests by bumping the counter,
+        // those requests won't clear isFetchingTicket in their finally block (since their
+        // currentRequestId won't match the new fetchTicketRequestCounter).
+        // To prevent the UI from being stuck in a loading state, we manually clear it here.
+        // We also set selectedTicket to the updated ticket to ensure the UI shows the fresh data,
+        // even if an in-flight getTicketById had set selectedTicket to null before awaiting.
+        set({ isFetchingTicket: false, selectedTicket: ticket, fetchingTicketId: null })
+      }
 
       // Only set isUpdating to false when all requests have completed
       // Check if count is 1 (this is the last request) since decrement happens in finally
@@ -349,7 +357,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     const currentRequestId = fetchTicketRequestCounter
 
     // Set loading state and clear stale data BEFORE any awaited work
-    set({ isFetchingTicket: true, fetchTicketError: null, selectedTicket: null })
+    // Store the ticket ID being fetched so updateTicket can check if it should invalidate this request
+    set({ isFetchingTicket: true, fetchTicketError: null, selectedTicket: null, fetchingTicketId: id })
 
     try {
       const ticket = await ticketService.getTicketById(id)
@@ -374,7 +383,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     } finally {
       // Only clear loading state if this is still the most recent request
       if (currentRequestId === fetchTicketRequestCounter) {
-        set({ isFetchingTicket: false })
+        set({ isFetchingTicket: false, fetchingTicketId: null })
       }
     }
   },
@@ -383,7 +392,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // Increment counter to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
     fetchTicketRequestCounter += 1
-    set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false })
+    set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
   },
 }))
 
