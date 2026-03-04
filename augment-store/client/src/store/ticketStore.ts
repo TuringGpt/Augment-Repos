@@ -28,12 +28,17 @@ interface TicketState {
   isUpdating: boolean
   updateError: string | null
 
+  // Separate state for delete ticket action to avoid race conditions with fetchTickets
+  isDeleting: boolean
+  deleteError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
   createTicket: (data: CreateTicketRequest) => Promise<Ticket>
   updateTicket: (id: string, data: UpdateTicketRequest) => Promise<Ticket>
+  deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
 }
@@ -83,6 +88,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   createError: null,
   isUpdating: false,
   updateError: null,
+  isDeleting: false,
+  deleteError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -347,6 +354,34 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Decrement in-flight count in finally block to ensure it always happens
       // even if parseApiError or any other code in try/catch throws
       updateInFlightCount -= 1
+    }
+  },
+
+  deleteTicket: async (id: string) => {
+    // Increment counter to invalidate any in-flight fetchTickets() requests
+    // This prevents a late fetch response from overwriting state with a stale list
+    // that re-introduces the deleted ticket
+    fetchRequestCounter += 1
+
+    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
+    // if a stale fetch already set isLoading: true before being invalidated
+    set({ isDeleting: true, deleteError: null, isLoading: false })
+    try {
+      // Call the API to delete the ticket
+      await ticketService.deleteTicket(id)
+
+      // Remove the ticket from the local state
+      set((state) => ({
+        tickets: state.tickets.filter((ticket) => ticket.id !== id),
+        isDeleting: false,
+        // If the deleted ticket was selected, clear the selection
+        selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+      }))
+    } catch (error) {
+      console.error('Failed to delete ticket:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
+      set({ deleteError: errorMessage, isDeleting: false })
+      throw error
     }
   },
 
