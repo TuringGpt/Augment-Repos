@@ -363,9 +363,33 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // that re-introduces the deleted ticket
     fetchRequestCounter += 1
 
+    // Check if we're deleting the same ticket that's currently being fetched
+    // If so, invalidate the in-flight getTicketById request to prevent it from
+    // repopulating selectedTicket after deletion
+    const state = get()
+    const isDeletingSameTicket = state.fetchingTicketId === id
+
+    if (isDeletingSameTicket) {
+      // Increment fetchTicketRequestCounter to invalidate the in-flight getTicketById request
+      // This prevents stale ticket data from repopulating selectedTicket after deletion
+      fetchTicketRequestCounter += 1
+    }
+
     // Explicitly clear isLoading to prevent UI from getting stuck in loading state
     // if a stale fetch already set isLoading: true before being invalidated
-    set({ isDeleting: true, deleteError: null, isLoading: false })
+    // Also clear ticket-detail fetch state if we're deleting the currently fetched ticket
+    set({
+      isDeleting: true,
+      deleteError: null,
+      isLoading: false,
+      // Clear ticket-detail fetch state if deleting the currently fetched/selected ticket
+      ...(isDeletingSameTicket && {
+        isFetchingTicket: false,
+        selectedTicket: null,
+        fetchingTicketId: null,
+      }),
+    })
+
     try {
       // Call the API to delete the ticket
       await ticketService.deleteTicket(id)
