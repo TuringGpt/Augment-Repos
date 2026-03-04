@@ -62,6 +62,11 @@ let createInFlightCount = 0
 // This prevents isUpdating from becoming false while earlier requests are still in-flight
 let updateInFlightCount = 0
 
+// In-flight counter to track concurrent delete ticket requests
+// Ensures isDeleting reflects "any delete in progress" rather than just the latest request
+// This prevents isDeleting from becoming false while earlier requests are still in-flight
+let deleteInFlightCount = 0
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -375,9 +380,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       fetchTicketRequestCounter += 1
     }
 
-    // Set delete-specific loading state
+    // Increment in-flight counter and set delete-specific loading state
     // Note: We do NOT touch isLoading here to avoid race conditions with fetchTickets()
     // isLoading is exclusively managed by fetchTickets(), while isDeleting is for delete operations
+    deleteInFlightCount += 1
     set({
       isDeleting: true,
       deleteError: null,
@@ -406,6 +412,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         fetchTicketRequestCounter += 1
       }
 
+      // Decrement in-flight counter
+      deleteInFlightCount -= 1
+
       // Remove the ticket from the local state and update pagination
       set((state) => {
         // Check if the ticket exists in the current list
@@ -426,7 +435,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           total: newTotal,
           page: newPage,
           totalPages: newTotalPages,
-          isDeleting: false,
+          // Only set isDeleting to false if no other delete operations are in-flight
+          isDeleting: deleteInFlightCount > 0,
           // If the deleted ticket was selected, clear the selection
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
           // Clear ticket-detail fetch state if we invalidated an in-flight request
@@ -440,7 +450,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     } catch (error) {
       console.error('Failed to delete ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
-      set({ deleteError: errorMessage, isDeleting: false })
+
+      // Decrement in-flight counter on error
+      deleteInFlightCount -= 1
+
+      set({
+        deleteError: errorMessage,
+        // Only set isDeleting to false if no other delete operations are in-flight
+        isDeleting: deleteInFlightCount > 0
+      })
       throw error
     }
   },
