@@ -417,6 +417,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       deleteInFlightCount -= 1
 
       // Remove the ticket from the local state and update pagination
+      // Capture the old page before updating state to detect page changes
+      const oldPage = get().page
+
       set((state) => {
         // Always decrement total when a ticket is successfully deleted
         // Even if the ticket is not in the current page (e.g., deleted from detail view),
@@ -462,6 +465,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           }),
         }
       })
+
+      // If the page changed (e.g., deleted last item on last page), refetch the new page
+      // This ensures the UI shows the correct tickets for the new page instead of stale data
+      const newPage = get().page
+      if (newPage !== oldPage) {
+        await get().fetchTickets({ page: newPage })
+      }
     } catch (error) {
       console.error('Failed to delete ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
