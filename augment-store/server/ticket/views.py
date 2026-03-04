@@ -39,6 +39,10 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
         if search:
             queryset = queryset.filter(title__icontains=search)
 
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
         return queryset
 
 
