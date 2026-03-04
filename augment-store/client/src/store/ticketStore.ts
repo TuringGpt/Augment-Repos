@@ -486,7 +486,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to delete ticket:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
+      // Use parseApiError to extract user-friendly error message from API response
+      // This ensures consistency with createTicket/updateTicket and properly handles DRF errors
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to delete ticket',
+      })
 
       // Decrement in-flight counter on error
       deleteInFlightCount -= 1
