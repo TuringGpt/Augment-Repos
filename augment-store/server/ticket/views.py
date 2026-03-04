@@ -4,6 +4,8 @@ from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpd
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
+from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
@@ -37,6 +39,32 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
+        return queryset
+
+
+class UserTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            reporter=self.request.user
+        ).order_by('-created_at')
+
+
+class AdminTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+    permission_classes = [hasAdminRole]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('-created_at')
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            import uuid as uuid_mod
+            try:
+                uuid_mod.UUID(user_id)
+            except ValueError:
+                raise ValidationError({'user_id': 'Invalid UUID format'})
+            queryset = queryset.filter(reporter_id=user_id)
         return queryset
 
 def _invalidate_stats_cache(user):
