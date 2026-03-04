@@ -392,6 +392,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         isFetchingTicket: false,
         selectedTicket: null,
         fetchingTicketId: null,
+        fetchTicketError: null,
       }),
     })
 
