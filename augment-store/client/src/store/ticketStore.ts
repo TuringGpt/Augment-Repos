@@ -424,7 +424,22 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         const newTotal = Math.max(0, state.total - 1)
 
         // Recalculate total pages based on new total
-        const newTotalPages = newTotal === 0 ? 1 : Math.ceil(newTotal / BACKEND_PAGE_SIZE)
+        // Derive page size from current state to match fetchTickets() logic and handle
+        // backend page size changes or differences across environments
+        let newTotalPages: number
+        if (newTotal === 0) {
+          // Edge case: empty results should show 1 page (not 0) for pagination UI compatibility
+          newTotalPages = 1
+        } else if (state.total > 0 && state.totalPages > 0) {
+          // Derive page size from the last successful fetch response
+          // This ensures consistency with fetchTickets() which derives page size from API responses
+          const derivedPageSize = Math.ceil(state.total / state.totalPages)
+          newTotalPages = Math.ceil(newTotal / derivedPageSize)
+        } else {
+          // Fallback: use BACKEND_PAGE_SIZE if we don't have valid state
+          // This should rarely happen, but provides a safe default
+          newTotalPages = Math.ceil(newTotal / BACKEND_PAGE_SIZE)
+        }
 
         // Clamp current page to valid range [1, newTotalPages] to prevent invalid pagination state
         // This prevents issues when deleting the last item on the last page
