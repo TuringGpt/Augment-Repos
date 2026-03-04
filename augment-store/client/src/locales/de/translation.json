@@ -1024,6 +1024,25 @@
         "actions": "Aktionen"
       }
     },
+    "ticketDetailPage": {
+      "backToTickets": "Zurück zu Tickets",
+      "description": "Beschreibung",
+      "status": "Status",
+      "priority": "Priorität",
+      "lastUpdated": "Zuletzt Aktualisiert",
+      "comments": "Kommentare ({{count}})",
+      "noComments": "Noch keine Kommentare. Seien Sie der Erste, der kommentiert!",
+      "user": "Benutzer",
+      "addComment": "Kommentar Hinzufügen",
+      "commentPlaceholder": "Schreiben Sie hier Ihren Kommentar...",
+      "submitComment": "Kommentar Absenden",
+      "submitting": "Wird gesendet...",
+      "created": "Erstellt {{date}}",
+      "notAvailable": "N/V",
+      "ticketNotFound": "Ticket nicht gefunden",
+      "loadError": "Fehler beim Laden der Ticket-Details. Bitte versuchen Sie es erneut.",
+      "commentError": "Fehler beim Absenden des Kommentars. Bitte versuchen Sie es erneut."
+    },
     "settings": "Einstellungen",
     "settingsPage": {
       "title": "Einstellungen",

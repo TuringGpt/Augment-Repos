@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -25,8 +25,10 @@ import { ticketService } from '@services/api'
 import type { Ticket, Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
+import { useTranslation } from '@hooks/useTranslation'
 
 const TicketDetailPage = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [ticket, setTicket] = useState<Ticket | null>(null)
@@ -37,14 +39,7 @@ const TicketDetailPage = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (id) {
-      fetchTicketDetails()
-      fetchComments()
-    }
-  }, [id])
-
-  const fetchTicketDetails = async () => {
+  const fetchTicketDetails = useCallback(async () => {
     if (!id) return
 
     try {
@@ -54,13 +49,13 @@ const TicketDetailPage = () => {
       setTicket(data)
     } catch (err) {
       console.error('Failed to load ticket:', err)
-      setError('Failed to load ticket details. Please try again.')
+      setError(t('admin.ticketDetailPage.loadError'))
     } finally {
       setLoading(false)
     }
-  }
+  }, [id, t])
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     if (!id) return
 
     try {
@@ -69,7 +64,14 @@ const TicketDetailPage = () => {
     } catch (err) {
       console.error('Failed to load comments:', err)
     }
-  }
+  }, [id])
+
+  useEffect(() => {
+    if (id) {
+      fetchTicketDetails()
+      fetchComments()
+    }
+  }, [id, fetchTicketDetails, fetchComments])
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return
@@ -84,7 +86,7 @@ const TicketDetailPage = () => {
       await fetchComments()
     } catch (err) {
       console.error('Failed to submit comment:', err)
-      setCommentError('Failed to submit comment. Please try again.')
+      setCommentError(t('admin.ticketDetailPage.commentError'))
     } finally {
       setIsSubmittingComment(false)
     }
@@ -125,11 +127,33 @@ const TicketDetailPage = () => {
   }
 
   const formatStatus = (status: TicketStatus) => {
-    return status.replace('_', ' ').toUpperCase()
+    switch (status) {
+      case 'open':
+        return t('admin.ticketsPage.statusOpen')
+      case 'in_progress':
+        return t('admin.ticketsPage.statusInProgress')
+      case 'resolved':
+        return t('admin.ticketsPage.statusResolved')
+      case 'closed':
+        return t('admin.ticketsPage.statusClosed')
+      default:
+        return status
+    }
   }
 
   const formatPriority = (priority: TicketPriority) => {
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
+    switch (priority) {
+      case 'low':
+        return t('admin.ticketsPage.priorityLow')
+      case 'medium':
+        return t('admin.ticketsPage.priorityMedium')
+      case 'high':
+        return t('admin.ticketsPage.priorityHigh')
+      case 'urgent':
+        return t('admin.ticketsPage.priorityUrgent')
+      default:
+        return priority
+    }
   }
 
   if (loading) {
@@ -145,9 +169,9 @@ const TicketDetailPage = () => {
   if (error || !ticket) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">{error || 'Ticket not found'}</Alert>
+        <Alert severity="error">{error || t('admin.ticketDetailPage.ticketNotFound')}</Alert>
         <Button onClick={handleBack} sx={{ mt: 2 }}>
-          Back to Tickets
+          {t('admin.ticketDetailPage.backToTickets')}
         </Button>
       </Container>
     )
@@ -162,7 +186,7 @@ const TicketDetailPage = () => {
           onClick={handleBack}
           sx={{ mb: 2, textTransform: 'none' }}
         >
-          Back to Tickets
+          {t('admin.ticketDetailPage.backToTickets')}
         </Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <TicketIcon sx={{ fontSize: 40, color: 'primary.main' }} />
@@ -175,7 +199,7 @@ const TicketDetailPage = () => {
           <Chip label={formatPriority(ticket.priority)} color={getPriorityColor(ticket.priority)} />
           {ticket.created_at && (
             <Typography variant="body2" color="text.secondary">
-              Created {formatDate(ticket.created_at)}
+              {t('admin.ticketDetailPage.created', { date: formatDate(ticket.created_at) })}
             </Typography>
           )}
         </Box>
@@ -184,7 +208,7 @@ const TicketDetailPage = () => {
       {/* Ticket Details */}
       <Paper sx={{ p: 4, mb: 3 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
-          Description
+          {t('admin.ticketDetailPage.description')}
         </Typography>
         <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', mb: 3 }}>
           {ticket.description}
@@ -195,13 +219,13 @@ const TicketDetailPage = () => {
         <Box sx={{ display: 'flex', gap: 4 }}>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Status
+              {t('admin.ticketDetailPage.status')}
             </Typography>
             <Chip label={formatStatus(ticket.status)} color={getStatusColor(ticket.status)} />
           </Box>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Priority
+              {t('admin.ticketDetailPage.priority')}
             </Typography>
             <Chip
               label={formatPriority(ticket.priority)}
@@ -210,10 +234,10 @@ const TicketDetailPage = () => {
           </Box>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Last Updated
+              {t('admin.ticketDetailPage.lastUpdated')}
             </Typography>
             <Typography variant="body1">
-              {ticket.updated_at ? formatDate(ticket.updated_at) : 'N/A'}
+              {ticket.updated_at ? formatDate(ticket.updated_at) : t('admin.ticketDetailPage.notAvailable')}
             </Typography>
           </Box>
         </Box>
@@ -222,7 +246,7 @@ const TicketDetailPage = () => {
       {/* Comments Section */}
       <Paper sx={{ p: 4 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
-          Comments ({comments.length})
+          {t('admin.ticketDetailPage.comments', { count: comments.length })}
         </Typography>
 
         <Divider sx={{ my: 2 }} />
@@ -231,7 +255,7 @@ const TicketDetailPage = () => {
         <Box sx={{ mb: 3 }}>
           {comments.length === 0 ? (
             <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-              No comments yet. Be the first to comment!
+              {t('admin.ticketDetailPage.noComments')}
             </Typography>
           ) : (
             comments.map((comment) => (
@@ -242,7 +266,7 @@ const TicketDetailPage = () => {
                       <PersonIcon sx={{ fontSize: 20 }} />
                     </Avatar>
                     <Typography variant="body2" fontWeight="medium">
-                      User
+                      {t('admin.ticketDetailPage.user')}
                     </Typography>
                     {comment.created_at && (
                       <Typography variant="caption" color="text.secondary">
@@ -262,7 +286,7 @@ const TicketDetailPage = () => {
         {/* Add Comment */}
         <Box>
           <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-            Add a Comment
+            {t('admin.ticketDetailPage.addComment')}
           </Typography>
 
           {commentError && (
@@ -275,7 +299,7 @@ const TicketDetailPage = () => {
             fullWidth
             multiline
             rows={4}
-            placeholder="Write your comment here..."
+            placeholder={t('admin.ticketDetailPage.commentPlaceholder')}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             disabled={isSubmittingComment}
@@ -290,7 +314,7 @@ const TicketDetailPage = () => {
               disabled={isSubmittingComment || !commentText.trim()}
               sx={{ textTransform: 'none', px: 4 }}
             >
-              {isSubmittingComment ? 'Submitting...' : 'Submit Comment'}
+              {isSubmittingComment ? t('admin.ticketDetailPage.submitting') : t('admin.ticketDetailPage.submitComment')}
             </Button>
           </Box>
         </Box>

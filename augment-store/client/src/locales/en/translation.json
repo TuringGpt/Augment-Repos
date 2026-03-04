@@ -1024,6 +1024,25 @@
         "actions": "Actions"
       }
     },
+    "ticketDetailPage": {
+      "backToTickets": "Back to Tickets",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "lastUpdated": "Last Updated",
+      "comments": "Comments ({{count}})",
+      "noComments": "No comments yet. Be the first to comment!",
+      "user": "User",
+      "addComment": "Add a Comment",
+      "commentPlaceholder": "Write your comment here...",
+      "submitComment": "Submit Comment",
+      "submitting": "Submitting...",
+      "created": "Created {{date}}",
+      "notAvailable": "N/A",
+      "ticketNotFound": "Ticket not found",
+      "loadError": "Failed to load ticket details. Please try again.",
+      "commentError": "Failed to submit comment. Please try again."
+    },
     "settings": "Settings",
     "settingsPage": {
       "title": "Settings",
