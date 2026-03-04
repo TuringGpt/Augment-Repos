@@ -394,13 +394,31 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Call the API to delete the ticket
       await ticketService.deleteTicket(id)
 
-      // Remove the ticket from the local state
-      set((state) => ({
-        tickets: state.tickets.filter((ticket) => ticket.id !== id),
-        isDeleting: false,
-        // If the deleted ticket was selected, clear the selection
-        selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
-      }))
+      // Remove the ticket from the local state and update pagination
+      set((state) => {
+        // Check if the ticket exists in the current list
+        const ticketExists = state.tickets.some((ticket) => ticket.id === id)
+
+        // Calculate new total
+        const newTotal = ticketExists ? Math.max(0, state.total - 1) : state.total
+
+        // Recalculate total pages based on new total
+        const newTotalPages = newTotal === 0 ? 1 : Math.ceil(newTotal / BACKEND_PAGE_SIZE)
+
+        // Clamp current page to valid range [1, newTotalPages] to prevent invalid pagination state
+        // This prevents issues when deleting the last item on the last page
+        const newPage = newTotalPages > 0 ? Math.max(1, Math.min(state.page, newTotalPages)) : 1
+
+        return {
+          tickets: state.tickets.filter((ticket) => ticket.id !== id),
+          total: newTotal,
+          page: newPage,
+          totalPages: newTotalPages,
+          isDeleting: false,
+          // If the deleted ticket was selected, clear the selection
+          selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+        }
+      })
     } catch (error) {
       console.error('Failed to delete ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
