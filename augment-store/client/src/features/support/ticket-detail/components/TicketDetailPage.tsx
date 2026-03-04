@@ -21,6 +21,7 @@ import {
   ConfirmationNumber as TicketIcon,
   Person as PersonIcon,
 } from '@mui/icons-material'
+import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
 import type { Ticket, Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
@@ -31,8 +32,8 @@ import { useTranslation } from '@hooks/useTranslation'
  * Translate error codes to user-friendly messages
  * Maps error codes to translation keys
  */
-const translateErrorCode = (errorCode: string, translateFn: (key: string) => string): string => {
-  const errorKeyMap: Record<string, string> = {
+const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
+  const errorKeyMap: Record<string, 'admin.ticketDetailPage.loadError' | 'admin.ticketDetailPage.commentError'> = {
     'TICKET_LOAD_ERROR': 'admin.ticketDetailPage.loadError',
     'COMMENT_SUBMIT_ERROR': 'admin.ticketDetailPage.commentError',
   }
@@ -40,8 +41,7 @@ const translateErrorCode = (errorCode: string, translateFn: (key: string) => str
   // If error code matches a known key, translate it
   const translationKey = errorKeyMap[errorCode]
   if (translationKey) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return translateFn(translationKey as any)
+    return translateFn(translationKey)
   }
 
   // Otherwise, return the error code as-is (may be a backend message or network error)
