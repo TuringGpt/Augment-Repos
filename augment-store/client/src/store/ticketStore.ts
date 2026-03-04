@@ -464,16 +464,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         }
       })
 
-      // If the page changed (e.g., deleted last item on last page), refetch the new page
-      // This ensures the UI shows the correct tickets for the new page instead of stale data
-      const newPage = get().page
-      if (newPage !== oldPage) {
-        await get().fetchTickets({ page: newPage })
-      }
-
-      // Decrement in-flight counter after all operations that could throw
+      // Decrement in-flight counter after successful deletion
       // This ensures the counter is only decremented once on success
       deleteInFlightCount -= 1
+
+      // If the page changed (e.g., deleted last item on last page), refetch the new page
+      // This ensures the UI shows the correct tickets for the new page instead of stale data
+      // Note: This refetch happens AFTER decrementing the counter and OUTSIDE the try-catch
+      // because the ticket was already successfully deleted. If this refetch fails, it's a
+      // fetch error, not a delete error, and should not mislead callers/UI about the deletion.
+      const newPage = get().page
+      if (newPage !== oldPage) {
+        try {
+          await get().fetchTickets({ page: newPage })
+        } catch (fetchError) {
+          // Log the fetch error but don't treat it as a delete failure
+          // The ticket was already successfully deleted
+          console.error('Failed to refetch tickets after deletion:', fetchError)
+          // The fetch error will be handled by fetchTickets() and set in the store's error state
+        }
+      }
     } catch (error) {
       console.error('Failed to delete ticket:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete ticket'
