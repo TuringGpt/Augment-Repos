@@ -375,13 +375,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       fetchTicketRequestCounter += 1
     }
 
-    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
-    // if a stale fetch already set isLoading: true before being invalidated
-    // Also clear ticket-detail fetch state if we're deleting the currently fetched ticket
+    // Set delete-specific loading state
+    // Note: We do NOT touch isLoading here to avoid race conditions with fetchTickets()
+    // isLoading is exclusively managed by fetchTickets(), while isDeleting is for delete operations
     set({
       isDeleting: true,
       deleteError: null,
-      isLoading: false,
       // Clear ticket-detail fetch state if deleting the currently fetched/selected ticket
       ...(isDeletingSameTicket && {
         isFetchingTicket: false,
