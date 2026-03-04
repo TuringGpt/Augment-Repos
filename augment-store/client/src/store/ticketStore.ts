@@ -394,6 +394,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Call the API to delete the ticket
       await ticketService.deleteTicket(id)
 
+      // After successful deletion, invalidate any getTicketById requests for this ticket
+      // that may have started during the deletion (after the initial invalidation).
+      // This prevents a race where getTicketById(id) called during deletion could
+      // set selectedTicket after deletion completes.
+      const currentState = get()
+      const isStillFetchingSameTicket = currentState.fetchingTicketId === id
+
+      if (isStillFetchingSameTicket) {
+        // Increment fetchTicketRequestCounter to invalidate any in-flight getTicketById request
+        // This prevents the in-flight request from setting selectedTicket after deletion
+        fetchTicketRequestCounter += 1
+      }
+
       // Remove the ticket from the local state and update pagination
       set((state) => {
         // Check if the ticket exists in the current list
@@ -417,6 +430,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           isDeleting: false,
           // If the deleted ticket was selected, clear the selection
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+          // Clear ticket-detail fetch state if we invalidated an in-flight request
+          // This prevents the UI from being stuck in a loading state
+          ...(isStillFetchingSameTicket && {
+            isFetchingTicket: false,
+            fetchingTicketId: null,
+          }),
         }
       })
     } catch (error) {
