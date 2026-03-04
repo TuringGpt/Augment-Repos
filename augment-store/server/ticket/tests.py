@@ -23,7 +23,7 @@ class TicketTests(BaseAPITestCase):
         self.ticket = TicketFactory(
             title="Test Title",
             description="Test Description",
-            status="Test Status",
+            status=Ticket.Status.OPEN,
             priority=Ticket.Priority.HIGH,
             assignee=self.user,
             reporter=self.user,
@@ -39,7 +39,7 @@ class TicketTests(BaseAPITestCase):
         payload = {
             "title": "New Ticket",
             "description": "New Ticket Description",
-            "status": "New Ticket Status",
+            "status": Ticket.Status.OPEN,
             "priority": Ticket.Priority.MEDIUM,
             "assignee": str(self.user.id),
         }
@@ -52,7 +52,7 @@ class TicketTests(BaseAPITestCase):
         payload = {
             "title": "Bad Ticket",
             "description": "Bad Description",
-            "status": "open",
+            "status": Ticket.Status.OPEN,
             "priority": "not_a_valid_priority",
             "assignee": str(self.user.id),
         }
@@ -65,18 +65,92 @@ class TicketTests(BaseAPITestCase):
         payload = {
             "title": "Default Priority Ticket",
             "description": "Should get default priority",
-            "status": "open",
+            "status": Ticket.Status.OPEN,
             "assignee": str(self.user.id),
         }
         response = self.authenticated_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["priority"], Ticket.Priority.LOW)
 
+    def test_create_ticket_with_invalid_status(self):
+        url = reverse("v1:ticket:create_ticket")
+        payload = {
+            "title": "Bad Ticket",
+            "description": "Bad Description",
+            "status": "not_a_valid_status",
+            "priority": Ticket.Priority.LOW,
+            "assignee": str(self.user.id),
+        }
+        response = self.authenticated_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+
     def test_list_tickets(self):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results", [])), 1)
+
+    def test_user_tickets_returns_own_tickets(self):
+        TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:user_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for ticket in results:
+            self.assertEqual(ticket["reporter"], self.user.id)
+
+    def test_user_tickets_excludes_others(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:user_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ticket_ids = [t["id"] for t in response.data.get("results", [])]
+        self.assertNotIn(str(other_ticket.id), ticket_ids)
+
+    def test_admin_tickets_forbidden_for_non_admin(self):
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_tickets_returns_all(self):
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
+        self.authenticated_client.force_authenticate(user=admin_user)
+        TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data.get("results", [])), 2)
+
+    def test_admin_tickets_filter_by_user(self):
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
+        self.authenticated_client.force_authenticate(user=admin_user)
+        TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url, {"user_id": str(self.user2.id)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for ticket in results:
+            self.assertEqual(ticket["reporter"], self.user2.id)
+
+    def test_admin_tickets_invalid_user_id(self):
+        from accounts.models import User
+        admin_user = UserFactory(role=User.Role.ADMIN)
+        self.authenticated_client.force_authenticate(user=admin_user)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url, {"user_id": "not-a-uuid"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_tickets_staff_without_role_forbidden(self):
+        staff_user = UserFactory(is_staff=True)
+        self.authenticated_client.force_authenticate(user=staff_user)
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_ticket_detail(self):
         url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
@@ -85,7 +159,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["id"], str(self.ticket.id))  
         self.assertEqual(response.data["title"], "Test Title")  
         self.assertEqual(response.data["description"], "Test Description")  
-        self.assertEqual(response.data["status"], "Test Status")
+        self.assertEqual(response.data["status"], Ticket.Status.OPEN)  
         self.assertEqual(response.data["priority"], Ticket.Priority.HIGH)  
         self.assertEqual(response.data["assignee"], self.user.id)  
         self.assertEqual(response.data["reporter"], self.user.id)  
@@ -111,7 +185,7 @@ class TicketTests(BaseAPITestCase):
         payload = {
             "title": "Updated Title",
             "description": "Updated Description",
-            "status": "Updated Status",
+            "status": Ticket.Status.IN_PROGRESS,
             "priority": Ticket.Priority.URGENT,
             "assignee": self.user2.id,
         }
@@ -119,7 +193,7 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Updated Title")  
         self.assertEqual(response.data["description"], "Updated Description")  
-        self.assertEqual(response.data["status"], "Updated Status")
+        self.assertEqual(response.data["status"], Ticket.Status.IN_PROGRESS)  
         self.assertEqual(response.data["priority"], Ticket.Priority.URGENT)  
         self.assertEqual(response.data["assignee"], self.user2.id)
 
@@ -190,9 +264,9 @@ class TicketStatsTests(BaseAPITestCase):
         django_cache.delete(f"ticket_stats:{self.other_user.id}")
 
     def test_stats_per_user_scoping(self):
-        TicketFactory(reporter=self.user, assignee=self.user, status="open")
-        TicketFactory(reporter=self.user, assignee=self.user, status="closed")
-        TicketFactory(reporter=self.other_user, assignee=self.other_user, status="open")
+        TicketFactory(reporter=self.user, assignee=self.user, status=Ticket.Status.OPEN)
+        TicketFactory(reporter=self.user, assignee=self.user, status=Ticket.Status.CLOSED)
+        TicketFactory(reporter=self.other_user, assignee=self.other_user, status=Ticket.Status.OPEN)
 
         response = self.authenticated_client.get(self.stats_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -201,7 +275,7 @@ class TicketStatsTests(BaseAPITestCase):
         self.assertEqual(response.data["closed"], 1)
 
     def test_stats_all_known_statuses(self):
-        for s in ["open", "in_progress", "resolved", "closed"]:
+        for s in Ticket.Status.values:
             TicketFactory(reporter=self.user, assignee=self.user, status=s)
 
         response = self.authenticated_client.get(self.stats_url)
@@ -227,7 +301,7 @@ class TicketStatsTests(BaseAPITestCase):
         payload = {
             "title": "New",
             "description": "Desc",
-            "status": "open",
+            "status": Ticket.Status.OPEN,
             "priority": Ticket.Priority.HIGH,
             "assignee": str(self.user.id),
         }

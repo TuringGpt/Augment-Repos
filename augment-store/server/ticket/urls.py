@@ -1,11 +1,13 @@
 from django.urls import path
-from .views import TicketListView, TicketCreateView, TicketDetailView, TicketUpdateView, TicketStatsView, CommentListView, CommentCreateView, CommentUpdateView, CommentDeleteView
+from .views import TicketListView, TicketCreateView, TicketDetailView, TicketUpdateView, TicketStatsView, CommentListView, CommentCreateView, CommentUpdateView, CommentDeleteView, UserTicketsView, AdminTicketsView
 
 
 app_name = 'ticket'
 
 urlpatterns = [
     path('', TicketListView.as_view(), name='ticket_list'),
+    path('my/', UserTicketsView.as_view(), name='user_tickets'),
+    path('admin/', AdminTicketsView.as_view(), name='admin_tickets'),
     path('create/', TicketCreateView.as_view(), name='create_ticket'),
     path('<uuid:pk>/', TicketDetailView.as_view(), name='ticket_detail'),
     path('<uuid:pk>/update/', TicketUpdateView.as_view(), name='update_ticket'),

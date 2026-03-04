@@ -34,6 +34,8 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useContactStore } from '@store/contactStore'
+import type { ContactItem } from '@services/api/contact/contactService'
 
 // Dummy contact messages data
 const DUMMY_CONTACTS = [
@@ -100,13 +102,13 @@ const AdminContactMessagesPage = () => {
   const theme = useTheme()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
-  // State for dummy data simulation
-  const [isLoading, setIsLoading] = useState(false)
-  const [contacts, setContacts] = useState(DUMMY_CONTACTS)
+  // Contact store
+  const { contacts: contactsData, isLoading, fetchError, getContacts, updateContact } = useContactStore()
+  const contacts = contactsData?.results || []
 
   // Drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
-  const [selectedContact, setSelectedContact] = useState<typeof DUMMY_CONTACTS[0] | null>(null)
+  const [selectedContact, setSelectedContact] = useState<ContactItem | null>(null)
 
   // Track which contacts are being marked as read
   const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set())
@@ -114,17 +116,34 @@ const AdminContactMessagesPage = () => {
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
   const drawerCloseTimeoutRef = useRef<number | null>(null)
-  const markAsReadTimeoutsRef = useRef<Map<string, number>>(new Map())
+  // Track mount state to prevent state updates after unmount
+  const isMountedRef = useRef<boolean>(true)
+  // Ref-based in-flight guard to prevent double-click race conditions
+  // Unlike React state, refs update synchronously and can't be bypassed by rapid clicks
+  const inFlightUpdatesRef = useRef<Set<string>>(new Set())
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
   const drawerTransitionDuration = theme.transitions.duration.leavingScreen
 
+  // Fetch contacts only when authenticated and authorized
+  // This prevents unnecessary/unauthorized fetches before auth checks complete
+  useEffect(() => {
+    if (hasHydrated && !authLoading && isAuthenticated && user?.role === 'admin') {
+      getContacts()
+    }
+  }, [hasHydrated, authLoading, isAuthenticated, user?.role, getContacts])
+
+  // Track mount/unmount state to prevent state updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   // Cleanup timeouts on unmount
   useEffect(() => {
-    // Capture the current ref values for cleanup
-    const markAsReadTimeouts = markAsReadTimeoutsRef.current
-
     return () => {
       if (refreshTimeoutRef.current !== null) {
         clearTimeout(refreshTimeoutRef.current)
@@ -132,25 +151,11 @@ const AdminContactMessagesPage = () => {
       if (drawerCloseTimeoutRef.current !== null) {
         clearTimeout(drawerCloseTimeoutRef.current)
       }
-      // Clear all mark-as-read timeouts
-      markAsReadTimeouts.forEach((timeoutId) => {
-        clearTimeout(timeoutId)
-      })
-      markAsReadTimeouts.clear()
     }
   }, [])
 
   const handleRefresh = () => {
-    setIsLoading(true)
-    // Clear any existing timeout
-    if (refreshTimeoutRef.current !== null) {
-      clearTimeout(refreshTimeoutRef.current)
-    }
-    // Simulate loading
-    refreshTimeoutRef.current = setTimeout(() => {
-      setIsLoading(false)
-      refreshTimeoutRef.current = null
-    }, 500)
+    getContacts()
   }
 
   // Format date for display
@@ -160,7 +165,7 @@ const AdminContactMessagesPage = () => {
   }
 
   // Drawer handlers
-  const handleViewDetails = (contact: typeof DUMMY_CONTACTS[0]) => {
+  const handleViewDetails = (contact: ContactItem) => {
     // Clear any pending close timeout to avoid race condition
     if (drawerCloseTimeoutRef.current !== null) {
       clearTimeout(drawerCloseTimeoutRef.current)
@@ -189,11 +194,17 @@ const AdminContactMessagesPage = () => {
     // Prevent row click event from firing
     event.stopPropagation()
 
-    // Don't mark if already being marked
-    if (markingAsRead.has(contactId)) {
+    // Ref-based guard: Check if update is already in-flight for this contact
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (inFlightUpdatesRef.current.has(contactId)) {
       return
     }
 
+    // Mark as in-flight immediately (synchronous update)
+    inFlightUpdatesRef.current.add(contactId)
+
+    // Also update React state for UI feedback (asynchronous update)
     // Add to marking set using functional update to avoid stale closure
     setMarkingAsRead((prev) => {
       const newMarkingAsRead = new Set(prev)
@@ -201,33 +212,27 @@ const AdminContactMessagesPage = () => {
       return newMarkingAsRead
     })
 
-    // Optimistically update the UI
-    setContacts((prevContacts) =>
-      prevContacts.map((contact) =>
-        contact.id === contactId ? { ...contact, is_read: true } : contact
-      )
-    )
+    try {
+      // Call the updateContact store action to mark as read
+      await updateContact(contactId, { status: 'read' })
+    } catch (error) {
+      // Error is already handled by the store, but we catch to prevent unhandled rejection
+      // The store will set updateError which could be displayed if needed
+      console.error('Failed to mark contact as read - check updateError state for details')
+    } finally {
+      // Remove from in-flight set (synchronous update)
+      inFlightUpdatesRef.current.delete(contactId)
 
-    // Clear any existing timeout for this specific contact
-    const existingTimeout = markAsReadTimeoutsRef.current.get(contactId)
-    if (existingTimeout !== undefined) {
-      clearTimeout(existingTimeout)
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Remove from marking set using functional update to avoid stale closure
+        setMarkingAsRead((prev) => {
+          const finalMarkingAsRead = new Set(prev)
+          finalMarkingAsRead.delete(contactId)
+          return finalMarkingAsRead
+        })
+      }
     }
-
-    // Simulate API call with timeout (dummy handler)
-    const timeoutId = setTimeout(() => {
-      // Remove from marking set using functional update to avoid stale closure
-      setMarkingAsRead((prev) => {
-        const finalMarkingAsRead = new Set(prev)
-        finalMarkingAsRead.delete(contactId)
-        return finalMarkingAsRead
-      })
-      // Clean up the timeout from the map
-      markAsReadTimeoutsRef.current.delete(contactId)
-    }, 500)
-
-    // Store the timeout ID for this contact
-    markAsReadTimeoutsRef.current.set(contactId, timeoutId)
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -299,8 +304,26 @@ const AdminContactMessagesPage = () => {
         </Tooltip>
       </Box>
 
-      {/* Loading State */}
-      {isLoading ? (
+      {/* Error State */}
+      {fetchError ? (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRefresh}
+              startIcon={<RefreshIcon />}
+            >
+              {t('admin.contactMessagesPage.retry')}
+            </Button>
+          }
+        >
+          {fetchError}
+        </Alert>
+      ) : /* Loading State - treat null contactsData as initial loading to avoid flicker */
+      isLoading || contactsData === null ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
@@ -309,7 +332,7 @@ const AdminContactMessagesPage = () => {
         <Box>
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Typography variant="body2">
-              {t('admin.contactMessagesPage.totalMessages', { count: contacts.length })}
+              {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
             </Typography>
           </Paper>
           <TableContainer component={Paper}>
@@ -320,6 +343,7 @@ const AdminContactMessagesPage = () => {
                   <TableCell>{t('admin.contactMessagesPage.table.email')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.subject')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.message')}</TableCell>
+                  <TableCell>{t('admin.contactMessagesPage.table.status')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.date')}</TableCell>
                   <TableCell align="center">{t('admin.contactMessagesPage.table.actions')}</TableCell>
                 </TableRow>
@@ -385,6 +409,26 @@ const AdminContactMessagesPage = () => {
                       </Typography>
                     </TableCell>
 
+                    {/* Status */}
+                    <TableCell>
+                      <Chip
+                        label={contact.status}
+                        size="small"
+                        color={
+                          contact.status === 'unread'
+                            ? 'error'
+                            : contact.status === 'read'
+                            ? 'warning'
+                            : 'success'
+                        }
+                        sx={{
+                          fontSize: '0.75rem',
+                          textTransform: 'capitalize',
+                          minWidth: 80
+                        }}
+                      />
+                    </TableCell>
+
                     {/* Date */}
                     <TableCell>
                       <Chip
@@ -408,7 +452,7 @@ const AdminContactMessagesPage = () => {
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        {(!contact.is_read || markingAsRead.has(contact.id)) && (
+                        {(contact.status === 'unread' || markingAsRead.has(contact.id)) && (
                           <Tooltip title={t('admin.contactMessagesPage.markAsRead')}>
                             <span>
                               <IconButton

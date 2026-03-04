@@ -4,6 +4,8 @@ from .serializers import TicketListSerializer, TicketCreateSerializer, TicketUpd
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
+from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 from django.core.cache import cache as django_cache
@@ -32,7 +34,33 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
-    
+
+
+class UserTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            reporter=self.request.user
+        ).order_by('-created_at')
+
+
+class AdminTicketsView(TicketBaseView, ListAPIView):
+    serializer_class = TicketListSerializer
+    permission_classes = [hasAdminRole]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('-created_at')
+        user_id = self.request.query_params.get('user_id')
+        if user_id:
+            import uuid as uuid_mod
+            try:
+                uuid_mod.UUID(user_id)
+            except ValueError:
+                raise ValidationError({'user_id': 'Invalid UUID format'})
+            queryset = queryset.filter(reporter_id=user_id)
+        return queryset
+
 
 def _invalidate_stats_cache(user):
     django_cache.delete(f"ticket_stats:{user.id}")
@@ -124,18 +152,18 @@ class TicketStatsView(GenericAPIView):
     Get ticket statistics for the current user.
     """
     permission_classes = [IsAuthenticated]
-    KNOWN_STATUSES = ["open", "in_progress", "resolved", "closed"]
 
     def get(self, request, *args, **kwargs):
         cache_key = f"ticket_stats:{request.user.id}"
         
         stats = django_cache.get(cache_key)
         if stats is None:
+            known_statuses = Ticket.Status.values
             aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
                 total=Count("id"),
-                **{s: Count("id", filter=Q(status=s)) for s in self.KNOWN_STATUSES},
+                **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
             )
-            known_sum = sum(aggregates[s] for s in self.KNOWN_STATUSES)
+            known_sum = sum(aggregates[s] for s in known_statuses)
             stats = {
                 **aggregates,
                 "other": aggregates["total"] - known_sum,

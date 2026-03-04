@@ -5,7 +5,6 @@ export interface NotificationAPI {
   id: string
   created_at: string
   updated_at: string
-  is_deleted: boolean
   title: string
   description: string
   is_read: boolean

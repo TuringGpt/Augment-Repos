@@ -150,6 +150,8 @@ export const API_ENDPOINTS = {
   CONTACT: {
     LIST: '/contact/',
     CREATE: '/contact/create/',
+    DELETE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
+    UPDATE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
   },
 }
 

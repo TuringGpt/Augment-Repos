@@ -5,7 +5,7 @@ from .models import Notification
 class NotificationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = "__all__"
+        fields = ["id", "title", "description", "user", "is_read", "model", "object_id", "created_at", "updated_at"]
 
 
 class UnreadCountSerializer(serializers.Serializer):
