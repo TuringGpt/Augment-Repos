@@ -27,6 +27,27 @@ import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: (key: string) => string): string => {
+  const errorKeyMap: Record<string, string> = {
+    'TICKET_LOAD_ERROR': 'admin.ticketDetailPage.loadError',
+    'COMMENT_SUBMIT_ERROR': 'admin.ticketDetailPage.commentError',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return translateFn(translationKey as any)
+  }
+
+  // Otherwise, return the error code as-is (may be a backend message or network error)
+  return errorCode
+}
+
 const TicketDetailPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
@@ -49,11 +70,13 @@ const TicketDetailPage = () => {
       setTicket(data)
     } catch (err) {
       console.error('Failed to load ticket:', err)
-      setError(t('admin.ticketDetailPage.loadError'))
+      // Store error code instead of translated message
+      // Translation happens in the render phase
+      setError('TICKET_LOAD_ERROR')
     } finally {
       setLoading(false)
     }
-  }, [id, t])
+  }, [id])
 
   const fetchComments = useCallback(async () => {
     if (!id) return
@@ -86,7 +109,9 @@ const TicketDetailPage = () => {
       await fetchComments()
     } catch (err) {
       console.error('Failed to submit comment:', err)
-      setCommentError(t('admin.ticketDetailPage.commentError'))
+      // Store error code instead of translated message
+      // Translation happens in the render phase
+      setCommentError('COMMENT_SUBMIT_ERROR')
     } finally {
       setIsSubmittingComment(false)
     }
@@ -167,9 +192,15 @@ const TicketDetailPage = () => {
   }
 
   if (error || !ticket) {
+    const errorMessage = error
+      ? translateErrorCode(error, t)
+      : t('admin.ticketDetailPage.ticketNotFound')
+
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">{error || t('admin.ticketDetailPage.ticketNotFound')}</Alert>
+        <Alert severity="error">
+          {errorMessage}
+        </Alert>
         <Button onClick={handleBack} sx={{ mt: 2 }}>
           {t('admin.ticketDetailPage.backToTickets')}
         </Button>
@@ -291,7 +322,7 @@ const TicketDetailPage = () => {
 
           {commentError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {commentError}
+              {translateErrorCode(commentError, t)}
             </Alert>
           )}
 
