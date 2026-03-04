@@ -381,12 +381,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }
 
     // Increment in-flight counter and set delete-specific loading state
-    // Note: We do NOT touch isLoading here to avoid race conditions with fetchTickets()
-    // isLoading is exclusively managed by fetchTickets(), while isDeleting is for delete operations
+    // After incrementing fetchRequestCounter, we must clear isLoading to prevent the store
+    // from being stuck in a loading state if an in-flight fetchTickets() is invalidated
     deleteInFlightCount += 1
     set({
       isDeleting: true,
       deleteError: null,
+      isLoading: false,
       // Clear ticket-detail fetch state if deleting the currently fetched/selected ticket
       ...(isDeletingSameTicket && {
         isFetchingTicket: false,
