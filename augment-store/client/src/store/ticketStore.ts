@@ -417,11 +417,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Remove the ticket from the local state and update pagination
       set((state) => {
-        // Check if the ticket exists in the current list
-        const ticketExists = state.tickets.some((ticket) => ticket.id === id)
-
-        // Calculate new total
-        const newTotal = ticketExists ? Math.max(0, state.total - 1) : state.total
+        // Always decrement total when a ticket is successfully deleted
+        // Even if the ticket is not in the current page (e.g., deleted from detail view),
+        // it still contributes to the total count and should be decremented
+        const newTotal = Math.max(0, state.total - 1)
 
         // Recalculate total pages based on new total
         const newTotalPages = newTotal === 0 ? 1 : Math.ceil(newTotal / BACKEND_PAGE_SIZE)
