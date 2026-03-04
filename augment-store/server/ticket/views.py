@@ -37,6 +37,9 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
 
         priority_filter = self.request.query_params.get('priority')
         if priority_filter:
+            valid_priorities = [p.value for p in Ticket.Priority]
+            if priority_filter.lower() not in valid_priorities:
+                raise ValidationError({'priority': f'Invalid priority. Must be one of: {", ".join(valid_priorities)}'})
             queryset = queryset.filter(priority__iexact=priority_filter)
 
         return queryset
