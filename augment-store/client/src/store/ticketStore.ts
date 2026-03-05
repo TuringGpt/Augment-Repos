@@ -529,8 +529,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchTicketRequestCounter) {
-        const errorMessage = 'Failed to fetch ticket. Please try again.'
-        set({ fetchTicketError: errorMessage })
+        // Set error code instead of hard-coded message to allow proper localization
+        // The error code will be translated by the component using translateErrorCode()
+        set({ fetchTicketError: 'TICKET_LOAD_ERROR' })
       }
 
       throw error

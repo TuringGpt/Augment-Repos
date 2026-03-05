@@ -209,7 +209,7 @@ const TicketDetailPage = () => {
   // This prevents briefly showing the error UI on initial render before useEffect runs
   if (hasFetchedOnce && (fetchTicketError || !selectedTicket)) {
     const errorMessage = fetchTicketError
-      ? fetchTicketError
+      ? translateErrorCode(fetchTicketError, t)
       : t('admin.ticketDetailPage.ticketNotFound')
 
     return (
