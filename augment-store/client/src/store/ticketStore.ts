@@ -28,12 +28,17 @@ interface TicketState {
   isUpdating: boolean
   updateError: string | null
 
+  // Separate state for delete ticket action to avoid race conditions with fetchTickets
+  isDeleting: boolean
+  deleteError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
   setPage: (page: number) => void
   createTicket: (data: CreateTicketRequest) => Promise<Ticket>
   updateTicket: (id: string, data: UpdateTicketRequest) => Promise<Ticket>
+  deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
 }
@@ -56,6 +61,11 @@ let createInFlightCount = 0
 // Ensures isUpdating reflects "any update in progress" rather than just the latest request
 // This prevents isUpdating from becoming false while earlier requests are still in-flight
 let updateInFlightCount = 0
+
+// In-flight counter to track concurrent delete ticket requests
+// Ensures isDeleting reflects "any delete in progress" rather than just the latest request
+// This prevents isDeleting from becoming false while earlier requests are still in-flight
+let deleteInFlightCount = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -83,6 +93,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   createError: null,
   isUpdating: false,
   updateError: null,
+  isDeleting: false,
+  deleteError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -347,6 +359,148 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Decrement in-flight count in finally block to ensure it always happens
       // even if parseApiError or any other code in try/catch throws
       updateInFlightCount -= 1
+    }
+  },
+
+  deleteTicket: async (id: string) => {
+    // Increment counter to invalidate any in-flight fetchTickets() requests
+    // This prevents a late fetch response from overwriting state with a stale list
+    // that re-introduces the deleted ticket
+    fetchRequestCounter += 1
+
+    // Check if we're deleting the same ticket that's currently being fetched
+    // If so, invalidate the in-flight getTicketById request to prevent it from
+    // repopulating selectedTicket after deletion
+    const state = get()
+    const isDeletingSameTicket = state.fetchingTicketId === id
+
+    if (isDeletingSameTicket) {
+      // Increment fetchTicketRequestCounter to invalidate the in-flight getTicketById request
+      // This prevents stale ticket data from repopulating selectedTicket after deletion
+      fetchTicketRequestCounter += 1
+    }
+
+    // Increment in-flight counter and set delete-specific loading state
+    // After incrementing fetchRequestCounter, we must clear isLoading to prevent the store
+    // from being stuck in a loading state if an in-flight fetchTickets() is invalidated
+    deleteInFlightCount += 1
+    set({
+      isDeleting: true,
+      deleteError: null,
+      isLoading: false,
+      // Clear ticket-detail fetch state if deleting the currently fetched/selected ticket
+      ...(isDeletingSameTicket && {
+        isFetchingTicket: false,
+        selectedTicket: null,
+        fetchingTicketId: null,
+        fetchTicketError: null,
+      }),
+    })
+
+    try {
+      // Call the API to delete the ticket
+      await ticketService.deleteTicket(id)
+
+      // After successful deletion, invalidate any getTicketById requests for this ticket
+      // that may have started during the deletion (after the initial invalidation).
+      // This prevents a race where getTicketById(id) called during deletion could
+      // set selectedTicket after deletion completes.
+      const currentState = get()
+      const isStillFetchingSameTicket = currentState.fetchingTicketId === id
+
+      if (isStillFetchingSameTicket) {
+        // Increment fetchTicketRequestCounter to invalidate any in-flight getTicketById request
+        // This prevents the in-flight request from setting selectedTicket after deletion
+        fetchTicketRequestCounter += 1
+      }
+
+      // Remove the ticket from the local state and update pagination
+      // Capture the old page before updating state to detect page changes
+      const oldPage = get().page
+
+      set((state) => {
+        // Always decrement total when a ticket is successfully deleted
+        // Even if the ticket is not in the current page (e.g., deleted from detail view),
+        // it still contributes to the total count and should be decremented
+        const newTotal = Math.max(0, state.total - 1)
+
+        // Recalculate total pages based on new total
+        // Derive page size from current state to match fetchTickets() logic and handle
+        // backend page size changes or differences across environments
+        let newTotalPages: number
+        if (newTotal === 0) {
+          // Edge case: empty results should show 1 page (not 0) for pagination UI compatibility
+          newTotalPages = 1
+        } else if (state.total > 0 && state.totalPages > 0) {
+          // Derive page size from the last successful fetch response
+          // This ensures consistency with fetchTickets() which derives page size from API responses
+          const derivedPageSize = Math.ceil(state.total / state.totalPages)
+          newTotalPages = Math.ceil(newTotal / derivedPageSize)
+        } else {
+          // Fallback: use BACKEND_PAGE_SIZE if we don't have valid state
+          // This should rarely happen, but provides a safe default
+          newTotalPages = Math.ceil(newTotal / BACKEND_PAGE_SIZE)
+        }
+
+        // Clamp current page to valid range [1, newTotalPages] to prevent invalid pagination state
+        // This prevents issues when deleting the last item on the last page
+        const newPage = newTotalPages > 0 ? Math.max(1, Math.min(state.page, newTotalPages)) : 1
+
+        return {
+          tickets: state.tickets.filter((ticket) => ticket.id !== id),
+          total: newTotal,
+          page: newPage,
+          totalPages: newTotalPages,
+          // Only set isDeleting to false if no other delete operations are in-flight
+          isDeleting: deleteInFlightCount > 0,
+          // If the deleted ticket was selected, clear the selection
+          selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
+          // Clear ticket-detail fetch state if we invalidated an in-flight request
+          // This prevents the UI from being stuck in a loading state
+          ...(isStillFetchingSameTicket && {
+            isFetchingTicket: false,
+            fetchingTicketId: null,
+          }),
+        }
+      })
+
+      // Decrement in-flight counter after successful deletion
+      // This ensures the counter is only decremented once on success
+      deleteInFlightCount -= 1
+
+      // If the page changed (e.g., deleted last item on last page), refetch the new page
+      // This ensures the UI shows the correct tickets for the new page instead of stale data
+      // Note: This refetch happens AFTER decrementing the counter and OUTSIDE the try-catch
+      // because the ticket was already successfully deleted. If this refetch fails, it's a
+      // fetch error, not a delete error, and should not mislead callers/UI about the deletion.
+      const newPage = get().page
+      if (newPage !== oldPage) {
+        try {
+          await get().fetchTickets({ page: newPage })
+        } catch (fetchError) {
+          // Log the fetch error but don't treat it as a delete failure
+          // The ticket was already successfully deleted
+          console.error('Failed to refetch tickets after deletion:', fetchError)
+          // The fetch error will be handled by fetchTickets() and set in the store's error state
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete ticket:', error)
+      // Use parseApiError to extract user-friendly error message from API response
+      // This ensures consistency with createTicket/updateTicket and properly handles DRF errors
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to delete ticket',
+      })
+
+      // Decrement in-flight counter on error
+      deleteInFlightCount -= 1
+
+      set({
+        deleteError: errorMessage,
+        // Only set isDeleting to false if no other delete operations are in-flight
+        isDeleting: deleteInFlightCount > 0
+      })
+      throw error
     }
   },
 
