@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -72,15 +72,27 @@ const TicketDetailPage = () => {
   // This prevents showing "not found" error on initial render before useEffect runs
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
 
+  // Track the current request ID to prevent race conditions
+  // If id changes while a request is in-flight, we only update hasFetchedOnce for the latest id
+  const currentRequestIdRef = useRef<string | undefined>(undefined)
+
   const fetchTicketDetails = useCallback(async () => {
     if (!id) return
+
+    // Capture the current id for this request
+    const requestId = id
+    currentRequestIdRef.current = requestId
 
     try {
       await getTicketById(id)
     } catch (err) {
       // Error is already logged and handled by the store
     } finally {
-      setHasFetchedOnce(true)
+      // Only update hasFetchedOnce if this request is still for the current id
+      // This prevents race conditions when id changes while a request is in-flight
+      if (currentRequestIdRef.current === requestId) {
+        setHasFetchedOnce(true)
+      }
     }
   }, [id, getTicketById])
 
@@ -97,14 +109,15 @@ const TicketDetailPage = () => {
 
   useEffect(() => {
     if (id) {
+      // Reset hasFetchedOnce when id changes to show loading state
+      setHasFetchedOnce(false)
       fetchTicketDetails()
       fetchComments()
     }
 
-    // Cleanup: clear selected ticket when component unmounts
+    // Cleanup: clear selected ticket when component unmounts or id changes
     return () => {
       clearSelectedTicket()
-      setHasFetchedOnce(false)
     }
   }, [id, fetchTicketDetails, fetchComments, clearSelectedTicket])
 
