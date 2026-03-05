@@ -164,7 +164,9 @@ class ContactTests(BaseAPITestCase):
         url = reverse("v1:contact_list")
         response = self.authenticated_client.get(url, {"status": ContactMessage.Status.UNREAD})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for result in response.data.get("results", []):
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for result in results:
             self.assertEqual(result["status"], ContactMessage.Status.UNREAD)
 
     def test_list_contact_messages_filter_by_status_no_match(self):
@@ -180,3 +182,10 @@ class ContactTests(BaseAPITestCase):
         response = self.authenticated_client.get(url, {"status": ContactMessage.Status.RESOLVED})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results", [])), 0)
+
+    def test_list_contact_messages_filter_by_invalid_status(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url, {"status": "invalid_status"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)

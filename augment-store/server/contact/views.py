@@ -39,11 +39,15 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     cache_ttl = 60 * 5  # 5 minutes - short TTL due to PII content
 
     def get_queryset(self):
+        from rest_framework.exceptions import ValidationError
         queryset = super().get_queryset()
 
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            queryset = queryset.filter(status=status_filter)
+            valid_statuses = [s.value for s in ContactMessage.Status]
+            if status_filter.lower() not in valid_statuses:
+                raise ValidationError({'status': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'})
+            queryset = queryset.filter(status=status_filter.lower())
 
         return queryset
 
