@@ -210,8 +210,13 @@ const TicketDetailPage = () => {
   // This prevents showing stale ticket data when navigating between tickets
   const isTicketReady = selectedTicket && selectedTicket.id === id
 
-  // Show loading state if we're fetching OR if we haven't fetched yet and don't have a matching ticket
-  if (isFetchingTicket || (!hasFetchedOnce && !isTicketReady)) {
+  // Show loading state if:
+  // 1. We're actively fetching, OR
+  // 2. We haven't fetched yet and don't have a matching ticket, OR
+  // 3. There's an ID mismatch (navigating from one ticket to another)
+  //    - This prevents briefly showing "not found" UI when hasFetchedOnce is still true
+  //      from the previous ticket but isTicketReady is false for the new ticket
+  if (isFetchingTicket || (!hasFetchedOnce && !isTicketReady) || !isTicketReady) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
