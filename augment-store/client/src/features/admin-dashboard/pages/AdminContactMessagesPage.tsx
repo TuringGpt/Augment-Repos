@@ -43,7 +43,7 @@ import type { ContactItem } from '@services/api/contact/contactService'
 /**
  * AdminContactMessagesPage Component
  * Admin page for viewing all contact messages submitted by users
- * Currently using dummy data for demonstration purposes
+ * Fetches contact messages from the backend API via the contact store
  *
  * Note: This component uses defense-in-depth for access control:
  * 1. Primary enforcement: AdminRoute guard redirects non-admin users to home
