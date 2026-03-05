@@ -23,10 +23,11 @@ import {
 } from '@mui/icons-material'
 import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
-import type { Ticket, Comment, TicketStatus, TicketPriority } from '@features/support/types'
+import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
+import { useTicketStore } from '@store/ticketStore'
 
 /**
  * Translate error codes to user-friendly messages
@@ -52,10 +53,17 @@ const TicketDetailPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [ticket, setTicket] = useState<Ticket | null>(null)
+
+  // Use ticket store for fetching ticket details
+  const {
+    selectedTicket,
+    isFetchingTicket,
+    fetchTicketError,
+    getTicketById,
+    clearSelectedTicket
+  } = useTicketStore()
+
   const [comments, setComments] = useState<Comment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
@@ -64,19 +72,12 @@ const TicketDetailPage = () => {
     if (!id) return
 
     try {
-      setLoading(true)
-      setError(null)
-      const data = await ticketService.getTicketById(id)
-      setTicket(data)
+      await getTicketById(id)
     } catch (err) {
       console.error('Failed to load ticket:', err)
-      // Store error code instead of translated message
-      // Translation happens in the render phase
-      setError('TICKET_LOAD_ERROR')
-    } finally {
-      setLoading(false)
+      // Error is already handled by the store
     }
-  }, [id])
+  }, [id, getTicketById])
 
   const fetchComments = useCallback(async () => {
     if (!id) return
@@ -94,6 +95,12 @@ const TicketDetailPage = () => {
       fetchTicketDetails()
       fetchComments()
     }
+
+    // Cleanup: clear selected ticket when component unmounts
+    return () => {
+      clearSelectedTicket()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, fetchTicketDetails, fetchComments])
 
   const handleSubmitComment = async () => {
@@ -181,7 +188,7 @@ const TicketDetailPage = () => {
     }
   }
 
-  if (loading) {
+  if (isFetchingTicket) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -191,9 +198,9 @@ const TicketDetailPage = () => {
     )
   }
 
-  if (error || !ticket) {
-    const errorMessage = error
-      ? translateErrorCode(error, t)
+  if (fetchTicketError || !selectedTicket) {
+    const errorMessage = fetchTicketError
+      ? fetchTicketError
       : t('admin.ticketDetailPage.ticketNotFound')
 
     return (
@@ -207,6 +214,9 @@ const TicketDetailPage = () => {
       </Container>
     )
   }
+
+  // Use selectedTicket from store
+  const ticket = selectedTicket
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
