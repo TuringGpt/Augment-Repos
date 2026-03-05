@@ -4,7 +4,7 @@ from .models import Newsletter
 class NewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
-        fields = ["email"]
+        fields = ["id", "email", "is_active", "created_at"]
 
 class SubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,7 +24,8 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
 class UnsubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
-        fields = ["email"]
+        fields = ["email", "is_active"]
+        read_only_fields = ["is_active"]
 
     def update(self, instance, validated_data):
         instance.is_active = False
