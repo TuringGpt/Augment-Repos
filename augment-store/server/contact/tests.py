@@ -150,14 +150,14 @@ class ContactTests(BaseAPITestCase):
     def test_search_contact_messages_by_name_or_email(self):
         self.authenticated_client.force_authenticate(user=self.admin)
         ContactMessageFactory(
-            name="John Doe",
-            email="john.doe@example.com",
+            name="Alice Cooper",
+            email="alice@music.com",
             subject="Help",
             message="I need help",
         )
         ContactMessageFactory(
             name="Jane Smith",
-            email="jane.smith@johndoe.com",
+            email="jane.smith@alice.com",
             subject="Question",
             message="I have a question",
         )
@@ -169,11 +169,15 @@ class ContactTests(BaseAPITestCase):
         )
         url = reverse("v1:contact_list")
         
-        # Test search by name (John)
-        response = self.authenticated_client.get(url, {"search": "John"})
+        # Test search by name (Alice)
+        # Matches Alice Cooper (name) and Jane Smith (email domain)
+        response = self.authenticated_client.get(url, {"search": "Alice"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
-        self.assertEqual(len(results), 2)  # John Doe and Jane Smith (email domain)
+        self.assertEqual(len(results), 2)
+        names = [r["name"] for r in results]
+        self.assertIn("Alice Cooper", names)
+        self.assertIn("Jane Smith", names)
         
         # Test search by email
         response = self.authenticated_client.get(url, {"search": "bob@example.com"})
