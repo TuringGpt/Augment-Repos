@@ -144,3 +144,31 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         contact_message = ContactMessage.objects.get(name="Test Name")
         self.assertEqual(contact_message.status, ContactMessage.Status.UNREAD)
+
+    def test_search_contact_messages_by_name(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        ContactMessageFactory(
+            name="John Doe",
+            email="john@example.com",
+            subject="Help",
+            message="I need help",
+        )
+        ContactMessageFactory(
+            name="Jane Smith",
+            email="jane@example.com",
+            subject="Question",
+            message="I have a question",
+        )
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url, {"search": "John"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        self.assertIn("John", results[0]["name"])
+
+    def test_search_contact_messages_no_match(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url, {"search": "xyznonexistent"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results", [])), 0)
