@@ -10,7 +10,7 @@ from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheServic
 
 class ContactCacheService(BaseCacheService):
     OBJECT_NAME = "contact"
-    VERSION = 3
+    VERSION = 4
 
 
 class ContactFormAnonThrottle(AnonRateThrottle):

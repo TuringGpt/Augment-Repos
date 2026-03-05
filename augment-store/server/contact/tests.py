@@ -16,6 +16,8 @@ class ContactTests(BaseAPITestCase):
             is_active=True,
             role=User.Role.ADMIN
         )
+        from .views import ContactCacheService
+        ContactCacheService().clear_namespace()
 
     def test_create_contact_message(self):
         url = reverse("v1:create_contact")
