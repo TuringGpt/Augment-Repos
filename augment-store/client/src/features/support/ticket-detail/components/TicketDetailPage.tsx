@@ -78,8 +78,7 @@ const TicketDetailPage = () => {
     try {
       await getTicketById(id)
     } catch (err) {
-      console.error('Failed to load ticket:', err)
-      // Error is already handled by the store
+      // Error is already logged and handled by the store
     } finally {
       setHasFetchedOnce(true)
     }
