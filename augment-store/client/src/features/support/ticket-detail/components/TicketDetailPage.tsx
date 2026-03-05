@@ -76,26 +76,6 @@ const TicketDetailPage = () => {
   // If id changes while a request is in-flight, we only update hasFetchedOnce for the latest id
   const currentRequestIdRef = useRef<string | undefined>(undefined)
 
-  const fetchTicketDetails = useCallback(async () => {
-    if (!id) return
-
-    // Capture the current id for this request
-    const requestId = id
-    currentRequestIdRef.current = requestId
-
-    try {
-      await getTicketById(id)
-    } catch (err) {
-      // Error is already logged and handled by the store
-    } finally {
-      // Only update hasFetchedOnce if this request is still for the current id
-      // This prevents race conditions when id changes while a request is in-flight
-      if (currentRequestIdRef.current === requestId) {
-        setHasFetchedOnce(true)
-      }
-    }
-  }, [id, getTicketById])
-
   const fetchComments = useCallback(async () => {
     if (!id) return
 
@@ -108,18 +88,41 @@ const TicketDetailPage = () => {
   }, [id])
 
   useEffect(() => {
+    let isMounted = true
+
     if (id) {
       // Reset hasFetchedOnce when id changes to show loading state
       setHasFetchedOnce(false)
-      fetchTicketDetails()
+
+      // Fetch ticket details with mount check
+      const fetchWithMountCheck = async () => {
+        const requestId = id
+        currentRequestIdRef.current = requestId
+
+        try {
+          await getTicketById(id)
+        } catch (err) {
+          // Error is already logged and handled by the store
+        } finally {
+          // Only update hasFetchedOnce if:
+          // 1. Component is still mounted
+          // 2. This request is still for the current id (prevents race conditions)
+          if (isMounted && currentRequestIdRef.current === requestId) {
+            setHasFetchedOnce(true)
+          }
+        }
+      }
+
+      fetchWithMountCheck()
       fetchComments()
     }
 
-    // Cleanup: clear selected ticket when component unmounts or id changes
+    // Cleanup: clear selected ticket and mark component as unmounted
     return () => {
+      isMounted = false
       clearSelectedTicket()
     }
-  }, [id, fetchTicketDetails, fetchComments, clearSelectedTicket])
+  }, [id, getTicketById, fetchComments, clearSelectedTicket])
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return
