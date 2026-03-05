@@ -958,6 +958,7 @@
       "viewDetails": "Ver Detalles",
       "messageDetails": "Detalles del Mensaje",
       "markAsRead": "Marcar como Leído",
+      "markAsResolved": "Marcar como Resuelto",
       "table": {
         "name": "Nombre",
         "email": "Correo Electrónico",

@@ -31,60 +31,14 @@ import {
   Message as MessageIcon,
   AccessTime as AccessTimeIcon,
   MarkEmailRead as MarkEmailReadIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useContactStore } from '@store/contactStore'
 import type { ContactItem } from '@services/api/contact/contactService'
 
-// Dummy contact messages data
-const DUMMY_CONTACTS = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    subject: 'Question about product availability',
-    message: 'Hi, I would like to know if the wireless headphones are still in stock. I am interested in purchasing 2 units.',
-    created_at: '2026-02-18T14:30:00Z',
-    is_read: false,
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    subject: 'Shipping inquiry',
-    message: 'Hello, I placed an order last week and haven\'t received any tracking information yet. Can you please help?',
-    created_at: '2026-02-17T10:15:00Z',
-    is_read: true,
-  },
-  {
-    id: '3',
-    name: 'Robert Johnson',
-    email: 'robert.j@example.com',
-    subject: 'Product return request',
-    message: 'I received a damaged item and would like to return it for a refund or replacement. Order number: #12345',
-    created_at: '2026-02-16T16:45:00Z',
-    is_read: false,
-  },
-  {
-    id: '4',
-    name: 'Emily Davis',
-    email: 'emily.davis@example.com',
-    subject: 'Partnership opportunity',
-    message: 'We are interested in partnering with your company for bulk orders. Please contact us to discuss further.',
-    created_at: '2026-02-15T09:20:00Z',
-    is_read: true,
-  },
-  {
-    id: '5',
-    name: 'Michael Brown',
-    email: 'michael.brown@example.com',
-    subject: 'Technical support needed',
-    message: 'I am having trouble setting up my new device. The instructions are unclear. Can someone assist me?',
-    created_at: '2026-02-14T13:00:00Z',
-    is_read: false,
-  },
-]
+
 
 /**
  * AdminContactMessagesPage Component
@@ -112,6 +66,8 @@ const AdminContactMessagesPage = () => {
 
   // Track which contacts are being marked as read
   const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set())
+  // Track which contacts are being resolved
+  const [markingAsResolved, setMarkingAsResolved] = useState<Set<string>>(new Set())
 
   // Ref to store the timeout IDs for cleanup
   const refreshTimeoutRef = useRef<number | null>(null)
@@ -230,6 +186,51 @@ const AdminContactMessagesPage = () => {
           const finalMarkingAsRead = new Set(prev)
           finalMarkingAsRead.delete(contactId)
           return finalMarkingAsRead
+        })
+      }
+    }
+  }
+
+  const handleMarkAsResolved = async (contactId: string, event: React.MouseEvent) => {
+    // Prevent row click event from firing
+    event.stopPropagation()
+
+    // Ref-based guard: Check if update is already in-flight for this contact
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (inFlightUpdatesRef.current.has(contactId)) {
+      return
+    }
+
+    // Mark as in-flight immediately (synchronous update)
+    inFlightUpdatesRef.current.add(contactId)
+
+    // Also update React state for UI feedback (asynchronous update)
+    // Add to marking set using functional update to avoid stale closure
+    setMarkingAsResolved((prev) => {
+      const newMarkingAsResolved = new Set(prev)
+      newMarkingAsResolved.add(contactId)
+      return newMarkingAsResolved
+    })
+
+    try {
+      // Call the updateContact store action to mark as resolved
+      await updateContact(contactId, { status: 'resolved' })
+    } catch (error) {
+      // Error is already handled by the store, but we catch to prevent unhandled rejection
+      // The store will set updateError which could be displayed if needed
+      console.error('Failed to mark contact as resolved - check updateError state for details')
+    } finally {
+      // Remove from in-flight set (synchronous update)
+      inFlightUpdatesRef.current.delete(contactId)
+
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Remove from marking set using functional update to avoid stale closure
+        setMarkingAsResolved((prev) => {
+          const finalMarkingAsResolved = new Set(prev)
+          finalMarkingAsResolved.delete(contactId)
+          return finalMarkingAsResolved
         })
       }
     }
@@ -466,6 +467,25 @@ const AdminContactMessagesPage = () => {
                                   <CircularProgress size={16} />
                                 ) : (
                                   <MarkEmailReadIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
+                        {(contact.status === 'read' || markingAsResolved.has(contact.id)) && (
+                          <Tooltip title={t('admin.contactMessagesPage.markAsResolved')}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={(e) => handleMarkAsResolved(contact.id, e)}
+                                disabled={markingAsResolved.has(contact.id)}
+                                aria-label={t('admin.contactMessagesPage.markAsResolved')}
+                              >
+                                {markingAsResolved.has(contact.id) ? (
+                                  <CircularProgress size={16} />
+                                ) : (
+                                  <CheckCircleIcon fontSize="small" />
                                 )}
                               </IconButton>
                             </span>
