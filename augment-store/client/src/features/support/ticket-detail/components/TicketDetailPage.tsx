@@ -100,8 +100,7 @@ const TicketDetailPage = () => {
     return () => {
       clearSelectedTicket()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, fetchTicketDetails, fetchComments])
+  }, [id, fetchTicketDetails, fetchComments, clearSelectedTicket])
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return
