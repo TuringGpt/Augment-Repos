@@ -38,6 +38,15 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     cache_service_class = ContactCacheService
     cache_ttl = 60 * 5  # 5 minutes - short TTL due to PII content
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset
+
 class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
     cache_service_class = ContactCacheService

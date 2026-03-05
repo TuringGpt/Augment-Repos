@@ -144,3 +144,39 @@ class ContactTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         contact_message = ContactMessage.objects.get(name="Test Name")
         self.assertEqual(contact_message.status, ContactMessage.Status.UNREAD)
+
+    def test_list_contact_messages_filter_by_status(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        ContactMessageFactory(
+            name="Unread Msg",
+            email="unread@example.com",
+            subject="Unread Subject",
+            message="Unread message",
+            status=ContactMessage.Status.UNREAD,
+        )
+        ContactMessageFactory(
+            name="Read Msg",
+            email="read@example.com",
+            subject="Read Subject",
+            message="Read message",
+            status=ContactMessage.Status.READ,
+        )
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url, {"status": ContactMessage.Status.UNREAD})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for result in response.data.get("results", []):
+            self.assertEqual(result["status"], ContactMessage.Status.UNREAD)
+
+    def test_list_contact_messages_filter_by_status_no_match(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        ContactMessageFactory(
+            name="Unread Msg",
+            email="unread@example.com",
+            subject="Unread Subject",
+            message="Unread message",
+            status=ContactMessage.Status.UNREAD,
+        )
+        url = reverse("v1:contact_list")
+        response = self.authenticated_client.get(url, {"status": ContactMessage.Status.RESOLVED})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results", [])), 0)
