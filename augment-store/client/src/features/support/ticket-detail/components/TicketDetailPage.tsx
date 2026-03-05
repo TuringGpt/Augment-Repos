@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -23,10 +23,11 @@ import {
 } from '@mui/icons-material'
 import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
-import type { Ticket, Comment, TicketStatus, TicketPriority } from '@features/support/types'
+import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
+import { useTicketStore } from '@store/ticketStore'
 
 /**
  * Translate error codes to user-friendly messages
@@ -52,31 +53,28 @@ const TicketDetailPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [ticket, setTicket] = useState<Ticket | null>(null)
+
+  // Use ticket store for fetching ticket details
+  const {
+    selectedTicket,
+    isFetchingTicket,
+    fetchTicketError,
+    getTicketById,
+    clearSelectedTicket
+  } = useTicketStore()
+
   const [comments, setComments] = useState<Comment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
 
-  const fetchTicketDetails = useCallback(async () => {
-    if (!id) return
+  // Track if we've attempted to fetch the ticket at least once
+  // This prevents showing "not found" error on initial render before useEffect runs
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
 
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await ticketService.getTicketById(id)
-      setTicket(data)
-    } catch (err) {
-      console.error('Failed to load ticket:', err)
-      // Store error code instead of translated message
-      // Translation happens in the render phase
-      setError('TICKET_LOAD_ERROR')
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+  // Track the current request ID to prevent race conditions
+  // If id changes while a request is in-flight, we only update hasFetchedOnce for the latest id
+  const currentRequestIdRef = useRef<string | undefined>(undefined)
 
   const fetchComments = useCallback(async () => {
     if (!id) return
@@ -90,11 +88,41 @@ const TicketDetailPage = () => {
   }, [id])
 
   useEffect(() => {
+    let isMounted = true
+
     if (id) {
-      fetchTicketDetails()
+      // Reset hasFetchedOnce when id changes to show loading state
+      setHasFetchedOnce(false)
+
+      // Fetch ticket details with mount check
+      const fetchWithMountCheck = async () => {
+        const requestId = id
+        currentRequestIdRef.current = requestId
+
+        try {
+          await getTicketById(id)
+        } catch (err) {
+          // Error is already logged and handled by the store
+        } finally {
+          // Only update hasFetchedOnce if:
+          // 1. Component is still mounted
+          // 2. This request is still for the current id (prevents race conditions)
+          if (isMounted && currentRequestIdRef.current === requestId) {
+            setHasFetchedOnce(true)
+          }
+        }
+      }
+
+      fetchWithMountCheck()
       fetchComments()
     }
-  }, [id, fetchTicketDetails, fetchComments])
+
+    // Cleanup: clear selected ticket and mark component as unmounted
+    return () => {
+      isMounted = false
+      clearSelectedTicket()
+    }
+  }, [id, getTicketById, fetchComments, clearSelectedTicket])
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return
@@ -181,7 +209,17 @@ const TicketDetailPage = () => {
     }
   }
 
-  if (loading) {
+  // Check if selectedTicket matches the current route parameter
+  // This prevents showing stale ticket data when navigating between tickets
+  const isTicketReady = selectedTicket && selectedTicket.id === id
+
+  // Show loading state if:
+  // 1. We're actively fetching, OR
+  // 2. We haven't fetched yet, OR
+  // 3. There's an ID mismatch (navigating from one ticket to another)
+  //    - This prevents briefly showing "not found" UI when hasFetchedOnce is still true
+  //      from the previous ticket but isTicketReady is false for the new ticket
+  if (isFetchingTicket || !hasFetchedOnce || !isTicketReady) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -191,9 +229,12 @@ const TicketDetailPage = () => {
     )
   }
 
-  if (error || !ticket) {
-    const errorMessage = error
-      ? translateErrorCode(error, t)
+  // Only show error/not found UI after we've attempted to fetch at least once
+  // This prevents briefly showing the error UI on initial render before useEffect runs
+  // Also check if the ticket ID matches to avoid showing error for stale ticket data
+  if (hasFetchedOnce && (fetchTicketError || !isTicketReady)) {
+    const errorMessage = fetchTicketError
+      ? translateErrorCode(fetchTicketError, t)
       : t('admin.ticketDetailPage.ticketNotFound')
 
     return (
@@ -207,6 +248,16 @@ const TicketDetailPage = () => {
       </Container>
     )
   }
+
+  // At this point, selectedTicket must be non-null (TypeScript type guard)
+  // If we reach here, we've passed all the loading and error checks
+  if (!selectedTicket) {
+    // This should never happen, but TypeScript needs this check
+    return null
+  }
+
+  // Use selectedTicket from store
+  const ticket = selectedTicket
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
