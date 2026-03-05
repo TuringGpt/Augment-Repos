@@ -206,8 +206,12 @@ const TicketDetailPage = () => {
     }
   }
 
-  // Show loading state if we're fetching OR if we haven't fetched yet and don't have a ticket
-  if (isFetchingTicket || (!hasFetchedOnce && !selectedTicket)) {
+  // Check if selectedTicket matches the current route parameter
+  // This prevents showing stale ticket data when navigating between tickets
+  const isTicketReady = selectedTicket && selectedTicket.id === id
+
+  // Show loading state if we're fetching OR if we haven't fetched yet and don't have a matching ticket
+  if (isFetchingTicket || (!hasFetchedOnce && !isTicketReady)) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -219,7 +223,8 @@ const TicketDetailPage = () => {
 
   // Only show error/not found UI after we've attempted to fetch at least once
   // This prevents briefly showing the error UI on initial render before useEffect runs
-  if (hasFetchedOnce && (fetchTicketError || !selectedTicket)) {
+  // Also check if the ticket ID matches to avoid showing error for stale ticket data
+  if (hasFetchedOnce && (fetchTicketError || !isTicketReady)) {
     const errorMessage = fetchTicketError
       ? translateErrorCode(fetchTicketError, t)
       : t('admin.ticketDetailPage.ticketNotFound')
