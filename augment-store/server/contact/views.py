@@ -39,11 +39,16 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     cache_ttl = 60 * 5  # 5 minutes - short TTL due to PII content
 
     def get_queryset(self):
+        from django.db.models import Q
         queryset = super().get_queryset()
 
         search = self.request.query_params.get('search')
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            search = search.strip()
+            if search:  # Only filter if it's not empty after stripping
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(email__icontains=search)
+                )
 
         return queryset
 

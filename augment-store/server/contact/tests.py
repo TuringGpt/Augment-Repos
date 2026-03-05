@@ -145,29 +145,54 @@ class ContactTests(BaseAPITestCase):
         contact_message = ContactMessage.objects.get(name="Test Name")
         self.assertEqual(contact_message.status, ContactMessage.Status.UNREAD)
 
-    def test_search_contact_messages_by_name(self):
+    def test_search_contact_messages_by_name_or_email(self):
         self.authenticated_client.force_authenticate(user=self.admin)
         ContactMessageFactory(
             name="John Doe",
-            email="john@example.com",
+            email="john.doe@example.com",
             subject="Help",
             message="I need help",
         )
         ContactMessageFactory(
             name="Jane Smith",
-            email="jane@example.com",
+            email="jane.smith@johndoe.com",
             subject="Question",
             message="I have a question",
         )
+        ContactMessageFactory(
+            name="Bob Ross",
+            email="bob@example.com",
+            subject="Painting",
+            message="Happy little trees",
+        )
         url = reverse("v1:contact_list")
+        
+        # Test search by name (John)
         response = self.authenticated_client.get(url, {"search": "John"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
-        self.assertGreater(len(results), 0)
-        self.assertIn("John", results[0]["name"])
+        self.assertEqual(len(results), 2)  # John Doe and Jane Smith (email domain)
+        
+        # Test search by email
+        response = self.authenticated_client.get(url, {"search": "bob@example.com"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "Bob Ross")
+        
+        # Test search with whitespace stripping
+        response = self.authenticated_client.get(url, {"search": "   Bob   "})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "Bob Ross")
 
     def test_search_contact_messages_no_match(self):
         self.authenticated_client.force_authenticate(user=self.admin)
+        ContactMessageFactory(
+            name="Bob Ross",
+            email="bob@example.com",
+        )
         url = reverse("v1:contact_list")
         response = self.authenticated_client.get(url, {"search": "xyznonexistent"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
