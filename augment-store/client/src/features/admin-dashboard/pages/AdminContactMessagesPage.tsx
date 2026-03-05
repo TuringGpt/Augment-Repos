@@ -479,7 +479,7 @@ const AdminContactMessagesPage = () => {
                                 size="small"
                                 color="info"
                                 onClick={(e) => handleMarkAsResolved(contact.id, e)}
-                                disabled={markingAsResolved.has(contact.id)}
+                                disabled={markingAsResolved.has(contact.id) || markingAsRead.has(contact.id)}
                                 aria-label={t('admin.contactMessagesPage.markAsResolved')}
                               >
                                 {markingAsResolved.has(contact.id) ? (
