@@ -68,6 +68,10 @@ const TicketDetailPage = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
 
+  // Track if we've attempted to fetch the ticket at least once
+  // This prevents showing "not found" error on initial render before useEffect runs
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
+
   const fetchTicketDetails = useCallback(async () => {
     if (!id) return
 
@@ -76,6 +80,8 @@ const TicketDetailPage = () => {
     } catch (err) {
       console.error('Failed to load ticket:', err)
       // Error is already handled by the store
+    } finally {
+      setHasFetchedOnce(true)
     }
   }, [id, getTicketById])
 
@@ -99,6 +105,7 @@ const TicketDetailPage = () => {
     // Cleanup: clear selected ticket when component unmounts
     return () => {
       clearSelectedTicket()
+      setHasFetchedOnce(false)
     }
   }, [id, fetchTicketDetails, fetchComments, clearSelectedTicket])
 
@@ -187,7 +194,8 @@ const TicketDetailPage = () => {
     }
   }
 
-  if (isFetchingTicket) {
+  // Show loading state if we're fetching OR if we haven't fetched yet and don't have a ticket
+  if (isFetchingTicket || (!hasFetchedOnce && !selectedTicket)) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -197,7 +205,9 @@ const TicketDetailPage = () => {
     )
   }
 
-  if (fetchTicketError || !selectedTicket) {
+  // Only show error/not found UI after we've attempted to fetch at least once
+  // This prevents briefly showing the error UI on initial render before useEffect runs
+  if (hasFetchedOnce && (fetchTicketError || !selectedTicket)) {
     const errorMessage = fetchTicketError
       ? fetchTicketError
       : t('admin.ticketDetailPage.ticketNotFound')
@@ -212,6 +222,13 @@ const TicketDetailPage = () => {
         </Button>
       </Container>
     )
+  }
+
+  // At this point, selectedTicket must be non-null (TypeScript type guard)
+  // If we reach here, we've passed all the loading and error checks
+  if (!selectedTicket) {
+    // This should never happen, but TypeScript needs this check
+    return null
   }
 
   // Use selectedTicket from store
