@@ -20,6 +20,7 @@ import {
   Menu,
   MenuItem,
   Tooltip,
+  ButtonBase,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
@@ -628,18 +629,35 @@ const TicketDetailPage = () => {
                   {t('admin.ticketDetailPage.ticketId')}
                 </Typography>
                 <Tooltip title={t('admin.ticketDetailPage.clickToCopy')}>
-                  <Typography
-                    variant="body2"
-                    fontWeight="medium"
+                  <ButtonBase
+                    onClick={() => handleCopyTicketId(ticket.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleCopyTicketId(ticket.id)
+                      }
+                    }}
+                    aria-label={t('admin.ticketDetailPage.clickToCopy')}
                     sx={{
                       fontFamily: 'monospace',
+                      fontSize: '0.875rem',
+                      fontWeight: 'medium',
                       cursor: 'pointer',
-                      '&:hover': { color: 'primary.main' }
+                      borderRadius: 1,
+                      padding: '4px 8px',
+                      '&:hover': {
+                        color: 'primary.main',
+                        backgroundColor: 'action.hover'
+                      },
+                      '&:focus-visible': {
+                        outline: '2px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px'
+                      }
                     }}
-                    onClick={() => handleCopyTicketId(ticket.id)}
                   >
                     {ticket.id.substring(0, 8)}...
-                  </Typography>
+                  </ButtonBase>
                 </Tooltip>
               </Box>
 
