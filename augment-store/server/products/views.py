@@ -4,7 +4,7 @@ import functools
 
 logger = logging.getLogger(__name__)
 
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -238,10 +238,18 @@ class RecommendProductListView(BaseProductView, ListAPIView):
         return product_service.recommend_products_for_user(self.request.user)
 
 
+from rest_framework import serializers
+
+class ProductStockSerializer(serializers.Serializer):
+    product_id = serializers.UUIDField()
+    in_stock = serializers.BooleanField()
+    quantity = serializers.IntegerField()
+
 class ProductStockView(RetrieveAPIView):
     """Check stock for a specific product."""
     queryset = Product.objects.all()
     permission_classes = [IsAuthenticated]
+    serializer_class = ProductStockSerializer
     
     def retrieve(self, request, *args, **kwargs):
         from rest_framework.response import Response
