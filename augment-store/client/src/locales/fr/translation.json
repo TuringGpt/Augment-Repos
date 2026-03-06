@@ -1042,7 +1042,17 @@
       "notAvailable": "N/D",
       "ticketNotFound": "Ticket non trouvé",
       "loadError": "Échec du chargement des détails du ticket. Veuillez réessayer.",
-      "commentError": "Échec de l'envoi du commentaire. Veuillez réessayer."
+      "commentError": "Échec de l'envoi du commentaire. Veuillez réessayer.",
+      "editTicket": "Modifier le Ticket",
+      "deleteTicket": "Supprimer le Ticket",
+      "ticketInformation": "Informations du Ticket",
+      "createdLabel": "Créé",
+      "lastUpdatedLabel": "Dernière Mise à Jour",
+      "ticketId": "ID du Ticket",
+      "clickToCopy": "Cliquez pour copier",
+      "reporter": "Rapporteur",
+      "assignee": "Assigné à",
+      "supportAgent": "Agent de Support"
     },
     "settings": "Paramètres",
     "settingsPage": {

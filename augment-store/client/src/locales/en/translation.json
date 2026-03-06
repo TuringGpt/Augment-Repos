@@ -1042,7 +1042,17 @@
       "notAvailable": "N/A",
       "ticketNotFound": "Ticket not found",
       "loadError": "Failed to load ticket details. Please try again.",
-      "commentError": "Failed to submit comment. Please try again."
+      "commentError": "Failed to submit comment. Please try again.",
+      "editTicket": "Edit Ticket",
+      "deleteTicket": "Delete Ticket",
+      "ticketInformation": "Ticket Information",
+      "createdLabel": "Created",
+      "lastUpdatedLabel": "Last Updated",
+      "ticketId": "Ticket ID",
+      "clickToCopy": "Click to copy",
+      "reporter": "Reporter",
+      "assignee": "Assignee",
+      "supportAgent": "Support Agent"
     },
     "settings": "Settings",
     "settingsPage": {
