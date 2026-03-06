@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -14,19 +14,34 @@ import {
   Card,
   CardContent,
   Avatar,
+  Grid,
+  Stack,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  ButtonBase,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
   Send as SendIcon,
   ConfirmationNumber as TicketIcon,
   Person as PersonIcon,
+  AccessTime as AccessTimeIcon,
+  Update as UpdateIcon,
+  MoreVert as MoreVertIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
-import type { Ticket, Comment, TicketStatus, TicketPriority } from '@features/support/types'
+import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
+import { useTicketStore } from '@store/ticketStore'
 
 /**
  * Translate error codes to user-friendly messages
@@ -50,33 +65,32 @@ const translateErrorCode = (errorCode: string, translateFn: TFunction): string =
 
 const TicketDetailPage = () => {
   const { t } = useTranslation()
+  const toast = useToast()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [ticket, setTicket] = useState<Ticket | null>(null)
+
+  // Use ticket store for fetching ticket details
+  const {
+    selectedTicket,
+    isFetchingTicket,
+    fetchTicketError,
+    getTicketById,
+    clearSelectedTicket
+  } = useTicketStore()
+
   const [comments, setComments] = useState<Comment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-  const fetchTicketDetails = useCallback(async () => {
-    if (!id) return
+  // Track if we've attempted to fetch the ticket at least once
+  // This prevents showing "not found" error on initial render before useEffect runs
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
 
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await ticketService.getTicketById(id)
-      setTicket(data)
-    } catch (err) {
-      console.error('Failed to load ticket:', err)
-      // Store error code instead of translated message
-      // Translation happens in the render phase
-      setError('TICKET_LOAD_ERROR')
-    } finally {
-      setLoading(false)
-    }
-  }, [id])
+  // Track the current request ID to prevent race conditions
+  // If id changes while a request is in-flight, we only update hasFetchedOnce for the latest id
+  const currentRequestIdRef = useRef<string | undefined>(undefined)
 
   const fetchComments = useCallback(async () => {
     if (!id) return
@@ -90,11 +104,41 @@ const TicketDetailPage = () => {
   }, [id])
 
   useEffect(() => {
+    let isMounted = true
+
     if (id) {
-      fetchTicketDetails()
+      // Reset hasFetchedOnce when id changes to show loading state
+      setHasFetchedOnce(false)
+
+      // Fetch ticket details with mount check
+      const fetchWithMountCheck = async () => {
+        const requestId = id
+        currentRequestIdRef.current = requestId
+
+        try {
+          await getTicketById(id)
+        } catch (err) {
+          // Error is already logged and handled by the store
+        } finally {
+          // Only update hasFetchedOnce if:
+          // 1. Component is still mounted
+          // 2. This request is still for the current id (prevents race conditions)
+          if (isMounted && currentRequestIdRef.current === requestId) {
+            setHasFetchedOnce(true)
+          }
+        }
+      }
+
+      fetchWithMountCheck()
       fetchComments()
     }
-  }, [id, fetchTicketDetails, fetchComments])
+
+    // Cleanup: clear selected ticket and mark component as unmounted
+    return () => {
+      isMounted = false
+      clearSelectedTicket()
+    }
+  }, [id, getTicketById, fetchComments, clearSelectedTicket])
 
   const handleSubmitComment = async () => {
     if (!id || !commentText.trim()) return
@@ -119,6 +163,43 @@ const TicketDetailPage = () => {
 
   const handleBack = () => {
     navigate(ROUTES.SUPPORT_TICKETS)
+  }
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleEditTicket = () => {
+    handleMenuClose()
+    // TODO: Implement edit functionality
+    console.log('Edit ticket')
+  }
+
+  const handleDeleteTicket = () => {
+    handleMenuClose()
+    // TODO: Implement delete functionality
+    console.log('Delete ticket')
+  }
+
+  /**
+   * Handle copying ticket ID to clipboard with proper error handling
+   * Addresses potential errors from navigator.clipboard.writeText:
+   * - Unsupported browser/context
+   * - Insecure context (non-HTTPS)
+   * - Permission denied
+   */
+  const handleCopyTicketId = async (ticketId: string) => {
+    try {
+      await navigator.clipboard.writeText(ticketId)
+      toast.success(t('admin.ticketDetailPage.copySuccess'))
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err)
+      toast.error(t('admin.ticketDetailPage.copyError'))
+    }
   }
 
   const getStatusColor = (status: TicketStatus) => {
@@ -181,7 +262,18 @@ const TicketDetailPage = () => {
     }
   }
 
-  if (loading) {
+  // Check if selectedTicket matches the current route parameter
+  // This prevents showing stale ticket data when navigating between tickets
+  const isTicketReady = selectedTicket && selectedTicket.id === id
+
+  // Show loading state if:
+  // 1. We're actively fetching, OR
+  // 2. We haven't fetched yet, OR
+  // 3. There's an ID mismatch (navigating from one ticket to another)
+  //    - This prevents briefly showing "not found" UI when hasFetchedOnce is still true
+  //      from the previous ticket but isTicketReady is false for the new ticket
+  // BUT: Don't show loading if we have a fetch error - let the error UI render instead
+  if (isFetchingTicket || !hasFetchedOnce || (!isTicketReady && !fetchTicketError)) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -191,9 +283,12 @@ const TicketDetailPage = () => {
     )
   }
 
-  if (error || !ticket) {
-    const errorMessage = error
-      ? translateErrorCode(error, t)
+  // Only show error/not found UI after we've attempted to fetch at least once
+  // This prevents briefly showing the error UI on initial render before useEffect runs
+  // Also check if the ticket ID matches to avoid showing error for stale ticket data
+  if (hasFetchedOnce && (fetchTicketError || !isTicketReady)) {
+    const errorMessage = fetchTicketError
+      ? translateErrorCode(fetchTicketError, t)
       : t('admin.ticketDetailPage.ticketNotFound')
 
     return (
@@ -208,148 +303,394 @@ const TicketDetailPage = () => {
     )
   }
 
+  // At this point, selectedTicket must be non-null (TypeScript type guard)
+  // If we reach here, we've passed all the loading and error checks
+  if (!selectedTicket) {
+    // This should never happen, but TypeScript needs this check
+    return null
+  }
+
+  // Use selectedTicket from store
+  const ticket = selectedTicket
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={handleBack}
-          sx={{ mb: 2, textTransform: 'none' }}
-        >
-          {t('admin.ticketDetailPage.backToTickets')}
-        </Button>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <TicketIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight="bold">
-            {ticket.title}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Chip label={formatStatus(ticket.status)} color={getStatusColor(ticket.status)} />
-          <Chip label={formatPriority(ticket.priority)} color={getPriorityColor(ticket.priority)} />
-          {ticket.created_at && (
-            <Typography variant="body2" color="text.secondary">
-              {t('admin.ticketDetailPage.created', { date: formatDate(ticket.created_at) })}
-            </Typography>
-          )}
-        </Box>
-      </Box>
+      {/* Header with Back Button */}
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={handleBack}
+        sx={{ mb: 3, textTransform: 'none', color: 'text.secondary' }}
+      >
+        {t('admin.ticketDetailPage.backToTickets')}
+      </Button>
 
-      {/* Ticket Details */}
-      <Paper sx={{ p: 4, mb: 3 }}>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          {t('admin.ticketDetailPage.description')}
-        </Typography>
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', mb: 3 }}>
-          {ticket.description}
-        </Typography>
+      {/* Main Content Grid */}
+      <Grid container spacing={3}>
+        {/* Left Column - Ticket Details */}
+        <Grid item xs={12} md={8}>
+          {/* Ticket Header Card */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              mb: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flex: 1 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: 'primary.main',
+                    width: 48,
+                    height: 48,
+                    mt: 0.5
+                  }}
+                >
+                  <TicketIcon />
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h5" fontWeight="bold" gutterBottom>
+                    {ticket.title}
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                    <Chip
+                      label={formatStatus(ticket.status)}
+                      color={getStatusColor(ticket.status)}
+                      size="small"
+                      icon={<CheckCircleIcon />}
+                    />
+                    <Chip
+                      label={formatPriority(ticket.priority)}
+                      color={getPriorityColor(ticket.priority)}
+                      size="small"
+                    />
+                  </Stack>
+                </Box>
+              </Box>
+              <IconButton
+                onClick={handleMenuOpen}
+                size="small"
+                aria-label={t('admin.ticketDetailPage.ticketActions')}
+                aria-controls={anchorEl ? 'ticket-actions-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={!!anchorEl}
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id="ticket-actions-menu"
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={handleEditTicket}>
+                  <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+                  {t('admin.ticketDetailPage.editTicket')}
+                </MenuItem>
+                <MenuItem onClick={handleDeleteTicket} sx={{ color: 'error.main' }}>
+                  <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                  {t('admin.ticketDetailPage.deleteTicket')}
+                </MenuItem>
+              </Menu>
+            </Box>
 
-        <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 2 }} />
 
-        <Box sx={{ display: 'flex', gap: 4 }}>
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {t('admin.ticketDetailPage.status')}
-            </Typography>
-            <Chip label={formatStatus(ticket.status)} color={getStatusColor(ticket.status)} />
-          </Box>
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {t('admin.ticketDetailPage.priority')}
-            </Typography>
-            <Chip
-              label={formatPriority(ticket.priority)}
-              color={getPriorityColor(ticket.priority)}
-            />
-          </Box>
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {t('admin.ticketDetailPage.lastUpdated')}
-            </Typography>
-            <Typography variant="body1">
-              {ticket.updated_at ? formatDate(ticket.updated_at) : t('admin.ticketDetailPage.notAvailable')}
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
+            {/* Description */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                {t('admin.ticketDetailPage.description')}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  whiteSpace: 'pre-wrap',
+                  color: 'text.primary',
+                  lineHeight: 1.7
+                }}
+              >
+                {ticket.description}
+              </Typography>
+            </Box>
 
-      {/* Comments Section */}
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          {t('admin.ticketDetailPage.comments', { count: comments.length })}
-        </Typography>
+            {/* Metadata */}
+            <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AccessTimeIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {t('admin.ticketDetailPage.createdLabel')}
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {ticket.created_at ? formatDate(ticket.created_at) : t('admin.ticketDetailPage.notAvailable')}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <UpdateIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {t('admin.ticketDetailPage.lastUpdatedLabel')}
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {ticket.updated_at ? formatDate(ticket.updated_at) : t('admin.ticketDetailPage.notAvailable')}
+                  </Typography>
+                </Box>
+              </Box>
+            </Stack>
+          </Paper>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Comments List */}
-        <Box sx={{ mb: 3 }}>
-          {comments.length === 0 ? (
-            <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-              {t('admin.ticketDetailPage.noComments')}
+          {/* Comments Section */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              {t('admin.ticketDetailPage.comments', { count: comments.length })}
             </Typography>
-          ) : (
-            comments.map((comment) => (
-              <Card key={comment.id} sx={{ mb: 2, backgroundColor: 'grey.50' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-                      <PersonIcon sx={{ fontSize: 20 }} />
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Comments List */}
+            <Box sx={{ mb: 3 }}>
+              {comments.length === 0 ? (
+                <Box
+                  sx={{
+                    py: 6,
+                    textAlign: 'center',
+                    bgcolor: 'grey.50',
+                    borderRadius: 2
+                  }}
+                >
+                  <Typography color="text.secondary">
+                    {t('admin.ticketDetailPage.noComments')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Stack spacing={2}>
+                  {comments.map((comment) => (
+                    <Card
+                      key={comment.id}
+                      elevation={0}
+                      sx={{
+                        bgcolor: 'grey.50',
+                        border: '1px solid',
+                        borderColor: 'grey.200',
+                        '&:hover': {
+                          borderColor: 'primary.light',
+                          bgcolor: 'grey.100'
+                        },
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                          <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>
+                            <PersonIcon />
+                          </Avatar>
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Typography variant="subtitle2" fontWeight="bold">
+                                {t('admin.ticketDetailPage.user')}
+                              </Typography>
+                              {comment.created_at && (
+                                <>
+                                  <Typography variant="caption" color="text.secondary">
+                                    •
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {formatDate(comment.created_at)}
+                                  </Typography>
+                                </>
+                              )}
+                            </Box>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                whiteSpace: 'pre-wrap',
+                                color: 'text.primary',
+                                lineHeight: 1.6
+                              }}
+                            >
+                              {comment.content}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+
+            {/* Add Comment */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                {t('admin.ticketDetailPage.addComment')}
+              </Typography>
+
+              {commentError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {translateErrorCode(commentError, t)}
+                </Alert>
+              )}
+
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                placeholder={t('admin.ticketDetailPage.commentPlaceholder')}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                disabled={isSubmittingComment}
+                variant="outlined"
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'background.paper'
+                  }
+                }}
+              />
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={isSubmittingComment ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                  onClick={handleSubmitComment}
+                  disabled={isSubmittingComment || !commentText.trim()}
+                  sx={{
+                    textTransform: 'none',
+                    px: 4,
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {isSubmittingComment ? t('admin.ticketDetailPage.submitting') : t('admin.ticketDetailPage.submitComment')}
+                </Button>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Right Column - Sidebar */}
+        <Grid item xs={12} md={4}>
+          {/* Ticket Info Card */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              position: 'sticky',
+              top: 24
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              {t('admin.ticketDetailPage.ticketInformation')}
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+
+            <Stack spacing={3}>
+              {/* Status */}
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  {t('admin.ticketDetailPage.status')}
+                </Typography>
+                <Chip
+                  label={formatStatus(ticket.status)}
+                  color={getStatusColor(ticket.status)}
+                  sx={{ fontWeight: 'bold' }}
+                />
+              </Box>
+
+              {/* Priority */}
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  {t('admin.ticketDetailPage.priority')}
+                </Typography>
+                <Chip
+                  label={formatPriority(ticket.priority)}
+                  color={getPriorityColor(ticket.priority)}
+                  sx={{ fontWeight: 'bold' }}
+                />
+              </Box>
+
+              {/* Ticket ID */}
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  {t('admin.ticketDetailPage.ticketId')}
+                </Typography>
+                <Tooltip title={t('admin.ticketDetailPage.clickToCopy')}>
+                  <ButtonBase
+                    onClick={() => handleCopyTicketId(ticket.id)}
+                    aria-label={t('admin.ticketDetailPage.clickToCopy')}
+                    sx={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.875rem',
+                      fontWeight: 'medium',
+                      cursor: 'pointer',
+                      borderRadius: 1,
+                      padding: '4px 8px',
+                      '&:hover': {
+                        color: 'primary.main',
+                        backgroundColor: 'action.hover'
+                      },
+                      '&:focus-visible': {
+                        outline: '2px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: '2px'
+                      }
+                    }}
+                  >
+                    {ticket.id.substring(0, 8)}...
+                  </ButtonBase>
+                </Tooltip>
+              </Box>
+
+              {/* Reporter */}
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  {t('admin.ticketDetailPage.reporter')}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
+                    <PersonIcon sx={{ fontSize: 14 }} />
+                  </Avatar>
+                  <Typography variant="body2" fontWeight="medium">
+                    {t('admin.ticketDetailPage.user')}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Assignee */}
+              {ticket.assignee && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                    {t('admin.ticketDetailPage.assignee')}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: 'success.main' }}>
+                      <PersonIcon sx={{ fontSize: 14 }} />
                     </Avatar>
                     <Typography variant="body2" fontWeight="medium">
-                      {t('admin.ticketDetailPage.user')}
+                      {t('admin.ticketDetailPage.supportAgent')}
                     </Typography>
-                    {comment.created_at && (
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(comment.created_at)}
-                      </Typography>
-                    )}
                   </Box>
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', ml: 5 }}>
-                    {comment.content}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </Box>
-
-        {/* Add Comment */}
-        <Box>
-          <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-            {t('admin.ticketDetailPage.addComment')}
-          </Typography>
-
-          {commentError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {translateErrorCode(commentError, t)}
-            </Alert>
-          )}
-
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            placeholder={t('admin.ticketDetailPage.commentPlaceholder')}
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            disabled={isSubmittingComment}
-            sx={{ mb: 2 }}
-          />
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              startIcon={isSubmittingComment ? <CircularProgress size={20} /> : <SendIcon />}
-              onClick={handleSubmitComment}
-              disabled={isSubmittingComment || !commentText.trim()}
-              sx={{ textTransform: 'none', px: 4 }}
-            >
-              {isSubmittingComment ? t('admin.ticketDetailPage.submitting') : t('admin.ticketDetailPage.submitComment')}
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
+                </Box>
+              )}
+            </Stack>
+          </Paper>
+        </Grid>
+      </Grid>
     </Container>
   )
 }

@@ -104,14 +104,13 @@ export interface TicketFilterParams {
 }
 
 // Ticket statistics response
+// Matches the backend response from /support/tickets/stats/
+// Backend returns status counts (not priority counts)
 export interface TicketStatsResponse {
-  total_tickets: number
-  open_tickets: number
-  in_progress_tickets: number
-  resolved_tickets: number
-  closed_tickets: number
-  urgent_tickets: number
-  high_priority_tickets: number
-  medium_priority_tickets: number
-  low_priority_tickets: number
+  total: number
+  open: number
+  in_progress: number
+  resolved: number
+  closed: number
+  other: number // Count of tickets with unknown/other statuses
 }

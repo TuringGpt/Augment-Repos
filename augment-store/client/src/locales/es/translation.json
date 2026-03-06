@@ -958,6 +958,7 @@
       "viewDetails": "Ver Detalles",
       "messageDetails": "Detalles del Mensaje",
       "markAsRead": "Marcar como Leído",
+      "markAsResolved": "Marcar como Resuelto",
       "table": {
         "name": "Nombre",
         "email": "Correo Electrónico",
@@ -1041,7 +1042,20 @@
       "notAvailable": "N/D",
       "ticketNotFound": "Ticket no encontrado",
       "loadError": "Error al cargar los detalles del ticket. Por favor, inténtalo de nuevo.",
-      "commentError": "Error al enviar el comentario. Por favor, inténtalo de nuevo."
+      "commentError": "Error al enviar el comentario. Por favor, inténtalo de nuevo.",
+      "editTicket": "Editar Ticket",
+      "deleteTicket": "Eliminar Ticket",
+      "ticketActions": "Acciones del ticket",
+      "ticketInformation": "Información del Ticket",
+      "createdLabel": "Creado",
+      "lastUpdatedLabel": "Última Actualización",
+      "ticketId": "ID del Ticket",
+      "clickToCopy": "Haz clic para copiar",
+      "reporter": "Reportador",
+      "assignee": "Asignado a",
+      "supportAgent": "Agente de Soporte",
+      "copySuccess": "ID del ticket copiado al portapapeles",
+      "copyError": "Error al copiar al portapapeles"
     },
     "settings": "Configuración",
     "settingsPage": {

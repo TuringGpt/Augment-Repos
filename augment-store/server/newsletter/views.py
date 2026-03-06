@@ -12,7 +12,7 @@ from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheServic
 
 class NewsletterCacheService(BaseCacheService):
     OBJECT_NAME = "newsletter"
-    VERSION = 1
+    VERSION = 2
 
 
 class NewsletterStatusCacheService(BaseCacheService):
