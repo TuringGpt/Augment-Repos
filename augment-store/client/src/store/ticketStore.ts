@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
 import { parseApiError } from '@utils/errorUtils'
-import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket } from '@features/support/types'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -32,6 +32,11 @@ interface TicketState {
   isDeleting: boolean
   deleteError: string | null
 
+  // Ticket statistics state
+  stats: TicketStatsResponse | null
+  isFetchingStats: boolean
+  statsError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -41,6 +46,7 @@ interface TicketState {
   deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
+  getTicketStats: () => Promise<TicketStatsResponse>
 }
 
 // Request counter to track the latest fetch request
@@ -66,6 +72,11 @@ let updateInFlightCount = 0
 // Ensures isDeleting reflects "any delete in progress" rather than just the latest request
 // This prevents isDeleting from becoming false while earlier requests are still in-flight
 let deleteInFlightCount = 0
+
+// Request counter to prevent race conditions in getTicketStats
+// When multiple getTicketStats calls are made in quick succession,
+// only the most recent request should update the stats state
+let fetchStatsRequestCounter = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -95,6 +106,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   updateError: null,
   isDeleting: false,
   deleteError: null,
+  stats: null,
+  isFetchingStats: false,
+  statsError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -548,6 +562,43 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents in-flight responses from repopulating the store after clear
     fetchTicketRequestCounter += 1
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
+  },
+
+  getTicketStats: async (): Promise<TicketStatsResponse> => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchStatsRequestCounter += 1
+    const currentRequestId = fetchStatsRequestCounter
+
+    // Set loading state and clear stale data BEFORE any awaited work
+    set({ isFetchingStats: true, statsError: null })
+
+    try {
+      const stats = await ticketService.getTicketStats()
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchStatsRequestCounter) {
+        set({ stats, isFetchingStats: false })
+      }
+
+      return stats
+    } catch (error) {
+      console.error('Failed to fetch ticket stats:', error)
+
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchStatsRequestCounter) {
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'Failed to fetch ticket statistics',
+        })
+        set({
+          statsError: errorMessage,
+          isFetchingStats: false,
+        })
+      }
+
+      throw error
+    }
   },
 }))
 
