@@ -73,6 +73,11 @@ let updateInFlightCount = 0
 // This prevents isDeleting from becoming false while earlier requests are still in-flight
 let deleteInFlightCount = 0
 
+// Request counter to prevent race conditions in getTicketStats
+// When multiple getTicketStats calls are made in quick succession,
+// only the most recent request should update the stats state
+let fetchStatsRequestCounter = 0
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -560,21 +565,38 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 
   getTicketStats: async (): Promise<TicketStatsResponse> => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchStatsRequestCounter += 1
+    const currentRequestId = fetchStatsRequestCounter
+
+    // Set loading state and clear stale data BEFORE any awaited work
     set({ isFetchingStats: true, statsError: null })
 
     try {
       const stats = await ticketService.getTicketStats()
-      set({ stats, isFetchingStats: false })
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchStatsRequestCounter) {
+        set({ stats, isFetchingStats: false })
+      }
+
       return stats
     } catch (error) {
       console.error('Failed to fetch ticket stats:', error)
-      const errorMessage = parseApiError(error, {
-        defaultMessage: 'Failed to fetch ticket statistics',
-      })
-      set({
-        statsError: errorMessage,
-        isFetchingStats: false,
-      })
+
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchStatsRequestCounter) {
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'Failed to fetch ticket statistics',
+        })
+        set({
+          statsError: errorMessage,
+          isFetchingStats: false,
+        })
+      }
+
       throw error
     }
   },
