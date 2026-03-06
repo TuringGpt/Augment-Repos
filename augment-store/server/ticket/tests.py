@@ -91,6 +91,21 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results", [])), 1)
 
+    def test_list_tickets_search_by_title(self):
+        TicketFactory(title="Login Bug Report", assignee=self.user, reporter=self.user)
+        url = reverse("v1:ticket:ticket_list")
+        response = self.authenticated_client.get(url, {"search": "Login"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        self.assertIn("Login", results[0]["title"])
+
+    def test_list_tickets_search_no_match(self):
+        url = reverse("v1:ticket:ticket_list")
+        response = self.authenticated_client.get(url, {"search": "xyznonexistent"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results", [])), 0)
+
     def test_list_tickets_filter_by_priority(self):
         TicketFactory(priority=Ticket.Priority.HIGH, assignee=self.user, reporter=self.user)
         TicketFactory(priority=Ticket.Priority.LOW, assignee=self.user, reporter=self.user)
@@ -114,7 +129,6 @@ class TicketTests(BaseAPITestCase):
         response = self.authenticated_client.get(url, {"priority": "not_a_priority"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("priority", response.data)
-
     def test_list_tickets_filter_by_status(self):
         TicketFactory(status=Ticket.Status.CLOSED, assignee=self.user, reporter=self.user)
         url = reverse("v1:ticket:ticket_list")

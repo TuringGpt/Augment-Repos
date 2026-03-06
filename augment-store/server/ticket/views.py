@@ -35,6 +35,10 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by('-created_at')
 
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(title__icontains=search)
+
         priority_filter = self.request.query_params.get('priority')
         if priority_filter:
             valid_priorities = [p.value for p in Ticket.Priority]
