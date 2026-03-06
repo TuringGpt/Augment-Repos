@@ -632,12 +632,6 @@ const TicketDetailPage = () => {
                 <Tooltip title={t('admin.ticketDetailPage.clickToCopy')}>
                   <ButtonBase
                     onClick={() => handleCopyTicketId(ticket.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        handleCopyTicketId(ticket.id)
-                      }
-                    }}
                     aria-label={t('admin.ticketDetailPage.clickToCopy')}
                     sx={{
                       fontFamily: 'monospace',
