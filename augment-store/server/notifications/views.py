@@ -48,6 +48,13 @@ class ListNotificationView(CachedListMixin, BaseNotificationView, ListAPIView):
     cache_service_class = NotificationCacheService
     cache_ttl = 60  # 1 minute - keep short for timely notification updates
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        is_read = self.request.query_params.get('is_read')
+        if is_read is not None:
+            queryset = queryset.filter(is_read=is_read)
+        return queryset
+
 
 class UnreadNotificationCountView(BaseNotificationView, RetrieveAPIView):
     """

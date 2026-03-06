@@ -41,6 +41,31 @@ class NotificationTests(BaseAPITestCase):
         self.assertIn("created_at", result)
         self.assertNotIn("is_deleted", result)
 
+    def test_list_notifications_filter_by_is_read(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        from notifications.views import NotificationCacheService
+        NotificationCacheService().clear_namespace()
+        NotificationFactory(user=self.user, is_read=True)
+        NotificationFactory(user=self.user, is_read=False)
+
+        url = reverse("v1:notifications:list_notification")
+        
+        # Test filter unread
+        response = self.authenticated_client.get(url, {"is_read": "false"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for r in results:
+            self.assertFalse(r["is_read"])
+
+        # Test filter read
+        response = self.authenticated_client.get(url, {"is_read": "true"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreater(len(results), 0)
+        for r in results:
+            self.assertTrue(r["is_read"])
+
     def test_mark_notification_as_read(self):
         # GIVEN an authenticated user exists 
         self.authenticated_client.force_authenticate(user=self.user)
