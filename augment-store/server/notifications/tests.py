@@ -66,6 +66,13 @@ class NotificationTests(BaseAPITestCase):
         for r in results:
             self.assertTrue(r["is_read"])
 
+    def test_list_notifications_filter_by_is_read_invalid(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        url = reverse("v1:notifications:list_notification")
+        response = self.authenticated_client.get(url, {"is_read": "not_a_boolean"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("is_read", response.data)
+
     def test_mark_notification_as_read(self):
         # GIVEN an authenticated user exists 
         self.authenticated_client.force_authenticate(user=self.user)

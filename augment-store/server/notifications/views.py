@@ -49,9 +49,20 @@ class ListNotificationView(CachedListMixin, BaseNotificationView, ListAPIView):
     cache_ttl = 60  # 1 minute - keep short for timely notification updates
 
     def get_queryset(self):
+        from rest_framework.exceptions import ValidationError
+        
         queryset = super().get_queryset()
-        is_read = self.request.query_params.get('is_read')
-        if is_read is not None:
+        is_read_param = self.request.query_params.get('is_read')
+        
+        if is_read_param is not None:
+            is_read_str = is_read_param.lower()
+            if is_read_str in ['true', '1']:
+                is_read = True
+            elif is_read_str in ['false', '0']:
+                is_read = False
+            else:
+                raise ValidationError({'is_read': 'Must be true, false, 1, or 0'})
+                
             queryset = queryset.filter(is_read=is_read)
         return queryset
 
