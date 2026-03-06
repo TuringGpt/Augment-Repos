@@ -1042,7 +1042,20 @@
       "notAvailable": "N/V",
       "ticketNotFound": "Ticket nicht gefunden",
       "loadError": "Fehler beim Laden der Ticket-Details. Bitte versuchen Sie es erneut.",
-      "commentError": "Fehler beim Absenden des Kommentars. Bitte versuchen Sie es erneut."
+      "commentError": "Fehler beim Absenden des Kommentars. Bitte versuchen Sie es erneut.",
+      "editTicket": "Ticket Bearbeiten",
+      "deleteTicket": "Ticket Löschen",
+      "ticketActions": "Ticket-Aktionen",
+      "ticketInformation": "Ticket-Informationen",
+      "createdLabel": "Erstellt",
+      "lastUpdatedLabel": "Zuletzt Aktualisiert",
+      "ticketId": "Ticket-ID",
+      "clickToCopy": "Klicken zum Kopieren",
+      "reporter": "Melder",
+      "assignee": "Zugewiesen an",
+      "supportAgent": "Support-Mitarbeiter",
+      "copySuccess": "Ticket-ID in die Zwischenablage kopiert",
+      "copyError": "Fehler beim Kopieren in die Zwischenablage"
     },
     "settings": "Einstellungen",
     "settingsPage": {
