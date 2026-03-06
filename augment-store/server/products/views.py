@@ -231,8 +231,24 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
 
     
+    
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
         product_service = ProductService()
         return product_service.recommend_products_for_user(self.request.user)
+
+
+class ProductStockView(RetrieveAPIView):
+    """Check stock for a specific product."""
+    queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    
+    def retrieve(self, request, *args, **kwargs):
+        from rest_framework.response import Response
+        instance = self.get_object()
+        return Response({
+            "product_id": instance.id,
+            "in_stock": instance.quantity > 0,
+            "quantity": instance.quantity
+        })
 

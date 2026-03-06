@@ -611,6 +611,38 @@ class ProductTests(BaseAPITestCase):
         # AND the response should contain the products
         self.assertEqual(len(result), 2)
 
+    def test_product_stock_authenticated(self):
+        product = ProductFactory(
+            name="Stock Test Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["in_stock"])
+        self.assertEqual(response.data["quantity"], 5)
+
+    def test_product_stock_out_of_stock(self):
+        product = ProductFactory(
+            name="Out of Stock Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=0,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["in_stock"])
+        self.assertEqual(response.data["quantity"], 0)
+
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
         ProductFactory(
