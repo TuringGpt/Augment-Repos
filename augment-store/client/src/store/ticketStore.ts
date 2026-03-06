@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
 import { parseApiError } from '@utils/errorUtils'
-import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket } from '@features/support/types'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -32,6 +32,11 @@ interface TicketState {
   isDeleting: boolean
   deleteError: string | null
 
+  // Ticket statistics state
+  stats: TicketStatsResponse | null
+  isFetchingStats: boolean
+  statsError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -41,6 +46,7 @@ interface TicketState {
   deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
+  getTicketStats: () => Promise<TicketStatsResponse>
 }
 
 // Request counter to track the latest fetch request
@@ -95,6 +101,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   updateError: null,
   isDeleting: false,
   deleteError: null,
+  stats: null,
+  isFetchingStats: false,
+  statsError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -548,6 +557,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents in-flight responses from repopulating the store after clear
     fetchTicketRequestCounter += 1
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
+  },
+
+  getTicketStats: async (): Promise<TicketStatsResponse> => {
+    set({ isFetchingStats: true, statsError: null })
+
+    try {
+      const stats = await ticketService.getTicketStats()
+      set({ stats, isFetchingStats: false })
+      return stats
+    } catch (error) {
+      console.error('Failed to fetch ticket stats:', error)
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to fetch ticket statistics',
+      })
+      set({
+        statsError: errorMessage,
+        isFetchingStats: false,
+      })
+      throw error
+    }
   },
 }))
 
