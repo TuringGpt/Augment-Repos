@@ -1053,7 +1053,9 @@
       "clickToCopy": "Klicken zum Kopieren",
       "reporter": "Melder",
       "assignee": "Zugewiesen an",
-      "supportAgent": "Support-Mitarbeiter"
+      "supportAgent": "Support-Mitarbeiter",
+      "copySuccess": "Ticket-ID in die Zwischenablage kopiert",
+      "copyError": "Fehler beim Kopieren in die Zwischenablage"
     },
     "settings": "Einstellungen",
     "settingsPage": {

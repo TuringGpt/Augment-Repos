@@ -1053,7 +1053,9 @@
       "clickToCopy": "Cliquez pour copier",
       "reporter": "Rapporteur",
       "assignee": "Assigné à",
-      "supportAgent": "Agent de Support"
+      "supportAgent": "Agent de Support",
+      "copySuccess": "ID du ticket copié dans le presse-papiers",
+      "copyError": "Échec de la copie dans le presse-papiers"
     },
     "settings": "Paramètres",
     "settingsPage": {

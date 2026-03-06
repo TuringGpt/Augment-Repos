@@ -1053,7 +1053,9 @@
       "clickToCopy": "Click to copy",
       "reporter": "Reporter",
       "assignee": "Assignee",
-      "supportAgent": "Support Agent"
+      "supportAgent": "Support Agent",
+      "copySuccess": "Ticket ID copied to clipboard",
+      "copyError": "Failed to copy to clipboard"
     },
     "settings": "Settings",
     "settingsPage": {

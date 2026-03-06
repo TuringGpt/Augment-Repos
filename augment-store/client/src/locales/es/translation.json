@@ -1053,7 +1053,9 @@
       "clickToCopy": "Haz clic para copiar",
       "reporter": "Reportador",
       "assignee": "Asignado a",
-      "supportAgent": "Agente de Soporte"
+      "supportAgent": "Agente de Soporte",
+      "copySuccess": "ID del ticket copiado al portapapeles",
+      "copyError": "Error al copiar al portapapeles"
     },
     "settings": "Configuración",
     "settingsPage": {

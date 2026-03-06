@@ -39,6 +39,7 @@ import type { Comment, TicketStatus, TicketPriority } from '@features/support/ty
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useTicketStore } from '@store/ticketStore'
 
 /**
@@ -63,6 +64,7 @@ const translateErrorCode = (errorCode: string, translateFn: TFunction): string =
 
 const TicketDetailPage = () => {
   const { t } = useTranslation()
+  const toast = useToast()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -180,6 +182,23 @@ const TicketDetailPage = () => {
     handleMenuClose()
     // TODO: Implement delete functionality
     console.log('Delete ticket')
+  }
+
+  /**
+   * Handle copying ticket ID to clipboard with proper error handling
+   * Addresses potential errors from navigator.clipboard.writeText:
+   * - Unsupported browser/context
+   * - Insecure context (non-HTTPS)
+   * - Permission denied
+   */
+  const handleCopyTicketId = async (ticketId: string) => {
+    try {
+      await navigator.clipboard.writeText(ticketId)
+      toast.success(t('admin.ticketDetailPage.copySuccess'))
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err)
+      toast.error(t('admin.ticketDetailPage.copyError'))
+    }
   }
 
   const getStatusColor = (status: TicketStatus) => {
@@ -617,7 +636,7 @@ const TicketDetailPage = () => {
                       cursor: 'pointer',
                       '&:hover': { color: 'primary.main' }
                     }}
-                    onClick={() => navigator.clipboard.writeText(ticket.id)}
+                    onClick={() => handleCopyTicketId(ticket.id)}
                   >
                     {ticket.id.substring(0, 8)}...
                   </Typography>
