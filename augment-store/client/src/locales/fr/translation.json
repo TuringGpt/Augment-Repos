@@ -1045,6 +1045,7 @@
       "commentError": "Échec de l'envoi du commentaire. Veuillez réessayer.",
       "editTicket": "Modifier le Ticket",
       "deleteTicket": "Supprimer le Ticket",
+      "ticketActions": "Actions du ticket",
       "ticketInformation": "Informations du Ticket",
       "createdLabel": "Créé",
       "lastUpdatedLabel": "Dernière Mise à Jour",

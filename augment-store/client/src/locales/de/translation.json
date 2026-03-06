@@ -1045,6 +1045,7 @@
       "commentError": "Fehler beim Absenden des Kommentars. Bitte versuchen Sie es erneut.",
       "editTicket": "Ticket Bearbeiten",
       "deleteTicket": "Ticket Löschen",
+      "ticketActions": "Ticket-Aktionen",
       "ticketInformation": "Ticket-Informationen",
       "createdLabel": "Erstellt",
       "lastUpdatedLabel": "Zuletzt Aktualisiert",

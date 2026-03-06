@@ -1045,6 +1045,7 @@
       "commentError": "Failed to submit comment. Please try again.",
       "editTicket": "Edit Ticket",
       "deleteTicket": "Delete Ticket",
+      "ticketActions": "Ticket actions",
       "ticketInformation": "Ticket Information",
       "createdLabel": "Created",
       "lastUpdatedLabel": "Last Updated",

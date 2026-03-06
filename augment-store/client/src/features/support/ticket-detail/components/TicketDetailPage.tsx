@@ -349,10 +349,18 @@ const TicketDetailPage = () => {
                   </Stack>
                 </Box>
               </Box>
-              <IconButton onClick={handleMenuOpen} size="small">
+              <IconButton
+                onClick={handleMenuOpen}
+                size="small"
+                aria-label={t('admin.ticketDetailPage.ticketActions')}
+                aria-controls={anchorEl ? 'ticket-actions-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={!!anchorEl}
+              >
                 <MoreVertIcon />
               </IconButton>
               <Menu
+                id="ticket-actions-menu"
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
