@@ -660,6 +660,12 @@ class ProductTests(BaseAPITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_product_stock_not_found(self):
+        import uuid
+        url = reverse("v1:product_stock", kwargs={"pk": str(uuid.uuid4())})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
         ProductFactory(

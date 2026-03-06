@@ -5,6 +5,7 @@ import functools
 logger = logging.getLogger(__name__)
 
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -252,11 +253,12 @@ class ProductStockView(RetrieveAPIView):
     serializer_class = ProductStockSerializer
     
     def retrieve(self, request, *args, **kwargs):
-        from rest_framework.response import Response
         instance = self.get_object()
-        return Response({
+        data = {
             "product_id": instance.id,
-            "in_stock": instance.quantity > 0,
+            "in_stock": instance.check_stock(1),  # in stock if at least 1 unit available
             "quantity": instance.quantity
-        })
+        }
+        serializer = self.get_serializer(data)
+        return Response(serializer.data)
 
