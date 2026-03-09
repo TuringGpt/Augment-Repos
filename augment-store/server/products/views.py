@@ -4,7 +4,8 @@ import functools
 
 logger = logging.getLogger(__name__)
 
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -231,8 +232,33 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
 
     
+    
 class RecommendProductListView(BaseProductView, ListAPIView):
     def get_queryset(self):
         product_service = ProductService()
         return product_service.recommend_products_for_user(self.request.user)
+
+
+from rest_framework import serializers
+
+class ProductStockSerializer(serializers.Serializer):
+    product_id = serializers.UUIDField()
+    in_stock = serializers.BooleanField()
+    quantity = serializers.IntegerField()
+
+class ProductStockView(RetrieveAPIView):
+    """Check stock for a specific product."""
+    queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductStockSerializer
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = {
+            "product_id": instance.id,
+            "in_stock": instance.check_stock(1),  # in stock if at least 1 unit available
+            "quantity": instance.quantity
+        }
+        serializer = self.get_serializer(data)
+        return Response(serializer.data)
 
