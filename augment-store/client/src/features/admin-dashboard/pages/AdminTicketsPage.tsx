@@ -311,7 +311,7 @@ const AdminTicketsPage = () => {
                 <Typography variant="body2" color="text.secondary">
                   {t('admin.ticketsPage.statusClosed')}
                 </Typography>
-                <ResolvedIcon sx={{ color: 'default', fontSize: 24 }} />
+                <ResolvedIcon sx={{ color: 'text.secondary', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
                 {formatStatValue(stats?.closed)}
