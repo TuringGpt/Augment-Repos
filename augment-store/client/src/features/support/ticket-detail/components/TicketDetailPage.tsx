@@ -93,6 +93,13 @@ const TicketDetailPage = () => {
   // This prevents showing "not found" error on initial render before useEffect runs
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
 
+  // Clear anchorEl when isAdmin becomes false to prevent stale menu state
+  useEffect(() => {
+    if (!isAdmin && anchorEl) {
+      setAnchorEl(null)
+    }
+  }, [isAdmin, anchorEl])
+
   // Track the current request ID to prevent race conditions
   // If id changes while a request is in-flight, we only update hasFetchedOnce for the latest id
   const currentRequestIdRef = useRef<string | undefined>(undefined)
