@@ -32,8 +32,6 @@ import {
   Flag as StatusIcon,
   CheckCircle as ResolvedIcon,
   Schedule as PendingIcon,
-  Error as UrgentIcon,
-  TrendingUp as TrendingUpIcon,
   Search as SearchIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
@@ -41,16 +39,6 @@ import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
-
-// Dummy stats data
-const DUMMY_STATS = {
-  totalTickets: 156,
-  openTickets: 42,
-  inProgressTickets: 28,
-  resolvedTickets: 86,
-  urgentTickets: 8,
-  avgResponseTime: '2.5 hours',
-}
 
 /**
  * AdminTicketsPage Component
@@ -76,6 +64,9 @@ const AdminTicketsPage = () => {
     error: ticketsError,
     fetchTickets,
     setPage,
+    stats,
+    isFetchingStats,
+    getTicketStats,
   } = useTicketStore()
 
   // Filter states
@@ -94,6 +85,13 @@ const AdminTicketsPage = () => {
       })
     }
   }, [isAuthenticated, user?.role, statusFilter, priorityFilter, searchQuery, fetchTickets])
+
+  // Load ticket stats on mount
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      getTicketStats()
+    }
+  }, [isAuthenticated, user?.role, getTicketStats])
 
   // Helper functions for formatting
   const getStatusColor = (status: TicketStatus) => {
@@ -229,15 +227,9 @@ const AdminTicketsPage = () => {
                 </Typography>
                 <TicketIcon sx={{ color: 'primary.main', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.totalTickets}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {isFetchingStats ? '...' : stats?.total ?? 0}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                <Typography variant="caption" color="success.main">
-                  +12% {t('admin.ticketsPage.stats.fromLastMonth')}
-                </Typography>
-              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -252,11 +244,8 @@ const AdminTicketsPage = () => {
                 </Typography>
                 <PendingIcon sx={{ color: 'info.main', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.openTickets}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('admin.ticketsPage.stats.needsAttention')}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {isFetchingStats ? '...' : stats?.open ?? 0}
               </Typography>
             </CardContent>
           </Card>
@@ -272,11 +261,8 @@ const AdminTicketsPage = () => {
                 </Typography>
                 <StatusIcon sx={{ color: 'warning.main', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.inProgressTickets}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('admin.ticketsPage.stats.beingWorkedOn')}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {isFetchingStats ? '...' : stats?.in_progress ?? 0}
               </Typography>
             </CardContent>
           </Card>
@@ -292,31 +278,25 @@ const AdminTicketsPage = () => {
                 </Typography>
                 <ResolvedIcon sx={{ color: 'success.main', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.resolvedTickets}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {t('admin.ticketsPage.stats.thisMonth')}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {isFetchingStats ? '...' : stats?.resolved ?? 0}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Urgent Tickets */}
+        {/* Closed Tickets */}
         <Grid item xs={12} sm={6} md={4} lg={2}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2" color="text.secondary">
-                  {t('admin.ticketsPage.stats.urgent')}
+                  {t('admin.ticketsPage.statusClosed')}
                 </Typography>
-                <UrgentIcon sx={{ color: 'error.main', fontSize: 24 }} />
+                <ResolvedIcon sx={{ color: 'default', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.urgentTickets}
-              </Typography>
-              <Typography variant="caption" color="error.main">
-                {t('admin.ticketsPage.stats.requiresImmediate')}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {isFetchingStats ? '...' : stats?.closed ?? 0}
               </Typography>
             </CardContent>
           </Card>
@@ -332,15 +312,9 @@ const AdminTicketsPage = () => {
                 </Typography>
                 <AccessTimeIcon sx={{ color: 'primary.main', fontSize: 24 }} />
               </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-                {DUMMY_STATS.avgResponseTime}
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                N/A
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main', transform: 'rotate(180deg)' }} />
-                <Typography variant="caption" color="success.main">
-                  -15% {t('admin.ticketsPage.stats.faster')}
-                </Typography>
-              </Box>
             </CardContent>
           </Card>
         </Grid>
