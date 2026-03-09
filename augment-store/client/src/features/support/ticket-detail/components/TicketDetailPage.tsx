@@ -42,6 +42,7 @@ import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useTicketStore } from '@store/ticketStore'
+import { useAuthStore } from '@store/authStore'
 
 /**
  * Translate error codes to user-friendly messages
@@ -68,6 +69,10 @@ const TicketDetailPage = () => {
   const toast = useToast()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
+  // Use auth store to check if user is admin
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === 'admin'
 
   // Use ticket store for fetching ticket details
   const {
@@ -370,31 +375,36 @@ const TicketDetailPage = () => {
                   </Stack>
                 </Box>
               </Box>
-              <IconButton
-                onClick={handleMenuOpen}
-                size="small"
-                aria-label={t('admin.ticketDetailPage.ticketActions')}
-                aria-controls={anchorEl ? 'ticket-actions-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={!!anchorEl}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="ticket-actions-menu"
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={handleEditTicket}>
-                  <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-                  {t('admin.ticketDetailPage.editTicket')}
-                </MenuItem>
-                <MenuItem onClick={handleDeleteTicket} sx={{ color: 'error.main' }}>
-                  <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-                  {t('admin.ticketDetailPage.deleteTicket')}
-                </MenuItem>
-              </Menu>
+              {/* Only show edit/delete menu for admin users */}
+              {isAdmin && (
+                <>
+                  <IconButton
+                    onClick={handleMenuOpen}
+                    size="small"
+                    aria-label={t('admin.ticketDetailPage.ticketActions')}
+                    aria-controls={anchorEl ? 'ticket-actions-menu' : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={!!anchorEl}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    id="ticket-actions-menu"
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={handleEditTicket}>
+                      <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+                      {t('admin.ticketDetailPage.editTicket')}
+                    </MenuItem>
+                    <MenuItem onClick={handleDeleteTicket} sx={{ color: 'error.main' }}>
+                      <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
+                      {t('admin.ticketDetailPage.deleteTicket')}
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
             </Box>
 
             <Divider sx={{ my: 2 }} />
