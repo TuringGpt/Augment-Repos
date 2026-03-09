@@ -66,6 +66,7 @@ const AdminTicketsPage = () => {
     setPage,
     stats,
     isFetchingStats,
+    statsError,
     getTicketStats,
   } = useTicketStore()
 
@@ -116,6 +117,14 @@ const AdminTicketsPage = () => {
       default:
         return 'default'
     }
+  }
+
+  // Helper function to format stat values
+  // Shows loading state, error state, or actual value
+  const formatStatValue = (value: number | undefined): string | number => {
+    if (isFetchingStats) return '...'
+    if (statsError) return 'N/A'
+    return value ?? 0
   }
 
   const getPriorityColor = (priority: TicketPriority) => {
@@ -237,7 +246,7 @@ const AdminTicketsPage = () => {
                 <TicketIcon sx={{ color: 'primary.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {isFetchingStats ? '...' : stats?.total ?? 0}
+                {formatStatValue(stats?.total)}
               </Typography>
             </CardContent>
           </Card>
@@ -254,7 +263,7 @@ const AdminTicketsPage = () => {
                 <PendingIcon sx={{ color: 'info.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {isFetchingStats ? '...' : stats?.open ?? 0}
+                {formatStatValue(stats?.open)}
               </Typography>
             </CardContent>
           </Card>
@@ -271,7 +280,7 @@ const AdminTicketsPage = () => {
                 <StatusIcon sx={{ color: 'warning.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {isFetchingStats ? '...' : stats?.in_progress ?? 0}
+                {formatStatValue(stats?.in_progress)}
               </Typography>
             </CardContent>
           </Card>
@@ -288,7 +297,7 @@ const AdminTicketsPage = () => {
                 <ResolvedIcon sx={{ color: 'success.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {isFetchingStats ? '...' : stats?.resolved ?? 0}
+                {formatStatValue(stats?.resolved)}
               </Typography>
             </CardContent>
           </Card>
@@ -305,7 +314,7 @@ const AdminTicketsPage = () => {
                 <ResolvedIcon sx={{ color: 'default', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {isFetchingStats ? '...' : stats?.closed ?? 0}
+                {formatStatValue(stats?.closed)}
               </Typography>
             </CardContent>
           </Card>
