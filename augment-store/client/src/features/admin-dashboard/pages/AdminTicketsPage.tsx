@@ -88,9 +88,18 @@ const AdminTicketsPage = () => {
 
   // Load ticket stats on mount
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
-      getTicketStats()
+    const fetchStats = async () => {
+      if (isAuthenticated && user?.role === 'admin') {
+        try {
+          await getTicketStats()
+        } catch (err) {
+          // Error is already handled by the store
+          console.error('Failed to fetch ticket stats:', err)
+        }
+      }
     }
+
+    fetchStats()
   }, [isAuthenticated, user?.role, getTicketStats])
 
   // Helper functions for formatting
