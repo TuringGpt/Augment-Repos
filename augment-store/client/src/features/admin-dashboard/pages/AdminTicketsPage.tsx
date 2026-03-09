@@ -123,7 +123,7 @@ const AdminTicketsPage = () => {
   // Shows loading state, error state, or actual value
   const formatStatValue = (value: number | undefined): string | number => {
     if (isFetchingStats) return '...'
-    if (statsError) return 'N/A'
+    if (statsError) return t('admin.ticketDetailPage.notAvailable')
     return value ?? 0
   }
 
