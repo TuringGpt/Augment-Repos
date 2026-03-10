@@ -222,7 +222,6 @@ const TicketDetailPage = () => {
     try {
       // Call the store action to delete the ticket
       // Note: deleteTicket() reliably clears isDeleting to false on both success and error paths
-      // (see ticketStore.ts lines 437+473 for success, 511+516 for error)
       // This ensures dialog controls are re-enabled after the operation completes
       await deleteTicket(id)
 
