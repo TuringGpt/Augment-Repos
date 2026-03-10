@@ -23,6 +23,7 @@ import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 import { parseApiError } from '@utils/errorUtils'
 import { useTranslation } from '@hooks/useTranslation'
+import { useAuthStore } from '@store/authStore'
 
 type CreateTicketFormValues = {
   title: string
@@ -34,6 +35,7 @@ type CreateTicketFormValues = {
 const CreateTicketPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -67,12 +69,20 @@ const CreateTicketPage = () => {
     setError(null)
     setSuccessMessage(null)
 
+    // Ensure user is authenticated before creating ticket
+    if (!user?.id) {
+      setError(t('admin.createTicketPage.errorMessage'))
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const ticket = await ticketService.createTicket({
         title: values.title,
         description: values.description,
         priority: values.priority as TicketPriority,
         status: values.status as TicketStatus,
+        assignee: user.id, // Required by backend - Ticket.assignee is a non-null ForeignKey
       })
 
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
@@ -85,7 +95,7 @@ const CreateTicketPage = () => {
       console.error('Failed to create ticket:', err)
 
       const errorMessage = parseApiError(err, {
-        fieldNames: ['title', 'description', 'priority', 'status'],
+        fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
         defaultMessage: t('admin.createTicketPage.errorMessage'),
       })
 
