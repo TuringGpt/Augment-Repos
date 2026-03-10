@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Container,
   Typography,
@@ -39,6 +39,16 @@ const CreateTicketPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const redirectTimeoutRef = useRef<number | null>(null)
+
+  // Cleanup timeout on unmount to prevent navigation after component is unmounted
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Validation schema with translations
   const createTicketSchema = z.object({
@@ -73,8 +83,12 @@ const CreateTicketPage = () => {
     if (!user?.id) {
       setError(t('admin.createTicketPage.authenticationError'))
       setIsSubmitting(false)
+      // Clear any existing timeout before setting a new one
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+      }
       // Redirect to login page after showing the error message
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.LOGIN)
       }, 2000)
       return
@@ -91,8 +105,12 @@ const CreateTicketPage = () => {
 
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
 
+      // Clear any existing timeout before setting a new one
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+      }
       // Redirect to ticket detail page after 1.5 seconds
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticket.id))
       }, 1500)
     } catch (err) {
