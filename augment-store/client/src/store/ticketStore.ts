@@ -478,9 +478,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       // If the page changed (e.g., deleted last item on last page), refetch the new page
       // This ensures the UI shows the correct tickets for the new page instead of stale data
-      // Note: This refetch happens AFTER decrementing the counter and OUTSIDE the try-catch
-      // because the ticket was already successfully deleted. If this refetch fails, it's a
-      // fetch error, not a delete error, and should not mislead callers/UI about the deletion.
+      // Note: This refetch happens BEFORE decrementing the counter (which happens in finally),
+      // so isDeleting remains true during the refetch. This is intentional to keep UI controls
+      // disabled until the entire delete operation (including any necessary refetch) completes.
+      // The refetch is OUTSIDE the try-catch because the ticket was already successfully deleted.
+      // If this refetch fails, it's a fetch error, not a delete error, and should not mislead
+      // callers/UI about the deletion.
       const newPage = get().page
       if (newPage !== oldPage) {
         try {
