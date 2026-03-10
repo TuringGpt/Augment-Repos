@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Container,
   Typography,
@@ -51,19 +51,23 @@ const CreateTicketPage = () => {
     }
   }, [])
 
-  // Validation schema with translations
-  const createTicketSchema = z.object({
-    title: z
-      .string()
-      .min(5, t('admin.createTicketPage.validation.titleMinLength'))
-      .max(255, t('admin.createTicketPage.validation.titleMaxLength')),
-    description: z
-      .string()
-      .min(20, t('admin.createTicketPage.validation.descriptionMinLength'))
-      .max(2000, t('admin.createTicketPage.validation.descriptionMaxLength')),
-    priority: z.enum(['low', 'medium', 'high', 'urgent']),
-    status: z.enum(['open', 'in_progress', 'resolved', 'closed']),
-  })
+  // Validation schema with translations - memoized to update when language changes
+  const createTicketSchema = useMemo(
+    () =>
+      z.object({
+        title: z
+          .string()
+          .min(5, t('admin.createTicketPage.validation.titleMinLength'))
+          .max(255, t('admin.createTicketPage.validation.titleMaxLength')),
+        description: z
+          .string()
+          .min(20, t('admin.createTicketPage.validation.descriptionMinLength'))
+          .max(2000, t('admin.createTicketPage.validation.descriptionMaxLength')),
+        priority: z.enum(['low', 'medium', 'high', 'urgent']),
+        status: z.enum(['open', 'in_progress', 'resolved', 'closed']),
+      }),
+    [t]
+  )
 
   const form = useForm<CreateTicketFormValues>({
     initialValues: {
@@ -72,7 +76,9 @@ const CreateTicketPage = () => {
       priority: 'medium',
       status: 'open',
     },
-    validate: zodResolver(createTicketSchema),
+    // Use a validation function that references the memoized schema
+    // This ensures validation messages always match the active locale
+    validate: (values) => zodResolver(createTicketSchema)(values),
   })
 
   const handleSubmit = async (values: CreateTicketFormValues) => {
