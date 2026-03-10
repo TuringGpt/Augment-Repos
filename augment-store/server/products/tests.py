@@ -730,6 +730,14 @@ class ProductTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_product_list_filter_by_rating_invalid_value(self):
+        # GIVEN a non-decimal value is passed for min_rating
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"min_rating": "abc"})
+
+        # THEN we should get a 400 response, not a 500
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
         ProductFactory(

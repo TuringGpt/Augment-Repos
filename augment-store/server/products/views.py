@@ -157,13 +157,21 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     search_fields = ["name", "description", "brand__name", "category__name"]
 
     def get_queryset(self):
+        from decimal import Decimal, InvalidOperation
+        from rest_framework.exceptions import ValidationError
+
         queryset = super().get_queryset()
         min_rating = self.request.query_params.get('min_rating')
         max_rating = self.request.query_params.get('max_rating')
-        if min_rating:
-            queryset = queryset.filter(rating__gte=min_rating)
-        if max_rating:
-            queryset = queryset.filter(rating__gte=max_rating)  # bug: should be lte
+
+        try:
+            if min_rating:
+                queryset = queryset.filter(rating__gte=Decimal(min_rating))
+            if max_rating:
+                queryset = queryset.filter(rating__lte=Decimal(max_rating))
+        except InvalidOperation:
+            raise ValidationError({'detail': 'min_rating and max_rating must be valid decimal numbers.'})
+
         return queryset
 
 
