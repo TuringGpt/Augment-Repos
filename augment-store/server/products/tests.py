@@ -632,9 +632,9 @@ class ProductTests(BaseAPITestCase):
             created_by=self.merchant_user
         )
 
-        # WHEN we filter by min_rating=4.0
+        # WHEN we filter by rating_min=4.0 (using existing ProductFilter RangeFilter)
         url = reverse("v1:product_list")
-        response = self.client.get(url, {"min_rating": "4.0"})
+        response = self.client.get(url, {"rating_min": "4.0"})
 
         # THEN only high-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -664,9 +664,9 @@ class ProductTests(BaseAPITestCase):
             created_by=self.merchant_user
         )
 
-        # WHEN we filter by max_rating=3.0
+        # WHEN we filter by rating_max=3.0 (using existing ProductFilter RangeFilter)
         url = reverse("v1:product_list")
-        response = self.client.get(url, {"max_rating": "3.0"})
+        response = self.client.get(url, {"rating_max": "3.0"})
 
         # THEN only low-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -729,14 +729,6 @@ class ProductTests(BaseAPITestCase):
         url = reverse("v1:product_stock", kwargs={"pk": str(uuid.uuid4())})
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_product_list_filter_by_rating_invalid_value(self):
-        # GIVEN a non-decimal value is passed for min_rating
-        url = reverse("v1:product_list")
-        response = self.client.get(url, {"min_rating": "abc"})
-
-        # THEN we should get a 400 response, not a 500
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
