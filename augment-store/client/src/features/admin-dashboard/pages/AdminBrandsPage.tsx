@@ -45,6 +45,7 @@ import { useToast } from '@hooks/useToast'
 import type { Brand } from '@features/products/types'
 import { AvatarUpload } from '@features/user/profile/components/AvatarUpload'
 import { storageService } from '@services/api/storage/storageService'
+import { escapeHtml } from '@utils/validators'
 
 /**
  * AdminBrandsPage Component
@@ -1076,7 +1077,7 @@ const AdminBrandsPage = () => {
           <DialogContentText id="delete-brand-dialog-description">
             <Trans
               i18nKey="admin.brandsPage.deleteBrandConfirm"
-              values={{ brandName: brandToDelete?.name }}
+              values={{ brandName: brandToDelete?.name ? escapeHtml(brandToDelete.name) : '' }}
               components={{ strong: <strong /> }}
             />
           </DialogContentText>

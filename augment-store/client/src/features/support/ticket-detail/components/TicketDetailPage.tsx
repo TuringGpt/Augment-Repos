@@ -44,6 +44,7 @@ import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
 import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
+import { escapeHtml } from '@utils/validators'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
@@ -764,7 +765,7 @@ const TicketDetailPage = () => {
           <DialogContentText id="delete-ticket-dialog-description">
             <Trans
               i18nKey="admin.ticketDetailPage.deleteTicketConfirm"
-              values={{ ticketTitle: ticket.title }}
+              values={{ ticketTitle: escapeHtml(ticket.title) }}
               components={{ strong: <strong /> }}
             />
           </DialogContentText>
