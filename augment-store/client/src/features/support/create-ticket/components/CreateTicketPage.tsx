@@ -35,7 +35,7 @@ type CreateTicketFormValues = {
 const CreateTicketPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { user, hasHydrated, isLoading, isAuthenticated } = useAuthStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -86,8 +86,17 @@ const CreateTicketPage = () => {
     setError(null)
     setSuccessMessage(null)
 
+    // Wait for hydration to complete before checking authentication
+    // This prevents incorrectly treating authenticated users as unauthenticated
+    // during the initial hydration or transient loading states
+    if (!hasHydrated || isLoading) {
+      setError(t('admin.createTicketPage.authenticationError'))
+      setIsSubmitting(false)
+      return
+    }
+
     // Ensure user is authenticated before creating ticket
-    if (!user?.id) {
+    if (!isAuthenticated || !user?.id) {
       setError(t('admin.createTicketPage.authenticationError'))
       setIsSubmitting(false)
       // Clear any existing timeout before setting a new one
