@@ -96,7 +96,9 @@ const CreateTicketPage = () => {
     // This prevents incorrectly treating authenticated users as unauthenticated
     // during the initial hydration or transient loading states
     if (!hasHydrated || isLoading) {
-      setError(t('admin.createTicketPage.authenticationError'))
+      // Show a loading message instead of an error during hydration
+      // This avoids misleading users who may actually be authenticated
+      setError(t('admin.createTicketPage.loadingAuthState'))
       setIsSubmitting(false)
       return
     }

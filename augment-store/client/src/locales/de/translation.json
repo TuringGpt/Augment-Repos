@@ -1049,6 +1049,7 @@
       "successMessage": "Ticket erfolgreich erstellt! Weiterleitung...",
       "errorMessage": "Fehler beim Erstellen des Tickets. Bitte versuchen Sie es erneut.",
       "authenticationError": "Sie müssen angemeldet sein, um ein Ticket zu erstellen. Bitte melden Sie sich an und versuchen Sie es erneut.",
+      "loadingAuthState": "Bitte warten Sie, während wir Ihre Authentifizierung überprüfen...",
       "validation": {
         "titleMinLength": "Der Titel muss mindestens 5 Zeichen lang sein",
         "titleMaxLength": "Der Titel ist zu lang",

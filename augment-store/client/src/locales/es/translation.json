@@ -1049,6 +1049,7 @@
       "successMessage": "¡Ticket creado exitosamente! Redirigiendo...",
       "errorMessage": "Error al crear el ticket. Por favor, inténtalo de nuevo.",
       "authenticationError": "Debes iniciar sesión para crear un ticket. Por favor, inicia sesión e inténtalo de nuevo.",
+      "loadingAuthState": "Por favor espera mientras verificamos tu autenticación...",
       "validation": {
         "titleMinLength": "El título debe tener al menos 5 caracteres",
         "titleMaxLength": "El título es demasiado largo",
