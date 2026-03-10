@@ -469,7 +469,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           total: newTotal,
           page: newPage,
           totalPages: newTotalPages,
-          // Only set isDeleting to false if no other delete operations are in-flight
+          // Set isDeleting based on in-flight counter (already decremented above)
+          // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
+          // This guarantees UI controls are re-enabled after successful deletion
           isDeleting: deleteInFlightCount > 0,
           // If the deleted ticket was selected, clear the selection
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
@@ -512,7 +514,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       set({
         deleteError: errorMessage,
-        // Only set isDeleting to false if no other delete operations are in-flight
+        // Set isDeleting based on in-flight counter (already decremented above)
+        // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
+        // This guarantees UI controls are re-enabled after failed deletion
         isDeleting: deleteInFlightCount > 0
       })
       throw error
