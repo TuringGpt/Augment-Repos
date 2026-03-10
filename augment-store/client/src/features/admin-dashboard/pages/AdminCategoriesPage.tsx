@@ -46,6 +46,7 @@ import { useAuthStore } from '@store/authStore'
 import { useCategoryStore } from '@store/categoryStore'
 import { storageService } from '@services/api/storage/storageService'
 import { categoryNameToSlug } from '@utils/categoryUtils'
+import { escapeHtml } from '@utils/validators'
 import type { Category } from '@features/products/types'
 
 /**
@@ -1173,7 +1174,7 @@ const AdminCategoriesPage = () => {
           <DialogContentText id="delete-category-dialog-description">
             <Trans
               i18nKey="admin.categoriesPage.deleteCategoryConfirm"
-              values={{ categoryName: categoryToDelete?.name }}
+              values={{ categoryName: categoryToDelete?.name ? escapeHtml(categoryToDelete.name) : '' }}
               components={{ strong: <strong /> }}
             />
           </DialogContentText>

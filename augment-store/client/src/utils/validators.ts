@@ -33,3 +33,29 @@ export const isValidPostalCode = (postalCode: string, country = 'US'): boolean =
   // Add more country-specific validations as needed
   return postalCode.length > 0
 }
+
+/**
+ * Escape HTML special characters to prevent XSS attacks
+ *
+ * This function should be used when displaying user-generated content
+ * in contexts where HTML escaping is disabled (e.g., i18n with escapeValue: false)
+ *
+ * @param text - The text to escape
+ * @returns The escaped text safe for HTML rendering
+ *
+ * @example
+ * escapeHtml('<script>alert("XSS")</script>')
+ * // Returns: '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
+ */
+export const escapeHtml = (text: string): string => {
+  const htmlEscapeMap: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  }
+
+  return text.replace(/[&<>"'/]/g, (char) => htmlEscapeMap[char] || char)
+}

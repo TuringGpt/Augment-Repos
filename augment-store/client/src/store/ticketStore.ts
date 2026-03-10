@@ -465,8 +465,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           total: newTotal,
           page: newPage,
           totalPages: newTotalPages,
-          // Only set isDeleting to false if no other delete operations are in-flight
-          isDeleting: deleteInFlightCount > 0,
           // If the deleted ticket was selected, clear the selection
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
           // Clear ticket-detail fetch state if we invalidated an in-flight request
@@ -478,15 +476,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         }
       })
 
-      // Decrement in-flight counter after successful deletion
-      // This ensures the counter is only decremented once on success
-      deleteInFlightCount -= 1
-
       // If the page changed (e.g., deleted last item on last page), refetch the new page
       // This ensures the UI shows the correct tickets for the new page instead of stale data
-      // Note: This refetch happens AFTER decrementing the counter and OUTSIDE the try-catch
-      // because the ticket was already successfully deleted. If this refetch fails, it's a
-      // fetch error, not a delete error, and should not mislead callers/UI about the deletion.
+      // Note: This refetch happens BEFORE decrementing the counter (which happens in finally),
+      // so isDeleting remains true during the refetch. This is intentional to keep UI controls
+      // disabled until the entire delete operation (including any necessary refetch) completes.
+      // The refetch is OUTSIDE the try-catch because the ticket was already successfully deleted.
+      // If this refetch fails, it's a fetch error, not a delete error, and should not mislead
+      // callers/UI about the deletion.
       const newPage = get().page
       if (newPage !== oldPage) {
         try {
@@ -506,15 +503,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'Failed to delete ticket',
       })
 
-      // Decrement in-flight counter on error
-      deleteInFlightCount -= 1
-
       set({
         deleteError: errorMessage,
-        // Only set isDeleting to false if no other delete operations are in-flight
-        isDeleting: deleteInFlightCount > 0
       })
       throw error
+    } finally {
+      // Decrement in-flight counter in finally block to guarantee cleanup on all paths
+      // This ensures isDeleting is set to false even if parseApiError() or other error handling throws
+      deleteInFlightCount -= 1
+      set({
+        // Set isDeleting based on in-flight counter (already decremented above)
+        // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
+        // This guarantees UI controls are re-enabled after deletion completes (success or failure)
+        isDeleting: deleteInFlightCount > 0
+      })
     }
   },
 

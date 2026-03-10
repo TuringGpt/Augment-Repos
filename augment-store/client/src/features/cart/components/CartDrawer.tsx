@@ -31,6 +31,7 @@ import { useCartStore } from '@store/cartStore'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
 import { getItemPrice, getItemSubtotal } from '@utils/cartUtils'
 import { useTranslation } from '@hooks/useTranslation'
+import { escapeHtml } from '@utils/validators'
 
 const CartDrawer = () => {
   const { t } = useTranslation()
@@ -340,7 +341,7 @@ const CartDrawer = () => {
           <DialogContentText id="remove-item-dialog-description">
             <Trans
               i18nKey="cart.removeItemConfirm"
-              values={{ name: itemToRemove?.name || '' }}
+              values={{ name: itemToRemove?.name ? escapeHtml(itemToRemove.name) : '' }}
               components={{ strong: <strong /> }}
             />
           </DialogContentText>
