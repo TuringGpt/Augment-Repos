@@ -638,7 +638,7 @@ class ProductTests(BaseAPITestCase):
 
         # THEN only high-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data.get("results", response.data)
+        results = response.data["results"]
         names = [r["name"] for r in results]
         self.assertIn("High Rated", names)
         self.assertNotIn("Low Rated", names)
@@ -670,7 +670,7 @@ class ProductTests(BaseAPITestCase):
 
         # THEN only low-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data.get("results", response.data)
+        results = response.data["results"]
         names = [r["name"] for r in results]
         self.assertIn("Low Rated", names)
         self.assertNotIn("High Rated", names)
