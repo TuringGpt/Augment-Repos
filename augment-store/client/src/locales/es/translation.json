@@ -1055,7 +1055,12 @@
       "assignee": "Asignado a",
       "supportAgent": "Agente de Soporte",
       "copySuccess": "ID del ticket copiado al portapapeles",
-      "copyError": "Error al copiar al portapapeles"
+      "copyError": "Error al copiar al portapapeles",
+      "deleteTicketConfirm": "¿Estás seguro de que quieres eliminar <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleteSuccess": "Ticket eliminado exitosamente",
+      "deleteError": "Error al eliminar el ticket. Por favor, inténtalo de nuevo."
     },
     "settings": "Configuración",
     "settingsPage": {

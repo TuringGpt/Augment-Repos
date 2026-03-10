@@ -21,6 +21,11 @@ import {
   MenuItem,
   Tooltip,
   ButtonBase,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
@@ -34,6 +39,7 @@ import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
+import { Trans } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ticketService } from '@services/api'
 import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
@@ -80,7 +86,9 @@ const TicketDetailPage = () => {
     isFetchingTicket,
     fetchTicketError,
     getTicketById,
-    clearSelectedTicket
+    clearSelectedTicket,
+    deleteTicket,
+    isDeleting
   } = useTicketStore()
 
   const [comments, setComments] = useState<Comment[]>([])
@@ -88,6 +96,7 @@ const TicketDetailPage = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Track if we've attempted to fetch the ticket at least once
   // This prevents showing "not found" error on initial render before useEffect runs
@@ -193,8 +202,33 @@ const TicketDetailPage = () => {
 
   const handleDeleteTicket = () => {
     handleMenuClose()
-    // TODO: Implement delete functionality
-    console.log('Delete ticket')
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    // Prevent closing dialog during deletion
+    if (isDeleting) return
+
+    setDeleteDialogOpen(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!id) return
+
+    try {
+      // Call the store action to delete the ticket
+      await deleteTicket(id)
+
+      // Show success message
+      toast.success(t('admin.ticketDetailPage.deleteSuccess'))
+
+      // Navigate back to tickets list
+      navigate(ROUTES.SUPPORT_TICKETS)
+    } catch (err) {
+      console.error('Failed to delete ticket:', err)
+      toast.error(t('admin.ticketDetailPage.deleteError'))
+      // Keep dialog open on error so user can retry or cancel
+    }
   }
 
   /**
@@ -708,6 +742,43 @@ const TicketDetailPage = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-ticket-dialog-title"
+        aria-describedby="delete-ticket-dialog-description"
+      >
+        <DialogTitle id="delete-ticket-dialog-title">
+          {t('admin.ticketDetailPage.deleteTicket')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-ticket-dialog-description">
+            <Trans
+              i18nKey="admin.ticketDetailPage.deleteTicketConfirm"
+              values={{ ticketTitle: ticket.title }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 1, color: 'error.main' }}>
+            {t('admin.ticketDetailPage.deleteTicketWarning')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.ticketDetailPage.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

@@ -1055,7 +1055,12 @@
       "assignee": "Assignee",
       "supportAgent": "Support Agent",
       "copySuccess": "Ticket ID copied to clipboard",
-      "copyError": "Failed to copy to clipboard"
+      "copyError": "Failed to copy to clipboard",
+      "deleteTicketConfirm": "Are you sure you want to delete <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Ticket deleted successfully",
+      "deleteError": "Failed to delete ticket. Please try again."
     },
     "settings": "Settings",
     "settingsPage": {

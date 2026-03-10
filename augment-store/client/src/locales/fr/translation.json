@@ -1055,7 +1055,12 @@
       "assignee": "Assigné à",
       "supportAgent": "Agent de Support",
       "copySuccess": "ID du ticket copié dans le presse-papiers",
-      "copyError": "Échec de la copie dans le presse-papiers"
+      "copyError": "Échec de la copie dans le presse-papiers",
+      "deleteTicketConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{ticketTitle}}</strong> ?",
+      "deleteTicketWarning": "Cette action ne peut pas être annulée.",
+      "deleting": "Suppression en cours...",
+      "deleteSuccess": "Ticket supprimé avec succès",
+      "deleteError": "Échec de la suppression du ticket. Veuillez réessayer."
     },
     "settings": "Paramètres",
     "settingsPage": {
