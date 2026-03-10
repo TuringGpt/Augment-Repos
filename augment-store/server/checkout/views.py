@@ -54,6 +54,13 @@ class CreateOrderView(BaseOrderView, CreateAPIView):
 class OrderListView(BaseOrderView, ListAPIView):
     serializer_class = OrderListSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status__icontains=status_filter)
+        return queryset
+
 
 class RetrieveOrderView(BaseOrderView, RetrieveAPIView):
     serializer_class = OrderDetailSerializer
