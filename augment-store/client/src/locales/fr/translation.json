@@ -1048,6 +1048,7 @@
       "creating": "Création en cours...",
       "successMessage": "Ticket créé avec succès ! Redirection...",
       "errorMessage": "Échec de la création du ticket. Veuillez réessayer.",
+      "authenticationError": "Vous devez être connecté pour créer un ticket. Veuillez vous connecter et réessayer.",
       "validation": {
         "titleMinLength": "Le titre doit contenir au moins 5 caractères",
         "titleMaxLength": "Le titre est trop long",

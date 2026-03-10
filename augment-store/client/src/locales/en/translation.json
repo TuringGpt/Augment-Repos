@@ -1048,6 +1048,7 @@
       "creating": "Creating...",
       "successMessage": "Ticket created successfully! Redirecting...",
       "errorMessage": "Failed to create ticket. Please try again.",
+      "authenticationError": "You must be logged in to create a ticket. Please log in and try again.",
       "validation": {
         "titleMinLength": "Title must be at least 5 characters",
         "titleMaxLength": "Title is too long",

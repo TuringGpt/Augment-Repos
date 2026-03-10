@@ -71,8 +71,12 @@ const CreateTicketPage = () => {
 
     // Ensure user is authenticated before creating ticket
     if (!user?.id) {
-      setError(t('admin.createTicketPage.errorMessage'))
+      setError(t('admin.createTicketPage.authenticationError'))
       setIsSubmitting(false)
+      // Redirect to login page after showing the error message
+      setTimeout(() => {
+        navigate(ROUTES.LOGIN)
+      }, 2000)
       return
     }
 
