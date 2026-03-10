@@ -82,6 +82,12 @@ const CreateTicketPage = () => {
   })
 
   const handleSubmit = async (values: CreateTicketFormValues) => {
+    // Clear any existing timeout at the start to prevent stale redirects
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
+
     setIsSubmitting(true)
     setError(null)
     setSuccessMessage(null)
@@ -99,11 +105,6 @@ const CreateTicketPage = () => {
     if (!isAuthenticated || !user?.id) {
       setError(t('admin.createTicketPage.authenticationError'))
       setIsSubmitting(false)
-      // Clear any existing timeout before setting a new one
-      if (redirectTimeoutRef.current != null) {
-        clearTimeout(redirectTimeoutRef.current)
-        redirectTimeoutRef.current = null
-      }
       // Redirect to login page after showing the error message
       redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.LOGIN)
@@ -122,11 +123,6 @@ const CreateTicketPage = () => {
 
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
 
-      // Clear any existing timeout before setting a new one
-      if (redirectTimeoutRef.current != null) {
-        clearTimeout(redirectTimeoutRef.current)
-        redirectTimeoutRef.current = null
-      }
       // Redirect to ticket detail page after 1.5 seconds
       redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticket.id))
