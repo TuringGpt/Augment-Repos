@@ -44,8 +44,9 @@ const CreateTicketPage = () => {
   // Cleanup timeout on unmount to prevent navigation after component is unmounted
   useEffect(() => {
     return () => {
-      if (redirectTimeoutRef.current) {
+      if (redirectTimeoutRef.current != null) {
         clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
       }
     }
   }, [])
@@ -84,8 +85,9 @@ const CreateTicketPage = () => {
       setError(t('admin.createTicketPage.authenticationError'))
       setIsSubmitting(false)
       // Clear any existing timeout before setting a new one
-      if (redirectTimeoutRef.current) {
+      if (redirectTimeoutRef.current != null) {
         clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
       }
       // Redirect to login page after showing the error message
       redirectTimeoutRef.current = setTimeout(() => {
@@ -106,8 +108,9 @@ const CreateTicketPage = () => {
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
 
       // Clear any existing timeout before setting a new one
-      if (redirectTimeoutRef.current) {
+      if (redirectTimeoutRef.current != null) {
         clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
       }
       // Redirect to ticket detail page after 1.5 seconds
       redirectTimeoutRef.current = setTimeout(() => {
