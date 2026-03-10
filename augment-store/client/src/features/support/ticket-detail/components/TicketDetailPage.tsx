@@ -130,6 +130,10 @@ const TicketDetailPage = () => {
     if (id) {
       // Reset hasFetchedOnce when id changes to show loading state
       setHasFetchedOnce(false)
+      // Reset delete dialog state when id changes to prevent operating on wrong ticket
+      setDeleteDialogOpen(false)
+      // Reset menu state when id changes to prevent stale menu for different ticket
+      setAnchorEl(null)
 
       // Fetch ticket details with mount check
       const fetchWithMountCheck = async () => {
