@@ -1025,6 +1025,36 @@
         "actions": "Acciones"
       }
     },
+    "createTicketPage": {
+      "backToTickets": "Volver a Tickets",
+      "title": "Crear Ticket de Soporte",
+      "subtitle": "Describe tu problema y te responderemos lo antes posible",
+      "titleLabel": "Título",
+      "titlePlaceholder": "Resumen breve de tu problema",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Proporciona información detallada sobre tu problema...",
+      "priorityLabel": "Prioridad",
+      "statusLabel": "Estado",
+      "priorityLow": "Baja",
+      "priorityMedium": "Media",
+      "priorityHigh": "Alta",
+      "priorityUrgent": "Urgente",
+      "statusOpen": "Abierto",
+      "statusInProgress": "En Progreso",
+      "statusResolved": "Resuelto",
+      "statusClosed": "Cerrado",
+      "cancel": "Cancelar",
+      "createTicket": "Crear Ticket",
+      "creating": "Creando...",
+      "successMessage": "¡Ticket creado exitosamente! Redirigiendo...",
+      "errorMessage": "Error al crear el ticket. Por favor, inténtalo de nuevo.",
+      "validation": {
+        "titleMinLength": "El título debe tener al menos 5 caracteres",
+        "titleMaxLength": "El título es demasiado largo",
+        "descriptionMinLength": "La descripción debe tener al menos 20 caracteres",
+        "descriptionMaxLength": "La descripción es demasiado larga"
+      }
+    },
     "ticketDetailPage": {
       "backToTickets": "Volver a Tickets",
       "description": "Descripción",

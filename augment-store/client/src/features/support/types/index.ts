@@ -39,7 +39,7 @@ export interface CreateTicketRequest {
   description: string
   status: TicketStatus
   priority: TicketPriority
-  assignee: string // Required - backend model has non-null ForeignKey
+  assignee?: string // Optional - can be set later by admin
 }
 
 // Update ticket request
