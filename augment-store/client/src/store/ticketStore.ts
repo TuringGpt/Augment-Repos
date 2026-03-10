@@ -432,10 +432,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Capture the old page before updating state to detect page changes
       const oldPage = get().page
 
-      // Decrement in-flight counter before updating state
-      // This ensures isDeleting is set to false when the last delete operation completes
-      deleteInFlightCount -= 1
-
       set((state) => {
         // Always decrement total when a ticket is successfully deleted
         // Even if the ticket is not in the current page (e.g., deleted from detail view),
@@ -469,10 +465,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           total: newTotal,
           page: newPage,
           totalPages: newTotalPages,
-          // Set isDeleting based on in-flight counter (already decremented above)
-          // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
-          // This guarantees UI controls are re-enabled after successful deletion
-          isDeleting: deleteInFlightCount > 0,
           // If the deleted ticket was selected, clear the selection
           selectedTicket: state.selectedTicket?.id === id ? null : state.selectedTicket,
           // Clear ticket-detail fetch state if we invalidated an in-flight request
@@ -508,18 +500,20 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'Failed to delete ticket',
       })
 
-      // Decrement in-flight counter before updating state
-      // This ensures isDeleting is set to false when the last delete operation completes
-      deleteInFlightCount -= 1
-
       set({
         deleteError: errorMessage,
-        // Set isDeleting based on in-flight counter (already decremented above)
-        // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
-        // This guarantees UI controls are re-enabled after failed deletion
-        isDeleting: deleteInFlightCount > 0
       })
       throw error
+    } finally {
+      // Decrement in-flight counter in finally block to guarantee cleanup on all paths
+      // This ensures isDeleting is set to false even if parseApiError() or other error handling throws
+      deleteInFlightCount -= 1
+      set({
+        // Set isDeleting based on in-flight counter (already decremented above)
+        // For single delete: counter goes 1→0, so isDeleting becomes false (0 > 0 = false)
+        // This guarantees UI controls are re-enabled after deletion completes (success or failure)
+        isDeleting: deleteInFlightCount > 0
+      })
     }
   },
 
