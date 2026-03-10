@@ -675,6 +675,61 @@ class ProductTests(BaseAPITestCase):
         self.assertIn("Low Rated", names)
         self.assertNotIn("High Rated", names)
 
+    def test_product_stock_authenticated(self):
+        product = ProductFactory(
+            name="Stock Test Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["in_stock"])
+        self.assertEqual(response.data["quantity"], 5)
+        self.assertEqual(str(response.data["product_id"]), str(product.id))
+
+    def test_product_stock_out_of_stock(self):
+        product = ProductFactory(
+            name="Out of Stock Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=0,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["in_stock"])
+        self.assertEqual(response.data["quantity"], 0)
+        self.assertEqual(str(response.data["product_id"]), str(product.id))
+
+    def test_product_stock_unauthenticated(self):
+        product = ProductFactory(
+            name="Anon Stock Check Product",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.0"),
+            created_by=self.merchant_user
+        )
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        # Use unauthenticated client expecting rejection because endpoint is IsAuthenticated
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_product_stock_not_found(self):
+        import uuid
+        url = reverse("v1:product_stock", kwargs={"pk": str(uuid.uuid4())})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_product_list_filter_by_price_range(self):
         # GIVEN products with different prices exist in the database
         ProductFactory(

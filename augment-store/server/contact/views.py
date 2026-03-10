@@ -10,7 +10,7 @@ from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheServic
 
 class ContactCacheService(BaseCacheService):
     OBJECT_NAME = "contact"
-    VERSION = 3
+    VERSION = 4
 
 
 class ContactFormAnonThrottle(AnonRateThrottle):
@@ -37,6 +37,28 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = ContactCacheService
     cache_ttl = 60 * 5  # 5 minutes - short TTL due to PII content
+
+    def get_queryset(self):
+        from rest_framework.exceptions import ValidationError
+        from django.db.models import Q
+        queryset = super().get_queryset()
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            valid_statuses = [s.value for s in ContactMessage.Status]
+            if status_filter.lower() not in valid_statuses:
+                raise ValidationError({'status': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'})
+            queryset = queryset.filter(status=status_filter.lower())
+
+        search = self.request.query_params.get('search')
+        if search:
+            search = search.strip()
+            if search:  # Only filter if it's not empty after stripping
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(email__icontains=search)
+                )
+
+        return queryset
 
 class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
