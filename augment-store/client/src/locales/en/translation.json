@@ -1025,6 +1025,38 @@
         "actions": "Actions"
       }
     },
+    "createTicketPage": {
+      "backToTickets": "Back to Tickets",
+      "title": "Create Support Ticket",
+      "subtitle": "Describe your issue and we'll get back to you as soon as possible",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Brief summary of your issue",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Provide detailed information about your issue...",
+      "priorityLabel": "Priority",
+      "statusLabel": "Status",
+      "priorityLow": "Low",
+      "priorityMedium": "Medium",
+      "priorityHigh": "High",
+      "priorityUrgent": "Urgent",
+      "statusOpen": "Open",
+      "statusInProgress": "In Progress",
+      "statusResolved": "Resolved",
+      "statusClosed": "Closed",
+      "cancel": "Cancel",
+      "createTicket": "Create Ticket",
+      "creating": "Creating...",
+      "successMessage": "Ticket created successfully! Redirecting...",
+      "errorMessage": "Failed to create ticket. Please try again.",
+      "authenticationError": "You must be logged in to create a ticket. Please log in and try again.",
+      "loadingAuthState": "Please wait while we verify your authentication...",
+      "validation": {
+        "titleMinLength": "Title must be at least 5 characters",
+        "titleMaxLength": "Title is too long",
+        "descriptionMinLength": "Description must be at least 20 characters",
+        "descriptionMaxLength": "Description is too long"
+      }
+    },
     "ticketDetailPage": {
       "backToTickets": "Back to Tickets",
       "description": "Description",

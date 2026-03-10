@@ -1025,6 +1025,38 @@
         "actions": "Aktionen"
       }
     },
+    "createTicketPage": {
+      "backToTickets": "Zurück zu Tickets",
+      "title": "Support-Ticket Erstellen",
+      "subtitle": "Beschreiben Sie Ihr Problem und wir melden uns so schnell wie möglich bei Ihnen",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Kurze Zusammenfassung Ihres Problems",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Geben Sie detaillierte Informationen zu Ihrem Problem an...",
+      "priorityLabel": "Priorität",
+      "statusLabel": "Status",
+      "priorityLow": "Niedrig",
+      "priorityMedium": "Mittel",
+      "priorityHigh": "Hoch",
+      "priorityUrgent": "Dringend",
+      "statusOpen": "Offen",
+      "statusInProgress": "In Bearbeitung",
+      "statusResolved": "Gelöst",
+      "statusClosed": "Geschlossen",
+      "cancel": "Abbrechen",
+      "createTicket": "Ticket Erstellen",
+      "creating": "Wird erstellt...",
+      "successMessage": "Ticket erfolgreich erstellt! Weiterleitung...",
+      "errorMessage": "Fehler beim Erstellen des Tickets. Bitte versuchen Sie es erneut.",
+      "authenticationError": "Sie müssen angemeldet sein, um ein Ticket zu erstellen. Bitte melden Sie sich an und versuchen Sie es erneut.",
+      "loadingAuthState": "Bitte warten Sie, während wir Ihre Authentifizierung überprüfen...",
+      "validation": {
+        "titleMinLength": "Der Titel muss mindestens 5 Zeichen lang sein",
+        "titleMaxLength": "Der Titel ist zu lang",
+        "descriptionMinLength": "Die Beschreibung muss mindestens 20 Zeichen lang sein",
+        "descriptionMaxLength": "Die Beschreibung ist zu lang"
+      }
+    },
     "ticketDetailPage": {
       "backToTickets": "Zurück zu Tickets",
       "description": "Beschreibung",
