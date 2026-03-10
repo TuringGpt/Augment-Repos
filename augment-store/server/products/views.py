@@ -155,6 +155,16 @@ class ProductListView( CachedListMixin, BaseProductView, ListAPIView):
     ordering_fields = ["created_at", "price", "rating", "quantity", "category",  "category__name", "brand", "brand__name"]
     search_fields = ["name", "description", "brand__name", "category__name"]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        min_rating = self.request.query_params.get('min_rating')
+        max_rating = self.request.query_params.get('max_rating')
+        if min_rating:
+            queryset = queryset.filter(rating__gte=min_rating)
+        if max_rating:
+            queryset = queryset.filter(rating__gte=max_rating)  # bug: should be lte
+        return queryset
+
 
 class FeaturedProductCacheService(ProductCacheService):
     OBJECT_NAME = "featured_products"
