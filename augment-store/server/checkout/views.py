@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from rest_framework import status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -58,10 +59,9 @@ class OrderListView(BaseOrderView, ListAPIView):
         queryset = super().get_queryset()
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            from rest_framework.exceptions import ValidationError
             valid_statuses = [s[0] for s in Order.OrderStatus.CHOICES]
             if status_filter not in valid_statuses:
-                raise ValidationError({'status': f'Invalid status. Valid choices are: {valid_statuses}'})
+                raise DRFValidationError({'status': f'Invalid status. Valid choices are: {valid_statuses}'})
             queryset = queryset.filter(status=status_filter)
         return queryset
 
