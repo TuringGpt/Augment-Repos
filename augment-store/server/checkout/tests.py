@@ -566,6 +566,16 @@ class OrderListViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 0)
 
+    def test_list_orders_filter_by_status_invalid(self):
+        # GIVEN an authenticated user exists
+        # WHEN we filter by an invalid status value
+        url = reverse("v1:checkout:order_list")
+        response = self.member_client1.get(url, {"status": "shipped"})
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+
 
 class RetrieveOrderViewTests(BaseAPITestCase):
 

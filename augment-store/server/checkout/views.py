@@ -58,7 +58,11 @@ class OrderListView(BaseOrderView, ListAPIView):
         queryset = super().get_queryset()
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            queryset = queryset.filter(status__icontains=status_filter)
+            from rest_framework.exceptions import ValidationError
+            valid_statuses = [s[0] for s in Order.OrderStatus.CHOICES]
+            if status_filter not in valid_statuses:
+                raise ValidationError({'status': f'Invalid status. Valid choices are: {valid_statuses}'})
+            queryset = queryset.filter(status=status_filter)
         return queryset
 
 
