@@ -638,10 +638,10 @@ class ProductTests(BaseAPITestCase):
 
         # THEN only high-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data["results"]
-        names = [r["name"] for r in results]
-        self.assertIn("High Rated", names)
-        self.assertNotIn("Low Rated", names)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "High Rated")
+        self.assertGreaterEqual(float(results[0]["rating"]), 4.0)
 
     def test_product_list_filter_by_max_rating(self):
         # GIVEN products with different ratings exist
@@ -670,10 +670,10 @@ class ProductTests(BaseAPITestCase):
 
         # THEN only low-rated products should be returned
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data["results"]
-        names = [r["name"] for r in results]
-        self.assertIn("Low Rated", names)
-        self.assertNotIn("High Rated", names)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "Low Rated")
+        self.assertLessEqual(float(results[0]["rating"]), 3.0)
 
     def test_product_stock_authenticated(self):
         product = ProductFactory(
