@@ -124,6 +124,7 @@ const CreateTicketPage = () => {
       })
 
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
+      setIsSubmitting(false)
 
       // Redirect to ticket detail page after 1.5 seconds
       redirectTimeoutRef.current = setTimeout(() => {
