@@ -432,6 +432,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Capture the old page before updating state to detect page changes
       const oldPage = get().page
 
+      // Decrement in-flight counter before updating state
+      // This ensures isDeleting is set to false when the last delete operation completes
+      deleteInFlightCount -= 1
+
       set((state) => {
         // Always decrement total when a ticket is successfully deleted
         // Even if the ticket is not in the current page (e.g., deleted from detail view),
@@ -478,10 +482,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         }
       })
 
-      // Decrement in-flight counter after successful deletion
-      // This ensures the counter is only decremented once on success
-      deleteInFlightCount -= 1
-
       // If the page changed (e.g., deleted last item on last page), refetch the new page
       // This ensures the UI shows the correct tickets for the new page instead of stale data
       // Note: This refetch happens AFTER decrementing the counter and OUTSIDE the try-catch
@@ -506,7 +506,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'Failed to delete ticket',
       })
 
-      // Decrement in-flight counter on error
+      // Decrement in-flight counter before updating state
+      // This ensures isDeleting is set to false when the last delete operation completes
       deleteInFlightCount -= 1
 
       set({
