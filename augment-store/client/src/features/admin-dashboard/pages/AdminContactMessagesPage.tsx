@@ -152,7 +152,7 @@ const AdminContactMessagesPage = () => {
         await updateContact(contact.id, { status: 'read' })
       } catch (error) {
         // Error is already handled by the store, but we catch to prevent unhandled rejection
-        console.error('Failed to automatically mark contact as read - check updateError state for details')
+        console.error('Failed to automatically mark contact as read - check updateError state for details', error)
       } finally {
         // Remove from in-flight set (synchronous update)
         inFlightUpdatesRef.current.delete(contact.id)
