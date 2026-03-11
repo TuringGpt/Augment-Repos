@@ -110,6 +110,16 @@ const CreateTicketPage = () => {
     setSuccessMessage(null)
     setAuthError(null)
 
+    // Wait for hydration to complete before checking authentication
+    // This prevents incorrectly treating authenticated users as unauthenticated
+    // during the initial hydration or transient loading states
+    if (!hasHydrated || isLoading) {
+      // Show a loading message to provide user feedback during hydration
+      // This avoids the form appearing to do nothing when submitted during initialization
+      setAuthError(t('admin.createTicketPage.loadingAuthState'))
+      return
+    }
+
     // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
       // Show authentication error message and redirect to login page
