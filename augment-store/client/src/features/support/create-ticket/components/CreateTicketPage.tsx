@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { z } from 'zod'
+import type { TFunction } from 'i18next'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
@@ -29,6 +30,25 @@ type CreateTicketFormValues = {
   description: string
   priority: 'low' | 'medium' | 'high' | 'urgent'
   status: 'open' | 'in_progress' | 'resolved' | 'closed'
+}
+
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
+  const errorKeyMap: Record<string, 'admin.createTicketPage.errorMessage'> = {
+    'TICKET_CREATE_ERROR': 'admin.createTicketPage.errorMessage',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    return translateFn(translationKey)
+  }
+
+  // Otherwise, return the error code as-is (may be a backend message or network error)
+  return errorCode
 }
 
 const CreateTicketPage = () => {
@@ -157,7 +177,7 @@ const CreateTicketPage = () => {
 
         {createError && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {createError}
+            {translateErrorCode(createError, t)}
           </Alert>
         )}
 
