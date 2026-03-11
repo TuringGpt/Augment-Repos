@@ -37,6 +37,7 @@ const CreateTicketPage = () => {
   const { user, hasHydrated, isLoading, isAuthenticated } = useAuthStore()
   const { createTicket, isCreating, createError } = useTicketStore()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<number | null>(null)
 
   // Cleanup timeout on unmount to prevent navigation after component is unmounted
@@ -87,10 +88,12 @@ const CreateTicketPage = () => {
     }
 
     setSuccessMessage(null)
+    setAuthError(null)
 
     // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
-      // Redirect to login page after showing the error message
+      // Show authentication error message and redirect to login page
+      setAuthError(t('admin.createTicketPage.authenticationError'))
       redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.LOGIN)
       }, 2000)
@@ -146,6 +149,12 @@ const CreateTicketPage = () => {
 
       {/* Form */}
       <Paper sx={{ p: 4 }}>
+        {authError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {authError}
+          </Alert>
+        )}
+
         {createError && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {createError}
