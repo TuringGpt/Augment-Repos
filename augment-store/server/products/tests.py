@@ -611,6 +611,70 @@ class ProductTests(BaseAPITestCase):
         # AND the response should contain the products
         self.assertEqual(len(result), 2)
 
+    def test_product_list_filter_by_min_rating(self):
+        # GIVEN products with different ratings exist
+        ProductFactory(
+            name="Low Rated",
+            price=Decimal("50.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("2.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="High Rated",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.5"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter by rating_min=4.0 (using existing ProductFilter RangeFilter)
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"rating_min": "4.0"})
+
+        # THEN only high-rated products should be returned
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "High Rated")
+        self.assertGreaterEqual(float(results[0]["rating"]), 4.0)
+
+    def test_product_list_filter_by_max_rating(self):
+        # GIVEN products with different ratings exist
+        ProductFactory(
+            name="Low Rated",
+            price=Decimal("50.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("2.0"),
+            created_by=self.merchant_user
+        )
+        ProductFactory(
+            name="High Rated",
+            price=Decimal("100.00"),
+            brand=self.brand,
+            category=self.category,
+            quantity=10,
+            rating=Decimal("4.5"),
+            created_by=self.merchant_user
+        )
+
+        # WHEN we filter by rating_max=3.0 (using existing ProductFilter RangeFilter)
+        url = reverse("v1:product_list")
+        response = self.client.get(url, {"rating_max": "3.0"})
+
+        # THEN only low-rated products should be returned
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["name"], "Low Rated")
+        self.assertLessEqual(float(results[0]["rating"]), 3.0)
+
     def test_product_stock_authenticated(self):
         product = ProductFactory(
             name="Stock Test Product",
