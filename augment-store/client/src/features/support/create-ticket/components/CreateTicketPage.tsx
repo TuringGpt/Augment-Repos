@@ -88,14 +88,6 @@ const CreateTicketPage = () => {
 
     setSuccessMessage(null)
 
-    // Wait for hydration to complete before checking authentication
-    // This prevents incorrectly treating authenticated users as unauthenticated
-    // during the initial hydration or transient loading states
-    if (!hasHydrated || isLoading) {
-      // The store will handle the error state
-      return
-    }
-
     // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
       // Redirect to login page after showing the error message
@@ -177,7 +169,7 @@ const CreateTicketPage = () => {
               {...form.getInputProps('title')}
               error={!!form.errors.title}
               helperText={form.errors.title}
-              disabled={isCreating}
+              disabled={isCreating || !hasHydrated || isLoading}
             />
 
             {/* Description */}
@@ -191,11 +183,11 @@ const CreateTicketPage = () => {
               {...form.getInputProps('description')}
               error={!!form.errors.description}
               helperText={form.errors.description}
-              disabled={isCreating}
+              disabled={isCreating || !hasHydrated || isLoading}
             />
 
             {/* Priority */}
-            <FormControl fullWidth required disabled={isCreating}>
+            <FormControl fullWidth required disabled={isCreating || !hasHydrated || isLoading}>
               <InputLabel>{t('admin.createTicketPage.priorityLabel')}</InputLabel>
               <Select label={t('admin.createTicketPage.priorityLabel')} {...form.getInputProps('priority')}>
                 <MenuItem value="low">{t('admin.createTicketPage.priorityLow')}</MenuItem>
@@ -206,7 +198,7 @@ const CreateTicketPage = () => {
             </FormControl>
 
             {/* Status */}
-            <FormControl fullWidth required disabled={isCreating}>
+            <FormControl fullWidth required disabled={isCreating || !hasHydrated || isLoading}>
               <InputLabel>{t('admin.createTicketPage.statusLabel')}</InputLabel>
               <Select label={t('admin.createTicketPage.statusLabel')} {...form.getInputProps('status')}>
                 <MenuItem value="open">{t('admin.createTicketPage.statusOpen')}</MenuItem>
@@ -221,7 +213,7 @@ const CreateTicketPage = () => {
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                disabled={isCreating}
+                disabled={isCreating || !hasHydrated || isLoading}
                 sx={{ textTransform: 'none', px: 4 }}
               >
                 {t('admin.createTicketPage.cancel')}
@@ -229,7 +221,7 @@ const CreateTicketPage = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isCreating}
+                disabled={isCreating || !hasHydrated || isLoading}
                 startIcon={isCreating ? <CircularProgress size={20} /> : <Send />}
                 sx={{ textTransform: 'none', px: 4 }}
               >
