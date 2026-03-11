@@ -47,9 +47,10 @@ const translateErrorCode = (errorCode: string, translateFn: TFunction): string =
     return translateFn(translationKey)
   }
 
-  // Always return a localized fallback message instead of raw API strings
-  // to ensure non-English locales don't see hard-coded English error messages
-  return translateFn('admin.createTicketPage.errorMessage')
+  // Otherwise, return the error code as-is (may be a backend message or field-specific validation error)
+  // This preserves field-specific DRF validation messages (e.g., "This field is required")
+  // and other specific backend error messages instead of hiding them behind a generic fallback
+  return errorCode
 }
 
 const CreateTicketPage = () => {
