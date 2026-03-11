@@ -47,8 +47,9 @@ const translateErrorCode = (errorCode: string, translateFn: TFunction): string =
     return translateFn(translationKey)
   }
 
-  // Otherwise, return the error code as-is (may be a backend message or network error)
-  return errorCode
+  // Always return a localized fallback message instead of raw API strings
+  // to ensure non-English locales don't see hard-coded English error messages
+  return translateFn('admin.createTicketPage.errorMessage')
 }
 
 const CreateTicketPage = () => {
