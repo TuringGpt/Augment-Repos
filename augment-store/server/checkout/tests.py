@@ -530,6 +530,52 @@ class OrderListViewTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_list_orders_filter_by_status(self):
+        # GIVEN an authenticated user has orders with different statuses
+        order_pending = OrderFactory(
+            created_by=self.member_user1,
+            status=Order.OrderStatus.PENDING
+        )
+        order_completed = OrderFactory(
+            created_by=self.member_user1,
+            status=Order.OrderStatus.COMPLETED
+        )
+
+        # WHEN we filter by status=pending
+        url = reverse("v1:checkout:order_list")
+        response = self.member_client1.get(url, {"status": "pending"})
+
+        # THEN we should get only the pending order
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], str(order_pending.id))
+
+    def test_list_orders_filter_by_status_no_match(self):
+        # GIVEN an authenticated user has a pending order
+        OrderFactory(
+            created_by=self.member_user1,
+            status=Order.OrderStatus.PENDING
+        )
+
+        # WHEN we filter by status=cancelled
+        url = reverse("v1:checkout:order_list")
+        response = self.member_client1.get(url, {"status": "cancelled"})
+
+        # THEN we should get an empty list
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 0)
+
+    def test_list_orders_filter_by_status_invalid(self):
+        # GIVEN an authenticated user exists
+        # WHEN we filter by an invalid status value
+        url = reverse("v1:checkout:order_list")
+        response = self.member_client1.get(url, {"status": "shipped"})
+
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+
 
 class RetrieveOrderViewTests(BaseAPITestCase):
 
