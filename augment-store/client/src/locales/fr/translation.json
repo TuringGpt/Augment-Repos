@@ -1098,9 +1098,13 @@
     "settingsPage": {
       "title": "Paramètres",
       "subtitle": "Gérer les paramètres et configurations de l'application",
-      "workInProgress": "Travaux en Cours",
-      "underDevelopment": "La page des paramètres d'administration est actuellement en développement.",
-      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+      "appearance": "Apparence",
+      "appearanceDescription": "Personnaliser l'apparence du tableau de bord d'administration",
+      "themeMode": "Mode de Thème",
+      "currentlyLight": "Utilise actuellement le thème clair",
+      "currentlyDark": "Utilise actuellement le thème sombre",
+      "moreSettings": "Plus de Paramètres Bientôt",
+      "moreSettingsDescription": "Des options de configuration supplémentaires seront disponibles ici dans les futures mises à jour."
     },
     "productStatistics": {
       "title": "Statistiques des produits",

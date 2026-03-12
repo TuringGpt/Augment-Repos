@@ -1098,9 +1098,13 @@
     "settingsPage": {
       "title": "Settings",
       "subtitle": "Manage application settings and configurations",
-      "workInProgress": "Work in Progress",
-      "underDevelopment": "The admin settings page is currently under development.",
-      "checkBackSoon": "Check back soon for updates!"
+      "appearance": "Appearance",
+      "appearanceDescription": "Customize the look and feel of the admin dashboard",
+      "themeMode": "Theme Mode",
+      "currentlyLight": "Currently using light theme",
+      "currentlyDark": "Currently using dark theme",
+      "moreSettings": "More Settings Coming Soon",
+      "moreSettingsDescription": "Additional configuration options will be available here in future updates."
     },
     "productStatistics": {
       "title": "Product Statistics",
