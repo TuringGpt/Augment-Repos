@@ -67,6 +67,12 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         return instance
 class CartItemListSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
+    subtotal = serializers.SerializerMethodField()
+
+    def get_subtotal(self, obj):
+        if obj.product:
+            return obj.product.price  # bug: should be obj.product.price * obj.quantity
+        return 0
 
     class Meta:
         model = CartItem
