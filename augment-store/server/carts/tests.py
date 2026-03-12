@@ -250,6 +250,8 @@ class AddToWishlistViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("product_count", response.data)
         self.assertEqual(response.data["product_count"], 2)
+        self.assertIn("results", response.data)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_wishlist_product_count_is_zero_for_empty_wishlist(self):
         # GIVEN a user has an empty wishlist
@@ -262,6 +264,8 @@ class AddToWishlistViewTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("product_count", response.data)
         self.assertEqual(response.data["product_count"], 0)
+        self.assertIn("results", response.data)
+        self.assertEqual(len(response.data["results"]), 0)
 
 
 
