@@ -244,7 +244,7 @@ class AddToWishlistViewTests(BaseAPITestCase):
         wishlist.products.add(product1, product2)
 
         # WHEN we list wishlist products
-        url = reverse("v1:wishlist:list_wishlist_products")
+        url = reverse("v1:wishlist:wishlist_detail")
         response = self.member_client.get(url)
 
         # THEN the response should include a product_count field
@@ -260,7 +260,7 @@ class AddToWishlistViewTests(BaseAPITestCase):
         # GIVEN a user has an empty wishlist
 
         # WHEN we list wishlist products
-        url = reverse("v1:wishlist:list_wishlist_products")
+        url = reverse("v1:wishlist:wishlist_detail")
         response = self.member_client.get(url)
 
         # THEN product_count should be 0
