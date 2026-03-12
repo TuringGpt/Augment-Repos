@@ -121,7 +121,7 @@ const AdminContactMessagesPage = () => {
   }
 
   // Drawer handlers
-  const handleViewDetails = (contact: ContactItem) => {
+  const handleViewDetails = async (contact: ContactItem) => {
     // Clear any pending close timeout to avoid race condition
     if (drawerCloseTimeoutRef.current !== null) {
       clearTimeout(drawerCloseTimeoutRef.current)
@@ -129,6 +129,45 @@ const AdminContactMessagesPage = () => {
     }
     setSelectedContact(contact)
     setIsDetailsDrawerOpen(true)
+
+    // Automatically mark as read when opening the drawer if status is unread
+    if (contact.status === 'unread') {
+      // Check if update is already in-flight for this contact
+      if (inFlightUpdatesRef.current.has(contact.id)) {
+        return
+      }
+
+      // Mark as in-flight immediately (synchronous update)
+      inFlightUpdatesRef.current.add(contact.id)
+
+      // Update React state for UI feedback (asynchronous update)
+      setMarkingAsRead((prev) => {
+        const newMarkingAsRead = new Set(prev)
+        newMarkingAsRead.add(contact.id)
+        return newMarkingAsRead
+      })
+
+      try {
+        // Call the updateContact store action to mark as read
+        await updateContact(contact.id, { status: 'read' })
+      } catch (error) {
+        // Error is already handled by the store, but we catch to prevent unhandled rejection
+        console.error('Failed to automatically mark contact as read - check updateError state for details', error)
+      } finally {
+        // Remove from in-flight set (synchronous update)
+        inFlightUpdatesRef.current.delete(contact.id)
+
+        // Only update state if component is still mounted to prevent React warnings
+        if (isMountedRef.current) {
+          // Remove from marking set using functional update to avoid stale closure
+          setMarkingAsRead((prev) => {
+            const finalMarkingAsRead = new Set(prev)
+            finalMarkingAsRead.delete(contact.id)
+            return finalMarkingAsRead
+          })
+        }
+      }
+    }
   }
 
   const handleCloseDetailsDrawer = () => {
