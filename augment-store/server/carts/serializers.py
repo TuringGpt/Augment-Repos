@@ -71,7 +71,7 @@ class CartItemListSerializer(serializers.ModelSerializer):
 
     def get_subtotal(self, obj):
         if obj.product:
-            return obj.product.price  # bug: should be obj.product.price * obj.quantity
+            return obj.product.price * obj.quantity
         return 0
 
     class Meta:
