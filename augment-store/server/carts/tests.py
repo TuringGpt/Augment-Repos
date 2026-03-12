@@ -80,6 +80,49 @@ class CartDetailViewTests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_cart_item_has_subtotal_field(self):
+        # GIVEN a user has one item in their cart with quantity=1
+        from decimal import Decimal
+        cart = Cart.objects.get_user_cart(self.member_user)
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        cart.items.add(cart_item)
+
+        # WHEN we retrieve the cart
+        url = reverse("v1:carts:cart_detail")
+        response = self.member_client.get(url)
+
+        # THEN each item should have a subtotal field
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["items"]), 1)
+        item = response.data["items"][0]
+        self.assertIn("subtotal", item)
+
+    def test_cart_item_subtotal_reflects_quantity(self):
+        # GIVEN a user has one item in their cart with quantity=3
+        from decimal import Decimal
+        cart = Cart.objects.get_user_cart(self.member_user)
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=3,
+            created_by=self.member_user
+        )
+        cart.items.add(cart_item)
+
+        # WHEN we retrieve the cart
+        url = reverse("v1:carts:cart_detail")
+        response = self.member_client.get(url)
+
+        # THEN the subtotal should equal price * quantity
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["items"]), 1)
+        item = response.data["items"][0]
+        expected_subtotal = Decimal(str(self.product1.price)) * 3
+        self.assertEqual(Decimal(str(item["subtotal"])), expected_subtotal)
+
 
 class AddToCartViewTests(BaseAPITestCase):
 
