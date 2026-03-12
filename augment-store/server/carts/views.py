@@ -60,6 +60,21 @@ class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView)
             wishlist__user=self.request.user
         )
 
+    from drf_spectacular.utils import extend_schema, inline_serializer
+    from rest_framework import serializers
+
+    @extend_schema(
+        responses=inline_serializer(
+            name='WishlistProductsResponse',
+            fields={
+                'count': serializers.IntegerField(),
+                'next': serializers.URLField(allow_null=True),
+                'previous': serializers.URLField(allow_null=True),
+                'product_count': serializers.IntegerField(),
+                'results': ProductListSerializer(many=True),
+            }
+        )
+    )
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
