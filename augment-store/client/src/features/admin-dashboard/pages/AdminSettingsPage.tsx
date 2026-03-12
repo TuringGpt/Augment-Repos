@@ -100,12 +100,12 @@ const AdminSettingsPage = () => {
     )
 
     // Start the view transition with circular reveal
-    try {
-      const transition = document.startViewTransition(() => {
-        toggleMode()
-      })
+    const transition = document.startViewTransition(() => {
+      toggleMode()
+    })
 
-      // Apply circular reveal animation
+    // Apply circular reveal animation
+    try {
       await transition.ready
 
       // Animate with clip-path for circular reveal effect
@@ -120,9 +120,8 @@ const AdminSettingsPage = () => {
         }
       )
     } catch (error) {
-      // Fallback if startViewTransition or animation fails
+      // If the animation fails, just log it - toggleMode() was already called above
       console.debug('View transition animation failed:', error)
-      toggleMode()
     }
   }
 
