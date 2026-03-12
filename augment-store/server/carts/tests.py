@@ -240,6 +240,7 @@ class AddToWishlistViewTests(BaseAPITestCase):
         wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
         product1 = ProductFactory()
         product2 = ProductFactory()
+        product3 = ProductFactory()  # not added to wishlist
         wishlist.products.add(product1, product2)
 
         # WHEN we list wishlist products
@@ -252,6 +253,8 @@ class AddToWishlistViewTests(BaseAPITestCase):
         self.assertEqual(response.data["product_count"], 2)
         self.assertIn("results", response.data)
         self.assertEqual(len(response.data["results"]), 2)
+        result_ids = [r["id"] for r in response.data["results"]]
+        self.assertNotIn(str(product3.id), result_ids)
 
     def test_wishlist_product_count_is_zero_for_empty_wishlist(self):
         # GIVEN a user has an empty wishlist
