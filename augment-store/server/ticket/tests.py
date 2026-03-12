@@ -366,3 +366,68 @@ class TicketStatsTests(BaseAPITestCase):
         response = self.authenticated_client.get(self.stats_url)
         self.assertEqual(response.data["total"], 1)
         self.assertEqual(response.data["open"], 1)
+
+class AdminTicketStatsTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_stats@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_stats@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        self.stats_url = reverse("v1:ticket:admin_ticket_stats")
+        from django.core.cache import cache as django_cache
+        django_cache.delete("ticket_stats:admin")
+
+    def test_admin_stats_all_tickets(self):
+        self.authenticated_client.force_authenticate(user=self.admin_user)
+        TicketFactory(reporter=self.regular_user, status=Ticket.Status.OPEN)
+        TicketFactory(reporter=self.regular_user, status=Ticket.Status.CLOSED)
+        TicketFactory(reporter=self.admin_user, status=Ticket.Status.OPEN)
+
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should see all 3 tickets
+        self.assertEqual(response.data["total"], 3)
+        self.assertEqual(response.data["open"], 2)
+        self.assertEqual(response.data["closed"], 1)
+
+    def test_regular_user_access_denied(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_stats_cache_invalidation_on_create(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        # First request as admin to prime cache
+        from rest_framework.test import APIClient
+        client = APIClient()
+        client.force_authenticate(user=self.admin_user)
+        
+        response = client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 0)
+
+        # Regular user creates a ticket
+        create_url = reverse("v1:ticket:create_ticket")
+        payload = {
+            "title": "New",
+            "description": "Desc",
+            "status": Ticket.Status.OPEN,
+            "priority": Ticket.Priority.HIGH,
+            "assignee": str(self.admin_user.id),
+        }
+        create_response = self.authenticated_client.post(create_url, payload)
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+
+        # Admin fetches stats again, it should be invalidated and show 1
+        response = client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 1)
+        self.assertEqual(response.data["open"], 1)
