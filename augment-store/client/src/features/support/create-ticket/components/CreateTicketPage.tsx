@@ -18,12 +18,12 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { z } from 'zod'
-import { ticketService } from '@services/api'
+import type { TFunction } from 'i18next'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
-import { parseApiError } from '@utils/errorUtils'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useTicketStore } from '@store/ticketStore'
 
 type CreateTicketFormValues = {
   title: string
@@ -32,13 +32,34 @@ type CreateTicketFormValues = {
   status: 'open' | 'in_progress' | 'resolved' | 'closed'
 }
 
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
+  const errorKeyMap: Record<string, 'admin.createTicketPage.errorMessage'> = {
+    'TICKET_CREATE_ERROR': 'admin.createTicketPage.errorMessage',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    return translateFn(translationKey)
+  }
+
+  // Otherwise, return the error code as-is (may be a backend message or field-specific validation error)
+  // This preserves field-specific DRF validation messages (e.g., "This field is required")
+  // and other specific backend error messages instead of hiding them behind a generic fallback
+  return errorCode
+}
+
 const CreateTicketPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user, hasHydrated, isLoading, isAuthenticated } = useAuthStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { createTicket, isCreating, createError } = useTicketStore()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<number | null>(null)
 
   // Cleanup timeout on unmount to prevent navigation after component is unmounted
@@ -88,26 +109,23 @@ const CreateTicketPage = () => {
       redirectTimeoutRef.current = null
     }
 
-    setIsSubmitting(true)
-    setError(null)
     setSuccessMessage(null)
+    setAuthError(null)
 
     // Wait for hydration to complete before checking authentication
     // This prevents incorrectly treating authenticated users as unauthenticated
     // during the initial hydration or transient loading states
     if (!hasHydrated || isLoading) {
-      // Show a loading message instead of an error during hydration
-      // This avoids misleading users who may actually be authenticated
-      setError(t('admin.createTicketPage.loadingAuthState'))
-      setIsSubmitting(false)
+      // Show a loading message to provide user feedback during hydration
+      // This avoids the form appearing to do nothing when submitted during initialization
+      setAuthError(t('admin.createTicketPage.loadingAuthState'))
       return
     }
 
     // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
-      setError(t('admin.createTicketPage.authenticationError'))
-      setIsSubmitting(false)
-      // Redirect to login page after showing the error message
+      // Show authentication error message and redirect to login page
+      setAuthError(t('admin.createTicketPage.authenticationError'))
       redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.LOGIN)
       }, 2000)
@@ -115,7 +133,7 @@ const CreateTicketPage = () => {
     }
 
     try {
-      const ticket = await ticketService.createTicket({
+      const ticket = await createTicket({
         title: values.title,
         description: values.description,
         priority: values.priority as TicketPriority,
@@ -124,7 +142,6 @@ const CreateTicketPage = () => {
       })
 
       setSuccessMessage(t('admin.createTicketPage.successMessage'))
-      setIsSubmitting(false)
 
       // Redirect to ticket detail page after 1.5 seconds
       redirectTimeoutRef.current = setTimeout(() => {
@@ -132,14 +149,7 @@ const CreateTicketPage = () => {
       }, 1500)
     } catch (err) {
       console.error('Failed to create ticket:', err)
-
-      const errorMessage = parseApiError(err, {
-        fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
-        defaultMessage: t('admin.createTicketPage.errorMessage'),
-      })
-
-      setError(errorMessage)
-      setIsSubmitting(false)
+      // Error is already handled by the store
     }
   }
 
@@ -171,9 +181,15 @@ const CreateTicketPage = () => {
 
       {/* Form */}
       <Paper sx={{ p: 4 }}>
-        {error && (
+        {authError && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+            {authError}
+          </Alert>
+        )}
+
+        {createError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {translateErrorCode(createError, t)}
           </Alert>
         )}
 
@@ -194,7 +210,7 @@ const CreateTicketPage = () => {
               {...form.getInputProps('title')}
               error={!!form.errors.title}
               helperText={form.errors.title}
-              disabled={isSubmitting}
+              disabled={isCreating || !hasHydrated || isLoading}
             />
 
             {/* Description */}
@@ -208,11 +224,11 @@ const CreateTicketPage = () => {
               {...form.getInputProps('description')}
               error={!!form.errors.description}
               helperText={form.errors.description}
-              disabled={isSubmitting}
+              disabled={isCreating || !hasHydrated || isLoading}
             />
 
             {/* Priority */}
-            <FormControl fullWidth required disabled={isSubmitting}>
+            <FormControl fullWidth required disabled={isCreating || !hasHydrated || isLoading}>
               <InputLabel>{t('admin.createTicketPage.priorityLabel')}</InputLabel>
               <Select label={t('admin.createTicketPage.priorityLabel')} {...form.getInputProps('priority')}>
                 <MenuItem value="low">{t('admin.createTicketPage.priorityLow')}</MenuItem>
@@ -223,7 +239,7 @@ const CreateTicketPage = () => {
             </FormControl>
 
             {/* Status */}
-            <FormControl fullWidth required disabled={isSubmitting}>
+            <FormControl fullWidth required disabled={isCreating || !hasHydrated || isLoading}>
               <InputLabel>{t('admin.createTicketPage.statusLabel')}</InputLabel>
               <Select label={t('admin.createTicketPage.statusLabel')} {...form.getInputProps('status')}>
                 <MenuItem value="open">{t('admin.createTicketPage.statusOpen')}</MenuItem>
@@ -238,7 +254,7 @@ const CreateTicketPage = () => {
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                disabled={isSubmitting}
+                disabled={isCreating || !hasHydrated || isLoading}
                 sx={{ textTransform: 'none', px: 4 }}
               >
                 {t('admin.createTicketPage.cancel')}
@@ -246,11 +262,11 @@ const CreateTicketPage = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? <CircularProgress size={20} /> : <Send />}
+                disabled={isCreating || !hasHydrated || isLoading}
+                startIcon={isCreating ? <CircularProgress size={20} /> : <Send />}
                 sx={{ textTransform: 'none', px: 4 }}
               >
-                {isSubmitting ? t('admin.createTicketPage.creating') : t('admin.createTicketPage.createTicket')}
+                {isCreating ? t('admin.createTicketPage.creating') : t('admin.createTicketPage.createTicket')}
               </Button>
             </Box>
           </Box>

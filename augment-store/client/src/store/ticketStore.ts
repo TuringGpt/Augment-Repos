@@ -269,8 +269,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     try {
       const ticket = await ticketService.createTicket(data)
 
-      // Only set isCreating to false when all requests have completed (count reaches 0)
-      if (createInFlightCount === 0) {
+      // Only set isCreating to false when all requests have completed
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (createInFlightCount === 1) {
         set({ isCreating: false })
       }
 
@@ -278,13 +279,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     } catch (error) {
       // Use parseApiError to extract user-friendly error message from API response
       // Pass field names to extract field-specific DRF validation errors (e.g., { title: [...] })
+      // Use error code instead of hard-coded English message to allow proper i18n in components
       const errorMessage = parseApiError(error, {
         fieldNames: ['title', 'description', 'priority', 'status', 'assignee'],
-        defaultMessage: 'Failed to create ticket',
+        defaultMessage: 'TICKET_CREATE_ERROR',
       })
 
       // Only update error state and isCreating when all requests have completed
-      if (createInFlightCount === 0) {
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (createInFlightCount === 1) {
         set({
           createError: errorMessage,
           isCreating: false,
