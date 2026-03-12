@@ -66,7 +66,7 @@ class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             response = self.get_paginated_response(serializer.data)
-            response.data['product_count'] = self.paginator.count
+            response.data['product_count'] = response.data['count']
             return response
         serializer = self.get_serializer(queryset, many=True)
         return Response({'product_count': queryset.count(), 'results': serializer.data})
