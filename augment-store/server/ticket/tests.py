@@ -20,6 +20,15 @@ class TicketTests(BaseAPITestCase):
             password="testpassword",
             is_active=True,
         )
+        self.admin_user = UserFactory(
+            email="admin@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
         self.ticket = TicketFactory(
             title="Test Title",
             description="Test Description",
@@ -235,7 +244,13 @@ class TicketTests(BaseAPITestCase):
             self.assertIn("created_at", result)
             self.assertNotIn("is_deleted", result)
 
-    def test_update_ticket(self):
+    def test_update_ticket_forbidden_for_regular_user(self):
+        url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
+        payload = {"title": "Updated Title"}
+        response = self.authenticated_client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_ticket_as_admin(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
         payload = {
             "title": "Updated Title",
@@ -244,7 +259,7 @@ class TicketTests(BaseAPITestCase):
             "priority": Ticket.Priority.URGENT,
             "assignee": self.user2.id,
         }
-        response = self.authenticated_client.put(url, payload)
+        response = self.admin_client.put(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["title"], "Updated Title")  
         self.assertEqual(response.data["description"], "Updated Description")  
@@ -279,12 +294,17 @@ class TicketTests(BaseAPITestCase):
             self.assertNotIn("is_deleted", comment)
             self.assertIn("created_at", comment)
     
-    def test_delete_ticket(self):
+    def test_delete_ticket_forbidden_for_regular_user(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
         response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_ticket_as_admin(self):
+        url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
+        response = self.admin_client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
-        response = self.authenticated_client.get(url)
+        response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_comment(self):

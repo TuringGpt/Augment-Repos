@@ -97,6 +97,7 @@ class TicketDetailView(TicketBaseView, RetrieveAPIView):
 class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = TicketUpdateSerializer
     cache_service_class = TicketCacheService
+    permission_classes = [IsAuthenticated, hasAdminRole]
 
     def perform_update(self, serializer):
         instance = serializer.instance
