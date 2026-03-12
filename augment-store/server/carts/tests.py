@@ -235,6 +235,34 @@ class AddToWishlistViewTests(BaseAPITestCase):
         self.assertEqual(wishlist.products.count(), 1)
         self.assertEqual(wishlist.products.first().id, product.id)
 
+    def test_wishlist_list_returns_product_count(self):
+        # GIVEN a user has 2 products in their wishlist
+        wishlist = Wishlist.objects.get_user_wishlist(self.member_user)
+        product1 = ProductFactory()
+        product2 = ProductFactory()
+        wishlist.products.add(product1, product2)
+
+        # WHEN we list wishlist products
+        url = reverse("v1:wishlist:list_wishlist_products")
+        response = self.member_client.get(url)
+
+        # THEN the response should include a product_count field
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("product_count", response.data)
+        self.assertEqual(response.data["product_count"], 2)
+
+    def test_wishlist_product_count_is_zero_for_empty_wishlist(self):
+        # GIVEN a user has an empty wishlist
+
+        # WHEN we list wishlist products
+        url = reverse("v1:wishlist:list_wishlist_products")
+        response = self.member_client.get(url)
+
+        # THEN product_count should be 0
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("product_count", response.data)
+        self.assertEqual(response.data["product_count"], 0)
+
 
 
 

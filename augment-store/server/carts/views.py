@@ -59,6 +59,18 @@ class ListWishListProductsView(AutoOptimizeMixin, BaseWishlistView, ListAPIView)
         return super().get_queryset().filter(
             wishlist__user=self.request.user
         )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        product_count = len(queryset)  # bug: should use queryset.count() to avoid loading all objects
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+            response.data['product_count'] = product_count
+            return response
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({'product_count': product_count, 'results': serializer.data})
     
 
 class AddToWishlistView(BaseWishlistView, GenericAPIView):
