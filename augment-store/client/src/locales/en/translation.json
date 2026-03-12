@@ -309,6 +309,24 @@
     "emptySavedItems": "No saved items",
     "emptySavedItemsMessage": "Items you save for later will appear here"
   },
+  "wishlist": {
+    "myWishlist": "My Wishlist",
+    "wishlist": "Wishlist",
+    "emptyWishlist": "Your wishlist is empty",
+    "emptyWishlistMessage": "Save your favorite items to your wishlist and shop them later!",
+    "browseProducts": "Browse Products",
+    "itemsInWishlist": "{{count}} item in your wishlist",
+    "itemsInWishlist_other": "{{count}} items in your wishlist",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "loginToAddToWishlist": "Login to add to wishlist",
+    "addedToWishlist": "Added to wishlist",
+    "removedFromWishlist": "Removed from wishlist",
+    "failedToAddToWishlist": "Failed to add to wishlist",
+    "failedToRemoveFromWishlist": "Failed to remove from wishlist",
+    "viewWishlist": "View Wishlist",
+    "moveToCart": "Move to Cart"
+  },
   "checkout": {
     "checkout": "Checkout",
     "checkoutDescription": "Complete your order by filling out the information below",

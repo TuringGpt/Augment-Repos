@@ -309,6 +309,24 @@
     "emptySavedItems": "No hay artículos guardados",
     "emptySavedItemsMessage": "Los artículos que guardes para después aparecerán aquí"
   },
+  "wishlist": {
+    "myWishlist": "Mi Lista de Deseos",
+    "wishlist": "Lista de Deseos",
+    "emptyWishlist": "Tu lista de deseos está vacía",
+    "emptyWishlistMessage": "¡Guarda tus artículos favoritos en tu lista de deseos y cómpralos más tarde!",
+    "browseProducts": "Explorar Productos",
+    "itemsInWishlist": "{{count}} artículo en tu lista de deseos",
+    "itemsInWishlist_other": "{{count}} artículos en tu lista de deseos",
+    "addToWishlist": "Añadir a la Lista de Deseos",
+    "removeFromWishlist": "Eliminar de la Lista de Deseos",
+    "loginToAddToWishlist": "Inicia sesión para añadir a la lista de deseos",
+    "addedToWishlist": "Añadido a la lista de deseos",
+    "removedFromWishlist": "Eliminado de la lista de deseos",
+    "failedToAddToWishlist": "Error al añadir a la lista de deseos",
+    "failedToRemoveFromWishlist": "Error al eliminar de la lista de deseos",
+    "viewWishlist": "Ver Lista de Deseos",
+    "moveToCart": "Mover al Carrito"
+  },
   "checkout": {
     "checkout": "Pagar",
     "checkoutDescription": "Complete su pedido rellenando la información a continuación",
