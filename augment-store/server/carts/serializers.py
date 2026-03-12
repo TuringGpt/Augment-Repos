@@ -1,4 +1,5 @@
 
+from decimal import Decimal
 from rest_framework import serializers
 from .models import Cart, CartItem, Wishlist
 from products.models import Product
@@ -72,7 +73,7 @@ class CartItemListSerializer(serializers.ModelSerializer):
     def get_subtotal(self, obj):
         if obj.product:
             return obj.product.price * obj.quantity
-        return 0
+        return Decimal('0.00')
 
     class Meta:
         model = CartItem
