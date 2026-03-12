@@ -97,6 +97,7 @@ class CartDetailViewTests(BaseAPITestCase):
 
         # THEN each item should have a subtotal field
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["items"]), 1)
         item = response.data["items"][0]
         self.assertIn("subtotal", item)
 
@@ -117,6 +118,7 @@ class CartDetailViewTests(BaseAPITestCase):
 
         # THEN the subtotal should equal price * quantity
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["items"]), 1)
         item = response.data["items"][0]
         expected_subtotal = Decimal(str(self.product1.price)) * 3
         self.assertEqual(Decimal(str(item["subtotal"])), expected_subtotal)
