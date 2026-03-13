@@ -1098,9 +1098,13 @@
     "settingsPage": {
       "title": "Einstellungen",
       "subtitle": "Anwendungseinstellungen und Konfigurationen verwalten",
-      "workInProgress": "In Arbeit",
-      "underDevelopment": "Die Admin-Einstellungsseite befindet sich derzeit in der Entwicklung.",
-      "checkBackSoon": "Schauen Sie bald wieder vorbei für Updates!"
+      "appearance": "Erscheinungsbild",
+      "appearanceDescription": "Passen Sie das Aussehen des Admin-Dashboards an",
+      "themeMode": "Themenmodus",
+      "currentlyLight": "Verwendet derzeit helles Theme",
+      "currentlyDark": "Verwendet derzeit dunkles Theme",
+      "moreSettings": "Weitere Einstellungen Demnächst",
+      "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },
     "productStatistics": {
       "title": "Produktstatistiken",

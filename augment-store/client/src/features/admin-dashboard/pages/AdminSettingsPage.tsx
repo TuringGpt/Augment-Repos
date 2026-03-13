@@ -7,18 +7,22 @@ import {
   CircularProgress,
   Alert,
   Button,
+  FormControlLabel,
+  Switch,
+  Divider,
 } from '@mui/material'
 import {
   Settings as SettingsIcon,
-  Construction as ConstructionIcon,
+  Brightness4,
+  Brightness7,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useThemeStore } from '@store/themeStore'
 
 /**
  * AdminSettingsPage Component
  * Admin page for managing application settings
- * Currently showing work in progress placeholder
  *
  * Note: This component uses defense-in-depth for access control:
  * 1. Primary enforcement: AdminRoute guard redirects non-admin users to home
@@ -29,6 +33,7 @@ const AdminSettingsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
+  const { mode, toggleMode } = useThemeStore()
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -70,6 +75,56 @@ const AdminSettingsPage = () => {
     )
   }
 
+  const handleThemeToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Check if user prefers reduced motion
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // Check if View Transitions API is supported
+    if (!document.startViewTransition || prefersReducedMotion) {
+      toggleMode()
+      return
+    }
+
+    // Get toggle position for circular reveal animation
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+
+    // Calculate the maximum radius needed to cover the entire screen
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    )
+
+    // Start the view transition with circular reveal
+    const transition = document.startViewTransition(() => {
+      toggleMode()
+    })
+
+    // Apply circular reveal animation
+    try {
+      await transition.ready
+
+      // Animate with clip-path for circular reveal effect
+      document.documentElement.animate(
+        {
+          clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`],
+        },
+        {
+          duration: 500,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        }
+      )
+    } catch (error) {
+      // If the animation fails, just log it - toggleMode() was already called above
+      console.debug('View transition animation failed:', error)
+    }
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
@@ -85,32 +140,70 @@ const AdminSettingsPage = () => {
         </Typography>
       </Box>
 
-      {/* Work in Progress Content */}
-      <Paper
-        sx={{
-          p: 6,
-          textAlign: 'center',
-          bgcolor: 'background.default',
-          border: '2px dashed',
-          borderColor: 'divider',
-        }}
-      >
-        <ConstructionIcon
-          sx={{
-            fontSize: 80,
-            color: 'warning.main',
-            mb: 3,
-          }}
-        />
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-          {t('admin.settingsPage.workInProgress')}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
-          {t('admin.settingsPage.underDevelopment')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {t('admin.settingsPage.checkBackSoon')}
-        </Typography>
+      {/* Settings Content */}
+      <Paper sx={{ p: 3 }}>
+        {/* Appearance Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {t('admin.settingsPage.appearance')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t('admin.settingsPage.appearanceDescription')}
+          </Typography>
+
+          {/* Theme Toggle */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {mode === 'light' ? (
+                <Brightness7 sx={{ fontSize: 24, color: 'primary.main' }} />
+              ) : (
+                <Brightness4 sx={{ fontSize: 24, color: 'primary.main' }} />
+              )}
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.themeMode')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {mode === 'light'
+                    ? t('admin.settingsPage.currentlyLight')
+                    : t('admin.settingsPage.currentlyDark')}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={mode === 'dark'}
+                  onChange={handleThemeToggle}
+                  color="primary"
+                />
+              }
+              label={mode === 'dark' ? t('common.darkMode') : t('common.lightMode')}
+              labelPlacement="start"
+            />
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Future Settings Placeholder */}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {t('admin.settingsPage.moreSettings')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('admin.settingsPage.moreSettingsDescription')}
+          </Typography>
+        </Box>
       </Paper>
     </Container>
   )
