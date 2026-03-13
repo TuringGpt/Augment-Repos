@@ -648,7 +648,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         set({
           comments: response.results,
           commentsTotal: response.count,
-          isFetchingComments: false
+          isFetchingComments: false,
+          fetchingCommentsTicketId: null
         })
         return response
       }
@@ -668,17 +669,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         set({
           fetchCommentsError: errorMessage || 'Failed to fetch comments',
           isFetchingComments: false,
+          fetchingCommentsTicketId: null
         })
         throw error
       }
 
       // Return null for superseded requests to prevent callers from handling stale errors
       return null
-    } finally {
-      // Only clear fetchingCommentsTicketId if this is still the most recent request
-      if (currentRequestId === fetchCommentsRequestCounter) {
-        set({ fetchingCommentsTicketId: null })
-      }
     }
   },
 
