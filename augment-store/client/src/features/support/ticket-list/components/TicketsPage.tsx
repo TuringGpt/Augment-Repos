@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Chip,
@@ -27,118 +27,41 @@ import {
   ConfirmationNumber as TicketIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { ticketService } from '@services/api'
-import type { TicketListItem, TicketStatus, TicketPriority } from '@features/support/types'
+import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
+import { useTicketStore } from '@store/ticketStore'
 
 const TicketsPage = () => {
   const navigate = useNavigate()
-  const [tickets, setTickets] = useState<TicketListItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+
+  // Use ticket store
+  const {
+    tickets,
+    page,
+    totalPages,
+    isLoading,
+    error,
+    fetchTickets,
+    setPage: setStorePage,
+  } = useTicketStore()
+
+  // Filter states
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Request counter to track the latest fetch request
-  // Prevents stale responses from overwriting newer state
-  const requestCounterRef = useRef(0)
-
-  // Reset page to 1 when filters or search query changes
+  // Load tickets on mount and when filters change
   useEffect(() => {
-    setPage(1)
-  }, [statusFilter, priorityFilter, searchQuery])
-
-  const loadTickets = useCallback(async () => {
-    // Increment counter and capture the current request ID
-    requestCounterRef.current += 1
-    const requestId = requestCounterRef.current
-
-    // Capture the current page value at the time of the request
-    const currentPage = page
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await ticketService.getTickets({
-        page: currentPage,
-        status: statusFilter || undefined,
-        priority: priorityFilter || undefined,
-        search: searchQuery || undefined,
-      })
-
-      // Only update state if this is still the latest request
-      // This prevents older responses from overwriting newer state
-      if (requestId === requestCounterRef.current) {
-        setTickets(response.results)
-
-        // Calculate total pages dynamically from response data
-        // This handles backend pagination size changes and different environments
-        let calculatedTotalPages: number
-
-        if (response.count === 0) {
-          // Edge case: empty results should show 1 page (not 0) for pagination UI compatibility
-          calculatedTotalPages = 1
-        } else if (response.results.length > 0) {
-          // Derive page size from actual results length (works for all pages except possibly the last)
-          // For the last page, this might underestimate, but we can use the presence of 'next' to refine
-          const derivedPageSize = response.results.length
-
-          // If there's a next page, we know we're not on the last page, so use derivedPageSize
-          // If there's no next page, we're on the last page, so calculate based on total count
-          if (response.next) {
-            calculatedTotalPages = Math.ceil(response.count / derivedPageSize)
-          } else {
-            // On the last page: calculate page size from previous pages
-            // totalPages = currentPage, and pageSize = count / (currentPage - 1) for previous pages
-            // But simpler: if we're on last page, totalPages = currentPage
-            calculatedTotalPages = currentPage
-          }
-        } else {
-          // Fallback: count > 0 but results empty (out-of-range page)
-          // We don't know the backend page size, so we can't accurately calculate total pages
-          // Instead, set calculatedTotalPages to ensure we trigger a refetch to a valid page
-          // Setting it to currentPage - 1 guarantees validPage < currentPage, triggering the refetch
-          calculatedTotalPages = Math.max(1, currentPage - 1)
-        }
-
-        // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
-        // This can happen when requesting an out-of-range page
-        const validPage = Math.max(1, Math.min(currentPage, calculatedTotalPages))
-
-        // Update totalPages before potential early return to keep UI state consistent
-        setTotalPages(calculatedTotalPages)
-
-        // If the requested page was out of range, refetch the valid page
-        if (validPage !== currentPage && calculatedTotalPages > 0) {
-          // Update page state and trigger refetch via useEffect
-          setPage(validPage)
-          return
-        }
-      }
-    } catch (err) {
-      // Only update error state if this is still the latest request
-      if (requestId === requestCounterRef.current) {
-        console.error('Failed to load tickets:', err)
-        setError('Failed to load tickets. Please try again.')
-      }
-    } finally {
-      // Only update loading state if this is still the latest request
-      if (requestId === requestCounterRef.current) {
-        setIsLoading(false)
-      }
-    }
-  }, [page, statusFilter, priorityFilter, searchQuery])
-
-  useEffect(() => {
-    loadTickets()
-  }, [loadTickets])
+    fetchTickets({
+      page: 1,
+      status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
+      search: searchQuery || undefined,
+    })
+  }, [statusFilter, priorityFilter, searchQuery, fetchTickets])
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
+    setStorePage(value)
   }
 
   const handleCreateTicket = () => {
@@ -147,6 +70,15 @@ const TicketsPage = () => {
 
   const handleTicketClick = (ticketId: string) => {
     navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticketId))
+  }
+
+  const handleRetry = () => {
+    fetchTickets({
+      page,
+      status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
+      search: searchQuery || undefined,
+    })
   }
 
   const getStatusColor = (status: TicketStatus) => {
@@ -268,7 +200,7 @@ const TicketsPage = () => {
           <Typography color="error" variant="h6">
             {error}
           </Typography>
-          <Button onClick={loadTickets} sx={{ mt: 2 }}>
+          <Button onClick={handleRetry} sx={{ mt: 2 }}>
             Retry
           </Button>
         </Paper>
