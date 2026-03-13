@@ -54,9 +54,9 @@ const TicketsPage = () => {
   useEffect(() => {
     fetchTickets({
       page: 1,
-      status: statusFilter || undefined,
-      priority: priorityFilter || undefined,
-      search: searchQuery || undefined,
+      status: statusFilter,
+      priority: priorityFilter,
+      search: searchQuery,
     })
   }, [statusFilter, priorityFilter, searchQuery, fetchTickets])
 
@@ -75,9 +75,9 @@ const TicketsPage = () => {
   const handleRetry = () => {
     fetchTickets({
       page,
-      status: statusFilter || undefined,
-      priority: priorityFilter || undefined,
-      search: searchQuery || undefined,
+      status: statusFilter,
+      priority: priorityFilter,
+      search: searchQuery,
     })
   }
 
