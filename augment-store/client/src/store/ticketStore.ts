@@ -663,8 +663,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         const errorMessage = parseApiError(error, {
           defaultMessage: 'Failed to fetch comments',
         })
+        // Ensure we always have a string fallback in case parseApiError returns undefined
+        // (e.g., when DRF returns empty non_field_errors or field error arrays)
         set({
-          fetchCommentsError: errorMessage,
+          fetchCommentsError: errorMessage || 'Failed to fetch comments',
           isFetchingComments: false,
         })
         throw error
