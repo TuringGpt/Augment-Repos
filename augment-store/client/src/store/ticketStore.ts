@@ -665,9 +665,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           fetchCommentsError: errorMessage,
           isFetchingComments: false,
         })
+        throw error
       }
 
-      throw error
+      // Return null for superseded requests to prevent callers from handling stale errors
+      return null
     } finally {
       // Only clear fetchingCommentsTicketId if this is still the most recent request
       if (currentRequestId === fetchCommentsRequestCounter) {
