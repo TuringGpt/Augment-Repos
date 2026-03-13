@@ -53,8 +53,8 @@ interface TicketState {
   deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
-  getTicketStats: () => Promise<TicketStatsResponse>
-  getComments: (ticketId: string) => Promise<CommentListResponse>
+  getTicketStats: () => Promise<TicketStatsResponse | null>
+  getComments: (ticketId: string) => Promise<CommentListResponse | null>
   clearComments: () => void
 }
 
@@ -588,7 +588,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
   },
 
-  getTicketStats: async (): Promise<TicketStatsResponse> => {
+  getTicketStats: async (): Promise<TicketStatsResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
     fetchStatsRequestCounter += 1
@@ -604,9 +604,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchStatsRequestCounter) {
         set({ stats, isFetchingStats: false })
+        return stats
       }
 
-      return stats
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
     } catch (error) {
       console.error('Failed to fetch ticket stats:', error)
 
@@ -625,7 +627,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }
   },
 
-  getComments: async (ticketId: string): Promise<CommentListResponse> => {
+  getComments: async (ticketId: string): Promise<CommentListResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
     fetchCommentsRequestCounter += 1
@@ -646,9 +648,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           commentsTotal: response.count,
           isFetchingComments: false
         })
+        return response
       }
 
-      return response
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
     } catch (error) {
       console.error('Failed to fetch comments:', error)
 
