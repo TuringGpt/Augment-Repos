@@ -80,6 +80,7 @@ class AdminTicketsView(TicketBaseView, ListAPIView):
 
 def _invalidate_stats_cache(user):
     django_cache.delete(f"ticket_stats:{user.id}")
+    django_cache.delete("ticket_stats:admin")
 
 
 class TicketCreateView(CacheInvalidatorMixin, TicketBaseView, CreateAPIView):
@@ -176,6 +177,31 @@ class TicketStatsView(GenericAPIView):
         if stats is None:
             known_statuses = Ticket.Status.values
             aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
+                total=Count("id"),
+                **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
+            )
+            known_sum = sum(aggregates[s] for s in known_statuses)
+            stats = {
+                **aggregates,
+                "other": aggregates["total"] - known_sum,
+            }
+            django_cache.set(cache_key, stats, 600)
+            
+        return Response(stats)
+    
+class AdminTicketStatsView(GenericAPIView):
+    """
+    Get ticket statistics for all tickets (admin only).
+    """
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
+    def get(self, request, *args, **kwargs):
+        cache_key = "ticket_stats:admin"
+        
+        stats = django_cache.get(cache_key)
+        if stats is None:
+            known_statuses = Ticket.Status.values
+            aggregates = Ticket.objects.aggregate(
                 total=Count("id"),
                 **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
             )
