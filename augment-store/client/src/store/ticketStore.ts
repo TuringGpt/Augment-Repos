@@ -621,9 +621,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           statsError: errorMessage,
           isFetchingStats: false,
         })
+        throw error
       }
 
-      throw error
+      // Return null if request was superseded to prevent callers from handling stale errors
+      return null
     }
   },
 
