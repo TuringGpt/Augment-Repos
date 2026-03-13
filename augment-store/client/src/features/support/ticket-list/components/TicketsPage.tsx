@@ -38,6 +38,7 @@ const TicketsPage = () => {
   const {
     tickets,
     page,
+    pendingPage,
     totalPages,
     isLoading,
     error,
@@ -74,7 +75,7 @@ const TicketsPage = () => {
 
   const handleRetry = () => {
     fetchTickets({
-      page,
+      page: pendingPage,
       status: statusFilter,
       priority: priorityFilter,
       search: searchQuery,
