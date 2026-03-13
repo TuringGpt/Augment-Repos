@@ -4,6 +4,7 @@ import { Favorite, FavoriteBorder } from '@mui/icons-material'
 import { useWishlistStore } from '@store/wishlistStore'
 import { useAuthStore } from '@store/authStore'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface AddToWishlistButtonProps {
   productId: string
@@ -19,6 +20,7 @@ const AddToWishlistButton = ({
   sx = {},
 }: AddToWishlistButtonProps) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistStore()
   const [isLoading, setIsLoading] = useState(false)
@@ -54,10 +56,10 @@ const AddToWishlistButton = ({
   }
 
   const tooltipTitle = !isAuthenticated
-    ? 'Login to add to wishlist'
+    ? t('wishlist.loginToAddToWishlist')
     : inWishlist
-      ? 'Remove from wishlist'
-      : 'Add to wishlist'
+      ? t('wishlist.removeFromWishlist')
+      : t('wishlist.addToWishlist')
 
   // Prevent click propagation to parent CardActionArea when disabled
   const handleWrapperClick = (e: React.MouseEvent) => {

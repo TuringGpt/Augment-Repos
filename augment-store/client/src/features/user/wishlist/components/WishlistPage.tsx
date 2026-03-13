@@ -15,9 +15,11 @@ import { useWishlistStore } from '@store/wishlistStore'
 import { useAuthStore } from '@store/authStore'
 import { useWishlistSync } from '../hooks/useWishlistSync'
 import ProductCard from '@features/products/product-list/components/ProductCard'
+import { useTranslation } from '@hooks/useTranslation'
 
 const WishlistPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { wishlist, isLoading, error } = useWishlistStore()
   const { isAuthenticated } = useAuthStore()
   const { fetchWishlist } = useWishlistSync()
@@ -30,7 +32,7 @@ const WishlistPage = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
-        My Wishlist
+        {t('wishlist.myWishlist')}
       </Typography>
 
       {isLoading && (
@@ -58,13 +60,13 @@ const WishlistPage = () => {
         >
           <FavoriteBorder sx={{ fontSize: 80, color: 'text.secondary' }} />
           <Typography variant="h5" color="text.secondary">
-            Your wishlist is empty
+            {t('wishlist.emptyWishlist')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Save your favorite items to your wishlist and shop them later!
+            {t('wishlist.emptyWishlistMessage')}
           </Typography>
           <Button variant="contained" size="large" onClick={() => navigate('/products')}>
-            Browse Products
+            {t('wishlist.browseProducts')}
           </Button>
         </Paper>
       )}
@@ -72,7 +74,7 @@ const WishlistPage = () => {
       {!isLoading && !error && wishlist.length > 0 && (
         <>
           <Typography color="text.secondary" gutterBottom sx={{ mb: 3 }}>
-            {wishlist.length} item{wishlist.length === 1 ? '' : 's'} in your wishlist
+            {t('wishlist.itemsInWishlist', { count: wishlist.length })}
           </Typography>
 
           <Grid container spacing={3}>
