@@ -982,7 +982,8 @@ class AdminOrderTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Should see all orders regardless of creator
-        self.assertEqual(len(response.data.get("results", response.data)), 2)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertEqual(len(results), 2)
         
     def test_regular_user_list_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
