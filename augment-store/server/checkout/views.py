@@ -173,7 +173,7 @@ class AdminOrderListView(BaseOrderView, ListAPIView):
         # We need the base optimized queryset, but globally
         # BaseOrderView inherits AutoOptimizeMixin, so we call its parent to get the queryset
         # without the user filter.
-        return super().get_queryset().order_by('-created_at')
+        return super(BaseOrderView, self).get_queryset().order_by('-created_at')
 
 
 class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
@@ -183,4 +183,4 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
 
     def get_queryset(self):
         # Allow admins to retrieve/update any order
-        return super().get_queryset()
+        return super(BaseOrderView, self).get_queryset()

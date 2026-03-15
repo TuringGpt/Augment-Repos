@@ -970,8 +970,8 @@ class AdminOrderTests(BaseAPITestCase):
             is_active=True,
             role="member"
         )
-        self.order1 = OrderFactory(created_by=self.admin_user, status=Order.OrderStatus.PENDING)
-        self.order2 = OrderFactory(created_by=self.admin_user, status=Order.OrderStatus.COMPLETED)
+        self.order1 = OrderFactory(created_by=self.regular_user, status=Order.OrderStatus.PENDING)
+        self.order2 = OrderFactory(created_by=self.regular_user, status=Order.OrderStatus.COMPLETED)
         
         from rest_framework.test import APIClient
         self.admin_client = APIClient()
