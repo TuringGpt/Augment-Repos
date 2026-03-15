@@ -1,7 +1,8 @@
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from .permissions import hasAdminRole
 from .models import User
-from .serializers import UserProfileSerializer, UpdateUserProfileSerializer
+from .serializers import UserProfileSerializer, UpdateUserProfileSerializer, UserListSerializer, AdminUserUpdateSerializer
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedRetrieveMixin, CacheInvalidatorMixin
 from .services import UserProfileCacheService
@@ -31,3 +32,20 @@ class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMi
         if self.request.method in ['PATCH', 'PUT']:
             return UpdateUserProfileSerializer
         return UserProfileSerializer
+
+
+class AdminUserListView(ListAPIView):
+    """Admin-only view to list all registration users."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    serializer_class = UserListSerializer
+    queryset = User.objects.all().order_by('-date_joined')
+
+
+class AdminUserUpdateView(RetrieveUpdateAPIView):
+    """Admin-only view to update a specific user's role or active status."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    serializer_class = AdminUserUpdateSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user
