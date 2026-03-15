@@ -954,3 +954,55 @@ class CheckoutPaymentConfirmationViewTests(BaseAPITestCase):
         self.assertContains(response, "Thank you for your purchase")
 
 
+class AdminOrderTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_orders@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_orders@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        self.order1 = OrderFactory(created_by=self.admin_user, status=Order.OrderStatus.PENDING)
+        self.order2 = OrderFactory(created_by=self.admin_user, status=Order.OrderStatus.COMPLETED)
+        
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_orders(self):
+        url = reverse("v1:checkout:admin_order_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should see all orders regardless of creator
+        self.assertEqual(len(response.data.get("results", response.data)), 2)
+        
+    def test_regular_user_list_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_order_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_update_order_status(self):
+        url = reverse("v1:checkout:admin_order_update", kwargs={"pk": self.order1.id})
+        payload = {"status": Order.OrderStatus.CANCELLED}
+        response = self.admin_client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Verify it updated
+        self.assertEqual(response.data["status"], Order.OrderStatus.CANCELLED)
+        self.order1.refresh_from_db()
+        self.assertEqual(self.order1.status, Order.OrderStatus.CANCELLED)
+
+    def test_regular_user_update_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_order_update", kwargs={"pk": self.order1.id})
+        payload = {"status": Order.OrderStatus.CANCELLED}
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

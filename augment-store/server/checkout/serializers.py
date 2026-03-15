@@ -294,6 +294,10 @@ class PaymentStatusSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ["payment_status"]
         read_only_fields = ["payment_status"]
-    
 
-    
+
+class AdminOrderUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["id", "status"]
+        read_only_fields = ["id"]
