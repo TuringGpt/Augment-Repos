@@ -46,6 +46,3 @@ class AdminUserUpdateView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, hasAdminRole]
     serializer_class = AdminUserUpdateSerializer
     queryset = User.objects.all()
-
-    def get_object(self):
-        return self.request.user

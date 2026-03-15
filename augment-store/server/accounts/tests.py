@@ -232,7 +232,7 @@ class AdminUserTests(BaseAPITestCase):
         self.admin_client.force_authenticate(user=self.admin_user)
 
     def test_admin_list_users(self):
-        url = reverse("v1:accounts:admin_user_list")
+        url = reverse("v1:admin_user_list")
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Should return multiple users
@@ -240,21 +240,25 @@ class AdminUserTests(BaseAPITestCase):
 
     def test_member_list_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
-        url = reverse("v1:accounts:admin_user_list")
+        url = reverse("v1:admin_user_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_update_user_role(self):
-        url = reverse("v1:accounts:admin_user_update", kwargs={"pk": self.regular_user.id})
+        url = reverse("v1:admin_user_update", kwargs={"pk": self.regular_user.id})
         payload = {"role": "merchant"}
         
         response = self.admin_client.patch(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["role"], "merchant")
+        
+        # Verify the actual database object was updated
+        self.regular_user.refresh_from_db()
+        self.assertEqual(self.regular_user.role, "merchant")
 
     def test_member_update_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
-        url = reverse("v1:accounts:admin_user_update", kwargs={"pk": self.regular_user.id})
+        url = reverse("v1:admin_user_update", kwargs={"pk": self.regular_user.id})
         payload = {"role": "merchant"}
         response = self.authenticated_client.patch(url, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
