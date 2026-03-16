@@ -484,6 +484,7 @@
       "saving": "Saving...",
       "cancel": "Cancel",
       "memberSince": "Member since",
+      "notAvailable": "N/A",
       "fields": {
         "username": "Username",
         "email": "Email",

@@ -484,6 +484,7 @@
       "saving": "Enregistrement...",
       "cancel": "Annuler",
       "memberSince": "Membre depuis",
+      "notAvailable": "N/D",
       "fields": {
         "username": "Nom d'Utilisateur",
         "email": "Email",

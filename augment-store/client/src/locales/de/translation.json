@@ -484,6 +484,7 @@
       "saving": "Speichern...",
       "cancel": "Abbrechen",
       "memberSince": "Mitglied seit",
+      "notAvailable": "N/V",
       "fields": {
         "username": "Benutzername",
         "email": "E-Mail",

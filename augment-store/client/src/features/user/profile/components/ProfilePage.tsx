@@ -277,7 +277,7 @@ const ProfilePage = () => {
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {t('user.profilePage.memberSince')}{' '}
-              {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : 'N/A'}
+              {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : t('user.profilePage.notAvailable')}
             </Typography>
           </Box>
           {!isEditing && (

@@ -484,6 +484,7 @@
       "saving": "Guardando...",
       "cancel": "Cancelar",
       "memberSince": "Miembro desde",
+      "notAvailable": "N/D",
       "fields": {
         "username": "Nombre de Usuario",
         "email": "Correo Electrónico",
