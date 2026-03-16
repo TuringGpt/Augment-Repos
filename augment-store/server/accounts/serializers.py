@@ -78,3 +78,18 @@ class UserListSerializer(serializers.ModelSerializer):
             "is_active",
             "date_joined",
         ]
+
+
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for admins to update a user's role or active status"""
+    
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "role",
+            "is_active",
+            "date_joined",
+        ]
+        read_only_fields = ["id", "email", "date_joined"]
