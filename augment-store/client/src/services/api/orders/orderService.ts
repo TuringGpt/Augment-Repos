@@ -21,7 +21,7 @@ export const orderService = {
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
           updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-          is_deleted: false,
+          is_deleted: itemAPI.cart_item === null, // Derive from cart_item being null
           created_by: '', // Not provided by backend
         },
         created_at: itemAPI.created_at,
@@ -70,7 +70,7 @@ export const orderService = {
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
         updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-        is_deleted: false,
+        is_deleted: itemAPI.cart_item === null, // Derive from cart_item being null
         created_by: '', // Not provided by backend
       },
       created_at: itemAPI.created_at,
@@ -114,7 +114,7 @@ export const orderService = {
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
         updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-        is_deleted: false,
+        is_deleted: itemAPI.cart_item === null, // Derive from cart_item being null
         created_by: '', // Not provided by backend
       },
       created_at: itemAPI.created_at,
@@ -161,7 +161,7 @@ export const orderService = {
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
           updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-          is_deleted: false,
+          is_deleted: itemAPI.cart_item === null, // Derive from cart_item being null
           created_by: '', // Not provided by backend
         },
         created_at: itemAPI.created_at,
