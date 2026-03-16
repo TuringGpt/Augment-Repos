@@ -476,7 +476,47 @@
     "changePassword": "Change Password",
     "updateProfile": "Update Profile",
     "currentPassword": "Current Password",
-    "newPassword": "New Password"
+    "newPassword": "New Password",
+    "profilePage": {
+      "title": "My Profile",
+      "editProfile": "Edit Profile",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "memberSince": "Member since",
+      "fields": {
+        "username": "Username",
+        "email": "Email",
+        "emailCannotBeChanged": "Email cannot be changed",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "mobile": "Mobile",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Gender",
+        "genderMale": "Male",
+        "genderFemale": "Female",
+        "genderOther": "Other",
+        "role": "Role",
+        "roleHelperText": "Role is managed by administrators",
+        "accountStatus": "Account Status",
+        "statusActive": "Active",
+        "statusInactive": "Inactive"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "Profile updated successfully!",
+        "avatarUpdatedSuccess": "Avatar updated successfully!",
+        "avatarRemovedSuccess": "Avatar removed successfully!",
+        "failedToLoadProfile": "Failed to load profile",
+        "failedToUpdateProfile": "Failed to update profile",
+        "failedToUploadAvatar": "Failed to upload avatar",
+        "failedToRemoveAvatar": "Failed to remove avatar",
+        "retry": "Retry"
+      },
+      "buttons": {
+        "supportAndHelp": "Support & Help",
+        "logout": "Logout"
+      }
+    }
   },
   "privacy": {
     "pageTitle": "Privacy Policy",

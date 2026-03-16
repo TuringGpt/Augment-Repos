@@ -476,7 +476,47 @@
     "changePassword": "Passwort Ändern",
     "updateProfile": "Profil Aktualisieren",
     "currentPassword": "Aktuelles Passwort",
-    "newPassword": "Neues Passwort"
+    "newPassword": "Neues Passwort",
+    "profilePage": {
+      "title": "Mein Profil",
+      "editProfile": "Profil Bearbeiten",
+      "saveChanges": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "cancel": "Abbrechen",
+      "memberSince": "Mitglied seit",
+      "fields": {
+        "username": "Benutzername",
+        "email": "E-Mail",
+        "emailCannotBeChanged": "E-Mail kann nicht geändert werden",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "mobile": "Mobil",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Geschlecht",
+        "genderMale": "Männlich",
+        "genderFemale": "Weiblich",
+        "genderOther": "Andere",
+        "role": "Rolle",
+        "roleHelperText": "Die Rolle wird von Administratoren verwaltet",
+        "accountStatus": "Kontostatus",
+        "statusActive": "Aktiv",
+        "statusInactive": "Inaktiv"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "Profil erfolgreich aktualisiert!",
+        "avatarUpdatedSuccess": "Avatar erfolgreich aktualisiert!",
+        "avatarRemovedSuccess": "Avatar erfolgreich entfernt!",
+        "failedToLoadProfile": "Profil konnte nicht geladen werden",
+        "failedToUpdateProfile": "Profil konnte nicht aktualisiert werden",
+        "failedToUploadAvatar": "Avatar konnte nicht hochgeladen werden",
+        "failedToRemoveAvatar": "Avatar konnte nicht entfernt werden",
+        "retry": "Erneut Versuchen"
+      },
+      "buttons": {
+        "supportAndHelp": "Support & Hilfe",
+        "logout": "Abmelden"
+      }
+    }
   },
   "privacy": {
     "pageTitle": "Datenschutzrichtlinie",

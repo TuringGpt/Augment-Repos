@@ -476,7 +476,47 @@
     "changePassword": "Changer le Mot de Passe",
     "updateProfile": "Mettre à Jour le Profil",
     "currentPassword": "Mot de Passe Actuel",
-    "newPassword": "Nouveau Mot de Passe"
+    "newPassword": "Nouveau Mot de Passe",
+    "profilePage": {
+      "title": "Mon Profil",
+      "editProfile": "Modifier le Profil",
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement...",
+      "cancel": "Annuler",
+      "memberSince": "Membre depuis",
+      "fields": {
+        "username": "Nom d'Utilisateur",
+        "email": "Email",
+        "emailCannotBeChanged": "L'email ne peut pas être modifié",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "mobile": "Mobile",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Genre",
+        "genderMale": "Masculin",
+        "genderFemale": "Féminin",
+        "genderOther": "Autre",
+        "role": "Rôle",
+        "roleHelperText": "Le rôle est géré par les administrateurs",
+        "accountStatus": "Statut du Compte",
+        "statusActive": "Actif",
+        "statusInactive": "Inactif"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "Profil mis à jour avec succès !",
+        "avatarUpdatedSuccess": "Avatar mis à jour avec succès !",
+        "avatarRemovedSuccess": "Avatar supprimé avec succès !",
+        "failedToLoadProfile": "Échec du chargement du profil",
+        "failedToUpdateProfile": "Échec de la mise à jour du profil",
+        "failedToUploadAvatar": "Échec du téléchargement de l'avatar",
+        "failedToRemoveAvatar": "Échec de la suppression de l'avatar",
+        "retry": "Réessayer"
+      },
+      "buttons": {
+        "supportAndHelp": "Support et Aide",
+        "logout": "Déconnexion"
+      }
+    }
   },
   "privacy": {
     "pageTitle": "Politique de Confidentialité",
