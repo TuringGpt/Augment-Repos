@@ -9,8 +9,9 @@ from django.views.generic import TemplateView
 
 from rest_framework import status
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
+from accounts.permissions import hasAdminRole
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -24,6 +25,7 @@ from .serializers import (
     OrderPaymentSerializer,
     PaymentStatusSerializer,
     ShippingAddressListSerializer,
+    AdminOrderUpdateSerializer,
 )
 from .services import StripeService
 
@@ -159,3 +161,26 @@ class CheckoutPaymentConfirmationView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["return_url"] = settings.FRONTEND_URL
         return context
+
+
+class AdminOrderListView(BaseOrderView, ListAPIView):
+    """Admin-only view to list all orders globally."""
+    serializer_class = OrderListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
+    def get_queryset(self):
+        # Override the get_queryset from BaseOrderView that restricts to self.request.user
+        # We need the base optimized queryset, but globally
+        # BaseOrderView inherits AutoOptimizeMixin, so we call its parent to get the queryset
+        # without the user filter.
+        return super(BaseOrderView, self).get_queryset().order_by('-created_at')
+
+
+class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
+    """Admin-only view to update a specific order (e.g. status)."""
+    serializer_class = AdminOrderUpdateSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
+    def get_queryset(self):
+        # Allow admins to retrieve/update any order
+        return super(BaseOrderView, self).get_queryset()
