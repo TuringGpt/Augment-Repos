@@ -476,7 +476,48 @@
     "changePassword": "Cambiar Contraseña",
     "updateProfile": "Actualizar Perfil",
     "currentPassword": "Contraseña Actual",
-    "newPassword": "Nueva Contraseña"
+    "newPassword": "Nueva Contraseña",
+    "profilePage": {
+      "title": "Mi Perfil",
+      "editProfile": "Editar Perfil",
+      "saveChanges": "Guardar Cambios",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "memberSince": "Miembro desde {{date}}",
+      "notAvailable": "N/D",
+      "fields": {
+        "username": "Nombre de Usuario",
+        "email": "Correo Electrónico",
+        "emailCannotBeChanged": "El correo electrónico no se puede cambiar",
+        "firstName": "Nombre",
+        "lastName": "Apellido",
+        "mobile": "Móvil",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Género",
+        "genderMale": "Masculino",
+        "genderFemale": "Femenino",
+        "genderOther": "Otro",
+        "role": "Rol",
+        "roleHelperText": "El rol es administrado por los administradores",
+        "accountStatus": "Estado de la Cuenta",
+        "statusActive": "Activo",
+        "statusInactive": "Inactivo"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "¡Perfil actualizado exitosamente!",
+        "avatarUpdatedSuccess": "¡Avatar actualizado exitosamente!",
+        "avatarRemovedSuccess": "¡Avatar eliminado exitosamente!",
+        "failedToLoadProfile": "Error al cargar el perfil",
+        "failedToUpdateProfile": "Error al actualizar el perfil",
+        "failedToUploadAvatar": "Error al cargar el avatar",
+        "failedToRemoveAvatar": "Error al eliminar el avatar",
+        "retry": "Reintentar"
+      },
+      "buttons": {
+        "supportAndHelp": "Soporte y Ayuda",
+        "logout": "Cerrar Sesión"
+      }
+    }
   },
   "privacy": {
     "pageTitle": "Política de Privacidad",

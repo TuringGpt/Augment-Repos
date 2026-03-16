@@ -25,8 +25,10 @@ import { useProfileForm } from '../hooks/useProfileForm'
 import { getChangedFields } from '../utils/profileValidation'
 import { AvatarUpload } from './AvatarUpload'
 import { parseApiError } from '@utils/errorUtils'
+import { useTranslation } from '@hooks/useTranslation'
 
 const ProfilePage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -72,7 +74,7 @@ const ProfilePage = () => {
       setProfileValues(profileData)
     } catch (err) {
       const errorMessage = parseApiError(err, {
-        defaultMessage: 'Failed to load profile',
+        defaultMessage: t('user.profilePage.messages.failedToLoadProfile'),
       })
       setError(errorMessage)
     } finally {
@@ -121,14 +123,14 @@ const ProfilePage = () => {
       setProfileValues(updatedProfile)
 
       setIsEditing(false)
-      setSuccessMessage('Profile updated successfully!')
+      setSuccessMessage(t('user.profilePage.messages.profileUpdatedSuccess'))
 
       // Auto-hide success message after 3 seconds
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
       const errorMessage = parseApiError(err, {
         fieldNames: ['first_name', 'last_name', 'phone'],
-        defaultMessage: 'Failed to update profile',
+        defaultMessage: t('user.profilePage.messages.failedToUpdateProfile'),
       })
       setError(errorMessage)
     } finally {
@@ -164,12 +166,12 @@ const ProfilePage = () => {
       console.log('📦 Updated profile:', updatedProfile)
       setAvatarState((prev) => ({ ...prev, newUrl: newAvatarUrl }))
 
-      setSuccessMessage('Avatar updated successfully!')
+      setSuccessMessage(t('user.profilePage.messages.avatarUpdatedSuccess'))
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
       const errorMessage = parseApiError(err, {
         fieldNames: ['profile_image'],
-        defaultMessage: 'Failed to upload avatar',
+        defaultMessage: t('user.profilePage.messages.failedToUploadAvatar'),
       })
       setAvatarState((prev) => ({ ...prev, error: errorMessage }))
     } finally {
@@ -195,12 +197,12 @@ const ProfilePage = () => {
       setProfile(updatedProfile)
       setProfileValues(updatedProfile)
 
-      setSuccessMessage('Avatar removed successfully!')
+      setSuccessMessage(t('user.profilePage.messages.avatarRemovedSuccess'))
       successTimeoutRef.current = delay(() => setSuccessMessage(null), 3000)
     } catch (err) {
       const errorMessage = parseApiError(err, {
         fieldNames: ['profile_image'],
-        defaultMessage: 'Failed to remove avatar',
+        defaultMessage: t('user.profilePage.messages.failedToRemoveAvatar'),
       })
       setAvatarState((prev) => ({ ...prev, error: errorMessage }))
     } finally {
@@ -222,7 +224,7 @@ const ProfilePage = () => {
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">{error}</Alert>
         <Button onClick={fetchProfile} sx={{ mt: 2 }}>
-          Retry
+          {t('user.profilePage.messages.retry')}
         </Button>
       </Container>
     )
@@ -231,7 +233,7 @@ const ProfilePage = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-        My Profile
+        {t('user.profilePage.title')}
       </Typography>
 
       {successMessage && (
@@ -274,8 +276,9 @@ const ProfilePage = () => {
               {profile?.email}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Member since{' '}
-              {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : 'N/A'}
+              {t('user.profilePage.memberSince', {
+                date: profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : t('user.profilePage.notAvailable')
+              })}
             </Typography>
           </Box>
           {!isEditing && (
@@ -285,7 +288,7 @@ const ProfilePage = () => {
               onClick={handleEdit}
               sx={{ borderColor: Colors.primary.main, color: Colors.primary.main }}
             >
-              Edit Profile
+              {t('user.profilePage.editProfile')}
             </Button>
           )}
         </Box>
@@ -299,7 +302,7 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Username"
+                label={t('user.profilePage.fields.username')}
                 {...form.getInputProps('username')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
@@ -312,11 +315,11 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Email"
+                label={t('user.profilePage.fields.email')}
                 value={profile?.email || ''}
                 disabled
                 variant="filled"
-                helperText="Email cannot be changed"
+                helperText={t('user.profilePage.fields.emailCannotBeChanged')}
               />
             </Grid>
 
@@ -324,7 +327,7 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="First Name"
+                label={t('user.profilePage.fields.firstName')}
                 {...form.getInputProps('first_name')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
@@ -337,7 +340,7 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Last Name"
+                label={t('user.profilePage.fields.lastName')}
                 {...form.getInputProps('last_name')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
@@ -350,11 +353,11 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Mobile"
+                label={t('user.profilePage.fields.mobile')}
                 {...form.getInputProps('mobile')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
-                placeholder="+1234567890"
+                placeholder={t('user.profilePage.fields.mobilePlaceholder')}
                 error={isEditing && !!form.errors.mobile}
                 helperText={isEditing ? form.errors.mobile : ' '}
               />
@@ -365,16 +368,16 @@ const ProfilePage = () => {
                 fullWidth
                 size="small"
                 select
-                label="Gender"
+                label={t('user.profilePage.fields.gender')}
                 {...form.getInputProps('gender')}
                 disabled={!isEditing}
                 variant={isEditing ? 'outlined' : 'filled'}
                 error={isEditing && !!form.errors.gender}
                 helperText={isEditing ? form.errors.gender : ' '}
               >
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
+                <MenuItem value="Male">{t('user.profilePage.fields.genderMale')}</MenuItem>
+                <MenuItem value="Female">{t('user.profilePage.fields.genderFemale')}</MenuItem>
+                <MenuItem value="Other">{t('user.profilePage.fields.genderOther')}</MenuItem>
               </TextField>
             </Grid>
 
@@ -382,11 +385,11 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Role"
+                label={t('user.profilePage.fields.role')}
                 value={profile?.role || 'customer'}
                 disabled
                 variant="filled"
-                helperText="Role is managed by administrators"
+                helperText={t('user.profilePage.fields.roleHelperText')}
               />
             </Grid>
 
@@ -394,8 +397,12 @@ const ProfilePage = () => {
               <TextField
                 fullWidth
                 size="small"
-                label="Account Status"
-                value={profile?.is_active ? 'Active' : 'Inactive'}
+                label={t('user.profilePage.fields.accountStatus')}
+                value={
+                  profile?.is_active
+                    ? t('user.profilePage.fields.statusActive')
+                    : t('user.profilePage.fields.statusInactive')
+                }
                 disabled
                 variant="filled"
                 helperText=" "
@@ -413,7 +420,7 @@ const ProfilePage = () => {
                 type="button"
                 disabled={isSaving}
               >
-                Cancel
+                {t('user.profilePage.cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -427,7 +434,7 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('user.profilePage.saving') : t('user.profilePage.saveChanges')}
               </Button>
             </Box>
           )}
@@ -452,7 +459,7 @@ const ProfilePage = () => {
             },
           }}
         >
-          Support & Help
+          {t('user.profilePage.buttons.supportAndHelp')}
         </Button>
       </Box>
 
@@ -474,7 +481,7 @@ const ProfilePage = () => {
             },
           }}
         >
-          Logout
+          {t('user.profilePage.buttons.logout')}
         </Button>
       </Box>
     </Container>
