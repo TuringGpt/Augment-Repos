@@ -483,7 +483,7 @@
       "saveChanges": "Enregistrer les Modifications",
       "saving": "Enregistrement...",
       "cancel": "Annuler",
-      "memberSince": "Membre depuis",
+      "memberSince": "Membre depuis {{date}}",
       "notAvailable": "N/D",
       "fields": {
         "username": "Nom d'Utilisateur",

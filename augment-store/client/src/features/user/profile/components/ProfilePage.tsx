@@ -276,8 +276,9 @@ const ProfilePage = () => {
               {profile?.email}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {t('user.profilePage.memberSince')}{' '}
-              {profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : t('user.profilePage.notAvailable')}
+              {t('user.profilePage.memberSince', {
+                date: profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : t('user.profilePage.notAvailable')
+              })}
             </Typography>
           </Box>
           {!isEditing && (
