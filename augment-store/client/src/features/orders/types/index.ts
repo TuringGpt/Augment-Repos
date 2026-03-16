@@ -54,7 +54,7 @@ export interface Order {
   status: OrderStatus
   shipping_address: OrderAddress | null
   billing_address: OrderAddress | null
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | null
   payment?: Payment
   created_at: string
   updated_at: string

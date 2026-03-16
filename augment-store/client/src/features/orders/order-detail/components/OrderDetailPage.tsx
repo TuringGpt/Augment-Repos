@@ -93,8 +93,29 @@ const OrderDetailPage = () => {
         return 'error'
       case 'refunded':
         return 'warning'
+      case 'pending':
+        return 'default'
+      case null:
+        return 'default'
       default:
         return 'default'
+    }
+  }
+
+  const getPaymentStatusLabel = (status: Order['payment_status']) => {
+    switch (status) {
+      case 'pending':
+        return t('order.paymentStatus.pending')
+      case 'paid':
+        return t('order.paymentStatus.paid')
+      case 'failed':
+        return t('order.paymentStatus.failed')
+      case 'refunded':
+        return t('order.paymentStatus.refunded')
+      case null:
+        return 'Unknown'
+      default:
+        return 'Unknown'
     }
   }
 
@@ -177,7 +198,7 @@ const OrderDetailPage = () => {
               />
               <Chip
                 icon={<PaymentIcon />}
-                label={t(`order.paymentStatus.${order.payment_status}`)}
+                label={getPaymentStatusLabel(order.payment_status)}
                 color={getPaymentStatusColor(order.payment_status)}
                 variant="outlined"
               />

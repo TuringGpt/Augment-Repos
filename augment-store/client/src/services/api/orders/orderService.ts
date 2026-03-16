@@ -37,7 +37,7 @@ export const orderService = {
         status: orderAPI.status,
         shipping_address: null,
         billing_address: null,
-        payment_status: 'pending',
+        payment_status: null, // Backend doesn't return payment info, so we set it to null to indicate unknown status
         payment: undefined,
         created_at: orderAPI.created_at,
         updated_at: orderAPI.updated_at,
@@ -86,7 +86,7 @@ export const orderService = {
       status: orderAPI.status,
       shipping_address: null,
       billing_address: null,
-      payment_status: 'pending',
+      payment_status: null, // Backend doesn't return payment info, so we set it to null to indicate unknown status
       payment: undefined,
       created_at: orderAPI.created_at,
       updated_at: orderAPI.updated_at,
@@ -130,7 +130,7 @@ export const orderService = {
       status: orderAPI.status,
       shipping_address: null,
       billing_address: null,
-      payment_status: 'pending',
+      payment_status: null, // Backend doesn't return payment info, so we set it to null to indicate unknown status
       payment: undefined,
       created_at: orderAPI.created_at,
       updated_at: orderAPI.updated_at,
@@ -177,7 +177,7 @@ export const orderService = {
         status: orderAPI.status,
         shipping_address: null,
         billing_address: null,
-        payment_status: 'pending',
+        payment_status: null, // Backend doesn't return payment info, so we set it to null to indicate unknown status
         payment: undefined,
         created_at: orderAPI.created_at,
         updated_at: orderAPI.updated_at,
