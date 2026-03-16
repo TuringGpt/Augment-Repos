@@ -10,13 +10,13 @@ export const orderService = {
 
     const orders: Order[] = response.results.map((orderAPI) => {
       // Transform OrderItemAPI[] to OrderItem[]
-      // Backend returns: { id, cart_item (UUID), product, quantity, created_at }
+      // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
       // Frontend expects: { id, cart_item: CartItem, created_at }
-      // Note: cart_item from backend is just a UUID, so we construct a minimal CartItem object
+      // Note: cart_item from backend is just a UUID (or null if deleted), so we construct a minimal CartItem object
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
         cart_item: {
-          id: itemAPI.cart_item, // cart_item is a UUID string
+          id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
           product: itemAPI.product,
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
@@ -59,13 +59,13 @@ export const orderService = {
     const orderAPI = await apiClient.get<OrderListAPIResponse['results'][0]>(API_ENDPOINTS.ORDERS.DETAIL(id))
 
     // Transform OrderItemAPI[] to OrderItem[] - same as getOrders
-    // Backend returns: { id, cart_item (UUID), product, quantity, created_at }
+    // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
     // Frontend expects: { id, cart_item: CartItem, created_at }
-    // Note: cart_item from backend is just a UUID, so we construct a minimal CartItem object
+    // Note: cart_item from backend is just a UUID (or null if deleted), so we construct a minimal CartItem object
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
       cart_item: {
-        id: itemAPI.cart_item, // cart_item is a UUID string
+        id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
         product: itemAPI.product,
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
@@ -103,13 +103,13 @@ export const orderService = {
     const orderAPI = await apiClient.post<OrderListAPIResponse['results'][0]>(API_ENDPOINTS.ORDERS.CANCEL(id))
 
     // Transform OrderItemAPI[] to OrderItem[] - same as getOrders and getOrderById
-    // Backend returns: { id, cart_item (UUID), product, quantity, created_at }
+    // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
     // Frontend expects: { id, cart_item: CartItem, created_at }
-    // Note: cart_item from backend is just a UUID, so we construct a minimal CartItem object
+    // Note: cart_item from backend is just a UUID (or null if deleted), so we construct a minimal CartItem object
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
       cart_item: {
-        id: itemAPI.cart_item, // cart_item is a UUID string
+        id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
         product: itemAPI.product,
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
@@ -150,13 +150,13 @@ export const orderService = {
 
     const orders: Order[] = response.results.map((orderAPI) => {
       // Transform OrderItemAPI[] to OrderItem[]
-      // Backend returns: { id, cart_item (UUID), product, quantity, created_at }
+      // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
       // Frontend expects: { id, cart_item: CartItem, created_at }
-      // Note: cart_item from backend is just a UUID, so we construct a minimal CartItem object
+      // Note: cart_item from backend is just a UUID (or null if deleted), so we construct a minimal CartItem object
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
         cart_item: {
-          id: itemAPI.cart_item, // cart_item is a UUID string
+          id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
           product: itemAPI.product,
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
