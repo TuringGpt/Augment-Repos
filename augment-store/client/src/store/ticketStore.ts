@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
 import { parseApiError } from '@utils/errorUtils'
-import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse } from '@features/support/types'
+import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse, Comment, CommentListResponse } from '@features/support/types'
 
 interface TicketState {
   tickets: TicketListItem[]
@@ -37,6 +37,13 @@ interface TicketState {
   isFetchingStats: boolean
   statsError: string | null
 
+  // Comments state
+  comments: Comment[]
+  commentsTotal: number
+  isFetchingComments: boolean
+  fetchCommentsError: string | null
+  fetchingCommentsTicketId: string | null // Track which ticket's comments are being fetched
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -46,7 +53,9 @@ interface TicketState {
   deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
-  getTicketStats: () => Promise<TicketStatsResponse>
+  getTicketStats: () => Promise<TicketStatsResponse | null>
+  getComments: (ticketId: string) => Promise<CommentListResponse | null>
+  clearComments: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -77,6 +86,11 @@ let deleteInFlightCount = 0
 // When multiple getTicketStats calls are made in quick succession,
 // only the most recent request should update the stats state
 let fetchStatsRequestCounter = 0
+
+// Request counter to prevent race conditions in getComments
+// When multiple getComments calls are made in quick succession,
+// only the most recent request should update the comments state
+let fetchCommentsRequestCounter = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -109,6 +123,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   stats: null,
   isFetchingStats: false,
   statsError: null,
+  comments: [],
+  commentsTotal: 0,
+  isFetchingComments: false,
+  fetchCommentsError: null,
+  fetchingCommentsTicketId: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -569,7 +588,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
   },
 
-  getTicketStats: async (): Promise<TicketStatsResponse> => {
+  getTicketStats: async (): Promise<TicketStatsResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
     fetchStatsRequestCounter += 1
@@ -585,9 +604,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchStatsRequestCounter) {
         set({ stats, isFetchingStats: false })
+        return stats
       }
 
-      return stats
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
     } catch (error) {
       console.error('Failed to fetch ticket stats:', error)
 
@@ -600,10 +621,74 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           statsError: errorMessage,
           isFetchingStats: false,
         })
+        throw error
       }
 
-      throw error
+      // Return null if request was superseded to prevent callers from handling stale errors
+      return null
     }
+  },
+
+  getComments: async (ticketId: string): Promise<CommentListResponse | null> => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchCommentsRequestCounter += 1
+    const currentRequestId = fetchCommentsRequestCounter
+
+    // Set loading state and clear stale data BEFORE any awaited work
+    // Store the ticket ID being fetched so we can track which ticket's comments are being loaded
+    set({ isFetchingComments: true, fetchCommentsError: null, comments: [], commentsTotal: 0, fetchingCommentsTicketId: ticketId })
+
+    try {
+      const response = await ticketService.getComments(ticketId)
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchCommentsRequestCounter) {
+        set({
+          comments: response.results,
+          commentsTotal: response.count,
+          isFetchingComments: false,
+          fetchingCommentsTicketId: null
+        })
+        return response
+      }
+
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
+    } catch (error) {
+      console.error('Failed to fetch comments:', error)
+
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchCommentsRequestCounter) {
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'Failed to fetch comments',
+        })
+        set({
+          fetchCommentsError: errorMessage,
+          isFetchingComments: false,
+          fetchingCommentsTicketId: null
+        })
+        throw error
+      }
+
+      // Return null for superseded requests to prevent callers from handling stale errors
+      return null
+    }
+  },
+
+  clearComments: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchCommentsRequestCounter += 1
+
+    set({
+      comments: [],
+      commentsTotal: 0,
+      isFetchingComments: false,
+      fetchCommentsError: null,
+      fetchingCommentsTicketId: null,
+    })
   },
 }))
 
