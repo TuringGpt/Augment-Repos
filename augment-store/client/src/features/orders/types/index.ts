@@ -54,7 +54,7 @@ export interface Order {
   status: OrderStatus
   shipping_address: OrderAddress | null
   billing_address: OrderAddress | null
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | null
   payment?: Payment
   created_at: string
   updated_at: string
@@ -124,7 +124,7 @@ export interface OrderAPI {
 
 export interface OrderItemAPI {
   id: string
-  cart_item: CartItem
+  cart_item: string | null // UUID of the cart item (nullable: on_delete=SET_NULL)
   product: Product | null
   quantity: number
   created_at: string
