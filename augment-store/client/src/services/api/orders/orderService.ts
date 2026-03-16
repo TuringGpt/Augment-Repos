@@ -51,7 +51,9 @@ export const orderService = {
       total: response.count,
       page,
       limit,
-      totalPages: Math.ceil(response.count / limit),
+      // Normalize totalPages to minimum of 1 for pagination UI compatibility (1-based pagination)
+      // When count is 0, Math.ceil returns 0, but pagination consumers expect at least 1 page
+      totalPages: Math.max(1, Math.ceil(response.count / limit)),
     }
   },
 
@@ -191,7 +193,9 @@ export const orderService = {
       total: response.count,
       page,
       limit: backendPageSize,
-      totalPages: Math.ceil(response.count / backendPageSize),
+      // Normalize totalPages to minimum of 1 for pagination UI compatibility (1-based pagination)
+      // When count is 0, Math.ceil returns 0, but pagination consumers expect at least 1 page
+      totalPages: Math.max(1, Math.ceil(response.count / backendPageSize)),
     }
   },
 }
