@@ -124,7 +124,7 @@ export interface OrderAPI {
 
 export interface OrderItemAPI {
   id: string
-  cart_item: CartItem
+  cart_item: string // UUID of the cart item (not a full object)
   product: Product | null
   quantity: number
   created_at: string
