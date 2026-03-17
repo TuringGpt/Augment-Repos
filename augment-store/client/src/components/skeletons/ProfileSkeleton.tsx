@@ -24,7 +24,7 @@ const ProfileSkeleton = ({ animation = 'wave' }: ProfileSkeletonProps) => {
       <Grid container spacing={3}>
         {/* Left Column - Profile Card Skeleton */}
         <Grid item xs={12} md={4}>
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0, 0, 0, 0.12)' }}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}` }}>
             <CardContent sx={{ p: 3 }}>
               {/* Avatar */}
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
@@ -53,7 +53,7 @@ const ProfileSkeleton = ({ animation = 'wave' }: ProfileSkeletonProps) => {
 
         {/* Right Column - Form Skeleton */}
         <Grid item xs={12} md={8}>
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0, 0, 0, 0.12)' }}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}` }}>
             <CardContent sx={{ p: 4 }}>
               {/* Card Header */}
               <Box sx={{ mb: 3 }}>

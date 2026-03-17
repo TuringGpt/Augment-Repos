@@ -302,7 +302,7 @@ const ProfilePage = () => {
             elevation={0}
             sx={{
               borderRadius: 3,
-              border: `1px solid ${Colors.border.light}`,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
               overflow: 'visible',
               position: 'relative',
               background: `linear-gradient(135deg, ${alpha(Colors.primary.light, 0.05)} 0%, ${alpha(Colors.secondary.light, 0.05)} 100%)`,
@@ -453,7 +453,7 @@ const ProfilePage = () => {
             elevation={0}
             sx={{
               borderRadius: 3,
-              border: `1px solid ${Colors.border.light}`,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
             }}
           >
             <CardContent sx={{ p: 4 }}>
