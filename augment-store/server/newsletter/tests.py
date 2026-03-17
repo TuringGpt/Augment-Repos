@@ -162,10 +162,12 @@ class NewsletterTests(BaseAPITestCase):
         # We want to test that adding an inactive subscription manually invalidates the admin list cache.
         # We'll use the API instead of NewsletterFactory to trigger the cache invalidation logic.
         subscribe_url = reverse("v1:create_newsletter")
-        self.authenticated_client.post(subscribe_url, {"email": "inactive2@example.com"})
+        sub_resp = self.authenticated_client.post(subscribe_url, {"email": "inactive2@example.com"})
+        self.assertEqual(sub_resp.status_code, 201)
         
         unsubscribe_url = reverse("v1:unsubscribe_newsletter_by_email")
-        self.authenticated_client.patch(unsubscribe_url, {"email": "inactive2@example.com"})
+        unsub_resp = self.authenticated_client.patch(unsubscribe_url, {"email": "inactive2@example.com"})
+        self.assertEqual(unsub_resp.status_code, 200)
         
         response = self.authenticated_client.get(url)
         # Assert the response shape to ensure we're dealing with a list
@@ -175,6 +177,11 @@ class NewsletterTests(BaseAPITestCase):
             results = response.data
         self.assertIsInstance(results, list, "API response or results should be a list")
         self.assertGreaterEqual(len(results), 2)
+        
+        # Verify the record is actually in the list and inactive
+        inactive_record = next((r for r in results if r['email'] == "inactive2@example.com"), None)
+        self.assertIsNotNone(inactive_record, "Expected cache to invalidate and return the new user")
+        self.assertFalse(inactive_record['is_active'], "Expected user to be inactive via API")
 
     def test_admin_update_newsletter(self):
         url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
