@@ -6,6 +6,9 @@ import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse 
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
+// Request counter for merchant orders to prevent race conditions
+let fetchMerchantRequestCounter = 0
+
 interface OrderState {
   // Current order (most recently created)
   currentOrder: CreateOrderResponse | null
@@ -16,6 +19,12 @@ interface OrderState {
   currentPage: number
   totalPages: number
 
+  // Merchant orders list
+  merchantOrders: Order[]
+  totalMerchantOrders: number
+  currentMerchantPage: number
+  totalMerchantPages: number
+
   // Single order detail
   selectedOrder: Order | null
   isFetchingOrder: boolean
@@ -24,11 +33,13 @@ interface OrderState {
   // Loading states
   isCreatingOrder: boolean
   isFetchingOrders: boolean
+  isFetchingMerchantOrders: boolean
   isCancelingOrder: boolean
 
   // Error states
   createOrderError: string | null
   fetchOrdersError: string | null
+  fetchMerchantOrdersError: string | null
   cancelOrderError: string | null
 
   // Actions
@@ -37,11 +48,14 @@ interface OrderState {
   clearCurrentOrder: () => void
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
+  getMerchantOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
   clearSelectedOrder: () => void
   clearOrders: () => void
+  clearMerchantOrders: () => void
   cancelOrder: (id: string) => Promise<Order>
   setPage: (page: number) => void
+  setMerchantPage: (page: number) => void
 }
 
 // Request counter to prevent race conditions in getOrderById
@@ -58,14 +72,20 @@ export const useOrderStore = create<OrderState>()(
       totalOrders: 0,
       currentPage: 1,
       totalPages: 1,
+      merchantOrders: [],
+      totalMerchantOrders: 0,
+      currentMerchantPage: 1,
+      totalMerchantPages: 1,
       selectedOrder: null,
       isFetchingOrder: false,
       fetchOrderError: null,
       isCreatingOrder: false,
       isFetchingOrders: false,
+      isFetchingMerchantOrders: false,
       isCancelingOrder: false,
       createOrderError: null,
       fetchOrdersError: null,
+      fetchMerchantOrdersError: null,
       cancelOrderError: null,
 
       // Actions
@@ -145,6 +165,59 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
+      getMerchantOrders: async (page = 1, limit = 10) => {
+        // Import orderService dynamically to avoid circular dependency
+        const { orderService } = await import('@services/api/orders/orderService')
+
+        // Increment counter and capture the current request ID
+        fetchMerchantRequestCounter += 1
+        const requestId = fetchMerchantRequestCounter
+
+        try {
+          set({ isFetchingMerchantOrders: true, fetchMerchantOrdersError: null })
+          const response = await orderService.getMerchantOrders(page, limit)
+
+          // Only update state if this is still the latest request
+          // This prevents older responses from overwriting newer state
+          if (requestId !== fetchMerchantRequestCounter) {
+            return response
+          }
+
+          // Clamp currentMerchantPage to valid range [1, totalPages] to prevent invalid pagination state
+          // This can happen when orders are deleted and total pages shrinks, or if page <= 0
+          const validPage = Math.max(1, Math.min(page, response.totalPages || 1))
+
+          // If the requested page was out of range and we have orders, refetch the valid page
+          if (validPage !== page && response.totalPages > 0) {
+            return await get().getMerchantOrders(validPage, limit)
+          }
+
+          // Update state with fetched merchant orders
+          set({
+            merchantOrders: response.orders,
+            totalMerchantOrders: response.total,
+            totalMerchantPages: response.totalPages,
+            currentMerchantPage: validPage,
+          })
+
+          return response
+        } catch (error) {
+          console.error('Failed to fetch merchant orders:', error)
+
+          // Only update error state if this is still the latest request
+          if (requestId === fetchMerchantRequestCounter) {
+            const errorMessage = 'Failed to fetch merchant orders. Please try again.'
+            set({ fetchMerchantOrdersError: errorMessage })
+          }
+          throw error
+        } finally {
+          // Only update loading state if this is still the latest request
+          if (requestId === fetchMerchantRequestCounter) {
+            set({ isFetchingMerchantOrders: false })
+          }
+        }
+      },
+
       getOrderById: async (id: string) => {
         // Increment counter to track this request
         // This prevents race conditions when multiple calls are made rapidly
@@ -207,6 +280,20 @@ export const useOrderStore = create<OrderState>()(
         })
       },
 
+      clearMerchantOrders: () => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight responses from repopulating the store after clear
+        fetchMerchantRequestCounter += 1
+        set({
+          merchantOrders: [],
+          totalMerchantOrders: 0,
+          currentMerchantPage: 1,
+          totalMerchantPages: 1,
+          fetchMerchantOrdersError: null,
+          isFetchingMerchantOrders: false,
+        })
+      },
+
       setCreateOrderError: (error) => set({ createOrderError: error }),
 
       cancelOrder: async (id: string) => {
@@ -241,6 +328,16 @@ export const useOrderStore = create<OrderState>()(
         get().getAllOrders(page, 10).catch((error) => {
           // Error is already handled in getAllOrders, just prevent unhandled rejection
           console.error('Error fetching orders on page change:', error)
+        })
+      },
+
+      setMerchantPage: (page: number) => {
+        // Update currentMerchantPage optimistically so UI state remains consistent even if fetch fails
+        // This ensures retry logic and pagination controls use the intended page
+        set({ currentMerchantPage: page })
+        get().getMerchantOrders(page, 10).catch((error) => {
+          // Error is already handled in getMerchantOrders, just prevent unhandled rejection
+          console.error('Error fetching merchant orders on page change:', error)
         })
       },
     }),
