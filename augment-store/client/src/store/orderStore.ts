@@ -327,9 +327,14 @@ export const useOrderStore = create<OrderState>()(
       },
 
       setMerchantPage: (page: number) => {
+        // Validate page before setting it optimistically to prevent invalid pagination state
+        // Clamp page to valid range to match the validation in getMerchantOrders
+        const currentTotalPages = get().totalMerchantPages
+        const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+
         // Update currentMerchantPage optimistically so UI state remains consistent even if fetch fails
         // This ensures retry logic and pagination controls use the intended page
-        set({ currentMerchantPage: page })
+        set({ currentMerchantPage: validPage })
         get().getMerchantOrders(page).catch((error) => {
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
           console.error('Error fetching merchant orders on page change:', error)
