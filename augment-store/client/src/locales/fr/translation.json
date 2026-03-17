@@ -491,6 +491,8 @@
       "personalInformationSubtitle": "Mettez à jour vos détails et informations personnelles",
       "roleAdmin": "Administrateur",
       "roleCustomer": "Client",
+      "avatarUploadHint": "Cliquez sur l'avatar pour télécharger",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5 Mo",
       "fields": {
         "username": "Nom d'Utilisateur",
         "usernameLabel": "Nom d'Utilisateur",
@@ -523,6 +525,8 @@
         "failedToUpdateProfile": "Échec de la mise à jour du profil",
         "failedToUploadAvatar": "Échec du téléchargement de l'avatar",
         "failedToRemoveAvatar": "Échec de la suppression de l'avatar",
+        "avatarInvalidFileType": "Type de fichier invalide. Veuillez sélectionner une image JPEG, PNG, GIF ou WebP.",
+        "avatarFileSizeExceeded": "La taille du fichier dépasse la limite de 5 Mo. Le fichier sélectionné fait {{fileSize}} Mo.",
         "retry": "Réessayer"
       },
       "buttons": {

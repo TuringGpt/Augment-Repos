@@ -491,6 +491,8 @@
       "personalInformationSubtitle": "Update your personal details and information",
       "roleAdmin": "Administrator",
       "roleCustomer": "Customer",
+      "avatarUploadHint": "Click avatar to upload",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5MB",
       "fields": {
         "username": "Username",
         "usernameLabel": "Username",
@@ -523,6 +525,8 @@
         "failedToUpdateProfile": "Failed to update profile",
         "failedToUploadAvatar": "Failed to upload avatar",
         "failedToRemoveAvatar": "Failed to remove avatar",
+        "avatarInvalidFileType": "Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.",
+        "avatarFileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{fileSize}}MB.",
         "retry": "Retry"
       },
       "buttons": {

@@ -66,7 +66,7 @@ export const AvatarUpload = ({
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      const errorMsg = 'Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.'
+      const errorMsg = t('user.profilePage.messages.avatarInvalidFileType')
       setValidationError(errorMsg)
       onValidationError?.(errorMsg)
       // Reset file input
@@ -79,7 +79,9 @@ export const AvatarUpload = ({
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      const errorMsg = `File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`
+      const errorMsg = t('user.profilePage.messages.avatarFileSizeExceeded', {
+        fileSize: (file.size / (1024 * 1024)).toFixed(2),
+      })
       setValidationError(errorMsg)
       onValidationError?.(errorMsg)
       // Reset file input
@@ -263,10 +265,10 @@ export const AvatarUpload = ({
           }}
         >
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-            Click avatar to upload
+            {t('user.profilePage.avatarUploadHint')}
           </Typography>
           <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled', fontSize: '0.7rem' }}>
-            JPEG, PNG, GIF, WebP • Max 5MB
+            {t('user.profilePage.avatarFileTypeHint')}
           </Typography>
         </Box>
       )}

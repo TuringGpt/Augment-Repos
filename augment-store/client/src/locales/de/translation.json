@@ -491,6 +491,8 @@
       "personalInformationSubtitle": "Aktualisieren Sie Ihre persönlichen Daten und Informationen",
       "roleAdmin": "Administrator",
       "roleCustomer": "Kunde",
+      "avatarUploadHint": "Klicken Sie auf den Avatar zum Hochladen",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5 MB",
       "fields": {
         "username": "Benutzername",
         "usernameLabel": "Benutzername",
@@ -523,6 +525,8 @@
         "failedToUpdateProfile": "Profil konnte nicht aktualisiert werden",
         "failedToUploadAvatar": "Avatar konnte nicht hochgeladen werden",
         "failedToRemoveAvatar": "Avatar konnte nicht entfernt werden",
+        "avatarInvalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein JPEG-, PNG-, GIF- oder WebP-Bild.",
+        "avatarFileSizeExceeded": "Die Dateigröße überschreitet das Limit von 5 MB. Die ausgewählte Datei ist {{fileSize}} MB groß.",
         "retry": "Erneut Versuchen"
       },
       "buttons": {
