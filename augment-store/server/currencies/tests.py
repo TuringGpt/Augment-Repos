@@ -136,6 +136,8 @@ class CurrencyAPITests(APITestCase):
         self.client.force_authenticate(user=self.regular_user)
         response = self.client.patch(update_url, {"name": "Mexican Peso"})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.delete(update_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         
         # Admin user succeeds update
         self.client.force_authenticate(user=self.admin_user)
