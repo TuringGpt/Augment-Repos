@@ -532,6 +532,11 @@
       "buttons": {
         "supportAndHelp": "Support et Aide",
         "logout": "Déconnexion"
+      },
+      "aria": {
+        "uploadAvatar": "Télécharger l'avatar",
+        "removeAvatar": "Supprimer l'avatar",
+        "avatarFileInput": "Saisie de fichier d'avatar"
       }
     }
   },

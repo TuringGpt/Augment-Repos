@@ -532,6 +532,11 @@
       "buttons": {
         "supportAndHelp": "Soporte y Ayuda",
         "logout": "Cerrar Sesión"
+      },
+      "aria": {
+        "uploadAvatar": "Subir avatar",
+        "removeAvatar": "Eliminar avatar",
+        "avatarFileInput": "Entrada de archivo de avatar"
       }
     }
   },

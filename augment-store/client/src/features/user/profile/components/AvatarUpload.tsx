@@ -211,7 +211,7 @@ export const AvatarUpload = ({
               transition: 'all 0.3s ease',
             }}
             onClick={handleAvatarClick}
-            aria-label="Upload avatar"
+            aria-label={t('user.profilePage.aria.uploadAvatar')}
           >
             <CloudUpload fontSize="small" />
           </IconButton>
@@ -236,7 +236,7 @@ export const AvatarUpload = ({
               transition: 'all 0.3s ease',
             }}
             onClick={handleRemoveImage}
-            aria-label="Remove avatar"
+            aria-label={t('user.profilePage.aria.removeAvatar')}
           >
             <Delete fontSize="small" />
           </IconButton>
@@ -250,7 +250,7 @@ export const AvatarUpload = ({
         onChange={handleFileSelect}
         style={{ display: 'none' }}
         disabled={disabled || isUploading}
-        aria-label="Avatar file input"
+        aria-label={t('user.profilePage.aria.avatarFileInput')}
       />
 
       {!disabled && !isUploading && (
