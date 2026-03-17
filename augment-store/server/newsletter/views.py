@@ -20,6 +20,10 @@ class NewsletterStatusCacheService(BaseCacheService):
     OBJECT_NAME = "newsletter_status"
     VERSION = 1
 
+class AdminNewsletterCacheService(BaseCacheService):
+    OBJECT_NAME = "admin_newsletter"
+    VERSION = 1
+
 
 def _invalidate_status_cache(email):
     """Invalidate the cached subscription status for a specific email."""
@@ -119,16 +123,16 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
 class AdminNewsletterListView(CachedListMixin, BaseNewsletterView, ListAPIView):
     """Admin-only view to list all newsletter subscriptions."""
     permission_classes = [IsAuthenticated, hasAdminRole]
-    cache_service_class = NewsletterCacheService
+    cache_service_class = AdminNewsletterCacheService
     cache_ttl = 60 * 60
 
     def get_queryset(self):
-        return super(BaseNewsletterView, self).get_queryset()
+        return super().get_queryset()
 
 class AdminNewsletterUpdateView(CacheInvalidatorMixin, BaseNewsletterView, RetrieveUpdateAPIView):
     """Admin-only view to update a newsletter subscription."""
     permission_classes = [IsAuthenticated, hasAdminRole]
-    cache_service_class = NewsletterCacheService
+    cache_service_class = AdminNewsletterCacheService
 
     def perform_update(self, serializer):
         instance = serializer.save()

@@ -23,9 +23,10 @@ class NewsletterTests(BaseAPITestCase):
             id=self.newsletter_id,
             email="test@example.com",
         )
-        from newsletter.views import NewsletterStatusCacheService, NewsletterCacheService
+        from newsletter.views import NewsletterStatusCacheService, NewsletterCacheService, AdminNewsletterCacheService
         NewsletterStatusCacheService().clear_namespace()
         NewsletterCacheService().clear_namespace()
+        AdminNewsletterCacheService().clear_namespace()
     
     def test_subscribe_newsletter(self):
         url = reverse("v1:create_newsletter")
@@ -160,6 +161,9 @@ class NewsletterTests(BaseAPITestCase):
         
         # Both active and inactive should be visible
         NewsletterFactory(email="inactive2@example.com", is_active=False)
+        from newsletter.views import AdminNewsletterCacheService
+        AdminNewsletterCacheService().clear_namespace()
+        
         response = self.authenticated_client.get(url)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
         self.assertGreaterEqual(len(results), 2)
