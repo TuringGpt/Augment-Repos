@@ -327,7 +327,20 @@ const ProfilePage = () => {
               {/* User Info */}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-                  {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
+                  {(() => {
+                    if (profile?.full_name?.trim()) {
+                      return profile.full_name;
+                    }
+                    const firstName = profile?.first_name?.trim();
+                    const lastName = profile?.last_name?.trim();
+                    if (firstName && lastName) {
+                      return `${firstName} ${lastName}`;
+                    }
+                    if (firstName || lastName) {
+                      return firstName || lastName;
+                    }
+                    return profile?.username || profile?.email || 'User';
+                  })()}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {profile?.email}
