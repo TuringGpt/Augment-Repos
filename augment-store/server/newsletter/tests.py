@@ -206,7 +206,8 @@ class NewsletterTests(BaseAPITestCase):
         update_url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
         admin = UserFactory(role="admin", email="admin3@example.com")
         self.authenticated_client.force_authenticate(user=admin)
-        self.authenticated_client.patch(update_url, {"is_active": False})
+        patch_resp = self.authenticated_client.patch(update_url, {"is_active": False})
+        self.assertEqual(patch_resp.status_code, 200, "Admin PATCH should succeed")
         
         self.authenticated_client.force_authenticate(user=self.user)
         response = self.authenticated_client.get(public_url)

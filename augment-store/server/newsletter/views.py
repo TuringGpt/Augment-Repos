@@ -2,7 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView, GenericAPIView
 from rest_framework.response import Response
 from .models import Newsletter
-from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
+from .serializers import (NewsletterSerializer, SubscribeNewsletterSerializer, 
+                          UnsubscribeNewsletterSerializer, AdminNewsletterUpdateSerializer)
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from accounts.permissions import hasAdminRole
 from rest_framework.exceptions import ValidationError
@@ -136,6 +137,7 @@ class AdminNewsletterUpdateView(CacheInvalidatorMixin, BaseNewsletterView, Retri
     """Admin-only view to update a newsletter subscription."""
     permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = AdminNewsletterCacheService
+    serializer_class = AdminNewsletterUpdateSerializer
 
     def perform_update(self, serializer):
         instance = serializer.save()
