@@ -126,6 +126,12 @@ class CurrencyAPITests(APITestCase):
         c = Currency.objects.create(name="peso", code="MXN", symbol="$")
         update_url = reverse('v1:currencies:admin_currency_update_delete', kwargs={"pk": c.pk})
         
+        # Prime the list cache
+        self.client.force_authenticate(user=self.admin_user)
+        list_res_before = self.client.get(self.list_url)
+        self.assertEqual(len(self._get_results(list_res_before)), 1)
+        self.assertEqual(self._get_results(list_res_before)[0]['name'], "peso")
+
         # Regular user fails
         self.client.force_authenticate(user=self.regular_user)
         response = self.client.patch(update_url, {"name": "Mexican Peso"})
@@ -140,7 +146,15 @@ class CurrencyAPITests(APITestCase):
         c.refresh_from_db()
         self.assertEqual(c.name, "mexican peso") # Normalized
 
+        # Verify list cache was invalidated for update
+        list_res_after_update = self.client.get(self.list_url)
+        self.assertEqual(self._get_results(list_res_after_update)[0]['name'], "mexican peso")
+
         # Admin delete
         response = self.client.delete(update_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Currency.objects.filter(pk=c.pk).exists(), False)
+        
+        # Verify list cache was invalidated for delete
+        list_res_after_delete = self.client.get(self.list_url)
+        self.assertEqual(len(self._get_results(list_res_after_delete)), 0)
