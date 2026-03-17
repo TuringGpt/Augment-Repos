@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Box, Avatar, IconButton, CircularProgress, Typography, Alert, alpha } from '@mui/material'
-import { PhotoCamera, Delete, CloudUpload } from '@mui/icons-material'
+import { Delete, CloudUpload } from '@mui/icons-material'
 import { Colors } from '@config/colors'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface AvatarUploadProps {
   currentImage: string | null
@@ -28,6 +29,7 @@ export const AvatarUpload = ({
   error = null,
   onValidationError,
 }: AvatarUploadProps) => {
+  const { t } = useTranslation()
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -181,7 +183,7 @@ export const AvatarUpload = ({
               <Box sx={{ textAlign: 'center' }}>
                 <CircularProgress size={50} sx={{ color: 'white', mb: 1 }} />
                 <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>
-                  Uploading...
+                  {t('user.profilePage.uploading')}
                 </Typography>
               </Box>
             </Box>

@@ -483,6 +483,7 @@
       "editProfile": "Edit Profile",
       "saveChanges": "Save Changes",
       "saving": "Saving...",
+      "uploading": "Uploading...",
       "cancel": "Cancel",
       "memberSince": "Member since {{date}}",
       "notAvailable": "N/A",
