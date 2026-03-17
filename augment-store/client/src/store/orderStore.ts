@@ -48,7 +48,7 @@ interface OrderState {
   clearCurrentOrder: () => void
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
-  getMerchantOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
+  getMerchantOrders: (page?: number) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
   clearSelectedOrder: () => void
   clearOrders: () => void
@@ -120,23 +120,20 @@ export const useOrderStore = create<OrderState>()(
         fetchRequestCounter += 1
         const requestId = fetchRequestCounter
 
+        // Clamp page to valid range BEFORE making the API call to prevent backend errors
+        // DRF PageNumberPagination returns errors for out-of-range pages (<=0 or beyond totalPages)
+        // so we must validate before the request, not after
+        const currentTotalPages = get().totalPages
+        const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+
         try {
           set({ isFetchingOrders: true, fetchOrdersError: null })
-          const response = await orderService.getOrders(page, limit)
+          const response = await orderService.getOrders(validPage, limit)
 
           // Only update state if this is still the latest request
           // This prevents older responses from overwriting newer state
           if (requestId !== fetchRequestCounter) {
             return response
-          }
-
-          // Clamp currentPage to valid range [1, totalPages] to prevent invalid pagination state
-          // This can happen when orders are deleted and total pages shrinks, or if page <= 0
-          const validPage = Math.max(1, Math.min(page, response.totalPages || 1))
-
-          // If the requested page was out of range and we have orders, refetch the valid page
-          if (validPage !== page && response.totalPages > 0) {
-            return await get().getAllOrders(validPage, limit)
           }
 
           // Update state with fetched orders
@@ -165,7 +162,7 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
-      getMerchantOrders: async (page = 1, limit = 10) => {
+      getMerchantOrders: async (page = 1) => {
         // Import orderService dynamically to avoid circular dependency
         const { orderService } = await import('@services/api/orders/orderService')
 
@@ -173,23 +170,21 @@ export const useOrderStore = create<OrderState>()(
         fetchMerchantRequestCounter += 1
         const requestId = fetchMerchantRequestCounter
 
+        // Clamp page to valid range BEFORE making the API call to prevent backend errors
+        // DRF PageNumberPagination returns errors for out-of-range pages (<=0 or beyond totalPages)
+        // so we must validate before the request, not after
+        const currentTotalPages = get().totalMerchantPages
+        const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+
         try {
           set({ isFetchingMerchantOrders: true, fetchMerchantOrdersError: null })
-          const response = await orderService.getMerchantOrders(page, limit)
+          // Note: Backend has fixed page size of 100, limit parameter is not supported
+          const response = await orderService.getMerchantOrders(validPage)
 
           // Only update state if this is still the latest request
           // This prevents older responses from overwriting newer state
           if (requestId !== fetchMerchantRequestCounter) {
             return response
-          }
-
-          // Clamp currentMerchantPage to valid range [1, totalPages] to prevent invalid pagination state
-          // This can happen when orders are deleted and total pages shrinks, or if page <= 0
-          const validPage = Math.max(1, Math.min(page, response.totalPages || 1))
-
-          // If the requested page was out of range and we have orders, refetch the valid page
-          if (validPage !== page && response.totalPages > 0) {
-            return await get().getMerchantOrders(validPage, limit)
           }
 
           // Update state with fetched merchant orders
@@ -335,7 +330,7 @@ export const useOrderStore = create<OrderState>()(
         // Update currentMerchantPage optimistically so UI state remains consistent even if fetch fails
         // This ensures retry logic and pagination controls use the intended page
         set({ currentMerchantPage: page })
-        get().getMerchantOrders(page, 10).catch((error) => {
+        get().getMerchantOrders(page).catch((error) => {
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
           console.error('Error fetching merchant orders on page change:', error)
         })
