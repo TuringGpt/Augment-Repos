@@ -225,7 +225,7 @@ export const AvatarUpload = ({
               width: 40,
               height: 40,
               '&:hover': {
-                bgcolor: Colors.error.dark,
+                background: Colors.error.dark,
                 transform: 'scale(1.1)',
               },
               boxShadow: Colors.shadow.medium,
