@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Newsletter
 from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from accounts.permissions import hasAdminRole
 from rest_framework.exceptions import ValidationError
 from rest_framework.throttling import ScopedRateThrottle
 from core.optimization import AutoOptimizeMixin
@@ -109,6 +110,25 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
 
         newsletter = get_object_or_404(Newsletter, email__iexact=email)
         return newsletter
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.invalidate_cache()
+        _invalidate_status_cache(instance.email)
+
+class AdminNewsletterListView(CachedListMixin, BaseNewsletterView, ListAPIView):
+    """Admin-only view to list all newsletter subscriptions."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = NewsletterCacheService
+    cache_ttl = 60 * 60
+
+    def get_queryset(self):
+        return super(BaseNewsletterView, self).get_queryset()
+
+class AdminNewsletterUpdateView(CacheInvalidatorMixin, BaseNewsletterView, RetrieveUpdateAPIView):
+    """Admin-only view to update a newsletter subscription."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = NewsletterCacheService
 
     def perform_update(self, serializer):
         instance = serializer.save()

@@ -144,3 +144,37 @@ class NewsletterTests(BaseAPITestCase):
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Newsletter.objects.filter(email="anonymous@example.com").exists())
+
+    def test_admin_list_newsletter(self):
+        url = reverse("v1:admin_newsletter_list")
+        
+        # Regular user fails
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 403)
+        
+        # Admin user succeeds
+        admin = UserFactory(role="admin", email="admin@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        
+        # Both active and inactive should be visible
+        NewsletterFactory(email="inactive2@example.com", is_active=False)
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertGreaterEqual(len(results), 2)
+
+    def test_admin_update_newsletter(self):
+        url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
+        
+        # Regular user fails
+        response = self.authenticated_client.patch(url, {"is_active": False})
+        self.assertEqual(response.status_code, 403)
+        
+        # Admin user succeeds
+        admin = UserFactory(role="admin", email="admin2@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        response = self.authenticated_client.patch(url, {"is_active": False})
+        self.assertEqual(response.status_code, 200)
+        self.newsletter.refresh_from_db()
+        self.assertFalse(self.newsletter.is_active)
