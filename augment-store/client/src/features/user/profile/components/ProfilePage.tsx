@@ -339,7 +339,7 @@ const ProfilePage = () => {
                     if (firstName || lastName) {
                       return firstName || lastName;
                     }
-                    return profile?.username || profile?.email || 'User';
+                    return profile?.username || profile?.email || t('user.profilePage.userFallback');
                   })()}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

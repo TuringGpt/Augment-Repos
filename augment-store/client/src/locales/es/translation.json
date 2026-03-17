@@ -487,6 +487,7 @@
       "cancel": "Cancelar",
       "memberSince": "Miembro desde {{date}}",
       "notAvailable": "N/D",
+      "userFallback": "Usuario",
       "personalInformation": "Información Personal",
       "personalInformationSubtitle": "Actualice sus detalles e información personal",
       "roleAdmin": "Administrador",
