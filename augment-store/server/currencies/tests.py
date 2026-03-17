@@ -121,3 +121,26 @@ class CurrencyAPITests(APITestCase):
         results = self._get_results(response)
         # Verify both name change and invalidation worked (note normalization to lower)
         self.assertEqual(results[0]['name'], "new name")
+
+    def test_update_delete_currency_admin_only(self):
+        c = Currency.objects.create(name="peso", code="MXN", symbol="$")
+        update_url = reverse('v1:currencies:admin_currency_update_delete', kwargs={"pk": c.pk})
+        
+        # Regular user fails
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.patch(update_url, {"name": "Mexican Peso"})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Admin user succeeds update
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.patch(update_url, {"name": "Mexican Peso"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Check DB
+        c.refresh_from_db()
+        self.assertEqual(c.name, "mexican peso") # Normalized
+
+        # Admin delete
+        response = self.client.delete(update_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Currency.objects.filter(pk=c.pk).exists(), False)
