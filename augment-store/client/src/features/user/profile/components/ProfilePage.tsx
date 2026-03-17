@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Container,
   Typography,
-  Paper,
   Box,
   Alert,
   CircularProgress,
@@ -11,8 +10,25 @@ import {
   Button,
   Grid,
   MenuItem,
+  Card,
+  CardContent,
+  Chip,
+  Stack,
+  alpha,
 } from '@mui/material'
-import { Edit, Save, Cancel, Logout, HelpOutline } from '@mui/icons-material'
+import {
+  Edit,
+  Save,
+  Cancel,
+  Logout,
+  HelpOutline,
+  Person,
+  Email,
+  Phone,
+  Badge,
+  VerifiedUser,
+  CalendarToday,
+} from '@mui/icons-material'
 import delay from 'lodash/delay'
 import { useNavigate } from 'react-router-dom'
 import { ProfileSkeleton } from '@components/skeletons'
@@ -231,259 +247,426 @@ const ProfilePage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-        {t('user.profilePage.title')}
-      </Typography>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      {/* Page Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            background: Colors.gradient.purpleViolet,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          {t('user.profilePage.title')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {t('user.profilePage.subtitle')}
+        </Typography>
+      </Box>
 
+      {/* Alerts */}
       {successMessage && (
-        <Alert severity="success" sx={{ mb: 3 }}>
+        <Alert
+          severity="success"
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            boxShadow: Colors.shadow.light,
+          }}
+        >
           {successMessage}
         </Alert>
       )}
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert
+          severity="error"
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            boxShadow: Colors.shadow.light,
+          }}
+        >
           {error}
         </Alert>
       )}
 
-      <Paper elevation={3} sx={{ p: 4 }}>
-        {/* Avatar Upload Section */}
-        <Box sx={{ mb: 4 }}>
-          <AvatarUpload
-            currentImage={
-              avatarState.newUrl || profile?.profile_image?.file || profile?.image || null
-            }
-            userName={profile?.first_name || profile?.email || 'User'}
-            onImageSelect={handleAvatarSelect}
-            onImageRemove={handleAvatarRemove}
-            isUploading={avatarState.isUploading}
-            disabled={false}
-            error={avatarState.error}
-          />
-        </Box>
+      <Grid container spacing={3}>
+        {/* Left Column - Profile Card */}
+        <Grid item xs={12} md={4}>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: `1px solid ${Colors.border.light}`,
+              overflow: 'visible',
+              position: 'relative',
+              background: `linear-gradient(135deg, ${alpha(Colors.primary.light, 0.05)} 0%, ${alpha(Colors.secondary.light, 0.05)} 100%)`,
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              {/* Avatar Section */}
+              <Box sx={{ mb: 3 }}>
+                <AvatarUpload
+                  currentImage={
+                    avatarState.newUrl || profile?.profile_image?.file || profile?.image || null
+                  }
+                  userName={profile?.first_name || profile?.email || 'User'}
+                  onImageSelect={handleAvatarSelect}
+                  onImageRemove={handleAvatarRemove}
+                  isUploading={avatarState.isUploading}
+                  disabled={false}
+                  error={avatarState.error}
+                />
+              </Box>
 
-        <Divider sx={{ mb: 4 }} />
+              {/* User Info */}
+              <Box sx={{ textAlign: 'center', mb: 3 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+                  {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {profile?.email}
+                </Typography>
 
-        {/* Profile Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-              {profile?.full_name || `${profile?.first_name} ${profile?.last_name}`}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {profile?.email}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {t('user.profilePage.memberSince', {
-                date: profile?.date_joined ? new Date(profile.date_joined).toLocaleDateString() : t('user.profilePage.notAvailable')
-              })}
-            </Typography>
-          </Box>
-          {!isEditing && (
-            <Button
-              variant="outlined"
-              startIcon={<Edit />}
-              onClick={handleEdit}
-              sx={{ borderColor: Colors.primary.main, color: Colors.primary.main }}
-            >
-              {t('user.profilePage.editProfile')}
-            </Button>
-          )}
-        </Box>
+                {/* Role Badge */}
+                <Chip
+                  icon={<Badge />}
+                  label={profile?.role === 'admin' ? t('user.profilePage.roleAdmin') : t('user.profilePage.roleCustomer')}
+                  size="small"
+                  sx={{
+                    background: profile?.role === 'admin'
+                      ? Colors.gradient.purpleViolet
+                      : Colors.gradient.blueIndigo,
+                    color: 'white',
+                    fontWeight: 600,
+                    mb: 2,
+                  }}
+                />
 
-        <Divider sx={{ mb: 3 }} />
+                {/* Account Status */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    mb: 2,
+                  }}
+                >
+                  <VerifiedUser
+                    sx={{
+                      fontSize: 16,
+                      color: profile?.is_active ? Colors.success.main : Colors.error.main,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: profile?.is_active ? Colors.success.main : Colors.error.main,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {profile?.is_active
+                      ? t('user.profilePage.fields.statusActive')
+                      : t('user.profilePage.fields.statusInactive')}
+                  </Typography>
+                </Box>
 
-        {/* Profile Form */}
-        <form onSubmit={handleSave}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.username')}
-                {...form.getInputProps('username')}
-                disabled={!isEditing}
-                variant={isEditing ? 'outlined' : 'filled'}
-                error={isEditing && !!form.errors.username}
-                helperText={isEditing ? form.errors.username : ' '}
-              />
-            </Grid>
+                {/* Member Since */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                  }}
+                >
+                  <CalendarToday sx={{ fontSize: 14, color: 'text.secondary' }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {t('user.profilePage.memberSince', {
+                      date: profile?.date_joined
+                        ? new Date(profile.date_joined).toLocaleDateString()
+                        : t('user.profilePage.notAvailable'),
+                    })}
+                  </Typography>
+                </Box>
+              </Box>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.email')}
-                value={profile?.email || ''}
-                disabled
-                variant="filled"
-                helperText={t('user.profilePage.fields.emailCannotBeChanged')}
-              />
-            </Grid>
+              <Divider sx={{ mb: 2 }} />
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.firstName')}
-                {...form.getInputProps('first_name')}
-                disabled={!isEditing}
-                variant={isEditing ? 'outlined' : 'filled'}
-                error={isEditing && !!form.errors.first_name}
-                helperText={isEditing ? form.errors.first_name : ' '}
-              />
-            </Grid>
+              {/* Action Buttons */}
+              <Stack spacing={1.5}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<HelpOutline />}
+                  onClick={() => navigate('/support/tickets')}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  {t('user.profilePage.buttons.supportAndHelp')}
+                </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  startIcon={<Logout />}
+                  onClick={handleLogout}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  {t('user.profilePage.buttons.logout')}
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.lastName')}
-                {...form.getInputProps('last_name')}
-                disabled={!isEditing}
-                variant={isEditing ? 'outlined' : 'filled'}
-                error={isEditing && !!form.errors.last_name}
-                helperText={isEditing ? form.errors.last_name : ' '}
-              />
-            </Grid>
+        {/* Right Column - Profile Form */}
+        <Grid item xs={12} md={8}>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: `1px solid ${Colors.border.light}`,
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              {/* Card Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                    {t('user.profilePage.personalInformation')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('user.profilePage.personalInformationSubtitle')}
+                  </Typography>
+                </Box>
+                {!isEditing && (
+                  <Button
+                    variant="contained"
+                    startIcon={<Edit />}
+                    onClick={handleEdit}
+                    sx={{
+                      background: Colors.gradient.purpleViolet,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      px: 3,
+                      '&:hover': {
+                        background: Colors.gradient.blueIndigo,
+                      },
+                    }}
+                  >
+                    {t('user.profilePage.editProfile')}
+                  </Button>
+                )}
+              </Box>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.mobile')}
-                {...form.getInputProps('mobile')}
-                disabled={!isEditing}
-                variant={isEditing ? 'outlined' : 'filled'}
-                placeholder={t('user.profilePage.fields.mobilePlaceholder')}
-                error={isEditing && !!form.errors.mobile}
-                helperText={isEditing ? form.errors.mobile : ' '}
-              />
-            </Grid>
+              <Divider sx={{ mb: 4 }} />
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                select
-                label={t('user.profilePage.fields.gender')}
-                {...form.getInputProps('gender')}
-                disabled={!isEditing}
-                variant={isEditing ? 'outlined' : 'filled'}
-                error={isEditing && !!form.errors.gender}
-                helperText={isEditing ? form.errors.gender : ' '}
-              >
-                <MenuItem value="Male">{t('user.profilePage.fields.genderMale')}</MenuItem>
-                <MenuItem value="Female">{t('user.profilePage.fields.genderFemale')}</MenuItem>
-                <MenuItem value="Other">{t('user.profilePage.fields.genderOther')}</MenuItem>
-              </TextField>
-            </Grid>
+              {/* Profile Form */}
+              <form onSubmit={handleSave}>
+                <Grid container spacing={3}>
+                  {/* Username */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Person sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.usernameLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      {...form.getInputProps('username')}
+                      disabled={!isEditing}
+                      variant={isEditing ? 'outlined' : 'filled'}
+                      error={isEditing && !!form.errors.username}
+                      helperText={isEditing ? form.errors.username : ' '}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.role')}
-                value={profile?.role || 'customer'}
-                disabled
-                variant="filled"
-                helperText={t('user.profilePage.fields.roleHelperText')}
-              />
-            </Grid>
+                  {/* Email */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Email sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.emailLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      value={profile?.email || ''}
+                      disabled
+                      variant="filled"
+                      helperText={t('user.profilePage.fields.emailCannotBeChanged')}
+                      sx={{
+                        '& .MuiFilledInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label={t('user.profilePage.fields.accountStatus')}
-                value={
-                  profile?.is_active
-                    ? t('user.profilePage.fields.statusActive')
-                    : t('user.profilePage.fields.statusInactive')
-                }
-                disabled
-                variant="filled"
-                helperText=" "
-              />
-            </Grid>
-          </Grid>
+                  {/* First Name */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Person sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.firstNameLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      {...form.getInputProps('first_name')}
+                      disabled={!isEditing}
+                      variant={isEditing ? 'outlined' : 'filled'}
+                      error={isEditing && !!form.errors.first_name}
+                      helperText={isEditing ? form.errors.first_name : ' '}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
 
-          {/* Action Buttons */}
-          {isEditing && (
-            <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                startIcon={<Cancel />}
-                onClick={handleCancel}
-                type="button"
-                disabled={isSaving}
-              >
-                {t('user.profilePage.cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
-                type="submit"
-                disabled={isSaving}
-                sx={{
-                  background: Colors.gradient.purpleViolet,
-                  '&:hover': {
-                    background: Colors.gradient.blueIndigo,
-                  },
-                }}
-              >
-                {isSaving ? t('user.profilePage.saving') : t('user.profilePage.saveChanges')}
-              </Button>
-            </Box>
-          )}
-        </form>
-      </Paper>
+                  {/* Last Name */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Person sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.lastNameLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      {...form.getInputProps('last_name')}
+                      disabled={!isEditing}
+                      variant={isEditing ? 'outlined' : 'filled'}
+                      error={isEditing && !!form.errors.last_name}
+                      helperText={isEditing ? form.errors.last_name : ' '}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
 
-      {/* Support Button - Visible on mobile */}
-      <Box sx={{ mt: 3, display: { xs: 'block', md: 'none' } }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          color="primary"
-          startIcon={<HelpOutline />}
-          onClick={() => navigate('/support/tickets')}
-          sx={{
-            py: 1.5,
-            borderWidth: 2,
-            '&:hover': {
-              borderWidth: 2,
-              backgroundColor: 'primary.main',
-              color: 'white',
-            },
-          }}
-        >
-          {t('user.profilePage.buttons.supportAndHelp')}
-        </Button>
-      </Box>
+                  {/* Mobile */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Phone sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.mobileLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      {...form.getInputProps('mobile')}
+                      disabled={!isEditing}
+                      variant={isEditing ? 'outlined' : 'filled'}
+                      placeholder={t('user.profilePage.fields.mobilePlaceholder')}
+                      error={isEditing && !!form.errors.mobile}
+                      helperText={isEditing ? form.errors.mobile : ' '}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    />
+                  </Grid>
 
-      {/* Logout Button - Visible on mobile */}
-      <Box sx={{ mt: 2, display: { xs: 'block', md: 'none' } }}>
-        <Button
-          fullWidth
-          variant="outlined"
-          color="error"
-          startIcon={<Logout />}
-          onClick={handleLogout}
-          sx={{
-            py: 1.5,
-            borderWidth: 2,
-            '&:hover': {
-              borderWidth: 2,
-              backgroundColor: 'error.main',
-              color: 'white',
-            },
-          }}
-        >
-          {t('user.profilePage.buttons.logout')}
-        </Button>
-      </Box>
+                  {/* Gender */}
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Person sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        {t('user.profilePage.fields.genderLabel')}
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      select
+                      {...form.getInputProps('gender')}
+                      disabled={!isEditing}
+                      variant={isEditing ? 'outlined' : 'filled'}
+                      error={isEditing && !!form.errors.gender}
+                      helperText={isEditing ? form.errors.gender : ' '}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                        },
+                      }}
+                    >
+                      <MenuItem value="Male">{t('user.profilePage.fields.genderMale')}</MenuItem>
+                      <MenuItem value="Female">{t('user.profilePage.fields.genderFemale')}</MenuItem>
+                      <MenuItem value="Other">{t('user.profilePage.fields.genderOther')}</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
+
+                {/* Action Buttons */}
+                {isEditing && (
+                  <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Cancel />}
+                      onClick={handleCancel}
+                      type="button"
+                      disabled={isSaving}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3,
+                      }}
+                    >
+                      {t('user.profilePage.cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                      type="submit"
+                      disabled={isSaving}
+                      sx={{
+                        background: Colors.gradient.purpleViolet,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3,
+                        '&:hover': {
+                          background: Colors.gradient.blueIndigo,
+                        },
+                      }}
+                    >
+                      {isSaving ? t('user.profilePage.saving') : t('user.profilePage.saveChanges')}
+                    </Button>
+                  </Box>
+                )}
+              </form>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Container>
   )
 }
