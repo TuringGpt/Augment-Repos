@@ -150,6 +150,36 @@ export const useOrderStore = create<OrderState>()(
 
           // Only update error state if this is still the latest request
           if (requestId === fetchRequestCounter) {
+            // Check if this is a 404 error, which likely means the requested page is out of range
+            // This can happen when total pages shrink (e.g., items deleted) and the current page
+            // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
+            const axiosError = error as { response?: { status?: number } }
+            const is404Error = axiosError?.response?.status === 404
+
+            if (is404Error && validPage > 1) {
+              // Page is out of range - reset to page 1 and retry to get fresh data
+              console.log(`Page ${validPage} returned 404, retrying with page 1`)
+              try {
+                const retryResponse = await orderService.getOrders(1, limit)
+
+                // Only update state if this is still the latest request
+                if (requestId === fetchRequestCounter) {
+                  set({
+                    orders: retryResponse.orders,
+                    totalOrders: retryResponse.total,
+                    totalPages: retryResponse.totalPages,
+                    currentPage: 1,
+                    isFetchingOrders: false,
+                    fetchOrdersError: null,
+                  })
+                }
+                return retryResponse
+              } catch (retryError) {
+                // If retry also fails, fall through to normal error handling
+                console.error('Retry with page 1 also failed:', retryError)
+              }
+            }
+
             const errorMessage = 'Failed to fetch orders. Please try again.'
             set({ fetchOrdersError: errorMessage })
           }
@@ -201,6 +231,36 @@ export const useOrderStore = create<OrderState>()(
 
           // Only update error state if this is still the latest request
           if (requestId === fetchMerchantRequestCounter) {
+            // Check if this is a 404 error, which likely means the requested page is out of range
+            // This can happen when total pages shrink (e.g., items deleted) and the current page
+            // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
+            const axiosError = error as { response?: { status?: number } }
+            const is404Error = axiosError?.response?.status === 404
+
+            if (is404Error && validPage > 1) {
+              // Page is out of range - reset to page 1 and retry to get fresh data
+              console.log(`Page ${validPage} returned 404, retrying with page 1`)
+              try {
+                const retryResponse = await orderService.getMerchantOrders(1)
+
+                // Only update state if this is still the latest request
+                if (requestId === fetchMerchantRequestCounter) {
+                  set({
+                    merchantOrders: retryResponse.orders,
+                    totalMerchantOrders: retryResponse.total,
+                    totalMerchantPages: retryResponse.totalPages,
+                    currentMerchantPage: 1,
+                    isFetchingMerchantOrders: false,
+                    fetchMerchantOrdersError: null,
+                  })
+                }
+                return retryResponse
+              } catch (retryError) {
+                // If retry also fails, fall through to normal error handling
+                console.error('Retry with page 1 also failed:', retryError)
+              }
+            }
+
             const errorMessage = 'Failed to fetch merchant orders. Please try again.'
             set({ fetchMerchantOrdersError: errorMessage })
           }
