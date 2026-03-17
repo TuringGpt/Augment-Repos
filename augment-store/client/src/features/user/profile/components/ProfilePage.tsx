@@ -503,6 +503,7 @@ const ProfilePage = () => {
                     </Box>
                     <TextField
                       fullWidth
+                      label={t('user.profilePage.fields.usernameLabel')}
                       {...form.getInputProps('username')}
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
@@ -526,6 +527,7 @@ const ProfilePage = () => {
                     </Box>
                     <TextField
                       fullWidth
+                      label={t('user.profilePage.fields.emailLabel')}
                       value={profile?.email || ''}
                       disabled
                       variant="filled"
@@ -548,6 +550,7 @@ const ProfilePage = () => {
                     </Box>
                     <TextField
                       fullWidth
+                      label={t('user.profilePage.fields.firstNameLabel')}
                       {...form.getInputProps('first_name')}
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
@@ -571,6 +574,7 @@ const ProfilePage = () => {
                     </Box>
                     <TextField
                       fullWidth
+                      label={t('user.profilePage.fields.lastNameLabel')}
                       {...form.getInputProps('last_name')}
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
@@ -594,6 +598,7 @@ const ProfilePage = () => {
                     </Box>
                     <TextField
                       fullWidth
+                      label={t('user.profilePage.fields.mobileLabel')}
                       {...form.getInputProps('mobile')}
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
@@ -619,6 +624,7 @@ const ProfilePage = () => {
                     <TextField
                       fullWidth
                       select
+                      label={t('user.profilePage.fields.genderLabel')}
                       {...form.getInputProps('gender')}
                       disabled={!isEditing}
                       variant={isEditing ? 'outlined' : 'filled'}
