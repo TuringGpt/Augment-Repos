@@ -168,7 +168,12 @@ class NewsletterTests(BaseAPITestCase):
         self.authenticated_client.patch(unsubscribe_url, {"email": "inactive2@example.com"})
         
         response = self.authenticated_client.get(url)
-        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Assert the response shape to ensure we're dealing with a list
+        if isinstance(response.data, dict) and 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertIsInstance(results, list, "API response or results should be a list")
         self.assertGreaterEqual(len(results), 2)
 
     def test_admin_update_newsletter(self):
@@ -198,7 +203,11 @@ class NewsletterTests(BaseAPITestCase):
         
         self.authenticated_client.force_authenticate(user=self.user)
         response = self.authenticated_client.get(public_url)
-        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        if isinstance(response.data, dict) and 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertIsInstance(results, list, "API response or results should be a list")
         
         is_present = any(r['id'] == str(self.newsletter_id) for r in results)
         self.assertFalse(is_present)
