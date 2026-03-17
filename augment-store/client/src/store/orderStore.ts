@@ -395,7 +395,7 @@ export const useOrderStore = create<OrderState>()(
         // Update currentMerchantPage optimistically so UI state remains consistent even if fetch fails
         // This ensures retry logic and pagination controls use the intended page
         set({ currentMerchantPage: validPage })
-        get().getMerchantOrders(page).catch((error) => {
+        get().getMerchantOrders(validPage).catch((error) => {
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
           console.error('Error fetching merchant orders on page change:', error)
         })
