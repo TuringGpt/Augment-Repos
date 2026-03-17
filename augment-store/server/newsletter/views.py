@@ -60,6 +60,7 @@ class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateA
     def perform_create(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
 
 
@@ -71,6 +72,7 @@ class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, Retri
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
 
 
@@ -118,6 +120,7 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
 
 class AdminNewsletterListView(CachedListMixin, BaseNewsletterView, ListAPIView):
@@ -137,4 +140,5 @@ class AdminNewsletterUpdateView(CacheInvalidatorMixin, BaseNewsletterView, Retri
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        NewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)

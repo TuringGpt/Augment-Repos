@@ -159,10 +159,13 @@ class NewsletterTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 200)
         
-        # Both active and inactive should be visible
-        NewsletterFactory(email="inactive2@example.com", is_active=False)
-        from newsletter.views import AdminNewsletterCacheService
-        AdminNewsletterCacheService().clear_namespace()
+        # We want to test that adding an inactive subscription manually invalidates the admin list cache.
+        # We'll use the API instead of NewsletterFactory to trigger the cache invalidation logic.
+        subscribe_url = reverse("v1:create_newsletter")
+        self.authenticated_client.post(subscribe_url, {"email": "inactive2@example.com"})
+        
+        unsubscribe_url = reverse("v1:unsubscribe_newsletter_by_email")
+        self.authenticated_client.patch(unsubscribe_url, {"email": "inactive2@example.com"})
         
         response = self.authenticated_client.get(url)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
@@ -182,3 +185,20 @@ class NewsletterTests(BaseAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.newsletter.refresh_from_db()
         self.assertFalse(self.newsletter.is_active)
+
+    def test_admin_update_invalidates_public_cache(self):
+        public_url = reverse("v1:newsletter")
+        self.authenticated_client.force_authenticate(user=self.user)
+        self.authenticated_client.get(public_url) # Prime public list cache
+        
+        update_url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
+        admin = UserFactory(role="admin", email="admin3@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        self.authenticated_client.patch(update_url, {"is_active": False})
+        
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.get(public_url)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        
+        is_present = any(r['id'] == str(self.newsletter_id) for r in results)
+        self.assertFalse(is_present)
