@@ -13,6 +13,10 @@ class NotificationCacheService(BaseCacheService):
     OBJECT_NAME = "notification"
     VERSION = 2
 
+class AdminNotificationCacheService(BaseCacheService):
+    OBJECT_NAME = "admin_notification"
+    VERSION = 1
+
 
 class NotificationCountCacheService(BaseCacheService):
     OBJECT_NAME = "notification_count"
@@ -103,19 +107,29 @@ class UpdateNotificationView(CacheInvalidatorMixin, BaseNotificationView, Retrie
 class AdminNotificationListView(CachedListMixin, BaseNotificationView, ListAPIView):
     """Admin-only view to list all notifications globally."""
     permission_classes = [IsAuthenticated, hasAdminRole]
-    cache_service_class = NotificationCacheService
+    cache_service_class = AdminNotificationCacheService
     cache_ttl = 60
+    
+    def get_queryset(self):
+        # Bypass the user=request.user filter to list globally
+        return Notification.objects.all().order_by('-created_at', '-id')
 
 class AdminNotificationUpdateView(CacheInvalidatorMixin, BaseNotificationView, RetrieveUpdateDestroyAPIView):
     """Admin-only view to moderate notifications directly."""
     permission_classes = [IsAuthenticated, hasAdminRole]
-    cache_service_class = NotificationCacheService
+    cache_service_class = AdminNotificationCacheService
     serializer_class = UpdateNotificationSerializer
     
+    def get_queryset(self):
+        # Bypass the default constraint to allow mutating any notification
+        return Notification.objects.all().order_by('-created_at', '-id')
+
     def perform_update(self, serializer):
         super().perform_update(serializer)
         NotificationCountCacheService().clear_namespace()
+        NotificationCacheService().clear_namespace()
 
     def perform_destroy(self, instance):
         super().perform_destroy(instance)
         NotificationCountCacheService().clear_namespace()
+        NotificationCacheService().clear_namespace()

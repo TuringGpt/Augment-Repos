@@ -295,7 +295,7 @@ class AdminNotificationTests(BaseAPITestCase):
         self.admin = UserFactory(role="admin", email="admin_notif@example.com")
         
     def test_admin_list_notifications(self):
-        NotificationFactory.create_batch(3, user=self.admin)
+        NotificationFactory.create_batch(3, user=self.user)
         
         self.authenticated_client.force_authenticate(user=self.admin)
         url = reverse('v1:notifications:admin_notification_list')
@@ -310,7 +310,7 @@ class AdminNotificationTests(BaseAPITestCase):
         self.assertEqual(response.status_code, 403)
         
     def test_admin_update_notification(self):
-        notification = NotificationFactory(user=self.admin, is_read=False)
+        notification = NotificationFactory(user=self.user, is_read=False)
         
         self.authenticated_client.force_authenticate(user=self.admin)
         url = reverse('v1:notifications:admin_notification_update', kwargs={'pk': notification.pk})
