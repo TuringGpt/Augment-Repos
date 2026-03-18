@@ -1682,13 +1682,17 @@ class ProductSearchViewTests(BaseAPITestCase):
 class AdminProductTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
-        from accounts.factories import UserFactory
+        from accounts.factory import UserFactory
         from products.factory import ProductFactory
         self.admin = UserFactory(role="admin", email="admin_products@example.com")
         self.merchant = UserFactory(role="merchant", email="merchant_products@example.com")
         self.product = ProductFactory(name="Test Product")
+        # Explicitly set both brand and product ownership to the merchant
+        # so the test clearly exercises the "admin modifying non-owned product" scenario
         self.product.brand.created_by = self.merchant
         self.product.brand.save()
+        self.product.created_by = self.merchant
+        self.product.save()
         
     def test_admin_update_product(self):
         url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
@@ -1721,5 +1725,6 @@ class AdminProductTests(BaseAPITestCase):
         
         # Re-fetch — same user_id so this hits the same cache key, verifying invalidation
         list_response = self.authenticated_client.get(list_url)
+        self.assertEqual(list_response.status_code, 200)
         results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
         self.assertEqual(len(results), 0)
