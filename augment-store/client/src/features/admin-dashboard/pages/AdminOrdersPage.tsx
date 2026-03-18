@@ -346,7 +346,7 @@ const AdminOrdersPage = () => {
                           ))}
                           {validItems.length > 2 && (
                             <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                              +{validItems.length - 2} more
+                              {t('admin.ordersPage.table.moreItems', { count: validItems.length - 2 })}
                             </Typography>
                           )}
                         </>

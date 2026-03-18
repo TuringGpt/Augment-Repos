@@ -974,7 +974,8 @@
         "items": "Artículos",
         "status": "Estado",
         "total": "Total",
-        "actions": "Acciones"
+        "actions": "Acciones",
+        "moreItems": "+{{count}} más"
       },
       "emptyState": {
         "noOrders": "Aún No Hay Pedidos",
