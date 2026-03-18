@@ -44,9 +44,12 @@ const AdminSettingsPage = () => {
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
 
-  // Get current language name
-  const currentLanguage = (i18n.resolvedLanguage || FALLBACK_LANGUAGE) as LanguageCode
-  const currentLanguageName = LANGUAGES[currentLanguage]?.nativeName || LANGUAGES[FALLBACK_LANGUAGE].nativeName
+  // Get current language name - normalize to a supported LanguageCode
+  const currentLanguage: LanguageCode =
+    (i18n.resolvedLanguage && i18n.resolvedLanguage in LANGUAGES)
+      ? (i18n.resolvedLanguage as LanguageCode)
+      : FALLBACK_LANGUAGE
+  const currentLanguageName = LANGUAGES[currentLanguage].nativeName
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -261,7 +264,7 @@ const AdminSettingsPage = () => {
                 labelId="language-select-label"
                 id="language-select"
                 label={t('admin.settingsPage.selectLanguage')}
-                value={i18n.resolvedLanguage || FALLBACK_LANGUAGE}
+                value={currentLanguage}
                 onChange={handleLanguageChange}
                 sx={{
                   '& .MuiSelect-select': {
