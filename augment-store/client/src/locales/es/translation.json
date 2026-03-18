@@ -967,7 +967,19 @@
       "subtitle": "Gestionar y rastrear todos los pedidos de clientes",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "La página de gestión de pedidos del administrador está actualmente en desarrollo.",
-      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!",
+      "table": {
+        "orderNumber": "Número de Pedido",
+        "date": "Fecha",
+        "items": "Artículos",
+        "status": "Estado",
+        "total": "Total",
+        "actions": "Acciones"
+      },
+      "emptyState": {
+        "noOrders": "Aún No Hay Pedidos",
+        "noOrdersDescription": "Aún no se han realizado pedidos de clientes."
+      }
     },
     "products": "Productos",
     "categories": "Categorías",
