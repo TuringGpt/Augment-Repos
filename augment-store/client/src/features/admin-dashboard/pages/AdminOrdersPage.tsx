@@ -25,7 +25,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import type { Order, OrderStatus } from '@features/orders/types'
 import { formatCurrency, formatDate } from '@utils/formatters'
-import { ORDER_STATUS_LABELS, ROUTES } from '@constants/index'
+import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 
 // Dummy data for merchant orders
@@ -357,7 +357,7 @@ const AdminOrdersPage = () => {
                 <TableCell>
                   <Chip
                     icon={getStatusIcon(order.status)}
-                    label={ORDER_STATUS_LABELS[order.status]}
+                    label={t(`order.status.${order.status}`)}
                     color={getStatusColor(order.status)}
                     size="small"
                     sx={{ fontWeight: 600 }}
