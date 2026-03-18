@@ -1162,6 +1162,10 @@
       "themeMode": "Mode de Thème",
       "currentlyLight": "Utilise actuellement le thème clair",
       "currentlyDark": "Utilise actuellement le thème sombre",
+      "language": "Langue",
+      "languageDescription": "Choisissez votre langue préférée pour le tableau de bord d'administration",
+      "selectLanguage": "Sélectionner la Langue",
+      "currentLanguage": "Utilise actuellement {{language}}",
       "moreSettings": "Plus de Paramètres Bientôt",
       "moreSettingsDescription": "Des options de configuration supplémentaires seront disponibles ici dans les futures mises à jour."
     },

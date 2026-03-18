@@ -1162,6 +1162,10 @@
       "themeMode": "Themenmodus",
       "currentlyLight": "Verwendet derzeit helles Theme",
       "currentlyDark": "Verwendet derzeit dunkles Theme",
+      "language": "Sprache",
+      "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für das Admin-Dashboard",
+      "selectLanguage": "Sprache Auswählen",
+      "currentLanguage": "Verwendet derzeit {{language}}",
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },

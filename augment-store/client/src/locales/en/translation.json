@@ -1162,6 +1162,10 @@
       "themeMode": "Theme Mode",
       "currentlyLight": "Currently using light theme",
       "currentlyDark": "Currently using dark theme",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language for the admin dashboard",
+      "selectLanguage": "Select Language",
+      "currentLanguage": "Currently using {{language}}",
       "moreSettings": "More Settings Coming Soon",
       "moreSettingsDescription": "Additional configuration options will be available here in future updates."
     },

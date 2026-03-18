@@ -1162,6 +1162,10 @@
       "themeMode": "Modo de Tema",
       "currentlyLight": "Actualmente usando tema claro",
       "currentlyDark": "Actualmente usando tema oscuro",
+      "language": "Idioma",
+      "languageDescription": "Elige tu idioma preferido para el panel de administración",
+      "selectLanguage": "Seleccionar Idioma",
+      "currentLanguage": "Actualmente usando {{language}}",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },
