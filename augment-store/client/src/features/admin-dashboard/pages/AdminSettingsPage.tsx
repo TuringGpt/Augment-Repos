@@ -22,6 +22,7 @@ import {
   Language as LanguageIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
 import { LANGUAGES, LanguageCode } from '@config/i18n'
@@ -38,6 +39,7 @@ import { LANGUAGES, LanguageCode } from '@config/i18n'
 const AdminSettingsPage = () => {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
 
@@ -135,8 +137,18 @@ const AdminSettingsPage = () => {
     }
   }
 
-  const handleLanguageChange = (event: SelectChangeEvent<string>) => {
-    i18n.changeLanguage(event.target.value as LanguageCode)
+  const handleLanguageChange = async (event: SelectChangeEvent<string>) => {
+    const newLanguage = event.target.value as LanguageCode
+
+    try {
+      await i18n.changeLanguage(newLanguage)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.languageChanged'))
+    } catch (error) {
+      console.error('Failed to change language:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.languageChangeFailed'))
+    }
   }
 
   return (

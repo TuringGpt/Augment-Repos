@@ -1166,6 +1166,8 @@
       "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für das Admin-Dashboard",
       "selectLanguage": "Sprache Auswählen",
       "currentLanguage": "Verwendet derzeit {{language}}",
+      "languageChanged": "Sprache erfolgreich geändert",
+      "languageChangeFailed": "Sprache konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },

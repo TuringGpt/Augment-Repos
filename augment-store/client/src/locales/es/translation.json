@@ -1166,6 +1166,8 @@
       "languageDescription": "Elige tu idioma preferido para el panel de administración",
       "selectLanguage": "Seleccionar Idioma",
       "currentLanguage": "Actualmente usando {{language}}",
+      "languageChanged": "Idioma cambiado exitosamente",
+      "languageChangeFailed": "Error al cambiar el idioma. Por favor, inténtalo de nuevo.",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },
