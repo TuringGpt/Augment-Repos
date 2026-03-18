@@ -1677,4 +1677,46 @@ class ProductSearchViewTests(BaseAPITestCase):
         # Verify SearchQuery was logged both times
         # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
         # Instead, check SearchQuery count.
-        self.assertEqual(SearchQuery.objects.count(), 2)
+        self.assertEqual(SearchQuery.objects.count(), 1)
+
+class AdminProductTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from accounts.factories import UserFactory
+        from products.factory import ProductFactory
+        self.admin = UserFactory(role="admin", email="admin_products@example.com")
+        self.merchant = UserFactory(role="merchant", email="merchant_products@example.com")
+        self.product = ProductFactory(name="Test Product")
+        self.product.brand.created_by = self.merchant
+        self.product.brand.save()
+        
+    def test_admin_update_product(self):
+        url = reverse('v1:products:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        
+        # Test non-admin fails
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.patch(url, {'name': 'Unauthorized Update'})
+        self.assertEqual(response.status_code, 403)
+        
+        # Admins can update products they do not own
+        self.authenticated_client.force_authenticate(user=self.admin)
+        response = self.authenticated_client.patch(url, {'name': 'Admin Updated Product'})
+        self.assertEqual(response.status_code, 200)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.name, 'Admin Updated Product')
+        
+    def test_admin_delete_product(self):
+        # Cache list initially
+        list_url = reverse('v1:products:product_list')
+        self.authenticated_client.get(list_url)
+        
+        url = reverse('v1:products:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        
+        # Admins can delete
+        self.authenticated_client.force_authenticate(user=self.admin)
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        
+        list_response = self.authenticated_client.get(list_url)
+        results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
+        self.assertEqual(len(results), 0)

@@ -12,7 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
 
-from accounts.permissions import hasAdminOrMerchantRole
+from accounts.permissions import hasAdminOrMerchantRole, hasAdminRole
 from .models import Product, ProductBrand, ProductCategory
 from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
 from .filters import ProductFilter, ProductSearchFilter
@@ -230,6 +230,16 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
         return [IsAuthenticated(), hasAdminOrMerchantRole()]
+
+class AdminProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUpdateDestroyAPIView):
+    """Admin-only view for unrestricted product moderation."""
+    serializer_class = ProductDetailSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = ProductCacheService
+
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        FeaturedProductCacheService().clear_namespace()
 
     
     
