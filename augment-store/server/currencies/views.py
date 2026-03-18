@@ -1,5 +1,5 @@
 from django.db import IntegrityError
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from accounts.permissions import hasAdminRole
@@ -34,6 +34,23 @@ class CreateCurrencyView(CacheInvalidatorMixin, CreateAPIView):
             super().perform_create(serializer)
         except IntegrityError:
             # Handle race conditions where uniqueness check passes but DB save fails
+            raise ValidationError({
+                "detail": "A currency with this name or code already exists."
+            })
+
+class AdminCurrencyUpdateDeleteView(CacheInvalidatorMixin, RetrieveUpdateDestroyAPIView):
+    """
+    Admin-only: Update or delete a currency.
+    """
+    serializer_class = CreateCurrencySerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = Currency.objects.all()
+    cache_service_class = CurrencyCacheService
+
+    def perform_update(self, serializer):
+        try:
+            super().perform_update(serializer)
+        except IntegrityError:
             raise ValidationError({
                 "detail": "A currency with this name or code already exists."
             })
