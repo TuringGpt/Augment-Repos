@@ -989,7 +989,21 @@
       "subtitle": "Gérer et suivre toutes les commandes clients",
       "workInProgress": "Travaux en Cours",
       "underDevelopment": "La page de gestion des commandes administrateur est actuellement en développement.",
-      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+      "checkBackSoon": "Revenez bientôt pour les mises à jour !",
+      "table": {
+        "orderNumber": "Numéro de Commande",
+        "date": "Date",
+        "items": "Articles",
+        "status": "Statut",
+        "total": "Total",
+        "actions": "Actions",
+        "moreItems": "+{{count}} de plus",
+        "deletedProduct": "(Produit Supprimé)"
+      },
+      "emptyState": {
+        "noOrders": "Aucune Commande Pour le Moment",
+        "noOrdersDescription": "Aucune commande client n'a encore été passée."
+      }
     },
     "products": "Produits",
     "categories": "Catégories",

@@ -989,7 +989,21 @@
       "subtitle": "Manage and track all customer orders",
       "workInProgress": "Work in Progress",
       "underDevelopment": "The admin orders management page is currently under development.",
-      "checkBackSoon": "Check back soon for updates!"
+      "checkBackSoon": "Check back soon for updates!",
+      "table": {
+        "orderNumber": "Order Number",
+        "date": "Date",
+        "items": "Items",
+        "status": "Status",
+        "total": "Total",
+        "actions": "Actions",
+        "moreItems": "+{{count}} more",
+        "deletedProduct": "(Deleted Product)"
+      },
+      "emptyState": {
+        "noOrders": "No Orders Yet",
+        "noOrdersDescription": "No customer orders have been placed yet."
+      }
     },
     "products": "Products",
     "categories": "Categories",

@@ -989,7 +989,21 @@
       "subtitle": "Alle Kundenbestellungen verwalten und verfolgen",
       "workInProgress": "In Arbeit",
       "underDevelopment": "Die Admin-Bestellungsverwaltungsseite befindet sich derzeit in der Entwicklung.",
-      "checkBackSoon": "Schauen Sie bald wieder vorbei!"
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "table": {
+        "orderNumber": "Bestellnummer",
+        "date": "Datum",
+        "items": "Artikel",
+        "status": "Status",
+        "total": "Gesamt",
+        "actions": "Aktionen",
+        "moreItems": "+{{count}} weitere",
+        "deletedProduct": "(Gelöschtes Produkt)"
+      },
+      "emptyState": {
+        "noOrders": "Noch Keine Bestellungen",
+        "noOrdersDescription": "Es wurden noch keine Kundenbestellungen aufgegeben."
+      }
     },
     "products": "Produkte",
     "categories": "Kategorien",
