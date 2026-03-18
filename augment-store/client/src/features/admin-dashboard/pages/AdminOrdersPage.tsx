@@ -377,7 +377,7 @@ const AdminOrdersPage = () => {
                       navigate(ROUTES.ORDER_DETAIL.replace(':id', order.id))
                     }}
                   >
-                    View
+                    {t('order.viewOrder')}
                   </Button>
                 </TableCell>
               </TableRow>
