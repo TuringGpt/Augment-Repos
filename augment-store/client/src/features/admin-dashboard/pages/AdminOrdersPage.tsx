@@ -218,6 +218,8 @@ const AdminOrdersPage = () => {
         return 'secondary'
       case 'delivered':
         return 'success'
+      case 'completed':
+        return 'success'
       case 'cancelled':
         return 'error'
       default:
@@ -235,6 +237,7 @@ const AdminOrdersPage = () => {
       case 'shipped':
         return <LocalShippingIcon fontSize="small" />
       case 'delivered':
+      case 'completed':
         return <CheckCircleIcon fontSize="small" />
       case 'cancelled':
         return <CancelIcon fontSize="small" />
