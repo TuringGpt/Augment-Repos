@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Box,
   Chip,
@@ -183,6 +183,9 @@ const DUMMY_ORDERS: Order[] = [
   },
 ]
 
+// Number of orders to display per page
+const ORDERS_PER_PAGE = 10
+
 /**
  * AdminOrdersPage Component
  * Admin page for managing merchant orders with table view and pagination
@@ -196,8 +199,15 @@ const AdminOrdersPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
 
   // Using dummy data for now
-  const merchantOrders = DUMMY_ORDERS
-  const totalPages = 1
+  const allOrders = DUMMY_ORDERS
+
+  // Calculate client-side pagination
+  const totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE)
+  const merchantOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * ORDERS_PER_PAGE
+    const endIndex = startIndex + ORDERS_PER_PAGE
+    return allOrders.slice(startIndex, endIndex)
+  }, [allOrders, currentPage])
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value)
@@ -246,7 +256,7 @@ const AdminOrdersPage = () => {
     }
   }
 
-  if (merchantOrders.length === 0) {
+  if (allOrders.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
