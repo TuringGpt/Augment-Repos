@@ -142,7 +142,16 @@ const AdminSettingsPage = () => {
   }
 
   const handleLanguageChange = async (event: SelectChangeEvent<string>) => {
-    const newLanguage = event.target.value as LanguageCode
+    const value = event.target.value
+
+    // Validate that the value is a supported language code
+    if (!Object.prototype.hasOwnProperty.call(LANGUAGES, value)) {
+      console.error('Invalid language code:', value)
+      toast.error(t('admin.settingsPage.languageChangeFailed'))
+      return
+    }
+
+    const newLanguage = value as LanguageCode
 
     try {
       await i18n.changeLanguage(newLanguage)
