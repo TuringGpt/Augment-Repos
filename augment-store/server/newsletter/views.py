@@ -2,8 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, UpdateAPIView, GenericAPIView
 from rest_framework.response import Response
 from .models import Newsletter
-from .serializers import NewsletterSerializer, SubscribeNewsletterSerializer, UnsubscribeNewsletterSerializer
+from .serializers import (NewsletterSerializer, SubscribeNewsletterSerializer, 
+                          UnsubscribeNewsletterSerializer, AdminNewsletterUpdateSerializer)
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from accounts.permissions import hasAdminRole
 from rest_framework.exceptions import ValidationError
 from rest_framework.throttling import ScopedRateThrottle
 from core.optimization import AutoOptimizeMixin
@@ -17,6 +19,10 @@ class NewsletterCacheService(BaseCacheService):
 
 class NewsletterStatusCacheService(BaseCacheService):
     OBJECT_NAME = "newsletter_status"
+    VERSION = 1
+
+class AdminNewsletterCacheService(BaseCacheService):
+    OBJECT_NAME = "admin_newsletter"
     VERSION = 1
 
 
@@ -55,6 +61,7 @@ class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateA
     def perform_create(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
 
 
@@ -66,6 +73,7 @@ class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, Retri
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
 
 
@@ -113,4 +121,26 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
+        AdminNewsletterCacheService().clear_namespace()
+        _invalidate_status_cache(instance.email)
+
+class AdminNewsletterListView(CachedListMixin, BaseNewsletterView, ListAPIView):
+    """Admin-only view to list all newsletter subscriptions."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = AdminNewsletterCacheService
+    cache_ttl = 60 * 60
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+class AdminNewsletterUpdateView(CacheInvalidatorMixin, BaseNewsletterView, RetrieveUpdateAPIView):
+    """Admin-only view to update a newsletter subscription."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = AdminNewsletterCacheService
+    serializer_class = AdminNewsletterUpdateSerializer
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.invalidate_cache()
+        NewsletterCacheService().clear_namespace()
         _invalidate_status_cache(instance.email)
