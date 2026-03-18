@@ -46,7 +46,7 @@ const AdminSettingsPage = () => {
 
   // Get current language name - normalize to a supported LanguageCode
   const currentLanguage: LanguageCode =
-    (i18n.resolvedLanguage && i18n.resolvedLanguage in LANGUAGES)
+    (i18n.resolvedLanguage && Object.prototype.hasOwnProperty.call(LANGUAGES, i18n.resolvedLanguage))
       ? (i18n.resolvedLanguage as LanguageCode)
       : FALLBACK_LANGUAGE
   const currentLanguageName = LANGUAGES[currentLanguage].nativeName
