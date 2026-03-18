@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Notification
 from .serializers import MarkAsReadSerializer, NotificationListSerializer, UpdateNotificationSerializer, UnreadCountSerializer
+from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
@@ -91,6 +92,26 @@ class UpdateNotificationView(CacheInvalidatorMixin, BaseNotificationView, Retrie
     permission_classes = [IsAuthenticated]
     cache_service_class = NotificationCacheService
 
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        NotificationCountCacheService().clear_namespace()
+
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
+        NotificationCountCacheService().clear_namespace()
+
+class AdminNotificationListView(CachedListMixin, BaseNotificationView, ListAPIView):
+    """Admin-only view to list all notifications globally."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = NotificationCacheService
+    cache_ttl = 60
+
+class AdminNotificationUpdateView(CacheInvalidatorMixin, BaseNotificationView, RetrieveUpdateDestroyAPIView):
+    """Admin-only view to moderate notifications directly."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = NotificationCacheService
+    serializer_class = UpdateNotificationSerializer
+    
     def perform_update(self, serializer):
         super().perform_update(serializer)
         NotificationCountCacheService().clear_namespace()
