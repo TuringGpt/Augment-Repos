@@ -26,7 +26,7 @@ import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
-import { LANGUAGES, LanguageCode } from '@config/i18n'
+import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
 
 /**
  * AdminSettingsPage Component
@@ -45,8 +45,8 @@ const AdminSettingsPage = () => {
   const { mode, toggleMode } = useThemeStore()
 
   // Get current language name
-  const currentLanguage = (i18n.resolvedLanguage || 'en') as LanguageCode
-  const currentLanguageName = LANGUAGES[currentLanguage]?.nativeName || 'English'
+  const currentLanguage = (i18n.resolvedLanguage || FALLBACK_LANGUAGE) as LanguageCode
+  const currentLanguageName = LANGUAGES[currentLanguage]?.nativeName || LANGUAGES[FALLBACK_LANGUAGE].nativeName
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -261,7 +261,7 @@ const AdminSettingsPage = () => {
                 labelId="language-select-label"
                 id="language-select"
                 label={t('admin.settingsPage.selectLanguage')}
-                value={i18n.resolvedLanguage || 'en'}
+                value={i18n.resolvedLanguage || FALLBACK_LANGUAGE}
                 onChange={handleLanguageChange}
                 sx={{
                   '& .MuiSelect-select': {
