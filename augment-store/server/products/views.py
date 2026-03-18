@@ -240,6 +240,9 @@ class AdminProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, Retri
     def invalidate_cache(self):
         super().invalidate_cache()
         FeaturedProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+        ProductBrandCacheService().clear_namespace()
+        ProductCategoryCacheService().clear_namespace()
 
     
     

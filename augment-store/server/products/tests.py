@@ -1677,7 +1677,7 @@ class ProductSearchViewTests(BaseAPITestCase):
         # Verify SearchQuery was logged both times
         # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
         # Instead, check SearchQuery count.
-        self.assertEqual(SearchQuery.objects.count(), 1)
+        self.assertEqual(SearchQuery.objects.count(), 2)
 
 class AdminProductTests(BaseAPITestCase):
     def setUp(self):
@@ -1691,7 +1691,7 @@ class AdminProductTests(BaseAPITestCase):
         self.product.brand.save()
         
     def test_admin_update_product(self):
-        url = reverse('v1:products:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
         
         # Test non-admin fails
         self.authenticated_client.force_authenticate(user=self.user)
@@ -1707,10 +1707,10 @@ class AdminProductTests(BaseAPITestCase):
         
     def test_admin_delete_product(self):
         # Cache list initially
-        list_url = reverse('v1:products:product_list')
+        list_url = reverse('v1:product_list')
         self.authenticated_client.get(list_url)
         
-        url = reverse('v1:products:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
         
         # Admins can delete
         self.authenticated_client.force_authenticate(user=self.admin)
