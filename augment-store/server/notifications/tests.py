@@ -291,7 +291,7 @@ class UnreadNotificationCountTests(BaseAPITestCase):
 class AdminNotificationTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
-        from accounts.factories import UserFactory
+        from accounts.factory import UserFactory
         self.admin = UserFactory(role="admin", email="admin_notif@example.com")
         
     def test_admin_list_notifications(self):
