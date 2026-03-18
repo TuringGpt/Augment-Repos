@@ -1706,6 +1706,9 @@ class AdminProductTests(BaseAPITestCase):
         self.assertEqual(self.product.name, 'Admin Updated Product')
         
     def test_admin_delete_product(self):
+        # Authenticate as admin first so the cache is primed under the same user_id
+        self.authenticated_client.force_authenticate(user=self.admin)
+
         # Cache list initially
         list_url = reverse('v1:product_list')
         self.authenticated_client.get(list_url)
@@ -1713,10 +1716,10 @@ class AdminProductTests(BaseAPITestCase):
         url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
         
         # Admins can delete
-        self.authenticated_client.force_authenticate(user=self.admin)
         response = self.authenticated_client.delete(url)
         self.assertEqual(response.status_code, 204)
         
+        # Re-fetch — same user_id so this hits the same cache key, verifying invalidation
         list_response = self.authenticated_client.get(list_url)
         results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
         self.assertEqual(len(results), 0)
