@@ -11,6 +11,7 @@ import {
   Switch,
   Divider,
   FormControl,
+  InputLabel,
   Select,
   MenuItem,
   SelectChangeEvent,
@@ -253,7 +254,13 @@ const AdminSettingsPage = () => {
               </Box>
             </Box>
             <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel id="language-select-label">
+                {t('admin.settingsPage.selectLanguage')}
+              </InputLabel>
               <Select
+                labelId="language-select-label"
+                id="language-select"
+                label={t('admin.settingsPage.selectLanguage')}
                 value={i18n.resolvedLanguage || 'en'}
                 onChange={handleLanguageChange}
                 sx={{
