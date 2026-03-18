@@ -975,7 +975,8 @@
         "status": "Status",
         "total": "Total",
         "actions": "Actions",
-        "moreItems": "+{{count}} more"
+        "moreItems": "+{{count}} more",
+        "deletedProduct": "(Deleted Product)"
       },
       "emptyState": {
         "noOrders": "No Orders Yet",
