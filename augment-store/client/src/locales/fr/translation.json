@@ -479,21 +479,36 @@
     "newPassword": "Nouveau Mot de Passe",
     "profilePage": {
       "title": "Mon Profil",
+      "subtitle": "Gérez vos informations personnelles et paramètres de compte",
       "editProfile": "Modifier le Profil",
       "saveChanges": "Enregistrer les Modifications",
       "saving": "Enregistrement...",
+      "uploading": "Téléchargement...",
       "cancel": "Annuler",
       "memberSince": "Membre depuis {{date}}",
       "notAvailable": "N/D",
+      "userFallback": "Utilisateur",
+      "personalInformation": "Informations Personnelles",
+      "personalInformationSubtitle": "Mettez à jour vos détails et informations personnelles",
+      "roleAdmin": "Administrateur",
+      "roleCustomer": "Client",
+      "avatarUploadHint": "Cliquez sur l'avatar pour télécharger",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5 Mo",
       "fields": {
         "username": "Nom d'Utilisateur",
+        "usernameLabel": "Nom d'Utilisateur",
         "email": "Email",
+        "emailLabel": "Adresse Email",
         "emailCannotBeChanged": "L'email ne peut pas être modifié",
         "firstName": "Prénom",
+        "firstNameLabel": "Prénom",
         "lastName": "Nom",
+        "lastNameLabel": "Nom",
         "mobile": "Mobile",
+        "mobileLabel": "Numéro de Mobile",
         "mobilePlaceholder": "+1234567890",
         "gender": "Genre",
+        "genderLabel": "Genre",
         "genderMale": "Masculin",
         "genderFemale": "Féminin",
         "genderOther": "Autre",
@@ -511,11 +526,18 @@
         "failedToUpdateProfile": "Échec de la mise à jour du profil",
         "failedToUploadAvatar": "Échec du téléchargement de l'avatar",
         "failedToRemoveAvatar": "Échec de la suppression de l'avatar",
+        "avatarInvalidFileType": "Type de fichier invalide. Veuillez sélectionner une image JPEG, PNG, GIF ou WebP.",
+        "avatarFileSizeExceeded": "La taille du fichier dépasse la limite de 5 Mo. Le fichier sélectionné fait {{fileSize}} Mo.",
         "retry": "Réessayer"
       },
       "buttons": {
         "supportAndHelp": "Support et Aide",
         "logout": "Déconnexion"
+      },
+      "aria": {
+        "uploadAvatar": "Télécharger l'avatar",
+        "removeAvatar": "Supprimer l'avatar",
+        "avatarFileInput": "Saisie de fichier d'avatar"
       }
     }
   },

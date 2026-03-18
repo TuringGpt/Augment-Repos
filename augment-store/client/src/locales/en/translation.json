@@ -479,21 +479,36 @@
     "newPassword": "New Password",
     "profilePage": {
       "title": "My Profile",
+      "subtitle": "Manage your personal information and account settings",
       "editProfile": "Edit Profile",
       "saveChanges": "Save Changes",
       "saving": "Saving...",
+      "uploading": "Uploading...",
       "cancel": "Cancel",
       "memberSince": "Member since {{date}}",
       "notAvailable": "N/A",
+      "userFallback": "User",
+      "personalInformation": "Personal Information",
+      "personalInformationSubtitle": "Update your personal details and information",
+      "roleAdmin": "Administrator",
+      "roleCustomer": "Customer",
+      "avatarUploadHint": "Click avatar to upload",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5MB",
       "fields": {
         "username": "Username",
+        "usernameLabel": "Username",
         "email": "Email",
+        "emailLabel": "Email Address",
         "emailCannotBeChanged": "Email cannot be changed",
         "firstName": "First Name",
+        "firstNameLabel": "First Name",
         "lastName": "Last Name",
+        "lastNameLabel": "Last Name",
         "mobile": "Mobile",
+        "mobileLabel": "Mobile Number",
         "mobilePlaceholder": "+1234567890",
         "gender": "Gender",
+        "genderLabel": "Gender",
         "genderMale": "Male",
         "genderFemale": "Female",
         "genderOther": "Other",
@@ -511,11 +526,18 @@
         "failedToUpdateProfile": "Failed to update profile",
         "failedToUploadAvatar": "Failed to upload avatar",
         "failedToRemoveAvatar": "Failed to remove avatar",
+        "avatarInvalidFileType": "Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.",
+        "avatarFileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{fileSize}}MB.",
         "retry": "Retry"
       },
       "buttons": {
         "supportAndHelp": "Support & Help",
         "logout": "Logout"
+      },
+      "aria": {
+        "uploadAvatar": "Upload avatar",
+        "removeAvatar": "Remove avatar",
+        "avatarFileInput": "Avatar file input"
       }
     }
   },

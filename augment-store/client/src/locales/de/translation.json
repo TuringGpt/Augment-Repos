@@ -479,21 +479,36 @@
     "newPassword": "Neues Passwort",
     "profilePage": {
       "title": "Mein Profil",
+      "subtitle": "Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen",
       "editProfile": "Profil Bearbeiten",
       "saveChanges": "Änderungen Speichern",
       "saving": "Speichern...",
+      "uploading": "Hochladen...",
       "cancel": "Abbrechen",
       "memberSince": "Mitglied seit {{date}}",
       "notAvailable": "N/V",
+      "userFallback": "Benutzer",
+      "personalInformation": "Persönliche Informationen",
+      "personalInformationSubtitle": "Aktualisieren Sie Ihre persönlichen Daten und Informationen",
+      "roleAdmin": "Administrator",
+      "roleCustomer": "Kunde",
+      "avatarUploadHint": "Klicken Sie auf den Avatar zum Hochladen",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5 MB",
       "fields": {
         "username": "Benutzername",
+        "usernameLabel": "Benutzername",
         "email": "E-Mail",
+        "emailLabel": "E-Mail-Adresse",
         "emailCannotBeChanged": "E-Mail kann nicht geändert werden",
         "firstName": "Vorname",
+        "firstNameLabel": "Vorname",
         "lastName": "Nachname",
+        "lastNameLabel": "Nachname",
         "mobile": "Mobil",
+        "mobileLabel": "Mobilnummer",
         "mobilePlaceholder": "+1234567890",
         "gender": "Geschlecht",
+        "genderLabel": "Geschlecht",
         "genderMale": "Männlich",
         "genderFemale": "Weiblich",
         "genderOther": "Andere",
@@ -511,11 +526,18 @@
         "failedToUpdateProfile": "Profil konnte nicht aktualisiert werden",
         "failedToUploadAvatar": "Avatar konnte nicht hochgeladen werden",
         "failedToRemoveAvatar": "Avatar konnte nicht entfernt werden",
+        "avatarInvalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein JPEG-, PNG-, GIF- oder WebP-Bild.",
+        "avatarFileSizeExceeded": "Die Dateigröße überschreitet das Limit von 5 MB. Die ausgewählte Datei ist {{fileSize}} MB groß.",
         "retry": "Erneut Versuchen"
       },
       "buttons": {
         "supportAndHelp": "Support & Hilfe",
         "logout": "Abmelden"
+      },
+      "aria": {
+        "uploadAvatar": "Avatar hochladen",
+        "removeAvatar": "Avatar entfernen",
+        "avatarFileInput": "Avatar-Dateieingabe"
       }
     }
   },

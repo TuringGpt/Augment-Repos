@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { Box, Avatar, IconButton, CircularProgress, Typography, Alert } from '@mui/material'
-import { PhotoCamera, Delete } from '@mui/icons-material'
+import { Box, Avatar, IconButton, CircularProgress, Typography, Alert, alpha } from '@mui/material'
+import { Delete, CloudUpload } from '@mui/icons-material'
 import { Colors } from '@config/colors'
+import { useTranslation } from '@hooks/useTranslation'
 
 interface AvatarUploadProps {
   currentImage: string | null
@@ -28,6 +29,7 @@ export const AvatarUpload = ({
   error = null,
   onValidationError,
 }: AvatarUploadProps) => {
+  const { t } = useTranslation()
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -64,7 +66,7 @@ export const AvatarUpload = ({
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      const errorMsg = 'Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.'
+      const errorMsg = t('user.profilePage.messages.avatarInvalidFileType')
       setValidationError(errorMsg)
       onValidationError?.(errorMsg)
       // Reset file input
@@ -77,7 +79,9 @@ export const AvatarUpload = ({
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      const errorMsg = `File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`
+      const errorMsg = t('user.profilePage.messages.avatarFileSizeExceeded', {
+        fileSize: (file.size / (1024 * 1024)).toFixed(2),
+      })
       setValidationError(errorMsg)
       onValidationError?.(errorMsg)
       // Reset file input
@@ -133,78 +137,106 @@ export const AvatarUpload = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
       <Box sx={{ position: 'relative' }}>
-        <Avatar
-          src={displayImage || undefined}
+        {/* Avatar with gradient border */}
+        <Box
           sx={{
-            width: 120,
-            height: 120,
-            fontSize: '3rem',
-            bgcolor: Colors.primary.main,
-            cursor: disabled || isUploading ? 'default' : 'pointer',
-            border: `4px solid ${Colors.background.paper}`,
-            boxShadow: 3,
+            position: 'relative',
+            p: 0.5,
+            borderRadius: '50%',
+            background: Colors.gradient.purpleViolet,
+            boxShadow: Colors.shadow.medium,
           }}
-          onClick={handleAvatarClick}
         >
-          {showInitials && userName && userName.charAt(0).toUpperCase()}
-        </Avatar>
-
-        {isUploading && (
-          <Box
+          <Avatar
+            src={displayImage || undefined}
             sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: 'rgba(0, 0, 0, 0.5)',
-              borderRadius: '50%',
+              width: 140,
+              height: 140,
+              fontSize: '3.5rem',
+              background: displayImage ? 'transparent' : Colors.gradient.blueIndigo,
+              cursor: disabled || isUploading ? 'default' : 'pointer',
+              border: `4px solid ${Colors.background.paper}`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: disabled || isUploading ? 'none' : 'scale(1.05)',
+              },
             }}
+            onClick={handleAvatarClick}
           >
-            <CircularProgress size={40} sx={{ color: 'white' }} />
-          </Box>
-        )}
+            {showInitials && userName && userName.charAt(0).toUpperCase()}
+          </Avatar>
 
+          {isUploading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: alpha(Colors.neutral.black, 0.6),
+                borderRadius: '50%',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              <Box sx={{ textAlign: 'center' }}>
+                <CircularProgress size={50} sx={{ color: 'white', mb: 1 }} />
+                <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>
+                  {t('user.profilePage.uploading')}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </Box>
+
+        {/* Upload Button */}
         {!disabled && !isUploading && (
           <IconButton
             sx={{
               position: 'absolute',
-              bottom: 0,
-              right: 0,
-              bgcolor: Colors.primary.main,
+              bottom: 8,
+              right: 8,
+              background: Colors.gradient.purpleViolet,
               color: 'white',
+              width: 40,
+              height: 40,
               '&:hover': {
-                bgcolor: Colors.primary.dark,
+                background: Colors.gradient.blueIndigo,
+                transform: 'scale(1.1)',
               },
-              boxShadow: 2,
+              boxShadow: Colors.shadow.medium,
+              transition: 'all 0.3s ease',
             }}
-            size="small"
             onClick={handleAvatarClick}
-            aria-label="Upload avatar"
+            aria-label={t('user.profilePage.aria.uploadAvatar')}
           >
-            <PhotoCamera fontSize="small" />
+            <CloudUpload fontSize="small" />
           </IconButton>
         )}
 
+        {/* Delete Button */}
         {!disabled && !isUploading && displayImage && (
           <IconButton
             sx={{
               position: 'absolute',
-              bottom: 0,
-              left: 0,
-              bgcolor: Colors.error.main,
+              bottom: 8,
+              left: 8,
+              background: Colors.gradient.orangeRed,
               color: 'white',
+              width: 40,
+              height: 40,
               '&:hover': {
-                bgcolor: Colors.error.dark,
+                background: Colors.error.dark,
+                transform: 'scale(1.1)',
               },
-              boxShadow: 2,
+              boxShadow: Colors.shadow.medium,
+              transition: 'all 0.3s ease',
             }}
-            size="small"
             onClick={handleRemoveImage}
-            aria-label="Remove avatar"
+            aria-label={t('user.profilePage.aria.removeAvatar')}
           >
             <Delete fontSize="small" />
           </IconButton>
@@ -218,27 +250,55 @@ export const AvatarUpload = ({
         onChange={handleFileSelect}
         style={{ display: 'none' }}
         disabled={disabled || isUploading}
-        aria-label="Avatar file input"
+        aria-label={t('user.profilePage.aria.avatarFileInput')}
       />
 
-      {!disabled && (
-        <Typography variant="caption" color="text.secondary" textAlign="center">
-          Click to upload avatar
-          <br />
-          (JPEG, PNG, GIF, WebP - Max 5MB)
-        </Typography>
+      {!disabled && !isUploading && (
+        <Box
+          sx={{
+            textAlign: 'center',
+            px: 2,
+            py: 1,
+            borderRadius: 2,
+            bgcolor: alpha(Colors.primary.main, 0.05),
+            border: `1px dashed ${alpha(Colors.primary.main, 0.3)}`,
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+            {t('user.profilePage.avatarUploadHint')}
+          </Typography>
+          <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled', fontSize: '0.7rem' }}>
+            {t('user.profilePage.avatarFileTypeHint')}
+          </Typography>
+        </Box>
       )}
 
       {/* Display validation errors */}
       {validationError && (
-        <Alert severity="warning" sx={{ width: '100%', maxWidth: 400 }}>
+        <Alert
+          severity="warning"
+          sx={{
+            width: '100%',
+            maxWidth: 400,
+            borderRadius: 2,
+            boxShadow: Colors.shadow.light,
+          }}
+        >
           {validationError}
         </Alert>
       )}
 
       {/* Display upload/API errors */}
       {error && (
-        <Alert severity="error" sx={{ width: '100%', maxWidth: 400 }}>
+        <Alert
+          severity="error"
+          sx={{
+            width: '100%',
+            maxWidth: 400,
+            borderRadius: 2,
+            boxShadow: Colors.shadow.light,
+          }}
+        >
           {error}
         </Alert>
       )}
