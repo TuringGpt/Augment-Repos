@@ -706,7 +706,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       isFetchingComments: false,
       fetchCommentsError: null,
       fetchingCommentsTicketId: null,
-      isCreatingComment: false,
+      // Only clear isCreatingComment if no create requests are in-flight
+      // This preserves the invariant: createCommentInFlightCount === 0 ⇔ isCreatingComment === false
+      // If we unconditionally set isCreatingComment to false while requests are in-flight,
+      // the flag won't be set back to true when those requests complete
+      isCreatingComment: createCommentInFlightCount === 0 ? false : get().isCreatingComment,
       createCommentError: null,
     })
   },
