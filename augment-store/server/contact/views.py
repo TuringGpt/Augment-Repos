@@ -2,6 +2,7 @@ from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
@@ -96,7 +97,10 @@ class AdminContactBulkUpdateView(GenericAPIView):
         ids = serializer.validated_data['ids']
         new_status = serializer.validated_data['status']
 
-        updated = ContactMessage.objects.filter(id__in=ids).update(status=new_status)
+        updated = ContactMessage.objects.filter(id__in=ids).update(
+            status=new_status,
+            updated_at=timezone.now()
+        )
 
         # Invalidate the contact list cache so admins see fresh data
         ContactCacheService().clear_namespace()
