@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   Box,
   Chip,
@@ -13,6 +13,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress,
+  Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material'
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -21,170 +25,17 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   HourglassEmpty as HourglassEmptyIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import type { Order, OrderStatus } from '@features/orders/types'
 import { formatCurrency, formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
+import { useAuthStore } from '@store/authStore'
+import { useOrderStore } from '@store/orderStore'
 
-// Dummy data for merchant orders
-const DUMMY_ORDERS: Order[] = [
-  {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    items: [
-      {
-        id: 'item-1',
-        cart_item: {
-          id: 'cart-1',
-          product: {
-            id: 'prod-1',
-            name: 'Wireless Headphones',
-            description: 'Premium wireless headphones',
-            price: 199.99,
-            images: [],
-            category: { id: 'cat-1', name: 'Electronics' },
-            stock: 50,
-            rating: 4.5,
-            reviewCount: 120,
-            createdAt: '2024-01-15T10:00:00Z',
-            updatedAt: '2024-01-15T10:00:00Z',
-          },
-          quantity: 2,
-          created_at: '2024-03-15T10:00:00Z',
-          updated_at: '2024-03-15T10:00:00Z',
-          is_deleted: false,
-          created_by: 'user-1',
-        },
-        created_at: '2024-03-15T10:00:00Z',
-      },
-    ],
-    subtotal: 399.98,
-    tax: 32.00,
-    shipping: 10.00,
-    total: 441.98,
-    status: 'delivered',
-    shipping_address: null,
-    billing_address: null,
-    payment_status: 'paid',
-    created_at: '2024-03-15T10:00:00Z',
-    updated_at: '2024-03-16T14:30:00Z',
-    created_by: 'user-1',
-    is_deleted: false,
-  },
-  {
-    id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
-    items: [
-      {
-        id: 'item-2',
-        cart_item: {
-          id: 'cart-2',
-          product: {
-            id: 'prod-2',
-            name: 'Smart Watch',
-            description: 'Fitness tracking smartwatch',
-            price: 299.99,
-            images: [],
-            category: { id: 'cat-1', name: 'Electronics' },
-            stock: 30,
-            rating: 4.7,
-            reviewCount: 85,
-            createdAt: '2024-01-10T10:00:00Z',
-            updatedAt: '2024-01-10T10:00:00Z',
-          },
-          quantity: 1,
-          created_at: '2024-03-14T15:30:00Z',
-          updated_at: '2024-03-14T15:30:00Z',
-          is_deleted: false,
-          created_by: 'user-2',
-        },
-        created_at: '2024-03-14T15:30:00Z',
-      },
-      {
-        id: 'item-3',
-        cart_item: {
-          id: 'cart-3',
-          product: {
-            id: 'prod-3',
-            name: 'Phone Case',
-            description: 'Protective phone case',
-            price: 24.99,
-            images: [],
-            category: { id: 'cat-2', name: 'Accessories' },
-            stock: 100,
-            rating: 4.2,
-            reviewCount: 45,
-            createdAt: '2024-01-05T10:00:00Z',
-            updatedAt: '2024-01-05T10:00:00Z',
-          },
-          quantity: 1,
-          created_at: '2024-03-14T15:30:00Z',
-          updated_at: '2024-03-14T15:30:00Z',
-          is_deleted: false,
-          created_by: 'user-2',
-        },
-        created_at: '2024-03-14T15:30:00Z',
-      },
-    ],
-    subtotal: 324.98,
-    tax: 26.00,
-    shipping: 10.00,
-    total: 360.98,
-    status: 'shipped',
-    shipping_address: null,
-    billing_address: null,
-    payment_status: 'paid',
-    created_at: '2024-03-14T15:30:00Z',
-    updated_at: '2024-03-15T09:00:00Z',
-    created_by: 'user-2',
-    is_deleted: false,
-  },
-  {
-    id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
-    items: [
-      {
-        id: 'item-4',
-        cart_item: {
-          id: 'cart-4',
-          product: {
-            id: 'prod-4',
-            name: 'Laptop Stand',
-            description: 'Ergonomic laptop stand',
-            price: 49.99,
-            images: [],
-            category: { id: 'cat-2', name: 'Accessories' },
-            stock: 75,
-            rating: 4.6,
-            reviewCount: 92,
-            createdAt: '2024-01-20T10:00:00Z',
-            updatedAt: '2024-01-20T10:00:00Z',
-          },
-          quantity: 3,
-          created_at: '2024-03-13T11:20:00Z',
-          updated_at: '2024-03-13T11:20:00Z',
-          is_deleted: false,
-          created_by: 'user-3',
-        },
-        created_at: '2024-03-13T11:20:00Z',
-      },
-    ],
-    subtotal: 149.97,
-    tax: 12.00,
-    shipping: 10.00,
-    total: 171.97,
-    status: 'processing',
-    shipping_address: null,
-    billing_address: null,
-    payment_status: 'paid',
-    created_at: '2024-03-13T11:20:00Z',
-    updated_at: '2024-03-13T16:45:00Z',
-    created_by: 'user-3',
-    is_deleted: false,
-  },
-]
 
-// Number of orders to display per page
-const ORDERS_PER_PAGE = 10
 
 /**
  * AdminOrdersPage Component
@@ -196,21 +47,57 @@ const ORDERS_PER_PAGE = 10
 const AdminOrdersPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const [currentPage, setCurrentPage] = useState(1)
+  const { user, isAuthenticated } = useAuthStore()
 
-  // Using dummy data for now
-  const allOrders = DUMMY_ORDERS
+  // Use order store
+  const {
+    merchantOrders,
+    currentMerchantPage,
+    totalMerchantPages,
+    isFetchingMerchantOrders,
+    fetchMerchantOrdersError,
+    getMerchantOrders,
+    setMerchantPage,
+  } = useOrderStore()
 
-  // Calculate client-side pagination
-  const totalPages = Math.ceil(allOrders.length / ORDERS_PER_PAGE)
-  const merchantOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * ORDERS_PER_PAGE
-    const endIndex = startIndex + ORDERS_PER_PAGE
-    return allOrders.slice(startIndex, endIndex)
-  }, [allOrders, currentPage])
+  // Track current abort controller for request cancellation
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Load merchant orders
+  const loadMerchantOrders = async () => {
+    // Abort any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController()
+
+    // Fetch merchant orders using the store
+    await getMerchantOrders(currentMerchantPage)
+  }
+
+  // Fetch merchant orders on mount
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      loadMerchantOrders()
+    }
+
+    return () => {
+      // Cleanup: abort any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  const handleRefresh = () => {
+    loadMerchantOrders()
+  }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setCurrentPage(value)
+    setMerchantPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -256,7 +143,63 @@ const AdminOrdersPage = () => {
     }
   }
 
-  if (allOrders.length === 0) {
+  // Loading state
+  if (isFetchingMerchantOrders && merchantOrders.length === 0) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <ShoppingCartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.ordersPage.title')}
+            </Typography>
+          </Box>
+          <Typography color="text.secondary">
+            {t('admin.ordersPage.subtitle')}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
+  }
+
+  // Error state
+  if (fetchMerchantOrdersError && merchantOrders.length === 0) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <ShoppingCartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.ordersPage.title')}
+            </Typography>
+          </Box>
+          <Typography color="text.secondary">
+            {t('admin.ordersPage.subtitle')}
+          </Typography>
+        </Box>
+
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              {t('common.retry')}
+            </Button>
+          }
+        >
+          {fetchMerchantOrdersError}
+        </Alert>
+      </Container>
+    )
+  }
+
+  // Empty state
+  if (merchantOrders.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
@@ -297,16 +240,34 @@ const AdminOrdersPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-          <ShoppingCartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('admin.ordersPage.title')}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ShoppingCartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.ordersPage.title')}
+            </Typography>
+          </Box>
+          <Tooltip title={t('common.refresh')}>
+            <IconButton
+              onClick={handleRefresh}
+              disabled={isFetchingMerchantOrders}
+              color="primary"
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
         <Typography color="text.secondary">
           {t('admin.ordersPage.subtitle')}
         </Typography>
       </Box>
+
+      {/* Error Alert */}
+      {fetchMerchantOrdersError && merchantOrders.length > 0 && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {fetchMerchantOrdersError}
+        </Alert>
+      )}
 
       {/* Orders Table */}
       <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
@@ -392,13 +353,14 @@ const AdminOrdersPage = () => {
       </TableContainer>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalMerchantPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <Pagination
-            count={totalPages}
-            page={currentPage}
+            count={totalMerchantPages}
+            page={currentMerchantPage}
             onChange={handlePageChange}
             color="primary"
+            disabled={isFetchingMerchantOrders}
           />
         </Box>
       )}
