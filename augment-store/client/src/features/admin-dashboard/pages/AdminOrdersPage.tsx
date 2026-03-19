@@ -73,8 +73,14 @@ const AdminOrdersPage = () => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
-    // Fetch merchant orders using the store with abort signal
-    await getMerchantOrders(currentMerchantPage, abortControllerRef.current.signal)
+    try {
+      // Fetch merchant orders using the store with abort signal
+      await getMerchantOrders(currentMerchantPage, abortControllerRef.current.signal)
+    } catch (error) {
+      // Error is already handled in getMerchantOrders and stored in fetchMerchantOrdersError
+      // This catch prevents unhandled promise rejections
+      console.error('Error loading merchant orders:', error)
+    }
   }
 
   // Fetch merchant orders on mount
