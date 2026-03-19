@@ -710,32 +710,22 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents createComment from clearing error or setting isFetchingComments to false
     // while a getComments request is still in-flight
 
-    // Increment in-flight count to track concurrent create comment requests
-    // This ensures isCreatingComment reflects "any create in progress" rather than just the latest request
-    // When the count goes from 0 to 1, set isCreatingComment to true
-    // When the count goes back to 0, set isCreatingComment to false
-    createCommentInFlightCount += 1
-    const isFirstRequest = createCommentInFlightCount === 1
-
-    // Only set isCreatingComment to true and clear error for the first concurrent request
-    // Subsequent concurrent requests don't need to update these flags
-    if (isFirstRequest) {
-      set({ isCreatingComment: true, createCommentError: null })
-    }
-
     try {
-      const comment = await ticketService.createComment(ticketId, { content })
+      // Increment in-flight count to track concurrent create comment requests
+      // This ensures isCreatingComment reflects "any create in progress" rather than just the latest request
+      // When the count goes from 0 to 1, set isCreatingComment to true
+      // When the count goes back to 0, set isCreatingComment to false
+      // Increment is inside try/finally to ensure decrement happens even on early failures
+      createCommentInFlightCount += 1
+      const isFirstRequest = createCommentInFlightCount === 1
 
-      // Decrement in-flight count before checking if we should update state
-      // This prevents race conditions where a synchronous subscriber could start another
-      // createComment during set(...) and leave isCreatingComment false while a request is in-flight
-      createCommentInFlightCount -= 1
-
-      // Only set isCreatingComment to false when all requests have completed
-      // Check if count is 0 (all requests completed) after decrementing
-      if (createCommentInFlightCount === 0) {
-        set({ isCreatingComment: false })
+      // Only set isCreatingComment to true and clear error for the first concurrent request
+      // Subsequent concurrent requests don't need to update these flags
+      if (isFirstRequest) {
+        set({ isCreatingComment: true, createCommentError: null })
       }
+
+      const comment = await ticketService.createComment(ticketId, { content })
 
       return comment
     } catch (error) {
@@ -747,23 +737,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'COMMENT_CREATE_ERROR',
       })
 
-      // Decrement in-flight count before checking if we should update state
-      // This prevents race conditions where a synchronous subscriber could start another
-      // createComment during set(...) and leave isCreatingComment false while a request is in-flight
-      createCommentInFlightCount -= 1
-
-      // Only update error state and isCreatingComment when all requests have completed
-      // Check if count is 0 (all requests completed) after decrementing
-      if (createCommentInFlightCount === 0) {
-        set({
-          createCommentError: errorMessage,
-          isCreatingComment: false,
-        })
+      // Only update error state when all requests have completed
+      // Check if count is 1 (will be 0 after decrement in finally) before updating error
+      if (createCommentInFlightCount === 1) {
+        set({ createCommentError: errorMessage })
       }
 
       // Re-throw the original error to preserve stack trace and debugging info
       // The store's createCommentError state contains the normalized user-friendly message
       throw error
+    } finally {
+      // Decrement in-flight count in finally to ensure it happens even on early failures
+      // This prevents race conditions where a synchronous subscriber could start another
+      // createComment during set(...) and leave isCreatingComment false while a request is in-flight
+      createCommentInFlightCount -= 1
+
+      // Only set isCreatingComment to false when all requests have completed
+      // Check if count is 0 (all requests completed) after decrementing
+      if (createCommentInFlightCount === 0) {
+        set({ isCreatingComment: false })
+      }
     }
   },
 }))
