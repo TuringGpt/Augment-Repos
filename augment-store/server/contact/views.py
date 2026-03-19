@@ -1,5 +1,7 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
@@ -77,7 +79,9 @@ class BulkStatusUpdateSerializer(drf_serializers.Serializer):
         child=drf_serializers.UUIDField(),
         allow_empty=False
     )
-    status = drf_serializers.CharField()
+    status = drf_serializers.ChoiceField(
+        choices=ContactMessage.Status.choices
+    )
 
 
 class AdminContactBulkUpdateView(GenericAPIView):
@@ -93,6 +97,9 @@ class AdminContactBulkUpdateView(GenericAPIView):
         new_status = serializer.validated_data['status']
 
         updated = ContactMessage.objects.filter(id__in=ids).update(status=new_status)
+
+        # Invalidate the contact list cache so admins see fresh data
+        ContactCacheService().clear_namespace()
 
         return Response(
             {'updated': updated, 'status': new_status},
