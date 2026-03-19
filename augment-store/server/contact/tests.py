@@ -248,3 +248,52 @@ class ContactTests(BaseAPITestCase):
         response = self.authenticated_client.get(url, {"search": "xyznonexistent"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results", [])), 0)
+
+
+class AdminContactBulkUpdateTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin = UserFactory(
+            email="bulkadmin@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.ADMIN
+        )
+        self.msg1 = ContactMessageFactory(name="Alice", status="unread")
+        self.msg2 = ContactMessageFactory(name="Bob", status="unread")
+        self.msg3 = ContactMessageFactory(name="Charlie", status="unread")
+
+    def test_bulk_update_status(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(url, {
+            'ids': [str(self.msg1.id), str(self.msg2.id)],
+            'status': 'resolved'
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['updated'], 2)
+
+        self.msg1.refresh_from_db()
+        self.msg2.refresh_from_db()
+        self.msg3.refresh_from_db()
+        self.assertEqual(self.msg1.status, 'resolved')
+        self.assertEqual(self.msg2.status, 'resolved')
+        self.assertEqual(self.msg3.status, 'unread')
+
+    def test_bulk_update_non_admin_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.user)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(url, {
+            'ids': [str(self.msg1.id)],
+            'status': 'read'
+        }, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_bulk_update_empty_ids_rejected(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(url, {
+            'ids': [],
+            'status': 'read'
+        }, format='json')
+        self.assertEqual(response.status_code, 400)
