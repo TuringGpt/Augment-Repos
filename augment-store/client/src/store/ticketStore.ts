@@ -44,6 +44,10 @@ interface TicketState {
   fetchCommentsError: string | null
   fetchingCommentsTicketId: string | null // Track which ticket's comments are being fetched
 
+  // Separate state for create comment action to avoid race conditions with getComments
+  isCreatingComment: boolean
+  createCommentError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -56,6 +60,7 @@ interface TicketState {
   getTicketStats: () => Promise<TicketStatsResponse | null>
   getComments: (ticketId: string) => Promise<CommentListResponse | null>
   clearComments: () => void
+  createComment: (ticketId: string, content: string) => Promise<Comment>
 }
 
 // Request counter to track the latest fetch request
@@ -91,6 +96,11 @@ let fetchStatsRequestCounter = 0
 // When multiple getComments calls are made in quick succession,
 // only the most recent request should update the comments state
 let fetchCommentsRequestCounter = 0
+
+// In-flight counter to track concurrent create comment requests
+// Ensures isCreatingComment reflects "any create in progress" rather than just the latest request
+// This prevents isCreatingComment from becoming false while earlier requests are still in-flight
+let createCommentInFlightCount = 0
 
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
@@ -128,6 +138,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   isFetchingComments: false,
   fetchCommentsError: null,
   fetchingCommentsTicketId: null,
+  isCreatingComment: false,
+  createCommentError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -689,6 +701,62 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       fetchCommentsError: null,
       fetchingCommentsTicketId: null,
     })
+  },
+
+  createComment: async (ticketId: string, content: string): Promise<Comment> => {
+    // Use separate isCreatingComment/createCommentError state to avoid race conditions with getComments
+    // This prevents createComment from clearing error or setting isFetchingComments to false
+    // while a getComments request is still in-flight
+
+    // Increment in-flight count to track concurrent create comment requests
+    // This ensures isCreatingComment reflects "any create in progress" rather than just the latest request
+    // When the count goes from 0 to 1, set isCreatingComment to true
+    // When the count goes back to 0, set isCreatingComment to false
+    createCommentInFlightCount += 1
+    const isFirstRequest = createCommentInFlightCount === 1
+
+    // Only set isCreatingComment to true and clear error for the first concurrent request
+    // Subsequent concurrent requests don't need to update these flags
+    if (isFirstRequest) {
+      set({ isCreatingComment: true, createCommentError: null })
+    }
+
+    try {
+      const comment = await ticketService.createComment(ticketId, { content })
+
+      // Only set isCreatingComment to false when all requests have completed
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (createCommentInFlightCount === 1) {
+        set({ isCreatingComment: false })
+      }
+
+      return comment
+    } catch (error) {
+      // Use parseApiError to extract user-friendly error message from API response
+      // Pass field names to extract field-specific DRF validation errors (e.g., { content: [...] })
+      // Use error code instead of hard-coded English message to allow proper i18n in components
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['content', 'ticket'],
+        defaultMessage: 'COMMENT_CREATE_ERROR',
+      })
+
+      // Only update error state and isCreatingComment when all requests have completed
+      // Check if count is 1 (this is the last request) since decrement happens in finally
+      if (createCommentInFlightCount === 1) {
+        set({
+          createCommentError: errorMessage,
+          isCreatingComment: false,
+        })
+      }
+
+      // Re-throw the original error to preserve stack trace and debugging info
+      // The store's createCommentError state contains the normalized user-friendly message
+      throw error
+    } finally {
+      // Decrement in-flight count in finally block to ensure it always happens
+      // even if parseApiError or any other code in try/catch throws
+      createCommentInFlightCount -= 1
+    }
   },
 }))
 
