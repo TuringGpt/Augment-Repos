@@ -368,15 +368,18 @@ class AdminCartTests(BaseAPITestCase):
 
     def test_admin_list_carts(self):
         self.authenticated_client.force_authenticate(user=self.admin)
-        url = reverse("carts:admin_cart_list")
+        url = reverse("v1:carts:admin_cart_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 200)
-        results = response.data.get('results', response.data)
-        self.assertTrue(len(results) >= 1)
+        results = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        # Verify the admin's cart is present with the expected item
+        cart_user_ids = [str(cart['user']) for cart in results]
+        self.assertIn(str(self.admin.id), cart_user_ids)
+        admin_cart = next(c for c in results if str(c['user']) == str(self.admin.id))
+        self.assertTrue(len(admin_cart['items']) >= 1)
 
     def test_admin_list_carts_non_admin_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.user)
-        url = reverse("carts:admin_cart_list")
+        url = reverse("v1:carts:admin_cart_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 403)
-
