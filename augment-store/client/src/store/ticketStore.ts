@@ -739,10 +739,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       createCommentInFlightCount += 1
       const isFirstRequest = createCommentInFlightCount === 1
 
-      // Only set isCreatingComment to true and clear error for the first concurrent request
-      // Subsequent concurrent requests don't need to update these flags
+      // Clear error for every new request to implement "latest submit wins" semantics
+      // This prevents stale errors from previous requests from remaining visible
+      // Only set isCreatingComment to true for the first concurrent request to avoid unnecessary updates
       if (isFirstRequest) {
         set({ isCreatingComment: true, createCommentError: null })
+      } else {
+        set({ createCommentError: null })
       }
 
       const comment = await ticketService.createComment(ticketId, { content })
