@@ -700,6 +700,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       isFetchingComments: false,
       fetchCommentsError: null,
       fetchingCommentsTicketId: null,
+      isCreatingComment: false,
+      createCommentError: null,
     })
   },
 
