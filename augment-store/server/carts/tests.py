@@ -376,7 +376,8 @@ class AdminCartTests(BaseAPITestCase):
         cart_user_ids = [str(cart['user']) for cart in results]
         self.assertIn(str(self.admin.id), cart_user_ids)
         admin_cart = next(c for c in results if str(c['user']) == str(self.admin.id))
-        self.assertTrue(len(admin_cart['items']) >= 1)
+        item_product_ids = [str(item['product']['id']) for item in admin_cart['items'] if item.get('product')]
+        self.assertIn(str(self.product.id), item_product_ids)
 
     def test_admin_list_carts_non_admin_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.user)
