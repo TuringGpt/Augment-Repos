@@ -102,6 +102,12 @@ let fetchCommentsRequestCounter = 0
 // This prevents isCreatingComment from becoming false while earlier requests are still in-flight
 let createCommentInFlightCount = 0
 
+// Request counter to prevent race conditions in createComment error state
+// When multiple createComment calls are made in quick succession,
+// only the most recent request should update the createCommentError state
+// This implements "latest submit wins" semantics for error handling
+let createCommentRequestCounter = 0
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -710,6 +716,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents createComment from clearing error or setting isFetchingComments to false
     // while a getComments request is still in-flight
 
+    // Increment request counter to track this specific request
+    // This implements "latest submit wins" semantics for error state
+    createCommentRequestCounter += 1
+    const currentRequestId = createCommentRequestCounter
+
     try {
       // Increment in-flight count to track concurrent create comment requests
       // This ensures isCreatingComment reflects "any create in progress" rather than just the latest request
@@ -737,9 +748,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'COMMENT_CREATE_ERROR',
       })
 
-      // Only update error state when all requests have completed
-      // Check if count is 1 (will be 0 after decrement in finally) before updating error
-      if (createCommentInFlightCount === 1) {
+      // Only update error state if this is still the most recent request
+      // This prevents stale/late completions from overwriting the error state
+      // Implements "latest submit wins" semantics
+      if (currentRequestId === createCommentRequestCounter) {
         set({ createCommentError: errorMessage })
       }
 
