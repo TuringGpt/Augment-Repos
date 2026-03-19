@@ -141,13 +141,14 @@ export const orderService = {
     }
   },
 
-  getMerchantOrders: async (page = 1, _limit = 10): Promise<OrderListResponse> => {
+  getMerchantOrders: async (page = 1, _limit = 10, signal?: AbortSignal): Promise<OrderListResponse> => {
     // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
     // The _limit parameter is kept for API consistency but is not used since the backend ignores it
     const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
     const response = await apiClient.get<OrderListAPIResponse>(API_ENDPOINTS.ORDERS.MERCHANT_LIST, {
       params: { page },
+      signal,
     })
 
     const orders: Order[] = response.results.map((orderAPI) => {

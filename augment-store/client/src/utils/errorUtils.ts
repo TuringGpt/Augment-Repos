@@ -1,6 +1,7 @@
 /**
  * Utility functions for handling API errors
  */
+import axios from 'axios'
 
 /**
  * Django/DRF error response structure
@@ -231,4 +232,40 @@ export function sanitizeErrorForLogging(
   }
 
   return sanitized
+}
+
+/**
+ * Check if an error is an abort/cancel error
+ *
+ * This function checks if an error was caused by an intentional request cancellation,
+ * either through AbortController (AbortSignal) or Axios cancel tokens.
+ *
+ * @param error - The error object to check
+ * @returns true if the error is an abort/cancel error, false otherwise
+ *
+ * @example
+ * try {
+ *   await apiClient.get('/api/data', { signal: abortController.signal })
+ * } catch (error) {
+ *   if (isAbortError(error)) {
+ *     // Request was intentionally cancelled, don't log as error
+ *     return
+ *   }
+ *   console.error('Unexpected error:', error)
+ * }
+ */
+export function isAbortError(error: unknown): boolean {
+  // Check if error is an axios cancel error (using cancel tokens)
+  if (axios.isCancel(error)) {
+    return true
+  }
+
+  // Check if error is an AbortController abort error (using AbortSignal)
+  // When a request is aborted via AbortController, it throws a DOMException with name "AbortError"
+  const domException = error as { name?: string }
+  if (domException?.name === 'AbortError') {
+    return true
+  }
+
+  return false
 }
