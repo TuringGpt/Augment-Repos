@@ -700,6 +700,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents in-flight responses from repopulating the store after clear
     fetchCommentsRequestCounter += 1
 
+    // Increment createCommentRequestCounter to invalidate in-flight createComment requests
+    // This prevents stale createComment failures from a previous ticket from setting
+    // createCommentError after switching to a new ticket
+    createCommentRequestCounter += 1
+
     set({
       comments: [],
       commentsTotal: 0,
