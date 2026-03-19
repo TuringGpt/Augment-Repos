@@ -73,8 +73,8 @@ const AdminOrdersPage = () => {
     // Create new abort controller for this request
     abortControllerRef.current = new AbortController()
 
-    // Fetch merchant orders using the store
-    await getMerchantOrders(currentMerchantPage)
+    // Fetch merchant orders using the store with abort signal
+    await getMerchantOrders(currentMerchantPage, abortControllerRef.current.signal)
   }
 
   // Fetch merchant orders on mount
@@ -99,6 +99,7 @@ const AdminOrdersPage = () => {
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setMerchantPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Note: setMerchantPage internally calls getMerchantOrders, which is handled in setMerchantPage implementation
   }
 
   const getStatusColor = (
