@@ -726,9 +726,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     try {
       const comment = await ticketService.createComment(ticketId, { content })
 
+      // Decrement in-flight count before checking if we should update state
+      // This prevents race conditions where a synchronous subscriber could start another
+      // createComment during set(...) and leave isCreatingComment false while a request is in-flight
+      createCommentInFlightCount -= 1
+
       // Only set isCreatingComment to false when all requests have completed
-      // Check if count is 1 (this is the last request) since decrement happens in finally
-      if (createCommentInFlightCount === 1) {
+      // Check if count is 0 (all requests completed) after decrementing
+      if (createCommentInFlightCount === 0) {
         set({ isCreatingComment: false })
       }
 
@@ -742,9 +747,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         defaultMessage: 'COMMENT_CREATE_ERROR',
       })
 
+      // Decrement in-flight count before checking if we should update state
+      // This prevents race conditions where a synchronous subscriber could start another
+      // createComment during set(...) and leave isCreatingComment false while a request is in-flight
+      createCommentInFlightCount -= 1
+
       // Only update error state and isCreatingComment when all requests have completed
-      // Check if count is 1 (this is the last request) since decrement happens in finally
-      if (createCommentInFlightCount === 1) {
+      // Check if count is 0 (all requests completed) after decrementing
+      if (createCommentInFlightCount === 0) {
         set({
           createCommentError: errorMessage,
           isCreatingComment: false,
@@ -754,10 +764,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Re-throw the original error to preserve stack trace and debugging info
       // The store's createCommentError state contains the normalized user-friendly message
       throw error
-    } finally {
-      // Decrement in-flight count in finally block to ensure it always happens
-      // even if parseApiError or any other code in try/catch throws
-      createCommentInFlightCount -= 1
     }
   },
 }))
