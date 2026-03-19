@@ -235,6 +235,12 @@ export const useOrderStore = create<OrderState>()(
 
           // Only update error state if this is still the latest request
           if (requestId === fetchMerchantRequestCounter) {
+            // Don't treat intentional cancellations as fetch errors
+            if (isAbortError(error)) {
+              // Request was intentionally cancelled, don't set error state
+              throw error
+            }
+
             // Check if this is a 404 error, which likely means the requested page is out of range
             // This can happen when total pages shrink (e.g., items deleted) and the current page
             // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
@@ -264,6 +270,9 @@ export const useOrderStore = create<OrderState>()(
                 // Don't log abort errors - these are expected when requests are intentionally cancelled
                 if (!isAbortError(retryError)) {
                   console.error('Retry with page 1 also failed:', retryError)
+                } else {
+                  // Retry was also cancelled, don't set error state
+                  throw retryError
                 }
               }
             }
