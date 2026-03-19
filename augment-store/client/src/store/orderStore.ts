@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse } from '@features/orders/types'
+import { isAbortError } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -227,7 +228,10 @@ export const useOrderStore = create<OrderState>()(
 
           return response
         } catch (error) {
-          console.error('Failed to fetch merchant orders:', error)
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Failed to fetch merchant orders:', error)
+          }
 
           // Only update error state if this is still the latest request
           if (requestId === fetchMerchantRequestCounter) {
@@ -257,7 +261,10 @@ export const useOrderStore = create<OrderState>()(
                 return retryResponse
               } catch (retryError) {
                 // If retry also fails, fall through to normal error handling
-                console.error('Retry with page 1 also failed:', retryError)
+                // Don't log abort errors - these are expected when requests are intentionally cancelled
+                if (!isAbortError(retryError)) {
+                  console.error('Retry with page 1 also failed:', retryError)
+                }
               }
             }
 
@@ -397,7 +404,10 @@ export const useOrderStore = create<OrderState>()(
         set({ currentMerchantPage: validPage })
         get().getMerchantOrders(validPage).catch((error) => {
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
-          console.error('Error fetching merchant orders on page change:', error)
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Error fetching merchant orders on page change:', error)
+          }
         })
       },
     }),

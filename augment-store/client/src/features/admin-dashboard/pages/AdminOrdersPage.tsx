@@ -34,6 +34,7 @@ import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useOrderStore } from '@store/orderStore'
+import { isAbortError } from '@utils/errorUtils'
 
 
 
@@ -77,6 +78,11 @@ const AdminOrdersPage = () => {
       // Fetch merchant orders using the store with abort signal
       await getMerchantOrders(currentMerchantPage, abortControllerRef.current.signal)
     } catch (error) {
+      // Ignore abort errors - these are expected when requests are intentionally cancelled
+      // (e.g., on refresh or component unmount)
+      if (isAbortError(error)) {
+        return
+      }
       // Error is already handled in getMerchantOrders and stored in fetchMerchantOrdersError
       // This catch prevents unhandled promise rejections
       console.error('Error loading merchant orders:', error)
