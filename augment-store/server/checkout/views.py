@@ -191,6 +191,7 @@ class AdminPaymentListView(BasePaymentView, ListAPIView):
     """Admin-only view to list all payments globally."""
     serializer_class = AdminPaymentListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ("order", "created_by")
 
     def get_queryset(self):
         # Bypass the user-scoped filter in BasePaymentView
