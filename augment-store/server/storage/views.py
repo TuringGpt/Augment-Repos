@@ -42,4 +42,11 @@ class AdminFileDeleteView(DestroyAPIView):
     permission_classes = [IsAuthenticated, hasAdminRole]
     queryset = File.objects.all()
 
+    def perform_destroy(self, instance):
+        # Clean up actual file blobs from storage before deleting the DB row
+        if instance.file:
+            instance.file.delete(save=False)
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+        instance.delete()
 

@@ -361,9 +361,12 @@ class AdminFileTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_delete_file(self):
-        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": self.file1.id})
+        file_id = self.file1.id
+        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": file_id})
         response = self.admin_client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Verify the file record is actually removed from the database
+        self.assertFalse(File.objects.filter(id=file_id).exists())
 
     def test_admin_delete_file_non_admin_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
