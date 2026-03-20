@@ -43,7 +43,11 @@ class AdminFileDeleteView(DestroyAPIView):
     queryset = File.objects.all()
 
     def perform_destroy(self, instance):
+        import logging
         from django.db import transaction
+
+        logger = logging.getLogger(__name__)
+
         # Capture file references before deleting the DB row
         file_field = instance.file.name if instance.file else None
         thumbnail_field = instance.thumbnail.name if instance.thumbnail else None
@@ -51,12 +55,21 @@ class AdminFileDeleteView(DestroyAPIView):
 
         instance.delete()
 
-        # Defer blob cleanup until after the transaction commits
+        # Defer blob cleanup until after the transaction commits.
+        # Errors are caught so transient storage failures don't surface
+        # as 500s after the DB row has already been removed.
         if storage:
             def cleanup():
-                if file_field:
-                    storage.delete(file_field)
-                if thumbnail_field:
-                    storage.delete(thumbnail_field)
+                try:
+                    if file_field:
+                        storage.delete(file_field)
+                    if thumbnail_field:
+                        storage.delete(thumbnail_field)
+                except Exception:
+                    logger.exception(
+                        "Failed to clean up storage blobs for deleted file "
+                        "(file=%s, thumbnail=%s). Manual cleanup may be required.",
+                        file_field, thumbnail_field
+                    )
             transaction.on_commit(cleanup)
 

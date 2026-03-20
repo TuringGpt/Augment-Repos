@@ -373,7 +373,9 @@ class AdminFileTests(BaseAPITestCase):
         file_path = file_with_blob.file.path
 
         url = reverse("v1:storage:admin_file_delete", kwargs={"pk": file_id})
-        response = self.admin_client.delete(url)
+        # Use captureOnCommitCallbacks so deferred blob cleanup actually runs
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.admin_client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # Verify the file record is actually removed from the database
         self.assertFalse(File.objects.filter(id=file_id).exists())
