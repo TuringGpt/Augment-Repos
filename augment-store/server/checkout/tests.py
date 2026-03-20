@@ -1033,6 +1033,14 @@ class AdminPaymentTests(BaseAPITestCase):
             amount=Decimal("99.99"),
             payment_status="paid"
         )
+        # Create a payment belonging to a non-admin user
+        self.regular_order = OrderFactory(created_by=self.regular_user)
+        self.regular_payment = PaymentFactory(
+            order=self.regular_order,
+            created_by=self.regular_user,
+            amount=Decimal("49.99"),
+            payment_status="pending"
+        )
 
         from rest_framework.test import APIClient
         self.admin_client = APIClient()
@@ -1043,11 +1051,13 @@ class AdminPaymentTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        # Admin should see payments from both the admin and regular user
+        payment_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.payment.id), payment_ids)
+        self.assertIn(str(self.regular_payment.id), payment_ids)
 
     def test_regular_user_list_payments_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
         url = reverse("v1:checkout:admin_payment_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
