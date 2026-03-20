@@ -364,7 +364,10 @@ class AdminFileTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 2)
+        # Verify the response contains the specific files created in setUp
+        result_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.file1.id), result_ids)
+        self.assertIn(str(self.file2.id), result_ids)
 
     def test_admin_list_files_non_admin_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
