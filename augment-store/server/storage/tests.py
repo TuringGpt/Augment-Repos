@@ -306,17 +306,24 @@ class StorageTests(BaseAPITestCase):
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+import tempfile
+import shutil
 
-@override_settings(
-    FILE_UPLOAD_STORAGE='local',
-    MEDIA_ROOT=os.path.join(settings.BASE_DIR, 'test_media'),
-    DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
-    APP_DOMAIN='http://testserver'
-)
+
 class AdminFileTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
+        # Use a per-test temporary directory so parallel runs don't collide
+        self._media_root = tempfile.mkdtemp()
+        self._override = override_settings(
+            FILE_UPLOAD_STORAGE='local',
+            MEDIA_ROOT=self._media_root,
+            DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
+            APP_DOMAIN='http://testserver'
+        )
+        self._override.enable()
+
         self.admin_user = UserFactory(
             email="admin_storage@example.com",
             password="testpass123",
@@ -347,6 +354,11 @@ class AdminFileTests(BaseAPITestCase):
         self.admin_client = APIClient()
         self.admin_client.force_authenticate(user=self.admin_user)
 
+    def tearDown(self):
+        self._override.disable()
+        shutil.rmtree(self._media_root, ignore_errors=True)
+        super().tearDown()
+
     def test_admin_list_files(self):
         url = reverse("v1:storage:admin_file_list")
         response = self.admin_client.get(url)
@@ -361,16 +373,18 @@ class AdminFileTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_delete_file(self):
-        # Create a file with an actual stored blob to exercise cleanup logic
+        # Create a file with both file and thumbnail blobs to exercise full cleanup
         file_with_blob = File.objects.create(
             original_file_name="deletable_file.jpg",
             file_name="deletable_file_xyz.jpg",
             file_type="image/jpeg",
             created_by=self.admin_user,
-            file=SimpleUploadedFile("deletable_file.jpg", b"file_content", content_type="image/jpeg")
+            file=SimpleUploadedFile("deletable_file.jpg", b"file_content", content_type="image/jpeg"),
+            thumbnail=SimpleUploadedFile("deletable_thumb.jpg", b"thumb_content", content_type="image/jpeg")
         )
         file_id = file_with_blob.id
         file_path = file_with_blob.file.path
+        thumb_path = file_with_blob.thumbnail.path
 
         url = reverse("v1:storage:admin_file_delete", kwargs={"pk": file_id})
         # Use captureOnCommitCallbacks so deferred blob cleanup actually runs
@@ -379,8 +393,9 @@ class AdminFileTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         # Verify the file record is actually removed from the database
         self.assertFalse(File.objects.filter(id=file_id).exists())
-        # Verify the underlying media file is removed from disk
+        # Verify both the file and thumbnail blobs are removed from disk
         self.assertFalse(os.path.exists(file_path))
+        self.assertFalse(os.path.exists(thumb_path))
 
     def test_admin_delete_file_non_admin_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)

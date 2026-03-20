@@ -48,28 +48,31 @@ class AdminFileDeleteView(DestroyAPIView):
 
         logger = logging.getLogger(__name__)
 
-        # Capture file references before deleting the DB row
-        file_field = instance.file.name if instance.file else None
-        thumbnail_field = instance.thumbnail.name if instance.thumbnail else None
-        storage = instance.file.storage if instance.file else (instance.thumbnail.storage if instance.thumbnail else None)
+        # Capture each field's name and storage independently so cleanup
+        # targets the correct backend even if file and thumbnail differ.
+        file_name = instance.file.name if instance.file else None
+        file_storage = instance.file.storage if instance.file else None
+        thumb_name = instance.thumbnail.name if instance.thumbnail else None
+        thumb_storage = instance.thumbnail.storage if instance.thumbnail else None
 
         instance.delete()
 
         # Defer blob cleanup until after the transaction commits.
         # Errors are caught so transient storage failures don't surface
         # as 500s after the DB row has already been removed.
-        if storage:
-            def cleanup():
-                try:
-                    if file_field:
-                        storage.delete(file_field)
-                    if thumbnail_field:
-                        storage.delete(thumbnail_field)
-                except Exception:
-                    logger.exception(
-                        "Failed to clean up storage blobs for deleted file "
-                        "(file=%s, thumbnail=%s). Manual cleanup may be required.",
-                        file_field, thumbnail_field
-                    )
+        def cleanup():
+            try:
+                if file_name and file_storage:
+                    file_storage.delete(file_name)
+                if thumb_name and thumb_storage:
+                    thumb_storage.delete(thumb_name)
+            except Exception:
+                logger.exception(
+                    "Failed to clean up storage blobs for deleted file "
+                    "(file=%s, thumbnail=%s). Manual cleanup may be required.",
+                    file_name, thumb_name
+                )
+
+        if file_name or thumb_name:
             transaction.on_commit(cleanup)
 
