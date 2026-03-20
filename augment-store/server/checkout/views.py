@@ -194,5 +194,5 @@ class AdminPaymentListView(BasePaymentView, ListAPIView):
 
     def get_queryset(self):
         # Bypass the user-scoped filter in BasePaymentView
-        return super(BasePaymentView, self).get_queryset().order_by('-created_at')
+        return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
 
