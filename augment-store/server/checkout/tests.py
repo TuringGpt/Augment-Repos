@@ -1007,3 +1007,47 @@ class AdminOrderTests(BaseAPITestCase):
         payload = {"status": Order.OrderStatus.CANCELLED}
         response = self.authenticated_client.patch(url, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminPaymentTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_payments@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_payments@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        # Create a payment belonging to the admin user
+        self.order = OrderFactory(created_by=self.admin_user)
+        self.payment = PaymentFactory(
+            order=self.order,
+            created_by=self.admin_user,
+            amount=Decimal("99.99"),
+            payment_status="paid"
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_payments(self):
+        url = reverse("v1:checkout:admin_payment_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(results) >= 1)
+
+    def test_regular_user_list_payments_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_payment_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
