@@ -305,3 +305,69 @@ class StorageTests(BaseAPITestCase):
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+@override_settings(
+    FILE_UPLOAD_STORAGE='local',
+    MEDIA_ROOT=os.path.join(settings.BASE_DIR, 'test_media'),
+    DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
+    APP_DOMAIN='http://testserver'
+)
+class AdminFileTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_storage@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.ADMIN
+        )
+        self.regular_user = UserFactory(
+            email="regular_storage@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        # Create file records for the admin user
+        self.file1 = File.objects.create(
+            original_file_name="admin_file_1.jpg",
+            file_name="admin_file_1_abc.jpg",
+            file_type="image/jpeg",
+            created_by=self.admin_user
+        )
+        self.file2 = File.objects.create(
+            original_file_name="admin_file_2.png",
+            file_name="admin_file_2_def.png",
+            file_type="image/png",
+            created_by=self.admin_user
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_files(self):
+        url = reverse("v1:storage:admin_file_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(results) >= 2)
+
+    def test_admin_list_files_non_admin_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:storage:admin_file_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_delete_file(self):
+        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": self.file1.id})
+        response = self.admin_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_admin_delete_file_non_admin_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": self.file1.id})
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
