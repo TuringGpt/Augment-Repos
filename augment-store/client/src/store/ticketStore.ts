@@ -779,6 +779,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const comment = await ticketService.createComment(ticketId, { content })
 
+      // Add the new comment to the store's comments array to prevent stale data
+      // This ensures components reading from useTicketStore().comments see the new comment immediately
+      // without needing an explicit refetch
+      const state = get()
+      set({
+        comments: [...state.comments, comment],
+        commentsTotal: state.commentsTotal + 1
+      })
+
       return comment
     } catch (error) {
       // Use parseApiError to extract user-friendly error message from API response
@@ -842,6 +851,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       }
 
       const comment = await ticketService.updateComment(ticketId, commentId, { content })
+
+      // Update the comment in the store's comments array to prevent stale data
+      // This ensures components reading from useTicketStore().comments see the updated content immediately
+      // without needing an explicit refetch
+      const state = get()
+      const updatedComments = state.comments.map(c =>
+        c.id === commentId ? comment : c
+      )
+      set({ comments: updatedComments })
 
       return comment
     } catch (error) {
