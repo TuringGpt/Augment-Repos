@@ -790,13 +790,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // without needing an explicit refetch
       // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
       // This prevents in-flight requests from a previous ticket from appending to the new ticket's comments
-      const state = get()
-      if (state.currentCommentsTicketId === ticketId) {
-        set({
-          comments: [...state.comments, comment],
-          commentsTotal: state.commentsTotal + 1
-        })
-      }
+      // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
+      set((state) => {
+        if (state.currentCommentsTicketId === ticketId) {
+          return {
+            comments: [...state.comments, comment],
+            commentsTotal: state.commentsTotal + 1
+          }
+        }
+        return {}
+      })
 
       return comment
     } catch (error) {
@@ -867,13 +870,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // without needing an explicit refetch
       // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
       // This prevents in-flight requests from a previous ticket from updating the new ticket's comments
-      const state = get()
-      if (state.currentCommentsTicketId === ticketId) {
-        const updatedComments = state.comments.map(c =>
-          c.id === commentId ? comment : c
-        )
-        set({ comments: updatedComments })
-      }
+      // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
+      set((state) => {
+        if (state.currentCommentsTicketId === ticketId) {
+          const updatedComments = state.comments.map(c =>
+            c.id === commentId ? comment : c
+          )
+          return { comments: updatedComments }
+        }
+        return {}
+      })
 
       return comment
     } catch (error) {
