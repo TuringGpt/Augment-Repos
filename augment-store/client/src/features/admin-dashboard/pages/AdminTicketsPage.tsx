@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   Container,
   Typography,
@@ -25,6 +25,9 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  Drawer,
+  IconButton,
+  Divider,
 } from '@mui/material'
 import {
   ConfirmationNumber as TicketIcon,
@@ -33,12 +36,26 @@ import {
   CheckCircle as ResolvedIcon,
   Schedule as PendingIcon,
   Search as SearchIcon,
+  Add as AddIcon,
+  Close as CloseIcon,
+  Send as SendIcon,
 } from '@mui/icons-material'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { z } from 'zod'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
+
+// Form values interface
+interface CreateTicketFormValues {
+  title: string
+  description: string
+  priority: TicketPriority
+  status: TicketStatus
+}
 
 /**
  * AdminTicketsPage Component
@@ -54,7 +71,6 @@ const AdminTicketsPage = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
-  // Ticket store
   const {
     tickets,
     page,
@@ -70,10 +86,40 @@ const AdminTicketsPage = () => {
     getTicketStats,
   } = useTicketStore()
 
-  // Filter states
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Validation schema with translations - memoized to update when language changes
+  const createTicketSchema = useMemo(
+    () =>
+      z.object({
+        title: z
+          .string()
+          .min(5, t('admin.createTicketPage.validation.titleMinLength'))
+          .max(255, t('admin.createTicketPage.validation.titleMaxLength')),
+        description: z
+          .string()
+          .min(20, t('admin.createTicketPage.validation.descriptionMinLength'))
+          .max(2000, t('admin.createTicketPage.validation.descriptionMaxLength')),
+        priority: z.enum(['low', 'medium', 'high', 'urgent']),
+        status: z.enum(['open', 'in_progress', 'resolved', 'closed']),
+      }),
+    [t]
+  )
+
+  const form = useForm({
+    initialValues: {
+      title: '',
+      description: '',
+      priority: 'medium' as TicketPriority,
+      status: 'open' as TicketStatus,
+    },
+    validate: zodResolver(createTicketSchema),
+  })
 
   // Load tickets on mount and when filters change
   useEffect(() => {
@@ -182,6 +228,46 @@ const AdminTicketsPage = () => {
     navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticketId))
   }
 
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    form.reset()
+    setSuccessMessage(null)
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    setIsCreateDrawerOpen(false)
+    form.reset()
+    setSuccessMessage(null)
+  }
+
+  const handleCreateTicket = async (values: CreateTicketFormValues) => {
+    setSuccessMessage(null)
+
+    if (!hasHydrated || authLoading) {
+      return
+    }
+
+    if (!isAuthenticated || !user?.id) {
+      return
+    }
+
+    console.log('Create ticket form submitted:', {
+      title: values.title,
+      description: values.description,
+      priority: values.priority,
+      status: values.status,
+      assignee: user.id,
+    })
+
+    setSuccessMessage('Ticket creation form validated successfully')
+    form.reset()
+
+    setTimeout(() => {
+      handleCloseCreateDrawer()
+    }, 1500)
+  }
+
   // Wait for persisted state to rehydrate before checking auth state
   if (!hasHydrated || authLoading) {
     return (
@@ -224,11 +310,25 @@ const AdminTicketsPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-          <TicketIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('admin.ticketsPage.title')}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <TicketIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.ticketsPage.title')}
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+            }}
+          >
+            {t('admin.createTicketPage.createTicket')}
+          </Button>
         </Box>
         <Typography color="text.secondary">
           {t('admin.ticketsPage.subtitle')}
@@ -505,6 +605,131 @@ const AdminTicketsPage = () => {
           )}
         </>
       )}
+
+      {/* Create Ticket Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.createTicketPage.createTicket')}
+            </Typography>
+            <IconButton onClick={handleCloseCreateDrawer} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            {successMessage && (
+              <Alert severity="success" sx={{ mb: 3 }}>
+                {successMessage}
+              </Alert>
+            )}
+
+            <form onSubmit={form.onSubmit(handleCreateTicket)}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  label={t('admin.createTicketPage.titleLabel')}
+                  placeholder={t('admin.createTicketPage.titlePlaceholder')}
+                  required
+                  fullWidth
+                  {...form.getInputProps('title')}
+                  error={!!form.errors.title}
+                  helperText={form.errors.title}
+                  disabled={!hasHydrated || authLoading}
+                />
+
+                <TextField
+                  label={t('admin.createTicketPage.descriptionLabel')}
+                  placeholder={t('admin.createTicketPage.descriptionPlaceholder')}
+                  required
+                  fullWidth
+                  multiline
+                  rows={6}
+                  {...form.getInputProps('description')}
+                  error={!!form.errors.description}
+                  helperText={form.errors.description}
+                  disabled={!hasHydrated || authLoading}
+                />
+
+                <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
+                  <InputLabel>{t('admin.createTicketPage.priorityLabel')}</InputLabel>
+                  <Select
+                    label={t('admin.createTicketPage.priorityLabel')}
+                    {...form.getInputProps('priority')}
+                  >
+                    <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
+                    <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
+                    <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
+                    <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
+                  <InputLabel>{t('admin.createTicketPage.statusLabel')}</InputLabel>
+                  <Select
+                    label={t('admin.createTicketPage.statusLabel')}
+                    {...form.getInputProps('status')}
+                  >
+                    <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
+                    <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
+                    <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
+                    <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </form>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={!hasHydrated || authLoading}
+            >
+              {t('admin.createTicketPage.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<SendIcon />}
+              onClick={() => form.onSubmit(handleCreateTicket)()}
+              disabled={!hasHydrated || authLoading}
+            >
+              {t('admin.createTicketPage.createTicket')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }
