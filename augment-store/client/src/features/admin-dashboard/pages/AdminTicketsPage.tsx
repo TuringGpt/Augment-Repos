@@ -680,8 +680,10 @@ const AdminTicketsPage = () => {
                 />
 
                 <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
-                  <InputLabel>{t('admin.createTicketPage.priorityLabel')}</InputLabel>
+                  <InputLabel id="priority-label">{t('admin.createTicketPage.priorityLabel')}</InputLabel>
                   <Select
+                    labelId="priority-label"
+                    id="priority-select"
                     label={t('admin.createTicketPage.priorityLabel')}
                     {...form.getInputProps('priority')}
                   >
@@ -693,8 +695,10 @@ const AdminTicketsPage = () => {
                 </FormControl>
 
                 <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
-                  <InputLabel>{t('admin.createTicketPage.statusLabel')}</InputLabel>
+                  <InputLabel id="status-label">{t('admin.createTicketPage.statusLabel')}</InputLabel>
                   <Select
+                    labelId="status-label"
+                    id="status-select"
                     label={t('admin.createTicketPage.statusLabel')}
                     {...form.getInputProps('status')}
                   >
