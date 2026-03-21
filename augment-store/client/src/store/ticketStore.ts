@@ -685,12 +685,28 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchCommentsRequestCounter) {
-        set({
-          comments: response.results,
-          commentsTotal: response.count,
-          isFetchingComments: false,
-          fetchingCommentsTicketId: null,
-          currentCommentsTicketId: ticketId
+        // Merge locally-created comments with fetched comments to prevent race condition
+        // where an in-flight getComments started before createComment can overwrite optimistically-added comments
+        // Use functional set form to access current state at the time of resolution
+        set((state) => {
+          // Build a Set of comment IDs from the API response for efficient lookup
+          const fetchedCommentIds = new Set(response.results.map(c => c.id))
+
+          // Find locally-created comments that aren't in the API response yet
+          // These are comments that were optimistically added by createComment but haven't been returned by the API
+          const localOnlyComments = state.comments.filter(c => !fetchedCommentIds.has(c.id))
+
+          // Merge: prepend local-only comments to maintain newest-first ordering
+          // Local comments are newer than fetched comments since they were just created
+          const mergedComments = [...localOnlyComments, ...response.results]
+
+          return {
+            comments: mergedComments,
+            commentsTotal: response.count,
+            isFetchingComments: false,
+            fetchingCommentsTicketId: null,
+            currentCommentsTicketId: ticketId
+          }
         })
         return response
       }
