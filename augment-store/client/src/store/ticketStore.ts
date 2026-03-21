@@ -125,6 +125,13 @@ let updateCommentInFlightCount = 0
 // This implements "latest submit wins" semantics for error handling
 let updateCommentRequestCounter = 0
 
+// Track locally-updated comment IDs to prevent stale fetched data from overwriting newer local updates
+// When updateComment completes, the comment ID is added to this set
+// When getComments merges data, it prefers locally-updated comments over fetched ones
+// This prevents race conditions where a getComments request started before updateComment
+// completes after updateComment and overwrites the newer local content
+const locallyUpdatedCommentIds = new Set<string>()
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -685,8 +692,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchCommentsRequestCounter) {
-        // Merge locally-created comments with fetched comments to prevent race condition
-        // where an in-flight getComments started before createComment can overwrite optimistically-added comments
+        // Merge locally-created/updated comments with fetched comments to prevent race conditions
+        // where an in-flight getComments started before createComment/updateComment can overwrite optimistically-added/updated comments
         // Use functional set form to access current state at the time of resolution
         set((state) => {
           // Build a Set of comment IDs from the API response for efficient lookup
@@ -696,9 +703,23 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           // These are comments that were optimistically added by createComment but haven't been returned by the API
           const localOnlyComments = state.comments.filter(c => !fetchedCommentIds.has(c.id))
 
+          // Build a Map of locally-updated comments by ID for efficient lookup
+          // These are comments that were updated by updateComment and should be preferred over fetched versions
+          const locallyUpdatedCommentsMap = new Map(
+            state.comments
+              .filter(c => locallyUpdatedCommentIds.has(c.id))
+              .map(c => [c.id, c])
+          )
+
+          // Merge fetched comments, preferring locally-updated versions when they exist
+          // This prevents stale fetched data from overwriting newer local updates
+          const mergedFetchedComments = response.results.map(fetchedComment =>
+            locallyUpdatedCommentsMap.get(fetchedComment.id) ?? fetchedComment
+          )
+
           // Merge: prepend local-only comments to maintain newest-first ordering
           // Local comments are newer than fetched comments since they were just created
-          const mergedComments = [...localOnlyComments, ...response.results]
+          const mergedComments = [...localOnlyComments, ...mergedFetchedComments]
 
           return {
             comments: mergedComments,
@@ -748,6 +769,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This prevents stale updateComment failures from a previous ticket from setting
     // updateCommentError after switching to a new ticket
     updateCommentRequestCounter += 1
+
+    // Clear the set of locally-updated comment IDs since we're clearing all comments
+    // This prevents stale tracking data from affecting future comment fetches
+    locallyUpdatedCommentIds.clear()
 
     set({
       comments: [],
@@ -887,6 +912,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // This prevents stale/late completions from overwriting newer content
       // Implements "latest submit wins" semantics
       if (currentRequestId === updateCommentRequestCounter) {
+        // Track this comment as locally-updated to prevent stale fetched data from overwriting it
+        // This ensures that if a getComments request started before this update completes after it,
+        // the merge logic will prefer this locally-updated version over the stale fetched version
+        locallyUpdatedCommentIds.add(commentId)
+
         // Update the comment in the store's comments array to prevent stale data
         // This ensures components reading from useTicketStore().comments see the updated content immediately
         // without needing an explicit refetch
