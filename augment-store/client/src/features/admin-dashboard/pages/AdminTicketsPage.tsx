@@ -637,7 +637,11 @@ const AdminTicketsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.createTicketPage.createTicket')}
             </Typography>
-            <IconButton onClick={handleCloseCreateDrawer} sx={{ color: 'white' }}>
+            <IconButton
+              onClick={handleCloseCreateDrawer}
+              sx={{ color: 'white' }}
+              aria-label="Close create ticket drawer"
+            >
               <CloseIcon />
             </IconButton>
           </Box>
