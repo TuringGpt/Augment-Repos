@@ -883,21 +883,26 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       const comment = await ticketService.updateComment(ticketId, commentId, { content })
 
-      // Update the comment in the store's comments array to prevent stale data
-      // This ensures components reading from useTicketStore().comments see the updated content immediately
-      // without needing an explicit refetch
-      // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
-      // This prevents in-flight requests from a previous ticket from updating the new ticket's comments
-      // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
-      set((state) => {
-        if (state.currentCommentsTicketId === ticketId) {
-          const updatedComments = state.comments.map(c =>
-            c.id === commentId ? comment : c
-          )
-          return { comments: updatedComments }
-        }
-        return {}
-      })
+      // Only update state if this is still the most recent request
+      // This prevents stale/late completions from overwriting newer content
+      // Implements "latest submit wins" semantics
+      if (currentRequestId === updateCommentRequestCounter) {
+        // Update the comment in the store's comments array to prevent stale data
+        // This ensures components reading from useTicketStore().comments see the updated content immediately
+        // without needing an explicit refetch
+        // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
+        // This prevents in-flight requests from a previous ticket from updating the new ticket's comments
+        // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
+        set((state) => {
+          if (state.currentCommentsTicketId === ticketId) {
+            const updatedComments = state.comments.map(c =>
+              c.id === commentId ? comment : c
+            )
+            return { comments: updatedComments }
+          }
+          return {}
+        })
+      }
 
       return comment
     } catch (error) {
