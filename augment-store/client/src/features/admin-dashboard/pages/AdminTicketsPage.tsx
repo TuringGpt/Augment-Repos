@@ -118,7 +118,9 @@ const AdminTicketsPage = () => {
       priority: 'medium' as TicketPriority,
       status: 'open' as TicketStatus,
     },
-    validate: zodResolver(createTicketSchema),
+    // Use a validation function that references the memoized schema
+    // This ensures validation messages always match the active locale
+    validate: (values) => zodResolver(createTicketSchema)(values),
   })
 
   // Load tickets on mount and when filters change
