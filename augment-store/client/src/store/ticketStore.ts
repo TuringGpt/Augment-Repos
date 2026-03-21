@@ -675,7 +675,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
     // Set loading state and clear stale data BEFORE any awaited work
     // Store the ticket ID being fetched so we can track which ticket's comments are being loaded
-    set({ isFetchingComments: true, fetchCommentsError: null, comments: [], commentsTotal: 0, fetchingCommentsTicketId: ticketId })
+    // Update currentCommentsTicketId immediately to prevent in-flight createComment from previous ticket
+    // from appending to the just-cleared comments array during navigation
+    set({ isFetchingComments: true, fetchCommentsError: null, comments: [], commentsTotal: 0, fetchingCommentsTicketId: ticketId, currentCommentsTicketId: ticketId })
 
     try {
       const response = await ticketService.getComments(ticketId)
