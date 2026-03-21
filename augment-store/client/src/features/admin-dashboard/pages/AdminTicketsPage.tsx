@@ -653,7 +653,7 @@ const AdminTicketsPage = () => {
               </Alert>
             )}
 
-            <form onSubmit={form.onSubmit(handleCreateTicket)}>
+            <form id="create-ticket-form" onSubmit={form.onSubmit(handleCreateTicket)}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   label={t('admin.createTicketPage.titleLabel')}
@@ -726,9 +726,10 @@ const AdminTicketsPage = () => {
               {t('admin.createTicketPage.cancel')}
             </Button>
             <Button
+              type="submit"
+              form="create-ticket-form"
               variant="contained"
               startIcon={<SendIcon />}
-              onClick={() => form.onSubmit(handleCreateTicket)()}
               disabled={!hasHydrated || authLoading}
             >
               {t('admin.createTicketPage.createTicket')}
