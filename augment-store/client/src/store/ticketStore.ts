@@ -723,7 +723,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
           return {
             comments: mergedComments,
-            commentsTotal: response.count,
+            commentsTotal: mergedComments.length,
             isFetchingComments: false,
             fetchingCommentsTicketId: null,
             currentCommentsTicketId: ticketId
