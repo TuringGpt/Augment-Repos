@@ -43,6 +43,7 @@ interface TicketState {
   isFetchingComments: boolean
   fetchCommentsError: string | null
   fetchingCommentsTicketId: string | null // Track which ticket's comments are being fetched
+  currentCommentsTicketId: string | null // Track which ticket's comments are currently displayed in the store
 
   // Separate state for create comment action to avoid race conditions with getComments
   isCreatingComment: boolean
@@ -160,6 +161,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   isFetchingComments: false,
   fetchCommentsError: null,
   fetchingCommentsTicketId: null,
+  currentCommentsTicketId: null,
   isCreatingComment: false,
   createCommentError: null,
   isUpdatingComment: false,
@@ -685,7 +687,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           comments: response.results,
           commentsTotal: response.count,
           isFetchingComments: false,
-          fetchingCommentsTicketId: null
+          fetchingCommentsTicketId: null,
+          currentCommentsTicketId: ticketId
         })
         return response
       }
@@ -734,6 +737,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       isFetchingComments: false,
       fetchCommentsError: null,
       fetchingCommentsTicketId: null,
+      currentCommentsTicketId: null,
       // Only clear isCreatingComment if no create requests are in-flight
       // This preserves the invariant: createCommentInFlightCount === 0 ⇔ isCreatingComment === false
       // If we unconditionally set isCreatingComment to false while requests are in-flight,
@@ -782,11 +786,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Add the new comment to the store's comments array to prevent stale data
       // This ensures components reading from useTicketStore().comments see the new comment immediately
       // without needing an explicit refetch
+      // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
+      // This prevents in-flight requests from a previous ticket from appending to the new ticket's comments
       const state = get()
-      set({
-        comments: [...state.comments, comment],
-        commentsTotal: state.commentsTotal + 1
-      })
+      if (state.currentCommentsTicketId === ticketId) {
+        set({
+          comments: [...state.comments, comment],
+          commentsTotal: state.commentsTotal + 1
+        })
+      }
 
       return comment
     } catch (error) {
@@ -855,11 +863,15 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Update the comment in the store's comments array to prevent stale data
       // This ensures components reading from useTicketStore().comments see the updated content immediately
       // without needing an explicit refetch
+      // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
+      // This prevents in-flight requests from a previous ticket from updating the new ticket's comments
       const state = get()
-      const updatedComments = state.comments.map(c =>
-        c.id === commentId ? comment : c
-      )
-      set({ comments: updatedComments })
+      if (state.currentCommentsTicketId === ticketId) {
+        const updatedComments = state.comments.map(c =>
+          c.id === commentId ? comment : c
+        )
+        set({ comments: updatedComments })
+      }
 
       return comment
     } catch (error) {
