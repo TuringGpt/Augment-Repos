@@ -791,10 +791,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
       // This prevents in-flight requests from a previous ticket from appending to the new ticket's comments
       // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
+      // Prepend the new comment to maintain consistency with API ordering (newest-first)
+      // This prevents locally-added comments from appearing in a different position than freshly fetched data
       set((state) => {
         if (state.currentCommentsTicketId === ticketId) {
           return {
-            comments: [...state.comments, comment],
+            comments: [comment, ...state.comments],
             commentsTotal: state.commentsTotal + 1
           }
         }
