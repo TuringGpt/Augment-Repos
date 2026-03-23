@@ -1056,9 +1056,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
       set((state) => {
         if (state.currentCommentsTicketId === ticketId) {
+          const filteredComments = state.comments.filter(c => c.id !== commentId)
+          // Derive the new total from the filtered array to prevent off-by-one errors
+          // This ensures accuracy even if the comment wasn't present in state.comments
+          const newTotal = Math.max(0, state.commentsTotal - (state.comments.length - filteredComments.length))
           return {
-            comments: state.comments.filter(c => c.id !== commentId),
-            commentsTotal: Math.max(0, state.commentsTotal - 1)
+            comments: filteredComments,
+            commentsTotal: newTotal
           }
         }
         return {}
