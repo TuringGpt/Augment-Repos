@@ -53,6 +53,10 @@ interface TicketState {
   isUpdatingComment: boolean
   updateCommentError: string | null
 
+  // Separate state for delete comment action to avoid race conditions with getComments
+  isDeletingComment: boolean
+  deleteCommentError: string | null
+
   // Actions
   fetchTickets: (params?: TicketFilterParams, recursionDepth?: number) => Promise<void>
   clearTickets: () => void
@@ -67,6 +71,7 @@ interface TicketState {
   clearComments: () => void
   createComment: (ticketId: string, content: string) => Promise<Comment>
   updateComment: (ticketId: string, commentId: string, content: string) => Promise<Comment>
+  deleteComment: (ticketId: string, commentId: string) => Promise<void>
 }
 
 // Request counter to track the latest fetch request
@@ -125,6 +130,17 @@ let updateCommentInFlightCount = 0
 // This implements "latest submit wins" semantics for error handling
 let updateCommentRequestCounter = 0
 
+// In-flight counter to track concurrent delete comment requests
+// Ensures isDeletingComment reflects "any delete in progress" rather than just the latest request
+// This prevents isDeletingComment from becoming false while earlier requests are still in-flight
+let deleteCommentInFlightCount = 0
+
+// Request counter to prevent race conditions in deleteComment error state
+// When multiple deleteComment calls are made in quick succession,
+// only the most recent request should update the deleteCommentError state
+// This implements "latest submit wins" semantics for error handling
+let deleteCommentRequestCounter = 0
+
 // Track locally-updated comment IDs to prevent stale fetched data from overwriting newer local updates
 // When updateComment completes, the comment ID is added to this set
 // When getComments merges data, it prefers locally-updated comments over fetched ones
@@ -173,6 +189,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   createCommentError: null,
   isUpdatingComment: false,
   updateCommentError: null,
+  isDeletingComment: false,
+  deleteCommentError: null,
 
   fetchTickets: async (params?: TicketFilterParams, recursionDepth = 0) => {
     const state = get()
@@ -770,6 +788,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // updateCommentError after switching to a new ticket
     updateCommentRequestCounter += 1
 
+    // Increment deleteCommentRequestCounter to invalidate in-flight deleteComment requests
+    // This prevents stale deleteComment failures from a previous ticket from setting
+    // deleteCommentError after switching to a new ticket
+    deleteCommentRequestCounter += 1
+
     // Clear the set of locally-updated comment IDs since we're clearing all comments
     // This prevents stale tracking data from affecting future comment fetches
     locallyUpdatedCommentIds.clear()
@@ -793,6 +816,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // the flag won't be set back to true when those requests complete
       isUpdatingComment: updateCommentInFlightCount === 0 ? false : get().isUpdatingComment,
       updateCommentError: null,
+      // Only clear isDeletingComment if no delete requests are in-flight
+      // This preserves the invariant: deleteCommentInFlightCount === 0 ⇔ isDeletingComment === false
+      // If we unconditionally set isDeletingComment to false while requests are in-flight,
+      // the flag won't be set back to true when those requests complete
+      isDeletingComment: deleteCommentInFlightCount === 0 ? false : get().isDeletingComment,
+      deleteCommentError: null,
     })
   },
 
@@ -964,6 +993,86 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Check if count is 0 (all requests completed) after decrementing
       if (updateCommentInFlightCount === 0) {
         set({ isUpdatingComment: false })
+      }
+    }
+  },
+
+  deleteComment: async (ticketId: string, commentId: string): Promise<void> => {
+    // Use separate isDeletingComment/deleteCommentError state to avoid race conditions with getComments
+    // This prevents deleteComment from clearing error or setting isFetchingComments to false
+    // while a getComments request is still in-flight
+
+    // Increment request counter to track this specific request
+    // This implements "latest submit wins" semantics for error state
+    deleteCommentRequestCounter += 1
+    const currentRequestId = deleteCommentRequestCounter
+
+    try {
+      // Increment in-flight count to track concurrent delete comment requests
+      // This ensures isDeletingComment reflects "any delete in progress" rather than just the latest request
+      // When the count goes from 0 to 1, set isDeletingComment to true
+      // When the count goes back to 0, set isDeletingComment to false
+      // Increment is inside try/finally to ensure decrement happens even on early failures
+      deleteCommentInFlightCount += 1
+      const isFirstRequest = deleteCommentInFlightCount === 1
+
+      // Clear error for every new request to implement "latest submit wins" semantics
+      // This prevents stale errors from previous requests from remaining visible
+      // Only set isDeletingComment to true for the first concurrent request to avoid unnecessary updates
+      if (isFirstRequest) {
+        set({ isDeletingComment: true, deleteCommentError: null })
+      } else {
+        set({ deleteCommentError: null })
+      }
+
+      await ticketService.deleteComment(ticketId, commentId)
+
+      // Remove the comment from the store's comments array to prevent stale data
+      // This ensures components reading from useTicketStore().comments see the deletion immediately
+      // without needing an explicit refetch
+      // Guard against cross-ticket comment leakage: only mutate if this comment belongs to the current ticket
+      // This prevents in-flight requests from a previous ticket from removing comments from the new ticket's list
+      // Use functional set form to avoid losing concurrent updates when multiple comment mutations resolve close together
+      set((state) => {
+        if (state.currentCommentsTicketId === ticketId) {
+          return {
+            comments: state.comments.filter(c => c.id !== commentId),
+            commentsTotal: Math.max(0, state.commentsTotal - 1)
+          }
+        }
+        return {}
+      })
+
+      // Remove the comment from the locally-updated tracking set if it was there
+      // This prevents memory leaks from accumulating deleted comment IDs
+      locallyUpdatedCommentIds.delete(commentId)
+    } catch (error) {
+      // Use parseApiError to extract user-friendly error message from API response
+      // Use error code instead of hard-coded English message to allow proper i18n in components
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'COMMENT_DELETE_ERROR',
+      })
+
+      // Only update error state if this is still the most recent request
+      // This prevents stale/late completions from overwriting the error state
+      // Implements "latest submit wins" semantics
+      if (currentRequestId === deleteCommentRequestCounter) {
+        set({ deleteCommentError: errorMessage })
+      }
+
+      // Re-throw the original error to preserve stack trace and debugging info
+      // The store's deleteCommentError state contains the normalized user-friendly message
+      throw error
+    } finally {
+      // Decrement in-flight count in finally to ensure it happens even on early failures
+      // This prevents race conditions where a synchronous subscriber could start another
+      // deleteComment during set(...) and leave isDeletingComment false while a request is in-flight
+      deleteCommentInFlightCount -= 1
+
+      // Only set isDeletingComment to false when all requests have completed
+      // Check if count is 0 (all requests completed) after decrementing
+      if (deleteCommentInFlightCount === 0) {
+        set({ isDeletingComment: false })
       }
     }
   },
