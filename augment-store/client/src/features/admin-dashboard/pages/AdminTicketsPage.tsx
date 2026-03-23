@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Container,
   Typography,
@@ -43,6 +43,7 @@ import {
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { z } from 'zod'
+import type { TFunction } from 'i18next'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
@@ -55,6 +56,25 @@ interface CreateTicketFormValues {
   description: string
   priority: TicketPriority
   status: TicketStatus
+}
+
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
+  const errorKeyMap: Partial<Record<string, 'admin.createTicketPage.errorMessage'>> = {
+    'TICKET_CREATE_ERROR': 'admin.createTicketPage.errorMessage',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    return translateFn(translationKey)
+  }
+
+  // Otherwise, return the error code as-is (fallback for unknown codes)
+  return errorCode
 }
 
 /**
@@ -84,6 +104,10 @@ const AdminTicketsPage = () => {
     isFetchingStats,
     statsError,
     getTicketStats,
+    createTicket,
+    isCreating,
+    createError,
+    clearCreateError,
   } = useTicketStore()
 
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
@@ -92,6 +116,8 @@ const AdminTicketsPage = () => {
 
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const redirectTimeoutRef = useRef<number | null>(null)
 
   // Validation schema with translations - memoized to update when language changes
   const createTicketSchema = useMemo(
@@ -122,6 +148,16 @@ const AdminTicketsPage = () => {
     // This ensures validation messages always match the active locale
     validate: (values) => zodResolver(createTicketSchema)(values),
   })
+
+  // Cleanup timeout on unmount to prevent navigation after component is unmounted
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current != null) {
+        clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   // Load tickets on mount and when filters change
   useEffect(() => {
@@ -234,40 +270,75 @@ const AdminTicketsPage = () => {
   const handleOpenCreateDrawer = () => {
     form.reset()
     setSuccessMessage(null)
+    setAuthError(null)
+    clearCreateError() // Clear any stale error from previous failed attempts
     setIsCreateDrawerOpen(true)
   }
 
   const handleCloseCreateDrawer = () => {
+    // Clear any pending redirect timeout to prevent navigation after drawer is closed
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
     setIsCreateDrawerOpen(false)
     form.reset()
     setSuccessMessage(null)
+    setAuthError(null)
+    clearCreateError() // Clear any error when closing the drawer
   }
 
   const handleCreateTicket = async (values: CreateTicketFormValues) => {
+    // Clear any existing timeout at the start to prevent stale redirects
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
+
     setSuccessMessage(null)
+    setAuthError(null)
 
+    // Wait for hydration to complete before checking authentication
+    // This prevents incorrectly treating authenticated users as unauthenticated
+    // during the initial hydration or transient loading states
     if (!hasHydrated || authLoading) {
+      // Show a loading message to provide user feedback during hydration
+      // This avoids the form appearing to do nothing when submitted during initialization
+      setAuthError(t('admin.createTicketPage.loadingAuthState'))
       return
     }
 
+    // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
+      // Show authentication error message and redirect to login page
+      setAuthError(t('admin.createTicketPage.authenticationError'))
+      redirectTimeoutRef.current = setTimeout(() => {
+        navigate(ROUTES.LOGIN)
+      }, 2000)
       return
     }
 
-    console.log('Create ticket form submitted:', {
-      title: values.title,
-      description: values.description,
-      priority: values.priority,
-      status: values.status,
-      assignee: user.id,
-    })
+    try {
+      const ticket = await createTicket({
+        title: values.title,
+        description: values.description,
+        priority: values.priority as TicketPriority,
+        status: values.status as TicketStatus,
+        assignee: user.id, // Required by backend - Ticket.assignee is a non-null ForeignKey
+      })
 
-    setSuccessMessage('Ticket creation form validated successfully')
-    form.reset()
+      setSuccessMessage(t('admin.createTicketPage.successMessage'))
+      form.reset()
 
-    setTimeout(() => {
-      handleCloseCreateDrawer()
-    }, 1500)
+      // Redirect to ticket detail page after 1.5 seconds
+      redirectTimeoutRef.current = setTimeout(() => {
+        handleCloseCreateDrawer()
+        navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticket.id))
+      }, 1500)
+    } catch (err) {
+      console.error('Failed to create ticket:', err)
+      // Error is already handled by the store
+    }
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -647,9 +718,21 @@ const AdminTicketsPage = () => {
           </Box>
 
           <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            {authError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {authError}
+              </Alert>
+            )}
+
             {successMessage && (
               <Alert severity="success" sx={{ mb: 3 }}>
                 {successMessage}
+              </Alert>
+            )}
+
+            {createError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {translateErrorCode(createError, t)}
               </Alert>
             )}
 
@@ -663,7 +746,7 @@ const AdminTicketsPage = () => {
                   {...form.getInputProps('title')}
                   error={!!form.errors.title}
                   helperText={form.errors.title}
-                  disabled={!hasHydrated || authLoading}
+                  disabled={isCreating || !hasHydrated || authLoading}
                 />
 
                 <TextField
@@ -676,10 +759,10 @@ const AdminTicketsPage = () => {
                   {...form.getInputProps('description')}
                   error={!!form.errors.description}
                   helperText={form.errors.description}
-                  disabled={!hasHydrated || authLoading}
+                  disabled={isCreating || !hasHydrated || authLoading}
                 />
 
-                <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
+                <FormControl fullWidth required disabled={isCreating || !hasHydrated || authLoading}>
                   <InputLabel id="priority-label">{t('admin.createTicketPage.priorityLabel')}</InputLabel>
                   <Select
                     labelId="priority-label"
@@ -694,7 +777,7 @@ const AdminTicketsPage = () => {
                   </Select>
                 </FormControl>
 
-                <FormControl fullWidth required disabled={!hasHydrated || authLoading}>
+                <FormControl fullWidth required disabled={isCreating || !hasHydrated || authLoading}>
                   <InputLabel id="status-label">{t('admin.createTicketPage.statusLabel')}</InputLabel>
                   <Select
                     labelId="status-label"
@@ -725,7 +808,7 @@ const AdminTicketsPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseCreateDrawer}
-              disabled={!hasHydrated || authLoading}
+              disabled={isCreating || !hasHydrated || authLoading}
             >
               {t('admin.createTicketPage.cancel')}
             </Button>
@@ -733,10 +816,10 @@ const AdminTicketsPage = () => {
               type="submit"
               form="create-ticket-form"
               variant="contained"
-              startIcon={<SendIcon />}
-              disabled={!hasHydrated || authLoading}
+              startIcon={isCreating ? <CircularProgress size={20} /> : <SendIcon />}
+              disabled={isCreating || !hasHydrated || authLoading}
             >
-              {t('admin.createTicketPage.createTicket')}
+              {isCreating ? t('admin.createTicketPage.creating') : t('admin.createTicketPage.createTicket')}
             </Button>
           </Box>
         </Box>
