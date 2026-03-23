@@ -58,6 +58,7 @@ interface TicketState {
   clearTickets: () => void
   setPage: (page: number) => void
   createTicket: (data: CreateTicketRequest) => Promise<Ticket>
+  clearCreateError: () => void
   updateTicket: (id: string, data: UpdateTicketRequest) => Promise<Ticket>
   deleteTicket: (id: string) => Promise<void>
   getTicketById: (id: string) => Promise<Ticket>
@@ -366,6 +367,12 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // even if parseApiError or any other code in try/catch throws
       createInFlightCount -= 1
     }
+  },
+
+  clearCreateError: () => {
+    // Clear the createError state to prevent stale error messages from appearing
+    // when reopening the create ticket drawer after a previous failed attempt
+    set({ createError: null })
   },
 
   updateTicket: async (id: string, data: UpdateTicketRequest): Promise<Ticket> => {

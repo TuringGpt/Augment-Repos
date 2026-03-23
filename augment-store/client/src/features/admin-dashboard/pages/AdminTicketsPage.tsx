@@ -107,6 +107,7 @@ const AdminTicketsPage = () => {
     createTicket,
     isCreating,
     createError,
+    clearCreateError,
   } = useTicketStore()
 
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
@@ -268,6 +269,7 @@ const AdminTicketsPage = () => {
   const handleOpenCreateDrawer = () => {
     form.reset()
     setSuccessMessage(null)
+    clearCreateError() // Clear any stale error from previous failed attempts
     setIsCreateDrawerOpen(true)
   }
 
@@ -280,6 +282,7 @@ const AdminTicketsPage = () => {
     setIsCreateDrawerOpen(false)
     form.reset()
     setSuccessMessage(null)
+    clearCreateError() // Clear any error when closing the drawer
   }
 
   const handleCreateTicket = async (values: CreateTicketFormValues) => {
