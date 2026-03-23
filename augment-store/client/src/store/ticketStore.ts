@@ -148,6 +148,13 @@ let deleteCommentRequestCounter = 0
 // completes after updateComment and overwrites the newer local content
 const locallyUpdatedCommentIds = new Set<string>()
 
+// Track locally-deleted comment IDs to prevent stale fetched data from reintroducing deleted comments
+// When deleteComment completes, the comment ID is added to this set
+// When getComments merges data, it filters out comments that are in this set
+// This prevents race conditions where a getComments request started before deleteComment
+// completes after deleteComment and reintroduces the deleted comment back into the store
+const locallyDeletedCommentIds = new Set<string>()
+
 // Maximum recursion depth for out-of-range page handling
 // Prevents excessive sequential requests when a far-out page is requested
 const MAX_RECURSION_DEPTH = 1
@@ -710,8 +717,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === fetchCommentsRequestCounter) {
-        // Merge locally-created/updated comments with fetched comments to prevent race conditions
-        // where an in-flight getComments started before createComment/updateComment can overwrite optimistically-added/updated comments
+        // Merge locally-created/updated/deleted comments with fetched comments to prevent race conditions
+        // where an in-flight getComments started before createComment/updateComment/deleteComment can overwrite optimistically-added/updated/deleted comments
         // Use functional set form to access current state at the time of resolution
         set((state) => {
           // Build a Set of comment IDs from the API response for efficient lookup
@@ -731,9 +738,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
           // Merge fetched comments, preferring locally-updated versions when they exist
           // This prevents stale fetched data from overwriting newer local updates
-          const mergedFetchedComments = response.results.map(fetchedComment =>
-            locallyUpdatedCommentsMap.get(fetchedComment.id) ?? fetchedComment
-          )
+          // Also filter out locally-deleted comments to prevent stale fetched data from reintroducing them
+          // This prevents race conditions where a getComments request started before deleteComment
+          // completes after deleteComment and reintroduces the deleted comment
+          const mergedFetchedComments = response.results
+            .filter(fetchedComment => !locallyDeletedCommentIds.has(fetchedComment.id))
+            .map(fetchedComment =>
+              locallyUpdatedCommentsMap.get(fetchedComment.id) ?? fetchedComment
+            )
 
           // Merge: prepend local-only comments to maintain newest-first ordering
           // Local comments are newer than fetched comments since they were just created
@@ -796,6 +808,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // Clear the set of locally-updated comment IDs since we're clearing all comments
     // This prevents stale tracking data from affecting future comment fetches
     locallyUpdatedCommentIds.clear()
+
+    // Clear the set of locally-deleted comment IDs since we're clearing all comments
+    // This prevents stale tracking data from affecting future comment fetches
+    locallyDeletedCommentIds.clear()
 
     set({
       comments: [],
@@ -1027,6 +1043,11 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       await ticketService.deleteComment(ticketId, commentId)
 
+      // Track this comment as locally-deleted to prevent stale fetched data from reintroducing it
+      // This ensures that if a getComments request started before this delete completes after it,
+      // the merge logic will filter out this deleted comment from the stale fetched data
+      locallyDeletedCommentIds.add(commentId)
+
       // Remove the comment from the store's comments array to prevent stale data
       // This ensures components reading from useTicketStore().comments see the deletion immediately
       // without needing an explicit refetch
@@ -1044,7 +1065,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       })
 
       // Remove the comment from the locally-updated tracking set if it was there
-      // This prevents memory leaks from accumulating deleted comment IDs
+      // This prevents memory leaks from accumulating deleted comment IDs in the wrong set
       locallyUpdatedCommentIds.delete(commentId)
     } catch (error) {
       // Use parseApiError to extract user-friendly error message from API response
