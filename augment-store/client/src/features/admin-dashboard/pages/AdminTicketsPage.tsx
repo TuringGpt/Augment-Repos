@@ -272,6 +272,11 @@ const AdminTicketsPage = () => {
   }
 
   const handleCloseCreateDrawer = () => {
+    // Clear any pending redirect timeout to prevent navigation after drawer is closed
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
     setIsCreateDrawerOpen(false)
     form.reset()
     setSuccessMessage(null)
