@@ -116,6 +116,7 @@ const AdminTicketsPage = () => {
 
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<number | null>(null)
 
   // Validation schema with translations - memoized to update when language changes
@@ -269,6 +270,7 @@ const AdminTicketsPage = () => {
   const handleOpenCreateDrawer = () => {
     form.reset()
     setSuccessMessage(null)
+    setAuthError(null)
     clearCreateError() // Clear any stale error from previous failed attempts
     setIsCreateDrawerOpen(true)
   }
@@ -282,6 +284,7 @@ const AdminTicketsPage = () => {
     setIsCreateDrawerOpen(false)
     form.reset()
     setSuccessMessage(null)
+    setAuthError(null)
     clearCreateError() // Clear any error when closing the drawer
   }
 
@@ -293,15 +296,25 @@ const AdminTicketsPage = () => {
     }
 
     setSuccessMessage(null)
+    setAuthError(null)
 
     // Wait for hydration to complete before checking authentication
     // This prevents incorrectly treating authenticated users as unauthenticated
     // during the initial hydration or transient loading states
     if (!hasHydrated || authLoading) {
+      // Show a loading message to provide user feedback during hydration
+      // This avoids the form appearing to do nothing when submitted during initialization
+      setAuthError(t('admin.createTicketPage.loadingAuthState'))
       return
     }
 
+    // Ensure user is authenticated before creating ticket
     if (!isAuthenticated || !user?.id) {
+      // Show authentication error message and redirect to login page
+      setAuthError(t('admin.createTicketPage.authenticationError'))
+      redirectTimeoutRef.current = setTimeout(() => {
+        navigate(ROUTES.LOGIN)
+      }, 2000)
       return
     }
 
@@ -705,6 +718,12 @@ const AdminTicketsPage = () => {
           </Box>
 
           <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            {authError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {authError}
+              </Alert>
+            )}
+
             {successMessage && (
               <Alert severity="success" sx={{ mb: 3 }}>
                 {successMessage}
