@@ -63,7 +63,7 @@ interface CreateTicketFormValues {
  * Maps error codes to translation keys
  */
 const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
-  const errorKeyMap: Record<string, 'admin.createTicketPage.errorMessage'> = {
+  const errorKeyMap: Partial<Record<string, 'admin.createTicketPage.errorMessage'>> = {
     'TICKET_CREATE_ERROR': 'admin.createTicketPage.errorMessage',
   }
 
