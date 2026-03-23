@@ -26,6 +26,7 @@ from .serializers import (
     PaymentStatusSerializer,
     ShippingAddressListSerializer,
     AdminOrderUpdateSerializer,
+    AdminPaymentListSerializer,
 )
 from .services import StripeService
 
@@ -184,3 +185,15 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
     def get_queryset(self):
         # Allow admins to retrieve/update any order
         return super(BaseOrderView, self).get_queryset()
+
+
+class AdminPaymentListView(BasePaymentView, ListAPIView):
+    """Admin-only view to list all payments globally."""
+    serializer_class = AdminPaymentListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ("order", "created_by")
+
+    def get_queryset(self):
+        # Bypass the user-scoped filter in BasePaymentView
+        return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
+
