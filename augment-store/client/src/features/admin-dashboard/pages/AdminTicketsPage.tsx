@@ -305,16 +305,22 @@ const AdminTicketsPage = () => {
       // Call the store action to delete the ticket
       await deleteTicket(ticketToDelete.id)
 
-      // Refresh ticket stats to reflect the deletion
-      // This ensures the dashboard stats cards show updated counts
-      await getTicketStats()
-
       // Show success message
       toast.success(t('admin.ticketsPage.deleteSuccess'))
 
       // Close dialog
       setDeleteDialogOpen(false)
       setTicketToDelete(null)
+
+      // Refresh ticket stats to reflect the deletion
+      // This ensures the dashboard stats cards show updated counts
+      // Handle stats refresh separately so failures don't misreport deletion success
+      try {
+        await getTicketStats()
+      } catch (statsErr) {
+        // Log stats refresh error but don't show user error since deletion succeeded
+        console.error('Failed to refresh ticket stats after deletion:', statsErr)
+      }
     } catch (err) {
       console.error('Failed to delete ticket:', err)
       toast.error(t('admin.ticketsPage.deleteError'))
