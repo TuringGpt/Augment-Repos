@@ -1051,3 +1051,8 @@ class AdminShippingAddressTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_unauthenticated_list_shipping_addresses(self):
+        url = reverse("v1:checkout:admin_shipping_address_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
