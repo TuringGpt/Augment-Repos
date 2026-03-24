@@ -86,6 +86,7 @@ class AdminMerchantOrdersListView(MerchantOrdersListView):
     permission_classes = [IsAuthenticated, hasAdminRole]
 
     def get_queryset(self):
-        # Bypass the merchant-scoped filter to list all orders with merchant products
-        return Order.objects.all().order_by('-created_at', '-id')
+        # Bypass the merchant-scoped filter but preserve AutoOptimizeMixin's
+        # select_related/prefetch_related for efficient serialization
+        return super(MerchantOrdersListView, self).get_queryset().order_by('-created_at', '-id')
 

@@ -327,14 +327,14 @@ class AdminMerchantOrdersListViewTests(BaseAPITestCase):
         self.product = ProductFactory(created_by=self.merchant, name="TestProduct", brand=self.brand)
         self.order = OrderFactory(created_by=self.merchant)
         self.order_item = OrderItemFactory(
-            order=self.order, cart_item__product=self.product, created_by=self.merchant
+            order=self.order, cart_item__product=self.product, product=True, created_by=self.merchant
         )
         # Order from second merchant
         self.brand_2 = ProductBrandFactory(created_by=self.merchant_2, name="TestBrand2")
         self.product_2 = ProductFactory(created_by=self.merchant_2, name="TestProduct2", brand=self.brand_2)
         self.order_2 = OrderFactory(created_by=self.merchant_2)
         self.order_item_2 = OrderItemFactory(
-            order=self.order_2, cart_item__product=self.product_2, created_by=self.merchant_2
+            order=self.order_2, cart_item__product=self.product_2, product=True, created_by=self.merchant_2
         )
 
         from rest_framework.test import APIClient
