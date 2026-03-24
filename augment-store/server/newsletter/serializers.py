@@ -31,3 +31,9 @@ class UnsubscribeNewsletterSerializer(serializers.ModelSerializer):
         instance.is_active = False
         instance.save()
         return instance
+
+class AdminNewsletterUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Newsletter
+        fields = ["id", "email", "is_active", "created_at"]
+        read_only_fields = ["email"]

@@ -26,6 +26,7 @@ from .serializers import (
     PaymentStatusSerializer,
     ShippingAddressListSerializer,
     AdminOrderUpdateSerializer,
+    AdminPaymentListSerializer,
 )
 from .services import StripeService
 
@@ -191,5 +192,16 @@ class AdminShippingAddressListView(ListAPIView):
     serializer_class = ShippingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     queryset = ShippingAddress.objects.all().order_by('-created_at', '-id')
+
+
+class AdminPaymentListView(BasePaymentView, ListAPIView):
+    """Admin-only view to list all payments globally."""
+    serializer_class = AdminPaymentListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ("order", "created_by")
+
+    def get_queryset(self):
+        # Bypass the user-scoped filter in BasePaymentView
+        return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
 
 

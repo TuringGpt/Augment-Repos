@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Container,
   Typography,
@@ -25,6 +25,9 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  Drawer,
+  IconButton,
+  Divider,
 } from '@mui/material'
 import {
   ConfirmationNumber as TicketIcon,
@@ -33,12 +36,46 @@ import {
   CheckCircle as ResolvedIcon,
   Schedule as PendingIcon,
   Search as SearchIcon,
+  Add as AddIcon,
+  Close as CloseIcon,
+  Send as SendIcon,
 } from '@mui/icons-material'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { z } from 'zod'
+import type { TFunction } from 'i18next'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
 import type { TicketStatus, TicketPriority } from '@features/support/types'
 import { ROUTES } from '@constants/index'
+
+// Form values interface
+interface CreateTicketFormValues {
+  title: string
+  description: string
+  priority: TicketPriority
+  status: TicketStatus
+}
+
+/**
+ * Translate error codes to user-friendly messages
+ * Maps error codes to translation keys
+ */
+const translateErrorCode = (errorCode: string, translateFn: TFunction): string => {
+  const errorKeyMap: Partial<Record<string, 'admin.createTicketPage.errorMessage'>> = {
+    'TICKET_CREATE_ERROR': 'admin.createTicketPage.errorMessage',
+  }
+
+  // If error code matches a known key, translate it
+  const translationKey = errorKeyMap[errorCode]
+  if (translationKey) {
+    return translateFn(translationKey)
+  }
+
+  // Otherwise, return the error code as-is (fallback for unknown codes)
+  return errorCode
+}
 
 /**
  * AdminTicketsPage Component
@@ -54,7 +91,6 @@ const AdminTicketsPage = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
-  // Ticket store
   const {
     tickets,
     page,
@@ -68,12 +104,60 @@ const AdminTicketsPage = () => {
     isFetchingStats,
     statsError,
     getTicketStats,
+    createTicket,
+    isCreating,
+    createError,
+    clearCreateError,
   } = useTicketStore()
 
-  // Filter states
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const redirectTimeoutRef = useRef<number | null>(null)
+
+  // Validation schema with translations - memoized to update when language changes
+  const createTicketSchema = useMemo(
+    () =>
+      z.object({
+        title: z
+          .string()
+          .min(5, t('admin.createTicketPage.validation.titleMinLength'))
+          .max(255, t('admin.createTicketPage.validation.titleMaxLength')),
+        description: z
+          .string()
+          .min(20, t('admin.createTicketPage.validation.descriptionMinLength'))
+          .max(2000, t('admin.createTicketPage.validation.descriptionMaxLength')),
+        priority: z.enum(['low', 'medium', 'high', 'urgent']),
+        status: z.enum(['open', 'in_progress', 'resolved', 'closed']),
+      }),
+    [t]
+  )
+
+  const form = useForm({
+    initialValues: {
+      title: '',
+      description: '',
+      priority: 'medium' as TicketPriority,
+      status: 'open' as TicketStatus,
+    },
+    // Use a validation function that references the memoized schema
+    // This ensures validation messages always match the active locale
+    validate: (values) => zodResolver(createTicketSchema)(values),
+  })
+
+  // Cleanup timeout on unmount to prevent navigation after component is unmounted
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current != null) {
+        clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   // Load tickets on mount and when filters change
   useEffect(() => {
@@ -182,6 +266,81 @@ const AdminTicketsPage = () => {
     navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticketId))
   }
 
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    form.reset()
+    setSuccessMessage(null)
+    setAuthError(null)
+    clearCreateError() // Clear any stale error from previous failed attempts
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    // Clear any pending redirect timeout to prevent navigation after drawer is closed
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
+    setIsCreateDrawerOpen(false)
+    form.reset()
+    setSuccessMessage(null)
+    setAuthError(null)
+    clearCreateError() // Clear any error when closing the drawer
+  }
+
+  const handleCreateTicket = async (values: CreateTicketFormValues) => {
+    // Clear any existing timeout at the start to prevent stale redirects
+    if (redirectTimeoutRef.current != null) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
+
+    setSuccessMessage(null)
+    setAuthError(null)
+
+    // Wait for hydration to complete before checking authentication
+    // This prevents incorrectly treating authenticated users as unauthenticated
+    // during the initial hydration or transient loading states
+    if (!hasHydrated || authLoading) {
+      // Show a loading message to provide user feedback during hydration
+      // This avoids the form appearing to do nothing when submitted during initialization
+      setAuthError(t('admin.createTicketPage.loadingAuthState'))
+      return
+    }
+
+    // Ensure user is authenticated before creating ticket
+    if (!isAuthenticated || !user?.id) {
+      // Show authentication error message and redirect to login page
+      setAuthError(t('admin.createTicketPage.authenticationError'))
+      redirectTimeoutRef.current = setTimeout(() => {
+        navigate(ROUTES.LOGIN)
+      }, 2000)
+      return
+    }
+
+    try {
+      const ticket = await createTicket({
+        title: values.title,
+        description: values.description,
+        priority: values.priority as TicketPriority,
+        status: values.status as TicketStatus,
+        assignee: user.id, // Required by backend - Ticket.assignee is a non-null ForeignKey
+      })
+
+      setSuccessMessage(t('admin.createTicketPage.successMessage'))
+      form.reset()
+
+      // Redirect to ticket detail page after 1.5 seconds
+      redirectTimeoutRef.current = setTimeout(() => {
+        handleCloseCreateDrawer()
+        navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticket.id))
+      }, 1500)
+    } catch (err) {
+      console.error('Failed to create ticket:', err)
+      // Error is already handled by the store
+    }
+  }
+
   // Wait for persisted state to rehydrate before checking auth state
   if (!hasHydrated || authLoading) {
     return (
@@ -224,11 +383,25 @@ const AdminTicketsPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-          <TicketIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('admin.ticketsPage.title')}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <TicketIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.ticketsPage.title')}
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+            }}
+          >
+            {t('admin.createTicketPage.createTicket')}
+          </Button>
         </Box>
         <Typography color="text.secondary">
           {t('admin.ticketsPage.subtitle')}
@@ -505,6 +678,152 @@ const AdminTicketsPage = () => {
           )}
         </>
       )}
+
+      {/* Create Ticket Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.createTicketPage.createTicket')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseCreateDrawer}
+              sx={{ color: 'white' }}
+              aria-label="Close create ticket drawer"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            {authError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {authError}
+              </Alert>
+            )}
+
+            {successMessage && (
+              <Alert severity="success" sx={{ mb: 3 }}>
+                {successMessage}
+              </Alert>
+            )}
+
+            {createError && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {translateErrorCode(createError, t)}
+              </Alert>
+            )}
+
+            <form id="create-ticket-form" onSubmit={form.onSubmit(handleCreateTicket)}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  label={t('admin.createTicketPage.titleLabel')}
+                  placeholder={t('admin.createTicketPage.titlePlaceholder')}
+                  required
+                  fullWidth
+                  {...form.getInputProps('title')}
+                  error={!!form.errors.title}
+                  helperText={form.errors.title}
+                  disabled={isCreating || !hasHydrated || authLoading}
+                />
+
+                <TextField
+                  label={t('admin.createTicketPage.descriptionLabel')}
+                  placeholder={t('admin.createTicketPage.descriptionPlaceholder')}
+                  required
+                  fullWidth
+                  multiline
+                  rows={6}
+                  {...form.getInputProps('description')}
+                  error={!!form.errors.description}
+                  helperText={form.errors.description}
+                  disabled={isCreating || !hasHydrated || authLoading}
+                />
+
+                <FormControl fullWidth required disabled={isCreating || !hasHydrated || authLoading}>
+                  <InputLabel id="priority-label">{t('admin.createTicketPage.priorityLabel')}</InputLabel>
+                  <Select
+                    labelId="priority-label"
+                    id="priority-select"
+                    label={t('admin.createTicketPage.priorityLabel')}
+                    {...form.getInputProps('priority')}
+                  >
+                    <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
+                    <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
+                    <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
+                    <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth required disabled={isCreating || !hasHydrated || authLoading}>
+                  <InputLabel id="status-label">{t('admin.createTicketPage.statusLabel')}</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status-select"
+                    label={t('admin.createTicketPage.statusLabel')}
+                    {...form.getInputProps('status')}
+                  >
+                    <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
+                    <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
+                    <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
+                    <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </form>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseCreateDrawer}
+              disabled={isCreating || !hasHydrated || authLoading}
+            >
+              {t('admin.createTicketPage.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              form="create-ticket-form"
+              variant="contained"
+              startIcon={isCreating ? <CircularProgress size={20} /> : <SendIcon />}
+              disabled={isCreating || !hasHydrated || authLoading}
+            >
+              {isCreating ? t('admin.createTicketPage.creating') : t('admin.createTicketPage.createTicket')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }

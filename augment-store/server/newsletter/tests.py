@@ -23,9 +23,10 @@ class NewsletterTests(BaseAPITestCase):
             id=self.newsletter_id,
             email="test@example.com",
         )
-        from newsletter.views import NewsletterStatusCacheService, NewsletterCacheService
+        from newsletter.views import NewsletterStatusCacheService, NewsletterCacheService, AdminNewsletterCacheService
         NewsletterStatusCacheService().clear_namespace()
         NewsletterCacheService().clear_namespace()
+        AdminNewsletterCacheService().clear_namespace()
     
     def test_subscribe_newsletter(self):
         url = reverse("v1:create_newsletter")
@@ -144,3 +145,77 @@ class NewsletterTests(BaseAPITestCase):
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Newsletter.objects.filter(email="anonymous@example.com").exists())
+
+    def test_admin_list_newsletter(self):
+        url = reverse("v1:admin_newsletter_list")
+        
+        # Regular user fails
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 403)
+        
+        # Admin user succeeds
+        admin = UserFactory(role="admin", email="admin@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        
+        # We want to test that adding an inactive subscription manually invalidates the admin list cache.
+        # We'll use the API instead of NewsletterFactory to trigger the cache invalidation logic.
+        subscribe_url = reverse("v1:create_newsletter")
+        sub_resp = self.authenticated_client.post(subscribe_url, {"email": "inactive2@example.com"})
+        self.assertEqual(sub_resp.status_code, 201)
+        
+        unsubscribe_url = reverse("v1:unsubscribe_newsletter_by_email")
+        unsub_resp = self.authenticated_client.patch(unsubscribe_url, {"email": "inactive2@example.com"})
+        self.assertEqual(unsub_resp.status_code, 200)
+        
+        response = self.authenticated_client.get(url)
+        # Assert the response shape to ensure we're dealing with a list
+        if isinstance(response.data, dict) and 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertIsInstance(results, list, "API response or results should be a list")
+        self.assertGreaterEqual(len(results), 2)
+        
+        # Verify the record is actually in the list and inactive
+        inactive_record = next((r for r in results if r['email'] == "inactive2@example.com"), None)
+        self.assertIsNotNone(inactive_record, "Expected cache to invalidate and return the new user")
+        self.assertFalse(inactive_record['is_active'], "Expected user to be inactive via API")
+
+    def test_admin_update_newsletter(self):
+        url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
+        
+        # Regular user fails
+        response = self.authenticated_client.patch(url, {"is_active": False})
+        self.assertEqual(response.status_code, 403)
+        
+        # Admin user succeeds
+        admin = UserFactory(role="admin", email="admin2@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        response = self.authenticated_client.patch(url, {"is_active": False})
+        self.assertEqual(response.status_code, 200)
+        self.newsletter.refresh_from_db()
+        self.assertFalse(self.newsletter.is_active)
+
+    def test_admin_update_invalidates_public_cache(self):
+        public_url = reverse("v1:newsletter")
+        self.authenticated_client.force_authenticate(user=self.user)
+        self.authenticated_client.get(public_url) # Prime public list cache
+        
+        update_url = reverse("v1:admin_newsletter_update", kwargs={"pk": str(self.newsletter_id)})
+        admin = UserFactory(role="admin", email="admin3@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        patch_resp = self.authenticated_client.patch(update_url, {"is_active": False})
+        self.assertEqual(patch_resp.status_code, 200, "Admin PATCH should succeed")
+        
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.get(public_url)
+        if isinstance(response.data, dict) and 'results' in response.data:
+            results = response.data['results']
+        else:
+            results = response.data
+        self.assertIsInstance(results, list, "API response or results should be a list")
+        
+        is_present = any(r['id'] == str(self.newsletter_id) for r in results)
+        self.assertFalse(is_present)

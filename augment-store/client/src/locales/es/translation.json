@@ -479,21 +479,36 @@
     "newPassword": "Nueva Contraseña",
     "profilePage": {
       "title": "Mi Perfil",
+      "subtitle": "Administre su información personal y configuración de cuenta",
       "editProfile": "Editar Perfil",
       "saveChanges": "Guardar Cambios",
       "saving": "Guardando...",
+      "uploading": "Subiendo...",
       "cancel": "Cancelar",
       "memberSince": "Miembro desde {{date}}",
       "notAvailable": "N/D",
+      "userFallback": "Usuario",
+      "personalInformation": "Información Personal",
+      "personalInformationSubtitle": "Actualice sus detalles e información personal",
+      "roleAdmin": "Administrador",
+      "roleCustomer": "Cliente",
+      "avatarUploadHint": "Haga clic en el avatar para cargar",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Máx 5 MB",
       "fields": {
         "username": "Nombre de Usuario",
+        "usernameLabel": "Nombre de Usuario",
         "email": "Correo Electrónico",
+        "emailLabel": "Dirección de Correo Electrónico",
         "emailCannotBeChanged": "El correo electrónico no se puede cambiar",
         "firstName": "Nombre",
+        "firstNameLabel": "Nombre",
         "lastName": "Apellido",
+        "lastNameLabel": "Apellido",
         "mobile": "Móvil",
+        "mobileLabel": "Número de Móvil",
         "mobilePlaceholder": "+1234567890",
         "gender": "Género",
+        "genderLabel": "Género",
         "genderMale": "Masculino",
         "genderFemale": "Femenino",
         "genderOther": "Otro",
@@ -511,11 +526,18 @@
         "failedToUpdateProfile": "Error al actualizar el perfil",
         "failedToUploadAvatar": "Error al cargar el avatar",
         "failedToRemoveAvatar": "Error al eliminar el avatar",
+        "avatarInvalidFileType": "Tipo de archivo no válido. Por favor, seleccione una imagen JPEG, PNG, GIF o WebP.",
+        "avatarFileSizeExceeded": "El tamaño del archivo excede el límite de 5 MB. El archivo seleccionado tiene {{fileSize}} MB.",
         "retry": "Reintentar"
       },
       "buttons": {
         "supportAndHelp": "Soporte y Ayuda",
         "logout": "Cerrar Sesión"
+      },
+      "aria": {
+        "uploadAvatar": "Subir avatar",
+        "removeAvatar": "Eliminar avatar",
+        "avatarFileInput": "Entrada de archivo de avatar"
       }
     }
   },
@@ -967,7 +989,21 @@
       "subtitle": "Gestionar y rastrear todos los pedidos de clientes",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "La página de gestión de pedidos del administrador está actualmente en desarrollo.",
-      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!",
+      "table": {
+        "orderNumber": "Número de Pedido",
+        "date": "Fecha",
+        "items": "Artículos",
+        "status": "Estado",
+        "total": "Total",
+        "actions": "Acciones",
+        "moreItems": "+{{count}} más",
+        "deletedProduct": "(Producto Eliminado)"
+      },
+      "emptyState": {
+        "noOrders": "Aún No Hay Pedidos",
+        "noOrdersDescription": "Aún no se han realizado pedidos de clientes."
+      }
     },
     "products": "Productos",
     "categories": "Categorías",
@@ -1162,6 +1198,12 @@
       "themeMode": "Modo de Tema",
       "currentlyLight": "Actualmente usando tema claro",
       "currentlyDark": "Actualmente usando tema oscuro",
+      "language": "Idioma",
+      "languageDescription": "Elige tu idioma preferido para el panel de administración",
+      "selectLanguage": "Seleccionar Idioma",
+      "currentLanguage": "Actualmente usando {{language}}",
+      "languageChanged": "Idioma cambiado exitosamente",
+      "languageChangeFailed": "Error al cambiar el idioma. Por favor, inténtalo de nuevo.",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },

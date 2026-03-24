@@ -305,3 +305,104 @@ class StorageTests(BaseAPITestCase):
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+import tempfile
+import shutil
+
+
+class AdminFileTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        # Use a per-test temporary directory so parallel runs don't collide
+        self._media_root = tempfile.mkdtemp()
+        self._override = override_settings(
+            FILE_UPLOAD_STORAGE='local',
+            MEDIA_ROOT=self._media_root,
+            DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
+            APP_DOMAIN='http://testserver'
+        )
+        self._override.enable()
+
+        self.admin_user = UserFactory(
+            email="admin_storage@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.ADMIN
+        )
+        self.regular_user = UserFactory(
+            email="regular_storage@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        # Create file records for the admin user
+        self.file1 = File.objects.create(
+            original_file_name="admin_file_1.jpg",
+            file_name="admin_file_1_abc.jpg",
+            file_type="image/jpeg",
+            created_by=self.admin_user
+        )
+        self.file2 = File.objects.create(
+            original_file_name="admin_file_2.png",
+            file_name="admin_file_2_def.png",
+            file_type="image/png",
+            created_by=self.admin_user
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def tearDown(self):
+        self._override.disable()
+        shutil.rmtree(self._media_root, ignore_errors=True)
+        super().tearDown()
+
+    def test_admin_list_files(self):
+        url = reverse("v1:storage:admin_file_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Verify the response contains the specific files created in setUp
+        result_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.file1.id), result_ids)
+        self.assertIn(str(self.file2.id), result_ids)
+
+    def test_admin_list_files_non_admin_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:storage:admin_file_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_delete_file(self):
+        # Create a file with both file and thumbnail blobs to exercise full cleanup
+        file_with_blob = File.objects.create(
+            original_file_name="deletable_file.jpg",
+            file_name="deletable_file_xyz.jpg",
+            file_type="image/jpeg",
+            created_by=self.admin_user,
+            file=SimpleUploadedFile("deletable_file.jpg", b"file_content", content_type="image/jpeg"),
+            thumbnail=SimpleUploadedFile("deletable_thumb.jpg", b"thumb_content", content_type="image/jpeg")
+        )
+        file_id = file_with_blob.id
+        file_path = file_with_blob.file.path
+        thumb_path = file_with_blob.thumbnail.path
+
+        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": file_id})
+        # Use captureOnCommitCallbacks so deferred blob cleanup actually runs
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.admin_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Verify the file record is actually removed from the database
+        self.assertFalse(File.objects.filter(id=file_id).exists())
+        # Verify both the file and thumbnail blobs are removed from disk
+        self.assertFalse(os.path.exists(file_path))
+        self.assertFalse(os.path.exists(thumb_path))
+
+    def test_admin_delete_file_non_admin_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:storage:admin_file_delete", kwargs={"pk": self.file1.id})
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
