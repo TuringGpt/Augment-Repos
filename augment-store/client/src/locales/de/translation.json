@@ -1187,7 +1187,8 @@
       "deleteTicketWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleting": "Wird gelöscht...",
       "deleteSuccess": "Ticket erfolgreich gelöscht",
-      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut."
+      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut.",
+      "saveChanges": "Änderungen Speichern"
     },
     "settings": "Einstellungen",
     "settingsPage": {

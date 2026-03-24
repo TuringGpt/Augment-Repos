@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -26,6 +26,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Drawer,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
@@ -38,9 +42,13 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import { Trans } from 'react-i18next'
 import type { TFunction } from 'i18next'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
+import { z } from 'zod'
 import { ticketService } from '@services/api'
 import type { Comment, TicketStatus, TicketPriority } from '@features/support/types'
 import { formatDate } from '@utils/formatters'
@@ -50,6 +58,14 @@ import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useTicketStore } from '@store/ticketStore'
 import { useAuthStore } from '@store/authStore'
+
+// Form values interface
+interface EditTicketFormValues {
+  title: string
+  description: string
+  priority: TicketPriority
+  status: TicketStatus
+}
 
 /**
  * Translate error codes to user-friendly messages
@@ -98,10 +114,41 @@ const TicketDetailPage = () => {
   const [commentError, setCommentError] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
 
   // Track if we've attempted to fetch the ticket at least once
   // This prevents showing "not found" error on initial render before useEffect runs
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false)
+
+  // Validation schema with translations - memoized to update when language changes
+  const editTicketSchema = useMemo(
+    () =>
+      z.object({
+        title: z
+          .string()
+          .min(5, t('admin.createTicketPage.validation.titleMinLength'))
+          .max(255, t('admin.createTicketPage.validation.titleMaxLength')),
+        description: z
+          .string()
+          .min(20, t('admin.createTicketPage.validation.descriptionMinLength'))
+          .max(2000, t('admin.createTicketPage.validation.descriptionMaxLength')),
+        priority: z.enum(['low', 'medium', 'high', 'urgent']),
+        status: z.enum(['open', 'in_progress', 'resolved', 'closed']),
+      }),
+    [t]
+  )
+
+  const editForm = useForm({
+    initialValues: {
+      title: '',
+      description: '',
+      priority: 'medium' as TicketPriority,
+      status: 'open' as TicketStatus,
+    },
+    // Use a validation function that references the memoized schema
+    // This ensures validation messages always match the active locale
+    validate: (values) => zodResolver(editTicketSchema)(values),
+  })
 
   // Clear anchorEl when isAdmin becomes false to prevent stale menu state
   useEffect(() => {
@@ -201,8 +248,29 @@ const TicketDetailPage = () => {
 
   const handleEditTicket = () => {
     handleMenuClose()
-    // TODO: Implement edit functionality
-    console.log('Edit ticket')
+
+    // Populate form with current ticket data
+    if (selectedTicket) {
+      editForm.setValues({
+        title: selectedTicket.title,
+        description: selectedTicket.description,
+        priority: selectedTicket.priority,
+        status: selectedTicket.status,
+      })
+    }
+
+    setIsEditDrawerOpen(true)
+  }
+
+  const handleCloseEditDrawer = () => {
+    // TODO: Prevent closing while saving
+    setIsEditDrawerOpen(false)
+    editForm.reset()
+  }
+
+  const handleEditSubmit = (values: EditTicketFormValues) => {
+    // TODO: Implement API call to update ticket
+    console.log('Edit ticket submit:', values)
   }
 
   const handleDeleteTicket = () => {
@@ -787,6 +855,133 @@ const TicketDetailPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Ticket Drawer */}
+      <Drawer
+        anchor="right"
+        open={isEditDrawerOpen}
+        onClose={handleCloseEditDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.ticketDetailPage.editTicket')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseEditDrawer}
+              sx={{ color: 'white' }}
+              aria-label="Close edit ticket drawer"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+            <form id="edit-ticket-form" onSubmit={editForm.onSubmit(handleEditSubmit)}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <TextField
+                  label={t('admin.createTicketPage.titleLabel')}
+                  placeholder={t('admin.createTicketPage.titlePlaceholder')}
+                  required
+                  fullWidth
+                  {...editForm.getInputProps('title')}
+                  error={!!editForm.errors.title}
+                  helperText={editForm.errors.title}
+                />
+
+                <TextField
+                  label={t('admin.createTicketPage.descriptionLabel')}
+                  placeholder={t('admin.createTicketPage.descriptionPlaceholder')}
+                  required
+                  fullWidth
+                  multiline
+                  rows={6}
+                  {...editForm.getInputProps('description')}
+                  error={!!editForm.errors.description}
+                  helperText={editForm.errors.description}
+                />
+
+                <FormControl fullWidth required>
+                  <InputLabel id="edit-priority-label">{t('admin.createTicketPage.priorityLabel')}</InputLabel>
+                  <Select
+                    labelId="edit-priority-label"
+                    id="edit-priority-select"
+                    label={t('admin.createTicketPage.priorityLabel')}
+                    value={editForm.values.priority}
+                    onChange={(e) => editForm.setFieldValue('priority', e.target.value as TicketPriority)}
+                  >
+                    <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
+                    <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
+                    <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
+                    <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth required>
+                  <InputLabel id="edit-status-label">{t('admin.createTicketPage.statusLabel')}</InputLabel>
+                  <Select
+                    labelId="edit-status-label"
+                    id="edit-status-select"
+                    label={t('admin.createTicketPage.statusLabel')}
+                    value={editForm.values.status}
+                    onChange={(e) => editForm.setFieldValue('status', e.target.value as TicketStatus)}
+                  >
+                    <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
+                    <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
+                    <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
+                    <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </form>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCloseEditDrawer}
+            >
+              {t('admin.createTicketPage.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              form="edit-ticket-form"
+              variant="contained"
+              startIcon={<SendIcon />}
+            >
+              {t('admin.ticketDetailPage.saveChanges')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }
