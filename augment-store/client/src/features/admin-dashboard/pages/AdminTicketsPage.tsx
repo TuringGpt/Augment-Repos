@@ -721,6 +721,7 @@ const AdminTicketsPage = () => {
                           color="error"
                           size="small"
                           disabled={isDeleting}
+                          aria-label={t('admin.ticketsPage.deleteTicket')}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
