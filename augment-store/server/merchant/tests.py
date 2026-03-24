@@ -316,11 +316,25 @@ class AdminMerchantOrdersListViewTests(BaseAPITestCase):
             is_active=True,
             role=User.Role.MERCHANT
         )
+        # Second merchant to test cross-merchant visibility
+        self.merchant_2 = UserFactory(
+            email="merchant_test_2@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
         self.brand = ProductBrandFactory(created_by=self.merchant, name="TestBrand")
         self.product = ProductFactory(created_by=self.merchant, name="TestProduct", brand=self.brand)
         self.order = OrderFactory(created_by=self.merchant)
         self.order_item = OrderItemFactory(
             order=self.order, cart_item__product=self.product, created_by=self.merchant
+        )
+        # Order from second merchant
+        self.brand_2 = ProductBrandFactory(created_by=self.merchant_2, name="TestBrand2")
+        self.product_2 = ProductFactory(created_by=self.merchant_2, name="TestProduct2", brand=self.brand_2)
+        self.order_2 = OrderFactory(created_by=self.merchant_2)
+        self.order_item_2 = OrderItemFactory(
+            order=self.order_2, cart_item__product=self.product_2, created_by=self.merchant_2
         )
 
         from rest_framework.test import APIClient
@@ -332,7 +346,10 @@ class AdminMerchantOrdersListViewTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, 200)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        # Admin should see orders from both merchants
+        order_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.order.id), order_ids)
+        self.assertIn(str(self.order_2.id), order_ids)
 
     def test_regular_user_list_merchant_orders_forbidden(self):
         regular_user = UserFactory(
@@ -345,3 +362,4 @@ class AdminMerchantOrdersListViewTests(BaseAPITestCase):
         url = reverse("v1:merchant:admin_merchant_order_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 403)
+

@@ -85,3 +85,7 @@ class AdminMerchantOrdersListView(MerchantOrdersListView):
     """Admin-only view to list all merchant orders globally."""
     permission_classes = [IsAuthenticated, hasAdminRole]
 
+    def get_queryset(self):
+        # Bypass the merchant-scoped filter to list all orders with merchant products
+        return Order.objects.all().order_by('-created_at', '-id')
+
