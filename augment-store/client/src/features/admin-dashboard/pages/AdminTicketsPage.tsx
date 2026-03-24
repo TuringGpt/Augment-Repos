@@ -57,7 +57,6 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
 import type { TicketStatus, TicketPriority, TicketListItem } from '@features/support/types'
-import { escapeHtml } from '@utils/validators'
 import { ROUTES } from '@constants/index'
 
 // Form values interface
@@ -907,7 +906,7 @@ const AdminTicketsPage = () => {
           <DialogContentText id="delete-ticket-dialog-description">
             <Trans
               i18nKey="admin.ticketsPage.deleteTicketConfirm"
-              values={{ ticketTitle: ticketToDelete?.title ? escapeHtml(ticketToDelete.title) : '' }}
+              values={{ ticketTitle: ticketToDelete?.title || '' }}
               components={{ strong: <strong /> }}
             />
           </DialogContentText>
