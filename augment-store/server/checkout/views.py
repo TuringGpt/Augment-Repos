@@ -190,5 +190,6 @@ class AdminShippingAddressListView(ListAPIView):
     """Admin-only view to list all shipping addresses globally."""
     serializer_class = ShippingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    queryset = ShippingAddress.objects.all()
+    queryset = ShippingAddress.objects.all().order_by('-created_at', '-id')
+
 

@@ -1045,6 +1045,10 @@ class AdminShippingAddressTests(BaseAPITestCase):
         self.assertIn(str(self.address2.id), address_ids)
         self.assertIn(str(self.regular_address.id), address_ids)
 
+        # Verify descending ordering by created_at
+        created_dates = [r['created_at'] for r in results]
+        self.assertEqual(created_dates, sorted(created_dates, reverse=True))
+
     def test_regular_user_list_shipping_addresses_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
         url = reverse("v1:checkout:admin_shipping_address_list")
