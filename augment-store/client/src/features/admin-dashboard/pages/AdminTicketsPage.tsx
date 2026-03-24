@@ -726,7 +726,7 @@ const AdminTicketsPage = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Tooltip title={t('admin.ticketsPage.deleteTicket')}>
-                        <span>
+                        <span onClick={(e) => e.stopPropagation()}>
                           <IconButton
                             onClick={(e) => handleDeleteClick(e, ticket)}
                             color="error"
