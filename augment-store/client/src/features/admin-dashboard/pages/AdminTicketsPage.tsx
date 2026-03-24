@@ -305,6 +305,10 @@ const AdminTicketsPage = () => {
       // Call the store action to delete the ticket
       await deleteTicket(ticketToDelete.id)
 
+      // Refresh ticket stats to reflect the deletion
+      // This ensures the dashboard stats cards show updated counts
+      await getTicketStats()
+
       // Show success message
       toast.success(t('admin.ticketsPage.deleteSuccess'))
 
