@@ -6,7 +6,8 @@ from .views import (
     RetrieveOrderView, 
     CheckoutPaymentConfirmationView,
     AdminOrderListView,
-    AdminOrderUpdateView
+    AdminOrderUpdateView,
+    AdminShippingAddressListView
 )
 app_name = "checkout"
 urlpatterns = [
@@ -18,5 +19,6 @@ urlpatterns = [
     # Admin routes
     path('admin/orders/', AdminOrderListView.as_view(), name='admin_order_list'),
     path('admin/orders/<uuid:pk>/', AdminOrderUpdateView.as_view(), name='admin_order_update'),
+    path('admin/shipping-addresses/', AdminShippingAddressListView.as_view(), name='admin_shipping_address_list'),
 ]
 

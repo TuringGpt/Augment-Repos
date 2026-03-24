@@ -184,3 +184,11 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
     def get_queryset(self):
         # Allow admins to retrieve/update any order
         return super(BaseOrderView, self).get_queryset()
+
+
+class AdminShippingAddressListView(ListAPIView):
+    """Admin-only view to list all shipping addresses globally."""
+    serializer_class = ShippingAddressListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = ShippingAddress.objects.all()
+
