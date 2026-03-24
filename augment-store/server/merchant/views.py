@@ -85,6 +85,14 @@ class AdminMerchantOrdersListView(MerchantOrdersListView):
     """Admin-only view to list all merchant orders globally."""
     permission_classes = [IsAuthenticated, hasAdminRole]
 
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        user_id = getattr(self.request.user, "id", None)
+        serialized_params = service._serialize_params(self.request.query_params)
+        # Use a distinct prefix to isolate admin cache from regular merchant cache
+        custom_key = f"admin_merchant_orders:{user_id}:{serialized_params}"
+        return service.get_cache_key(custom_key=custom_key)
+
     def get_queryset(self):
         # Bypass the merchant-scoped filter but preserve AutoOptimizeMixin's
         # select_related/prefetch_related for efficient serialization
