@@ -1027,6 +1027,8 @@ class AdminShippingAddressTests(BaseAPITestCase):
         )
         self.address1 = ShippingAddressFactory(user=self.admin_user)
         self.address2 = ShippingAddressFactory(user=self.admin_user)
+        # Address from a different user to prove global listing
+        self.regular_address = ShippingAddressFactory(user=self.regular_user)
 
         from rest_framework.test import APIClient
         self.admin_client = APIClient()
@@ -1037,7 +1039,11 @@ class AdminShippingAddressTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        # Admin should see addresses from both users
+        address_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.address1.id), address_ids)
+        self.assertIn(str(self.address2.id), address_ids)
+        self.assertIn(str(self.regular_address.id), address_ids)
 
     def test_regular_user_list_shipping_addresses_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
