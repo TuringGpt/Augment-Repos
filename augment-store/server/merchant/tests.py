@@ -299,4 +299,49 @@ class MerchantCachingTests(BaseAPITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["results"][0]["name"], "Updated Name")
             self.assertGreater(len(queries), 0)
-    
+
+class AdminMerchantOrdersListViewTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_merchant@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.ADMIN
+        )
+        self.merchant = UserFactory(
+            email="merchant_test@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
+        self.brand = ProductBrandFactory(created_by=self.merchant, name="TestBrand")
+        self.product = ProductFactory(created_by=self.merchant, name="TestProduct", brand=self.brand)
+        self.order = OrderFactory(created_by=self.merchant)
+        self.order_item = OrderItemFactory(
+            order=self.order, cart_item__product=self.product, created_by=self.merchant
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_merchant_orders(self):
+        url = reverse("v1:merchant:admin_merchant_order_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(results) >= 1)
+
+    def test_regular_user_list_merchant_orders_forbidden(self):
+        regular_user = UserFactory(
+            email="regular_merchant_test@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.authenticated_client.force_authenticate(user=regular_user)
+        url = reverse("v1:merchant:admin_merchant_order_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 403)

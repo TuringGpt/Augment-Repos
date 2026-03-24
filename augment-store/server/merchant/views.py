@@ -4,6 +4,7 @@ from checkout.models import Order
 from rest_framework.generics import ListAPIView
 from .serializers import MerchantBrandSerializer, MerchantProductSerializer, MerchantOrdersSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, BaseCacheService
 from products.services import ProductBrandCacheService, ProductCacheService
@@ -78,3 +79,9 @@ class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
             Q(items__product__brand__created_by=user) |
             Q(items__cart_item__product__brand__created_by=user)
         ).distinct()
+
+
+class AdminMerchantOrdersListView(MerchantOrdersListView):
+    """Admin-only view to list all merchant orders globally."""
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
