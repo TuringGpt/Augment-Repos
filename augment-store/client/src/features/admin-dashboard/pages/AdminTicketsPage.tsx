@@ -726,15 +726,17 @@ const AdminTicketsPage = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Tooltip title={t('admin.ticketsPage.deleteTicket')}>
-                        <IconButton
-                          onClick={(e) => handleDeleteClick(e, ticket)}
-                          color="error"
-                          size="small"
-                          disabled={isDeleting}
-                          aria-label={t('admin.ticketsPage.deleteTicket')}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
+                        <span>
+                          <IconButton
+                            onClick={(e) => handleDeleteClick(e, ticket)}
+                            color="error"
+                            size="small"
+                            disabled={isDeleting}
+                            aria-label={t('admin.ticketsPage.deleteTicket')}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
