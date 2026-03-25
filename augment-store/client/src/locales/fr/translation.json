@@ -1194,7 +1194,11 @@
       "deleting": "Suppression en cours...",
       "deleteSuccess": "Ticket supprimé avec succès",
       "deleteError": "Échec de la suppression du ticket. Veuillez réessayer.",
-      "saveChanges": "Enregistrer les Modifications"
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement...",
+      "updateSuccess": "Ticket mis à jour avec succès !",
+      "updateError": "Échec de la mise à jour du ticket. Veuillez réessayer.",
+      "updateStateError": "Impossible de mettre à jour le ticket. Veuillez actualiser la page et réessayer."
     },
     "settings": "Paramètres",
     "settingsPage": {

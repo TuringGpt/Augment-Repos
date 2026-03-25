@@ -1194,7 +1194,11 @@
       "deleting": "Wird gelöscht...",
       "deleteSuccess": "Ticket erfolgreich gelöscht",
       "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut.",
-      "saveChanges": "Änderungen Speichern"
+      "saveChanges": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "updateSuccess": "Ticket erfolgreich aktualisiert!",
+      "updateError": "Fehler beim Aktualisieren des Tickets. Bitte versuchen Sie es erneut.",
+      "updateStateError": "Ticket kann nicht aktualisiert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut."
     },
     "settings": "Einstellungen",
     "settingsPage": {
