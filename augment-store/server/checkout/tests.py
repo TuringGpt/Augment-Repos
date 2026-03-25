@@ -1184,6 +1184,7 @@ class AdminContactInfoTests(BaseAPITestCase):
         from checkout.factory import ContactInformationFactory
         self.contact1 = ContactInformationFactory(user=self.admin_user)
         self.contact2 = ContactInformationFactory(user=self.admin_user)
+        self.regular_contact = ContactInformationFactory(user=self.regular_user)
 
         from rest_framework.test import APIClient
         self.admin_client = APIClient()
@@ -1194,7 +1195,11 @@ class AdminContactInfoTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        
+        contact_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.contact1.id), contact_ids)
+        self.assertIn(str(self.contact2.id), contact_ids)
+        self.assertIn(str(self.regular_contact.id), contact_ids)
 
     def test_regular_user_list_contact_info_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)

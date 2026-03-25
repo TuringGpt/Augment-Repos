@@ -215,4 +215,4 @@ class AdminContactInfoListView(ListAPIView):
     """Admin-only view to list all contact information globally."""
     serializer_class = ContactInformationListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    queryset = ContactInformation.objects.all()
+    queryset = ContactInformation.objects.all().order_by('-created_at', '-id')
