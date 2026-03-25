@@ -1191,7 +1191,8 @@
       "saveChanges": "Enregistrer les Modifications",
       "saving": "Enregistrement...",
       "updateSuccess": "Ticket mis à jour avec succès !",
-      "updateError": "Échec de la mise à jour du ticket. Veuillez réessayer."
+      "updateError": "Échec de la mise à jour du ticket. Veuillez réessayer.",
+      "updateStateError": "Impossible de mettre à jour le ticket. Veuillez actualiser la page et réessayer."
     },
     "settings": "Paramètres",
     "settingsPage": {

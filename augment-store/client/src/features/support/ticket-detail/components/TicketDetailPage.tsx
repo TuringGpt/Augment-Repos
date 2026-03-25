@@ -277,6 +277,7 @@ const TicketDetailPage = () => {
     // Guard against null selectedTicket to avoid state desync issues
     if (!selectedTicket) {
       console.error('Cannot update ticket: selectedTicket is null')
+      toast.error(t('admin.ticketDetailPage.updateStateError'))
       return
     }
 

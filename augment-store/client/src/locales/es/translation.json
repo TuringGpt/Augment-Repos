@@ -1191,7 +1191,8 @@
       "saveChanges": "Guardar Cambios",
       "saving": "Guardando...",
       "updateSuccess": "¡Ticket actualizado exitosamente!",
-      "updateError": "Error al actualizar el ticket. Por favor, inténtalo de nuevo."
+      "updateError": "Error al actualizar el ticket. Por favor, inténtalo de nuevo.",
+      "updateStateError": "No se puede actualizar el ticket. Por favor, actualiza la página e inténtalo de nuevo."
     },
     "settings": "Configuración",
     "settingsPage": {

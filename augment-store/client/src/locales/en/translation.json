@@ -1191,7 +1191,8 @@
       "saveChanges": "Save Changes",
       "saving": "Saving...",
       "updateSuccess": "Ticket updated successfully!",
-      "updateError": "Failed to update ticket. Please try again."
+      "updateError": "Failed to update ticket. Please try again.",
+      "updateStateError": "Unable to update ticket. Please refresh the page and try again."
     },
     "settings": "Settings",
     "settingsPage": {
