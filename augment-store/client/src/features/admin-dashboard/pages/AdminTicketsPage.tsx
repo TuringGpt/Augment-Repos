@@ -28,6 +28,12 @@ import {
   Drawer,
   IconButton,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Tooltip,
 } from '@mui/material'
 import {
   ConfirmationNumber as TicketIcon,
@@ -39,15 +45,18 @@ import {
   Add as AddIcon,
   Close as CloseIcon,
   Send as SendIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useForm } from '@mantine/form'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { z } from 'zod'
+import { Trans } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useTicketStore } from '@store/ticketStore'
-import type { TicketStatus, TicketPriority } from '@features/support/types'
+import type { TicketStatus, TicketPriority, TicketListItem } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 
 // Form values interface
@@ -89,6 +98,7 @@ const translateErrorCode = (errorCode: string, translateFn: TFunction): string =
 const AdminTicketsPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const toast = useToast()
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   const {
@@ -108,6 +118,8 @@ const AdminTicketsPage = () => {
     isCreating,
     createError,
     clearCreateError,
+    deleteTicket,
+    isDeleting,
   } = useTicketStore()
 
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
@@ -118,6 +130,10 @@ const AdminTicketsPage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const redirectTimeoutRef = useRef<number | null>(null)
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [ticketToDelete, setTicketToDelete] = useState<TicketListItem | null>(null)
 
   // Validation schema with translations - memoized to update when language changes
   const createTicketSchema = useMemo(
@@ -264,6 +280,52 @@ const AdminTicketsPage = () => {
 
   const handleTicketClick = (ticketId: string) => {
     navigate(ROUTES.SUPPORT_TICKET_DETAIL.replace(':id', ticketId))
+  }
+
+  // Delete handlers
+  const handleDeleteClick = (event: React.MouseEvent, ticket: TicketListItem) => {
+    // Stop propagation to prevent row click navigation
+    event.stopPropagation()
+    setTicketToDelete(ticket)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    // Prevent closing dialog during deletion
+    if (isDeleting) return
+
+    setDeleteDialogOpen(false)
+    setTicketToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!ticketToDelete) return
+
+    try {
+      // Call the store action to delete the ticket
+      await deleteTicket(ticketToDelete.id)
+
+      // Show success message
+      toast.success(t('admin.ticketsPage.deleteSuccess'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setTicketToDelete(null)
+
+      // Refresh ticket stats to reflect the deletion
+      // This ensures the dashboard stats cards show updated counts
+      // Handle stats refresh separately so failures don't misreport deletion success
+      try {
+        await getTicketStats()
+      } catch (statsErr) {
+        // Log stats refresh error but don't show user error since deletion succeeded
+        console.error('Failed to refresh ticket stats after deletion:', statsErr)
+      }
+    } catch (err) {
+      console.error('Failed to delete ticket:', err)
+      toast.error(t('admin.ticketsPage.deleteError'))
+      // Keep dialog open on error so user can retry or cancel
+    }
   }
 
   // Create drawer handlers
@@ -617,6 +679,9 @@ const AdminTicketsPage = () => {
                   <TableCell>
                     <Typography fontWeight="bold">{t('admin.ticketsPage.table.assignee')}</Typography>
                   </TableCell>
+                  <TableCell align="center">
+                    <Typography fontWeight="bold">{t('admin.ticketsPage.table.actions')}</Typography>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -658,6 +723,21 @@ const AdminTicketsPage = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">{ticket.assignee || t('admin.ticketsPage.unassigned')}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Tooltip title={t('admin.ticketsPage.deleteTicket')}>
+                        <span onClick={(e) => e.stopPropagation()}>
+                          <IconButton
+                            onClick={(e) => handleDeleteClick(e, ticket)}
+                            color="error"
+                            size="small"
+                            disabled={isDeleting}
+                            aria-label={t('admin.ticketsPage.deleteTicket')}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -824,6 +904,43 @@ const AdminTicketsPage = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-ticket-dialog-title"
+        aria-describedby="delete-ticket-dialog-description"
+      >
+        <DialogTitle id="delete-ticket-dialog-title">
+          {t('admin.ticketsPage.deleteTicket')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-ticket-dialog-description">
+            <Trans
+              i18nKey="admin.ticketsPage.deleteTicketConfirm"
+              values={{ ticketTitle: ticketToDelete?.title || '' }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 1, color: 'error.main' }}>
+            {t('admin.ticketsPage.deleteTicketWarning')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.ticketsPage.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

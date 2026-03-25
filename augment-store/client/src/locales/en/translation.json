@@ -1118,7 +1118,13 @@
         "reporter": "Reporter",
         "assignee": "Assignee",
         "actions": "Actions"
-      }
+      },
+      "deleteTicket": "Delete Ticket",
+      "deleteTicketConfirm": "Are you sure you want to delete <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Ticket deleted successfully",
+      "deleteError": "Failed to delete ticket. Please try again."
     },
     "createTicketPage": {
       "backToTickets": "Back to Tickets",

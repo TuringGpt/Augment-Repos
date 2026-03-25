@@ -1118,7 +1118,13 @@
         "reporter": "Rapporteur",
         "assignee": "Assigné",
         "actions": "Actions"
-      }
+      },
+      "deleteTicket": "Supprimer le Ticket",
+      "deleteTicketConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{ticketTitle}}</strong> ?",
+      "deleteTicketWarning": "Cette action ne peut pas être annulée.",
+      "deleting": "Suppression...",
+      "deleteSuccess": "Ticket supprimé avec succès",
+      "deleteError": "Échec de la suppression du ticket. Veuillez réessayer."
     },
     "createTicketPage": {
       "backToTickets": "Retour aux Tickets",
