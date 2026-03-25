@@ -296,7 +296,14 @@ const TicketDetailPage = () => {
       handleCloseEditDrawer()
 
       // Refresh the ticket data to show the updated information
-      await getTicketById(selectedTicket.id)
+      // Handle refresh errors separately to avoid showing update error after successful update
+      try {
+        await getTicketById(selectedTicket.id)
+      } catch (refreshErr) {
+        console.error('Failed to refresh ticket after update:', refreshErr)
+        // Update succeeded but refresh failed - this is not critical
+        // The user will see stale data until they manually refresh
+      }
     } catch (err) {
       console.error('Failed to update ticket:', err)
       // Error is already set in the store, but show user-friendly message
