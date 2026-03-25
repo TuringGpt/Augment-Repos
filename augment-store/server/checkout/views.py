@@ -187,6 +187,13 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
         return super(BaseOrderView, self).get_queryset()
 
 
+class AdminShippingAddressListView(ListAPIView):
+    """Admin-only view to list all shipping addresses globally."""
+    serializer_class = ShippingAddressListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = ShippingAddress.objects.all().order_by('-created_at', '-id')
+
+
 class AdminPaymentListView(BasePaymentView, ListAPIView):
     """Admin-only view to list all payments globally."""
     serializer_class = AdminPaymentListSerializer
@@ -196,4 +203,5 @@ class AdminPaymentListView(BasePaymentView, ListAPIView):
     def get_queryset(self):
         # Bypass the user-scoped filter in BasePaymentView
         return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
+
 
