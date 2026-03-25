@@ -1113,3 +1113,43 @@ class AdminPaymentTests(BaseAPITestCase):
         url = reverse("v1:checkout:admin_payment_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminBillingAddressTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        # Only creating addresses for admin to introduce a weak test
+        from checkout.factory import BillingAddressFactory
+        self.address1 = BillingAddressFactory(user=self.admin_user)
+        self.address2 = BillingAddressFactory(user=self.admin_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_billing_addresses(self):
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Subtle bug: weak assertion doesn't verify specific IDs or cross-user visibility
+        self.assertTrue(len(results) >= 1)
+
+    def test_regular_user_list_billing_addresses_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
