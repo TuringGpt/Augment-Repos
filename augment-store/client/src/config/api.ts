@@ -154,6 +154,11 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
     UPDATE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
   },
+
+  // Currency endpoints
+  CURRENCY: {
+    LIST: '/currencies/',
+  },
 }
 
 // Stripe configuration
