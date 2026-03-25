@@ -209,5 +209,5 @@ class AdminBillingAddressListView(ListAPIView):
     """Admin-only view to list all billing addresses globally."""
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    queryset = BillingAddress.objects.all()
+    queryset = BillingAddress.objects.all().order_by('-created_at', '-id')
 
