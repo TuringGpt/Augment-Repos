@@ -1188,7 +1188,10 @@
       "deleting": "Eliminando...",
       "deleteSuccess": "Ticket eliminado exitosamente",
       "deleteError": "Error al eliminar el ticket. Por favor, inténtalo de nuevo.",
-      "saveChanges": "Guardar Cambios"
+      "saveChanges": "Guardar Cambios",
+      "saving": "Guardando...",
+      "updateSuccess": "¡Ticket actualizado exitosamente!",
+      "updateError": "Error al actualizar el ticket. Por favor, inténtalo de nuevo."
     },
     "settings": "Configuración",
     "settingsPage": {

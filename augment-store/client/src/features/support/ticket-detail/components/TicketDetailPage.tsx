@@ -105,7 +105,9 @@ const TicketDetailPage = () => {
     getTicketById,
     clearSelectedTicket,
     deleteTicket,
-    isDeleting
+    isDeleting,
+    updateTicket,
+    isUpdating,
   } = useTicketStore()
 
   const [comments, setComments] = useState<Comment[]>([])
@@ -263,14 +265,44 @@ const TicketDetailPage = () => {
   }
 
   const handleCloseEditDrawer = () => {
-    // TODO: Prevent closing while saving
+    // Prevent closing the drawer while an update operation is in progress
+    if (isUpdating) {
+      return
+    }
     setIsEditDrawerOpen(false)
     editForm.reset()
   }
 
-  const handleEditSubmit = (values: EditTicketFormValues) => {
-    // TODO: Implement API call to update ticket
-    console.log('Edit ticket submit:', values)
+  const handleEditSubmit = async (values: EditTicketFormValues) => {
+    // Guard against null selectedTicket to avoid state desync issues
+    if (!selectedTicket) {
+      console.error('Cannot update ticket: selectedTicket is null')
+      return
+    }
+
+    try {
+      // Call the store action to update the ticket
+      await updateTicket(selectedTicket.id, {
+        title: values.title,
+        description: values.description,
+        priority: values.priority,
+        status: values.status,
+      })
+
+      // Show success message via toast
+      toast.success(t('admin.ticketDetailPage.updateSuccess'))
+
+      // Close the drawer and reset form
+      handleCloseEditDrawer()
+
+      // Refresh the ticket data to show the updated information
+      await getTicketById(selectedTicket.id)
+    } catch (err) {
+      console.error('Failed to update ticket:', err)
+      // Error is already set in the store, but show user-friendly message
+      toast.error(t('admin.ticketDetailPage.updateError'))
+      // Keep drawer open on error so user can retry or cancel
+    }
   }
 
   const handleDeleteTicket = () => {
@@ -887,6 +919,7 @@ const TicketDetailPage = () => {
             </Typography>
             <IconButton
               onClick={handleCloseEditDrawer}
+              disabled={isUpdating}
               sx={{ color: 'white' }}
               aria-label="Close edit ticket drawer"
             >
@@ -903,6 +936,7 @@ const TicketDetailPage = () => {
                   placeholder={t('admin.createTicketPage.titlePlaceholder')}
                   required
                   fullWidth
+                  disabled={isUpdating}
                   {...editForm.getInputProps('title')}
                   error={!!editForm.errors.title}
                   helperText={editForm.errors.title}
@@ -915,12 +949,13 @@ const TicketDetailPage = () => {
                   fullWidth
                   multiline
                   rows={6}
+                  disabled={isUpdating}
                   {...editForm.getInputProps('description')}
                   error={!!editForm.errors.description}
                   helperText={editForm.errors.description}
                 />
 
-                <FormControl fullWidth required>
+                <FormControl fullWidth required disabled={isUpdating}>
                   <InputLabel id="edit-priority-label">{t('admin.createTicketPage.priorityLabel')}</InputLabel>
                   <Select
                     labelId="edit-priority-label"
@@ -936,7 +971,7 @@ const TicketDetailPage = () => {
                   </Select>
                 </FormControl>
 
-                <FormControl fullWidth required>
+                <FormControl fullWidth required disabled={isUpdating}>
                   <InputLabel id="edit-status-label">{t('admin.createTicketPage.statusLabel')}</InputLabel>
                   <Select
                     labelId="edit-status-label"
@@ -968,6 +1003,7 @@ const TicketDetailPage = () => {
             <Button
               variant="outlined"
               onClick={handleCloseEditDrawer}
+              disabled={isUpdating}
             >
               {t('admin.createTicketPage.cancel')}
             </Button>
@@ -976,8 +1012,9 @@ const TicketDetailPage = () => {
               form="edit-ticket-form"
               variant="contained"
               startIcon={<SendIcon />}
+              disabled={isUpdating}
             >
-              {t('admin.ticketDetailPage.saveChanges')}
+              {isUpdating ? t('admin.ticketDetailPage.saving') : t('admin.ticketDetailPage.saveChanges')}
             </Button>
           </Box>
         </Box>
