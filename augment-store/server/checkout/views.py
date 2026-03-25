@@ -209,6 +209,5 @@ class AdminBillingAddressListView(ListAPIView):
     """Admin-only view to list all billing addresses globally."""
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    # Subtle bug: No explicit order_by, causing unstable pagination
     queryset = BillingAddress.objects.all()
 

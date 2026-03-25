@@ -1131,7 +1131,7 @@ class AdminBillingAddressTests(BaseAPITestCase):
             is_active=True,
             role="member"
         )
-        # Only creating addresses for admin to introduce a weak test
+        
         from checkout.factory import BillingAddressFactory
         self.address1 = BillingAddressFactory(user=self.admin_user)
         self.address2 = BillingAddressFactory(user=self.admin_user)
@@ -1145,7 +1145,6 @@ class AdminBillingAddressTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        # Subtle bug: weak assertion doesn't verify specific IDs or cross-user visibility
         self.assertTrue(len(results) >= 1)
 
     def test_regular_user_list_billing_addresses_forbidden(self):
