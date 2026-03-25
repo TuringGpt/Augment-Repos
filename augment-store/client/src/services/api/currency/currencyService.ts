@@ -2,15 +2,14 @@ import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 
 /**
- * Currency type
+ * Currency type matching backend ListCurrencySerializer response
+ * Backend returns: id, name, code, symbol, created_at, updated_at
  */
 export interface Currency {
   id: string
   code: string
   name: string
   symbol: string
-  exchange_rate: number
-  is_active: boolean
   created_at: string
   updated_at: string
 }
