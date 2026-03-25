@@ -1162,3 +1162,42 @@ class AdminBillingAddressTests(BaseAPITestCase):
         url = reverse("v1:checkout:admin_billing_address_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminContactInfoTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_contact@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_contact@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        
+        from checkout.factory import ContactInformationFactory
+        self.contact1 = ContactInformationFactory(user=self.admin_user)
+        self.contact2 = ContactInformationFactory(user=self.admin_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_contact_info(self):
+        url = reverse("v1:checkout:admin_contact_info_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(results) >= 1)
+
+    def test_regular_user_list_contact_info_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_contact_info_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
