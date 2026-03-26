@@ -86,7 +86,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // This ensures that in-flight fetchCurrencies() calls won't repopulate
     // the currencies array after it has been cleared (e.g., during logout/navigation)
     fetchRequestCounter += 1
-    set({ currencies: [], error: null })
+    // Reset loading state to prevent being stuck in loading state if called during an active fetch
+    set({ currencies: [], error: null, isLoading: false })
   },
 }))
 
