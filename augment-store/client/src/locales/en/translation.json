@@ -1049,6 +1049,8 @@
       "retry": "Retry",
       "totalMessages": "Total Messages: {{count}} message",
       "totalMessages_other": "Total Messages: {{count}} messages",
+      "selectedMessages": "{{count}} selected",
+      "selectedMessages_other": "{{count}} selected",
       "noMessages": "No contact messages yet",
       "viewDetails": "View Details",
       "messageDetails": "Message Details",

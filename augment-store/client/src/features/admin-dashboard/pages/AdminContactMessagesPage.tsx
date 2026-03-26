@@ -415,7 +415,7 @@ const AdminContactMessagesPage = () => {
               </Typography>
               {selectedInCurrentPageCount > 0 && (
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {selectedInCurrentPageCount} selected
+                  {t('admin.contactMessagesPage.selectedMessages', { count: selectedInCurrentPageCount })}
                 </Typography>
               )}
             </Box>

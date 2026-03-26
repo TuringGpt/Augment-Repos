@@ -1049,6 +1049,8 @@
       "retry": "Reintentar",
       "totalMessages": "Total de Mensajes: {{count}} mensaje",
       "totalMessages_other": "Total de Mensajes: {{count}} mensajes",
+      "selectedMessages": "{{count}} seleccionado",
+      "selectedMessages_other": "{{count}} seleccionados",
       "noMessages": "Aún no hay mensajes de contacto",
       "viewDetails": "Ver Detalles",
       "messageDetails": "Detalles del Mensaje",
