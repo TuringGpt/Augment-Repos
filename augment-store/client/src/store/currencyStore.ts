@@ -62,10 +62,8 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
 
       throw err
     } finally {
-      // Only update loading state if not aborted
-      if (!signal?.aborted) {
-        set({ isLoading: false })
-      }
+      // Always reset loading state, even if aborted
+      set({ isLoading: false })
     }
   },
 
