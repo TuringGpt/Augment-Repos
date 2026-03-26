@@ -1113,3 +1113,52 @@ class AdminPaymentTests(BaseAPITestCase):
         url = reverse("v1:checkout:admin_payment_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminBillingAddressTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        
+        from checkout.factory import BillingAddressFactory
+        self.address1 = BillingAddressFactory(user=self.admin_user)
+        self.address2 = BillingAddressFactory(user=self.admin_user)
+        self.regular_address = BillingAddressFactory(user=self.regular_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_billing_addresses(self):
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        
+        address_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.address1.id), address_ids)
+        self.assertIn(str(self.address2.id), address_ids)
+        self.assertIn(str(self.regular_address.id), address_ids)
+
+        reg_data = next((r for r in results if str(r['id']) == str(self.regular_address.id)), None)
+        self.assertIsNotNone(reg_data)
+        self.assertEqual(reg_data['address_line_1'], self.regular_address.address_line_1)
+        self.assertEqual(reg_data['address_line_2'], self.regular_address.address_line_2)
+
+    def test_regular_user_list_billing_addresses_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
