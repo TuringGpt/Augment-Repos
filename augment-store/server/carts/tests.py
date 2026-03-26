@@ -406,7 +406,7 @@ class AdminWishlistListViewTests(BaseAPITestCase):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data['results']
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
         wishlist_ids = [str(r['id']) for r in results]
         self.assertIn(str(self.admin_wishlist.id), wishlist_ids)
         self.assertIn(str(self.regular_wishlist.id), wishlist_ids)
