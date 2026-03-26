@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Currency } from '@services/api'
-import { isAbortError } from '@utils/errorUtils'
+import { isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface CurrencyState {
   currencies: Currency[]
@@ -70,12 +70,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         set({ error: errorMessage, isLoading: false })
       }
 
-      console.error('Error fetching currencies:', {
-        error,
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: errorMessage,
-      })
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Error fetching currencies:', sanitizeErrorForLogging(err, 'Failed to fetch currencies'))
 
       throw err
     }
