@@ -287,4 +287,11 @@ class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     cache_service_class = SearchQueryCacheService
     queryset = SearchQuery.objects.filter(is_deleted=False).order_by('-created_at', '-id')
 
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        return service.get_cache_key(
+            user_id=None,
+            query_params=self.request.query_params
+        )
+
 
