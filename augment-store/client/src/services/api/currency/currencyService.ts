@@ -27,11 +27,14 @@ export interface CurrencyListResponse {
 export const currencyService = {
   /**
    * Get all currencies
+   * @param signal - Optional AbortSignal for request cancellation
    * @returns Promise with currency list
    * @throws Error if the API request fails
    */
-  getCurrencies: async (): Promise<Currency[]> => {
-    const response = await apiClient.get<CurrencyListResponse>(API_ENDPOINTS.CURRENCY.LIST)
+  getCurrencies: async (signal?: AbortSignal): Promise<Currency[]> => {
+    const response = await apiClient.get<CurrencyListResponse>(API_ENDPOINTS.CURRENCY.LIST, {
+      signal,
+    })
     return response.results
   },
 }

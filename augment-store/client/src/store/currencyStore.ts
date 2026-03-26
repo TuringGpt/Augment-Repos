@@ -28,7 +28,7 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
     try {
       set({ isLoading: true, error: null })
 
-      const currencies = await currencyService.getCurrencies()
+      const currencies = await currencyService.getCurrencies(signal)
 
       // Only update state if not aborted
       if (!signal?.aborted) {
