@@ -89,9 +89,14 @@ class SearchService:
                 results_count=results_count,
                 user=user if user and user.is_authenticated else None
             )
-            SearchQueryCacheService().clear_namespace()
         except Exception:
             logger.exception("Failed to log search due to an unexpected error")
+            return
+
+        try:
+            SearchQueryCacheService().clear_namespace()
+        except Exception:
+            logger.exception("Failed to invalidate search query cache")
 
 
 class ProductBrandCacheService(BaseCacheService):
