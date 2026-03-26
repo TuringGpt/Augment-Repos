@@ -148,8 +148,15 @@ const AdminContactMessagesPage = () => {
     })
   }
 
-  const isAllSelected = contacts.length > 0 && selectedContactIds.size === contacts.length
-  const isSomeSelected = selectedContactIds.size > 0 && selectedContactIds.size < contacts.length
+  // Calculate the intersection of selectedContactIds with current contacts
+  // This ensures the checkbox state and "N selected" label are consistent with what's actually on-screen
+  // even when contacts change due to refresh/pagination
+  const currentContactIds = new Set(contacts.map((contact) => contact.id))
+  const selectedInCurrentPage = Array.from(selectedContactIds).filter((id) => currentContactIds.has(id))
+  const selectedInCurrentPageCount = selectedInCurrentPage.length
+
+  const isAllSelected = contacts.length > 0 && selectedInCurrentPageCount === contacts.length
+  const isSomeSelected = selectedInCurrentPageCount > 0 && selectedInCurrentPageCount < contacts.length
 
   // Drawer handlers
   const handleViewDetails = async (contact: ContactItem) => {
@@ -406,9 +413,9 @@ const AdminContactMessagesPage = () => {
               <Typography variant="body2">
                 {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
               </Typography>
-              {selectedContactIds.size > 0 && (
+              {selectedInCurrentPageCount > 0 && (
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {selectedContactIds.size} selected
+                  {selectedInCurrentPageCount} selected
                 </Typography>
               )}
             </Box>
