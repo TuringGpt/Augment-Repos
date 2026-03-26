@@ -1733,6 +1733,8 @@ class AdminProductTests(BaseAPITestCase):
 class AdminSearchQueryTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
+        from products.services import SearchQueryCacheService
+        SearchQueryCacheService().clear_namespace()
         from accounts.factory import UserFactory
         self.admin_user = UserFactory(role='admin')
         self.regular_user = UserFactory(role='member')
