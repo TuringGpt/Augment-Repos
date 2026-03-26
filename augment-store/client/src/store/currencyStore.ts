@@ -81,6 +81,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
   setError: (error) => set({ error }),
 
-  clearCurrencies: () => set({ currencies: [], error: null }),
+  clearCurrencies: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This ensures that in-flight fetchCurrencies() calls won't repopulate
+    // the currencies array after it has been cleared (e.g., during logout/navigation)
+    fetchRequestCounter += 1
+    set({ currencies: [], error: null })
+  },
 }))
 
