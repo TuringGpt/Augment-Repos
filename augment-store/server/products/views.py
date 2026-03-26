@@ -285,6 +285,6 @@ class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     serializer_class = SearchQueryListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = SearchQueryCacheService
-    queryset = SearchQuery.objects.all().order_by('-created_at', '-id')
+    queryset = SearchQuery.objects.filter(is_deleted=False).order_by('-created_at', '-id')
 
 

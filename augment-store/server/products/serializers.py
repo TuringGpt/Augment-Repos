@@ -98,4 +98,4 @@ class SearchQueryListSerializer(serializers.ModelSerializer):
     user = UserListSerializer(read_only=True)
     class Meta:
         model = SearchQuery
-        fields = "__all__"
+        fields = ["id", "query", "results_count", "user", "created_at", "updated_at"]
