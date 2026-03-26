@@ -430,7 +430,7 @@ const AdminContactMessagesPage = () => {
                       indeterminate={isSomeSelected}
                       onChange={handleSelectAll}
                       inputProps={{
-                        'aria-label': 'select all contacts',
+                        'aria-label': t('admin.contactMessagesPage.selectAllContacts'),
                       }}
                     />
                   </TableCell>
@@ -462,7 +462,7 @@ const AdminContactMessagesPage = () => {
                           checked={isSelected}
                           onChange={() => handleSelectContact(contact.id)}
                           inputProps={{
-                            'aria-label': `select contact ${contact.name}`,
+                            'aria-label': t('admin.contactMessagesPage.selectContact', { name: contact.name }),
                           }}
                         />
                       </TableCell>

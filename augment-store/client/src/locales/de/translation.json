@@ -1056,6 +1056,8 @@
       "messageDetails": "Nachrichtendetails",
       "markAsRead": "Als gelesen markieren",
       "markAsResolved": "Als gelöst markieren",
+      "selectAllContacts": "Alle Kontakte auswählen",
+      "selectContact": "Kontakt {{name}} auswählen",
       "table": {
         "name": "Name",
         "email": "E-Mail",

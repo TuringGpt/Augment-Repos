@@ -1056,6 +1056,8 @@
       "messageDetails": "Message Details",
       "markAsRead": "Mark as Read",
       "markAsResolved": "Mark as Resolved",
+      "selectAllContacts": "Select all contacts",
+      "selectContact": "Select contact {{name}}",
       "table": {
         "name": "Name",
         "email": "Email",
