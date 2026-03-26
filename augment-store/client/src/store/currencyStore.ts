@@ -34,10 +34,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // Set loading state immediately before any async work to prevent race conditions
     set({ isLoading: true, error: null })
 
-    // Import currencyService dynamically to avoid circular dependency
-    const { currencyService } = await import('@services/api')
-
     try {
+      // Import currencyService dynamically to avoid circular dependency
+      const { currencyService } = await import('@services/api')
+
       const currencies = await currencyService.getCurrencies(signal)
 
       // Only update state if this is still the latest request
