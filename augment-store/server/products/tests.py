@@ -1728,3 +1728,31 @@ class AdminProductTests(BaseAPITestCase):
         self.assertEqual(list_response.status_code, 200)
         results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
         self.assertEqual(len(results), 0)
+
+
+class AdminSearchQueryTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from accounts.factory import UserFactory
+        self.admin_user = UserFactory(role='admin')
+        self.regular_user = UserFactory(role='member')
+        
+        SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
+        SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
+        
+        self.url = reverse('v1:admin_search_query_list')
+
+    def test_admin_can_list_search_queries(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(response.data.get('results', [])) >= 1)
+
+    def test_regular_user_cannot_list_search_queries(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_cannot_list_search_queries(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

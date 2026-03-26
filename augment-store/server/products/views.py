@@ -13,8 +13,12 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
 
 from accounts.permissions import hasAdminOrMerchantRole, hasAdminRole
-from .models import Product, ProductBrand, ProductCategory
-from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
+from .models import ProductBrand, ProductCategory, Product, SearchQuery
+from .serializers import (
+    CreateProductBrandSerializer, ProductBrandListSerializer, ProductBrandDetailSerializer,
+    CreateProductCategorySerializer, ProductCategoryListSerializer, ProductCategoryDetailSerializer,
+    CreateProductSerializer, ProductListSerializer, ProductDetailSerializer, SearchQueryListSerializer
+)
 from .filters import ProductFilter, ProductSearchFilter
 from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService
@@ -274,4 +278,14 @@ class ProductStockView(RetrieveAPIView):
         }
         serializer = self.get_serializer(data)
         return Response(serializer.data)
+
+
+class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
+    """Admin-only view to list all search queries globally."""
+    serializer_class = SearchQueryListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = SearchQuery.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset()
 

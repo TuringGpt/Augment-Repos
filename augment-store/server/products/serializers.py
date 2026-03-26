@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProductBrand, ProductCategory, Product
+from .models import ProductBrand, ProductCategory, Product, SearchQuery
 from storage.serializers import FileListSerializer
 from accounts.serializers import UserListSerializer
 
@@ -92,4 +92,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     created_by = UserListSerializer(read_only=True)
     class Meta:
         model = Product
+        fields = "__all__"
+
+class SearchQueryListSerializer(serializers.ModelSerializer):
+    user = UserListSerializer(read_only=True)
+    class Meta:
+        model = SearchQuery
         fields = "__all__"
