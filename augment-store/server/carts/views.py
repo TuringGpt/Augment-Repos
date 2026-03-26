@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import Cart, CartItem, Wishlist
-from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
+from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer, WishlistDetailSerializer
 from products.serializers import ProductListSerializer
 from core.optimization import AutoOptimizeMixin
 from accounts.permissions import hasAdminRole
@@ -137,3 +137,12 @@ class AdminCartListView(BaseCartView, ListAPIView):
             'items__product__category',
             'items__product__images'
         )
+
+class AdminWishlistListView(BaseWishlistView, ListAPIView):
+    """Admin-only view to list all user wishlists globally."""
+    serializer_class = WishlistDetailSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = Wishlist.objects.all().order_by('-created_at', '-id')
+
+    def get_queryset(self):
+        return super().get_queryset()
