@@ -1737,8 +1737,8 @@ class AdminSearchQueryTests(BaseAPITestCase):
         self.admin_user = UserFactory(role='admin')
         self.regular_user = UserFactory(role='member')
         
-        SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
-        SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
+        self.admin_query = SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
+        self.regular_query = SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
         
         self.url = reverse('v1:admin_search_query_list')
 
@@ -1746,7 +1746,10 @@ class AdminSearchQueryTests(BaseAPITestCase):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data.get('results', [])) >= 1)
+        results = response.data.get('results', [])
+        query_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_query.id), query_ids)
+        self.assertIn(str(self.regular_query.id), query_ids)
 
     def test_regular_user_cannot_list_search_queries(self):
         self.client.force_authenticate(user=self.regular_user)

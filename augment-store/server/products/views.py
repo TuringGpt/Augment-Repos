@@ -21,7 +21,7 @@ from .serializers import (
 )
 from .filters import ProductFilter, ProductSearchFilter
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService
+from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService, SearchQueryCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 from core.search import AdvancedSearchMixin
@@ -284,8 +284,7 @@ class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all search queries globally."""
     serializer_class = SearchQueryListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    queryset = SearchQuery.objects.all()
+    cache_service_class = SearchQueryCacheService
+    queryset = SearchQuery.objects.all().order_by('-created_at', '-id')
 
-    def get_queryset(self):
-        return super().get_queryset()
 
