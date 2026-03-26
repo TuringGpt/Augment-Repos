@@ -400,13 +400,16 @@ class AdminWishlistListViewTests(BaseAPITestCase):
         self.regular_wishlist = Wishlist.objects.get_user_wishlist(self.regular_user)
         self.regular_wishlist.products.add(ProductFactory())
         
-        self.url = reverse('carts:admin_wishlist_list')
+        self.url = reverse('v1:carts:admin_wishlist_list')
         
     def test_admin_can_list_all_wishlists(self):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data['results']) >= 1)
+        results = response.data['results']
+        wishlist_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_wishlist.id), wishlist_ids)
+        self.assertIn(str(self.regular_wishlist.id), wishlist_ids)
         
     def test_regular_user_cannot_list_wishlists(self):
         self.client.force_authenticate(user=self.regular_user)
