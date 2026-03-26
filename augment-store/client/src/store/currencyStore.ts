@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Currency } from '@services/api'
+import { isAbortError } from '@utils/errorUtils'
 
 interface CurrencyState {
   currencies: Currency[]
@@ -45,19 +46,18 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       }
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts
-      const error = err as {
-        name?: string
-        response?: { status?: number; data?: { message?: string } }
-        message?: string
-      }
-
-      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+      if (isAbortError(err)) {
         console.log('Currency fetch aborted')
         // Reset loading state if this is still the latest request
         if (requestId === fetchRequestCounter) {
           set({ isLoading: false })
         }
         return
+      }
+
+      const error = err as {
+        response?: { status?: number; data?: { message?: string } }
+        message?: string
       }
 
       const errorMessage =
