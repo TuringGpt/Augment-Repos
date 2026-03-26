@@ -1741,6 +1741,7 @@ class AdminSearchQueryTests(BaseAPITestCase):
         
         self.admin_query = SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
         self.regular_query = SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
+        self.anon_query = SearchQuery.objects.create(query="headphones", results_count=3, user=None)
         
         self.url = reverse('v1:admin_search_query_list')
 
@@ -1761,3 +1762,12 @@ class AdminSearchQueryTests(BaseAPITestCase):
     def test_unauthenticated_cannot_list_search_queries(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_admin_can_list_search_queries_with_null_user(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        anon_entry = next((r for r in results if str(r['id']) == str(self.anon_query.id)), None)
+        self.assertIsNotNone(anon_entry)
+        self.assertIsNone(anon_entry['user'])
