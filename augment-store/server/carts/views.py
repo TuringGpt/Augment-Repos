@@ -145,4 +145,8 @@ class AdminWishlistListView(BaseWishlistView, ListAPIView):
     queryset = Wishlist.objects.all().order_by('-created_at', '-id')
 
     def get_queryset(self):
-        return super().get_queryset()
+        return super().get_queryset().prefetch_related(
+            'products__brand',
+            'products__category',
+            'products__images'
+        ).select_related('user')
