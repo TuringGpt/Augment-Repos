@@ -14,7 +14,11 @@ interface CurrencyState {
   clearCurrencies: () => void
 }
 
-export const useCurrencyStore = create<CurrencyState>((set, get) => ({
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let fetchRequestCounter = 0
+
+export const useCurrencyStore = create<CurrencyState>((set) => ({
   // Initial state
   currencies: [],
   isLoading: false,
@@ -22,6 +26,10 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
 
   // Actions
   fetchCurrencies: async (signal?: AbortSignal) => {
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
     // Import currencyService dynamically to avoid circular dependency
     const { currencyService } = await import('@services/api')
 
@@ -30,9 +38,9 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
 
       const currencies = await currencyService.getCurrencies(signal)
 
-      // Only update state if not aborted
-      if (!signal?.aborted) {
-        set({ currencies, error: null })
+      // Only update state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({ currencies, error: null, isLoading: false })
       }
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts
@@ -44,6 +52,10 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
 
       if (error.name === 'AbortError' || error.name === 'CanceledError') {
         console.log('Currency fetch aborted')
+        // Reset loading state if this is still the latest request
+        if (requestId === fetchRequestCounter) {
+          set({ isLoading: false })
+        }
         return
       }
 
@@ -52,7 +64,11 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
         error?.message ||
         'Failed to fetch currencies. Please try again.'
 
-      set({ error: errorMessage })
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({ error: errorMessage, isLoading: false })
+      }
+
       console.error('Error fetching currencies:', {
         error,
         status: error?.response?.status,
@@ -61,9 +77,6 @@ export const useCurrencyStore = create<CurrencyState>((set, get) => ({
       })
 
       throw err
-    } finally {
-      // Always reset loading state, even if aborted
-      set({ isLoading: false })
     }
   },
 
