@@ -72,8 +72,6 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
       console.error('Error fetching currencies:', sanitizeErrorForLogging(err, 'Failed to fetch currencies'))
-
-      throw err
     }
   },
 
