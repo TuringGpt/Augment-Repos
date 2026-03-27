@@ -1012,6 +1012,7 @@
     "reports": "Reports",
     "contactMessages": "Contact Messages",
     "tickets": "Tickets",
+    "currency": "Currency",
     "reportsPage": {
       "title": "Reports",
       "subtitle": "View and analyze comprehensive business reports",
@@ -1357,6 +1358,19 @@
         "uploadCategoryImage": "Upload category image",
         "removeCategoryImage": "Remove category image",
         "categoryImageInput": "Category image file input"
+      }
+    },
+    "currencyPage": {
+      "title": "Currency Management",
+      "subtitle": "View and manage supported currencies",
+      "refresh": "Refresh",
+      "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
+      "noCurrencies": "No currencies available",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID"
       }
     },
     "brandsPage": {

@@ -1012,6 +1012,7 @@
     "reports": "Informes",
     "contactMessages": "Mensajes de Contacto",
     "tickets": "Tickets",
+    "currency": "Moneda",
     "reportsPage": {
       "title": "Informes",
       "subtitle": "Ver y analizar informes comerciales completos",
@@ -1357,6 +1358,19 @@
         "uploadCategoryImage": "Subir imagen de la categoría",
         "removeCategoryImage": "Eliminar imagen de la categoría",
         "categoryImageInput": "Entrada de archivo de imagen de categoría"
+      }
+    },
+    "currencyPage": {
+      "title": "Gestión de Monedas",
+      "subtitle": "Ver y gestionar monedas admitidas",
+      "refresh": "Actualizar",
+      "wipBanner": "Esta página está actualmente en desarrollo. Las funciones completas de gestión de monedas estarán disponibles pronto.",
+      "noCurrencies": "No hay monedas disponibles",
+      "table": {
+        "code": "Código",
+        "name": "Nombre",
+        "symbol": "Símbolo",
+        "id": "ID"
       }
     },
     "brandsPage": {

@@ -1012,6 +1012,7 @@
     "reports": "Berichte",
     "contactMessages": "Kontaktnachrichten",
     "tickets": "Tickets",
+    "currency": "Währung",
     "reportsPage": {
       "title": "Berichte",
       "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
@@ -1357,6 +1358,19 @@
         "uploadCategoryImage": "Kategoriebild hochladen",
         "removeCategoryImage": "Kategoriebild entfernen",
         "categoryImageInput": "Kategoriebild-Dateieingabe"
+      }
+    },
+    "currencyPage": {
+      "title": "Währungsverwaltung",
+      "subtitle": "Unterstützte Währungen anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
+      "noCurrencies": "Keine Währungen verfügbar",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID"
       }
     },
     "brandsPage": {
