@@ -1242,7 +1242,10 @@ class AdminOrderItemTests(BaseAPITestCase):
         response = self.admin_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        self.assertIsInstance(results, list)
+        item_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_item.id), item_ids)
+        self.assertIn(str(self.regular_item.id), item_ids)
 
     def test_regular_user_list_order_items_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
