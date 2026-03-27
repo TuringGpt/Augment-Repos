@@ -472,7 +472,10 @@ class AdminCommentListViewTests(BaseAPITestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
-        self.assertTrue(len(results) >= 1)
+        self.assertIsInstance(results, list)
+        comment_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_comment.id), comment_ids)
+        self.assertIn(str(self.regular_comment.id), comment_ids)
 
     def test_regular_user_cannot_list_comments(self):
         self.client.force_authenticate(user=self.regular_user)

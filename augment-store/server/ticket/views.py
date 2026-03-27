@@ -230,4 +230,4 @@ class AdminCommentListView(ListAPIView):
     """Admin-only view to list all ticket comments globally."""
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.all().order_by('-created_at', '-id')
