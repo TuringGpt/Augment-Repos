@@ -1012,6 +1012,7 @@
     "reports": "Rapports",
     "contactMessages": "Messages de Contact",
     "tickets": "Tickets",
+    "currency": "Devises",
     "reportsPage": {
       "title": "Rapports",
       "subtitle": "Voir et analyser les rapports commerciaux complets",
@@ -1357,6 +1358,19 @@
         "uploadCategoryImage": "Télécharger l'image de la catégorie",
         "removeCategoryImage": "Supprimer l'image de la catégorie",
         "categoryImageInput": "Entrée de fichier d'image de catégorie"
+      }
+    },
+    "currencyPage": {
+      "title": "Gestion des Devises",
+      "subtitle": "Voir et gérer les devises prises en charge",
+      "refresh": "Actualiser",
+      "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
+      "noCurrencies": "Aucune devise disponible",
+      "table": {
+        "code": "Code",
+        "name": "Nom",
+        "symbol": "Symbole",
+        "id": "ID"
       }
     },
     "brandsPage": {
