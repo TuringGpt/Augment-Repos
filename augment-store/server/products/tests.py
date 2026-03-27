@@ -1728,3 +1728,46 @@ class AdminProductTests(BaseAPITestCase):
         self.assertEqual(list_response.status_code, 200)
         results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
         self.assertEqual(len(results), 0)
+
+
+class AdminSearchQueryTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from products.services import SearchQueryCacheService
+        SearchQueryCacheService().clear_namespace()
+        from accounts.factory import UserFactory
+        self.admin_user = UserFactory(role='admin')
+        self.regular_user = UserFactory(role='member')
+        
+        self.admin_query = SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
+        self.regular_query = SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
+        self.anon_query = SearchQuery.objects.create(query="headphones", results_count=3, user=None)
+        
+        self.url = reverse('v1:admin_search_query_list')
+
+    def test_admin_can_list_search_queries(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        query_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_query.id), query_ids)
+        self.assertIn(str(self.regular_query.id), query_ids)
+
+    def test_regular_user_cannot_list_search_queries(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_cannot_list_search_queries(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_admin_can_list_search_queries_with_null_user(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        anon_entry = next((r for r in results if str(r['id']) == str(self.anon_query.id)), None)
+        self.assertIsNotNone(anon_entry)
+        self.assertIsNone(anon_entry['user'])

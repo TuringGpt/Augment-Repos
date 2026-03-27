@@ -13,11 +13,15 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework import filters
 
 from accounts.permissions import hasAdminOrMerchantRole, hasAdminRole
-from .models import Product, ProductBrand, ProductCategory
-from .serializers import CreateProductBrandSerializer, CreateProductCategorySerializer, CreateProductSerializer, ProductBrandDetailSerializer, ProductBrandListSerializer, ProductCategoryDetailSerializer, ProductCategoryListSerializer, ProductListSerializer, ProductDetailSerializer
+from .models import ProductBrand, ProductCategory, Product, SearchQuery
+from .serializers import (
+    CreateProductBrandSerializer, ProductBrandListSerializer, ProductBrandDetailSerializer,
+    CreateProductCategorySerializer, ProductCategoryListSerializer, ProductCategoryDetailSerializer,
+    CreateProductSerializer, ProductListSerializer, ProductDetailSerializer, SearchQueryListSerializer
+)
 from .filters import ProductFilter, ProductSearchFilter
 from .filters import ProductFilter, ProductSearchFilter
-from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService
+from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService, SearchQueryCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
 from core.search import AdvancedSearchMixin
@@ -274,4 +278,21 @@ class ProductStockView(RetrieveAPIView):
         }
         serializer = self.get_serializer(data)
         return Response(serializer.data)
+
+
+class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
+    """Admin-only view to list all search queries globally."""
+    serializer_class = SearchQueryListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = SearchQueryCacheService
+    auto_select_related = ("user",)
+    queryset = SearchQuery.objects.filter(is_deleted=False).order_by('-created_at', '-id')
+
+    def generate_cache_key(self):
+        service = self.get_cache_service()
+        return service.get_cache_key(
+            user_id=None,
+            query_params=self.request.query_params
+        )
+
 
