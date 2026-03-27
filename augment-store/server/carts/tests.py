@@ -384,3 +384,38 @@ class AdminCartTests(BaseAPITestCase):
         url = reverse("v1:carts:admin_cart_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 403)
+
+
+class AdminWishlistListViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(role=User.Role.ADMIN)
+        self.regular_user = UserFactory(role=User.Role.MEMBER)
+        
+        # Give admin a wishlist
+        self.admin_wishlist = Wishlist.objects.get_user_wishlist(self.admin_user)
+        self.admin_wishlist.products.add(ProductFactory(), ProductFactory())
+        
+        # Give regular user a wishlist
+        self.regular_wishlist = Wishlist.objects.get_user_wishlist(self.regular_user)
+        self.regular_wishlist.products.add(ProductFactory())
+        
+        self.url = reverse('v1:carts:admin_wishlist_list')
+        
+    def test_admin_can_list_all_wishlists(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        wishlist_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_wishlist.id), wishlist_ids)
+        self.assertIn(str(self.regular_wishlist.id), wishlist_ids)
+        
+    def test_regular_user_cannot_list_wishlists(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    def test_unauthenticated_cannot_list_wishlists(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
