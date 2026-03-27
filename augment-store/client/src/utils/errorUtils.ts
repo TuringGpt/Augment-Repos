@@ -239,6 +239,7 @@ export function sanitizeErrorForLogging(
  *
  * This function checks if an error was caused by an intentional request cancellation,
  * either through AbortController (AbortSignal) or Axios cancel tokens.
+ * Uses multiple detection methods for reliability across Axios versions and runtimes.
  *
  * @param error - The error object to check
  * @returns true if the error is an abort/cancel error, false otherwise
@@ -255,15 +256,27 @@ export function sanitizeErrorForLogging(
  * }
  */
 export function isAbortError(error: unknown): boolean {
-  // Check if error is an axios cancel error (using cancel tokens)
+  // Method 1: Use Axios's built-in isCancel utility (most reliable for cancel tokens)
   if (axios.isCancel(error)) {
     return true
   }
 
-  // Check if error is an AbortController abort error (using AbortSignal)
+  const err = error as { code?: string; name?: string }
+
+  // Method 2: Check error.code for 'ERR_CANCELED' (Axios standard for AbortSignal)
+  // Axios can surface aborts via signal as code === 'ERR_CANCELED' depending on version/runtime
+  if (err?.code === 'ERR_CANCELED') {
+    return true
+  }
+
+  // Method 3: Check error.name for AbortError (AbortController standard)
   // When a request is aborted via AbortController, it throws a DOMException with name "AbortError"
-  const domException = error as { name?: string }
-  if (domException?.name === 'AbortError') {
+  if (err?.name === 'AbortError') {
+    return true
+  }
+
+  // Method 4: Check error.name for CanceledError (legacy Axios pattern)
+  if (err?.name === 'CanceledError') {
     return true
   }
 
