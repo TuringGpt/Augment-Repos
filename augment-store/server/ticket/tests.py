@@ -451,3 +451,34 @@ class AdminTicketStatsTests(BaseAPITestCase):
         response = client.get(self.stats_url)
         self.assertEqual(response.data["total"], 1)
         self.assertEqual(response.data["open"], 1)
+
+
+class AdminCommentListViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(role='admin')
+        self.regular_user = UserFactory(role='member')
+        
+        self.admin_ticket = TicketFactory(reporter=self.admin_user, assignee=self.admin_user)
+        self.regular_ticket = TicketFactory(reporter=self.regular_user, assignee=self.regular_user)
+        
+        self.admin_comment = CommentFactory(ticket=self.admin_ticket, user=self.admin_user, content="Admin comment")
+        self.regular_comment = CommentFactory(ticket=self.regular_ticket, user=self.regular_user, content="User comment")
+        
+        self.url = reverse('v1:ticket:admin_comment_list')
+
+    def test_admin_can_list_all_comments(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertTrue(len(results) >= 1)
+
+    def test_regular_user_cannot_list_comments(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_cannot_list_comments(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
