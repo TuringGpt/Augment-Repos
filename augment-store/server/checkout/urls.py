@@ -9,7 +9,8 @@ from .views import (
     AdminShippingAddressListView,
     AdminPaymentListView,
     AdminBillingAddressListView,
-    AdminContactInfoListView
+    AdminContactInfoListView,
+    AdminOrderItemListView
 )
 app_name = "checkout"
 urlpatterns = [
@@ -25,4 +26,5 @@ urlpatterns = [
     path('admin/billing-addresses/', AdminBillingAddressListView.as_view(), name='admin_billing_address_list'),
     path('admin/contact-info/', AdminContactInfoListView.as_view(), name='admin_contact_info_list'),
     path('admin/payments/', AdminPaymentListView.as_view(), name='admin_payment_list'),
+    path('admin/order-items/', AdminOrderItemListView.as_view(), name='admin_order_item_list'),
 ]
