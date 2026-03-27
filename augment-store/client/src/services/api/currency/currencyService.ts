@@ -37,5 +37,15 @@ export const currencyService = {
     })
     return response.results
   },
+
+  /**
+   * Get a single currency by ID
+   * @param id - Currency ID
+   * @returns Promise with currency details
+   * @throws Error if the API request fails
+   */
+  getCurrencyById: async (id: string): Promise<Currency> => {
+    return apiClient.get<Currency>(API_ENDPOINTS.CURRENCY.DETAIL(id))
+  },
 }
 
