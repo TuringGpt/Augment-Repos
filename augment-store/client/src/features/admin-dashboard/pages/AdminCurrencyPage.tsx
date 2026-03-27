@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import {
   Container,
   Typography,
   Box,
   Alert,
+  Button,
 } from '@mui/material'
 import {
   AttachMoney as CurrencyIcon,
@@ -16,6 +18,7 @@ import { useAuthStore } from '@store/authStore'
  * Currently in work-in-progress state
  */
 const AdminCurrencyPage = () => {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
 
@@ -26,6 +29,9 @@ const AdminCurrencyPage = () => {
         <Alert severity="warning" sx={{ mb: 3 }}>
           {t('admin.dashboard.pleaseLogin')}
         </Alert>
+        <Button variant="contained" onClick={() => navigate('/login')}>
+          {t('admin.dashboard.goToLogin')}
+        </Button>
       </Container>
     )
   }
@@ -36,6 +42,9 @@ const AdminCurrencyPage = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {t('admin.dashboard.accessDenied')}
         </Alert>
+        <Button variant="contained" onClick={() => navigate('/')}>
+          {t('admin.dashboard.goToHome')}
+        </Button>
       </Container>
     )
   }
