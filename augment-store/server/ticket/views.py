@@ -224,3 +224,10 @@ class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
         return super().get_queryset().filter(ticket_id=ticket_id)
+
+
+class AdminCommentListView(ListAPIView):
+    """Admin-only view to list all ticket comments globally."""
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = Comment.objects.all().order_by('-created_at', '-id')
