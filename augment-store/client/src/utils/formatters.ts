@@ -10,25 +10,42 @@ export const formatCurrency = (amount: number, currency = 'USD'): string => {
 
 /**
  * Format a date string
+ * Returns 'N/A' if the date is invalid or empty to prevent crashes
  */
 export const formatDate = (date: string | Date, format: 'short' | 'long' = 'short'): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date
-
-  if (format === 'long') {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(dateObj)
+  // Guard against invalid input
+  if (!date || (typeof date === 'string' && date.trim() === '')) {
+    return 'N/A'
   }
 
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(dateObj)
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+
+    // Check if the parsed date is valid
+    if (isNaN(dateObj.getTime())) {
+      return 'N/A'
+    }
+
+    if (format === 'long') {
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(dateObj)
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(dateObj)
+  } catch (error) {
+    // If formatting fails, return a fallback value instead of crashing
+    console.warn('Invalid date encountered in formatDate:', date, error)
+    return 'N/A'
+  }
 }
 
 /**
