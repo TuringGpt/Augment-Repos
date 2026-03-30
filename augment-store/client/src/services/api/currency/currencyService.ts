@@ -68,6 +68,9 @@ export const currencyService = {
    * @returns Promise with currency details (basic fields only: name, code, symbol)
    * @throws Error if the API request fails
    *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (AdminCurrencyUpdateDeleteView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   *
    * Note: Backend uses CreateCurrencySerializer which returns only name, code, and symbol.
    * It does NOT include id, created_at, or updated_at fields.
    */
@@ -80,6 +83,9 @@ export const currencyService = {
    * @param data - Currency data to create
    * @returns Promise with created currency (basic fields only: name, code, symbol)
    * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (CreateCurrencyView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
    *
    * Note: Backend CreateCurrencySerializer returns only name, code, and symbol.
    * It does NOT include id, created_at, or updated_at fields.
