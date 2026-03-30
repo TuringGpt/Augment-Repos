@@ -114,9 +114,11 @@ const AdminCurrencyPage = () => {
           </Typography>
         </Box>
         <Tooltip title={t('admin.currencyPage.refresh', 'Refresh')}>
-          <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
-            <RefreshIcon />
-          </IconButton>
+          <span>
+            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
+              <RefreshIcon />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
 
