@@ -24,6 +24,30 @@ export interface CurrencyListResponse {
   results: Currency[]
 }
 
+/**
+ * Create Currency Request
+ * Backend expects fields for creating a new currency
+ */
+export interface CreateCurrencyRequest {
+  code: string
+  name: string
+  symbol: string
+}
+
+/**
+ * Create Currency Response
+ * Backend CreateCurrencySerializer returns only basic fields without timestamps or id
+ * Fields: name, code, symbol
+ *
+ * Note: This is different from Currency which includes id, created_at, and updated_at.
+ * The CreateCurrencySerializer doesn't include these fields in the response.
+ */
+export interface CreateCurrencyResponse {
+  code: string
+  name: string
+  symbol: string
+}
+
 export const currencyService = {
   /**
    * Get all currencies
@@ -41,11 +65,33 @@ export const currencyService = {
   /**
    * Get a single currency by ID
    * @param id - Currency ID
-   * @returns Promise with currency details
+   * @returns Promise with currency details (basic fields only: name, code, symbol)
    * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (AdminCurrencyUpdateDeleteView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   *
+   * Note: Backend uses CreateCurrencySerializer which returns only name, code, and symbol.
+   * It does NOT include id, created_at, or updated_at fields.
    */
-  getCurrencyById: async (id: string): Promise<Currency> => {
-    return apiClient.get<Currency>(API_ENDPOINTS.CURRENCY.DETAIL(id))
+  getCurrencyById: async (id: string): Promise<CreateCurrencyResponse> => {
+    return apiClient.get<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.DETAIL(id))
+  },
+
+  /**
+   * Create a new currency
+   * @param data - Currency data to create
+   * @returns Promise with created currency (basic fields only: name, code, symbol)
+   * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (CreateCurrencyView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   *
+   * Note: Backend CreateCurrencySerializer returns only name, code, and symbol.
+   * It does NOT include id, created_at, or updated_at fields.
+   */
+  createCurrency: async (data: CreateCurrencyRequest): Promise<CreateCurrencyResponse> => {
+    return apiClient.post<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.CREATE, data)
   },
 }
 

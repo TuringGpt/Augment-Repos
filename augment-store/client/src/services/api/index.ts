@@ -14,5 +14,5 @@ export { productStatisticsService } from './product-statistics/productStatistics
 export { customerStatisticsService } from './customer-statistics/customerStatisticsService'
 export { contactService } from './contact/contactService'
 export { currencyService } from './currency/currencyService'
-export type { Currency, CurrencyListResponse } from './currency/currencyService'
+export type { Currency, CurrencyListResponse, CreateCurrencyRequest, CreateCurrencyResponse } from './currency/currencyService'
 export { apiClient } from './client'

@@ -158,6 +158,7 @@ export const API_ENDPOINTS = {
   // Currency endpoints
   CURRENCY: {
     LIST: '/currencies/',
+    CREATE: '/currencies/create/',
     DETAIL: (id: string) => `/currencies/${encodeURIComponent(id)}/`,
   },
 }
