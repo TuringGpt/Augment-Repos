@@ -15,7 +15,7 @@ from accounts.permissions import hasAdminRole
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BillingAddress, ContactInformation, Order, Payment, ShippingAddress
+from .models import BillingAddress, ContactInformation, Order, OrderItem, Payment, ShippingAddress
 from .serializers import (
     BillingAddressListSerializer,
     ContactInformationListSerializer,
@@ -27,6 +27,7 @@ from .serializers import (
     ShippingAddressListSerializer,
     AdminOrderUpdateSerializer,
     AdminPaymentListSerializer,
+    OrderItemListSerializer,
 )
 from .services import StripeService
 
@@ -216,3 +217,10 @@ class AdminContactInfoListView(ListAPIView):
     serializer_class = ContactInformationListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     queryset = ContactInformation.objects.all().order_by('-created_at', '-id')
+
+
+class AdminOrderItemListView(ListAPIView):
+    """Admin-only view to list all order items globally."""
+    serializer_class = OrderItemListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = OrderItem.objects.all().order_by('-created_at', '-id')
