@@ -24,6 +24,16 @@ export interface CurrencyListResponse {
   results: Currency[]
 }
 
+/**
+ * Create Currency Request
+ * Backend expects fields for creating a new currency
+ */
+export interface CreateCurrencyRequest {
+  code: string
+  name: string
+  symbol: string
+}
+
 export const currencyService = {
   /**
    * Get all currencies
@@ -46,6 +56,16 @@ export const currencyService = {
    */
   getCurrencyById: async (id: string): Promise<Currency> => {
     return apiClient.get<Currency>(API_ENDPOINTS.CURRENCY.DETAIL(id))
+  },
+
+  /**
+   * Create a new currency
+   * @param data - Currency data to create
+   * @returns Promise with created currency
+   * @throws Error if the API request fails
+   */
+  createCurrency: async (data: CreateCurrencyRequest): Promise<Currency> => {
+    return apiClient.post<Currency>(API_ENDPOINTS.CURRENCY.CREATE, data)
   },
 }
 
