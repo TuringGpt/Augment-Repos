@@ -18,9 +18,10 @@ interface CurrencyState {
   clearCurrencies: () => void
 }
 
-// Request counter to track the latest fetch request
+// Request counters to track the latest requests
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
+let createRequestCounter = 0
 
 export const useCurrencyStore = create<CurrencyState>((set) => ({
   // Initial state
@@ -48,15 +49,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         set({ currencies, error: null, isLoading: false })
+      } else {
+        // Request was invalidated by a newer fetch or create - ensure isLoading is reset
+        set({ isLoading: false })
       }
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts
       if (isAbortError(err)) {
         console.log('Currency fetch aborted')
-        // Reset loading state if this is still the latest request
-        if (requestId === fetchRequestCounter) {
-          set({ isLoading: false })
-        }
+        // Always reset loading state regardless of whether this request was invalidated
+        set({ isLoading: false })
         return
       }
 
@@ -69,6 +71,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         set({ error: errorMessage, isLoading: false })
+      } else {
+        // Request was invalidated - just reset loading state without setting error
+        set({ isLoading: false })
       }
 
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
@@ -81,10 +86,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // This prevents createCurrency from clearing error or setting isLoading to false
     // while a fetchCurrencies request is still in-flight
 
-    // Increment counter to invalidate any in-flight fetch requests
+    // Increment both counters to track this create request and invalidate in-flight fetches
     // This prevents stale fetchCurrencies() responses from overwriting the post-create list
+    createRequestCounter += 1
     fetchRequestCounter += 1
-    const requestId = fetchRequestCounter
+    const requestId = createRequestCounter
 
     set({ isCreating: true, createError: null })
 
@@ -104,17 +110,18 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update state if this is still the latest request
       // This check protects against race conditions where clearCurrencies() or a newer
       // fetchCurrencies()/createCurrency() call invalidates this request while in-flight
-      if (requestId === fetchRequestCounter) {
+      if (requestId === createRequestCounter) {
         set({ currencies, createError: null, isCreating: false })
+      } else {
+        // Request was invalidated by a newer create or fetch - ensure isCreating is reset
+        set({ isCreating: false })
       }
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts or request is cancelled
       if (isAbortError(err)) {
         console.log('Currency create/refetch aborted')
-        // Reset loading state if this is still the latest request
-        if (requestId === fetchRequestCounter) {
-          set({ isCreating: false })
-        }
+        // Always reset loading state regardless of whether this request was invalidated
+        set({ isCreating: false })
         return
       }
 
@@ -130,8 +137,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       })
 
       // Only update error state if this is still the latest request
-      if (requestId === fetchRequestCounter) {
+      if (requestId === createRequestCounter) {
         set({ createError: errorMessage, isCreating: false })
+      } else {
+        // Request was invalidated - just reset loading state without setting error
+        set({ isCreating: false })
       }
 
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
@@ -149,11 +159,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   setError: (error) => set({ error }),
 
   clearCurrencies: () => {
-    // Increment counter to invalidate any in-flight fetch requests
-    // This ensures that in-flight fetchCurrencies() calls won't repopulate
+    // Increment both counters to invalidate any in-flight fetch or create requests
+    // This ensures that in-flight fetchCurrencies() or createCurrency() calls won't repopulate
     // the currencies array after it has been cleared (e.g., during logout/navigation)
     fetchRequestCounter += 1
-    // Reset loading state to prevent being stuck in loading state if called during an active fetch
+    createRequestCounter += 1
+    // Reset all loading state to prevent being stuck in loading state if called during active requests
     set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false })
   },
 }))
