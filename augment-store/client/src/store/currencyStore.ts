@@ -148,14 +148,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update error state if this is still the latest request
       if (requestId === createRequestCounter) {
         set({ createError: errorMessage, isCreating: false })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Error creating currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
+
+        // Re-throw the error so the caller can handle it (e.g., show a notification)
+        // Only throw if this is still the latest request to avoid noisy/unhandled promise rejections
+        // from stale/invalidated requests
+        throw err
       }
-      // Don't clear isCreating if this is a stale request - a newer createCurrency may still be in-flight
-
-      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
-      console.error('Error creating currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
-
-      // Re-throw the error so the caller can handle it (e.g., show a notification)
-      throw err
+      // Don't clear isCreating or throw error if this is a stale request - a newer createCurrency may still be in-flight
     }
   },
 
