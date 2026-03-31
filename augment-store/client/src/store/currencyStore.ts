@@ -120,7 +120,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
           fetchRequestCounter += 1
         }
 
-        set({ currencies, createError: null, isCreating: false })
+        set({ currencies, createError: null, isCreating: false, error: null })
       }
       // Don't clear isCreating if this is a stale request - a newer createCurrency may still be in-flight
     } catch (err) {
