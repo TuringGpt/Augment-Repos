@@ -84,11 +84,13 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // This prevents createCurrency from clearing error or setting isLoading to false
     // while a fetchCurrencies request is still in-flight
 
-    // Increment both counters to track this create request and invalidate in-flight fetches
-    // This prevents stale fetchCurrencies() responses from overwriting the post-create list
     createRequestCounter += 1
-    fetchRequestCounter += 1
     const requestId = createRequestCounter
+
+    // Capture the current fetchRequestCounter at the start of this create
+    // This allows us to invalidate only fetchCurrencies() calls that started BEFORE this create
+    // preventing invalidation of newer fetches that started after this create began
+    const fetchCounterAtCreateStart = fetchRequestCounter
 
     set({ isCreating: true, createError: null })
 
@@ -107,8 +109,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
       // Only update state if this is still the latest request
       // This check protects against race conditions where clearCurrencies() or a newer
-      // fetchCurrencies()/createCurrency() call invalidates this request while in-flight
+      // createCurrency() call invalidates this request while in-flight
       if (requestId === createRequestCounter) {
+        // Invalidate any in-flight fetchCurrencies() requests that started BEFORE this create
+        // to prevent them from overwriting the just-created currency list with stale data
+        // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
+        // This prevents invalidating user-triggered refreshes that started after this create
+        if (fetchRequestCounter === fetchCounterAtCreateStart) {
+          fetchRequestCounter += 1
+        }
+
         set({ currencies, createError: null, isCreating: false })
       }
       // Don't clear isCreating if this is a stale request - a newer createCurrency may still be in-flight
