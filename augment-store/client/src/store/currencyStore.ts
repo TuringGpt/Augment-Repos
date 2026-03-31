@@ -9,7 +9,7 @@ interface CurrencyState {
 
   // Actions
   fetchCurrencies: (signal?: AbortSignal) => Promise<void>
-  createCurrency: (data: CreateCurrencyRequest) => Promise<void>
+  createCurrency: (data: CreateCurrencyRequest, signal?: AbortSignal) => Promise<void>
   setCurrencies: (currencies: Currency[]) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -72,7 +72,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     }
   },
 
-  createCurrency: async (data: CreateCurrencyRequest) => {
+  createCurrency: async (data: CreateCurrencyRequest, signal?: AbortSignal) => {
     // Increment counter to invalidate any in-flight fetch requests
     // This prevents stale fetchCurrencies() responses from overwriting the post-create list
     fetchRequestCounter += 1
@@ -90,13 +90,26 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Refetch currencies to get the updated list with the newly created currency
       // Note: The create endpoint returns only basic fields (code, name, symbol)
       // without id, created_at, and updated_at, so we need to refetch to get the complete data
-      const currencies = await currencyService.getCurrencies()
+      // Pass the AbortSignal to allow cancellation of the refetch request
+      const currencies = await currencyService.getCurrencies(signal)
 
       // Only update state if this is still the latest request
+      // This check protects against race conditions where clearCurrencies() or a newer
+      // fetchCurrencies()/createCurrency() call invalidates this request while in-flight
       if (requestId === fetchRequestCounter) {
         set({ currencies, error: null, isLoading: false })
       }
     } catch (err) {
+      // Ignore abort errors - these are expected when component unmounts or request is cancelled
+      if (isAbortError(err)) {
+        console.log('Currency create/refetch aborted')
+        // Reset loading state if this is still the latest request
+        if (requestId === fetchRequestCounter) {
+          set({ isLoading: false })
+        }
+        return
+      }
+
       // Use parseApiError to extract user-friendly error message from API response
       // Pass field names to extract field-specific DRF validation errors (e.g., { code: [...], name: [...] })
       // This properly handles Django/DRF error responses including:
