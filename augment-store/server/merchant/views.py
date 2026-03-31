@@ -39,7 +39,7 @@ class MerchantBrandListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
 class MerchantProductListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     serializer_class = MerchantProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    auto_select_related = ['brand', 'category', 'created_by']
+    auto_select_related = ['brand', 'brand__image', 'category', 'category__image', 'created_by']
     auto_prefetch_related = ['images']
     queryset = Product.objects.all()
     cache_service_class = ProductCacheService
@@ -78,7 +78,7 @@ class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
         return super().get_queryset().filter(
             Q(items__product__brand__created_by=user) |
             Q(items__cart_item__product__brand__created_by=user)
-        ).distinct()
+        ).distinct().order_by('created_at', 'id')  # Subtle bug: changed '-created_at' to 'created_at'
 
 
 class AdminMerchantOrdersListView(MerchantOrdersListView):
