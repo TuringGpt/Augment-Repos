@@ -77,6 +77,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   },
 
   createCurrency: async (data: CreateCurrencyRequest) => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents stale fetchCurrencies() responses from overwriting the post-create list
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
     set({ isLoading: true, error: null })
 
     try {
@@ -91,7 +96,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // without id, created_at, and updated_at, so we need to refetch to get the complete data
       const currencies = await currencyService.getCurrencies()
 
-      set({ currencies, error: null, isLoading: false })
+      // Only update state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({ currencies, error: null, isLoading: false })
+      }
     } catch (err) {
       const error = err as {
         response?: { status?: number; data?: { message?: string } }
@@ -103,7 +111,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         error?.message ||
         'Failed to create currency. Please try again.'
 
-      set({ error: errorMessage, isLoading: false })
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({ error: errorMessage, isLoading: false })
+      }
 
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
       console.error('Error creating currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
