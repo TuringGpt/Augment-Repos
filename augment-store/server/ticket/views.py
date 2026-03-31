@@ -14,7 +14,7 @@ from django.db.models import Count, Q
 
 class TicketCacheService(BaseCacheService):
     OBJECT_NAME = "ticket"
-    VERSION = 1
+    VERSION = 2
 
 
 class CommentCacheService(BaseCacheService):
