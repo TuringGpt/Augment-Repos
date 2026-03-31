@@ -98,6 +98,8 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", [])
+        self.assertGreaterEqual(len(results), 1)
 
     def test_ticket_list_comment_count(self):
         url = reverse("v1:ticket:ticket_list")
@@ -109,7 +111,8 @@ class TicketTests(BaseAPITestCase):
 
         # Add another comment via API to trigger cache invalidation
         create_url = reverse("v1:ticket:create_comment", kwargs={"pk": self.ticket.id})
-        self.authenticated_client.post(create_url, {"content": "Second comment"})
+        res = self.authenticated_client.post(create_url, {"content": "Second comment"})
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         
         # Verify count updated in list view
         response = self.authenticated_client.get(url)
@@ -119,13 +122,13 @@ class TicketTests(BaseAPITestCase):
         # Delete a comment via API
         comment = self.ticket.comments.first()
         delete_url = reverse("v1:ticket:delete_comment", kwargs={"pk": self.ticket.id, "comment_pk": comment.id})
-        self.authenticated_client.delete(delete_url)
+        res = self.authenticated_client.delete(delete_url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
         # Verify count decreased in list view
         response = self.authenticated_client.get(url)
         results = response.data.get("results", response.data)
         self.assertEqual(results[0]["comment_count"], 1)
-        self.assertGreaterEqual(len(response.data.get("results", [])), 1)
 
     def test_list_tickets_search_by_title(self):
         TicketFactory(title="Login Bug Report", assignee=self.user, reporter=self.user)
