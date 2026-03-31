@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Currency, CreateCurrencyRequest } from '@services/api'
-import { isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
+import { isAbortError, parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface CurrencyState {
   currencies: Currency[]
@@ -56,15 +56,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         return
       }
 
-      const error = err as {
-        response?: { status?: number; data?: { message?: string } }
-        message?: string
-      }
-
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to fetch currencies. Please try again.'
+      // Use parseApiError to extract user-friendly error message from API response
+      // This properly handles Django/DRF error responses including detail field
+      const errorMessage = parseApiError(err, {
+        defaultMessage: 'Failed to fetch currencies. Please try again.',
+      })
 
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
@@ -101,15 +97,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         set({ currencies, error: null, isLoading: false })
       }
     } catch (err) {
-      const error = err as {
-        response?: { status?: number; data?: { message?: string } }
-        message?: string
-      }
-
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to create currency. Please try again.'
+      // Use parseApiError to extract user-friendly error message from API response
+      // Pass field names to extract field-specific DRF validation errors (e.g., { code: [...], name: [...] })
+      // This properly handles Django/DRF error responses including:
+      // - detail field (common for validation errors like duplicates)
+      // - field-specific errors (code, name, symbol)
+      // - non_field_errors
+      const errorMessage = parseApiError(err, {
+        fieldNames: ['code', 'name', 'symbol'],
+        defaultMessage: 'Failed to create currency. Please try again.',
+      })
 
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
