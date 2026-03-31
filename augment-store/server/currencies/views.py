@@ -16,7 +16,7 @@ class CurrencyListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     """
     serializer_class = ListCurrencySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    queryset = Currency.objects.filter(is_deleted=True).order_by('code')
+    queryset = Currency.objects.filter(is_deleted=False).order_by('code')
     cache_service_class = CurrencyCacheService
     cache_ttl = 60 * 60 * 24 * 30  # 30 days - currencies change rarely 
 
