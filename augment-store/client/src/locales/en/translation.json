@@ -989,7 +989,21 @@
       "subtitle": "Manage and track all customer orders",
       "workInProgress": "Work in Progress",
       "underDevelopment": "The admin orders management page is currently under development.",
-      "checkBackSoon": "Check back soon for updates!"
+      "checkBackSoon": "Check back soon for updates!",
+      "table": {
+        "orderNumber": "Order Number",
+        "date": "Date",
+        "items": "Items",
+        "status": "Status",
+        "total": "Total",
+        "actions": "Actions",
+        "moreItems": "+{{count}} more",
+        "deletedProduct": "(Deleted Product)"
+      },
+      "emptyState": {
+        "noOrders": "No Orders Yet",
+        "noOrdersDescription": "No customer orders have been placed yet."
+      }
     },
     "products": "Products",
     "categories": "Categories",
@@ -998,6 +1012,7 @@
     "reports": "Reports",
     "contactMessages": "Contact Messages",
     "tickets": "Tickets",
+    "currency": "Currency",
     "reportsPage": {
       "title": "Reports",
       "subtitle": "View and analyze comprehensive business reports",
@@ -1035,11 +1050,15 @@
       "retry": "Retry",
       "totalMessages": "Total Messages: {{count}} message",
       "totalMessages_other": "Total Messages: {{count}} messages",
+      "selectedMessages": "{{count}} selected",
+      "selectedMessages_other": "{{count}} selected",
       "noMessages": "No contact messages yet",
       "viewDetails": "View Details",
       "messageDetails": "Message Details",
       "markAsRead": "Mark as Read",
       "markAsResolved": "Mark as Resolved",
+      "selectAllContacts": "Select all contacts",
+      "selectContact": "Select contact {{name}}",
       "table": {
         "name": "Name",
         "email": "Email",
@@ -1104,7 +1123,13 @@
         "reporter": "Reporter",
         "assignee": "Assignee",
         "actions": "Actions"
-      }
+      },
+      "deleteTicket": "Delete Ticket",
+      "deleteTicketConfirm": "Are you sure you want to delete <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Ticket deleted successfully",
+      "deleteError": "Failed to delete ticket. Please try again."
     },
     "createTicketPage": {
       "backToTickets": "Back to Tickets",
@@ -1173,7 +1198,12 @@
       "deleteTicketWarning": "This action cannot be undone.",
       "deleting": "Deleting...",
       "deleteSuccess": "Ticket deleted successfully",
-      "deleteError": "Failed to delete ticket. Please try again."
+      "deleteError": "Failed to delete ticket. Please try again.",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "updateSuccess": "Ticket updated successfully!",
+      "updateError": "Failed to update ticket. Please try again.",
+      "updateStateError": "Unable to update ticket. Please refresh the page and try again."
     },
     "settings": "Settings",
     "settingsPage": {
@@ -1184,6 +1214,12 @@
       "themeMode": "Theme Mode",
       "currentlyLight": "Currently using light theme",
       "currentlyDark": "Currently using dark theme",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language for the admin dashboard",
+      "selectLanguage": "Select Language",
+      "currentLanguage": "Currently using {{language}}",
+      "languageChanged": "Language changed successfully",
+      "languageChangeFailed": "Failed to change language. Please try again.",
       "moreSettings": "More Settings Coming Soon",
       "moreSettingsDescription": "Additional configuration options will be available here in future updates."
     },
@@ -1322,6 +1358,19 @@
         "uploadCategoryImage": "Upload category image",
         "removeCategoryImage": "Remove category image",
         "categoryImageInput": "Category image file input"
+      }
+    },
+    "currencyPage": {
+      "title": "Currency Management",
+      "subtitle": "View and manage supported currencies",
+      "refresh": "Refresh",
+      "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
+      "noCurrencies": "No currencies available",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID"
       }
     },
     "brandsPage": {

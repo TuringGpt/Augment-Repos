@@ -1678,3 +1678,96 @@ class ProductSearchViewTests(BaseAPITestCase):
         # We can't strictly assert len(ctx2) == 1 because middleware might add queries (session, user, etc).
         # Instead, check SearchQuery count.
         self.assertEqual(SearchQuery.objects.count(), 2)
+
+class AdminProductTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from accounts.factory import UserFactory
+        from products.factory import ProductFactory
+        self.admin = UserFactory(role="admin", email="admin_products@example.com")
+        self.merchant = UserFactory(role="merchant", email="merchant_products@example.com")
+        self.product = ProductFactory(name="Test Product")
+        # Explicitly set both brand and product ownership to the merchant
+        # so the test clearly exercises the "admin modifying non-owned product" scenario
+        self.product.brand.created_by = self.merchant
+        self.product.brand.save()
+        self.product.created_by = self.merchant
+        self.product.save()
+        
+    def test_admin_update_product(self):
+        url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        
+        # Test non-admin fails
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.patch(url, {'name': 'Unauthorized Update'})
+        self.assertEqual(response.status_code, 403)
+        
+        # Admins can update products they do not own
+        self.authenticated_client.force_authenticate(user=self.admin)
+        response = self.authenticated_client.patch(url, {'name': 'Admin Updated Product'})
+        self.assertEqual(response.status_code, 200)
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.name, 'Admin Updated Product')
+        
+    def test_admin_delete_product(self):
+        # Authenticate as admin first so the cache is primed under the same user_id
+        self.authenticated_client.force_authenticate(user=self.admin)
+
+        # Cache list initially
+        list_url = reverse('v1:product_list')
+        self.authenticated_client.get(list_url)
+        
+        url = reverse('v1:admin_product_update_delete', kwargs={'pk': self.product.pk})
+        
+        # Admins can delete
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        
+        # Re-fetch — same user_id so this hits the same cache key, verifying invalidation
+        list_response = self.authenticated_client.get(list_url)
+        self.assertEqual(list_response.status_code, 200)
+        results = list_response.data.get('results', list_response.data) if isinstance(list_response.data, dict) else list_response.data
+        self.assertEqual(len(results), 0)
+
+
+class AdminSearchQueryTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from products.services import SearchQueryCacheService
+        SearchQueryCacheService().clear_namespace()
+        from accounts.factory import UserFactory
+        self.admin_user = UserFactory(role='admin')
+        self.regular_user = UserFactory(role='member')
+        
+        self.admin_query = SearchQuery.objects.create(query="laptop", results_count=10, user=self.admin_user)
+        self.regular_query = SearchQuery.objects.create(query="phone", results_count=5, user=self.regular_user)
+        self.anon_query = SearchQuery.objects.create(query="headphones", results_count=3, user=None)
+        
+        self.url = reverse('v1:admin_search_query_list')
+
+    def test_admin_can_list_search_queries(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        query_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_query.id), query_ids)
+        self.assertIn(str(self.regular_query.id), query_ids)
+
+    def test_regular_user_cannot_list_search_queries(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_cannot_list_search_queries(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_admin_can_list_search_queries_with_null_user(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        anon_entry = next((r for r in results if str(r['id']) == str(self.anon_query.id)), None)
+        self.assertIsNotNone(anon_entry)
+        self.assertIsNone(anon_entry['user'])

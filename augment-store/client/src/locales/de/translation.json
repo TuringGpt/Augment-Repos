@@ -989,7 +989,21 @@
       "subtitle": "Alle Kundenbestellungen verwalten und verfolgen",
       "workInProgress": "In Arbeit",
       "underDevelopment": "Die Admin-Bestellungsverwaltungsseite befindet sich derzeit in der Entwicklung.",
-      "checkBackSoon": "Schauen Sie bald wieder vorbei!"
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "table": {
+        "orderNumber": "Bestellnummer",
+        "date": "Datum",
+        "items": "Artikel",
+        "status": "Status",
+        "total": "Gesamt",
+        "actions": "Aktionen",
+        "moreItems": "+{{count}} weitere",
+        "deletedProduct": "(Gelöschtes Produkt)"
+      },
+      "emptyState": {
+        "noOrders": "Noch Keine Bestellungen",
+        "noOrdersDescription": "Es wurden noch keine Kundenbestellungen aufgegeben."
+      }
     },
     "products": "Produkte",
     "categories": "Kategorien",
@@ -998,6 +1012,7 @@
     "reports": "Berichte",
     "contactMessages": "Kontaktnachrichten",
     "tickets": "Tickets",
+    "currency": "Währung",
     "reportsPage": {
       "title": "Berichte",
       "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
@@ -1035,11 +1050,15 @@
       "retry": "Erneut versuchen",
       "totalMessages": "Gesamtnachrichten: {{count}} Nachricht",
       "totalMessages_other": "Gesamtnachrichten: {{count}} Nachrichten",
+      "selectedMessages": "{{count}} ausgewählt",
+      "selectedMessages_other": "{{count}} ausgewählt",
       "noMessages": "Noch keine Kontaktnachrichten",
       "viewDetails": "Details anzeigen",
       "messageDetails": "Nachrichtendetails",
       "markAsRead": "Als gelesen markieren",
       "markAsResolved": "Als gelöst markieren",
+      "selectAllContacts": "Alle Kontakte auswählen",
+      "selectContact": "Kontakt {{name}} auswählen",
       "table": {
         "name": "Name",
         "email": "E-Mail",
@@ -1104,7 +1123,13 @@
         "reporter": "Melder",
         "assignee": "Zugewiesen",
         "actions": "Aktionen"
-      }
+      },
+      "deleteTicket": "Ticket Löschen",
+      "deleteTicketConfirm": "Sind Sie sicher, dass Sie <strong>{{ticketTitle}}</strong> löschen möchten?",
+      "deleteTicketWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Wird gelöscht...",
+      "deleteSuccess": "Ticket erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut."
     },
     "createTicketPage": {
       "backToTickets": "Zurück zu Tickets",
@@ -1173,7 +1198,12 @@
       "deleteTicketWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleting": "Wird gelöscht...",
       "deleteSuccess": "Ticket erfolgreich gelöscht",
-      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut."
+      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut.",
+      "saveChanges": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "updateSuccess": "Ticket erfolgreich aktualisiert!",
+      "updateError": "Fehler beim Aktualisieren des Tickets. Bitte versuchen Sie es erneut.",
+      "updateStateError": "Ticket kann nicht aktualisiert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut."
     },
     "settings": "Einstellungen",
     "settingsPage": {
@@ -1184,6 +1214,12 @@
       "themeMode": "Themenmodus",
       "currentlyLight": "Verwendet derzeit helles Theme",
       "currentlyDark": "Verwendet derzeit dunkles Theme",
+      "language": "Sprache",
+      "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für das Admin-Dashboard",
+      "selectLanguage": "Sprache Auswählen",
+      "currentLanguage": "Verwendet derzeit {{language}}",
+      "languageChanged": "Sprache erfolgreich geändert",
+      "languageChangeFailed": "Sprache konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },
@@ -1322,6 +1358,19 @@
         "uploadCategoryImage": "Kategoriebild hochladen",
         "removeCategoryImage": "Kategoriebild entfernen",
         "categoryImageInput": "Kategoriebild-Dateieingabe"
+      }
+    },
+    "currencyPage": {
+      "title": "Währungsverwaltung",
+      "subtitle": "Unterstützte Währungen anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
+      "noCurrencies": "Keine Währungen verfügbar",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID"
       }
     },
     "brandsPage": {

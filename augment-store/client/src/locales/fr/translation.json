@@ -989,7 +989,21 @@
       "subtitle": "Gérer et suivre toutes les commandes clients",
       "workInProgress": "Travaux en Cours",
       "underDevelopment": "La page de gestion des commandes administrateur est actuellement en développement.",
-      "checkBackSoon": "Revenez bientôt pour les mises à jour !"
+      "checkBackSoon": "Revenez bientôt pour les mises à jour !",
+      "table": {
+        "orderNumber": "Numéro de Commande",
+        "date": "Date",
+        "items": "Articles",
+        "status": "Statut",
+        "total": "Total",
+        "actions": "Actions",
+        "moreItems": "+{{count}} de plus",
+        "deletedProduct": "(Produit Supprimé)"
+      },
+      "emptyState": {
+        "noOrders": "Aucune Commande Pour le Moment",
+        "noOrdersDescription": "Aucune commande client n'a encore été passée."
+      }
     },
     "products": "Produits",
     "categories": "Catégories",
@@ -998,6 +1012,7 @@
     "reports": "Rapports",
     "contactMessages": "Messages de Contact",
     "tickets": "Tickets",
+    "currency": "Devises",
     "reportsPage": {
       "title": "Rapports",
       "subtitle": "Voir et analyser les rapports commerciaux complets",
@@ -1035,11 +1050,15 @@
       "retry": "Réessayer",
       "totalMessages": "Total des Messages : {{count}} message",
       "totalMessages_other": "Total des Messages : {{count}} messages",
+      "selectedMessages": "{{count}} sélectionné",
+      "selectedMessages_other": "{{count}} sélectionnés",
       "noMessages": "Aucun message de contact pour le moment",
       "viewDetails": "Voir les Détails",
       "messageDetails": "Détails du Message",
       "markAsRead": "Marquer comme lu",
       "markAsResolved": "Marquer comme résolu",
+      "selectAllContacts": "Sélectionner tous les contacts",
+      "selectContact": "Sélectionner le contact {{name}}",
       "table": {
         "name": "Nom",
         "email": "E-mail",
@@ -1104,7 +1123,13 @@
         "reporter": "Rapporteur",
         "assignee": "Assigné",
         "actions": "Actions"
-      }
+      },
+      "deleteTicket": "Supprimer le Ticket",
+      "deleteTicketConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{ticketTitle}}</strong> ?",
+      "deleteTicketWarning": "Cette action ne peut pas être annulée.",
+      "deleting": "Suppression...",
+      "deleteSuccess": "Ticket supprimé avec succès",
+      "deleteError": "Échec de la suppression du ticket. Veuillez réessayer."
     },
     "createTicketPage": {
       "backToTickets": "Retour aux Tickets",
@@ -1173,7 +1198,12 @@
       "deleteTicketWarning": "Cette action ne peut pas être annulée.",
       "deleting": "Suppression en cours...",
       "deleteSuccess": "Ticket supprimé avec succès",
-      "deleteError": "Échec de la suppression du ticket. Veuillez réessayer."
+      "deleteError": "Échec de la suppression du ticket. Veuillez réessayer.",
+      "saveChanges": "Enregistrer les Modifications",
+      "saving": "Enregistrement...",
+      "updateSuccess": "Ticket mis à jour avec succès !",
+      "updateError": "Échec de la mise à jour du ticket. Veuillez réessayer.",
+      "updateStateError": "Impossible de mettre à jour le ticket. Veuillez actualiser la page et réessayer."
     },
     "settings": "Paramètres",
     "settingsPage": {
@@ -1184,6 +1214,12 @@
       "themeMode": "Mode de Thème",
       "currentlyLight": "Utilise actuellement le thème clair",
       "currentlyDark": "Utilise actuellement le thème sombre",
+      "language": "Langue",
+      "languageDescription": "Choisissez votre langue préférée pour le tableau de bord d'administration",
+      "selectLanguage": "Sélectionner la Langue",
+      "currentLanguage": "Utilise actuellement {{language}}",
+      "languageChanged": "Langue changée avec succès",
+      "languageChangeFailed": "Échec du changement de langue. Veuillez réessayer.",
       "moreSettings": "Plus de Paramètres Bientôt",
       "moreSettingsDescription": "Des options de configuration supplémentaires seront disponibles ici dans les futures mises à jour."
     },
@@ -1322,6 +1358,19 @@
         "uploadCategoryImage": "Télécharger l'image de la catégorie",
         "removeCategoryImage": "Supprimer l'image de la catégorie",
         "categoryImageInput": "Entrée de fichier d'image de catégorie"
+      }
+    },
+    "currencyPage": {
+      "title": "Gestion des Devises",
+      "subtitle": "Voir et gérer les devises prises en charge",
+      "refresh": "Actualiser",
+      "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
+      "noCurrencies": "Aucune devise disponible",
+      "table": {
+        "code": "Code",
+        "name": "Nom",
+        "symbol": "Symbole",
+        "id": "ID"
       }
     },
     "brandsPage": {

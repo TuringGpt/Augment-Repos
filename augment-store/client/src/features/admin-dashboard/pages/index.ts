@@ -10,4 +10,5 @@ export { default as AdminContactMessagesPage } from './AdminContactMessagesPage'
 export { default as AdminTicketsPage } from './AdminTicketsPage'
 export { default as ProductStatisticsViewPage } from './ProductStatisticsViewPage'
 export { default as AdminSettingsPage } from './AdminSettingsPage'
+export { default as AdminCurrencyPage } from './AdminCurrencyPage'
 

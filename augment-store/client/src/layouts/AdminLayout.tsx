@@ -12,6 +12,7 @@ import {
   Store as BrandsIcon,
   Email as EmailIcon,
   ConfirmationNumber as TicketIcon,
+  AttachMoney as CurrencyIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import Header from '@components/Header'
@@ -25,7 +26,7 @@ import { ROUTES } from '@constants/index'
 const DRAWER_WIDTH = 260
 
 interface NavItem {
-  labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.contactMessages' | 'admin.tickets' | 'admin.settings'
+  labelKey: 'admin.dashboardNav' | 'admin.orders' | 'admin.products' | 'admin.categories' | 'admin.brands' | 'admin.users' | 'admin.reports' | 'admin.contactMessages' | 'admin.tickets' | 'admin.currency' | 'admin.settings'
   path: string
   icon: React.ReactNode
   activePaths?: string[] // Additional paths that should make this item active
@@ -82,6 +83,11 @@ const AdminLayout = () => {
       labelKey: 'admin.tickets',
       path: '/admin/tickets',
       icon: <TicketIcon />,
+    },
+    {
+      labelKey: 'admin.currency',
+      path: '/admin/currency',
+      icon: <CurrencyIcon />,
     },
     {
       labelKey: 'admin.settings',

@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import Cart, CartItem, Wishlist
-from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer
+from .serializers import AddToCartSerializer, AddToWishlistSerializer, UpdateCartItemSerializer, CartDetailSerializer, RemoveFromWishlistSerializer, WishlistDetailSerializer
 from products.serializers import ProductListSerializer
 from core.optimization import AutoOptimizeMixin
+from accounts.permissions import hasAdminRole
 
 class BaseCartView:
     permission_classes = [IsAuthenticated]
@@ -122,3 +123,30 @@ class RemoveFromWishlistView(BaseWishlistView, GenericAPIView):
             }, 
             status=status.HTTP_200_OK
         )
+
+
+class AdminCartListView(BaseCartView, ListAPIView):
+    """Admin-only view to list all user carts globally."""
+    serializer_class = CartDetailSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = Cart.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related(
+            'items__product__brand',
+            'items__product__category',
+            'items__product__images'
+        )
+
+class AdminWishlistListView(BaseWishlistView, ListAPIView):
+    """Admin-only view to list all user wishlists globally."""
+    serializer_class = WishlistDetailSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = Wishlist.objects.all().order_by('-created_at', '-id')
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related(
+            'products__brand',
+            'products__category',
+            'products__images'
+        ).select_related('user')
