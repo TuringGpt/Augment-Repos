@@ -33,7 +33,9 @@ class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
     cache_ttl = 60 * 10
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('-created_at')
+        queryset = super().get_queryset().annotate(
+            comment_count=Count('comments')
+        ).order_by('-created_at')
 
         search = self.request.query_params.get('search')
         if search:
@@ -142,8 +144,7 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
         return super().list(request, *args, **kwargs)
     
     def get_queryset(self):
-        ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
+        return super().get_queryset().order_by('-created_at')
     
 class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
     serializer_class = CommentCreateSerializer
