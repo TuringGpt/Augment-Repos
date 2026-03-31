@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Currency, CreateCurrencyRequest } from '@services/api'
-import { isAbortError, parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
+import { isAbortError, parseApiError, sanitizeErrorForLogging, SupersededRequestError } from '@utils/errorUtils'
 
 interface CurrencyState {
   currencies: Currency[]
@@ -121,8 +121,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         }
 
         set({ currencies, createError: null, isCreating: false, error: null })
+      } else {
+        // Throw error to signal to the caller that this request was superseded
+        // This prevents callers from showing success toasts for stale/ignored results
+        throw new SupersededRequestError('Currency creation was superseded by a newer request')
       }
-      // Don't clear isCreating if this is a stale request - a newer createCurrency may still be in-flight
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts or request is cancelled
       if (isAbortError(err)) {
@@ -156,8 +159,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Only throw if this is still the latest request to avoid noisy/unhandled promise rejections
         // from stale/invalidated requests
         throw err
+      } else {
+        // Throw SupersededRequestError to signal to the caller that this request was superseded
+        // This prevents callers from showing error toasts for stale/ignored requests
+        throw new SupersededRequestError('Currency creation was superseded by a newer request')
       }
-      // Don't clear isCreating or throw error if this is a stale request - a newer createCurrency may still be in-flight
     }
   },
 
