@@ -49,16 +49,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         set({ currencies, error: null, isLoading: false })
-      } else {
-        // Request was invalidated by a newer fetch or create - ensure isLoading is reset
-        set({ isLoading: false })
       }
+      // Don't clear isLoading if this is an old request - a newer request may still be in-flight
     } catch (err) {
       // Ignore abort errors - these are expected when component unmounts
       if (isAbortError(err)) {
         console.log('Currency fetch aborted')
-        // Always reset loading state regardless of whether this request was invalidated
-        set({ isLoading: false })
+        // Only reset loading state if this is still the latest request
+        if (requestId === fetchRequestCounter) {
+          set({ isLoading: false })
+        }
         return
       }
 
@@ -71,10 +71,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         set({ error: errorMessage, isLoading: false })
-      } else {
-        // Request was invalidated - just reset loading state without setting error
-        set({ isLoading: false })
       }
+      // Don't clear isLoading if this is an old request - a newer request may still be in-flight
 
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
       console.error('Error fetching currencies:', sanitizeErrorForLogging(err, 'Failed to fetch currencies'))
