@@ -73,8 +73,4 @@ class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     ]
 
     def get_queryset(self):
-        user = self.request.user
-        return super().get_queryset().filter(
-            Q(items__product__brand__created_by=user) |
-            Q(items__cart_item__product__brand__created_by=user)
-        ).distinct()
+        return super().get_queryset().distinct()
