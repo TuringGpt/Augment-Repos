@@ -59,7 +59,9 @@ class UserTicketsView(TicketBaseView, ListAPIView):
     serializer_class = TicketListSerializer
 
     def get_queryset(self):
-        return super().get_queryset().filter(
+        return super().get_queryset().annotate(
+            comment_count=Count('comments')
+        ).filter(
             reporter=self.request.user
         ).order_by('-created_at')
 
@@ -69,7 +71,9 @@ class AdminTicketsView(TicketBaseView, ListAPIView):
     permission_classes = [hasAdminRole]
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('-created_at')
+        queryset = super().get_queryset().annotate(
+            comment_count=Count('comments')
+        ).order_by('-created_at')
         user_id = self.request.query_params.get('user_id')
         if user_id:
             import uuid as uuid_mod
@@ -156,6 +160,8 @@ class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
         ticket = get_object_or_404(Ticket, id=ticket_id)
         serializer.save(user=self.request.user, ticket=ticket)
         self.invalidate_cache()
+        # Invalidate ticket list cache to update comment_count
+        TicketCacheService().clear_namespace()
 
 class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = CommentUpdateSerializer
@@ -222,6 +228,11 @@ class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
     cache_service_class = CommentCacheService
     lookup_url_kwarg = 'comment_pk'
     http_method_names = ['delete', 'options']
+
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
+        # Invalidate ticket list cache to update comment_count
+        TicketCacheService().clear_namespace()
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")

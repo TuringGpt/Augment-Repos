@@ -98,6 +98,33 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_ticket_list_comment_count(self):
+        url = reverse("v1:ticket:ticket_list")
+        # Initial check - should have 1 comment from setUp
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data)
+        self.assertEqual(results[0]["comment_count"], 1)
+
+        # Add another comment via API to trigger cache invalidation
+        create_url = reverse("v1:ticket:create_comment", kwargs={"pk": self.ticket.id})
+        self.authenticated_client.post(create_url, {"content": "Second comment"})
+        
+        # Verify count updated in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        self.assertEqual(results[0]["comment_count"], 2)
+
+        # Delete a comment via API
+        comment = self.ticket.comments.first()
+        delete_url = reverse("v1:ticket:delete_comment", kwargs={"pk": self.ticket.id, "comment_pk": comment.id})
+        self.authenticated_client.delete(delete_url)
+
+        # Verify count decreased in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        self.assertEqual(results[0]["comment_count"], 1)
         self.assertGreaterEqual(len(response.data.get("results", [])), 1)
 
     def test_list_tickets_search_by_title(self):
