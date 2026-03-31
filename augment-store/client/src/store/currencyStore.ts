@@ -127,14 +127,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         throw new SupersededRequestError('Currency creation was superseded by a newer request')
       }
     } catch (err) {
-      // Ignore abort errors - these are expected when component unmounts or request is cancelled
+      // Handle abort errors - these are expected when component unmounts or request is cancelled
       if (isAbortError(err)) {
         console.log('Currency create/refetch aborted')
         // Only reset loading state if this is still the latest request
         if (requestId === createRequestCounter) {
           set({ isCreating: false })
         }
-        return
+        // Re-throw the error to signal to the caller that the operation was aborted
+        // This prevents callers from showing success toasts for aborted operations
+        throw err
       }
 
       // Use parseApiError to extract user-friendly error message from API response
