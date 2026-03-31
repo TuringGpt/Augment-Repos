@@ -81,6 +81,7 @@ export const currencyService = {
   /**
    * Create a new currency
    * @param data - Currency data to create
+   * @param signal - Optional AbortSignal for request cancellation
    * @returns Promise with created currency (basic fields only: name, code, symbol)
    * @throws Error if the API request fails
    *
@@ -90,8 +91,10 @@ export const currencyService = {
    * Note: Backend CreateCurrencySerializer returns only name, code, and symbol.
    * It does NOT include id, created_at, or updated_at fields.
    */
-  createCurrency: async (data: CreateCurrencyRequest): Promise<CreateCurrencyResponse> => {
-    return apiClient.post<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.CREATE, data)
+  createCurrency: async (data: CreateCurrencyRequest, signal?: AbortSignal): Promise<CreateCurrencyResponse> => {
+    return apiClient.post<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.CREATE, data, {
+      signal,
+    })
   },
 }
 

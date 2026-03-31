@@ -99,7 +99,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       const { currencyService } = await import('@services/api')
 
       // Create the currency
-      await currencyService.createCurrency(data)
+      // Pass the AbortSignal to allow cancellation of the create request
+      await currencyService.createCurrency(data, signal)
 
       // Refetch currencies to get the updated list with the newly created currency
       // Note: The create endpoint returns only basic fields (code, name, symbol)
