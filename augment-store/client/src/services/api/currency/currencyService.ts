@@ -93,5 +93,17 @@ export const currencyService = {
   createCurrency: async (data: CreateCurrencyRequest): Promise<CreateCurrencyResponse> => {
     return apiClient.post<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.CREATE, data)
   },
+
+  /**
+   * Delete a currency by ID
+   * @param id - Currency ID to delete
+   * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (AdminCurrencyUpdateDeleteView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   */
+  deleteCurrency: async (id: string): Promise<void> => {
+    await apiClient.delete(API_ENDPOINTS.CURRENCY.DELETE(id))
+  },
 }
 
