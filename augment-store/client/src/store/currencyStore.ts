@@ -157,10 +157,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
         console.error('Error creating currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
 
-        // Re-throw the error so the caller can handle it (e.g., show a notification)
+        // Re-throw with the parsed error message so callers can display it (e.g., in toast notifications)
+        // This ensures callers using `catch (e) => toast(e.message)` show the user-friendly parsed message
+        // instead of the raw technical error message from the original exception
         // Only throw if this is still the latest request to avoid noisy/unhandled promise rejections
         // from stale/invalidated requests
-        throw err
+        throw new Error(errorMessage)
       } else {
         // Throw SupersededRequestError to signal to the caller that this request was superseded
         // This prevents callers from showing error toasts for stale/ignored requests
