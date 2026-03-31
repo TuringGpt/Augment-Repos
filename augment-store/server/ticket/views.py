@@ -144,7 +144,8 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
         return super().list(request, *args, **kwargs)
     
     def get_queryset(self):
-        return super().get_queryset().order_by('-created_at')
+        ticket_id = self.kwargs.get("pk")
+        return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
     
 class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
     serializer_class = CommentCreateSerializer
