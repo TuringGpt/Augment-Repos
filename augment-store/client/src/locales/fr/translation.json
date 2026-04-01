@@ -1366,11 +1366,19 @@
       "refresh": "Actualiser",
       "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
       "noCurrencies": "Aucune devise disponible",
+      "deleteCurrency": "Supprimer la Devise",
+      "deleteCurrencyConfirm": "Êtes-vous sûr de vouloir supprimer <strong>{{currencyName}} ({{currencyCode}})</strong> ? Cette action ne peut pas être annulée.",
+      "deleteSuccess": "Devise supprimée avec succès",
+      "errorDeleteCurrency": "Échec de la suppression de la devise",
+      "deleting": "Suppression...",
       "table": {
         "code": "Code",
         "name": "Nom",
         "symbol": "Symbole",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Actions",
+        "createdAt": "Créé le",
+        "updatedAt": "Mis à jour le"
       }
     },
     "brandsPage": {
