@@ -25,7 +25,7 @@ class ContactFormUserThrottle(UserRateThrottle):
 
 class BaseContactView(AutoOptimizeMixin):
     serializer_class = ContactMessageSerializer
-    queryset = ContactMessage.objects.all()
+    queryset = ContactMessage.objects.filter(is_deleted=False)
 
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
