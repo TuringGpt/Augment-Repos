@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -16,15 +16,23 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   AttachMoney as CurrencyIcon,
   Refresh as RefreshIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
+import type { Currency } from '@services/api'
 
 /**
  * AdminCurrencyPage Component
@@ -33,6 +41,7 @@ import { formatDate } from '@utils/formatters'
 const AdminCurrencyPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const toast = useToast()
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
@@ -40,6 +49,11 @@ const AdminCurrencyPage = () => {
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Local state for delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [currencyToDelete, setCurrencyToDelete] = useState<Currency | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Load currencies function
   const loadCurrencies = () => {
@@ -72,6 +86,44 @@ const AdminCurrencyPage = () => {
 
   const handleRefresh = () => {
     loadCurrencies()
+  }
+
+  // Delete handlers
+  const handleDeleteClick = (currency: Currency) => {
+    setCurrencyToDelete(currency)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    // Prevent closing dialog during deletion
+    if (isDeleting) return
+
+    setDeleteDialogOpen(false)
+    setCurrencyToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!currencyToDelete) return
+
+    setIsDeleting(true)
+
+    try {
+      // Empty handler - simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // Show success message
+      toast.success(t('admin.currencyPage.deleteSuccess', 'Currency deleted successfully'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setCurrencyToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete currency:', err)
+      toast.error(t('admin.currencyPage.errorDeleteCurrency', 'Failed to delete currency'))
+      // Keep dialog open on error so user can retry or cancel
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   // Check if user is authenticated and is an admin
@@ -155,6 +207,9 @@ const AdminCurrencyPage = () => {
                 <TableCell sx={{ fontWeight: 700 }}>
                   {t('admin.currencyPage.table.updatedAt', 'Updated At')}
                 </TableCell>
+                <TableCell sx={{ fontWeight: 700 }} align="center">
+                  {t('admin.currencyPage.table.actions', 'Actions')}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -199,6 +254,19 @@ const AdminCurrencyPage = () => {
                       {formatDate(currency.updated_at)}
                     </Typography>
                   </TableCell>
+
+                  {/* Actions */}
+                  <TableCell align="center">
+                    <Tooltip title={t('common.delete', 'Delete')}>
+                      <IconButton
+                        onClick={() => handleDeleteClick(currency)}
+                        color="error"
+                        size="small"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -213,6 +281,45 @@ const AdminCurrencyPage = () => {
           </Typography>
         </Paper>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-currency-dialog-title"
+        aria-describedby="delete-currency-dialog-description"
+      >
+        <DialogTitle id="delete-currency-dialog-title">
+          {t('admin.currencyPage.deleteCurrency', 'Delete Currency')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-currency-dialog-description">
+            {t(
+              'admin.currencyPage.deleteCurrencyConfirm',
+              'Are you sure you want to delete this currency?'
+            )}{' '}
+            <strong>
+              {currencyToDelete?.name} ({currencyToDelete?.code})
+            </strong>
+            ? {t('admin.currencyPage.deleteCurrencyWarning', 'This action cannot be undone.')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel', 'Cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting
+              ? t('admin.currencyPage.deleting', 'Deleting...')
+              : t('common.delete', 'Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

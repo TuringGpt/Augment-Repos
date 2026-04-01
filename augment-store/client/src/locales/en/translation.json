@@ -1366,11 +1366,20 @@
       "refresh": "Refresh",
       "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
       "noCurrencies": "No currencies available",
+      "deleteCurrency": "Delete Currency",
+      "deleteCurrencyConfirm": "Are you sure you want to delete this currency?",
+      "deleteCurrencyWarning": "This action cannot be undone.",
+      "deleteSuccess": "Currency deleted successfully",
+      "errorDeleteCurrency": "Failed to delete currency",
+      "deleting": "Deleting...",
       "table": {
         "code": "Code",
         "name": "Name",
         "symbol": "Symbol",
-        "id": "ID"
+        "id": "ID",
+        "actions": "Actions",
+        "createdAt": "Created At",
+        "updatedAt": "Updated At"
       }
     },
     "brandsPage": {
