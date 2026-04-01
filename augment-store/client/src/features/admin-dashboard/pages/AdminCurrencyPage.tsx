@@ -30,7 +30,6 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
-import { escapeHtml } from '@utils/validators'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
@@ -300,8 +299,8 @@ const AdminCurrencyPage = () => {
             <Trans
               i18nKey="admin.currencyPage.deleteCurrencyConfirm"
               values={{
-                currencyName: currencyToDelete?.name ? escapeHtml(currencyToDelete.name) : '',
-                currencyCode: currencyToDelete?.code ? escapeHtml(currencyToDelete.code) : '',
+                currencyName: currencyToDelete?.name ?? '',
+                currencyCode: currencyToDelete?.code ?? '',
               }}
               components={{ strong: <strong /> }}
             />
