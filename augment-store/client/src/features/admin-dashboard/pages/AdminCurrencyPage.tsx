@@ -300,8 +300,8 @@ const AdminCurrencyPage = () => {
             )}{' '}
             <strong>
               {currencyToDelete?.name} ({currencyToDelete?.code})
-            </strong>
-            ? {t('admin.currencyPage.deleteCurrencyWarning', 'This action cannot be undone.')}
+            </strong>{' '}
+            {t('admin.currencyPage.deleteCurrencyWarning', 'This action cannot be undone.')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
