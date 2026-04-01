@@ -28,6 +28,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { escapeHtml } from '@utils/validators'
 import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
@@ -300,8 +301,8 @@ const AdminCurrencyPage = () => {
                 'admin.currencyPage.deleteCurrencyConfirm',
                 'Are you sure you want to delete <strong>{{currencyName}} ({{currencyCode}})</strong>? This action cannot be undone.',
                 {
-                  currencyName: currencyToDelete?.name || '',
-                  currencyCode: currencyToDelete?.code || '',
+                  currencyName: escapeHtml(currencyToDelete?.name || ''),
+                  currencyCode: escapeHtml(currencyToDelete?.code || ''),
                 }
               ),
             }}
