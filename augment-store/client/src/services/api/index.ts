@@ -13,6 +13,17 @@ export { adminReportService } from './admin-reports/adminReportService'
 export { productStatisticsService } from './product-statistics/productStatisticsService'
 export { customerStatisticsService } from './customer-statistics/customerStatisticsService'
 export { contactService } from './contact/contactService'
+export type {
+  ContactStatus,
+  CreateContactRequest,
+  CreateContactResponse,
+  ContactItem,
+  UpdateContactRequest,
+  UpdateContactResponse,
+  ContactListResponse,
+  BulkUpdateContactRequest,
+  BulkUpdateContactResponse,
+} from './contact/contactService'
 export { currencyService } from './currency/currencyService'
 export type { Currency, CurrencyListResponse, CreateCurrencyRequest, CreateCurrencyResponse } from './currency/currencyService'
 export { apiClient } from './client'
