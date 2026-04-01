@@ -264,6 +264,7 @@ const AdminCurrencyPage = () => {
                         onClick={() => handleDeleteClick(currency)}
                         color="error"
                         size="small"
+                        aria-label={t('common.delete', 'Delete')}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
