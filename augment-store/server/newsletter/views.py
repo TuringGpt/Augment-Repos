@@ -50,7 +50,8 @@ class NewsletterView(CachedListMixin, BaseNewsletterView, ListAPIView):
     cache_ttl = 60 * 60
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_active=True)
+        # Intentional Bug: Filter by is_active=False (hides active subscribers)
+        return super().get_queryset().filter(is_active=False)
 
 
 class SubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, CreateAPIView):
