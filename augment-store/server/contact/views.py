@@ -25,7 +25,7 @@ class ContactFormUserThrottle(UserRateThrottle):
 
 class BaseContactView(AutoOptimizeMixin):
     serializer_class = ContactMessageSerializer
-    queryset = ContactMessage.objects.filter(is_deleted=False)
+    queryset = ContactMessage.objects.all()
 
     def get_queryset(self):
         return super().get_queryset().order_by('-created_at')
@@ -35,6 +35,7 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
     # to admin users only. TTL kept short to limit retention in cache.
     serializer_class = ContactMessageSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = ContactMessage.objects.filter(is_deleted=False)
     cache_service_class = ContactCacheService
     cache_ttl = 60 * 5  # 5 minutes - short TTL due to PII content
 
