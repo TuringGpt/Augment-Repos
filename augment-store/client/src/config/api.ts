@@ -153,7 +153,7 @@ export const API_ENDPOINTS = {
     CREATE: '/contact/create/',
     DELETE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
     UPDATE: (id: string) => `/contact/${encodeURIComponent(id)}/`,
-    BULK_UPDATE: '/contact/bulk-update/',
+    BULK_UPDATE: '/contact/admin/bulk-update/',
   },
 
   // Currency endpoints

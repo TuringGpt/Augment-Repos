@@ -70,23 +70,21 @@ export interface UpdateContactResponse {
 
 /**
  * Bulk update request data
- * Updates multiple contacts with the same data
+ * Updates the status of multiple contacts
+ * Server only accepts ids and status fields
  */
 export interface BulkUpdateContactRequest {
   ids: string[]
-  status?: ContactStatus
-  name?: string
-  email?: string
-  subject?: string
-  message?: string
+  status: ContactStatus
 }
 
 /**
  * Bulk update response from backend
- * Returns an array of updated contacts
+ * Returns the number of updated contacts and the new status
  */
 export interface BulkUpdateContactResponse {
-  updated: UpdateContactResponse[]
+  updated: number
+  status: ContactStatus
 }
 
 /**
@@ -143,15 +141,15 @@ export const contactService = {
   },
 
   /**
-   * Bulk update multiple contact messages with the same data
+   * Bulk update the status of multiple contact messages
    * @param ids - Array of contact IDs to update
-   * @param data - Partial contact data to apply to all specified contacts
-   * @returns Promise with bulk update response containing updated contacts
+   * @param status - New status to apply to all specified contacts
+   * @returns Promise with bulk update response containing count and status
    * @throws Error if the API request fails
    */
-  bulkUpdateContacts: async (ids: string[], data: UpdateContactRequest): Promise<BulkUpdateContactResponse> => {
-    const requestData: BulkUpdateContactRequest = { ids, ...data }
-    return apiClient.patch<BulkUpdateContactResponse>(API_ENDPOINTS.CONTACT.BULK_UPDATE, requestData)
+  bulkUpdateContacts: async (ids: string[], status: ContactStatus): Promise<BulkUpdateContactResponse> => {
+    const requestData: BulkUpdateContactRequest = { ids, status }
+    return apiClient.post<BulkUpdateContactResponse>(API_ENDPOINTS.CONTACT.BULK_UPDATE, requestData)
   },
 }
 
