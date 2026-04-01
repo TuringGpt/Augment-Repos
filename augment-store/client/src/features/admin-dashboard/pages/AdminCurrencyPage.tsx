@@ -293,16 +293,19 @@ const AdminCurrencyPage = () => {
           {t('admin.currencyPage.deleteCurrency', 'Delete Currency')}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="delete-currency-dialog-description">
-            {t(
-              'admin.currencyPage.deleteCurrencyConfirm',
-              'Are you sure you want to delete this currency?'
-            )}{' '}
-            <strong>
-              {currencyToDelete?.name} ({currencyToDelete?.code})
-            </strong>{' '}
-            {t('admin.currencyPage.deleteCurrencyWarning', 'This action cannot be undone.')}
-          </DialogContentText>
+          <DialogContentText
+            id="delete-currency-dialog-description"
+            dangerouslySetInnerHTML={{
+              __html: t(
+                'admin.currencyPage.deleteCurrencyConfirm',
+                'Are you sure you want to delete <strong>{{currencyName}} ({{currencyCode}})</strong>? This action cannot be undone.',
+                {
+                  currencyName: currencyToDelete?.name || '',
+                  currencyCode: currencyToDelete?.code || '',
+                }
+              ),
+            }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
