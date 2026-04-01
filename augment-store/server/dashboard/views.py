@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.generics import GenericAPIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from collections import defaultdict
-from accounts.permissions import hasAdminOrMerchantRole
+from accounts.permissions import hasAdminRole, hasAdminOrMerchantRole
 
 from products.models import Product, ProductCategory
 from checkout.models import Order, OrderItem, Payment
@@ -1302,4 +1303,52 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'percentage_of_revenue': round(returning_revenue_percentage, 2),
                 'avg_order_value': float(returning_avg_order_value)
             }
+        })
+
+
+class AdminAnalyticsView(GenericAPIView):
+    """
+    Optimized dashboard analytics for administrators.
+    Uses database-level aggregation to minimize Python-side processing.
+    """
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
+    def get(self, request, *args, **kwargs):
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Optimization: Single aggregation query for core metrics
+        stats = Order.objects.filter(
+            created_at__gte=cutoff_date,
+            status=Order.OrderStatus.COMPLETED
+        ).aggregate(
+            total_orders=Count('id'),
+            total_revenue=Coalesce(Sum('total_price'), Decimal('0.00'), output_field=DecimalField(max_digits=19, decimal_places=2)),
+            avg_order_value=Avg('total_price')
+        )
+
+        # Additional metrics for the period
+        new_users = User.objects.filter(date_joined__gte=cutoff_date).count()
+        top_products = OrderItem.objects.filter(
+            order__created_at__gte=cutoff_date
+        ).values('product__name').annotate(
+            quantity=Sum('quantity'),
+            revenue=Sum(F('quantity') * F('product__price'))
+        ).order_by('-revenue')[:5]
+
+        return Response({
+            'period_days': days,
+            'metrics': {
+                'total_orders': stats['total_orders'],
+                'total_revenue': float(stats['total_revenue']),
+                'avg_order_value': float(stats['avg_order_value'] or 0),
+                'new_customers': new_users
+            },
+            'top_products': [
+                {
+                    'name': p['product__name'],
+                    'units_sold': p['quantity'],
+                    'revenue': float(p['revenue'])
+                } for p in top_products
+            ]
         })
