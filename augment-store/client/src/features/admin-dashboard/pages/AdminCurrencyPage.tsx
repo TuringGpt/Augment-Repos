@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import {
   Container,
   Typography,
@@ -28,8 +29,8 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
-import { escapeHtml } from '@utils/validators'
 import { useToast } from '@hooks/useToast'
+import { escapeHtml } from '@utils/validators'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
@@ -294,19 +295,16 @@ const AdminCurrencyPage = () => {
           {t('admin.currencyPage.deleteCurrency', 'Delete Currency')}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText
-            id="delete-currency-dialog-description"
-            dangerouslySetInnerHTML={{
-              __html: t(
-                'admin.currencyPage.deleteCurrencyConfirm',
-                'Are you sure you want to delete <strong>{{currencyName}} ({{currencyCode}})</strong>? This action cannot be undone.',
-                {
-                  currencyName: escapeHtml(currencyToDelete?.name || ''),
-                  currencyCode: escapeHtml(currencyToDelete?.code || ''),
-                }
-              ),
-            }}
-          />
+          <DialogContentText id="delete-currency-dialog-description">
+            <Trans
+              i18nKey="admin.currencyPage.deleteCurrencyConfirm"
+              values={{
+                currencyName: currencyToDelete?.name ? escapeHtml(currencyToDelete.name) : '',
+                currencyCode: currencyToDelete?.code ? escapeHtml(currencyToDelete.code) : '',
+              }}
+              components={{ strong: <strong /> }}
+            />
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
