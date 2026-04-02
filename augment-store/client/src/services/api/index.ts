@@ -31,6 +31,5 @@ export type {
   CreateCurrencyRequest,
   CreateCurrencyResponse,
   UpdateCurrencyRequest,
-  UpdateCurrencyResponse
 } from './currency/currencyService'
 export { apiClient } from './client'

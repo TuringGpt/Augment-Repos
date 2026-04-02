@@ -59,17 +59,6 @@ export interface UpdateCurrencyRequest {
   symbol?: string
 }
 
-/**
- * Update Currency Response
- * Backend returns only basic fields without timestamps or id
- * Fields: name, code, symbol
- */
-export interface UpdateCurrencyResponse {
-  code: string
-  name: string
-  symbol: string
-}
-
 export const currencyService = {
   /**
    * Get all currencies
@@ -132,8 +121,8 @@ export const currencyService = {
    * Note: Backend uses CreateCurrencySerializer which returns only name, code, and symbol.
    * It does NOT include id, created_at, or updated_at fields.
    */
-  updateCurrency: async (id: string, data: UpdateCurrencyRequest): Promise<UpdateCurrencyResponse> => {
-    return apiClient.patch<UpdateCurrencyResponse>(API_ENDPOINTS.CURRENCY.DETAIL(id), data)
+  updateCurrency: async (id: string, data: UpdateCurrencyRequest): Promise<CreateCurrencyResponse> => {
+    return apiClient.patch<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.DETAIL(id), data)
   },
 
   /**
