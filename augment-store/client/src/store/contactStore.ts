@@ -553,8 +553,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
    * - If the API call fails, the optimistic update is rolled back
    *
    * **Partial Success Handling:**
-   * - If the server returns `updated` count < `ids.length`, some contacts were not updated
+   * - If the server returns `updated` count < unique IDs count, some contacts were not updated
    *   (e.g., they no longer exist on the server)
+   * - Duplicate IDs in the array are automatically handled (counted as one unique ID)
    * - In this case, the contact list is automatically refreshed to sync with the server state
    * - The UI will show optimistic updates briefly, then sync to actual server state
    *
@@ -638,9 +639,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === bulkUpdateRequestCounter) {
-        // Check for partial success: if response.updated < ids.length, some contacts
+        // Check for partial success: if response.updated < unique IDs count, some contacts
         // were not updated by the server (e.g., they no longer exist)
-        const isPartialSuccess = response.updated < ids.length
+        // Use Set to count unique IDs since the ids array could contain duplicates
+        const uniqueIdCount = new Set(ids).size
+        const isPartialSuccess = response.updated < uniqueIdCount
 
         if (isPartialSuccess) {
           // Partial success: some IDs were not updated by the server
