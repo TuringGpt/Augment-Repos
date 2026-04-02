@@ -98,7 +98,40 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data.get("results", [])), 1)
+        results = response.data.get("results", [])
+        self.assertGreaterEqual(len(results), 1)
+
+    def test_ticket_list_comment_count(self):
+        url = reverse("v1:ticket:ticket_list")
+        # Initial check - should have 1 comment from setUp
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 1)
+
+        # Add another comment via API to trigger cache invalidation
+        create_url = reverse("v1:ticket:create_comment", kwargs={"pk": self.ticket.id})
+        res = self.authenticated_client.post(create_url, {"content": "Second comment"})
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        
+        # Verify count updated in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 2)
+
+        # Delete a comment via API
+        comment = self.ticket.comments.first()
+        delete_url = reverse("v1:ticket:delete_comment", kwargs={"pk": self.ticket.id, "comment_pk": comment.id})
+        res = self.authenticated_client.delete(delete_url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Verify count decreased in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 1)
 
     def test_list_tickets_search_by_title(self):
         TicketFactory(title="Login Bug Report", assignee=self.user, reporter=self.user)
@@ -107,7 +140,8 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
         self.assertGreater(len(results), 0)
-        self.assertIn("Login", results[0]["title"])
+        for result in results:
+            self.assertIn("Login", result["title"])
 
     def test_list_tickets_search_no_match(self):
         url = reverse("v1:ticket:ticket_list")
