@@ -666,7 +666,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // IMPORTANT: Only refresh if the user is still authenticated to prevent
           // repopulating PII after logout/clearContacts() has been called
           const { useAuthStore } = await import('@store/authStore')
-          if (useAuthStore.getState().isAuthenticated) {
+          // Re-check request freshness after await to prevent stale requests from triggering refresh
+          if (currentRequestId === bulkUpdateRequestCounter && useAuthStore.getState().isAuthenticated) {
             get().getContacts()
           }
         } else {
@@ -696,16 +697,21 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // IMPORTANT: Only refresh if the user is still authenticated to prevent
           // repopulating PII after logout/clearContacts() has been called
           const { useAuthStore } = await import('@store/authStore')
-          if (useAuthStore.getState().isAuthenticated) {
+          // Re-check request freshness after await to prevent stale requests from triggering refresh
+          if (currentRequestId === bulkUpdateRequestCounter && useAuthStore.getState().isAuthenticated) {
             get().getContacts()
           }
         }
 
-        set({
-          isBulkUpdating: false,
-          lastBulkUpdateResult: response,
-          bulkUpdateError: null
-        })
+        // Re-check request freshness right before writing bulk-update state to prevent
+        // stale requests from clobbering newer ones after awaited boundaries above
+        if (currentRequestId === bulkUpdateRequestCounter) {
+          set({
+            isBulkUpdating: false,
+            lastBulkUpdateResult: response,
+            bulkUpdateError: null
+          })
+        }
       } else {
         // This request was superseded by a newer request
         // Trigger a refresh to ensure the UI syncs with actual server state
@@ -717,6 +723,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // IMPORTANT: Only refresh if the user is still authenticated to prevent
         // repopulating PII after logout/clearContacts() has been called
         const { useAuthStore } = await import('@store/authStore')
+        // Note: This request is already superseded, but we still check auth before refresh
         if (useAuthStore.getState().isAuthenticated) {
           get().getContacts()
         }
@@ -784,6 +791,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // IMPORTANT: Only refresh if the user is still authenticated to prevent
       // repopulating PII after logout/clearContacts() has been called
       const { useAuthStore } = await import('@store/authStore')
+      // Note: This request is already superseded, but we still check auth before refresh
       if (useAuthStore.getState().isAuthenticated) {
         get().getContacts()
       }
