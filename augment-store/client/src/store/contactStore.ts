@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CreateContactRequest, CreateContactResponse, ContactListResponse, UpdateContactRequest, UpdateContactResponse, ContactItem } from '@services/api/contact/contactService'
+import type { CreateContactRequest, CreateContactResponse, ContactListResponse, UpdateContactRequest, UpdateContactResponse, ContactItem, BulkUpdateContactResponse, ContactStatus } from '@services/api/contact/contactService'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to prevent race conditions when submitting contact form
@@ -21,6 +21,11 @@ let fetchRequestCounter = 0
 // responses to incorrectly pass the currentRequestId check
 const updateRequestCounters = new Map<string, number>()
 
+// Request counter to prevent race conditions when bulk updating contacts
+// When multiple bulk update calls are made in quick succession,
+// only the most recent request should update the state
+let bulkUpdateRequestCounter = 0
+
 // Map to store the original server state for each contact ID
 // This prevents rollback to optimistic states when multiple requests fail
 // When request A optimistically updates, then request B starts and both fail,
@@ -38,17 +43,20 @@ interface ContactState {
   // Track which contact IDs are currently being updated
   // This allows concurrent updates to different contacts without race conditions
   updatingContactIds: Set<string>
+  isBulkUpdating: boolean
 
   // Error states
   error: string | null
   fetchError: string | null
   // Track update errors per contact ID to prevent concurrent updates from clearing each other's errors
   updateErrors: Map<string, string>
+  bulkUpdateError: string | null
 
   // Success state
   lastSubmittedContact: CreateContactResponse | null
   // Track last updated contact per contact ID to prevent concurrent updates from clearing each other's success states
   lastUpdatedContacts: Map<string, UpdateContactResponse>
+  lastBulkUpdateResult: BulkUpdateContactResponse | null
 
   // Data state
   contacts: ContactListResponse | null
@@ -57,9 +65,11 @@ interface ContactState {
   submitContact: (data: CreateContactRequest) => Promise<CreateContactResponse>
   getContacts: () => Promise<void>
   updateContact: (id: string, data: UpdateContactRequest) => Promise<UpdateContactResponse>
+  bulkUpdateContacts: (ids: string[], status: ContactStatus) => Promise<BulkUpdateContactResponse>
   clearError: () => void
   clearFetchError: () => void
   clearUpdateError: (id?: string) => void
+  clearBulkUpdateError: () => void
   clearLastSubmitted: () => void
   clearLastUpdated: (id?: string) => void
   clearContacts: () => void
@@ -70,11 +80,14 @@ export const useContactStore = create<ContactState>((set, get) => ({
   isSubmitting: false,
   isLoading: false,
   updatingContactIds: new Set<string>(),
+  isBulkUpdating: false,
   error: null,
   fetchError: null,
   updateErrors: new Map(),
+  bulkUpdateError: null,
   lastSubmittedContact: null,
   lastUpdatedContacts: new Map(),
+  lastBulkUpdateResult: null,
   contacts: null,
 
   // Actions
@@ -217,12 +230,16 @@ export const useContactStore = create<ContactState>((set, get) => ({
     updateRequestCounters.forEach((value, key) => {
       updateRequestCounters.set(key, value + 1)
     })
+    // Invalidate all in-flight bulkUpdateContacts() requests by incrementing the counter
+    // This prevents in-flight bulk updates from writing PII back to state after logout/clearContacts
+    bulkUpdateRequestCounter += 1
     // Clear the original contact states since we're clearing all contacts
     originalContactStates.clear()
     // Always reset isLoading to prevent it from being stuck in true state
     // if this is called while a request is in-flight
     // Also clear update-related state to prevent PII retention and stale UI
     // Also clear submit-related state to prevent PII retention from in-flight submitContact() calls
+    // Also clear bulk update-related state to prevent PII retention from in-flight bulkUpdateContacts() calls
     set({
       contacts: null,
       fetchError: null,
@@ -230,6 +247,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
       lastUpdatedContacts: new Map(),
       updateErrors: new Map(),
       updatingContactIds: new Set<string>(),
+      isBulkUpdating: false,
+      bulkUpdateError: null,
+      lastBulkUpdateResult: null,
       isSubmitting: false,
       error: null,
       lastSubmittedContact: null
@@ -516,6 +536,153 @@ export const useContactStore = create<ContactState>((set, get) => ({
         return { lastUpdatedContacts: new Map() }
       }
     })
+  },
+
+  clearBulkUpdateError: () => {
+    set({ bulkUpdateError: null, lastBulkUpdateResult: null })
+  },
+
+  /**
+   * Bulk update the status of multiple contacts with optimistic updates.
+   *
+   * **IMPORTANT - Race Condition Handling:**
+   * This method uses optimistic updates to ensure the UI reflects changes immediately.
+   * - When multiple bulk update calls are made in quick succession, only the most recent
+   *   request will update the store state
+   * - The contact list is updated IMMEDIATELY (optimistically) before the API call
+   * - If the API call fails, the optimistic update is rolled back
+   *
+   * **Example Usage:**
+   * ```tsx
+   * const isBulkUpdating = useContactStore((s) => s.isBulkUpdating)
+   * const bulkUpdateError = useContactStore((s) => s.bulkUpdateError)
+   * const lastBulkUpdateResult = useContactStore((s) => s.lastBulkUpdateResult)
+   * const bulkUpdateContacts = useContactStore((s) => s.bulkUpdateContacts)
+   *
+   * // Call the bulk update and handle potential rejections
+   * bulkUpdateContacts(selectedIds, 'read').catch((error) => {
+   *   // Error is already handled by the store
+   *   console.error('Bulk update failed - check bulkUpdateError state for details')
+   * })
+   *
+   * // Use store state for UI updates
+   * if (isBulkUpdating) return <Spinner />
+   * if (bulkUpdateError) return <Error message={bulkUpdateError} />
+   * if (lastBulkUpdateResult) return <Success count={lastBulkUpdateResult.updated} />
+   * ```
+   *
+   * @param ids - Array of contact IDs to update
+   * @param status - New status to apply to all specified contacts
+   * @returns Promise that resolves with the API response (may be stale if superseded)
+   */
+  bulkUpdateContacts: async (ids: string[], status: ContactStatus) => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    bulkUpdateRequestCounter += 1
+    const currentRequestId = bulkUpdateRequestCounter
+
+    // Capture the current fetchRequestCounter at the start of this update
+    // This allows us to invalidate only getContacts() calls that started BEFORE this update
+    const fetchCounterAtUpdateStart = fetchRequestCounter
+
+    // Store the original state for each contact for rollback
+    const rollbackStates = new Map<string, ContactItem>()
+    ids.forEach((id) => {
+      const originalState = originalContactStates.get(id)
+      if (originalState) {
+        rollbackStates.set(id, originalState)
+      }
+    })
+
+    // Set loading state and clear previous error/success BEFORE any awaited work
+    set({ isBulkUpdating: true, bulkUpdateError: null, lastBulkUpdateResult: null })
+
+    // OPTIMISTIC UPDATE: Update all contacts immediately before the API call
+    set((state) => {
+      if (!state.contacts) {
+        return {}
+      }
+
+      return {
+        contacts: {
+          ...state.contacts,
+          results: state.contacts.results.map((contact) =>
+            ids.includes(contact.id) ? { ...contact, status } : contact
+          ),
+        },
+      }
+    })
+
+    try {
+      // Import contactService dynamically to avoid circular dependency
+      const { contactService } = await import('@services/api/contact/contactService')
+
+      const response = await contactService.bulkUpdateContacts(ids, status)
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === bulkUpdateRequestCounter) {
+        // Update the stored server state for all successfully updated contacts
+        // This prevents rollbacks from reverting to a state older than what's on the server
+        ids.forEach((id) => {
+          const contact = get().contacts?.results.find((c) => c.id === id)
+          if (contact) {
+            originalContactStates.set(id, { ...contact, status })
+          }
+        })
+
+        // Invalidate any getContacts() calls that started before this update
+        // This ensures fresh data is fetched, but prevents newer fetches from being invalidated
+        if (fetchCounterAtUpdateStart === fetchRequestCounter) {
+          fetchRequestCounter += 1
+        }
+
+        set({
+          isBulkUpdating: false,
+          lastBulkUpdateResult: response,
+          bulkUpdateError: null
+        })
+      }
+
+      return response
+    } catch (err) {
+      // ROLLBACK: Revert the optimistic update on error
+      // Only rollback if this is still the most recent request
+      if (currentRequestId === bulkUpdateRequestCounter) {
+        // Use parseApiError to handle DRF/Axios errors with proper priority order
+        const errorMessage = parseApiError(err, {
+          fieldNames: ['ids', 'status'],
+          defaultMessage: 'Failed to bulk update contacts. Please try again.',
+        })
+
+        set((state) => {
+          if (!state.contacts) {
+            return {
+              isBulkUpdating: false,
+              bulkUpdateError: errorMessage,
+            }
+          }
+
+          // Revert contacts back to their original server state
+          return {
+            isBulkUpdating: false,
+            bulkUpdateError: errorMessage,
+            contacts: {
+              ...state.contacts,
+              results: state.contacts.results.map((contact) => {
+                const rollbackState = rollbackStates.get(contact.id)
+                return rollbackState || contact
+              }),
+            },
+          }
+        })
+
+        // Only log for non-stale requests to prevent noisy logs during rapid superseding updates
+        console.error('Error bulk updating contacts:', sanitizeErrorForLogging(err, 'Failed to bulk update contacts'))
+      }
+
+      throw err
+    }
   },
 }))
 
