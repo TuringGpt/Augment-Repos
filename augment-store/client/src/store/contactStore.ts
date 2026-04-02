@@ -639,8 +639,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
         if (isPartialSuccess) {
           // Partial success: some IDs were not updated by the server
-          // We don't know which specific IDs failed, so we invalidate the fetch
-          // to trigger a refresh that will sync the UI with the actual server state
+          // We don't know which specific IDs failed, so we need to fetch fresh data
+          // from the server to sync the UI with the actual server state
           // Do NOT update originalContactStates for any contacts to avoid persisting
           // optimistic updates for contacts that the server didn't actually update
           if (fetchCounterAtUpdateStart === fetchRequestCounter) {
@@ -648,6 +648,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
             // Reset isLoading to prevent it from being stuck true when invalidated
             // fetch requests skip their finally block (request id no longer matches)
             set({ isLoading: false })
+
+            // Actually trigger a refresh to fetch the current server state
+            // Without this, the UI would remain stuck showing optimistic status values
+            // until the user manually refreshes
+            get().getContacts()
           }
         } else {
           // Full success: all contacts were updated
@@ -661,7 +666,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
           })
 
           // Invalidate any getContacts() calls that started before this update
-          // This ensures fresh data is fetched, but prevents newer fetches from being invalidated
+          // to prevent them from overwriting just-updated contacts with stale data
           if (fetchCounterAtUpdateStart === fetchRequestCounter) {
             fetchRequestCounter += 1
             // Reset isLoading to prevent it from being stuck true when invalidated
