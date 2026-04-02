@@ -736,9 +736,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
         // Only log for non-stale requests to prevent noisy logs during rapid superseding updates
         console.error('Error bulk updating contacts:', sanitizeErrorForLogging(err, 'Failed to bulk update contacts'))
+
+        // Only throw for the current request so callers can handle it
+        // Superseded requests are suppressed to prevent unhandled rejections when a newer request succeeded
+        throw err
       }
 
-      throw err
+      // Suppress errors from superseded/stale requests to match the docstring's
+      // "store handles the error" expectation - a newer request has taken over
+      // and the UI should reflect that request's state, not this stale one's error
+      // Return a response indicating this was a stale request (0 updated)
+      return { updated: 0, status }
     }
   },
 }))
