@@ -585,21 +585,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // This allows us to invalidate only getContacts() calls that started BEFORE this update
     const fetchCounterAtUpdateStart = fetchRequestCounter
 
-    // Store the original state for each contact for rollback
-    // If not in the Map yet, fall back to current state (first update for this contact)
-    const rollbackStates = new Map<string, ContactItem>()
+    // Store the original state for each contact that's not already tracked
+    // This ensures originalContactStates has an entry for all contacts in this bulk update
+    // so that rollback can use the most recent confirmed server state
     ids.forEach((id) => {
-      let originalState = originalContactStates.get(id)
-      if (!originalState) {
+      if (!originalContactStates.has(id)) {
         const currentState = get()
-        originalState = currentState.contacts?.results.find((contact) => contact.id === id)
+        const originalState = currentState.contacts?.results.find((contact) => contact.id === id)
         // Store it in the Map for future updates
         if (originalState) {
           originalContactStates.set(id, originalState)
         }
-      }
-      if (originalState) {
-        rollbackStates.set(id, originalState)
       }
     })
 
@@ -675,15 +671,22 @@ export const useContactStore = create<ContactState>((set, get) => ({
             }
           }
 
-          // Revert contacts back to their original server state
+          // Revert contacts back to their most recent confirmed server state
+          // Use the current originalContactStates instead of a snapshot to ensure we don't
+          // overwrite newer confirmed states from other successful requests (e.g., updateContact)
+          // that may have completed while this bulk update was in-flight
           return {
             isBulkUpdating: false,
             bulkUpdateError: errorMessage,
             contacts: {
               ...state.contacts,
               results: state.contacts.results.map((contact) => {
-                const rollbackState = rollbackStates.get(contact.id)
-                return rollbackState || contact
+                // Only rollback contacts that were part of this bulk update
+                if (ids.includes(contact.id)) {
+                  const rollbackState = originalContactStates.get(contact.id)
+                  return rollbackState || contact
+                }
+                return contact
               }),
             },
           }
