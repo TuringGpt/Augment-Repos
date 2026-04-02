@@ -18,6 +18,9 @@ export const LANGUAGES = {
 
 export type LanguageCode = keyof typeof LANGUAGES
 
+// Fallback language configuration
+export const FALLBACK_LANGUAGE: LanguageCode = 'en'
+
 // Translation resources
 const resources = {
   en: { translation: enTranslation },
@@ -34,7 +37,7 @@ i18n
   // Initialize i18next
   .init({
     resources,
-    fallbackLng: 'en',
+    fallbackLng: FALLBACK_LANGUAGE,
     debug: import.meta.env.DEV,
     
     // Language detection options

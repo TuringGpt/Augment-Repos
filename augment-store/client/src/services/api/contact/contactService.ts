@@ -69,6 +69,25 @@ export interface UpdateContactResponse {
 }
 
 /**
+ * Bulk update request data
+ * Updates the status of multiple contacts
+ * Server only accepts ids and status fields
+ */
+export interface BulkUpdateContactRequest {
+  ids: string[]
+  status: ContactStatus
+}
+
+/**
+ * Bulk update response from backend
+ * Returns the number of updated contacts and the new status
+ */
+export interface BulkUpdateContactResponse {
+  updated: number
+  status: ContactStatus
+}
+
+/**
  * Contact list response from backend
  * DRF ListAPIView returns paginated response with count, next, previous, results
  */
@@ -119,6 +138,18 @@ export const contactService = {
    */
   updateContact: async (id: string, data: UpdateContactRequest): Promise<UpdateContactResponse> => {
     return apiClient.patch<UpdateContactResponse>(API_ENDPOINTS.CONTACT.UPDATE(id), data)
+  },
+
+  /**
+   * Bulk update the status of multiple contact messages
+   * @param ids - Array of contact IDs to update
+   * @param status - New status to apply to all specified contacts
+   * @returns Promise with bulk update response containing count and status
+   * @throws Error if the API request fails
+   */
+  bulkUpdateContacts: async (ids: string[], status: ContactStatus): Promise<BulkUpdateContactResponse> => {
+    const requestData: BulkUpdateContactRequest = { ids, status }
+    return apiClient.post<BulkUpdateContactResponse>(API_ENDPOINTS.CONTACT.BULK_UPDATE, requestData)
   },
 }
 

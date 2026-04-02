@@ -39,7 +39,7 @@ import NewslettersPage from '@features/newsletter/pages/NewslettersPage'
 import UnsubscribePage from '@features/newsletter/pages/UnsubscribePage'
 
 // Admin Dashboard pages
-import { AdminDashboardPage, AdminProductsPage, AdminAllProductsPage, AdminUsersPage, AdminCategoriesPage, AdminBrandsPage, AdminOrdersPage, AdminReportsPage, ProductStatisticsViewPage, AdminContactMessagesPage, AdminSettingsPage, AdminTicketsPage } from '@features/admin-dashboard/pages'
+import { AdminDashboardPage, AdminProductsPage, AdminAllProductsPage, AdminUsersPage, AdminCategoriesPage, AdminBrandsPage, AdminOrdersPage, AdminReportsPage, ProductStatisticsViewPage, AdminContactMessagesPage, AdminSettingsPage, AdminTicketsPage, AdminCurrencyPage } from '@features/admin-dashboard/pages'
 
 // Product Statistics Detail page
 import ProductStatisticsDetailPage from '@features/products/product-statistics-detail/components/ProductStatisticsDetailPage'
@@ -123,6 +123,7 @@ const AppRoutes = () => {
           <Route path="/admin/contact-messages" element={<AdminContactMessagesPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/tickets" element={<AdminTicketsPage />} />
+          <Route path="/admin/currency" element={<AdminCurrencyPage />} />
         </Route>
       </Route>
       

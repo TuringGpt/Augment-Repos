@@ -989,7 +989,21 @@
       "subtitle": "Gestionar y rastrear todos los pedidos de clientes",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "La página de gestión de pedidos del administrador está actualmente en desarrollo.",
-      "checkBackSoon": "¡Vuelva pronto para actualizaciones!"
+      "checkBackSoon": "¡Vuelva pronto para actualizaciones!",
+      "table": {
+        "orderNumber": "Número de Pedido",
+        "date": "Fecha",
+        "items": "Artículos",
+        "status": "Estado",
+        "total": "Total",
+        "actions": "Acciones",
+        "moreItems": "+{{count}} más",
+        "deletedProduct": "(Producto Eliminado)"
+      },
+      "emptyState": {
+        "noOrders": "Aún No Hay Pedidos",
+        "noOrdersDescription": "Aún no se han realizado pedidos de clientes."
+      }
     },
     "products": "Productos",
     "categories": "Categorías",
@@ -998,6 +1012,7 @@
     "reports": "Informes",
     "contactMessages": "Mensajes de Contacto",
     "tickets": "Tickets",
+    "currency": "Moneda",
     "reportsPage": {
       "title": "Informes",
       "subtitle": "Ver y analizar informes comerciales completos",
@@ -1035,11 +1050,15 @@
       "retry": "Reintentar",
       "totalMessages": "Total de Mensajes: {{count}} mensaje",
       "totalMessages_other": "Total de Mensajes: {{count}} mensajes",
+      "selectedMessages": "{{count}} seleccionado",
+      "selectedMessages_other": "{{count}} seleccionados",
       "noMessages": "Aún no hay mensajes de contacto",
       "viewDetails": "Ver Detalles",
       "messageDetails": "Detalles del Mensaje",
       "markAsRead": "Marcar como Leído",
       "markAsResolved": "Marcar como Resuelto",
+      "selectAllContacts": "Seleccionar todos los contactos",
+      "selectContact": "Seleccionar contacto {{name}}",
       "table": {
         "name": "Nombre",
         "email": "Correo Electrónico",
@@ -1104,7 +1123,13 @@
         "reporter": "Reportador",
         "assignee": "Asignado",
         "actions": "Acciones"
-      }
+      },
+      "deleteTicket": "Eliminar Ticket",
+      "deleteTicketConfirm": "¿Está seguro de que desea eliminar <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleteSuccess": "Ticket eliminado exitosamente",
+      "deleteError": "Error al eliminar el ticket. Por favor, inténtelo de nuevo."
     },
     "createTicketPage": {
       "backToTickets": "Volver a Tickets",
@@ -1173,7 +1198,12 @@
       "deleteTicketWarning": "Esta acción no se puede deshacer.",
       "deleting": "Eliminando...",
       "deleteSuccess": "Ticket eliminado exitosamente",
-      "deleteError": "Error al eliminar el ticket. Por favor, inténtalo de nuevo."
+      "deleteError": "Error al eliminar el ticket. Por favor, inténtalo de nuevo.",
+      "saveChanges": "Guardar Cambios",
+      "saving": "Guardando...",
+      "updateSuccess": "¡Ticket actualizado exitosamente!",
+      "updateError": "Error al actualizar el ticket. Por favor, inténtalo de nuevo.",
+      "updateStateError": "No se puede actualizar el ticket. Por favor, actualiza la página e inténtalo de nuevo."
     },
     "settings": "Configuración",
     "settingsPage": {
@@ -1184,6 +1214,12 @@
       "themeMode": "Modo de Tema",
       "currentlyLight": "Actualmente usando tema claro",
       "currentlyDark": "Actualmente usando tema oscuro",
+      "language": "Idioma",
+      "languageDescription": "Elige tu idioma preferido para el panel de administración",
+      "selectLanguage": "Seleccionar Idioma",
+      "currentLanguage": "Actualmente usando {{language}}",
+      "languageChanged": "Idioma cambiado exitosamente",
+      "languageChangeFailed": "Error al cambiar el idioma. Por favor, inténtalo de nuevo.",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },
@@ -1322,6 +1358,27 @@
         "uploadCategoryImage": "Subir imagen de la categoría",
         "removeCategoryImage": "Eliminar imagen de la categoría",
         "categoryImageInput": "Entrada de archivo de imagen de categoría"
+      }
+    },
+    "currencyPage": {
+      "title": "Gestión de Monedas",
+      "subtitle": "Ver y gestionar monedas admitidas",
+      "refresh": "Actualizar",
+      "wipBanner": "Esta página está actualmente en desarrollo. Las funciones completas de gestión de monedas estarán disponibles pronto.",
+      "noCurrencies": "No hay monedas disponibles",
+      "deleteCurrency": "Eliminar Moneda",
+      "deleteCurrencyConfirm": "¿Está seguro de que desea eliminar <strong>{{currencyName}} ({{currencyCode}})</strong>? Esta acción no se puede deshacer.",
+      "deleteSuccess": "Moneda eliminada con éxito",
+      "errorDeleteCurrency": "Error al eliminar la moneda",
+      "deleting": "Eliminando...",
+      "table": {
+        "code": "Código",
+        "name": "Nombre",
+        "symbol": "Símbolo",
+        "id": "ID",
+        "actions": "Acciones",
+        "createdAt": "Creado el",
+        "updatedAt": "Actualizado el"
       }
     },
     "brandsPage": {

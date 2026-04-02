@@ -301,3 +301,16 @@ class AdminOrderUpdateSerializer(serializers.ModelSerializer):
         model = Order
         fields = ["id", "status"]
         read_only_fields = ["id"]
+
+
+class AdminPaymentListSerializer(serializers.ModelSerializer):
+    order_id = serializers.UUIDField(source='order.id', read_only=True)
+    customer_email = serializers.EmailField(source='created_by.email', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = [
+            "id", "order_id", "customer_email", "amount",
+            "payment_method", "payment_status", "stripe_session_id",
+            "created_at", "updated_at"
+        ]

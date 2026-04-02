@@ -299,4 +299,67 @@ class MerchantCachingTests(BaseAPITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["results"][0]["name"], "Updated Name")
             self.assertGreater(len(queries), 0)
-    
+
+class AdminMerchantOrdersListViewTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_merchant@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.ADMIN
+        )
+        self.merchant = UserFactory(
+            email="merchant_test@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
+        # Second merchant to test cross-merchant visibility
+        self.merchant_2 = UserFactory(
+            email="merchant_test_2@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
+        self.brand = ProductBrandFactory(created_by=self.merchant, name="TestBrand")
+        self.product = ProductFactory(created_by=self.merchant, name="TestProduct", brand=self.brand)
+        self.order = OrderFactory(created_by=self.merchant)
+        self.order_item = OrderItemFactory(
+            order=self.order, cart_item__product=self.product, product=True, created_by=self.merchant
+        )
+        # Order from second merchant
+        self.brand_2 = ProductBrandFactory(created_by=self.merchant_2, name="TestBrand2")
+        self.product_2 = ProductFactory(created_by=self.merchant_2, name="TestProduct2", brand=self.brand_2)
+        self.order_2 = OrderFactory(created_by=self.merchant_2)
+        self.order_item_2 = OrderItemFactory(
+            order=self.order_2, cart_item__product=self.product_2, product=True, created_by=self.merchant_2
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_merchant_orders(self):
+        url = reverse("v1:merchant:admin_merchant_order_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Admin should see orders from both merchants
+        order_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.order.id), order_ids)
+        self.assertIn(str(self.order_2.id), order_ids)
+
+    def test_regular_user_list_merchant_orders_forbidden(self):
+        regular_user = UserFactory(
+            email="regular_merchant_test@example.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        self.authenticated_client.force_authenticate(user=regular_user)
+        url = reverse("v1:merchant:admin_merchant_order_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 403)
+

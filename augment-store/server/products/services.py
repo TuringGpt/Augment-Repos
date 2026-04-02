@@ -91,6 +91,12 @@ class SearchService:
             )
         except Exception:
             logger.exception("Failed to log search due to an unexpected error")
+            return
+
+        try:
+            SearchQueryCacheService().clear_namespace()
+        except Exception:
+            logger.exception("Failed to invalidate search query cache")
 
 
 class ProductBrandCacheService(BaseCacheService):
@@ -109,4 +115,9 @@ class ProductCacheService(BaseCacheService):
 
 class ProductSearchCacheService(BaseCacheService):
     OBJECT_NAME = "product_search"
+    VERSION = 1
+
+
+class SearchQueryCacheService(BaseCacheService):
+    OBJECT_NAME = "search_queries"
     VERSION = 1
