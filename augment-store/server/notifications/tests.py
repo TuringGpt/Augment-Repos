@@ -287,3 +287,40 @@ class UnreadNotificationCountTests(BaseAPITestCase):
         # Count should now be 0
         response = self.authenticated_client.get(self.count_url)
         self.assertEqual(response.data["unread_count"], 0)
+
+class AdminNotificationTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        from accounts.factory import UserFactory
+        self.admin = UserFactory(role="admin", email="admin_notif@example.com")
+        
+    def test_admin_list_notifications(self):
+        NotificationFactory.create_batch(3, user=self.user)
+        
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse('v1:notifications:admin_notification_list')
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        results = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
+        self.assertEqual(len(results), 3)
+        
+        # Test non-admin fails
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, 403)
+        
+    def test_admin_update_notification(self):
+        notification = NotificationFactory(user=self.user, is_read=False)
+        
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse('v1:notifications:admin_notification_update', kwargs={'pk': notification.pk})
+        
+        response = self.authenticated_client.patch(url, {'is_read': True})
+        self.assertEqual(response.status_code, 200)
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)
+        
+        # Test non-admin fails
+        self.authenticated_client.force_authenticate(user=self.user)
+        response = self.authenticated_client.patch(url, {'is_read': False})
+        self.assertEqual(response.status_code, 403)

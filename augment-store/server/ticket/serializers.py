@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import Ticket, Comment
 
 class TicketListSerializer(serializers.ModelSerializer):
+    comment_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Ticket
-        fields = ["id", "title", "description", "status", "priority", "assignee", "reporter", "created_at"]
+        fields = ["id", "title", "description", "status", "priority", "assignee", "reporter", "created_at", "comment_count"]
 
 
 class TicketCreateSerializer(serializers.ModelSerializer):
