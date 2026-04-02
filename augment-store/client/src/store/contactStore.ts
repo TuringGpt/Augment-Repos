@@ -663,7 +663,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // Actually trigger a refresh to fetch the current server state
           // Without this, the UI would remain stuck showing optimistic status values
           // until the user manually refreshes
-          get().getContacts()
+          // IMPORTANT: Only refresh if the user is still authenticated to prevent
+          // repopulating PII after logout/clearContacts() has been called
+          const { useAuthStore } = await import('@store/authStore')
+          if (useAuthStore.getState().isAuthenticated) {
+            get().getContacts()
+          }
         } else {
           // Full success: all contacts were updated
           // Update the stored server state for all successfully updated contacts
@@ -688,7 +693,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
           // Actually trigger a refresh to fetch the updated server state
           // This ensures the UI reflects the actual server state after the bulk update
-          get().getContacts()
+          // IMPORTANT: Only refresh if the user is still authenticated to prevent
+          // repopulating PII after logout/clearContacts() has been called
+          const { useAuthStore } = await import('@store/authStore')
+          if (useAuthStore.getState().isAuthenticated) {
+            get().getContacts()
+          }
         }
 
         set({
@@ -704,7 +714,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // Without this refresh, the UI could diverge from the server state
         fetchRequestCounter += 1
         set({ isLoading: false })
-        get().getContacts()
+        // IMPORTANT: Only refresh if the user is still authenticated to prevent
+        // repopulating PII after logout/clearContacts() has been called
+        const { useAuthStore } = await import('@store/authStore')
+        if (useAuthStore.getState().isAuthenticated) {
+          get().getContacts()
+        }
       }
 
       return response
@@ -766,7 +781,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // in an unconfirmed optimistic status
       fetchRequestCounter += 1
       set({ isLoading: false })
-      get().getContacts()
+      // IMPORTANT: Only refresh if the user is still authenticated to prevent
+      // repopulating PII after logout/clearContacts() has been called
+      const { useAuthStore } = await import('@store/authStore')
+      if (useAuthStore.getState().isAuthenticated) {
+        get().getContacts()
+      }
 
       // Suppress errors from superseded/stale requests to match the docstring's
       // "store handles the error" expectation - a newer request has taken over
