@@ -552,6 +552,12 @@ export const useContactStore = create<ContactState>((set, get) => ({
    * - The contact list is updated IMMEDIATELY (optimistically) before the API call
    * - If the API call fails, the optimistic update is rolled back
    *
+   * **Partial Success Handling:**
+   * - If the server returns `updated` count < `ids.length`, some contacts were not updated
+   *   (e.g., they no longer exist on the server)
+   * - In this case, the contact list is automatically refreshed to sync with the server state
+   * - The UI will show optimistic updates briefly, then sync to actual server state
+   *
    * **Example Usage:**
    * ```tsx
    * const isBulkUpdating = useContactStore((s) => s.isBulkUpdating)
@@ -627,22 +633,41 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // Only update state if this is still the most recent request
       // If a newer request has been made, discard this response
       if (currentRequestId === bulkUpdateRequestCounter) {
-        // Update the stored server state for all successfully updated contacts
-        // This prevents rollbacks from reverting to a state older than what's on the server
-        ids.forEach((id) => {
-          const contact = get().contacts?.results.find((c) => c.id === id)
-          if (contact) {
-            originalContactStates.set(id, { ...contact, status })
-          }
-        })
+        // Check for partial success: if response.updated < ids.length, some contacts
+        // were not updated by the server (e.g., they no longer exist)
+        const isPartialSuccess = response.updated < ids.length
 
-        // Invalidate any getContacts() calls that started before this update
-        // This ensures fresh data is fetched, but prevents newer fetches from being invalidated
-        if (fetchCounterAtUpdateStart === fetchRequestCounter) {
-          fetchRequestCounter += 1
-          // Reset isLoading to prevent it from being stuck true when invalidated
-          // fetch requests skip their finally block (request id no longer matches)
-          set({ isLoading: false })
+        if (isPartialSuccess) {
+          // Partial success: some IDs were not updated by the server
+          // We don't know which specific IDs failed, so we invalidate the fetch
+          // to trigger a refresh that will sync the UI with the actual server state
+          // Do NOT update originalContactStates for any contacts to avoid persisting
+          // optimistic updates for contacts that the server didn't actually update
+          if (fetchCounterAtUpdateStart === fetchRequestCounter) {
+            fetchRequestCounter += 1
+            // Reset isLoading to prevent it from being stuck true when invalidated
+            // fetch requests skip their finally block (request id no longer matches)
+            set({ isLoading: false })
+          }
+        } else {
+          // Full success: all contacts were updated
+          // Update the stored server state for all successfully updated contacts
+          // This prevents rollbacks from reverting to a state older than what's on the server
+          ids.forEach((id) => {
+            const contact = get().contacts?.results.find((c) => c.id === id)
+            if (contact) {
+              originalContactStates.set(id, { ...contact, status })
+            }
+          })
+
+          // Invalidate any getContacts() calls that started before this update
+          // This ensures fresh data is fetched, but prevents newer fetches from being invalidated
+          if (fetchCounterAtUpdateStart === fetchRequestCounter) {
+            fetchRequestCounter += 1
+            // Reset isLoading to prevent it from being stuck true when invalidated
+            // fetch requests skip their finally block (request id no longer matches)
+            set({ isLoading: false })
+          }
         }
 
         set({
