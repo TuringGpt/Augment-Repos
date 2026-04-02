@@ -696,6 +696,15 @@ export const useContactStore = create<ContactState>((set, get) => ({
           lastBulkUpdateResult: response,
           bulkUpdateError: null
         })
+      } else {
+        // This request was superseded by a newer request
+        // Trigger a refresh to ensure the UI syncs with actual server state
+        // This handles the case where this superseded request may have succeeded server-side
+        // but its optimistic changes are already overwritten by the newer request
+        // Without this refresh, the UI could diverge from the server state
+        fetchRequestCounter += 1
+        set({ isLoading: false })
+        get().getContacts()
       }
 
       return response
@@ -745,6 +754,19 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // Superseded requests are suppressed to prevent unhandled rejections when a newer request succeeded
         throw err
       }
+
+      // This request was superseded by a newer request
+      // Trigger a refresh to ensure the UI syncs with actual server state
+      // This is critical because:
+      // 1. This superseded request may have failed server-side, leaving optimistic changes
+      //    from this request stuck in the UI if the newer request didn't include these IDs
+      // 2. This superseded request may have succeeded server-side despite being suppressed,
+      //    and a later request failure + rollback could leave client state diverging from server
+      // Without this refresh, IDs that aren't included in the newer request can stay stuck
+      // in an unconfirmed optimistic status
+      fetchRequestCounter += 1
+      set({ isLoading: false })
+      get().getContacts()
 
       // Suppress errors from superseded/stale requests to match the docstring's
       // "store handles the error" expectation - a newer request has taken over
