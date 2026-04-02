@@ -595,10 +595,6 @@ export const useContactStore = create<ContactState>((set, get) => ({
     bulkUpdateRequestCounter += 1
     const currentRequestId = bulkUpdateRequestCounter
 
-    // Capture the current fetchRequestCounter at the start of this update
-    // This allows us to invalidate only getContacts() calls that started BEFORE this update
-    const fetchCounterAtUpdateStart = fetchRequestCounter
-
     // Store the original state for each contact that's not already tracked
     // This ensures originalContactStates has an entry for all contacts in this bulk update
     // so that rollback can use the most recent confirmed server state
@@ -679,14 +675,20 @@ export const useContactStore = create<ContactState>((set, get) => ({
             }
           })
 
-          // Invalidate any getContacts() calls that started before this update
-          // to prevent them from overwriting just-updated contacts with stale data
-          if (fetchCounterAtUpdateStart === fetchRequestCounter) {
-            fetchRequestCounter += 1
-            // Reset isLoading to prevent it from being stuck true when invalidated
-            // fetch requests skip their finally block (request id no longer matches)
-            set({ isLoading: false })
-          }
+          // ALWAYS increment the fetch counter and trigger a refresh in full-success case
+          // This ensures the UI syncs with the server state even if a concurrent
+          // getContacts() started after this update began but will return stale data
+          // Without this, a concurrent getContacts() could overwrite the optimistic
+          // status updates with old server data, leaving the UI stale despite successful
+          // bulk update
+          fetchRequestCounter += 1
+          // Reset isLoading to prevent it from being stuck true when invalidated
+          // fetch requests skip their finally block (request id no longer matches)
+          set({ isLoading: false })
+
+          // Actually trigger a refresh to fetch the updated server state
+          // This ensures the UI reflects the actual server state after the bulk update
+          get().getContacts()
         }
 
         set({
