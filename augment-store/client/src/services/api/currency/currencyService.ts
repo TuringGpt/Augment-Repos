@@ -48,6 +48,28 @@ export interface CreateCurrencyResponse {
   symbol: string
 }
 
+/**
+ * Update Currency Request
+ * Backend expects fields for updating a currency
+ * All fields are optional for partial updates (PATCH)
+ */
+export interface UpdateCurrencyRequest {
+  code?: string
+  name?: string
+  symbol?: string
+}
+
+/**
+ * Update Currency Response
+ * Backend returns only basic fields without timestamps or id
+ * Fields: name, code, symbol
+ */
+export interface UpdateCurrencyResponse {
+  code: string
+  name: string
+  symbol: string
+}
+
 export const currencyService = {
   /**
    * Get all currencies
@@ -95,6 +117,23 @@ export const currencyService = {
     return apiClient.post<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.CREATE, data, {
       signal,
     })
+  },
+
+  /**
+   * Update a currency by ID
+   * @param id - Currency ID to update
+   * @param data - Partial currency data to update
+   * @returns Promise with updated currency (basic fields only: name, code, symbol)
+   * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (AdminCurrencyUpdateDeleteView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   *
+   * Note: Backend uses CreateCurrencySerializer which returns only name, code, and symbol.
+   * It does NOT include id, created_at, or updated_at fields.
+   */
+  updateCurrency: async (id: string, data: UpdateCurrencyRequest): Promise<UpdateCurrencyResponse> => {
+    return apiClient.patch<UpdateCurrencyResponse>(API_ENDPOINTS.CURRENCY.UPDATE(id), data)
   },
 
   /**
