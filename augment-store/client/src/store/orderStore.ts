@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse } from '@features/orders/types'
+import { isAbortError } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -48,7 +49,7 @@ interface OrderState {
   clearCurrentOrder: () => void
   setCreateOrderError: (error: string | null) => void
   getAllOrders: (page?: number, limit?: number) => Promise<OrderListResponse>
-  getMerchantOrders: (page?: number) => Promise<OrderListResponse>
+  getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
   clearSelectedOrder: () => void
   clearOrders: () => void
@@ -192,7 +193,7 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
-      getMerchantOrders: async (page = 1) => {
+      getMerchantOrders: async (page = 1, signal?: AbortSignal) => {
         // Import orderService dynamically to avoid circular dependency
         const { orderService } = await import('@services/api/orders/orderService')
 
@@ -209,7 +210,7 @@ export const useOrderStore = create<OrderState>()(
         try {
           set({ isFetchingMerchantOrders: true, fetchMerchantOrdersError: null })
           // Note: Backend has fixed page size of 100, limit parameter is not supported
-          const response = await orderService.getMerchantOrders(validPage)
+          const response = await orderService.getMerchantOrders(validPage, 10, signal)
 
           // Only update state if this is still the latest request
           // This prevents older responses from overwriting newer state
@@ -227,10 +228,19 @@ export const useOrderStore = create<OrderState>()(
 
           return response
         } catch (error) {
-          console.error('Failed to fetch merchant orders:', error)
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Failed to fetch merchant orders:', error)
+          }
 
           // Only update error state if this is still the latest request
           if (requestId === fetchMerchantRequestCounter) {
+            // Don't treat intentional cancellations as fetch errors
+            if (isAbortError(error)) {
+              // Request was intentionally cancelled, don't set error state
+              throw error
+            }
+
             // Check if this is a 404 error, which likely means the requested page is out of range
             // This can happen when total pages shrink (e.g., items deleted) and the current page
             // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
@@ -241,7 +251,7 @@ export const useOrderStore = create<OrderState>()(
               // Page is out of range - reset to page 1 and retry to get fresh data
               console.log(`Page ${validPage} returned 404, retrying with page 1`)
               try {
-                const retryResponse = await orderService.getMerchantOrders(1)
+                const retryResponse = await orderService.getMerchantOrders(1, 10, signal)
 
                 // Only update state if this is still the latest request
                 if (requestId === fetchMerchantRequestCounter) {
@@ -257,7 +267,13 @@ export const useOrderStore = create<OrderState>()(
                 return retryResponse
               } catch (retryError) {
                 // If retry also fails, fall through to normal error handling
-                console.error('Retry with page 1 also failed:', retryError)
+                // Don't log abort errors - these are expected when requests are intentionally cancelled
+                if (!isAbortError(retryError)) {
+                  console.error('Retry with page 1 also failed:', retryError)
+                } else {
+                  // Retry was also cancelled, don't set error state
+                  throw retryError
+                }
               }
             }
 
@@ -397,7 +413,10 @@ export const useOrderStore = create<OrderState>()(
         set({ currentMerchantPage: validPage })
         get().getMerchantOrders(validPage).catch((error) => {
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
-          console.error('Error fetching merchant orders on page change:', error)
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Error fetching merchant orders on page change:', error)
+          }
         })
       },
     }),
