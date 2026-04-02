@@ -635,6 +635,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
         // This ensures fresh data is fetched, but prevents newer fetches from being invalidated
         if (fetchCounterAtUpdateStart === fetchRequestCounter) {
           fetchRequestCounter += 1
+          // Reset isLoading to prevent it from being stuck true when invalidated
+          // fetch requests skip their finally block (request id no longer matches)
+          set({ isLoading: false })
         }
 
         set({
