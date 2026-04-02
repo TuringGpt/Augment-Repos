@@ -133,7 +133,7 @@ export const currencyService = {
    * It does NOT include id, created_at, or updated_at fields.
    */
   updateCurrency: async (id: string, data: UpdateCurrencyRequest): Promise<UpdateCurrencyResponse> => {
-    return apiClient.patch<UpdateCurrencyResponse>(API_ENDPOINTS.CURRENCY.UPDATE(id), data)
+    return apiClient.patch<UpdateCurrencyResponse>(API_ENDPOINTS.CURRENCY.DETAIL(id), data)
   },
 
   /**
@@ -145,7 +145,7 @@ export const currencyService = {
    * Calling this from non-admin client flows will result in a 403 Forbidden error.
    */
   deleteCurrency: async (id: string): Promise<void> => {
-    await apiClient.delete(API_ENDPOINTS.CURRENCY.DELETE(id))
+    await apiClient.delete(API_ENDPOINTS.CURRENCY.DETAIL(id))
   },
 }
 
