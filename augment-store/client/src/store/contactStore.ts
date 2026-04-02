@@ -586,9 +586,18 @@ export const useContactStore = create<ContactState>((set, get) => ({
     const fetchCounterAtUpdateStart = fetchRequestCounter
 
     // Store the original state for each contact for rollback
+    // If not in the Map yet, fall back to current state (first update for this contact)
     const rollbackStates = new Map<string, ContactItem>()
     ids.forEach((id) => {
-      const originalState = originalContactStates.get(id)
+      let originalState = originalContactStates.get(id)
+      if (!originalState) {
+        const currentState = get()
+        originalState = currentState.contacts?.results.find((contact) => contact.id === id)
+        // Store it in the Map for future updates
+        if (originalState) {
+          originalContactStates.set(id, originalState)
+        }
+      }
       if (originalState) {
         rollbackStates.set(id, originalState)
       }
