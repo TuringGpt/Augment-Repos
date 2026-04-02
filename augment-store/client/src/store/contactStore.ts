@@ -582,6 +582,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
    * @returns Promise that resolves with the API response (may be stale if superseded)
    */
   bulkUpdateContacts: async (ids: string[], status: ContactStatus) => {
+    // Early return if no IDs provided - nothing to update
+    if (ids.length === 0) {
+      return { updated: 0, status }
+    }
+
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
     bulkUpdateRequestCounter += 1
