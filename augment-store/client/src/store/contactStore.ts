@@ -584,7 +584,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
    */
   bulkUpdateContacts: async (ids: string[], status: ContactStatus) => {
     // Early return if no IDs provided - nothing to update
+    // Clear any stale success/error state to prevent showing outdated UI
     if (ids.length === 0) {
+      set({ bulkUpdateError: null, lastBulkUpdateResult: null })
       return { updated: 0, status }
     }
 
