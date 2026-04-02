@@ -1007,3 +1007,253 @@ class AdminOrderTests(BaseAPITestCase):
         payload = {"status": Order.OrderStatus.CANCELLED}
         response = self.authenticated_client.patch(url, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminShippingAddressTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_addresses@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_addresses@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        self.address1 = ShippingAddressFactory(user=self.admin_user)
+        self.address2 = ShippingAddressFactory(user=self.admin_user)
+        # Address from a different user to prove global listing
+        self.regular_address = ShippingAddressFactory(user=self.regular_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_shipping_addresses(self):
+        url = reverse("v1:checkout:admin_shipping_address_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Admin should see addresses from both users
+        address_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.address1.id), address_ids)
+        self.assertIn(str(self.address2.id), address_ids)
+        self.assertIn(str(self.regular_address.id), address_ids)
+
+        # Verify descending ordering by created_at
+        created_dates = [r['created_at'] for r in results]
+        self.assertEqual(created_dates, sorted(created_dates, reverse=True))
+
+    def test_regular_user_list_shipping_addresses_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_shipping_address_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_list_shipping_addresses(self):
+        url = reverse("v1:checkout:admin_shipping_address_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class AdminPaymentTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_payments@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_payments@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        # Create a payment belonging to the admin user
+        self.order = OrderFactory(created_by=self.admin_user)
+        self.payment = PaymentFactory(
+            order=self.order,
+            created_by=self.admin_user,
+            amount=Decimal("99.99"),
+            payment_status="paid"
+        )
+        # Create a payment belonging to a non-admin user
+        self.regular_order = OrderFactory(created_by=self.regular_user)
+        self.regular_payment = PaymentFactory(
+            order=self.regular_order,
+            created_by=self.regular_user,
+            amount=Decimal("49.99"),
+            payment_status="pending"
+        )
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_payments(self):
+        url = reverse("v1:checkout:admin_payment_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        # Admin should see payments from both the admin and regular user
+        payment_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.payment.id), payment_ids)
+        self.assertIn(str(self.regular_payment.id), payment_ids)
+
+    def test_regular_user_list_payments_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_payment_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminBillingAddressTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_billing@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        
+        from checkout.factory import BillingAddressFactory
+        self.address1 = BillingAddressFactory(user=self.admin_user)
+        self.address2 = BillingAddressFactory(user=self.admin_user)
+        self.regular_address = BillingAddressFactory(user=self.regular_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_billing_addresses(self):
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        
+        address_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.address1.id), address_ids)
+        self.assertIn(str(self.address2.id), address_ids)
+        self.assertIn(str(self.regular_address.id), address_ids)
+
+        reg_data = next((r for r in results if str(r['id']) == str(self.regular_address.id)), None)
+        self.assertIsNotNone(reg_data)
+        self.assertEqual(reg_data['address_line_1'], self.regular_address.address_line_1)
+        self.assertEqual(reg_data['address_line_2'], self.regular_address.address_line_2)
+
+    def test_regular_user_list_billing_addresses_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_billing_address_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminContactInfoTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_contact@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_contact@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+        
+        from checkout.factory import ContactInformationFactory
+        self.contact1 = ContactInformationFactory(user=self.admin_user)
+        self.contact2 = ContactInformationFactory(user=self.admin_user)
+        self.regular_contact = ContactInformationFactory(user=self.regular_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_contact_info(self):
+        url = reverse("v1:checkout:admin_contact_info_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        
+        contact_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.contact1.id), contact_ids)
+        self.assertIn(str(self.contact2.id), contact_ids)
+        self.assertIn(str(self.regular_contact.id), contact_ids)
+
+    def test_regular_user_list_contact_info_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_contact_info_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminOrderItemTests(BaseAPITestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(
+            email="admin_orderitem@example.com",
+            password="testpassword",
+            is_active=True,
+            role="admin"
+        )
+        self.regular_user = UserFactory(
+            email="regular_orderitem@example.com",
+            password="testpassword",
+            is_active=True,
+            role="member"
+        )
+
+        from products.factory import ProductFactory
+        from checkout.factory import OrderFactory, OrderItemFactory
+        product = ProductFactory()
+        admin_order = OrderFactory(created_by=self.admin_user)
+        regular_order = OrderFactory(created_by=self.regular_user)
+        self.admin_item = OrderItemFactory(order=admin_order, product=product, created_by=self.admin_user)
+        self.regular_item = OrderItemFactory(order=regular_order, product=product, created_by=self.regular_user)
+
+        from rest_framework.test import APIClient
+        self.admin_client = APIClient()
+        self.admin_client.force_authenticate(user=self.admin_user)
+
+    def test_admin_list_order_items(self):
+        url = reverse("v1:checkout:admin_order_item_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertIsInstance(results, list)
+        item_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_item.id), item_ids)
+        self.assertIn(str(self.regular_item.id), item_ids)
+
+    def test_regular_user_list_order_items_forbidden(self):
+        self.authenticated_client.force_authenticate(user=self.regular_user)
+        url = reverse("v1:checkout:admin_order_item_list")
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_list_order_items(self):
+        url = reverse("v1:checkout:admin_order_item_list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

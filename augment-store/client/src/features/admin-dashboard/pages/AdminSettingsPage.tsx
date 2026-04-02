@@ -10,15 +10,23 @@ import {
   FormControlLabel,
   Switch,
   Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from '@mui/material'
 import {
   Settings as SettingsIcon,
   Brightness4,
   Brightness7,
+  Language as LanguageIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
+import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
 
 /**
  * AdminSettingsPage Component
@@ -31,9 +39,17 @@ import { useThemeStore } from '@store/themeStore'
  */
 const AdminSettingsPage = () => {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
+
+  // Get current language name - normalize to a supported LanguageCode
+  const currentLanguage: LanguageCode =
+    (i18n.resolvedLanguage && Object.prototype.hasOwnProperty.call(LANGUAGES, i18n.resolvedLanguage))
+      ? (i18n.resolvedLanguage as LanguageCode)
+      : FALLBACK_LANGUAGE
+  const currentLanguageName = LANGUAGES[currentLanguage].nativeName
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -125,6 +141,29 @@ const AdminSettingsPage = () => {
     }
   }
 
+  const handleLanguageChange = async (event: SelectChangeEvent<string>) => {
+    const value = event.target.value
+
+    // Validate that the value is a supported language code
+    if (!Object.prototype.hasOwnProperty.call(LANGUAGES, value)) {
+      console.error('Invalid language code:', value)
+      toast.error(t('admin.settingsPage.languageChangeFailed'))
+      return
+    }
+
+    const newLanguage = value as LanguageCode
+
+    try {
+      await i18n.changeLanguage(newLanguage)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.languageChanged'))
+    } catch (error) {
+      console.error('Failed to change language:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.languageChangeFailed'))
+    }
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
@@ -190,6 +229,65 @@ const AdminSettingsPage = () => {
               label={mode === 'dark' ? t('common.darkMode') : t('common.lightMode')}
               labelPlacement="start"
             />
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Language Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {t('admin.settingsPage.language')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t('admin.settingsPage.languageDescription')}
+          </Typography>
+
+          {/* Language Selector */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <LanguageIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.selectLanguage')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.settingsPage.currentLanguage', { language: currentLanguageName })}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel id="language-select-label">
+                {t('admin.settingsPage.selectLanguage')}
+              </InputLabel>
+              <Select
+                labelId="language-select-label"
+                id="language-select"
+                label={t('admin.settingsPage.selectLanguage')}
+                value={currentLanguage}
+                onChange={handleLanguageChange}
+                sx={{
+                  '& .MuiSelect-select': {
+                    py: 1,
+                  },
+                }}
+              >
+                {Object.entries(LANGUAGES).map(([code, { nativeName }]) => (
+                  <MenuItem key={code} value={code}>
+                    {nativeName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
 

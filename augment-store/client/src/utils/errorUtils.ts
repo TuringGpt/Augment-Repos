@@ -1,6 +1,7 @@
 /**
  * Utility functions for handling API errors
  */
+import axios from 'axios'
 
 /**
  * Django/DRF error response structure
@@ -231,4 +232,127 @@ export function sanitizeErrorForLogging(
   }
 
   return sanitized
+}
+
+/**
+ * Custom error class for superseded requests
+ *
+ * This error is thrown when a request is superseded by a newer request,
+ * preventing the caller from treating stale/ignored results as successful operations.
+ * Callers can catch this error to avoid showing success notifications for superseded requests.
+ *
+ * @example
+ * try {
+ *   await createCurrency(data)
+ *   showSuccessToast("Currency created!") // Only shows if not superseded
+ * } catch (error) {
+ *   if (isSupersededError(error)) {
+ *     // Request was superseded by a newer request, don't show success or error
+ *     return
+ *   }
+ *   showErrorToast(error.message)
+ * }
+ */
+export class SupersededRequestError extends Error {
+  readonly name = 'SupersededRequestError'
+  readonly isSuperseded = true
+
+  constructor(message: string = 'Request was superseded by a newer request') {
+    super(message)
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, SupersededRequestError)
+    }
+  }
+}
+
+/**
+ * Check if an error is a superseded request error
+ *
+ * This function checks if an error was caused by a request being superseded by a newer request.
+ * Use this to distinguish between real errors (that should be shown to the user) and
+ * intentionally ignored stale requests.
+ *
+ * @param error - The error object to check
+ * @returns true if the error is a superseded request error, false otherwise
+ *
+ * @example
+ * try {
+ *   await store.createCurrency(data)
+ * } catch (error) {
+ *   if (isSupersededError(error)) {
+ *     // Request was superseded, don't show notification
+ *     return
+ *   }
+ *   showErrorNotification(error.message)
+ * }
+ */
+export function isSupersededError(error: unknown): boolean {
+  // Method 1: Check if it's an instance of SupersededRequestError
+  if (error instanceof SupersededRequestError) {
+    return true
+  }
+
+  const err = error as { name?: string; isSuperseded?: boolean }
+
+  // Method 2: Check error.name for SupersededRequestError
+  if (err?.name === 'SupersededRequestError') {
+    return true
+  }
+
+  // Method 3: Check error.isSuperseded flag
+  if (err?.isSuperseded === true) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Check if an error is an abort/cancel error
+ *
+ * This function checks if an error was caused by an intentional request cancellation,
+ * either through AbortController (AbortSignal) or Axios cancel tokens.
+ * Uses multiple detection methods for reliability across Axios versions and runtimes.
+ *
+ * @param error - The error object to check
+ * @returns true if the error is an abort/cancel error, false otherwise
+ *
+ * @example
+ * try {
+ *   await apiClient.get('/api/data', { signal: abortController.signal })
+ * } catch (error) {
+ *   if (isAbortError(error)) {
+ *     // Request was intentionally cancelled, don't log as error
+ *     return
+ *   }
+ *   console.error('Unexpected error:', error)
+ * }
+ */
+export function isAbortError(error: unknown): boolean {
+  // Method 1: Use Axios's built-in isCancel utility (most reliable for cancel tokens)
+  if (axios.isCancel(error)) {
+    return true
+  }
+
+  const err = error as { code?: string; name?: string }
+
+  // Method 2: Check error.code for 'ERR_CANCELED' (Axios standard for AbortSignal)
+  // Axios can surface aborts via signal as code === 'ERR_CANCELED' depending on version/runtime
+  if (err?.code === 'ERR_CANCELED') {
+    return true
+  }
+
+  // Method 3: Check error.name for AbortError (AbortController standard)
+  // When a request is aborted via AbortController, it throws a DOMException with name "AbortError"
+  if (err?.name === 'AbortError') {
+    return true
+  }
+
+  // Method 4: Check error.name for CanceledError (legacy Axios pattern)
+  if (err?.name === 'CanceledError') {
+    return true
+  }
+
+  return false
 }

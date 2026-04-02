@@ -98,7 +98,40 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data.get("results", [])), 1)
+        results = response.data.get("results", [])
+        self.assertGreaterEqual(len(results), 1)
+
+    def test_ticket_list_comment_count(self):
+        url = reverse("v1:ticket:ticket_list")
+        # Initial check - should have 1 comment from setUp
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 1)
+
+        # Add another comment via API to trigger cache invalidation
+        create_url = reverse("v1:ticket:create_comment", kwargs={"pk": self.ticket.id})
+        res = self.authenticated_client.post(create_url, {"content": "Second comment"})
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        
+        # Verify count updated in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 2)
+
+        # Delete a comment via API
+        comment = self.ticket.comments.first()
+        delete_url = reverse("v1:ticket:delete_comment", kwargs={"pk": self.ticket.id, "comment_pk": comment.id})
+        res = self.authenticated_client.delete(delete_url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Verify count decreased in list view
+        response = self.authenticated_client.get(url)
+        results = response.data.get("results", response.data)
+        ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
+        self.assertEqual(ticket_data["comment_count"], 1)
 
     def test_list_tickets_search_by_title(self):
         TicketFactory(title="Login Bug Report", assignee=self.user, reporter=self.user)
@@ -107,7 +140,8 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
         self.assertGreater(len(results), 0)
-        self.assertIn("Login", results[0]["title"])
+        for result in results:
+            self.assertIn("Login", result["title"])
 
     def test_list_tickets_search_no_match(self):
         url = reverse("v1:ticket:ticket_list")
@@ -451,3 +485,37 @@ class AdminTicketStatsTests(BaseAPITestCase):
         response = client.get(self.stats_url)
         self.assertEqual(response.data["total"], 1)
         self.assertEqual(response.data["open"], 1)
+
+
+class AdminCommentListViewTests(BaseAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin_user = UserFactory(role='admin')
+        self.regular_user = UserFactory(role='member')
+        
+        self.admin_ticket = TicketFactory(reporter=self.admin_user, assignee=self.admin_user)
+        self.regular_ticket = TicketFactory(reporter=self.regular_user, assignee=self.regular_user)
+        
+        self.admin_comment = CommentFactory(ticket=self.admin_ticket, user=self.admin_user, content="Admin comment")
+        self.regular_comment = CommentFactory(ticket=self.regular_ticket, user=self.regular_user, content="User comment")
+        
+        self.url = reverse('v1:ticket:admin_comment_list')
+
+    def test_admin_can_list_all_comments(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        results = response.data.get("results", response.data) if isinstance(response.data, dict) else response.data
+        self.assertIsInstance(results, list)
+        comment_ids = [str(r['id']) for r in results]
+        self.assertIn(str(self.admin_comment.id), comment_ids)
+        self.assertIn(str(self.regular_comment.id), comment_ids)
+
+    def test_regular_user_cannot_list_comments(self):
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_cannot_list_comments(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

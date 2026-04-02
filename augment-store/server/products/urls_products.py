@@ -5,7 +5,9 @@ from .views import (ProductListView,
                     ProductSearchView,
                     FeaturedProductListView,
                     RecommendProductListView,
-                    ProductStockView
+                    ProductStockView,
+                    AdminProductUpdateDeleteView,
+                    AdminSearchQueryListView
                 )
 
 urlpatterns = [
@@ -16,5 +18,6 @@ urlpatterns = [
     path('search/', ProductSearchView.as_view(), name='product_search'),
     path('featured/', FeaturedProductListView.as_view(), name='product_featured'),
     path('recommend/', RecommendProductListView.as_view(), name='product_recommend'),
-
+    path('admin/<uuid:pk>/', AdminProductUpdateDeleteView.as_view(), name='admin_product_update_delete'),
+    path('admin/search-queries/', AdminSearchQueryListView.as_view(), name='admin_search_query_list'),
 ]

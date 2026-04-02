@@ -20,6 +20,7 @@ import {
   Drawer,
   Divider,
   useTheme,
+  Checkbox,
 } from '@mui/material'
 import {
   Refresh as RefreshIcon,
@@ -63,6 +64,9 @@ const AdminContactMessagesPage = () => {
   // Drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<ContactItem | null>(null)
+
+  // Selection state
+  const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set())
 
   // Track which contacts are being marked as read
   const [markingAsRead, setMarkingAsRead] = useState<Set<string>>(new Set())
@@ -119,6 +123,40 @@ const AdminContactMessagesPage = () => {
     const date = new Date(dateString)
     return date.toLocaleString()
   }
+
+  // Selection handlers
+  const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      // Select all contacts
+      const allContactIds = new Set(contacts.map((contact) => contact.id))
+      setSelectedContactIds(allContactIds)
+    } else {
+      // Deselect all
+      setSelectedContactIds(new Set())
+    }
+  }
+
+  const handleSelectContact = (contactId: string) => {
+    setSelectedContactIds((prev) => {
+      const newSelected = new Set(prev)
+      if (newSelected.has(contactId)) {
+        newSelected.delete(contactId)
+      } else {
+        newSelected.add(contactId)
+      }
+      return newSelected
+    })
+  }
+
+  // Calculate the intersection of selectedContactIds with current contacts
+  // This ensures the checkbox state and "N selected" label are consistent with what's actually on-screen
+  // even when contacts change due to refresh/pagination
+  const currentContactIds = new Set(contacts.map((contact) => contact.id))
+  const selectedInCurrentPage = Array.from(selectedContactIds).filter((id) => currentContactIds.has(id))
+  const selectedInCurrentPageCount = selectedInCurrentPage.length
+
+  const isAllSelected = contacts.length > 0 && selectedInCurrentPageCount === contacts.length
+  const isSomeSelected = selectedInCurrentPageCount > 0 && selectedInCurrentPageCount < contacts.length
 
   // Drawer handlers
   const handleViewDetails = async (contact: ContactItem) => {
@@ -371,14 +409,31 @@ const AdminContactMessagesPage = () => {
         /* Contact Messages Table */
         <Box>
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
-            <Typography variant="body2">
-              {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2">
+                {t('admin.contactMessagesPage.totalMessages', { count: contactsData?.count ?? 0 })}
+              </Typography>
+              {selectedInCurrentPageCount > 0 && (
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {t('admin.contactMessagesPage.selectedMessages', { count: selectedInCurrentPageCount })}
+                </Typography>
+              )}
+            </Box>
           </Paper>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isAllSelected}
+                      indeterminate={isSomeSelected}
+                      onChange={handleSelectAll}
+                      inputProps={{
+                        'aria-label': t('admin.contactMessagesPage.selectAllContacts'),
+                      }}
+                    />
+                  </TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.name')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.email')}</TableCell>
                   <TableCell>{t('admin.contactMessagesPage.table.subject')}</TableCell>
@@ -389,17 +444,31 @@ const AdminContactMessagesPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {contacts.map((contact) => (
-                  <TableRow
-                    key={contact.id}
-                    sx={{
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  >
-                    {/* Name */}
-                    <TableCell>
+                {contacts.map((contact) => {
+                  const isSelected = selectedContactIds.has(contact.id)
+                  return (
+                    <TableRow
+                      key={contact.id}
+                      selected={isSelected}
+                      sx={{
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
+                      }}
+                    >
+                      {/* Checkbox */}
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => handleSelectContact(contact.id)}
+                          inputProps={{
+                            'aria-label': t('admin.contactMessagesPage.selectContact', { name: contact.name }),
+                          }}
+                        />
+                      </TableCell>
+
+                      {/* Name */}
+                      <TableCell>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
                         {contact.name}
                       </Typography>
@@ -533,7 +602,8 @@ const AdminContactMessagesPage = () => {
                       </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
               </TableBody>
             </Table>
           </TableContainer>

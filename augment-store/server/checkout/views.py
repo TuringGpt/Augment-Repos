@@ -15,7 +15,7 @@ from accounts.permissions import hasAdminRole
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BillingAddress, ContactInformation, Order, Payment, ShippingAddress
+from .models import BillingAddress, ContactInformation, Order, OrderItem, Payment, ShippingAddress
 from .serializers import (
     BillingAddressListSerializer,
     ContactInformationListSerializer,
@@ -26,6 +26,8 @@ from .serializers import (
     PaymentStatusSerializer,
     ShippingAddressListSerializer,
     AdminOrderUpdateSerializer,
+    AdminPaymentListSerializer,
+    OrderItemListSerializer,
 )
 from .services import StripeService
 
@@ -184,3 +186,41 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
     def get_queryset(self):
         # Allow admins to retrieve/update any order
         return super(BaseOrderView, self).get_queryset()
+
+
+class AdminShippingAddressListView(ListAPIView):
+    """Admin-only view to list all shipping addresses globally."""
+    serializer_class = ShippingAddressListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = ShippingAddress.objects.all().order_by('-created_at', '-id')
+
+
+class AdminPaymentListView(BasePaymentView, ListAPIView):
+    """Admin-only view to list all payments globally."""
+    serializer_class = AdminPaymentListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ("order", "created_by")
+
+    def get_queryset(self):
+        # Bypass the user-scoped filter in BasePaymentView
+        return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
+
+
+class AdminBillingAddressListView(ListAPIView):
+    """Admin-only view to list all billing addresses globally."""
+    serializer_class = BillingAddressListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = BillingAddress.objects.all().order_by('-created_at', '-id')
+
+class AdminContactInfoListView(ListAPIView):
+    """Admin-only view to list all contact information globally."""
+    serializer_class = ContactInformationListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = ContactInformation.objects.all().order_by('-created_at', '-id')
+
+
+class AdminOrderItemListView(ListAPIView):
+    """Admin-only view to list all order items globally."""
+    serializer_class = OrderItemListSerializer
+    permission_classes = [IsAuthenticated, hasAdminRole]
+    queryset = OrderItem.objects.all().order_by('-created_at', '-id')
