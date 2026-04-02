@@ -651,17 +651,21 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // from the server to sync the UI with the actual server state
           // Do NOT update originalContactStates for any contacts to avoid persisting
           // optimistic updates for contacts that the server didn't actually update
-          if (fetchCounterAtUpdateStart === fetchRequestCounter) {
-            fetchRequestCounter += 1
-            // Reset isLoading to prevent it from being stuck true when invalidated
-            // fetch requests skip their finally block (request id no longer matches)
-            set({ isLoading: false })
 
-            // Actually trigger a refresh to fetch the current server state
-            // Without this, the UI would remain stuck showing optimistic status values
-            // until the user manually refreshes
-            get().getContacts()
-          }
+          // ALWAYS increment the fetch counter and trigger a refresh in partial-success case
+          // This ensures the UI eventually syncs with the server state, even if a concurrent
+          // getContacts() started after this update began but returned stale data
+          // Without this, the UI could remain stuck showing optimistic statuses for IDs
+          // the server didn't actually update
+          fetchRequestCounter += 1
+          // Reset isLoading to prevent it from being stuck true when invalidated
+          // fetch requests skip their finally block (request id no longer matches)
+          set({ isLoading: false })
+
+          // Actually trigger a refresh to fetch the current server state
+          // Without this, the UI would remain stuck showing optimistic status values
+          // until the user manually refreshes
+          get().getContacts()
         } else {
           // Full success: all contacts were updated
           // Update the stored server state for all successfully updated contacts
