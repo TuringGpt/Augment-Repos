@@ -209,7 +209,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Only update loading/error state if this is still the latest delete request
         // This prevents a slow earlier delete from overwriting state from a newer delete
         ...(requestId === deleteRequestCounter
-          ? { isDeleting: false, deleteError: null }
+          ? { isDeleting: false, deleteError: null, error: null }
           : {}),
       }))
 
