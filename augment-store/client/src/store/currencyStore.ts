@@ -8,10 +8,13 @@ interface CurrencyState {
   error: string | null
   isCreating: boolean
   createError: string | null
+  isDeleting: boolean
+  deleteError: string | null
 
   // Actions
   fetchCurrencies: (signal?: AbortSignal) => Promise<void>
   createCurrency: (data: CreateCurrencyRequest, signal?: AbortSignal) => Promise<void>
+  deleteCurrency: (id: string) => Promise<void>
   setCurrencies: (currencies: Currency[]) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -30,6 +33,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   error: null,
   isCreating: false,
   createError: null,
+  isDeleting: false,
+  deleteError: null,
 
   // Actions
   fetchCurrencies: async (signal?: AbortSignal) => {
@@ -171,6 +176,45 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     }
   },
 
+  deleteCurrency: async (id: string) => {
+    // Increment counter to invalidate any in-flight fetchCurrencies() requests
+    // This prevents a late fetch response from overwriting state with a stale list
+    // that re-introduces the deleted currency
+    fetchRequestCounter += 1
+
+    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
+    // if a stale fetch already set isLoading: true before being invalidated
+    set({ isDeleting: true, deleteError: null, isLoading: false })
+
+    try {
+      // Import currencyService dynamically to avoid circular dependency
+      const { currencyService } = await import('@services/api')
+
+      // Call the API to delete the currency
+      await currencyService.deleteCurrency(id)
+
+      // Remove the currency from the local state
+      set((state) => ({
+        currencies: state.currencies.filter((currency) => currency.id !== id),
+        isDeleting: false,
+        deleteError: null,
+      }))
+    } catch (err) {
+      // Use parseApiError to extract user-friendly error message from API response
+      const errorMessage = parseApiError(err, {
+        defaultMessage: 'Failed to delete currency. Please try again.',
+      })
+
+      set({ deleteError: errorMessage, isDeleting: false })
+
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Error deleting currency:', sanitizeErrorForLogging(err, 'Failed to delete currency'))
+
+      // Re-throw with the parsed error message so callers can display it (e.g., in toast notifications)
+      throw new Error(errorMessage)
+    }
+  },
+
   setCurrencies: (currencies) => set({ currencies }),
 
   setLoading: (isLoading) => set({ isLoading }),
@@ -184,7 +228,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     fetchRequestCounter += 1
     createRequestCounter += 1
     // Reset all loading state to prevent being stuck in loading state if called during active requests
-    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false })
+    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, deleteError: null, isDeleting: false })
   },
 }))
 
