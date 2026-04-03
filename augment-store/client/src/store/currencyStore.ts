@@ -184,14 +184,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     deleteRequestCounter += 1
     const requestId = deleteRequestCounter
 
-    // Increment fetch counter to invalidate any in-flight fetchCurrencies() requests
-    // This prevents a late fetch response from overwriting state with a stale list
-    // that re-introduces the deleted currency
-    fetchRequestCounter += 1
-
-    // Explicitly clear isLoading to prevent UI from getting stuck in loading state
-    // if a stale fetch already set isLoading: true before being invalidated
-    set({ isDeleting: true, deleteError: null, isLoading: false })
+    set({ isDeleting: true, deleteError: null })
 
     try {
       // Import currencyService dynamically to avoid circular dependency
@@ -199,6 +192,13 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
       // Call the API to delete the currency
       await currencyService.deleteCurrency(id)
+
+      // Increment fetch counter to invalidate any in-flight fetchCurrencies() requests
+      // This prevents a late fetch response from overwriting state with a stale list
+      // that re-introduces the deleted currency
+      // IMPORTANT: Do this AFTER the delete succeeds, not before, so that if the delete
+      // fails, any in-flight fetch can still update the UI with the current list
+      fetchRequestCounter += 1
 
       // ALWAYS remove the successfully deleted currency from local state
       // Even if this request was superseded by a newer delete (different currency),
