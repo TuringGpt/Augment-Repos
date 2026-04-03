@@ -33,6 +33,7 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
+import { isSupersededError } from '@utils/errorUtils'
 import type { Currency } from '@services/api'
 
 /**
@@ -119,6 +120,16 @@ const AdminCurrencyPage = () => {
       setDeleteDialogOpen(false)
       setCurrencyToDelete(null)
     } catch (err) {
+      // Handle superseded request errors separately - don't show error toast
+      // This occurs when overlapping deletes or clearCurrencies() happens mid-flight
+      if (isSupersededError(err)) {
+        // Request was superseded by a newer request, silently close dialog
+        setDeleteDialogOpen(false)
+        setCurrencyToDelete(null)
+        return
+      }
+
+      // For actual errors, show error toast and keep dialog open for retry
       console.error('Failed to delete currency:', err)
       toast.error(t('admin.currencyPage.errorDeleteCurrency', 'Failed to delete currency'))
       // Keep dialog open on error so user can retry or cancel
