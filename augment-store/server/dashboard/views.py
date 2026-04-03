@@ -1317,31 +1317,46 @@ class AdminAnalyticsView(GenericAPIView):
         days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Optimization: Single aggregation query for core metrics
-        stats = Order.objects.filter(
-            created_at__gte=cutoff_date,
-            status=Order.OrderStatus.COMPLETED
+        # Revenue from Payment.amount (source of truth for actual charged amounts)
+        payment_stats = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
         ).aggregate(
             total_orders=Count('id'),
-            total_revenue=Coalesce(Sum('total_price'), Decimal('0.00'), output_field=DecimalField(max_digits=19, decimal_places=2)),
-            avg_order_value=Avg('total_price')
+            total_revenue=Coalesce(
+                Sum('amount'), Decimal('0.00'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            ),
+            avg_order_value=Coalesce(
+                Avg('amount'), Decimal('0.00'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            )
         )
 
         # Additional metrics for the period
         new_users = User.objects.filter(date_joined__gte=cutoff_date).count()
+
+        # Top products — scoped to completed+paid orders only, with explicit output_field
         top_products = OrderItem.objects.filter(
-            order__created_at__gte=cutoff_date
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            order__payment__payment_status=Payment.PaymentStatus.PAID,
+            product__isnull=False
         ).values('product__name').annotate(
             quantity=Sum('quantity'),
-            revenue=Sum(F('quantity') * F('product__price'))
+            revenue=Sum(
+                F('quantity') * F('product__price'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            )
         ).order_by('-revenue')[:5]
 
         return Response({
             'period_days': days,
             'metrics': {
-                'total_orders': stats['total_orders'],
-                'total_revenue': float(stats['total_revenue']),
-                'avg_order_value': float(stats['avg_order_value'] or 0),
+                'total_orders': payment_stats['total_orders'],
+                'total_revenue': float(payment_stats['total_revenue']),
+                'avg_order_value': float(payment_stats['avg_order_value']),
                 'new_customers': new_users
             },
             'top_products': [
