@@ -200,6 +200,13 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // fails, any in-flight fetch can still update the UI with the current list
       fetchRequestCounter += 1
 
+      // Increment create counter to invalidate any in-flight createCurrency() requests
+      // This prevents a late createCurrency() refetch (line 115) from overwriting state
+      // with a stale list that re-introduces the deleted currency
+      // Without this, if createCurrency() is in-flight when delete happens, the createCurrency()
+      // refetch could complete after the delete and restore the deleted item
+      createRequestCounter += 1
+
       // ALWAYS remove the successfully deleted currency from local state
       // Even if this request was superseded by a newer delete (different currency),
       // the API call succeeded so we must update the UI to reflect the deletion
