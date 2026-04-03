@@ -1338,12 +1338,13 @@ class AdminAnalyticsView(GenericAPIView):
         new_users = User.objects.filter(date_joined__gte=cutoff_date).count()
 
         # Top products — scoped to completed+paid orders only, with explicit output_field
+        # Group by product_id to avoid merging distinct products with the same name
         top_products = OrderItem.objects.filter(
             order__created_at__gte=cutoff_date,
             order__status=Order.OrderStatus.COMPLETED,
             order__payment__payment_status=Payment.PaymentStatus.PAID,
             product__isnull=False
-        ).values('product__name').annotate(
+        ).values('product_id', 'product__name').annotate(
             quantity=Sum('quantity'),
             revenue=Sum(
                 F('quantity') * F('product__price'),
@@ -1361,9 +1362,11 @@ class AdminAnalyticsView(GenericAPIView):
             },
             'top_products': [
                 {
+                    'product_id': str(p['product_id']),
                     'name': p['product__name'],
                     'units_sold': p['quantity'],
                     'revenue': float(p['revenue'])
                 } for p in top_products
             ]
         })
+
