@@ -218,6 +218,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     deleteRequestCounter += 1
     const requestId = deleteRequestCounter
 
+    // Capture the current fetchRequestCounter at the start of this delete
+    // This allows us to invalidate only fetchCurrencies() calls that started BEFORE this delete
+    // preventing invalidation of newer fetches that started after this delete began
+    const fetchCounterAtDeleteStart = fetchRequestCounter
+
+    // Capture the current createRequestCounter at the start of this delete
+    // This allows us to invalidate only createCurrency() calls that started BEFORE this delete
+    // preventing invalidation of newer creates that started after this delete began
+    const createCounterAtDeleteStart = createRequestCounter
+
     set({ isDeleting: true, deleteError: null })
 
     try {
@@ -227,25 +237,26 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Call the API to delete the currency
       await currencyService.deleteCurrency(id)
 
-      // Increment fetch counter to invalidate any in-flight fetchCurrencies() requests
-      // This prevents a late fetch response from overwriting state with a stale list
-      // that re-introduces the deleted currency
-      // IMPORTANT: Do this AFTER the delete succeeds, not before, so that if the delete
-      // fails, any in-flight fetch can still update the UI with the current list
-      //
-      // Also clear isLoading to prevent UI from being stuck in loading state
-      // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
-      // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
-      // with disabled refresh button
-      fetchRequestCounter += 1
-      set({ isLoading: false })
+      // Only invalidate in-flight fetchCurrencies() requests that started BEFORE this delete
+      // to prevent them from overwriting state with a stale list that re-introduces the deleted currency
+      // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
+      // This prevents invalidating user-triggered refreshes that started after this delete
+      if (fetchRequestCounter === fetchCounterAtDeleteStart) {
+        fetchRequestCounter += 1
+        // Clear isLoading to prevent UI from being stuck in loading state
+        // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
+        // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
+        // with disabled refresh button
+        set({ isLoading: false })
+      }
 
-      // Increment create counter to invalidate any in-flight createCurrency() requests
-      // This prevents a late createCurrency() refetch (line 115) from overwriting state
-      // with a stale list that re-introduces the deleted currency
-      // Without this, if createCurrency() is in-flight when delete happens, the createCurrency()
-      // refetch could complete after the delete and restore the deleted item
-      createRequestCounter += 1
+      // Only invalidate in-flight createCurrency() requests that started BEFORE this delete
+      // to prevent them from overwriting state with a stale list that re-introduces the deleted currency
+      // Only invalidate if no newer create has started (createRequestCounter hasn't changed)
+      // This prevents invalidating user-triggered creates that started after this delete
+      if (createRequestCounter === createCounterAtDeleteStart) {
+        createRequestCounter += 1
+      }
 
       // ALWAYS remove the successfully deleted currency from local state
       // Even if this request was superseded by a newer delete (different currency),
