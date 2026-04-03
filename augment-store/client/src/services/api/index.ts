@@ -25,5 +25,11 @@ export type {
   BulkUpdateContactResponse,
 } from './contact/contactService'
 export { currencyService } from './currency/currencyService'
-export type { Currency, CurrencyListResponse, CreateCurrencyRequest, CreateCurrencyResponse } from './currency/currencyService'
+export type {
+  Currency,
+  CurrencyListResponse,
+  CreateCurrencyRequest,
+  CreateCurrencyResponse,
+  UpdateCurrencyRequest,
+} from './currency/currencyService'
 export { apiClient } from './client'

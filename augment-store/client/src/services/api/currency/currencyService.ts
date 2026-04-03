@@ -48,6 +48,17 @@ export interface CreateCurrencyResponse {
   symbol: string
 }
 
+/**
+ * Update Currency Request
+ * Backend expects fields for updating a currency
+ * All fields are optional for partial updates (PATCH)
+ */
+export interface UpdateCurrencyRequest {
+  code?: string
+  name?: string
+  symbol?: string
+}
+
 export const currencyService = {
   /**
    * Get all currencies
@@ -98,6 +109,23 @@ export const currencyService = {
   },
 
   /**
+   * Update a currency by ID
+   * @param id - Currency ID to update
+   * @param data - Partial currency data to update
+   * @returns Promise with updated currency (basic fields only: name, code, symbol)
+   * @throws Error if the API request fails
+   *
+   * **ADMIN ONLY**: This endpoint requires admin authentication (AdminCurrencyUpdateDeleteView).
+   * Calling this from non-admin client flows will result in a 403 Forbidden error.
+   *
+   * Note: Backend uses CreateCurrencySerializer which returns only name, code, and symbol.
+   * It does NOT include id, created_at, or updated_at fields.
+   */
+  updateCurrency: async (id: string, data: UpdateCurrencyRequest): Promise<CreateCurrencyResponse> => {
+    return apiClient.patch<CreateCurrencyResponse>(API_ENDPOINTS.CURRENCY.DETAIL(id), data)
+  },
+
+  /**
    * Delete a currency by ID
    * @param id - Currency ID to delete
    * @throws Error if the API request fails
@@ -106,7 +134,7 @@ export const currencyService = {
    * Calling this from non-admin client flows will result in a 403 Forbidden error.
    */
   deleteCurrency: async (id: string): Promise<void> => {
-    await apiClient.delete(API_ENDPOINTS.CURRENCY.DELETE(id))
+    await apiClient.delete(API_ENDPOINTS.CURRENCY.DETAIL(id))
   },
 }
 
