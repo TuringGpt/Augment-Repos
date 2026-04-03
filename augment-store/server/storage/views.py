@@ -23,9 +23,10 @@ class DirectLocalFileUpload(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class FinishDirectFileUploadFinish(CreateAPIView):
+class FinishDirectFileUploadFinish(CacheInvalidatorMixin, CreateAPIView):
     serializer_class = FinishFileUploadSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = AdminFileCacheService
 
 
 class AdminFileListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
@@ -62,6 +63,9 @@ class AdminFileDeleteView(CacheInvalidatorMixin, DestroyAPIView):
         thumb_storage = instance.thumbnail.storage if instance.thumbnail else None
 
         instance.delete()
+
+        # Manually invalidate cache since this override bypasses the mixin's hook
+        self.invalidate_cache()
 
         # Defer blob cleanup until after the transaction commits.
         # Errors are caught so transient storage failures don't surface
