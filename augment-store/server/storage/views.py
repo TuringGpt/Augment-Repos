@@ -2,11 +2,11 @@ from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from accounts.permissions import hasAdminRole
 from core.optimization import AutoOptimizeMixin
-from core.service import CachedListMixin, BaseCacheService
+from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
 
 from .models import File
 from .serializers import (StartDirectFileUploadSerializer, DirectLocalFileUploadSerializer, 
-                         FinishFileUploadSerializer, FileListSerializer, FileSerializer)
+                         FinishFileUploadSerializer, FileSerializer)
 
 class AdminFileCacheService(BaseCacheService):
     OBJECT_NAME = "admin_file"
@@ -32,7 +32,7 @@ class AdminFileListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     """
     Admin-only view to list all files in the system.
     """
-    serializer_class = FileListSerializer
+    serializer_class = FileSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = AdminFileCacheService
     queryset = File.objects.all()
@@ -41,10 +41,11 @@ class AdminFileListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
         return super().get_queryset().filter(is_deleted=False).order_by('-created_at')
 
 
-class AdminFileDeleteView(DestroyAPIView):
+class AdminFileDeleteView(CacheInvalidatorMixin, DestroyAPIView):
     """Admin-only view to delete any uploaded file."""
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = AdminFileCacheService
     queryset = File.objects.all()
 
     def perform_destroy(self, instance):
