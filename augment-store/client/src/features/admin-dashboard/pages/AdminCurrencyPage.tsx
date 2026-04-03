@@ -22,11 +22,17 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Drawer,
+  TextField,
+  Grid,
+  Divider,
 } from '@mui/material'
 import {
   AttachMoney as CurrencyIcon,
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
+  Add as AddIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
@@ -55,6 +61,14 @@ const AdminCurrencyPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [currencyToDelete, setCurrencyToDelete] = useState<Currency | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Local state for create drawer
+  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState({
+    code: '',
+    name: '',
+    symbol: '',
+  })
 
   // Load currencies function
   const loadCurrencies = () => {
@@ -127,6 +141,41 @@ const AdminCurrencyPage = () => {
     }
   }
 
+  // Create drawer handlers
+  const handleOpenCreateDrawer = () => {
+    setCreateFormData({
+      code: '',
+      name: '',
+      symbol: '',
+    })
+    setIsCreateDrawerOpen(true)
+  }
+
+  const handleCloseCreateDrawer = () => {
+    setIsCreateDrawerOpen(false)
+    setCreateFormData({
+      code: '',
+      name: '',
+      symbol: '',
+    })
+  }
+
+  const handleCreateCurrency = async () => {
+    try {
+      // Empty handler - simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // Show success message
+      toast.success(t('admin.currencyPage.createSuccess', 'Currency created successfully'))
+
+      // Close drawer
+      handleCloseCreateDrawer()
+    } catch (err) {
+      console.error('Failed to create currency:', err)
+      toast.error(t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency'))
+    }
+  }
+
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
     return (
@@ -166,13 +215,23 @@ const AdminCurrencyPage = () => {
             {t('admin.currencyPage.subtitle', 'View and manage supported currencies')}
           </Typography>
         </Box>
-        <Tooltip title={t('admin.currencyPage.refresh', 'Refresh')}>
-          <span>
-            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
-              <RefreshIcon />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateDrawer}
+            disabled={isLoading}
+          >
+            {t('admin.currencyPage.addCurrency', 'Add Currency')}
+          </Button>
+          <Tooltip title={t('admin.currencyPage.refresh', 'Refresh')}>
+            <span>
+              <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
+                <RefreshIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Error Alert */}
@@ -322,6 +381,121 @@ const AdminCurrencyPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Create Currency Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCreateDrawerOpen}
+        onClose={handleCloseCreateDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.currencyPage.createCurrency', 'Create Currency')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseCreateDrawer}
+              sx={{ color: 'white' }}
+              aria-label="Close create currency drawer"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Currency Code */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.code', 'Currency Code')}
+                  value={createFormData.code}
+                  onChange={(e) =>
+                    setCreateFormData({ ...createFormData, code: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.codePlaceholder', 'e.g., USD')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.codeHelper',
+                    'Enter the 3-letter currency code'
+                  )}
+                />
+              </Grid>
+
+              {/* Currency Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.name', 'Currency Name')}
+                  value={createFormData.name}
+                  onChange={(e) =>
+                    setCreateFormData({ ...createFormData, name: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.namePlaceholder', 'e.g., US Dollar')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.nameHelper',
+                    'Enter the full name of the currency'
+                  )}
+                />
+              </Grid>
+
+              {/* Currency Symbol */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.symbol', 'Currency Symbol')}
+                  value={createFormData.symbol}
+                  onChange={(e) =>
+                    setCreateFormData({ ...createFormData, symbol: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.symbolPlaceholder', 'e.g., $')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.symbolHelper',
+                    'Enter the currency symbol'
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button variant="outlined" onClick={handleCloseCreateDrawer}>
+              {t('admin.currencyPage.form.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleCreateCurrency}
+              disabled={!createFormData.code.trim() || !createFormData.name.trim() || !createFormData.symbol.trim()}
+            >
+              {t('admin.currencyPage.form.create', 'Create')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }

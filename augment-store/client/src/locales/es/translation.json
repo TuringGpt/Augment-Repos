@@ -1364,6 +1364,8 @@
       "title": "Gestión de Monedas",
       "subtitle": "Ver y gestionar monedas admitidas",
       "refresh": "Actualizar",
+      "addCurrency": "Agregar Moneda",
+      "createCurrency": "Crear Moneda",
       "wipBanner": "Esta página está actualmente en desarrollo. Las funciones completas de gestión de monedas estarán disponibles pronto.",
       "noCurrencies": "No hay monedas disponibles",
       "deleteCurrency": "Eliminar Moneda",
@@ -1371,6 +1373,8 @@
       "deleteSuccess": "Moneda eliminada con éxito",
       "errorDeleteCurrency": "Error al eliminar la moneda",
       "deleting": "Eliminando...",
+      "createSuccess": "Moneda creada con éxito",
+      "errorCreateCurrency": "Error al crear la moneda",
       "table": {
         "code": "Código",
         "name": "Nombre",
@@ -1379,6 +1383,20 @@
         "actions": "Acciones",
         "createdAt": "Creado el",
         "updatedAt": "Actualizado el"
+      },
+      "form": {
+        "code": "Código de Moneda",
+        "codePlaceholder": "ej., USD",
+        "codeHelper": "Ingrese el código de moneda de 3 letras",
+        "name": "Nombre de Moneda",
+        "namePlaceholder": "ej., Dólar estadounidense",
+        "nameHelper": "Ingrese el nombre completo de la moneda",
+        "symbol": "Símbolo de Moneda",
+        "symbolPlaceholder": "ej., $",
+        "symbolHelper": "Ingrese el símbolo de la moneda",
+        "cancel": "Cancelar",
+        "create": "Crear",
+        "creating": "Creando..."
       }
     },
     "brandsPage": {
