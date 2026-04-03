@@ -200,18 +200,22 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Call the API to delete the currency
       await currencyService.deleteCurrency(id)
 
-      // Only update state if this is still the latest delete request
-      // This prevents a slow/failed earlier delete from overwriting state after a newer delete
-      if (requestId === deleteRequestCounter) {
-        // Remove the currency from the local state
-        set((state) => ({
-          currencies: state.currencies.filter((currency) => currency.id !== id),
-          isDeleting: false,
-          deleteError: null,
-        }))
-      } else {
-        // Throw error to signal to the caller that this request was superseded
-        // This prevents callers from showing success toasts for stale/ignored results
+      // ALWAYS remove the successfully deleted currency from local state
+      // Even if this request was superseded by a newer delete (different currency),
+      // the API call succeeded so we must update the UI to reflect the deletion
+      // This prevents stale UI where a currency remains visible after successful deletion
+      set((state) => ({
+        currencies: state.currencies.filter((currency) => currency.id !== id),
+        // Only update loading/error state if this is still the latest delete request
+        // This prevents a slow earlier delete from overwriting state from a newer delete
+        ...(requestId === deleteRequestCounter
+          ? { isDeleting: false, deleteError: null }
+          : {}),
+      }))
+
+      // If this request was superseded, throw error to signal to the caller
+      // This prevents callers from showing success toasts for stale/ignored results
+      if (requestId !== deleteRequestCounter) {
         throw new SupersededRequestError('Currency deletion was superseded by a newer request')
       }
     } catch (err) {

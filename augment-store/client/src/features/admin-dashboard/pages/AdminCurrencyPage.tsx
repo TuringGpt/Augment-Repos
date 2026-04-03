@@ -46,7 +46,7 @@ const AdminCurrencyPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
-  const { currencies, isLoading, error, fetchCurrencies } = useCurrencyStore()
+  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency } = useCurrencyStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -109,8 +109,8 @@ const AdminCurrencyPage = () => {
     setIsDeleting(true)
 
     try {
-      // Empty handler - simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      // Call the store action to delete the currency
+      await deleteCurrency(currencyToDelete.id)
 
       // Show success message
       toast.success(t('admin.currencyPage.deleteSuccess', 'Currency deleted successfully'))
