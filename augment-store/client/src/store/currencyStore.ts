@@ -139,6 +139,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents invalidating user-triggered refreshes that started after this create
         if (fetchRequestCounter === fetchCounterAtCreateStart) {
           fetchRequestCounter += 1
+          // Clear isLoading to prevent UI from being stuck in loading state
+          // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
+          // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
+          // with disabled refresh button
+          set({ isLoading: false })
         }
 
         set({ currencies, createError: null, isCreating: false, error: null })
@@ -213,7 +218,13 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // that re-introduces the deleted currency
       // IMPORTANT: Do this AFTER the delete succeeds, not before, so that if the delete
       // fails, any in-flight fetch can still update the UI with the current list
+      //
+      // Also clear isLoading to prevent UI from being stuck in loading state
+      // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
+      // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
+      // with disabled refresh button
       fetchRequestCounter += 1
+      set({ isLoading: false })
 
       // Increment create counter to invalidate any in-flight createCurrency() requests
       // This prevents a late createCurrency() refetch (line 115) from overwriting state
