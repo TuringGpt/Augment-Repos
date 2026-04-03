@@ -25,6 +25,7 @@ interface CurrencyState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 let createRequestCounter = 0
+let deleteRequestCounter = 0
 
 export const useCurrencyStore = create<CurrencyState>((set) => ({
   // Initial state
@@ -177,7 +178,13 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   },
 
   deleteCurrency: async (id: string) => {
-    // Increment counter to invalidate any in-flight fetchCurrencies() requests
+    // Increment counter and capture the current request ID
+    // This prevents a slow/failed earlier delete from overwriting deleteError/isDeleting
+    // from a newer delete operation
+    deleteRequestCounter += 1
+    const requestId = deleteRequestCounter
+
+    // Increment fetch counter to invalidate any in-flight fetchCurrencies() requests
     // This prevents a late fetch response from overwriting state with a stale list
     // that re-introduces the deleted currency
     fetchRequestCounter += 1
@@ -193,25 +200,42 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Call the API to delete the currency
       await currencyService.deleteCurrency(id)
 
-      // Remove the currency from the local state
-      set((state) => ({
-        currencies: state.currencies.filter((currency) => currency.id !== id),
-        isDeleting: false,
-        deleteError: null,
-      }))
+      // Only update state if this is still the latest delete request
+      // This prevents a slow/failed earlier delete from overwriting state after a newer delete
+      if (requestId === deleteRequestCounter) {
+        // Remove the currency from the local state
+        set((state) => ({
+          currencies: state.currencies.filter((currency) => currency.id !== id),
+          isDeleting: false,
+          deleteError: null,
+        }))
+      } else {
+        // Throw error to signal to the caller that this request was superseded
+        // This prevents callers from showing success toasts for stale/ignored results
+        throw new SupersededRequestError('Currency deletion was superseded by a newer request')
+      }
     } catch (err) {
       // Use parseApiError to extract user-friendly error message from API response
       const errorMessage = parseApiError(err, {
         defaultMessage: 'Failed to delete currency. Please try again.',
       })
 
-      set({ deleteError: errorMessage, isDeleting: false })
+      // Only update error state if this is still the latest delete request
+      // This prevents a slow/failed earlier delete from overwriting deleteError/isDeleting
+      // from a newer delete that may have already succeeded
+      if (requestId === deleteRequestCounter) {
+        set({ deleteError: errorMessage, isDeleting: false })
 
-      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
-      console.error('Error deleting currency:', sanitizeErrorForLogging(err, 'Failed to delete currency'))
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Error deleting currency:', sanitizeErrorForLogging(err, 'Failed to delete currency'))
 
-      // Re-throw with the parsed error message so callers can display it (e.g., in toast notifications)
-      throw new Error(errorMessage)
+        // Re-throw with the parsed error message so callers can display it (e.g., in toast notifications)
+        throw new Error(errorMessage)
+      } else {
+        // Throw SupersededRequestError to signal to the caller that this request was superseded
+        // This prevents callers from showing error toasts for stale/ignored requests
+        throw new SupersededRequestError('Currency deletion was superseded by a newer request')
+      }
     }
   },
 
@@ -222,11 +246,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   setError: (error) => set({ error }),
 
   clearCurrencies: () => {
-    // Increment both counters to invalidate any in-flight fetch or create requests
-    // This ensures that in-flight fetchCurrencies() or createCurrency() calls won't repopulate
-    // the currencies array after it has been cleared (e.g., during logout/navigation)
+    // Increment all counters to invalidate any in-flight fetch, create, or delete requests
+    // This ensures that in-flight fetchCurrencies(), createCurrency(), or deleteCurrency() calls won't update
+    // state after it has been cleared (e.g., during logout/navigation)
     fetchRequestCounter += 1
     createRequestCounter += 1
+    deleteRequestCounter += 1
     // Reset all loading state to prevent being stuck in loading state if called during active requests
     set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, deleteError: null, isDeleting: false })
   },
