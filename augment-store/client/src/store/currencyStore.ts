@@ -98,6 +98,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // preventing invalidation of newer fetches that started after this create began
     const fetchCounterAtCreateStart = fetchRequestCounter
 
+    // Capture the current deleteRequestCounter at the start of this create
+    // This allows us to detect if a deleteCurrency() call occurred while this create was in-flight
+    // preventing us from re-introducing a deleted currency in the refetched list
+    const deleteCounterAtCreateStart = deleteRequestCounter
+
     set({ isCreating: true, createError: null })
 
     try {
@@ -118,6 +123,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // This check protects against race conditions where clearCurrencies() or a newer
       // createCurrency() call invalidates this request while in-flight
       if (requestId === createRequestCounter) {
+        // Check if a deleteCurrency() call occurred while this create was in-flight
+        // If so, the delete invalidated createRequestCounter, so this check prevents us from
+        // re-introducing the deleted currency via the refetched list
+        if (deleteRequestCounter !== deleteCounterAtCreateStart) {
+          // A delete occurred while this create was in-flight
+          // Throw error to signal that this request was invalidated by a delete
+          // This prevents re-introducing a deleted currency and avoids showing success toasts
+          throw new SupersededRequestError('Currency creation was invalidated by a concurrent deletion')
+        }
+
         // Invalidate any in-flight fetchCurrencies() requests that started BEFORE this create
         // to prevent them from overwriting the just-created currency list with stale data
         // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
