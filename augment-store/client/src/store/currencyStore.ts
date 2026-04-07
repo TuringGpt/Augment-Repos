@@ -128,8 +128,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // re-introducing the deleted currency via the refetched list
         if (deleteRequestCounter !== deleteCounterAtCreateStart) {
           // A delete occurred while this create was in-flight
-          // Reset isCreating state before throwing to prevent the store from being stuck in creating state
-          set({ isCreating: false })
+          // Only reset isCreating state if this is still the latest request
+          // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
+          if (requestId === createRequestCounter) {
+            set({ isCreating: false })
+          }
           // Throw error to signal that this request was invalidated by a delete
           // This prevents re-introducing a deleted currency and avoids showing success toasts
           throw new SupersededRequestError('Currency creation was invalidated by a concurrent deletion')
@@ -150,8 +153,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
         set({ currencies, createError: null, isCreating: false, error: null })
       } else {
-        // Reset isCreating state before throwing to prevent the store from being stuck in creating state
-        set({ isCreating: false })
+        // Only reset isCreating state if this is still the latest request
+        // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
+        if (requestId === createRequestCounter) {
+          set({ isCreating: false })
+        }
         // Throw error to signal to the caller that this request was superseded
         // This prevents callers from showing success toasts for stale/ignored results
         throw new SupersededRequestError('Currency creation was superseded by a newer request')
@@ -160,8 +166,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Handle SupersededRequestError - this is thrown when the request is invalidated
       // by a delete or newer create. We need to reset isCreating before re-throwing.
       if (err instanceof SupersededRequestError) {
-        // Reset isCreating state before re-throwing to prevent the store from being stuck in creating state
-        set({ isCreating: false })
+        // Only reset isCreating state if this is still the latest request
+        // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
+        if (requestId === createRequestCounter) {
+          set({ isCreating: false })
+        }
         throw err
       }
 
@@ -202,8 +211,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // from stale/invalidated requests
         throw new Error(errorMessage)
       } else {
-        // Reset isCreating state before throwing to prevent the store from being stuck in creating state
-        set({ isCreating: false })
+        // Only reset isCreating state if this is still the latest request
+        // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
+        if (requestId === createRequestCounter) {
+          set({ isCreating: false })
+        }
         // Throw SupersededRequestError to signal to the caller that this request was superseded
         // This prevents callers from showing error toasts for stale/ignored requests
         throw new SupersededRequestError('Currency creation was superseded by a newer request')
