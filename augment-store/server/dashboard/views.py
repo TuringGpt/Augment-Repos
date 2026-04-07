@@ -1323,7 +1323,7 @@ class AdminAnalyticsView(GenericAPIView):
             order__status=Order.OrderStatus.COMPLETED,
             payment_status=Payment.PaymentStatus.PAID
         ).aggregate(
-            total_orders=Count('id'),
+            total_paid_orders=Count('id'),
             total_revenue=Coalesce(
                 Sum('amount'), Decimal('0.00'),
                 output_field=DecimalField(max_digits=19, decimal_places=2)
@@ -1335,7 +1335,7 @@ class AdminAnalyticsView(GenericAPIView):
         )
 
         # Additional metrics for the period
-        new_users = User.objects.filter(date_joined__gte=cutoff_date).count()
+        new_user_registrations = User.objects.filter(date_joined__gte=cutoff_date).count()
 
         # Top products — scoped to completed+paid orders only, with explicit output_field
         # Group by product_id to avoid merging distinct products with the same name
@@ -1347,7 +1347,7 @@ class AdminAnalyticsView(GenericAPIView):
         ).values('product_id', 'product__name').annotate(
             quantity=Sum('quantity'),
             revenue=Sum(
-                F('quantity') * F('product__price'),
+                F('quantity') * F('price'),
                 output_field=DecimalField(max_digits=19, decimal_places=2)
             )
         ).order_by('-revenue')[:5]
@@ -1355,10 +1355,10 @@ class AdminAnalyticsView(GenericAPIView):
         return Response({
             'period_days': days,
             'metrics': {
-                'total_orders': payment_stats['total_orders'],
+                'total_paid_orders': payment_stats['total_paid_orders'],
                 'total_revenue': float(payment_stats['total_revenue']),
                 'avg_order_value': float(payment_stats['avg_order_value']),
-                'new_customers': new_users
+                'new_user_registrations': new_user_registrations
             },
             'top_products': [
                 {
