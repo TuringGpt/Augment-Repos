@@ -1336,6 +1336,7 @@ class AdminAnalyticsView(GenericAPIView):
 
         # Additional metrics for the period
         new_user_registrations = User.objects.filter(date_joined__gte=cutoff_date).count()
+        total_orders_created = Order.objects.filter(created_at__gte=cutoff_date).count()
 
         # Top products — scoped to completed+paid orders only, with explicit output_field
         # Group by product_id to avoid merging distinct products with the same name
@@ -1355,7 +1356,8 @@ class AdminAnalyticsView(GenericAPIView):
         return Response({
             'period_days': days,
             'metrics': {
-                'total_paid_orders': payment_stats['total_paid_orders'],
+                'total_orders_created': total_orders_created,
+                'total_completed_paid_orders': payment_stats['total_paid_orders'],
                 'total_revenue': float(payment_stats['total_revenue']),
                 'avg_order_value': float(payment_stats['avg_order_value']),
                 'new_user_registrations': new_user_registrations
