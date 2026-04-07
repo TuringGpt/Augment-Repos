@@ -1347,7 +1347,7 @@ class AdminAnalyticsView(GenericAPIView):
         ).values('product_id', 'product__name').annotate(
             quantity=Sum('quantity'),
             revenue=Sum(
-                F('quantity') * F('price'),
+                F('quantity') * F('product__price'),
                 output_field=DecimalField(max_digits=19, decimal_places=2)
             )
         ).order_by('-revenue')[:5]
