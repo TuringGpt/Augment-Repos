@@ -27,6 +27,13 @@ let fetchRequestCounter = 0
 let createRequestCounter = 0
 let deleteRequestCounter = 0
 
+// Track locally-deleted currency IDs to prevent stale fetched data from reintroducing deleted currencies
+// When deleteCurrency completes, the currency ID is added to this set
+// When fetchCurrencies or createCurrency updates state, they filter out currencies that are in this set
+// This prevents race conditions where a fetchCurrencies/createCurrency request started before deleteCurrency
+// completes after deleteCurrency and reintroduces the deleted currency back into the store
+const locallyDeletedCurrencyIds = new Set<string>()
+
 export const useCurrencyStore = create<CurrencyState>((set) => ({
   // Initial state
   currencies: [],
@@ -54,7 +61,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
       // Only update state if this is still the latest request
       if (requestId === fetchRequestCounter) {
-        set({ currencies, error: null, isLoading: false })
+        // Filter out locally-deleted currencies to prevent race conditions
+        // This prevents stale fetched data from reintroducing deleted currencies
+        // when a fetchCurrencies request started before deleteCurrency completes after it
+        const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
+        set({ currencies: filteredCurrencies, error: null, isLoading: false })
       }
       // Don't clear isLoading if this is an old request - a newer request may still be in-flight
     } catch (err) {
@@ -151,7 +162,11 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
           set({ isLoading: false })
         }
 
-        set({ currencies, createError: null, isCreating: false, error: null })
+        // Filter out locally-deleted currencies to prevent race conditions
+        // This prevents stale refetched data from reintroducing deleted currencies
+        // when a deleteCurrency call completes while this createCurrency was in-flight
+        const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
+        set({ currencies: filteredCurrencies, createError: null, isCreating: false, error: null })
       } else {
         // Only reset isCreating state if this is still the latest request
         // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
@@ -249,6 +264,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // Call the API to delete the currency
       await currencyService.deleteCurrency(id)
 
+      // Add the deleted currency ID to the set to prevent race conditions
+      // This ensures that any in-flight fetchCurrencies() or createCurrency() requests
+      // that started before this delete will filter out this currency when they complete,
+      // preventing the deleted currency from being reintroduced into the store
+      locallyDeletedCurrencyIds.add(id)
+
       // Only invalidate in-flight fetchCurrencies() requests that started BEFORE this delete
       // to prevent them from overwriting state with a stale list that re-introduces the deleted currency
       // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
@@ -326,6 +347,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     fetchRequestCounter += 1
     createRequestCounter += 1
     deleteRequestCounter += 1
+    // Clear the locally-deleted currency IDs set to prevent memory leaks
+    // and allow previously deleted currencies to be fetched again in future sessions
+    locallyDeletedCurrencyIds.clear()
     // Reset all loading state to prevent being stuck in loading state if called during active requests
     set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, deleteError: null, isDeleting: false })
   },
