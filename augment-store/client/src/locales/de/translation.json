@@ -1366,6 +1366,7 @@
       "refresh": "Aktualisieren",
       "addCurrency": "Währung hinzufügen",
       "createCurrency": "Währung erstellen",
+      "closeDrawer": "Währungserstellungs-Drawer schließen",
       "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
       "noCurrencies": "Keine Währungen verfügbar",
       "deleteCurrency": "Währung löschen",
