@@ -430,7 +430,7 @@ const AdminCurrencyPage = () => {
                   label={t('admin.currencyPage.form.code', 'Currency Code')}
                   value={createFormData.code}
                   onChange={(e) =>
-                    setCreateFormData({ ...createFormData, code: e.target.value })
+                    setCreateFormData((prev) => ({ ...prev, code: e.target.value }))
                   }
                   placeholder={t('admin.currencyPage.form.codePlaceholder', 'e.g., USD')}
                   required
@@ -448,7 +448,7 @@ const AdminCurrencyPage = () => {
                   label={t('admin.currencyPage.form.name', 'Currency Name')}
                   value={createFormData.name}
                   onChange={(e) =>
-                    setCreateFormData({ ...createFormData, name: e.target.value })
+                    setCreateFormData((prev) => ({ ...prev, name: e.target.value }))
                   }
                   placeholder={t('admin.currencyPage.form.namePlaceholder', 'e.g., US Dollar')}
                   required
@@ -466,7 +466,7 @@ const AdminCurrencyPage = () => {
                   label={t('admin.currencyPage.form.symbol', 'Currency Symbol')}
                   value={createFormData.symbol}
                   onChange={(e) =>
-                    setCreateFormData({ ...createFormData, symbol: e.target.value })
+                    setCreateFormData((prev) => ({ ...prev, symbol: e.target.value }))
                   }
                   placeholder={t('admin.currencyPage.form.symbolPlaceholder', 'e.g., $')}
                   required
