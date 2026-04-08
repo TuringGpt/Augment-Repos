@@ -46,6 +46,16 @@ class AdminUserListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     auto_prefetch_related = ['merchant_detail']
     queryset = User.objects.all().order_by('-date_joined')
 
+    def generate_cache_key(self):
+        # Use a shared cache key (no user_id) since the admin user list is
+        # identical for all admins. Avoids per-admin cache duplication and
+        # reduces the number of PII copies stored in the cache backend.
+        service = self.get_cache_service()
+        return service.get_cache_key(
+            user_id=None,
+            query_params=self.request.query_params
+        )
+
 
 class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
     """Admin-only view to update a specific user's role or active status."""
