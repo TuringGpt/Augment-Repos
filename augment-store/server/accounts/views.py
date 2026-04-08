@@ -56,6 +56,9 @@ class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
-        # Also invalidate the affected user's profile cache so role/is_active
-        # changes are immediately reflected in their own profile view.
+        # Evict the entire user_profile cache namespace. This is broader than
+        # strictly necessary (all users, not just the updated one), but
+        # BaseCacheService doesn't support per-key invalidation and admin
+        # role/status changes are infrequent enough that the cache churn is
+        # acceptable.
         UserProfileCacheService().clear_namespace()
