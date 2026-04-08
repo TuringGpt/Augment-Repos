@@ -36,11 +36,14 @@ class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMi
 
 class AdminUserListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all registered users with caching."""
+    # Note: cached data contains user PII (email, name, mobile). Access is
+    # restricted to admin users only. TTL kept short to limit retention in cache.
     permission_classes = [IsAuthenticated, hasAdminRole]
     serializer_class = UserListSerializer
     cache_service_class = AdminUserCacheService
     cache_ttl = 60 * 5
-    auto_select_related = ['profile_image', 'preferred_currency', 'merchant_detail']
+    auto_select_related = ['profile_image', 'preferred_currency']
+    auto_prefetch_related = ['merchant_detail']
     queryset = User.objects.all().order_by('-date_joined')
 
 
