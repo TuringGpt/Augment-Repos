@@ -53,3 +53,9 @@ class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
     serializer_class = AdminUserUpdateSerializer
     cache_service_class = AdminUserCacheService
     queryset = User.objects.all()
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        # Also invalidate the affected user's profile cache so role/is_active
+        # changes are immediately reflected in their own profile view.
+        UserProfileCacheService().clear_namespace()
