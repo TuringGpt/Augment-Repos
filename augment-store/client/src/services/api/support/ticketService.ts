@@ -114,4 +114,11 @@ export const ticketService = {
   getTicketStats: async (): Promise<TicketStatsResponse> => {
     return apiClient.get<TicketStatsResponse>(API_ENDPOINTS.SUPPORT.TICKETS.STATS)
   },
+
+  /**
+   * Get admin ticket statistics
+   */
+  getAdminTicketStats: async (): Promise<TicketStatsResponse> => {
+    return apiClient.get<TicketStatsResponse>(API_ENDPOINTS.SUPPORT.TICKETS.ADMIN_STATS)
+  },
 }

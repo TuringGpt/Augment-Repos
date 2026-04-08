@@ -100,6 +100,7 @@ export const API_ENDPOINTS = {
       UPDATE: (id: string) => `/support/tickets/${id}/update/`,
       DELETE: (id: string) => `/support/tickets/${id}/update/`,
       STATS: '/support/tickets/stats/',
+      ADMIN_STATS: '/support/tickets/admin/stats/',
     },
     COMMENTS: {
       LIST: (ticketId: string) => `/support/tickets/${ticketId}/comments/`,
