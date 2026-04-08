@@ -226,6 +226,7 @@ class AdminOrderItemListView(AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all order items globally."""
     serializer_class = OrderItemListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
-    auto_select_related = ['product', 'product__images', 'order', 'created_by']
+    auto_select_related = ['product', 'order', 'created_by']
+    auto_prefetch_related = ['product__images']
     queryset = OrderItem.objects.all().order_by('-created_at', '-id')
 
