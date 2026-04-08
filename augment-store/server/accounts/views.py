@@ -4,8 +4,8 @@ from .permissions import hasAdminRole
 from .models import User
 from .serializers import UserProfileSerializer, UpdateUserProfileSerializer, UserListSerializer, AdminUserUpdateSerializer
 from core.optimization import AutoOptimizeMixin
-from core.service import CachedRetrieveMixin, CacheInvalidatorMixin
-from .services import UserProfileCacheService
+from core.service import CachedRetrieveMixin, CachedListMixin, CacheInvalidatorMixin
+from .services import UserProfileCacheService, AdminUserCacheService
 
 
 class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMixin, RetrieveUpdateAPIView):
@@ -34,15 +34,19 @@ class UserProfileView(CachedRetrieveMixin, CacheInvalidatorMixin, AutoOptimizeMi
         return UserProfileSerializer
 
 
-class AdminUserListView(ListAPIView):
-    """Admin-only view to list all registration users."""
+class AdminUserListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
+    """Admin-only view to list all registered users with caching."""
     permission_classes = [IsAuthenticated, hasAdminRole]
     serializer_class = UserListSerializer
+    cache_service_class = AdminUserCacheService
+    cache_ttl = 60 * 5
+    auto_select_related = ['profile_image', 'preferred_currency', 'merchant_detail']
     queryset = User.objects.all().order_by('-date_joined')
 
 
-class AdminUserUpdateView(RetrieveUpdateAPIView):
+class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
     """Admin-only view to update a specific user's role or active status."""
     permission_classes = [IsAuthenticated, hasAdminRole]
     serializer_class = AdminUserUpdateSerializer
+    cache_service_class = AdminUserCacheService
     queryset = User.objects.all()
