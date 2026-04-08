@@ -1,14 +1,16 @@
-
-
-
 from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView
-
-from .serializers import StartDirectFileUploadSerializer, DirectLocalFileUploadSerializer
-from .serializers import FinishFileUploadSerializer, FileSerializer
-
 from rest_framework.permissions import IsAuthenticated
 from accounts.permissions import hasAdminRole
+from core.optimization import AutoOptimizeMixin
+from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
+
 from .models import File
+from .serializers import (StartDirectFileUploadSerializer, DirectLocalFileUploadSerializer, 
+                         FinishFileUploadSerializer, FileSerializer)
+
+class AdminFileCacheService(BaseCacheService):
+    OBJECT_NAME = "admin_file"
+    VERSION = 1
 
 
 class StartDirectFileUpload(CreateAPIView):
@@ -21,25 +23,30 @@ class DirectLocalFileUpload(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class FinishDirectFileUploadFinish(CreateAPIView):
+class FinishDirectFileUploadFinish(CacheInvalidatorMixin, CreateAPIView):
     serializer_class = FinishFileUploadSerializer
     permission_classes = [IsAuthenticated]
+    cache_service_class = AdminFileCacheService
 
 
-class AdminFileListView(ListAPIView):
-    """Admin-only view to list all uploaded files globally."""
+class AdminFileListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
+    """
+    Admin-only view to list all files in the system.
+    """
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = AdminFileCacheService
     queryset = File.objects.all()
 
     def get_queryset(self):
-        return super().get_queryset().order_by('-created_at')
+        return super().get_queryset().filter(is_deleted=False).order_by('-created_at')
 
 
-class AdminFileDeleteView(DestroyAPIView):
+class AdminFileDeleteView(CacheInvalidatorMixin, DestroyAPIView):
     """Admin-only view to delete any uploaded file."""
     serializer_class = FileSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    cache_service_class = AdminFileCacheService
     queryset = File.objects.all()
 
     def perform_destroy(self, instance):
@@ -56,6 +63,9 @@ class AdminFileDeleteView(DestroyAPIView):
         thumb_storage = instance.thumbnail.storage if instance.thumbnail else None
 
         instance.delete()
+
+        # Manually invalidate cache since this override bypasses the mixin's hook
+        self.invalidate_cache()
 
         # Defer blob cleanup until after the transaction commits.
         # Errors are caught so transient storage failures don't surface
@@ -75,4 +85,3 @@ class AdminFileDeleteView(DestroyAPIView):
 
         if file_name or thumb_name:
             transaction.on_commit(cleanup)
-
