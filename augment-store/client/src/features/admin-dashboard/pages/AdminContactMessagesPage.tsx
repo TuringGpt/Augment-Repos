@@ -33,6 +33,7 @@ import {
   AccessTime as AccessTimeIcon,
   MarkEmailRead as MarkEmailReadIcon,
   CheckCircle as CheckCircleIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -113,6 +114,23 @@ const AdminContactMessagesPage = () => {
       }
     }
   }, [])
+
+  // Clear selections when contacts change (refresh/pagination)
+  // This prevents selectedContactIds from accumulating stale IDs that are no longer visible
+  // and ensures the UI count and bulk actions always operate on the same set of contacts
+  useEffect(() => {
+    // Only clear if we have selections and contacts have changed
+    if (selectedContactIds.size > 0) {
+      const currentContactIds = new Set(contacts.map((contact) => contact.id))
+      const hasStaleSelections = Array.from(selectedContactIds).some((id) => !currentContactIds.has(id))
+
+      if (hasStaleSelections) {
+        // Clear all selections to avoid confusion about what's selected
+        setSelectedContactIds(new Set())
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contacts])
 
   const handleRefresh = () => {
     getContacts()
@@ -313,6 +331,25 @@ const AdminContactMessagesPage = () => {
     }
   }
 
+  // Toolbar action handlers (empty handlers as requested)
+  const handleBulkMarkAsRead = () => {
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk mark as read clicked for:', selectedInCurrentPage)
+    // Empty handler - no store actions called
+  }
+
+  const handleBulkMarkAsResolved = () => {
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk mark as resolved clicked for:', selectedInCurrentPage)
+    // Empty handler - no store actions called
+  }
+
+  const handleBulkDelete = () => {
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk delete clicked for:', selectedInCurrentPage)
+    // Empty handler - no store actions called
+  }
+
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
   // during the brief hydration period on initial page load
@@ -420,6 +457,60 @@ const AdminContactMessagesPage = () => {
               )}
             </Box>
           </Paper>
+
+          {/* Toolbar - shown when contacts are selected */}
+          {selectedInCurrentPageCount > 0 && (
+            <Paper
+              sx={{
+                mb: 2,
+                p: 2,
+                bgcolor: 'action.selected',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                borderLeft: 4,
+                borderColor: 'primary.main',
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600, flexGrow: 1 }}>
+                {t('admin.contactMessagesPage.toolbar.messagesSelected', { count: selectedInCurrentPageCount })}
+              </Typography>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsReadTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<MarkEmailReadIcon />}
+                  onClick={handleBulkMarkAsRead}
+                  color="success"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
+                </Button>
+              </Tooltip>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsResolvedTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={handleBulkMarkAsResolved}
+                  color="info"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsResolved')}
+                </Button>
+              </Tooltip>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkDeleteTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleBulkDelete}
+                  color="error"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkDelete')}
+                </Button>
+              </Tooltip>
+            </Paper>
+          )}
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>

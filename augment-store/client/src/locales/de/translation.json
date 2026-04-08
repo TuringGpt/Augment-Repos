@@ -1059,6 +1059,16 @@
       "markAsResolved": "Als gelöst markieren",
       "selectAllContacts": "Alle Kontakte auswählen",
       "selectContact": "Kontakt {{name}} auswählen",
+      "toolbar": {
+        "messagesSelected": "{{count}} Nachricht ausgewählt",
+        "messagesSelected_other": "{{count}} Nachrichten ausgewählt",
+        "bulkMarkAsRead": "Als gelesen markieren",
+        "bulkMarkAsReadTooltip": "Ausgewählte als gelesen markieren",
+        "bulkMarkAsResolved": "Als gelöst markieren",
+        "bulkMarkAsResolvedTooltip": "Ausgewählte als gelöst markieren",
+        "bulkDelete": "Löschen",
+        "bulkDeleteTooltip": "Ausgewählte Nachrichten löschen"
+      },
       "table": {
         "name": "Name",
         "email": "E-Mail",
