@@ -56,9 +56,9 @@ class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
-        # Evict the entire user_profile cache namespace. This is broader than
-        # strictly necessary (all users, not just the updated one), but
-        # BaseCacheService doesn't support per-key invalidation and admin
-        # role/status changes are infrequent enough that the cache churn is
-        # acceptable.
+        # Evict the entire user_profile cache namespace. Per-key deletion is
+        # possible via BaseCacheService.delete(key), but deriving the exact
+        # cache keys for the affected user's profile responses is non-trivial
+        # from this view context. Since admin role/status changes are
+        # infrequent, broad namespace eviction is an acceptable trade-off.
         UserProfileCacheService().clear_namespace()
