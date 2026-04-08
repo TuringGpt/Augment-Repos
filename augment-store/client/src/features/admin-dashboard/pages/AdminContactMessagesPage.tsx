@@ -316,17 +316,20 @@ const AdminContactMessagesPage = () => {
 
   // Toolbar action handlers (empty handlers as requested)
   const handleBulkMarkAsRead = () => {
-    console.log('Bulk mark as read clicked for:', Array.from(selectedContactIds))
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk mark as read clicked for:', selectedInCurrentPage)
     // Empty handler - no store actions called
   }
 
   const handleBulkMarkAsResolved = () => {
-    console.log('Bulk mark as resolved clicked for:', Array.from(selectedContactIds))
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk mark as resolved clicked for:', selectedInCurrentPage)
     // Empty handler - no store actions called
   }
 
   const handleBulkDelete = () => {
-    console.log('Bulk delete clicked for:', Array.from(selectedContactIds))
+    // Only operate on contacts selected in the current page to match the UI count
+    console.log('Bulk delete clicked for:', selectedInCurrentPage)
     // Empty handler - no store actions called
   }
 
