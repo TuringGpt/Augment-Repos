@@ -1364,6 +1364,9 @@
       "title": "Gestion des Devises",
       "subtitle": "Voir et gérer les devises prises en charge",
       "refresh": "Actualiser",
+      "addCurrency": "Ajouter une Devise",
+      "createCurrency": "Créer une Devise",
+      "closeDrawer": "Fermer le tiroir de création de devise",
       "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
       "noCurrencies": "Aucune devise disponible",
       "deleteCurrency": "Supprimer la Devise",
@@ -1371,6 +1374,8 @@
       "deleteSuccess": "Devise supprimée avec succès",
       "errorDeleteCurrency": "Échec de la suppression de la devise",
       "deleting": "Suppression...",
+      "createSuccess": "Devise créée avec succès",
+      "errorCreateCurrency": "Échec de la création de la devise",
       "table": {
         "code": "Code",
         "name": "Nom",
@@ -1379,6 +1384,20 @@
         "actions": "Actions",
         "createdAt": "Créé le",
         "updatedAt": "Mis à jour le"
+      },
+      "form": {
+        "code": "Code de Devise",
+        "codePlaceholder": "ex., USD",
+        "codeHelper": "Entrez le code de devise à 3 lettres",
+        "name": "Nom de la Devise",
+        "namePlaceholder": "ex., Dollar américain",
+        "nameHelper": "Entrez le nom complet de la devise",
+        "symbol": "Symbole de Devise",
+        "symbolPlaceholder": "ex., $",
+        "symbolHelper": "Entrez le symbole de la devise",
+        "cancel": "Annuler",
+        "create": "Créer",
+        "creating": "Création..."
       }
     },
     "brandsPage": {

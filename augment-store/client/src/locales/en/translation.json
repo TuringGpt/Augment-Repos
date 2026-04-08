@@ -1364,6 +1364,9 @@
       "title": "Currency Management",
       "subtitle": "View and manage supported currencies",
       "refresh": "Refresh",
+      "addCurrency": "Add Currency",
+      "createCurrency": "Create Currency",
+      "closeDrawer": "Close create currency drawer",
       "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
       "noCurrencies": "No currencies available",
       "deleteCurrency": "Delete Currency",
@@ -1371,6 +1374,8 @@
       "deleteSuccess": "Currency deleted successfully",
       "errorDeleteCurrency": "Failed to delete currency",
       "deleting": "Deleting...",
+      "createSuccess": "Currency created successfully",
+      "errorCreateCurrency": "Failed to create currency",
       "table": {
         "code": "Code",
         "name": "Name",
@@ -1379,6 +1384,20 @@
         "actions": "Actions",
         "createdAt": "Created At",
         "updatedAt": "Updated At"
+      },
+      "form": {
+        "code": "Currency Code",
+        "codePlaceholder": "e.g., USD",
+        "codeHelper": "Enter the 3-letter currency code",
+        "name": "Currency Name",
+        "namePlaceholder": "e.g., US Dollar",
+        "nameHelper": "Enter the full name of the currency",
+        "symbol": "Currency Symbol",
+        "symbolPlaceholder": "e.g., $",
+        "symbolHelper": "Enter the currency symbol",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating..."
       }
     },
     "brandsPage": {

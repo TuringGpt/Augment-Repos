@@ -1364,6 +1364,9 @@
       "title": "Währungsverwaltung",
       "subtitle": "Unterstützte Währungen anzeigen und verwalten",
       "refresh": "Aktualisieren",
+      "addCurrency": "Währung hinzufügen",
+      "createCurrency": "Währung erstellen",
+      "closeDrawer": "Währungserstellungs-Drawer schließen",
       "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
       "noCurrencies": "Keine Währungen verfügbar",
       "deleteCurrency": "Währung löschen",
@@ -1371,6 +1374,8 @@
       "deleteSuccess": "Währung erfolgreich gelöscht",
       "errorDeleteCurrency": "Fehler beim Löschen der Währung",
       "deleting": "Wird gelöscht...",
+      "createSuccess": "Währung erfolgreich erstellt",
+      "errorCreateCurrency": "Fehler beim Erstellen der Währung",
       "table": {
         "code": "Code",
         "name": "Name",
@@ -1379,6 +1384,20 @@
         "actions": "Aktionen",
         "createdAt": "Erstellt am",
         "updatedAt": "Aktualisiert am"
+      },
+      "form": {
+        "code": "Währungscode",
+        "codePlaceholder": "z.B. USD",
+        "codeHelper": "Geben Sie den 3-stelligen Währungscode ein",
+        "name": "Währungsname",
+        "namePlaceholder": "z.B. US-Dollar",
+        "nameHelper": "Geben Sie den vollständigen Namen der Währung ein",
+        "symbol": "Währungssymbol",
+        "symbolPlaceholder": "z.B. $",
+        "symbolHelper": "Geben Sie das Währungssymbol ein",
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "creating": "Wird erstellt..."
       }
     },
     "brandsPage": {
