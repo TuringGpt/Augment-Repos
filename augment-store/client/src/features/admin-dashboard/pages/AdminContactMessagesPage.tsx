@@ -115,6 +115,23 @@ const AdminContactMessagesPage = () => {
     }
   }, [])
 
+  // Clear selections when contacts change (refresh/pagination)
+  // This prevents selectedContactIds from accumulating stale IDs that are no longer visible
+  // and ensures the UI count and bulk actions always operate on the same set of contacts
+  useEffect(() => {
+    // Only clear if we have selections and contacts have changed
+    if (selectedContactIds.size > 0) {
+      const currentContactIds = new Set(contacts.map((contact) => contact.id))
+      const hasStaleSelections = Array.from(selectedContactIds).some((id) => !currentContactIds.has(id))
+
+      if (hasStaleSelections) {
+        // Clear all selections to avoid confusion about what's selected
+        setSelectedContactIds(new Set())
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contacts])
+
   const handleRefresh = () => {
     getContacts()
   }
