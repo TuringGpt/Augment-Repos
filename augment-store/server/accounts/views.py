@@ -50,6 +50,12 @@ class AdminUserListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
         # Use a shared cache key (no user_id) since the admin user list is
         # identical for all admins. Avoids per-admin cache duplication and
         # reduces the number of PII copies stored in the cache backend.
+        #
+        # Caveat: paginated responses include absolute next/previous URLs
+        # derived from the originating request's host/scheme. If the API is
+        # served behind multiple domains or proxy schemes, the cached URLs
+        # may not match subsequent requests. Acceptable for single-domain
+        # deployments; revisit if multi-domain access is introduced.
         service = self.get_cache_service()
         return service.get_cache_key(
             user_id=None,
