@@ -33,6 +33,7 @@ import {
   AccessTime as AccessTimeIcon,
   MarkEmailRead as MarkEmailReadIcon,
   CheckCircle as CheckCircleIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
@@ -313,6 +314,22 @@ const AdminContactMessagesPage = () => {
     }
   }
 
+  // Toolbar action handlers (empty handlers as requested)
+  const handleBulkMarkAsRead = () => {
+    console.log('Bulk mark as read clicked for:', Array.from(selectedContactIds))
+    // Empty handler - no store actions called
+  }
+
+  const handleBulkMarkAsResolved = () => {
+    console.log('Bulk mark as resolved clicked for:', Array.from(selectedContactIds))
+    // Empty handler - no store actions called
+  }
+
+  const handleBulkDelete = () => {
+    console.log('Bulk delete clicked for:', Array.from(selectedContactIds))
+    // Empty handler - no store actions called
+  }
+
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
   // during the brief hydration period on initial page load
@@ -420,6 +437,60 @@ const AdminContactMessagesPage = () => {
               )}
             </Box>
           </Paper>
+
+          {/* Toolbar - shown when contacts are selected */}
+          {selectedInCurrentPageCount > 0 && (
+            <Paper
+              sx={{
+                mb: 2,
+                p: 2,
+                bgcolor: 'action.selected',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                borderLeft: 4,
+                borderColor: 'primary.main',
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 600, flexGrow: 1 }}>
+                {t('admin.contactMessagesPage.toolbar.messagesSelected', { count: selectedInCurrentPageCount })}
+              </Typography>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsReadTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<MarkEmailReadIcon />}
+                  onClick={handleBulkMarkAsRead}
+                  color="success"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
+                </Button>
+              </Tooltip>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsResolvedTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={handleBulkMarkAsResolved}
+                  color="info"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsResolved')}
+                </Button>
+              </Tooltip>
+              <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkDeleteTooltip')}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleBulkDelete}
+                  color="error"
+                >
+                  {t('admin.contactMessagesPage.toolbar.bulkDelete')}
+                </Button>
+              </Tooltip>
+            </Paper>
+          )}
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
