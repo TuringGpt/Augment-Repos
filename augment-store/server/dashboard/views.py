@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.generics import GenericAPIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +9,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from collections import defaultdict
-from accounts.permissions import hasAdminOrMerchantRole
+from accounts.permissions import hasAdminRole, hasAdminOrMerchantRole
 
 from products.models import Product, ProductCategory
 from checkout.models import Order, OrderItem, Payment
@@ -1303,3 +1304,71 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
                 'avg_order_value': float(returning_avg_order_value)
             }
         })
+
+
+class AdminAnalyticsView(GenericAPIView):
+    """
+    Optimized dashboard analytics for administrators.
+    Uses database-level aggregation to minimize Python-side processing.
+    """
+    permission_classes = [IsAuthenticated, hasAdminRole]
+
+    def get(self, request, *args, **kwargs):
+        days = parse_int_param(request.query_params.get('days'), default=30, max_value=365)
+        cutoff_date = timezone.now() - timedelta(days=days)
+
+        # Revenue from Payment.amount (source of truth for actual charged amounts)
+        payment_stats = Payment.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            payment_status=Payment.PaymentStatus.PAID
+        ).aggregate(
+            total_paid_orders=Count('id'),
+            total_revenue=Coalesce(
+                Sum('amount'), Decimal('0.00'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            ),
+            avg_order_value=Coalesce(
+                Avg('amount'), Decimal('0.00'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            )
+        )
+
+        # Additional metrics for the period
+        new_user_registrations = User.objects.filter(date_joined__gte=cutoff_date).count()
+        total_orders_created = Order.objects.filter(created_at__gte=cutoff_date).count()
+
+        # Top products — scoped to completed+paid orders only, with explicit output_field
+        # Group by product_id to avoid merging distinct products with the same name
+        top_products = OrderItem.objects.filter(
+            order__created_at__gte=cutoff_date,
+            order__status=Order.OrderStatus.COMPLETED,
+            order__payment__payment_status=Payment.PaymentStatus.PAID,
+            product__isnull=False
+        ).values('product_id', 'product__name').annotate(
+            quantity=Sum('quantity'),
+            revenue=Sum(
+                F('quantity') * F('product__price'),
+                output_field=DecimalField(max_digits=19, decimal_places=2)
+            )
+        ).order_by('-revenue')[:5]
+
+        return Response({
+            'period_days': days,
+            'metrics': {
+                'total_orders_created': total_orders_created,
+                'total_completed_paid_orders': payment_stats['total_paid_orders'],
+                'total_revenue': float(payment_stats['total_revenue']),
+                'avg_order_value': float(payment_stats['avg_order_value']),
+                'new_user_registrations': new_user_registrations
+            },
+            'top_products': [
+                {
+                    'product_id': str(p['product_id']),
+                    'name': p['product__name'],
+                    'units_sold': p['quantity'],
+                    'revenue': float(p['revenue'])
+                } for p in top_products
+            ]
+        })
+
