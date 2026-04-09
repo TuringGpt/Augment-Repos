@@ -828,6 +828,16 @@ class StripePaymentCallbackTests(BaseAPITestCase):
         self.assertEqual(response.url, reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
         mock_update_status.assert_called_once_with(payment)
 
+    @patch("checkout.views.StripeService.check_and_update_payment_status")
+    def test_callback_rejects_tampered_state(self, mock_update_status):
+        payment = PaymentFactory(created_by=self.user)
+        callback_state = signing.dumps({"payment_id": str(payment.id)}, salt="checkout.stripe.redirect")
+        tampered_state = f"{callback_state}tampered"
+        url = reverse("v1:checkout_payments:stripe_redirect")
+        response = self.client.get(url, {"state": tampered_state})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        mock_update_status.assert_not_called()
+
 
 class CheckoutPaymentConfirmationViewTests(BaseAPITestCase):
 
