@@ -364,9 +364,12 @@ const AdminContactMessagesPage = () => {
       // Call the bulkUpdateContacts store action to mark selected contacts as read
       await bulkUpdateContacts(selectedInCurrentPage, 'read')
 
-      // Clear selections after successful update
-      // The store will automatically refresh the contacts list
-      setSelectedContactIds(new Set())
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Clear selections after successful update
+        // The store will automatically refresh the contacts list
+        setSelectedContactIds(new Set())
+      }
     } catch (error) {
       // Error is already handled by the store and stored in bulkUpdateError
       // The store will set bulkUpdateError which could be displayed if needed
