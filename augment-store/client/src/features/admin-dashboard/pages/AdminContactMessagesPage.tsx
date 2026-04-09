@@ -59,7 +59,16 @@ const AdminContactMessagesPage = () => {
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // Contact store
-  const { contacts: contactsData, isLoading, fetchError, getContacts, updateContact } = useContactStore()
+  const {
+    contacts: contactsData,
+    isLoading,
+    fetchError,
+    getContacts,
+    updateContact,
+    bulkUpdateContacts,
+    isBulkUpdating,
+    bulkUpdateError
+  } = useContactStore()
   const contacts = contactsData?.results || []
 
   // Drawer state
@@ -331,11 +340,25 @@ const AdminContactMessagesPage = () => {
     }
   }
 
-  // Toolbar action handlers (empty handlers as requested)
-  const handleBulkMarkAsRead = () => {
+  // Toolbar action handlers
+  const handleBulkMarkAsRead = async () => {
     // Only operate on contacts selected in the current page to match the UI count
-    console.log('Bulk mark as read clicked for:', selectedInCurrentPage)
-    // Empty handler - no store actions called
+    if (selectedInCurrentPage.length === 0) {
+      return
+    }
+
+    try {
+      // Call the bulkUpdateContacts store action to mark selected contacts as read
+      await bulkUpdateContacts(selectedInCurrentPage, 'read')
+
+      // Clear selections after successful update
+      // The store will automatically refresh the contacts list
+      setSelectedContactIds(new Set())
+    } catch (error) {
+      // Error is already handled by the store and stored in bulkUpdateError
+      // The store will set bulkUpdateError which could be displayed if needed
+      console.error('Failed to bulk mark contacts as read - check bulkUpdateError state for details', error)
+    }
   }
 
   const handleBulkMarkAsResolved = () => {
@@ -445,6 +468,13 @@ const AdminContactMessagesPage = () => {
       ) : contacts.length > 0 ? (
         /* Contact Messages Table */
         <Box>
+          {/* Bulk Update Error State */}
+          {bulkUpdateError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {bulkUpdateError}
+            </Alert>
+          )}
+
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2">
@@ -476,15 +506,18 @@ const AdminContactMessagesPage = () => {
                 {t('admin.contactMessagesPage.toolbar.messagesSelected', { count: selectedInCurrentPageCount })}
               </Typography>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsReadTooltip')}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<MarkEmailReadIcon />}
-                  onClick={handleBulkMarkAsRead}
-                  color="success"
-                >
-                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
-                </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={isBulkUpdating ? <CircularProgress size={16} /> : <MarkEmailReadIcon />}
+                    onClick={handleBulkMarkAsRead}
+                    disabled={isBulkUpdating}
+                    color="success"
+                  >
+                    {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
+                  </Button>
+                </span>
               </Tooltip>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsResolvedTooltip')}>
                 <Button
@@ -699,14 +732,14 @@ const AdminContactMessagesPage = () => {
             </Table>
           </TableContainer>
         </Box>
-      ) : (
+      ) : !fetchError ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
           <Typography color="text.secondary">
             {t('admin.contactMessagesPage.noMessages')}
           </Typography>
         </Paper>
-      )}
+      ) : null}
 
       {/* Contact Message Details Drawer */}
       <Drawer
