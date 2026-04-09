@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
-import { parseApiError } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse, Comment, CommentListResponse } from '@features/support/types'
 
 interface TicketState {
@@ -604,12 +604,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         } catch (fetchError) {
           // Log the fetch error but don't treat it as a delete failure
           // The ticket was already successfully deleted
-          console.error('Failed to refetch tickets after deletion:', fetchError)
+          // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+          console.error('Failed to refetch tickets after deletion:', sanitizeErrorForLogging(fetchError, 'Failed to refetch tickets after deletion'))
           // The fetch error will be handled by fetchTickets() and set in the store's error state
         }
       }
     } catch (error) {
-      console.error('Failed to delete ticket:', error)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to delete ticket:', sanitizeErrorForLogging(error, 'Failed to delete ticket'))
       // Use parseApiError to extract user-friendly error message from API response
       // This ensures consistency with createTicket/updateTicket and properly handles DRF errors
       const errorMessage = parseApiError(error, {
@@ -654,13 +656,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       return ticket
     } catch (error) {
-      console.error('Failed to fetch ticket:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchTicketRequestCounter) {
         // Set error code instead of hard-coded message to allow proper localization
         // The error code will be translated by the component using translateErrorCode()
         set({ fetchTicketError: 'TICKET_LOAD_ERROR' })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch ticket:', sanitizeErrorForLogging(error, 'Failed to fetch ticket'))
       }
 
       throw error
@@ -701,8 +704,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Return null if request was superseded to prevent callers from acting on stale results
       return null
     } catch (error) {
-      console.error('Failed to fetch ticket stats:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchStatsRequestCounter) {
         const errorMessage = parseApiError(error, {
@@ -712,6 +713,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           statsError: errorMessage,
           isFetchingStats: false,
         })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch ticket statistics'))
         throw error
       }
 
@@ -742,8 +746,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Return null if request was superseded to prevent callers from acting on stale results
       return null
     } catch (error) {
-      console.error('Failed to fetch admin ticket stats:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchAdminStatsRequestCounter) {
         const errorMessage = parseApiError(error, {
@@ -753,6 +755,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           adminStatsError: errorMessage,
           isFetchingAdminStats: false,
         })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch admin ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch admin ticket statistics'))
         throw error
       }
 
@@ -827,8 +832,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Return null if request was superseded to prevent callers from acting on stale results
       return null
     } catch (error) {
-      console.error('Failed to fetch comments:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchCommentsRequestCounter) {
         const errorMessage = parseApiError(error, {
@@ -839,6 +842,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           isFetchingComments: false,
           fetchingCommentsTicketId: null
         })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch comments:', sanitizeErrorForLogging(error, 'Failed to fetch comments'))
         throw error
       }
 
