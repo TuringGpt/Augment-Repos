@@ -1174,53 +1174,76 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 // Subscribe to auth state changes and clear admin-only data when user logs out
 // This prevents adminStats (and related loading/error state) from surviving logout/login
 // within the same SPA session and being accidentally displayed/leaked to a subsequent user
-import('@store/authStore')
-  .then(({ useAuthStore }) => {
-    let previousAuthState = useAuthStore.getState().isAuthenticated
 
-    const unsubscribe = useAuthStore.subscribe((state) => {
-      const currentAuthState = state.isAuthenticated
+// Track whether the subscription has been successfully established
+let authSubscriptionEstablished = false
 
-      // Detect transition from authenticated to unauthenticated
-      if (previousAuthState === true && currentAuthState === false) {
-        // Log only in development to prevent noisy console output in production
-        if (import.meta.env.DEV) {
-          console.log('🔒 User logged out - clearing admin ticket data from memory')
+// Function to set up the auth subscription with retry capability
+const setupAuthSubscription = () => {
+  import('@store/authStore')
+    .then(({ useAuthStore }) => {
+      // Mark subscription as established
+      authSubscriptionEstablished = true
+
+      let previousAuthState = useAuthStore.getState().isAuthenticated
+
+      const unsubscribe = useAuthStore.subscribe((state) => {
+        const currentAuthState = state.isAuthenticated
+
+        // Detect transition from authenticated to unauthenticated
+        if (previousAuthState === true && currentAuthState === false) {
+          // Log only in development to prevent noisy console output in production
+          if (import.meta.env.DEV) {
+            console.log('🔒 User logged out - clearing admin ticket data from memory')
+          }
+
+          // Increment counter to invalidate any in-flight admin stats requests
+          // This prevents in-flight responses from repopulating the store after logout
+          fetchAdminStatsRequestCounter += 1
+
+          // Clear admin-only state to prevent data leakage across user sessions
+          useTicketStore.setState({
+            adminStats: null,
+            isFetchingAdminStats: false,
+            adminStatsError: null,
+          })
         }
 
-        // Increment counter to invalidate any in-flight admin stats requests
-        // This prevents in-flight responses from repopulating the store after logout
-        fetchAdminStatsRequestCounter += 1
+        previousAuthState = currentAuthState
+      })
 
-        // Clear admin-only state to prevent data leakage across user sessions
-        useTicketStore.setState({
-          adminStats: null,
-          isFetchingAdminStats: false,
-          adminStatsError: null,
+      // Clean up subscription on HMR module disposal to prevent memory leaks
+      if (import.meta.hot) {
+        import.meta.hot.dispose(() => {
+          unsubscribe()
         })
       }
-
-      previousAuthState = currentAuthState
     })
+    .catch((error) => {
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to load authStore for ticket store subscription:', sanitizeErrorForLogging(error, 'Failed to load authStore for ticket store subscription'))
 
-    // Clean up subscription on HMR module disposal to prevent memory leaks
-    if (import.meta.hot) {
-      import.meta.hot.dispose(() => {
-        unsubscribe()
+      // Clear admin-only state immediately to prevent privacy risk in shared-browser sessions.
+      useTicketStore.setState({
+        adminStats: null,
+        isFetchingAdminStats: false,
+        adminStatsError: null,
       })
-    }
-  })
-  .catch((error) => {
-    // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
-    console.error('Failed to load authStore for ticket store subscription:', sanitizeErrorForLogging(error, 'Failed to load authStore for ticket store subscription'))
 
-    // Clear admin-only state immediately to prevent privacy risk in shared-browser sessions.
-    // Without the auth subscription, we cannot detect logout events, so we must clear admin
-    // data proactively to prevent it from being displayed to subsequent users on the same browser.
-    useTicketStore.setState({
-      adminStats: null,
-      isFetchingAdminStats: false,
-      adminStatsError: null,
+      // Retry the subscription after a delay to ensure protection is eventually established
+      // This prevents a scenario where adminStats is fetched later but never cleared on logout
+      // because the subscription failed to initialize
+      if (import.meta.env.DEV) {
+        console.log('Will retry authStore subscription in 5 seconds to ensure logout protection...')
+      }
+      setTimeout(() => {
+        if (!authSubscriptionEstablished) {
+          setupAuthSubscription()
+        }
+      }, 5000)
     })
-  })
+}
+
+// Initialize the subscription
+setupAuthSubscription()
 
