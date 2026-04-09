@@ -685,7 +685,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchStatsRequestCounter += 1
     const currentRequestId = fetchStatsRequestCounter
 
-    // Set loading state and clear stale data BEFORE any awaited work
+    // Set loading state and clear any previous error BEFORE any awaited work
     set({ isFetchingStats: true, statsError: null })
 
     try {
@@ -726,7 +726,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     fetchAdminStatsRequestCounter += 1
     const currentRequestId = fetchAdminStatsRequestCounter
 
-    // Set loading state and clear stale data BEFORE any awaited work
+    // Set loading state and clear any previous error BEFORE any awaited work
     set({ isFetchingAdminStats: true, adminStatsError: null })
 
     try {
