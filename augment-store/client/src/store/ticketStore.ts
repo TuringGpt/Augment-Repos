@@ -1178,12 +1178,21 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 // Track whether the subscription has been successfully established
 let authSubscriptionEstablished = false
 
+// Track retry state for bounded retries with exponential backoff
+let authSubscriptionRetryCount = 0
+const MAX_AUTH_SUBSCRIPTION_RETRIES = 5
+const INITIAL_RETRY_DELAY_MS = 1000 // Start with 1 second
+
+// Track pending retry timer for cleanup on HMR
+let pendingRetryTimer: ReturnType<typeof setTimeout> | null = null
+
 // Function to set up the auth subscription with retry capability
 const setupAuthSubscription = () => {
   import('@store/authStore')
     .then(({ useAuthStore }) => {
-      // Mark subscription as established
+      // Mark subscription as established and reset retry count
       authSubscriptionEstablished = true
+      authSubscriptionRetryCount = 0
 
       let previousAuthState = useAuthStore.getState().isAuthenticated
 
@@ -1234,18 +1243,37 @@ const setupAuthSubscription = () => {
         adminStatsError: null,
       })
 
-      // Retry the subscription after a delay to ensure protection is eventually established
+      // Retry the subscription with exponential backoff, up to a maximum number of attempts
       // This prevents a scenario where adminStats is fetched later but never cleared on logout
       // because the subscription failed to initialize
-      if (import.meta.env.DEV) {
-        console.log('Will retry authStore subscription in 5 seconds to ensure logout protection...')
-      }
-      setTimeout(() => {
-        if (!authSubscriptionEstablished) {
-          setupAuthSubscription()
+      if (!authSubscriptionEstablished && authSubscriptionRetryCount < MAX_AUTH_SUBSCRIPTION_RETRIES) {
+        authSubscriptionRetryCount += 1
+
+        // Calculate delay with exponential backoff: 1s, 2s, 4s, 8s, 16s
+        const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(2, authSubscriptionRetryCount - 1)
+
+        if (import.meta.env.DEV) {
+          console.log(`Will retry authStore subscription in ${delayMs}ms (attempt ${authSubscriptionRetryCount}/${MAX_AUTH_SUBSCRIPTION_RETRIES})...`)
         }
-      }, 5000)
+
+        pendingRetryTimer = setTimeout(() => {
+          pendingRetryTimer = null
+          setupAuthSubscription()
+        }, delayMs)
+      } else if (authSubscriptionRetryCount >= MAX_AUTH_SUBSCRIPTION_RETRIES) {
+        console.error(`Failed to establish authStore subscription after ${MAX_AUTH_SUBSCRIPTION_RETRIES} attempts. Admin stats may not be cleared on logout.`)
+      }
     })
+}
+
+// Clean up pending retry timer on HMR module disposal
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (pendingRetryTimer !== null) {
+      clearTimeout(pendingRetryTimer)
+      pendingRetryTimer = null
+    }
+  })
 }
 
 // Initialize the subscription
