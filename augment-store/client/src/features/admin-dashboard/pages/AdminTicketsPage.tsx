@@ -191,12 +191,8 @@ const AdminTicketsPage = () => {
   useEffect(() => {
     const fetchStats = async () => {
       if (isAuthenticated && user?.role === 'admin') {
-        try {
-          await getTicketStats()
-        } catch (err) {
-          // Error is already handled by the store
-          console.error('Failed to fetch ticket stats:', err)
-        }
+        // No try/catch needed - getTicketStats sets error in store state and returns null on failure
+        await getTicketStats()
       }
     }
 
@@ -314,13 +310,9 @@ const AdminTicketsPage = () => {
 
       // Refresh ticket stats to reflect the deletion
       // This ensures the dashboard stats cards show updated counts
-      // Handle stats refresh separately so failures don't misreport deletion success
-      try {
-        await getTicketStats()
-      } catch (statsErr) {
-        // Log stats refresh error but don't show user error since deletion succeeded
-        console.error('Failed to refresh ticket stats after deletion:', statsErr)
-      }
+      // No try/catch needed - getTicketStats sets error in store state and returns null on failure
+      // Stats refresh failures won't interfere with deletion success toast
+      await getTicketStats()
     } catch (err) {
       console.error('Failed to delete ticket:', err)
       toast.error(t('admin.ticketsPage.deleteError'))

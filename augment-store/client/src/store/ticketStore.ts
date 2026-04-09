@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { ticketService } from '@services/api'
-import { parseApiError } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 import type { TicketListItem, TicketFilterParams, CreateTicketRequest, UpdateTicketRequest, Ticket, TicketStatsResponse, Comment, CommentListResponse } from '@features/support/types'
 
 interface TicketState {
@@ -37,6 +37,11 @@ interface TicketState {
   isFetchingStats: boolean
   statsError: string | null
 
+  // Admin ticket statistics state
+  adminStats: TicketStatsResponse | null
+  isFetchingAdminStats: boolean
+  adminStatsError: string | null
+
   // Comments state
   comments: Comment[]
   commentsTotal: number
@@ -68,6 +73,7 @@ interface TicketState {
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
   getTicketStats: () => Promise<TicketStatsResponse | null>
+  getAdminTicketStats: () => Promise<TicketStatsResponse | null>
   getComments: (ticketId: string) => Promise<CommentListResponse | null>
   clearComments: () => void
   createComment: (ticketId: string, content: string) => Promise<Comment>
@@ -103,6 +109,11 @@ let deleteInFlightCount = 0
 // When multiple getTicketStats calls are made in quick succession,
 // only the most recent request should update the stats state
 let fetchStatsRequestCounter = 0
+
+// Request counter to prevent race conditions in getAdminTicketStats
+// When multiple getAdminTicketStats calls are made in quick succession,
+// only the most recent request should update the adminStats state
+let fetchAdminStatsRequestCounter = 0
 
 // Request counter to prevent race conditions in getComments
 // When multiple getComments calls are made in quick succession,
@@ -187,6 +198,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   stats: null,
   isFetchingStats: false,
   statsError: null,
+  adminStats: null,
+  isFetchingAdminStats: false,
+  adminStatsError: null,
   comments: [],
   commentsTotal: 0,
   isFetchingComments: false,
@@ -590,12 +604,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         } catch (fetchError) {
           // Log the fetch error but don't treat it as a delete failure
           // The ticket was already successfully deleted
-          console.error('Failed to refetch tickets after deletion:', fetchError)
+          // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+          console.error('Failed to refetch tickets after deletion:', sanitizeErrorForLogging(fetchError, 'Failed to refetch tickets after deletion'))
           // The fetch error will be handled by fetchTickets() and set in the store's error state
         }
       }
     } catch (error) {
-      console.error('Failed to delete ticket:', error)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to delete ticket:', sanitizeErrorForLogging(error, 'Failed to delete ticket'))
       // Use parseApiError to extract user-friendly error message from API response
       // This ensures consistency with createTicket/updateTicket and properly handles DRF errors
       const errorMessage = parseApiError(error, {
@@ -640,13 +656,14 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
       return ticket
     } catch (error) {
-      console.error('Failed to fetch ticket:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchTicketRequestCounter) {
         // Set error code instead of hard-coded message to allow proper localization
         // The error code will be translated by the component using translateErrorCode()
         set({ fetchTicketError: 'TICKET_LOAD_ERROR' })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch ticket:', sanitizeErrorForLogging(error, 'Failed to fetch ticket'))
       }
 
       throw error
@@ -665,13 +682,23 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
   },
 
+  /**
+   * Fetch ticket statistics for the current user
+   *
+   * Error Handling Contract:
+   * - On error: Sets `statsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `statsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @returns Promise resolving to stats data or null (on error or if superseded)
+   */
   getTicketStats: async (): Promise<TicketStatsResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
     fetchStatsRequestCounter += 1
     const currentRequestId = fetchStatsRequestCounter
 
-    // Set loading state and clear stale data BEFORE any awaited work
+    // Set loading state and clear any previous error BEFORE any awaited work
     set({ isFetchingStats: true, statsError: null })
 
     try {
@@ -687,8 +714,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Return null if request was superseded to prevent callers from acting on stale results
       return null
     } catch (error) {
-      console.error('Failed to fetch ticket stats:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchStatsRequestCounter) {
         const errorMessage = parseApiError(error, {
@@ -698,14 +723,80 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           statsError: errorMessage,
           isFetchingStats: false,
         })
-        throw error
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch ticket statistics'))
       }
 
-      // Return null if request was superseded to prevent callers from handling stale errors
+      // Return null to indicate failure; error is available in statsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
       return null
     }
   },
 
+  /**
+   * Fetch admin ticket statistics (admin-only)
+   *
+   * Error Handling Contract:
+   * - On error: Sets `adminStatsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `adminStatsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @returns Promise resolving to admin stats data or null (on error or if superseded)
+   */
+  getAdminTicketStats: async (): Promise<TicketStatsResponse | null> => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchAdminStatsRequestCounter += 1
+    const currentRequestId = fetchAdminStatsRequestCounter
+
+    // Set loading state and clear any previous error BEFORE any awaited work
+    set({ isFetchingAdminStats: true, adminStatsError: null })
+
+    try {
+      const adminStats = await ticketService.getAdminTicketStats()
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchAdminStatsRequestCounter) {
+        set({ adminStats, isFetchingAdminStats: false })
+        return adminStats
+      }
+
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
+    } catch (error) {
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchAdminStatsRequestCounter) {
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'Failed to fetch admin ticket statistics',
+        })
+        set({
+          adminStatsError: errorMessage,
+          isFetchingAdminStats: false,
+        })
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch admin ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch admin ticket statistics'))
+      }
+
+      // Return null to indicate failure; error is available in adminStatsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
+      return null
+    }
+  },
+
+  /**
+   * Fetch comments for a specific ticket
+   *
+   * Error Handling Contract:
+   * - On error: Sets `fetchCommentsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `fetchCommentsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @param ticketId - The ID of the ticket to fetch comments for
+   * @returns Promise resolving to comment list response or null (on error or if superseded)
+   */
   getComments: async (ticketId: string): Promise<CommentListResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
@@ -772,8 +863,6 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       // Return null if request was superseded to prevent callers from acting on stale results
       return null
     } catch (error) {
-      console.error('Failed to fetch comments:', error)
-
       // Only update error state if this is still the most recent request
       if (currentRequestId === fetchCommentsRequestCounter) {
         const errorMessage = parseApiError(error, {
@@ -784,10 +873,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
           isFetchingComments: false,
           fetchingCommentsTicketId: null
         })
-        throw error
+
+        // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+        console.error('Failed to fetch comments:', sanitizeErrorForLogging(error, 'Failed to fetch comments'))
       }
 
-      // Return null for superseded requests to prevent callers from handling stale errors
+      // Return null to indicate failure; error is available in fetchCommentsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
       return null
     }
   },
@@ -1109,4 +1201,112 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     }
   },
 }))
+
+// Subscribe to auth state changes and clear admin-only data when user logs out
+// This prevents adminStats (and related loading/error state) from surviving logout/login
+// within the same SPA session and being accidentally displayed/leaked to a subsequent user
+
+// Track whether the subscription has been successfully established
+let authSubscriptionEstablished = false
+
+// Track retry state for bounded retries with exponential backoff
+let authSubscriptionRetryCount = 0
+const MAX_AUTH_SUBSCRIPTION_RETRIES = 5
+const INITIAL_RETRY_DELAY_MS = 1000 // Start with 1 second
+
+// Track pending retry timer for cleanup on HMR
+let pendingRetryTimer: ReturnType<typeof setTimeout> | null = null
+
+// Function to set up the auth subscription with retry capability
+const setupAuthSubscription = () => {
+  import('@store/authStore')
+    .then(({ useAuthStore }) => {
+      // Mark subscription as established and reset retry count
+      authSubscriptionEstablished = true
+      authSubscriptionRetryCount = 0
+
+      let previousAuthState = useAuthStore.getState().isAuthenticated
+
+      const unsubscribe = useAuthStore.subscribe((state) => {
+        const currentAuthState = state.isAuthenticated
+
+        // Detect transition from authenticated to unauthenticated
+        if (previousAuthState === true && currentAuthState === false) {
+          // Log only in development to prevent noisy console output in production
+          if (import.meta.env.DEV) {
+            console.log('🔒 User logged out - clearing admin ticket data from memory')
+          }
+
+          // Increment counter to invalidate any in-flight admin stats requests
+          // This prevents in-flight responses from repopulating the store after logout
+          fetchAdminStatsRequestCounter += 1
+
+          // Clear admin-only state to prevent data leakage across user sessions
+          useTicketStore.setState({
+            adminStats: null,
+            isFetchingAdminStats: false,
+            adminStatsError: null,
+          })
+        }
+
+        previousAuthState = currentAuthState
+      })
+
+      // Clean up subscription on HMR module disposal to prevent memory leaks
+      if (import.meta.hot) {
+        import.meta.hot.dispose(() => {
+          unsubscribe()
+        })
+      }
+    })
+    .catch((error) => {
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to load authStore for ticket store subscription:', sanitizeErrorForLogging(error, 'Failed to load authStore for ticket store subscription'))
+
+      // Increment counter to invalidate any in-flight admin stats requests
+      // This prevents in-flight responses from repopulating the store after clearing
+      fetchAdminStatsRequestCounter += 1
+
+      // Clear admin-only state immediately to prevent privacy risk in shared-browser sessions.
+      useTicketStore.setState({
+        adminStats: null,
+        isFetchingAdminStats: false,
+        adminStatsError: null,
+      })
+
+      // Retry the subscription with exponential backoff, up to a maximum number of attempts
+      // This prevents a scenario where adminStats is fetched later but never cleared on logout
+      // because the subscription failed to initialize
+      if (!authSubscriptionEstablished && authSubscriptionRetryCount < MAX_AUTH_SUBSCRIPTION_RETRIES) {
+        authSubscriptionRetryCount += 1
+
+        // Calculate delay with exponential backoff: 1s, 2s, 4s, 8s, 16s
+        const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(2, authSubscriptionRetryCount - 1)
+
+        if (import.meta.env.DEV) {
+          console.log(`Will retry authStore subscription in ${delayMs}ms (attempt ${authSubscriptionRetryCount}/${MAX_AUTH_SUBSCRIPTION_RETRIES})...`)
+        }
+
+        pendingRetryTimer = setTimeout(() => {
+          pendingRetryTimer = null
+          setupAuthSubscription()
+        }, delayMs)
+      } else if (authSubscriptionRetryCount >= MAX_AUTH_SUBSCRIPTION_RETRIES) {
+        console.error(`Failed to establish authStore subscription after ${MAX_AUTH_SUBSCRIPTION_RETRIES} attempts. Admin stats may not be cleared on logout.`)
+      }
+    })
+}
+
+// Clean up pending retry timer on HMR module disposal
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (pendingRetryTimer !== null) {
+      clearTimeout(pendingRetryTimer)
+      pendingRetryTimer = null
+    }
+  })
+}
+
+// Initialize the subscription
+setupAuthSubscription()
 
