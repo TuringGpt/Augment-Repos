@@ -1183,7 +1183,10 @@ import('@store/authStore')
 
       // Detect transition from authenticated to unauthenticated
       if (previousAuthState === true && currentAuthState === false) {
-        console.log('🔒 User logged out - clearing admin ticket data from memory')
+        // Log only in development to prevent noisy console output in production
+        if (import.meta.env.DEV) {
+          console.log('🔒 User logged out - clearing admin ticket data from memory')
+        }
 
         // Increment counter to invalidate any in-flight admin stats requests
         // This prevents in-flight responses from repopulating the store after logout
