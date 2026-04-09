@@ -37,6 +37,11 @@ interface TicketState {
   isFetchingStats: boolean
   statsError: string | null
 
+  // Admin ticket statistics state
+  adminStats: TicketStatsResponse | null
+  isFetchingAdminStats: boolean
+  adminStatsError: string | null
+
   // Comments state
   comments: Comment[]
   commentsTotal: number
@@ -68,6 +73,7 @@ interface TicketState {
   getTicketById: (id: string) => Promise<Ticket>
   clearSelectedTicket: () => void
   getTicketStats: () => Promise<TicketStatsResponse | null>
+  getAdminTicketStats: () => Promise<TicketStatsResponse | null>
   getComments: (ticketId: string) => Promise<CommentListResponse | null>
   clearComments: () => void
   createComment: (ticketId: string, content: string) => Promise<Comment>
@@ -103,6 +109,11 @@ let deleteInFlightCount = 0
 // When multiple getTicketStats calls are made in quick succession,
 // only the most recent request should update the stats state
 let fetchStatsRequestCounter = 0
+
+// Request counter to prevent race conditions in getAdminTicketStats
+// When multiple getAdminTicketStats calls are made in quick succession,
+// only the most recent request should update the adminStats state
+let fetchAdminStatsRequestCounter = 0
 
 // Request counter to prevent race conditions in getComments
 // When multiple getComments calls are made in quick succession,
@@ -187,6 +198,9 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   stats: null,
   isFetchingStats: false,
   statsError: null,
+  adminStats: null,
+  isFetchingAdminStats: false,
+  adminStatsError: null,
   comments: [],
   commentsTotal: 0,
   isFetchingComments: false,
@@ -697,6 +711,47 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         set({
           statsError: errorMessage,
           isFetchingStats: false,
+        })
+        throw error
+      }
+
+      // Return null if request was superseded to prevent callers from handling stale errors
+      return null
+    }
+  },
+
+  getAdminTicketStats: async (): Promise<TicketStatsResponse | null> => {
+    // Increment counter to track this request
+    // This prevents race conditions when multiple calls are made rapidly
+    fetchAdminStatsRequestCounter += 1
+    const currentRequestId = fetchAdminStatsRequestCounter
+
+    // Set loading state and clear stale data BEFORE any awaited work
+    set({ isFetchingAdminStats: true, adminStatsError: null })
+
+    try {
+      const adminStats = await ticketService.getAdminTicketStats()
+
+      // Only update state if this is still the most recent request
+      // If a newer request has been made, discard this response
+      if (currentRequestId === fetchAdminStatsRequestCounter) {
+        set({ adminStats, isFetchingAdminStats: false })
+        return adminStats
+      }
+
+      // Return null if request was superseded to prevent callers from acting on stale results
+      return null
+    } catch (error) {
+      console.error('Failed to fetch admin ticket stats:', error)
+
+      // Only update error state if this is still the most recent request
+      if (currentRequestId === fetchAdminStatsRequestCounter) {
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'Failed to fetch admin ticket statistics',
+        })
+        set({
+          adminStatsError: errorMessage,
+          isFetchingAdminStats: false,
         })
         throw error
       }
