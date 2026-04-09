@@ -1213,8 +1213,14 @@ import('@store/authStore')
   .catch((error) => {
     // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
     console.error('Failed to load authStore for ticket store subscription:', sanitizeErrorForLogging(error, 'Failed to load authStore for ticket store subscription'))
-    // Fail safely: without the auth subscription, admin data won't be cleared on logout,
-    // but this is preferable to crashing the application. The security risk is minimal
-    // since the backend still enforces auth, and browser refresh will clear the state.
+
+    // Clear admin-only state immediately to prevent privacy risk in shared-browser sessions.
+    // Without the auth subscription, we cannot detect logout events, so we must clear admin
+    // data proactively to prevent it from being displayed to subsequent users on the same browser.
+    useTicketStore.setState({
+      adminStats: null,
+      isFetchingAdminStats: false,
+      adminStatsError: null,
+    })
   })
 
