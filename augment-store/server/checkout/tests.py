@@ -4,6 +4,7 @@ from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
 from django.core import signing
+from urllib.parse import parse_qs, urlparse
 from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
@@ -807,6 +808,18 @@ class StripeServiceTests(BaseAPITestCase):
         # THEN we should get a session object
         self.assertIsNotNone(session)
         self.assertIn("client_secret", session)
+
+    @patch("stripe.checkout.Session.create")
+    def test_create_payment_session_url_encodes_signed_state(self, mock_create_session):
+        mock_create_session.return_value = type("MockSession", (object,), {"id": "sess_test_123"})()
+        order = OrderFactory()
+        OrderItemFactory(order=order, cart_item=CartItemFactory(quantity=1))
+        payment = PaymentFactory(order=order)
+        StripeService().create_payment_session(payment)
+        return_url = mock_create_session.call_args.kwargs["return_url"]
+        state = parse_qs(urlparse(return_url).query)["state"][0]
+        payload = signing.loads(state, salt="checkout.stripe.redirect")
+        self.assertEqual(payload["payment_id"], str(payment.id))
 
 class StripePaymentCallbackTests(BaseAPITestCase):
 

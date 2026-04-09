@@ -15,6 +15,7 @@ class StripeService:
         from django.core import signing
         from django.urls import reverse
         from rest_framework.exceptions import ValidationError
+        from urllib.parse import urlencode
 
         order = payment.order
         stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -55,7 +56,7 @@ class StripeService:
             ui_mode="embedded",
             mode="payment",
             line_items=line_items,
-            return_url=f"{settings.APP_DOMAIN}{redirect_url}?state={callback_state}",
+            return_url=f"{settings.APP_DOMAIN}{redirect_url}?{urlencode({'state': callback_state})}",
         )
 
         payment.stripe_session_id = strip_session.id
