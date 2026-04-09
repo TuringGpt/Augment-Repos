@@ -91,6 +91,9 @@ const AdminContactMessagesPage = () => {
   // Ref-based in-flight guard to prevent double-click race conditions
   // Unlike React state, refs update synchronously and can't be bypassed by rapid clicks
   const inFlightUpdatesRef = useRef<Set<string>>(new Set())
+  // Ref-based guard to prevent bulk updates from running concurrently
+  // Ensures only one bulk operation is active at a time
+  const isBulkUpdateInFlightRef = useRef<boolean>(false)
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -347,6 +350,16 @@ const AdminContactMessagesPage = () => {
       return
     }
 
+    // Ref-based guard: Check if a bulk update is already in-flight
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
+    // Mark bulk update as in-flight immediately (synchronous update)
+    isBulkUpdateInFlightRef.current = true
+
     try {
       // Call the bulkUpdateContacts store action to mark selected contacts as read
       await bulkUpdateContacts(selectedInCurrentPage, 'read')
@@ -358,6 +371,9 @@ const AdminContactMessagesPage = () => {
       // Error is already handled by the store and stored in bulkUpdateError
       // The store will set bulkUpdateError which could be displayed if needed
       console.error('Failed to bulk mark contacts as read - check bulkUpdateError state for details', error)
+    } finally {
+      // Remove bulk update in-flight flag (synchronous update)
+      isBulkUpdateInFlightRef.current = false
     }
   }
 
