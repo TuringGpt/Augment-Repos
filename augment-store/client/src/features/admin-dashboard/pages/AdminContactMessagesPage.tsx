@@ -220,7 +220,7 @@ const AdminContactMessagesPage = () => {
         await updateContact(contact.id, { status: 'read' })
       } catch (error) {
         // Error is already handled by the store, but we catch to prevent unhandled rejection
-        console.error('Failed to automatically mark contact as read - check updateError state for details', error)
+        console.error('Failed to automatically mark contact as read - check updateError state for details')
       } finally {
         // Remove from in-flight set (synchronous update)
         inFlightUpdatesRef.current.delete(contact.id)
@@ -373,7 +373,7 @@ const AdminContactMessagesPage = () => {
     } catch (error) {
       // Error is already handled by the store and stored in bulkUpdateError
       // The store will set bulkUpdateError which could be displayed if needed
-      console.error('Failed to bulk mark contacts as read - check bulkUpdateError state for details', error)
+      console.error('Failed to bulk mark contacts as read - check bulkUpdateError state for details')
     } finally {
       // Remove bulk update in-flight flag (synchronous update)
       isBulkUpdateInFlightRef.current = false
