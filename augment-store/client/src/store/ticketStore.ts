@@ -1171,3 +1171,39 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   },
 }))
 
+// Subscribe to auth state changes and clear admin-only data when user logs out
+// This prevents adminStats (and related loading/error state) from surviving logout/login
+// within the same SPA session and being accidentally displayed/leaked to a subsequent user
+import('@store/authStore').then(({ useAuthStore }) => {
+  let previousAuthState = useAuthStore.getState().isAuthenticated
+
+  const unsubscribe = useAuthStore.subscribe((state) => {
+    const currentAuthState = state.isAuthenticated
+
+    // Detect transition from authenticated to unauthenticated
+    if (previousAuthState === true && currentAuthState === false) {
+      console.log('🔒 User logged out - clearing admin ticket data from memory')
+
+      // Increment counter to invalidate any in-flight admin stats requests
+      // This prevents in-flight responses from repopulating the store after logout
+      fetchAdminStatsRequestCounter += 1
+
+      // Clear admin-only state to prevent data leakage across user sessions
+      useTicketStore.setState({
+        adminStats: null,
+        isFetchingAdminStats: false,
+        adminStatsError: null,
+      })
+    }
+
+    previousAuthState = currentAuthState
+  })
+
+  // Clean up subscription on HMR module disposal to prevent memory leaks
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      unsubscribe()
+    })
+  }
+})
+
