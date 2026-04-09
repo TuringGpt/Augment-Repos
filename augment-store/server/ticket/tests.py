@@ -351,6 +351,14 @@ class TicketTests(BaseAPITestCase):
         comments = response.data.get("results", [])
         self.assertFalse(any(c["id"] == str(self.comment.id) for c in comments))
 
+    def test_other_user_cannot_mutate_comment(self):
+        from rest_framework.test import APIClient
+        client = APIClient(); client.force_authenticate(user=self.user2)
+        update_url = reverse("v1:ticket:update_comment", args=[self.ticket.id, self.comment.id])
+        delete_url = reverse("v1:ticket:delete_comment", args=[self.ticket.id, self.comment.id])
+        self.assertEqual(client.patch(update_url, {"content": "x"}).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(client.delete(delete_url).status_code, status.HTTP_404_NOT_FOUND)
+
 
 class TicketStatsTests(BaseAPITestCase):
 

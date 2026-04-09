@@ -171,7 +171,10 @@ class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        queryset = super().get_queryset().filter(ticket_id=ticket_id)
+        if self.request.user.is_admin:
+            return queryset
+        return queryset.filter(user=self.request.user)
 
 class TicketStatsView(GenericAPIView):
     """
@@ -236,7 +239,10 @@ class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        queryset = super().get_queryset().filter(ticket_id=ticket_id)
+        if self.request.user.is_admin:
+            return queryset
+        return queryset.filter(user=self.request.user)
 
 
 class AdminCommentListView(ListAPIView):
