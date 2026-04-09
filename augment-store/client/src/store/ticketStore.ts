@@ -1223,6 +1223,10 @@ const setupAuthSubscription = () => {
       // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
       console.error('Failed to load authStore for ticket store subscription:', sanitizeErrorForLogging(error, 'Failed to load authStore for ticket store subscription'))
 
+      // Increment counter to invalidate any in-flight admin stats requests
+      // This prevents in-flight responses from repopulating the store after clearing
+      fetchAdminStatsRequestCounter += 1
+
       // Clear admin-only state immediately to prevent privacy risk in shared-browser sessions.
       useTicketStore.setState({
         adminStats: null,
