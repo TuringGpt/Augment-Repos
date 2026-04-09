@@ -188,10 +188,11 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
         return super(BaseOrderView, self).get_queryset()
 
 
-class AdminShippingAddressListView(ListAPIView):
+class AdminShippingAddressListView(AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all shipping addresses globally."""
     serializer_class = ShippingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ['user']
     queryset = ShippingAddress.objects.all().order_by('-created_at', '-id')
 
 
@@ -206,21 +207,26 @@ class AdminPaymentListView(BasePaymentView, ListAPIView):
         return super(BasePaymentView, self).get_queryset().order_by('-created_at', '-id')
 
 
-class AdminBillingAddressListView(ListAPIView):
+class AdminBillingAddressListView(AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all billing addresses globally."""
     serializer_class = BillingAddressListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ['user']
     queryset = BillingAddress.objects.all().order_by('-created_at', '-id')
 
-class AdminContactInfoListView(ListAPIView):
+class AdminContactInfoListView(AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all contact information globally."""
     serializer_class = ContactInformationListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ['user']
     queryset = ContactInformation.objects.all().order_by('-created_at', '-id')
 
 
-class AdminOrderItemListView(ListAPIView):
+class AdminOrderItemListView(AutoOptimizeMixin, ListAPIView):
     """Admin-only view to list all order items globally."""
     serializer_class = OrderItemListSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
+    auto_select_related = ['product', 'order', 'created_by']
+    auto_prefetch_related = ['product__images']
     queryset = OrderItem.objects.all().order_by('-created_at', '-id')
+
