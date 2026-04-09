@@ -3,6 +3,7 @@ from unittest.mock import  patch
 from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from accounts.models import User
+from django.core import signing
 from rest_framework import status
 from django.urls import reverse
 from products.factory import ProductFactory
@@ -806,6 +807,26 @@ class StripeServiceTests(BaseAPITestCase):
         # THEN we should get a session object
         self.assertIsNotNone(session)
         self.assertIn("client_secret", session)
+
+class StripePaymentCallbackTests(BaseAPITestCase):
+
+    @patch("checkout.views.StripeService.check_and_update_payment_status")
+    def test_callback_requires_signed_state(self, mock_update_status):
+        payment = PaymentFactory(created_by=self.user)
+        url = reverse("v1:checkout_payments:stripe_redirect")
+        response = self.client.get(url, {"payment_id": str(payment.id)})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        mock_update_status.assert_not_called()
+
+    @patch("checkout.views.StripeService.check_and_update_payment_status")
+    def test_callback_redirects_with_valid_signed_state(self, mock_update_status):
+        payment = PaymentFactory(created_by=self.user)
+        callback_state = signing.dumps({"payment_id": str(payment.id)}, salt="checkout.stripe.redirect")
+        url = reverse("v1:checkout_payments:stripe_redirect")
+        response = self.client.get(url, {"state": callback_state})
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertEqual(response.url, reverse("v1:checkout:order_confirmation", kwargs={"pk": payment.order.id}))
+        mock_update_status.assert_called_once_with(payment)
 
 
 class CheckoutPaymentConfirmationViewTests(BaseAPITestCase):

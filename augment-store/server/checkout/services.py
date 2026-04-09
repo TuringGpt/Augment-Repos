@@ -12,6 +12,7 @@ class StripeService:
 
     def create_payment_session(self, payment: Payment):
         from django.conf import settings
+        from django.core import signing
         from django.urls import reverse
         from rest_framework.exceptions import ValidationError
 
@@ -46,11 +47,15 @@ class StripeService:
         ]
 
         redirect_url = reverse("v1:checkout_payments:stripe_redirect")
+        callback_state = signing.dumps(
+            {"payment_id": str(payment.id)},
+            salt="checkout.stripe.redirect",
+        )
         strip_session = stripe.checkout.Session.create(
             ui_mode="embedded",
             mode="payment",
             line_items=line_items,
-            return_url=f"{settings.APP_DOMAIN}{redirect_url}?payment_id={payment.id}",
+            return_url=f"{settings.APP_DOMAIN}{redirect_url}?state={callback_state}",
         )
 
         payment.stripe_session_id = strip_session.id
