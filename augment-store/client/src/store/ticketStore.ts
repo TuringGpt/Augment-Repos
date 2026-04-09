@@ -682,6 +682,16 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     set({ selectedTicket: null, fetchTicketError: null, isFetchingTicket: false, fetchingTicketId: null })
   },
 
+  /**
+   * Fetch ticket statistics for the current user
+   *
+   * Error Handling Contract:
+   * - On error: Sets `statsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `statsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @returns Promise resolving to stats data or null (on error or if superseded)
+   */
   getTicketStats: async (): Promise<TicketStatsResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
@@ -716,14 +726,24 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
         // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
         console.error('Failed to fetch ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch ticket statistics'))
-        throw error
       }
 
-      // Return null if request was superseded to prevent callers from handling stale errors
+      // Return null to indicate failure; error is available in statsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
       return null
     }
   },
 
+  /**
+   * Fetch admin ticket statistics (admin-only)
+   *
+   * Error Handling Contract:
+   * - On error: Sets `adminStatsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `adminStatsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @returns Promise resolving to admin stats data or null (on error or if superseded)
+   */
   getAdminTicketStats: async (): Promise<TicketStatsResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
@@ -758,14 +778,25 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
         // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
         console.error('Failed to fetch admin ticket stats:', sanitizeErrorForLogging(error, 'Failed to fetch admin ticket statistics'))
-        throw error
       }
 
-      // Return null if request was superseded to prevent callers from handling stale errors
+      // Return null to indicate failure; error is available in adminStatsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
       return null
     }
   },
 
+  /**
+   * Fetch comments for a specific ticket
+   *
+   * Error Handling Contract:
+   * - On error: Sets `fetchCommentsError` in state and returns `null` (does NOT throw)
+   * - Callers can safely call without try/catch; UI should render `fetchCommentsError` from state
+   * - Returns `null` if request was superseded by a newer request
+   *
+   * @param ticketId - The ID of the ticket to fetch comments for
+   * @returns Promise resolving to comment list response or null (on error or if superseded)
+   */
   getComments: async (ticketId: string): Promise<CommentListResponse | null> => {
     // Increment counter to track this request
     // This prevents race conditions when multiple calls are made rapidly
@@ -845,10 +876,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
         // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
         console.error('Failed to fetch comments:', sanitizeErrorForLogging(error, 'Failed to fetch comments'))
-        throw error
       }
 
-      // Return null for superseded requests to prevent callers from handling stale errors
+      // Return null to indicate failure; error is available in fetchCommentsError state for UI rendering
+      // Do NOT throw - this is a read operation and callers should not need try/catch
       return null
     }
   },
