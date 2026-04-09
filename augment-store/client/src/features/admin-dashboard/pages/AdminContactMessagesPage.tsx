@@ -360,15 +360,23 @@ const AdminContactMessagesPage = () => {
     // Mark bulk update as in-flight immediately (synchronous update)
     isBulkUpdateInFlightRef.current = true
 
+    // Capture the IDs being submitted to handle race conditions with selection changes
+    // This prevents clearing IDs that were selected/deselected during the async operation
+    const idsBeingUpdated = new Set(selectedInCurrentPage)
+
     try {
       // Call the bulkUpdateContacts store action to mark selected contacts as read
       await bulkUpdateContacts(selectedInCurrentPage, 'read')
 
       // Only update state if component is still mounted to prevent React warnings
       if (isMountedRef.current) {
-        // Clear selections after successful update
-        // The store will automatically refresh the contacts list
-        setSelectedContactIds(new Set())
+        // Clear only the IDs that were part of this bulk operation
+        // This preserves any selection changes made by the user during the async update
+        setSelectedContactIds((prev) => {
+          const newSelected = new Set(prev)
+          idsBeingUpdated.forEach((id) => newSelected.delete(id))
+          return newSelected
+        })
       }
     } catch (error) {
       // Error is already handled by the store and stored in bulkUpdateError
