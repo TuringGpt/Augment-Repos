@@ -215,6 +215,7 @@ class TicketTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         ticket_ids = [t["id"] for t in response.data.get("results", [])]
+        self.assertIn(str(self.ticket.id), ticket_ids)
         self.assertNotIn(str(other_ticket.id), ticket_ids)
 
     def test_admin_tickets_forbidden_for_non_admin(self):
