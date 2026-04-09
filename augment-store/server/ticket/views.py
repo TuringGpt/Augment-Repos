@@ -27,6 +27,12 @@ class TicketBaseView(AutoOptimizeMixin):
     queryset = Ticket.objects.all()
     auto_select_related = ['reporter', 'assignee']
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if getattr(self.request.user, "role", None) == "admin":
+            return queryset
+        return queryset.filter(Q(reporter=self.request.user) | Q(assignee=self.request.user)).distinct()
+
 class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
     serializer_class = TicketListSerializer
     cache_service_class = TicketCacheService
