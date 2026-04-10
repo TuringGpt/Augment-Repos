@@ -39,6 +39,30 @@ export const ticketService = {
   },
 
   /**
+   * Get all admin tickets with optional filtering
+   */
+  getAdminTickets: async (params?: TicketFilterParams): Promise<TicketListResponse> => {
+    const queryParams: Record<string, string | number> = {}
+
+    if (params?.page) {
+      queryParams.page = params.page
+    }
+    if (params?.status) {
+      queryParams.status = params.status
+    }
+    if (params?.priority) {
+      queryParams.priority = params.priority
+    }
+    if (params?.search) {
+      queryParams.search = params.search
+    }
+
+    return apiClient.get<TicketListResponse>(API_ENDPOINTS.SUPPORT.TICKETS.ADMIN, {
+      params: queryParams,
+    })
+  },
+
+  /**
    * Get a single ticket by ID
    */
   getTicketById: async (id: string): Promise<Ticket> => {
