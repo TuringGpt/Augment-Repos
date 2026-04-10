@@ -851,6 +851,14 @@ class StripePaymentCallbackTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         mock_update_status.assert_not_called()
 
+    @patch("checkout.views.StripeService.check_and_update_payment_status")
+    def test_callback_rejects_signed_state_with_missing_payment(self, mock_update_status):
+        callback_state = signing.dumps({"payment_id": "00000000-0000-0000-0000-000000000000"}, salt="checkout.stripe.redirect")
+        url = reverse("v1:checkout_payments:stripe_redirect")
+        response = self.client.get(url, {"state": callback_state})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        mock_update_status.assert_not_called()
+
 
 class CheckoutPaymentConfirmationViewTests(BaseAPITestCase):
 
