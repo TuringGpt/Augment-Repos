@@ -10,6 +10,7 @@ import type {
   CreateCommentRequest,
   UpdateCommentRequest,
   TicketFilterParams,
+  AdminTicketFilterParams,
   TicketStatsResponse,
 } from '@features/support/types'
 
@@ -40,21 +41,19 @@ export const ticketService = {
 
   /**
    * Get all admin tickets with optional filtering
+   *
+   * NOTE: The backend AdminTicketsView only supports filtering by user_id.
+   * It does NOT implement status, priority, or search filtering.
+   * Those filters are only available on the regular getTickets endpoint.
    */
-  getAdminTickets: async (params?: TicketFilterParams): Promise<TicketListResponse> => {
+  getAdminTickets: async (params?: AdminTicketFilterParams): Promise<TicketListResponse> => {
     const queryParams: Record<string, string | number> = {}
 
     if (params?.page) {
       queryParams.page = params.page
     }
-    if (params?.status) {
-      queryParams.status = params.status
-    }
-    if (params?.priority) {
-      queryParams.priority = params.priority
-    }
-    if (params?.search) {
-      queryParams.search = params.search
+    if (params?.user_id) {
+      queryParams.user_id = params.user_id
     }
 
     return apiClient.get<TicketListResponse>(API_ENDPOINTS.SUPPORT.TICKETS.ADMIN, {
