@@ -146,7 +146,7 @@ class StripePaymentCallback(APIView):
                 max_age=60 * 60 * 24,
             )
             payment_id = payload["payment_id"]
-            payment = Payment.objects.get(id=payment_id)
+            payment = get_object_or_404(Payment, id=payment_id)
         except (KeyError, TypeError, ValidationError, ValueError, BadSignature, SignatureExpired):
             raise Http404
 
