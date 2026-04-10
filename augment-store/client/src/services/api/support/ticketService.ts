@@ -21,7 +21,7 @@ export const ticketService = {
   getTickets: async (params?: TicketFilterParams): Promise<TicketListResponse> => {
     const queryParams: Record<string, string | number> = {}
 
-    if (params?.page) {
+    if (params?.page !== undefined && params?.page !== null) {
       queryParams.page = params.page
     }
     if (params?.status) {
@@ -49,7 +49,7 @@ export const ticketService = {
   getAdminTickets: async (params?: AdminTicketFilterParams): Promise<TicketListResponse> => {
     const queryParams: Record<string, string | number> = {}
 
-    if (params?.page) {
+    if (params?.page !== undefined && params?.page !== null) {
       queryParams.page = params.page
     }
     if (params?.user_id) {
