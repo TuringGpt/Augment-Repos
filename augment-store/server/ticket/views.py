@@ -29,9 +29,11 @@ class TicketBaseView(AutoOptimizeMixin):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if getattr(self.request.user, "role", None) == "admin":
+        if self.request.user.is_admin:
             return queryset
-        return queryset.filter(Q(reporter=self.request.user) | Q(assignee=self.request.user)).distinct()
+        return queryset.filter(
+            Q(reporter=self.request.user) | Q(assignee=self.request.user)
+        ).distinct()
 
 class TicketListView(CachedListMixin, TicketBaseView, ListAPIView):
     serializer_class = TicketListSerializer
@@ -134,6 +136,18 @@ class CommentBaseView(AutoOptimizeMixin):
     queryset = Comment.objects.all()
     auto_select_related = ['user', 'ticket']
 
+    def get_ticket_queryset(self):
+        queryset = Ticket.objects.all()
+        if self.request.user.is_admin:
+            return queryset
+        return queryset.filter(
+            Q(reporter=self.request.user) | Q(assignee=self.request.user)
+        ).distinct()
+
+    def get_accessible_ticket(self):
+        ticket_id = self.kwargs.get("pk")
+        return get_object_or_404(self.get_ticket_queryset(), id=ticket_id)
+
 class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
     serializer_class = CommentSerializer
     cache_service_class = CommentCacheService
@@ -149,21 +163,19 @@ class CommentListView(CachedListMixin, CommentBaseView, ListAPIView):
 
     def list(self, request, *args, **kwargs):
         # Validate ticket exists before serving cached data
-        ticket_id = self.kwargs.get("pk")
-        get_object_or_404(Ticket, id=ticket_id)
+        self.get_accessible_ticket()
         return super().list(request, *args, **kwargs)
     
     def get_queryset(self):
-        ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id).order_by('-created_at')
+        ticket = self.get_accessible_ticket()
+        return super().get_queryset().filter(ticket=ticket).order_by('-created_at')
     
 class CommentCreateView(CacheInvalidatorMixin, CommentBaseView, CreateAPIView):
     serializer_class = CommentCreateSerializer
     cache_service_class = CommentCacheService
     
     def perform_create(self, serializer):
-        ticket_id = self.kwargs.get("pk")
-        ticket = get_object_or_404(Ticket, id=ticket_id)
+        ticket = self.get_accessible_ticket()
         serializer.save(user=self.request.user, ticket=ticket)
         self.invalidate_cache()
         # Invalidate ticket list cache to update comment_count
@@ -177,7 +189,10 @@ class CommentUpdateView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        queryset = super().get_queryset().filter(ticket_id=ticket_id)
+        if self.request.user.is_admin:
+            return queryset
+        return queryset.filter(user=self.request.user)
 
 class TicketStatsView(GenericAPIView):
     """
@@ -242,7 +257,10 @@ class CommentDeleteView(CacheInvalidatorMixin, CommentBaseView, RetrieveUpdateDe
 
     def get_queryset(self):
         ticket_id = self.kwargs.get("pk")
-        return super().get_queryset().filter(ticket_id=ticket_id)
+        queryset = super().get_queryset().filter(ticket_id=ticket_id)
+        if self.request.user.is_admin:
+            return queryset
+        return queryset.filter(user=self.request.user)
 
 
 class AdminCommentListView(ListAPIView):

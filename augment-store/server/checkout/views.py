@@ -1,7 +1,9 @@
 import typing
 
 from django.conf import settings
+from django.core import signing
 from django.core.exceptions import ValidationError
+from django.core.signing import BadSignature, SignatureExpired
 from django.http import Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
@@ -136,12 +138,16 @@ class StripePaymentCallback(APIView):
     """
     
     def get(self, request, *args, **kwargs):
-        # Get the payment id from the query params
-        payment_id = request.GET.get("payment_id")
-
         try:
+            callback_state = request.GET["state"]
+            payload = signing.loads(
+                callback_state,
+                salt="checkout.stripe.redirect",
+                max_age=60 * 60 * 24,
+            )
+            payment_id = payload["payment_id"]
             payment = get_object_or_404(Payment, id=payment_id)
-        except (ValidationError, ValueError):
+        except (KeyError, TypeError, ValidationError, ValueError, BadSignature, SignatureExpired):
             raise Http404
 
         stripe_service = StripeService()
@@ -229,4 +235,3 @@ class AdminOrderItemListView(AutoOptimizeMixin, ListAPIView):
     auto_select_related = ['product', 'order', 'created_by']
     auto_prefetch_related = ['product__images']
     queryset = OrderItem.objects.all().order_by('-created_at', '-id')
-

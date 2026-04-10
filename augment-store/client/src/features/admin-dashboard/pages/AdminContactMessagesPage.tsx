@@ -59,7 +59,16 @@ const AdminContactMessagesPage = () => {
   const { user, isAuthenticated, hasHydrated, isLoading: authLoading } = useAuthStore()
 
   // Contact store
-  const { contacts: contactsData, isLoading, fetchError, getContacts, updateContact } = useContactStore()
+  const {
+    contacts: contactsData,
+    isLoading,
+    fetchError,
+    getContacts,
+    updateContact,
+    bulkUpdateContacts,
+    isBulkUpdating,
+    bulkUpdateError
+  } = useContactStore()
   const contacts = contactsData?.results || []
 
   // Drawer state
@@ -82,6 +91,9 @@ const AdminContactMessagesPage = () => {
   // Ref-based in-flight guard to prevent double-click race conditions
   // Unlike React state, refs update synchronously and can't be bypassed by rapid clicks
   const inFlightUpdatesRef = useRef<Set<string>>(new Set())
+  // Ref-based guard to prevent bulk updates from running concurrently
+  // Ensures only one bulk operation is active at a time
+  const isBulkUpdateInFlightRef = useRef<boolean>(false)
 
   // Get the drawer transition duration from theme
   // MUI Drawer uses 'leavingScreen' duration for exit transitions
@@ -208,7 +220,7 @@ const AdminContactMessagesPage = () => {
         await updateContact(contact.id, { status: 'read' })
       } catch (error) {
         // Error is already handled by the store, but we catch to prevent unhandled rejection
-        console.error('Failed to automatically mark contact as read - check updateError state for details', error)
+        console.error('Failed to automatically mark contact as read - check updateError state for details')
       } finally {
         // Remove from in-flight set (synchronous update)
         inFlightUpdatesRef.current.delete(contact.id)
@@ -331,11 +343,49 @@ const AdminContactMessagesPage = () => {
     }
   }
 
-  // Toolbar action handlers (empty handlers as requested)
-  const handleBulkMarkAsRead = () => {
+  // Toolbar action handlers
+  const handleBulkMarkAsRead = async () => {
     // Only operate on contacts selected in the current page to match the UI count
-    console.log('Bulk mark as read clicked for:', selectedInCurrentPage)
-    // Empty handler - no store actions called
+    if (selectedInCurrentPage.length === 0) {
+      return
+    }
+
+    // Ref-based guard: Check if a bulk update is already in-flight
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
+    // Mark bulk update as in-flight immediately (synchronous update)
+    isBulkUpdateInFlightRef.current = true
+
+    // Capture the IDs being submitted to handle race conditions with selection changes
+    // This prevents clearing IDs that were selected/deselected during the async operation
+    const idsBeingUpdated = new Set(selectedInCurrentPage)
+
+    try {
+      // Call the bulkUpdateContacts store action to mark selected contacts as read
+      await bulkUpdateContacts(selectedInCurrentPage, 'read')
+
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Clear only the IDs that were part of this bulk operation
+        // This preserves any selection changes made by the user during the async update
+        setSelectedContactIds((prev) => {
+          const newSelected = new Set(prev)
+          idsBeingUpdated.forEach((id) => newSelected.delete(id))
+          return newSelected
+        })
+      }
+    } catch (error) {
+      // Error is already handled by the store and stored in bulkUpdateError
+      // The store will set bulkUpdateError which could be displayed if needed
+      console.error('Failed to bulk mark contacts as read - check bulkUpdateError state for details')
+    } finally {
+      // Remove bulk update in-flight flag (synchronous update)
+      isBulkUpdateInFlightRef.current = false
+    }
   }
 
   const handleBulkMarkAsResolved = () => {
@@ -445,6 +495,13 @@ const AdminContactMessagesPage = () => {
       ) : contacts.length > 0 ? (
         /* Contact Messages Table */
         <Box>
+          {/* Bulk Update Error State */}
+          {bulkUpdateError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {bulkUpdateError}
+            </Alert>
+          )}
+
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2">
@@ -476,15 +533,18 @@ const AdminContactMessagesPage = () => {
                 {t('admin.contactMessagesPage.toolbar.messagesSelected', { count: selectedInCurrentPageCount })}
               </Typography>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsReadTooltip')}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<MarkEmailReadIcon />}
-                  onClick={handleBulkMarkAsRead}
-                  color="success"
-                >
-                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
-                </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={isBulkUpdating ? <CircularProgress size={16} /> : <MarkEmailReadIcon />}
+                    onClick={handleBulkMarkAsRead}
+                    disabled={isBulkUpdating}
+                    color="success"
+                  >
+                    {t('admin.contactMessagesPage.toolbar.bulkMarkAsRead')}
+                  </Button>
+                </span>
               </Tooltip>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsResolvedTooltip')}>
                 <Button
@@ -699,14 +759,14 @@ const AdminContactMessagesPage = () => {
             </Table>
           </TableContainer>
         </Box>
-      ) : (
+      ) : !fetchError ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
           <Typography color="text.secondary">
             {t('admin.contactMessagesPage.noMessages')}
           </Typography>
         </Paper>
-      )}
+      ) : null}
 
       {/* Contact Message Details Drawer */}
       <Drawer
