@@ -156,6 +156,11 @@ const AdminContactMessagesPage = () => {
 
   // Selection handlers
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent selection changes during bulk update to avoid race conditions
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
     if (event.target.checked) {
       // Select all contacts
       const allContactIds = new Set(contacts.map((contact) => contact.id))
@@ -167,6 +172,11 @@ const AdminContactMessagesPage = () => {
   }
 
   const handleSelectContact = (contactId: string) => {
+    // Prevent selection changes during bulk update to avoid race conditions
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
     setSelectedContactIds((prev) => {
       const newSelected = new Set(prev)
       if (newSelected.has(contactId)) {
@@ -621,6 +631,7 @@ const AdminContactMessagesPage = () => {
                       checked={isAllSelected}
                       indeterminate={isSomeSelected}
                       onChange={handleSelectAll}
+                      disabled={isBulkUpdating}
                       inputProps={{
                         'aria-label': t('admin.contactMessagesPage.selectAllContacts'),
                       }}
@@ -653,6 +664,7 @@ const AdminContactMessagesPage = () => {
                         <Checkbox
                           checked={isSelected}
                           onChange={() => handleSelectContact(contact.id)}
+                          disabled={isBulkUpdating}
                           inputProps={{
                             'aria-label': t('admin.contactMessagesPage.selectContact', { name: contact.name }),
                           }}
