@@ -147,7 +147,7 @@ class StripePaymentCallback(APIView):
             )
             payment_id = payload["payment_id"]
             payment = get_object_or_404(Payment, id=payment_id)
-        except (TypeError, ValidationError, ValueError, BadSignature, SignatureExpired):
+        except (KeyError, TypeError, ValidationError, ValueError, BadSignature, SignatureExpired):
             raise Http404
 
         stripe_service = StripeService()
