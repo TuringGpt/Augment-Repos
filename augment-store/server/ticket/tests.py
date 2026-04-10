@@ -117,6 +117,7 @@ class TicketTests(BaseAPITestCase):
         
         # Verify count updated in list view
         response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data)
         ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
         self.assertEqual(ticket_data["comment_count"], 2)
@@ -129,9 +130,18 @@ class TicketTests(BaseAPITestCase):
 
         # Verify count decreased in list view
         response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", response.data)
         ticket_data = next(item for item in results if item["id"] == str(self.ticket.id))
         self.assertEqual(ticket_data["comment_count"], 1)
+
+    def test_admin_can_view_unrelated_tickets_in_ticket_list(self):
+        unrelated_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:ticket_list")
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ticket_ids = [item["id"] for item in response.data.get("results", [])]
+        self.assertIn(str(unrelated_ticket.id), ticket_ids)
 
     def test_list_tickets_search_by_title(self):
         TicketFactory(title="Login Bug Report", assignee=self.user, reporter=self.user)
@@ -205,6 +215,7 @@ class TicketTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         ticket_ids = [t["id"] for t in response.data.get("results", [])]
+        self.assertIn(str(self.ticket.id), ticket_ids)
         self.assertNotIn(str(other_ticket.id), ticket_ids)
 
     def test_admin_tickets_forbidden_for_non_admin(self):
@@ -270,6 +281,13 @@ class TicketTests(BaseAPITestCase):
         self.assertIn("created_at", response.data)
         self.assertIn("updated_at", response.data)
 
+    def test_admin_can_view_unrelated_ticket_detail(self):
+        unrelated_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:ticket_detail", args=[unrelated_ticket.id])
+        response = self.admin_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], str(unrelated_ticket.id))
+
     def test_list_tickets_includes_created_at(self):
         url = reverse("v1:ticket:ticket_list")
         response = self.authenticated_client.get(url)
@@ -319,6 +337,19 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["results"][0]["content"], "Test Content")
         self.assertEqual(response.data["results"][0]["user"], self.user.id)
         self.assertEqual(response.data["results"][0]["ticket"], self.ticket.id)
+
+    def test_list_comments_for_unrelated_ticket_is_forbidden(self):
+        unrelated_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        CommentFactory(ticket=unrelated_ticket, user=self.user2, content="Private comment")
+        url = reverse("v1:ticket:comment_list", args=[unrelated_ticket.id])
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_comment_for_unrelated_ticket_is_forbidden(self):
+        unrelated_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:create_comment", args=[unrelated_ticket.id])
+        response = self.authenticated_client.post(url, {"content": "Not allowed"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_list_comments_excludes_is_deleted(self):
         url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
