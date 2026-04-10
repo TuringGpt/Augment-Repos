@@ -435,7 +435,8 @@ const AdminContactMessagesPage = () => {
     } catch (error) {
       // Error is already handled by the store and stored in bulkUpdateError
       // The store will set bulkUpdateError which could be displayed if needed
-      console.error('Failed to bulk mark contacts as resolved - check bulkUpdateError state for details', error)
+      // Log only the error message to avoid leaking sensitive information
+      console.error('Failed to bulk mark contacts as resolved:', error instanceof Error ? error.message : 'Unknown error', '- check bulkUpdateError state for details')
     } finally {
       // Remove bulk update in-flight flag (synchronous update)
       isBulkUpdateInFlightRef.current = false
