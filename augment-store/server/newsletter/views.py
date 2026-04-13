@@ -72,7 +72,7 @@ class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, Retri
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if getattr(self.request.user, "role", None) == "admin":
+        if self.request.user.is_admin:
             return queryset
         return queryset.filter(email__iexact=self.request.user.email)
 
@@ -121,8 +121,8 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
         if not email:
             raise ValidationError({'email': 'Email is required'})
 
-        queryset = Newsletter.objects.all()
-        if getattr(self.request.user, "role", None) != "admin":
+        queryset = self.get_queryset()
+        if not self.request.user.is_admin:
             queryset = queryset.filter(email__iexact=self.request.user.email)
         newsletter = get_object_or_404(queryset, email__iexact=email)
         return newsletter
