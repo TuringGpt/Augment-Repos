@@ -141,11 +141,12 @@ const AdminCurrencyPage = () => {
       setCurrencyToDelete(null)
     } catch (err) {
       // Handle superseded request errors separately - don't show error toast
-      // This occurs when overlapping deletes or clearCurrencies() happens mid-flight
+      // This occurs when clearCurrencies() is called mid-flight
       if (isSupersededError(err)) {
-        // Request was superseded by a newer request, silently close dialog
-        setDeleteDialogOpen(false)
-        setCurrencyToDelete(null)
+        // Request was superseded (likely by clearCurrencies during logout/navigation)
+        // Treat as no-op for UI state - if there was a newer delete request in-flight,
+        // it will handle UI updates when it completes. In practice, this is rare since
+        // the delete dialog prevents overlapping deletes, but we handle it for consistency.
         return
       }
 
@@ -219,16 +220,12 @@ const AdminCurrencyPage = () => {
       // Handle superseded request errors separately - don't show error toast
       // This occurs when overlapping creates or clearCurrencies() happens mid-flight
       if (isSupersededError(err)) {
-        // Request was superseded by a newer request, silently close drawer
-        // Note: We don't call handleCloseCreateDrawer() here because it would abort
-        // the current abort controller, which might belong to a newer create request
-        // that's still in-flight. Instead, just close the drawer and reset the form.
-        setIsCreateDrawerOpen(false)
-        setCreateFormData({
-          code: '',
-          name: '',
-          symbol: '',
-        })
+        // Request was superseded by a newer request - treat as no-op for UI state
+        // The newer in-flight request will handle all UI updates when it completes
+        // (either showing success message and closing drawer, or showing error and keeping drawer open)
+        // Closing the drawer or resetting the form here would interfere with the newer request:
+        // - If the newer request succeeds, the user won't see the success message
+        // - If the newer request fails, the user won't see the error or be able to retry
         return
       }
 
