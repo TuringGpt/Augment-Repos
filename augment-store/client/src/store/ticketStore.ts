@@ -722,13 +722,22 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       const newPage = get().page
       if (newPage !== oldPage) {
         try {
-          await get().fetchTickets({ page: newPage })
+          // Use isAdminMode to determine which fetch function to call
+          // This ensures we refetch using the same endpoint (admin or regular) that was used before deletion
+          // Without this check, deleting a ticket in admin mode would flip isAdminMode back to false
+          // and reload non-admin data instead of admin data
+          const currentState = get()
+          if (currentState.isAdminMode) {
+            await get().fetchAdminTickets({ page: newPage })
+          } else {
+            await get().fetchTickets({ page: newPage })
+          }
         } catch (fetchError) {
           // Log the fetch error but don't treat it as a delete failure
           // The ticket was already successfully deleted
           // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
           console.error('Failed to refetch tickets after deletion:', sanitizeErrorForLogging(fetchError, 'Failed to refetch tickets after deletion'))
-          // The fetch error will be handled by fetchTickets() and set in the store's error state
+          // The fetch error will be handled by fetchTickets()/fetchAdminTickets() and set in the store's error state
         }
       }
     } catch (error) {
