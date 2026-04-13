@@ -156,6 +156,11 @@ const AdminContactMessagesPage = () => {
 
   // Selection handlers
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Prevent selection changes during bulk update to avoid race conditions
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
     if (event.target.checked) {
       // Select all contacts
       const allContactIds = new Set(contacts.map((contact) => contact.id))
@@ -167,6 +172,11 @@ const AdminContactMessagesPage = () => {
   }
 
   const handleSelectContact = (contactId: string) => {
+    // Prevent selection changes during bulk update to avoid race conditions
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
     setSelectedContactIds((prev) => {
       const newSelected = new Set(prev)
       if (newSelected.has(contactId)) {
@@ -360,8 +370,7 @@ const AdminContactMessagesPage = () => {
     // Mark bulk update as in-flight immediately (synchronous update)
     isBulkUpdateInFlightRef.current = true
 
-    // Capture the IDs being submitted to handle race conditions with selection changes
-    // This prevents clearing IDs that were selected/deselected during the async operation
+    // Capture the IDs being submitted for this bulk operation
     const idsBeingUpdated = new Set(selectedInCurrentPage)
 
     try {
@@ -371,7 +380,8 @@ const AdminContactMessagesPage = () => {
       // Only update state if component is still mounted to prevent React warnings
       if (isMountedRef.current) {
         // Clear only the IDs that were part of this bulk operation
-        // This preserves any selection changes made by the user during the async update
+        // Note: Selection changes are blocked during bulk updates (handlers return early + checkboxes disabled)
+        // so idsBeingUpdated will always match the current selection, but this approach is future-proof
         setSelectedContactIds((prev) => {
           const newSelected = new Set(prev)
           idsBeingUpdated.forEach((id) => newSelected.delete(id))
@@ -388,10 +398,49 @@ const AdminContactMessagesPage = () => {
     }
   }
 
-  const handleBulkMarkAsResolved = () => {
+  const handleBulkMarkAsResolved = async () => {
     // Only operate on contacts selected in the current page to match the UI count
-    console.log('Bulk mark as resolved clicked for:', selectedInCurrentPage)
-    // Empty handler - no store actions called
+    if (selectedInCurrentPage.length === 0) {
+      return
+    }
+
+    // Ref-based guard: Check if a bulk update is already in-flight
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (isBulkUpdateInFlightRef.current) {
+      return
+    }
+
+    // Mark bulk update as in-flight immediately (synchronous update)
+    isBulkUpdateInFlightRef.current = true
+
+    // Capture the IDs being submitted for this bulk operation
+    const idsBeingUpdated = new Set(selectedInCurrentPage)
+
+    try {
+      // Call the bulkUpdateContacts store action to mark selected contacts as resolved
+      await bulkUpdateContacts(selectedInCurrentPage, 'resolved')
+
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // Clear only the IDs that were part of this bulk operation
+        // Note: Selection changes are blocked during bulk updates (handlers return early + checkboxes disabled)
+        // so idsBeingUpdated will always match the current selection, but this approach is future-proof
+        setSelectedContactIds((prev) => {
+          const newSelected = new Set(prev)
+          idsBeingUpdated.forEach((id) => newSelected.delete(id))
+          return newSelected
+        })
+      }
+    } catch (error) {
+      // Error is already handled by the store and stored in bulkUpdateError
+      // The store will set bulkUpdateError which could be displayed if needed
+      // Log only the error message to avoid leaking sensitive information
+      console.error('Failed to bulk mark contacts as resolved:', error instanceof Error ? error.message : 'Unknown error', '- check bulkUpdateError state for details')
+    } finally {
+      // Remove bulk update in-flight flag (synchronous update)
+      isBulkUpdateInFlightRef.current = false
+    }
   }
 
   const handleBulkDelete = () => {
@@ -547,15 +596,18 @@ const AdminContactMessagesPage = () => {
                 </span>
               </Tooltip>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkMarkAsResolvedTooltip')}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<CheckCircleIcon />}
-                  onClick={handleBulkMarkAsResolved}
-                  color="info"
-                >
-                  {t('admin.contactMessagesPage.toolbar.bulkMarkAsResolved')}
-                </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={isBulkUpdating ? <CircularProgress size={16} /> : <CheckCircleIcon />}
+                    onClick={handleBulkMarkAsResolved}
+                    disabled={isBulkUpdating}
+                    color="info"
+                  >
+                    {t('admin.contactMessagesPage.toolbar.bulkMarkAsResolved')}
+                  </Button>
+                </span>
               </Tooltip>
               <Tooltip title={t('admin.contactMessagesPage.toolbar.bulkDeleteTooltip')}>
                 <Button
@@ -580,6 +632,7 @@ const AdminContactMessagesPage = () => {
                       checked={isAllSelected}
                       indeterminate={isSomeSelected}
                       onChange={handleSelectAll}
+                      disabled={isBulkUpdating}
                       inputProps={{
                         'aria-label': t('admin.contactMessagesPage.selectAllContacts'),
                       }}
@@ -612,6 +665,7 @@ const AdminContactMessagesPage = () => {
                         <Checkbox
                           checked={isSelected}
                           onChange={() => handleSelectContact(contact.id)}
+                          disabled={isBulkUpdating}
                           inputProps={{
                             'aria-label': t('admin.contactMessagesPage.selectContact', { name: contact.name }),
                           }}
