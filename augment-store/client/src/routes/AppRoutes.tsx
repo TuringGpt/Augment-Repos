@@ -100,7 +100,6 @@ const AppRoutes = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/newsletters" element={<NewslettersPage />} />
           <Route path="/support/tickets/:id" element={<TicketDetailPage />} />
           <Route path="/support/create" element={<CreateTicketPage />} />
           <Route path="/support/tickets" element={<TicketsPage />} />
@@ -124,6 +123,7 @@ const AppRoutes = () => {
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/tickets" element={<AdminTicketsPage />} />
           <Route path="/admin/currency" element={<AdminCurrencyPage />} />
+          <Route path="/newsletters" element={<NewslettersPage />} />
         </Route>
       </Route>
       
