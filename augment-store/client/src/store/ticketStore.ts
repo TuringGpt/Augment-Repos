@@ -10,8 +10,10 @@ interface TicketState {
   totalPages: number
   isLoading: boolean
   error: string | null
-  lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
-  pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
+  lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page) for regular tickets
+  pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight) for regular tickets
+  lastAdminFilters: Omit<AdminTicketFilterParams, 'page'> // Store last successfully fetched filters for admin tickets
+  pendingAdminFilters: Omit<AdminTicketFilterParams, 'page'> // Store latest requested filters for admin tickets
   pendingPage: number // Store latest requested page (even if in-flight or failed)
   isAdminMode: boolean // Track whether we're using fetchAdminTickets (true) or fetchTickets (false)
 
@@ -184,8 +186,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   totalPages: 1,
   isLoading: false,
   error: null,
-  lastFilters: {}, // Initialize with empty filters
-  pendingFilters: {}, // Initialize with empty filters
+  lastFilters: {}, // Initialize with empty filters for regular tickets
+  pendingFilters: {}, // Initialize with empty filters for regular tickets
+  lastAdminFilters: {}, // Initialize with empty filters for admin tickets
+  pendingAdminFilters: {}, // Initialize with empty filters for admin tickets
   pendingPage: 1, // Initialize with page 1
   isAdminMode: false, // Initialize to regular mode (not admin)
   selectedTicket: null,
@@ -335,30 +339,30 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { page: _, ...filters } = params ?? {}
 
-    // Filter out undefined values to prevent them from overwriting lastFilters
+    // Filter out undefined values to prevent them from overwriting lastAdminFilters
     // Only keep keys with defined values
     const definedFilters = Object.fromEntries(
       Object.entries(filters).filter(([, value]) => value !== undefined)
     ) as Omit<AdminTicketFilterParams, 'page'>
 
-    // Only update lastFilters if new filter parameters are explicitly provided
+    // Only update lastAdminFilters if new filter parameters are explicitly provided
     // This prevents overwriting existing filters when only page is changed
     const hasNewFilters = Object.keys(definedFilters).length > 0
 
-    // When new filters are provided, merge them with lastFilters to allow partial updates
+    // When new filters are provided, merge them with lastAdminFilters to allow partial updates
     // This allows callers to update one filter without affecting others
-    const updatedFilters = hasNewFilters ? { ...state.lastFilters, ...definedFilters } : state.lastFilters
+    const updatedFilters = hasNewFilters ? { ...state.lastAdminFilters, ...definedFilters } : state.lastAdminFilters
 
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    // Update pendingFilters and pendingPage immediately to prevent race conditions in setPage()
+    // Update pendingAdminFilters and pendingPage immediately to prevent race conditions in setPage()
     // This ensures that if setPage() is called while this request is in-flight,
-    // it will use the latest requested filters (not stale lastFilters)
+    // it will use the latest requested filters (not stale lastAdminFilters)
     // Also update pendingPage so the Retry button can retry the correct page if this request fails
     // Set isAdminMode to true to indicate we're using the admin endpoint
-    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage, isAdminMode: true })
+    set({ isLoading: true, error: null, pendingAdminFilters: updatedFilters, pendingPage: currentPage, isAdminMode: true })
 
     try {
       const response = await ticketService.getAdminTickets({
@@ -411,19 +415,19 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         // When recursion limit is hit or page is in range, update state
         // Use validPage (clamped to [1, totalPages]) to maintain pagination invariants (page <= totalPages)
         // This prevents the store from ending up with page > totalPages (e.g., page=999, totalPages=10)
-        // Only update lastFilters on successful fetch to prevent failed filter states from being committed
+        // Only update lastAdminFilters on successful fetch to prevent failed filter states from being committed
         set({
           tickets: response.results,
           total: response.count,
           page: validPage,
           totalPages: calculatedTotalPages,
           isLoading: false,
-          lastFilters: updatedFilters,
+          lastAdminFilters: updatedFilters,
         })
       }
     } catch (error) {
       // Only update error state if this is still the latest request
-      // Do NOT update lastFilters here - keep the last known-good filter state
+      // Do NOT update lastAdminFilters here - keep the last known-good filter state
       if (requestId === fetchRequestCounter) {
         set({
           error: error instanceof Error ? error.message : 'Failed to fetch admin tickets',
@@ -445,8 +449,10 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       totalPages: 1,
       isLoading: false,
       error: null,
-      lastFilters: {}, // Reset filters when clearing tickets
-      pendingFilters: {}, // Reset pending filters when clearing tickets
+      lastFilters: {}, // Reset regular filters when clearing tickets
+      pendingFilters: {}, // Reset pending regular filters when clearing tickets
+      lastAdminFilters: {}, // Reset admin filters when clearing tickets
+      pendingAdminFilters: {}, // Reset pending admin filters when clearing tickets
       pendingPage: 1, // Reset pending page when clearing tickets
       isAdminMode: false, // Reset to regular mode when clearing tickets
     })
@@ -456,13 +462,13 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     const state = get()
     // Don't update page state here - let fetchTickets/fetchAdminTickets update it on success
     // This prevents page/tickets mismatch if the fetch fails
-    // Use pendingFilters (not lastFilters) to prevent race conditions:
-    // If a new-filter request is in-flight, pendingFilters contains the latest requested filters,
-    // while lastFilters still contains the old committed filters. Using pendingFilters ensures
+    // Use pendingFilters/pendingAdminFilters (not lastFilters/lastAdminFilters) to prevent race conditions:
+    // If a new-filter request is in-flight, pendingFilters/pendingAdminFilters contains the latest requested filters,
+    // while lastFilters/lastAdminFilters still contains the old committed filters. Using pending filters ensures
     // we page with the correct (latest) filters even if the previous request hasn't completed yet.
-    // Use isAdminMode to determine which fetch function to call (admin vs regular endpoint)
+    // Use isAdminMode to determine which fetch function and filter state to use
     if (state.isAdminMode) {
-      get().fetchAdminTickets({ ...state.pendingFilters, page })
+      get().fetchAdminTickets({ ...state.pendingAdminFilters, page })
     } else {
       get().fetchTickets({ ...state.pendingFilters, page })
     }
