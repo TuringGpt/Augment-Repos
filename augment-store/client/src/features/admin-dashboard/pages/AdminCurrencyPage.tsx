@@ -210,7 +210,6 @@ const AdminCurrencyPage = () => {
       // Handle abort errors - don't show error toast for cancelled requests
       // This occurs when the component unmounts or user navigates away
       if (isAbortError(err)) {
-        console.log('Currency create aborted')
         return
       }
 
