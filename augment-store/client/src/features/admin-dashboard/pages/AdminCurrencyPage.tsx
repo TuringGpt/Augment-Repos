@@ -169,8 +169,11 @@ const AdminCurrencyPage = () => {
   }
 
   const handleCloseCreateDrawer = () => {
-    // Prevent closing drawer during creation
-    if (isCreating) return
+    // Cancel any pending create request to allow users to dismiss the drawer
+    // even if a request is stalled, timed out, or experiencing network issues
+    if (createAbortControllerRef.current) {
+      createAbortControllerRef.current.abort()
+    }
 
     setIsCreateDrawerOpen(false)
     setCreateFormData({
@@ -536,7 +539,7 @@ const AdminCurrencyPage = () => {
           {/* Footer Actions */}
           <Divider />
           <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button variant="outlined" onClick={handleCloseCreateDrawer} disabled={isCreating}>
+            <Button variant="outlined" onClick={handleCloseCreateDrawer}>
               {t('admin.currencyPage.form.cancel', 'Cancel')}
             </Button>
             <Button
