@@ -13,6 +13,7 @@ interface TicketState {
   lastFilters: Omit<TicketFilterParams, 'page'> // Store last successfully fetched filters (excluding page)
   pendingFilters: Omit<TicketFilterParams, 'page'> // Store latest requested filters (even if in-flight)
   pendingPage: number // Store latest requested page (even if in-flight or failed)
+  isAdminMode: boolean // Track whether we're using fetchAdminTickets (true) or fetchTickets (false)
 
   // Single ticket detail
   selectedTicket: Ticket | null
@@ -186,6 +187,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
   lastFilters: {}, // Initialize with empty filters
   pendingFilters: {}, // Initialize with empty filters
   pendingPage: 1, // Initialize with page 1
+  isAdminMode: false, // Initialize to regular mode (not admin)
   selectedTicket: null,
   isFetchingTicket: false,
   fetchTicketError: null,
@@ -249,7 +251,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This ensures that if setPage() is called while this request is in-flight,
     // it will use the latest requested filters (not stale lastFilters)
     // Also update pendingPage so the Retry button can retry the correct page if this request fails
-    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage })
+    // Set isAdminMode to false to indicate we're using the regular endpoint
+    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage, isAdminMode: false })
 
     try {
       const response = await ticketService.getTickets({
@@ -354,7 +357,8 @@ export const useTicketStore = create<TicketState>((set, get) => ({
     // This ensures that if setPage() is called while this request is in-flight,
     // it will use the latest requested filters (not stale lastFilters)
     // Also update pendingPage so the Retry button can retry the correct page if this request fails
-    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage })
+    // Set isAdminMode to true to indicate we're using the admin endpoint
+    set({ isLoading: true, error: null, pendingFilters: updatedFilters, pendingPage: currentPage, isAdminMode: true })
 
     try {
       const response = await ticketService.getAdminTickets({
@@ -444,18 +448,24 @@ export const useTicketStore = create<TicketState>((set, get) => ({
       lastFilters: {}, // Reset filters when clearing tickets
       pendingFilters: {}, // Reset pending filters when clearing tickets
       pendingPage: 1, // Reset pending page when clearing tickets
+      isAdminMode: false, // Reset to regular mode when clearing tickets
     })
   },
 
   setPage: (page: number) => {
     const state = get()
-    // Don't update page state here - let fetchTickets update it on success
+    // Don't update page state here - let fetchTickets/fetchAdminTickets update it on success
     // This prevents page/tickets mismatch if the fetch fails
     // Use pendingFilters (not lastFilters) to prevent race conditions:
     // If a new-filter request is in-flight, pendingFilters contains the latest requested filters,
     // while lastFilters still contains the old committed filters. Using pendingFilters ensures
     // we page with the correct (latest) filters even if the previous request hasn't completed yet.
-    get().fetchTickets({ ...state.pendingFilters, page })
+    // Use isAdminMode to determine which fetch function to call (admin vs regular endpoint)
+    if (state.isAdminMode) {
+      get().fetchAdminTickets({ ...state.pendingFilters, page })
+    } else {
+      get().fetchTickets({ ...state.pendingFilters, page })
+    }
   },
 
   createTicket: async (data: CreateTicketRequest): Promise<Ticket> => {
