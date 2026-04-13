@@ -190,8 +190,16 @@ const AdminCurrencyPage = () => {
       // Create new abort controller for this request
       createAbortControllerRef.current = new AbortController()
 
+      // Normalize the payload by trimming all fields to keep validation and persisted data consistent
+      // This ensures symbols (and code/name) with leading/trailing whitespace are not persisted
+      const normalizedPayload = {
+        code: createFormData.code.trim(),
+        name: createFormData.name.trim(),
+        symbol: createFormData.symbol.trim(),
+      }
+
       // Call the store action to create the currency
-      await createCurrency(createFormData, createAbortControllerRef.current.signal)
+      await createCurrency(normalizedPayload, createAbortControllerRef.current.signal)
 
       // Show success message
       toast.success(t('admin.currencyPage.createSuccess', 'Currency created successfully'))
