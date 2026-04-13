@@ -35,6 +35,11 @@ def _invalidate_status_cache(email):
         service.delete(cache_key)
 
 
+def _normalize_email(email):
+    """Normalize email values used for case-insensitive ownership checks."""
+    return (email or "").strip().lower()
+
+
 class BaseNewsletterView(AutoOptimizeMixin):
     serializer_class = NewsletterSerializer
     queryset = Newsletter.objects.all()
@@ -74,7 +79,7 @@ class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, Retri
         queryset = super().get_queryset()
         if self.request.user.is_admin:
             return queryset
-        return queryset.filter(email__iexact=self.request.user.email)
+        return queryset.filter(email__iexact=_normalize_email(self.request.user.email))
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -123,7 +128,7 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
 
         queryset = self.get_queryset()
         if not self.request.user.is_admin:
-            queryset = queryset.filter(email__iexact=self.request.user.email)
+            queryset = queryset.filter(email__iexact=_normalize_email(self.request.user.email))
         newsletter = get_object_or_404(queryset, email__iexact=email)
         return newsletter
 
