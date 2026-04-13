@@ -39,7 +39,7 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
-import { isSupersededError } from '@utils/errorUtils'
+import { isSupersededError, isAbortError } from '@utils/errorUtils'
 import type { Currency } from '@services/api'
 
 /**
@@ -57,6 +57,8 @@ const AdminCurrencyPage = () => {
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+  // Track abort controller for create currency requests
+  const createAbortControllerRef = useRef<AbortController | null>(null)
 
   // Local state for delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -95,6 +97,10 @@ const AdminCurrencyPage = () => {
       // Cleanup: abort any pending requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
+      }
+      // Cleanup: abort any pending create requests
+      if (createAbortControllerRef.current) {
+        createAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,8 +182,16 @@ const AdminCurrencyPage = () => {
 
   const handleCreateCurrency = async () => {
     try {
+      // Cancel any pending create request
+      if (createAbortControllerRef.current) {
+        createAbortControllerRef.current.abort()
+      }
+
+      // Create new abort controller for this request
+      createAbortControllerRef.current = new AbortController()
+
       // Call the store action to create the currency
-      await createCurrency(createFormData)
+      await createCurrency(createFormData, createAbortControllerRef.current.signal)
 
       // Show success message
       toast.success(t('admin.currencyPage.createSuccess', 'Currency created successfully'))
@@ -185,6 +199,13 @@ const AdminCurrencyPage = () => {
       // Close drawer
       handleCloseCreateDrawer()
     } catch (err) {
+      // Handle abort errors - don't show error toast for cancelled requests
+      // This occurs when the component unmounts or user navigates away
+      if (isAbortError(err)) {
+        console.log('Currency create aborted')
+        return
+      }
+
       // Handle superseded request errors separately - don't show error toast
       // This occurs when overlapping creates or clearCurrencies() happens mid-flight
       if (isSupersededError(err)) {
