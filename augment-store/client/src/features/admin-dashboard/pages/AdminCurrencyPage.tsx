@@ -220,7 +220,15 @@ const AdminCurrencyPage = () => {
       // This occurs when overlapping creates or clearCurrencies() happens mid-flight
       if (isSupersededError(err)) {
         // Request was superseded by a newer request, silently close drawer
-        handleCloseCreateDrawer()
+        // Note: We don't call handleCloseCreateDrawer() here because it would abort
+        // the current abort controller, which might belong to a newer create request
+        // that's still in-flight. Instead, just close the drawer and reset the form.
+        setIsCreateDrawerOpen(false)
+        setCreateFormData({
+          code: '',
+          name: '',
+          symbol: '',
+        })
         return
       }
 
