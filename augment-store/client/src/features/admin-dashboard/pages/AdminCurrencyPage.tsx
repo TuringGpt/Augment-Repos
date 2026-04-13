@@ -53,7 +53,7 @@ const AdminCurrencyPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
-  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency } = useCurrencyStore()
+  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating } = useCurrencyStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -163,6 +163,9 @@ const AdminCurrencyPage = () => {
   }
 
   const handleCloseCreateDrawer = () => {
+    // Prevent closing drawer during creation
+    if (isCreating) return
+
     setIsCreateDrawerOpen(false)
     setCreateFormData({
       code: '',
@@ -173,8 +176,8 @@ const AdminCurrencyPage = () => {
 
   const handleCreateCurrency = async () => {
     try {
-      // Empty handler - simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      // Call the store action to create the currency
+      await createCurrency(createFormData)
 
       // Show success message
       toast.success(t('admin.currencyPage.createSuccess', 'Currency created successfully'))
@@ -182,8 +185,20 @@ const AdminCurrencyPage = () => {
       // Close drawer
       handleCloseCreateDrawer()
     } catch (err) {
+      // Handle superseded request errors separately - don't show error toast
+      // This occurs when overlapping creates or clearCurrencies() happens mid-flight
+      if (isSupersededError(err)) {
+        // Request was superseded by a newer request, silently close drawer
+        handleCloseCreateDrawer()
+        return
+      }
+
+      // For actual errors, show error toast and keep drawer open for retry
+      // The error message from the store is already user-friendly (parsed by parseApiError)
       console.error('Failed to create currency:', err)
-      toast.error(t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency'))
+      const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency')
+      toast.error(errorMessage)
+      // Keep drawer open on error so user can retry or cancel
     }
   }
 
@@ -493,16 +508,18 @@ const AdminCurrencyPage = () => {
           {/* Footer Actions */}
           <Divider />
           <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button variant="outlined" onClick={handleCloseCreateDrawer}>
+            <Button variant="outlined" onClick={handleCloseCreateDrawer} disabled={isCreating}>
               {t('admin.currencyPage.form.cancel', 'Cancel')}
             </Button>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreateCurrency}
-              disabled={!createFormData.code.trim() || !createFormData.name.trim() || !createFormData.symbol.trim()}
+              disabled={!createFormData.code.trim() || !createFormData.name.trim() || !createFormData.symbol.trim() || isCreating}
             >
-              {t('admin.currencyPage.form.create', 'Create')}
+              {isCreating
+                ? t('admin.currencyPage.form.creating', 'Creating...')
+                : t('admin.currencyPage.form.create', 'Create')}
             </Button>
           </Box>
         </Box>
