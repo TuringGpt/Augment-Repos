@@ -94,7 +94,8 @@ class NewsletterTests(BaseAPITestCase):
 
     def test_list_newsletter_response_fields(self):
         url = reverse("v1:newsletter")
-        self.authenticated_client.force_authenticate(user=self.user)
+        admin = UserFactory(role="admin", email="admin-list@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 200)
         results = response.data.get("results", [])
@@ -116,9 +117,7 @@ class NewsletterTests(BaseAPITestCase):
     def test_list_newsletter_authenticated(self):
         url = reverse("v1:newsletter")
         response = self.authenticated_client.get(url)
-        self.assertEqual(response.status_code, 200)
-        results = response.data.get("results", [])
-        self.assertGreaterEqual(len(results), 1)
+        self.assertEqual(response.status_code, 403)
 
     def test_newsletter_status_subscribed(self):
         url = reverse("v1:newsletter_status")
