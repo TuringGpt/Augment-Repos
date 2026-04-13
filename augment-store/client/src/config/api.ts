@@ -95,6 +95,7 @@ export const API_ENDPOINTS = {
   SUPPORT: {
     TICKETS: {
       LIST: '/support/tickets/',
+      ADMIN: '/support/tickets/admin/',
       CREATE: '/support/tickets/create/',
       DETAIL: (id: string) => `/support/tickets/${id}/`,
       UPDATE: (id: string) => `/support/tickets/${id}/update/`,

@@ -103,6 +103,14 @@ export interface TicketFilterParams {
   search?: string
 }
 
+// Admin ticket filter params
+// Backend AdminTicketsView only supports user_id filtering
+// It does NOT implement status, priority, or search filtering
+export interface AdminTicketFilterParams {
+  user_id?: string
+  page?: number
+}
+
 // Ticket statistics response
 // Matches the backend response from /support/tickets/stats/
 // Backend returns status counts (not priority counts)
