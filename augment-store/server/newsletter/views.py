@@ -70,6 +70,12 @@ class UnsubscribeNewsletterView(CacheInvalidatorMixin, BaseNewsletterView, Retri
     permission_classes = [IsAuthenticated]
     cache_service_class = NewsletterCacheService
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if getattr(self.request.user, "role", None) == "admin":
+            return queryset
+        return queryset.filter(email__iexact=self.request.user.email)
+
     def perform_update(self, serializer):
         instance = serializer.save()
         self.invalidate_cache()
@@ -115,7 +121,10 @@ class UnsubscribeNewsletterByEmailView(CacheInvalidatorMixin, BaseNewsletterView
         if not email:
             raise ValidationError({'email': 'Email is required'})
 
-        newsletter = get_object_or_404(Newsletter, email__iexact=email)
+        queryset = Newsletter.objects.all()
+        if getattr(self.request.user, "role", None) != "admin":
+            queryset = queryset.filter(email__iexact=self.request.user.email)
+        newsletter = get_object_or_404(queryset, email__iexact=email)
         return newsletter
 
     def perform_update(self, serializer):
