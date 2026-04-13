@@ -101,6 +101,12 @@ class TicketTests(BaseAPITestCase):
         results = response.data.get("results", [])
         self.assertGreaterEqual(len(results), 1)
 
+    def test_list_tickets_excludes_unrelated_users_tickets(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        response = self.authenticated_client.get(reverse("v1:ticket:ticket_list"))
+        ticket_ids = [ticket["id"] for ticket in response.data.get("results", [])]
+        self.assertNotIn(str(other_ticket.id), ticket_ids)
+
     def test_ticket_list_comment_count(self):
         url = reverse("v1:ticket:ticket_list")
         # Initial check - should have 1 comment from setUp
@@ -272,6 +278,11 @@ class TicketTests(BaseAPITestCase):
         self.assertEqual(response.data["priority"], Ticket.Priority.HIGH)  
         self.assertEqual(response.data["assignee"], self.user.id)  
         self.assertEqual(response.data["reporter"], self.user.id)  
+
+    def test_ticket_detail_for_unrelated_ticket_returns_not_found(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        response = self.authenticated_client.get(reverse("v1:ticket:ticket_detail", args=[other_ticket.id]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_ticket_detail_excludes_is_deleted(self):
         url = reverse("v1:ticket:ticket_detail", args=[self.ticket.id])
