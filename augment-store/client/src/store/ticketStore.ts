@@ -358,7 +358,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
 
     try {
       const response = await ticketService.getAdminTickets({
-        ...definedFilters,
+        ...updatedFilters,
         page: currentPage,
       })
 
@@ -401,7 +401,7 @@ export const useTicketStore = create<TicketState>((set, get) => ({
         // If the requested page was out of range and we have tickets, refetch the valid page
         // Use recursion depth limit to prevent excessive sequential requests for far-out pages
         if (validPage !== currentPage && calculatedTotalPages > 0 && recursionDepth < MAX_RECURSION_DEPTH) {
-          return await get().fetchAdminTickets({ ...definedFilters, page: validPage }, recursionDepth + 1)
+          return await get().fetchAdminTickets({ ...updatedFilters, page: validPage }, recursionDepth + 1)
         }
 
         // When recursion limit is hit or page is in range, update state
