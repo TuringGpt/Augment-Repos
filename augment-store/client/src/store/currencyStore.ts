@@ -292,13 +292,12 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Also clear isCreating to prevent UI from being stuck in creating state
         // When we increment createRequestCounter, any in-flight createCurrency() will be invalidated
         // and won't clear isCreating (see line 132-156), potentially leaving the UI stuck
-        set({ isLoading: false, isCreating: false })
 
         // Filter out locally-deleted currencies to prevent race conditions
         // This prevents stale refetched data from reintroducing deleted currencies
         // when a deleteCurrency call completes while this updateCurrency was in-flight
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, error: null })
+        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, isLoading: false, isCreating: false, error: null })
       } else {
         // Only reset isUpdating state if this is still the latest request
         // This prevents an older request from clearing isUpdating while a newer updateCurrency() is still in-flight
