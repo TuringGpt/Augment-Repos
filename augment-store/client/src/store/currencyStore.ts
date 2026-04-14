@@ -136,6 +136,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Note: We don't check if fetchRequestCounter changed because a fetch that started during
         // the create (after we started but before we refetched) could still return stale data
         fetchRequestCounter += 1
+        // Invalidate ALL in-flight updateCurrency() requests that started before this refetch completed
+        // This prevents cross-mutation race conditions where a slow create that started earlier
+        // can overwrite the store after a newer update has applied, potentially reverting updated fields
+        updateRequestCounter += 1
         // Clear isLoading to prevent UI from being stuck in loading state
         // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
         // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
@@ -274,6 +278,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // Note: We don't check if fetchRequestCounter changed because a fetch that started during
         // the update (after we started but before we refetched) could still return stale data
         fetchRequestCounter += 1
+        // Invalidate ALL in-flight createCurrency() requests that started before this refetch completed
+        // This prevents cross-mutation race conditions where a slow update that started earlier
+        // can overwrite the store after a newer create has applied, potentially reverting created fields
+        createRequestCounter += 1
         // Clear isLoading to prevent UI from being stuck in loading state
         // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
         // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
