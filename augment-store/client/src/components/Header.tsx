@@ -209,13 +209,15 @@ const Header = () => {
                     <ListItemText>{t('nav.wishlist')}</ListItemText>
                   </MenuItem>
 
-                  {/* Newsletter */}
-                  <MenuItem onClick={() => handleProfileNavigation('/newsletters')}>
-                    <ListItemIcon>
-                      <Email fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText>{t('footer.newsletter')}</ListItemText>
-                  </MenuItem>
+                  {/* Newsletter - only visible for admin users */}
+                  {user?.role === 'admin' && (
+                    <MenuItem onClick={() => handleProfileNavigation('/newsletters')}>
+                      <ListItemIcon>
+                        <Email fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText>{t('footer.newsletter')}</ListItemText>
+                    </MenuItem>
+                  )}
 
                   {/* Admin Dashboard - Only visible for admin users */}
                   {user?.role === 'admin' && (

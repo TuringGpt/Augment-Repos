@@ -45,7 +45,7 @@ class BaseNewsletterView(AutoOptimizeMixin):
 
 class NewsletterView(CachedListMixin, BaseNewsletterView, ListAPIView):
     serializer_class = NewsletterSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, hasAdminRole]
     cache_service_class = NewsletterCacheService
     cache_ttl = 60 * 60
 
