@@ -257,10 +257,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // preventing invalidation of newer fetches that started after this update began
     const fetchCounterAtUpdateStart = fetchRequestCounter
 
-    // Capture the current deleteRequestCounter at the start of this update
-    // This allows us to detect if a deleteCurrency() call occurred while this update was in-flight
-    // preventing us from re-introducing a deleted currency in the refetched list
-    const deleteCounterAtUpdateStart = deleteRequestCounter
+
 
     set({ isUpdating: true, updateError: null })
 
@@ -282,17 +279,18 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // This check protects against race conditions where clearCurrencies() or a newer
       // updateCurrency() call invalidates this request while in-flight
       if (requestId === updateRequestCounter) {
-        // Check if a deleteCurrency() call occurred while this update was in-flight
-        // If so, this check prevents us from re-introducing the deleted currency via the refetched list
-        // Note: deleteCurrency() bumps deleteRequestCounter (not updateRequestCounter)
-        if (deleteRequestCounter !== deleteCounterAtUpdateStart) {
-          // A delete occurred while this update was in-flight
+        // Check if the currency being updated was successfully deleted while this update was in-flight
+        // Only check locallyDeletedCurrencyIds (which contains IDs of successfully deleted currencies)
+        // instead of deleteRequestCounter (which increments when delete starts, even if it later fails)
+        // This prevents skipping the update when a delete fails, ensuring the store stays up-to-date
+        if (locallyDeletedCurrencyIds.has(id)) {
+          // The currency was successfully deleted while this update was in-flight
           // Only reset isUpdating state if this is still the latest request
           // This prevents an older request from clearing isUpdating while a newer updateCurrency() is still in-flight
           if (requestId === updateRequestCounter) {
             set({ isUpdating: false })
           }
-          // Throw error to signal that this request was invalidated by a delete
+          // Throw error to signal that this request was invalidated by a successful delete
           // This prevents re-introducing a deleted currency and avoids showing success toasts
           throw new SupersededRequestError('Currency update was invalidated by a concurrent deletion')
         }
