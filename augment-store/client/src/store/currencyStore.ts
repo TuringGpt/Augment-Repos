@@ -110,11 +110,6 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     createRequestCounter += 1
     const requestId = createRequestCounter
 
-    // Capture the current fetchRequestCounter at the start of this create
-    // This allows us to invalidate only fetchCurrencies() calls that started BEFORE this create
-    // preventing invalidation of newer fetches that started after this create began
-    const fetchCounterAtCreateStart = fetchRequestCounter
-
     // Capture the current deleteRequestCounter at the start of this create
     // This allows us to detect if a deleteCurrency() call occurred while this create was in-flight
     // preventing us from re-introducing a deleted currency in the refetched list
@@ -155,18 +150,17 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
           throw new SupersededRequestError('Currency creation was invalidated by a concurrent deletion')
         }
 
-        // Invalidate any in-flight fetchCurrencies() requests that started BEFORE this create
+        // Invalidate ALL in-flight fetchCurrencies() requests that started before this refetch completed
+        // This includes fetches that started before AND during this create operation
         // to prevent them from overwriting the just-created currency list with stale data
-        // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
-        // This prevents invalidating user-triggered refreshes that started after this create
-        if (fetchRequestCounter === fetchCounterAtCreateStart) {
-          fetchRequestCounter += 1
-          // Clear isLoading to prevent UI from being stuck in loading state
-          // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
-          // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
-          // with disabled refresh button
-          set({ isLoading: false })
-        }
+        // Note: We don't check if fetchRequestCounter changed because a fetch that started during
+        // the create (after we started but before we refetched) could still return stale data
+        fetchRequestCounter += 1
+        // Clear isLoading to prevent UI from being stuck in loading state
+        // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
+        // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
+        // with disabled refresh button
+        set({ isLoading: false })
 
         // Filter out locally-deleted currencies to prevent race conditions
         // This prevents stale refetched data from reintroducing deleted currencies
@@ -252,11 +246,6 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     updateRequestCounter += 1
     const requestId = updateRequestCounter
 
-    // Capture the current fetchRequestCounter at the start of this update
-    // This allows us to invalidate only fetchCurrencies() calls that started BEFORE this update
-    // preventing invalidation of newer fetches that started after this update began
-    const fetchCounterAtUpdateStart = fetchRequestCounter
-
 
 
     set({ isUpdating: true, updateError: null })
@@ -297,18 +286,17 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
           throw new SupersededRequestError('Currency update was invalidated by a concurrent deletion')
         }
 
-        // Invalidate any in-flight fetchCurrencies() requests that started BEFORE this update
-        // to prevent them from overwriting the just-updated currency list with stale data
-        // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
-        // This prevents invalidating user-triggered refreshes that started after this update
-        if (fetchRequestCounter === fetchCounterAtUpdateStart) {
-          fetchRequestCounter += 1
-          // Clear isLoading to prevent UI from being stuck in loading state
-          // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
-          // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
-          // with disabled refresh button
-          set({ isLoading: false })
-        }
+        // Invalidate ALL in-flight fetchCurrencies() requests that started before this refetch completed
+        // This includes fetches that started before AND during this update operation
+        // to prevent them from overwriting the just-updated currency list with stale pre-update data
+        // Note: We don't check if fetchRequestCounter changed because a fetch that started during
+        // the update (after we started but before we refetched) could still return stale data
+        fetchRequestCounter += 1
+        // Clear isLoading to prevent UI from being stuck in loading state
+        // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
+        // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
+        // with disabled refresh button
+        set({ isLoading: false })
 
         // Filter out locally-deleted currencies to prevent race conditions
         // This prevents stale refetched data from reintroducing deleted currencies
