@@ -43,6 +43,7 @@ import { useAuthStore } from '@store/authStore'
 import { useToast } from '@hooks/useToast'
 import { useTranslation } from '@hooks/useTranslation'
 import { escapeHtml } from '@utils/validators'
+import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 const TicketsPage = () => {
   const navigate = useNavigate()
@@ -137,7 +138,8 @@ const TicketsPage = () => {
       setDeleteDialogOpen(false)
       setTicketToDelete(null)
     } catch (err) {
-      console.error('Failed to delete ticket:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to delete ticket:', sanitizeErrorForLogging(err, 'Failed to delete ticket'))
       toast.error(t('admin.ticketsPage.deleteError'))
       // Keep dialog open on error so user can retry or cancel
     }
