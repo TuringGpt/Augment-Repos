@@ -39,7 +39,7 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
-import { isSupersededError } from '@utils/errorUtils'
+import { isSupersededError, isAbortError } from '@utils/errorUtils'
 import type { Currency } from '@services/api'
 
 /**
@@ -53,10 +53,12 @@ const AdminCurrencyPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
-  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency } = useCurrencyStore()
+  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating } = useCurrencyStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
+  // Track abort controller for create currency requests
+  const createAbortControllerRef = useRef<AbortController | null>(null)
 
   // Local state for delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -95,6 +97,10 @@ const AdminCurrencyPage = () => {
       // Cleanup: abort any pending requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
+      }
+      // Cleanup: abort any pending create requests
+      if (createAbortControllerRef.current) {
+        createAbortControllerRef.current.abort()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,11 +141,12 @@ const AdminCurrencyPage = () => {
       setCurrencyToDelete(null)
     } catch (err) {
       // Handle superseded request errors separately - don't show error toast
-      // This occurs when overlapping deletes or clearCurrencies() happens mid-flight
+      // This occurs when clearCurrencies() is called mid-flight
       if (isSupersededError(err)) {
-        // Request was superseded by a newer request, silently close dialog
-        setDeleteDialogOpen(false)
-        setCurrencyToDelete(null)
+        // Request was superseded (likely by clearCurrencies during logout/navigation)
+        // Treat as no-op for UI state - if there was a newer delete request in-flight,
+        // it will handle UI updates when it completes. In practice, this is rare since
+        // the delete dialog prevents overlapping deletes, but we handle it for consistency.
         return
       }
 
@@ -163,6 +170,12 @@ const AdminCurrencyPage = () => {
   }
 
   const handleCloseCreateDrawer = () => {
+    // Cancel any pending create request to allow users to dismiss the drawer
+    // even if a request is stalled, timed out, or experiencing network issues
+    if (createAbortControllerRef.current) {
+      createAbortControllerRef.current.abort()
+    }
+
     setIsCreateDrawerOpen(false)
     setCreateFormData({
       code: '',
@@ -173,8 +186,24 @@ const AdminCurrencyPage = () => {
 
   const handleCreateCurrency = async () => {
     try {
-      // Empty handler - simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      // Cancel any pending create request
+      if (createAbortControllerRef.current) {
+        createAbortControllerRef.current.abort()
+      }
+
+      // Create new abort controller for this request
+      createAbortControllerRef.current = new AbortController()
+
+      // Normalize the payload by trimming all fields to keep validation and persisted data consistent
+      // This ensures symbols (and code/name) with leading/trailing whitespace are not persisted
+      const normalizedPayload = {
+        code: createFormData.code.trim(),
+        name: createFormData.name.trim(),
+        symbol: createFormData.symbol.trim(),
+      }
+
+      // Call the store action to create the currency
+      await createCurrency(normalizedPayload, createAbortControllerRef.current.signal)
 
       // Show success message
       toast.success(t('admin.currencyPage.createSuccess', 'Currency created successfully'))
@@ -182,8 +211,30 @@ const AdminCurrencyPage = () => {
       // Close drawer
       handleCloseCreateDrawer()
     } catch (err) {
+      // Handle abort errors - don't show error toast for cancelled requests
+      // This occurs when the component unmounts or user navigates away
+      if (isAbortError(err)) {
+        return
+      }
+
+      // Handle superseded request errors separately - don't show error toast
+      // This occurs when overlapping creates or clearCurrencies() happens mid-flight
+      if (isSupersededError(err)) {
+        // Request was superseded by a newer request - treat as no-op for UI state
+        // The newer in-flight request will handle all UI updates when it completes
+        // (either showing success message and closing drawer, or showing error and keeping drawer open)
+        // Closing the drawer or resetting the form here would interfere with the newer request:
+        // - If the newer request succeeds, the user won't see the success message
+        // - If the newer request fails, the user won't see the error or be able to retry
+        return
+      }
+
+      // For actual errors, show error toast and keep drawer open for retry
+      // The error message from the store is already user-friendly (parsed by parseApiError)
       console.error('Failed to create currency:', err)
-      toast.error(t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency'))
+      const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency')
+      toast.error(errorMessage)
+      // Keep drawer open on error so user can retry or cancel
     }
   }
 
@@ -500,9 +551,11 @@ const AdminCurrencyPage = () => {
               variant="contained"
               startIcon={<AddIcon />}
               onClick={handleCreateCurrency}
-              disabled={!createFormData.code.trim() || !createFormData.name.trim() || !createFormData.symbol.trim()}
+              disabled={!createFormData.code.trim() || !createFormData.name.trim() || !createFormData.symbol.trim() || isCreating}
             >
-              {t('admin.currencyPage.form.create', 'Create')}
+              {isCreating
+                ? t('admin.currencyPage.form.creating', 'Creating...')
+                : t('admin.currencyPage.form.create', 'Create')}
             </Button>
           </Box>
         </Box>
