@@ -144,7 +144,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
         // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
         // with disabled refresh button
-        set({ isLoading: false })
+        // Also clear isUpdating to prevent UI from being stuck in updating state
+        // When we increment updateRequestCounter, any in-flight updateCurrency() will be invalidated
+        // and won't clear isUpdating (see line 256-295), potentially leaving the UI stuck
+        set({ isLoading: false, isUpdating: false })
 
         // Filter out locally-deleted currencies to prevent race conditions
         // This prevents stale refetched data from reintroducing deleted currencies
@@ -286,7 +289,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // When we increment fetchRequestCounter, any in-flight fetchCurrencies() will be invalidated
         // and won't clear isLoading (see line 56-58), potentially leaving the UI stuck
         // with disabled refresh button
-        set({ isLoading: false })
+        // Also clear isCreating to prevent UI from being stuck in creating state
+        // When we increment createRequestCounter, any in-flight createCurrency() will be invalidated
+        // and won't clear isCreating (see line 132-156), potentially leaving the UI stuck
+        set({ isLoading: false, isCreating: false })
 
         // Filter out locally-deleted currencies to prevent race conditions
         // This prevents stale refetched data from reintroducing deleted currencies
@@ -415,6 +421,10 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // This prevents invalidating user-triggered creates that started after this delete
       if (createRequestCounter === createCounterAtDeleteStart) {
         createRequestCounter += 1
+        // Clear isCreating to prevent UI from being stuck in creating state
+        // When we increment createRequestCounter, any in-flight createCurrency() will be invalidated
+        // and won't clear isCreating (see line 132-156), potentially leaving the UI stuck
+        set({ isCreating: false })
       }
 
       // ALWAYS remove the successfully deleted currency from local state
