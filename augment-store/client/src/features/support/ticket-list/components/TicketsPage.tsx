@@ -35,12 +35,14 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
 import type { TicketStatus, TicketPriority, TicketListItem } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 import { useTicketStore } from '@store/ticketStore'
 import { useAuthStore } from '@store/authStore'
 import { useToast } from '@hooks/useToast'
 import { useTranslation } from '@hooks/useTranslation'
+import { escapeHtml } from '@utils/validators'
 
 const TicketsPage = () => {
   const navigate = useNavigate()
@@ -382,12 +384,10 @@ const TicketsPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            <span
-              dangerouslySetInnerHTML={{
-                __html: t('admin.ticketsPage.deleteTicketConfirm', {
-                  ticketTitle: ticketToDelete?.title || '',
-                }),
-              }}
+            <Trans
+              i18nKey="admin.ticketsPage.deleteTicketConfirm"
+              values={{ ticketTitle: ticketToDelete?.title ? escapeHtml(ticketToDelete.title) : '' }}
+              components={{ strong: <strong /> }}
             />
           </DialogContentText>
           <DialogContentText sx={{ mt: 2, color: 'error.main' }}>
