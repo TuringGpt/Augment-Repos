@@ -16,7 +16,7 @@ interface CurrencyState {
   // Actions
   fetchCurrencies: (signal?: AbortSignal) => Promise<void>
   createCurrency: (data: CreateCurrencyRequest, signal?: AbortSignal) => Promise<void>
-  updateCurrency: (id: string, data: UpdateCurrencyRequest, signal?: AbortSignal) => Promise<void>
+  updateCurrency: (id: string, data: UpdateCurrencyRequest) => Promise<void>
   deleteCurrency: (id: string) => Promise<void>
   setCurrencies: (currencies: Currency[]) => void
   setLoading: (isLoading: boolean) => void
@@ -244,7 +244,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     }
   },
 
-  updateCurrency: async (id: string, data: UpdateCurrencyRequest, signal?: AbortSignal) => {
+  updateCurrency: async (id: string, data: UpdateCurrencyRequest) => {
     // Use separate isUpdating/updateError state to avoid race conditions with fetchCurrencies
     // This prevents updateCurrency from clearing error or setting isLoading to false
     // while a fetchCurrencies request is still in-flight
@@ -266,14 +266,16 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       const { currencyService } = await import('@services/api')
 
       // Update the currency
-      // Note: updateCurrency API doesn't support AbortSignal yet
+      // Note: updateCurrency API doesn't support AbortSignal, so we cannot abort the update itself
       await currencyService.updateCurrency(id, data)
 
       // Refetch currencies to get the updated list with the modified currency
       // Note: The update endpoint returns only basic fields (code, name, symbol)
       // without id, created_at, and updated_at, so we need to refetch to get the complete data
-      // Pass the AbortSignal to allow cancellation of the refetch request
-      const currencies = await currencyService.getCurrencies(signal)
+      // Don't pass AbortSignal to refetch because the update itself cannot be aborted
+      // If we allowed aborting the refetch after a successful update, callers would
+      // incorrectly treat the successful update as failed/cancelled
+      const currencies = await currencyService.getCurrencies()
 
       // Only update state if this is still the latest request
       // This check protects against race conditions where clearCurrencies() or a newer
