@@ -141,8 +141,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // createCurrency() call invalidates this request while in-flight
       if (requestId === createRequestCounter) {
         // Check if a deleteCurrency() call occurred while this create was in-flight
-        // If so, the delete invalidated createRequestCounter, so this check prevents us from
-        // re-introducing the deleted currency via the refetched list
+        // If so, this check prevents us from re-introducing the deleted currency via the refetched list
+        // Note: deleteCurrency() bumps deleteRequestCounter (not createRequestCounter)
         if (deleteRequestCounter !== deleteCounterAtCreateStart) {
           // A delete occurred while this create was in-flight
           // Only reset isCreating state if this is still the latest request
@@ -283,8 +283,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // updateCurrency() call invalidates this request while in-flight
       if (requestId === updateRequestCounter) {
         // Check if a deleteCurrency() call occurred while this update was in-flight
-        // If so, the delete invalidated updateRequestCounter, so this check prevents us from
-        // re-introducing the deleted currency via the refetched list
+        // If so, this check prevents us from re-introducing the deleted currency via the refetched list
+        // Note: deleteCurrency() bumps deleteRequestCounter (not updateRequestCounter)
         if (deleteRequestCounter !== deleteCounterAtUpdateStart) {
           // A delete occurred while this update was in-flight
           // Only reset isUpdating state if this is still the latest request
