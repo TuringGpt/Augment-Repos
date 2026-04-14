@@ -282,6 +282,8 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
             set({ isUpdating: false })
           }
           // Throw error to signal that this request was invalidated by a successful delete
+          // The invalidation was detected via locallyDeletedCurrencyIds (populated when deleteCurrency succeeds)
+          // Note: deleteCurrency() doesn't increment updateRequestCounter, it only modifies locallyDeletedCurrencyIds
           // This prevents re-introducing a deleted currency and avoids showing success toasts
           throw new SupersededRequestError('Currency update was invalidated by a concurrent deletion')
         }
