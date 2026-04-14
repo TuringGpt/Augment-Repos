@@ -20,19 +20,36 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Search as SearchIcon,
   ConfirmationNumber as TicketIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import type { TicketStatus, TicketPriority } from '@features/support/types'
+import type { TicketStatus, TicketPriority, TicketListItem } from '@features/support/types'
 import { ROUTES } from '@constants/index'
 import { useTicketStore } from '@store/ticketStore'
+import { useAuthStore } from '@store/authStore'
+import { useToast } from '@hooks/useToast'
+import { useTranslation } from '@hooks/useTranslation'
 
 const TicketsPage = () => {
   const navigate = useNavigate()
+  const toast = useToast()
+  const { t } = useTranslation()
+
+  // Use auth store to check if user is admin
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === 'admin'
 
   // Use ticket store
   const {
@@ -44,12 +61,18 @@ const TicketsPage = () => {
     error,
     fetchTickets,
     setPage: setStorePage,
+    deleteTicket,
+    isDeleting,
   } = useTicketStore()
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [ticketToDelete, setTicketToDelete] = useState<TicketListItem | null>(null)
 
   // Load tickets on mount and when filters change
   useEffect(() => {
@@ -80,6 +103,42 @@ const TicketsPage = () => {
       priority: priorityFilter,
       search: searchQuery,
     })
+  }
+
+  // Delete handlers
+  const handleDeleteClick = (event: React.MouseEvent, ticket: TicketListItem) => {
+    // Stop propagation to prevent row click navigation
+    event.stopPropagation()
+    setTicketToDelete(ticket)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    // Prevent closing dialog during deletion
+    if (isDeleting) return
+
+    setDeleteDialogOpen(false)
+    setTicketToDelete(null)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!ticketToDelete) return
+
+    try {
+      // Call the store action to delete the ticket
+      await deleteTicket(ticketToDelete.id)
+
+      // Show success message
+      toast.success(t('admin.ticketsPage.deleteSuccess'))
+
+      // Close dialog
+      setDeleteDialogOpen(false)
+      setTicketToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete ticket:', err)
+      toast.error(t('admin.ticketsPage.deleteError'))
+      // Keep dialog open on error so user can retry or cancel
+    }
   }
 
   const getStatusColor = (status: TicketStatus) => {
@@ -233,6 +292,11 @@ const TicketsPage = () => {
                   <TableCell>
                     <Typography fontWeight="bold">Priority</Typography>
                   </TableCell>
+                  {isAdmin && (
+                    <TableCell align="center">
+                      <Typography fontWeight="bold">{t('admin.ticketsPage.table.actions')}</Typography>
+                    </TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -269,6 +333,23 @@ const TicketsPage = () => {
                         size="small"
                       />
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell align="center">
+                        <Tooltip title={t('admin.ticketsPage.deleteTicket')}>
+                          <span onClick={(e) => e.stopPropagation()}>
+                            <IconButton
+                              onClick={(e) => handleDeleteClick(e, ticket)}
+                              color="error"
+                              size="small"
+                              disabled={isDeleting}
+                              aria-label={t('admin.ticketsPage.deleteTicket')}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -288,6 +369,45 @@ const TicketsPage = () => {
           )}
         </>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          {t('admin.ticketsPage.deleteTicket')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t('admin.ticketsPage.deleteTicketConfirm', {
+                  ticketTitle: ticketToDelete?.title || '',
+                }),
+              }}
+            />
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 2, color: 'error.main' }}>
+            {t('admin.ticketsPage.deleteTicketWarning')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary" disabled={isDeleting} autoFocus>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? t('admin.ticketsPage.deleting') : t('common.delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }
