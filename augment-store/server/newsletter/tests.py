@@ -63,6 +63,23 @@ class NewsletterTests(BaseAPITestCase):
         self.newsletter.refresh_from_db()
         self.assertFalse(self.newsletter.is_active)
 
+    def test_unsubscribe_newsletter_other_user_forbidden(self):
+        other = NewsletterFactory(email="other@example.com")
+        url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(other.id)})
+        response = self.authenticated_client.patch(url)
+        self.assertEqual(response.status_code, 404)
+        other.refresh_from_db()
+        self.assertTrue(other.is_active)
+
+    def test_unsubscribe_newsletter_normalizes_authenticated_user_email(self):
+        self.user.email = "  TEST@Example.COM  "
+        self.user.save(update_fields=["email"])
+        url = reverse("v1:unsubscribe_newsletter", kwargs={"pk": str(self.newsletter_id)})
+        response = self.authenticated_client.patch(url)
+        self.assertEqual(response.status_code, 200)
+        self.newsletter.refresh_from_db()
+        self.assertFalse(self.newsletter.is_active)
+
     def test_unsubscribe_newsletter_by_email(self):
         url = reverse("v1:unsubscribe_newsletter_by_email")
         payload = {
@@ -86,6 +103,21 @@ class NewsletterTests(BaseAPITestCase):
         }
         response = self.authenticated_client.patch(url, payload)
         self.assertEqual(response.status_code, 404)
+
+    def test_unsubscribe_newsletter_by_email_other_user_forbidden(self):
+        NewsletterFactory(email="other@example.com")
+        url = reverse("v1:unsubscribe_newsletter_by_email")
+        response = self.authenticated_client.patch(url, {"email": "other@example.com"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_unsubscribe_newsletter_by_email_normalizes_authenticated_user_email(self):
+        self.user.email = "  TEST@Example.COM  "
+        self.user.save(update_fields=["email"])
+        url = reverse("v1:unsubscribe_newsletter_by_email")
+        response = self.authenticated_client.patch(url, {"email": "test@example.com"})
+        self.assertEqual(response.status_code, 200)
+        self.newsletter.refresh_from_db()
+        self.assertFalse(self.newsletter.is_active)
 
     def test_list_newsletter_unauthenticated(self):
         url = reverse("v1:newsletter")
