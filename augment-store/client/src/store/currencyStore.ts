@@ -110,11 +110,6 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     createRequestCounter += 1
     const requestId = createRequestCounter
 
-    // Capture the current deleteRequestCounter at the start of this create
-    // This allows us to detect if a deleteCurrency() call occurred while this create was in-flight
-    // preventing us from re-introducing a deleted currency in the refetched list
-    const deleteCounterAtCreateStart = deleteRequestCounter
-
     set({ isCreating: true, createError: null })
 
     try {
@@ -135,21 +130,6 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
       // This check protects against race conditions where clearCurrencies() or a newer
       // createCurrency() call invalidates this request while in-flight
       if (requestId === createRequestCounter) {
-        // Check if a deleteCurrency() call occurred while this create was in-flight
-        // If so, this check prevents us from re-introducing the deleted currency via the refetched list
-        // Note: deleteCurrency() bumps deleteRequestCounter (not createRequestCounter)
-        if (deleteRequestCounter !== deleteCounterAtCreateStart) {
-          // A delete occurred while this create was in-flight
-          // Only reset isCreating state if this is still the latest request
-          // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
-          if (requestId === createRequestCounter) {
-            set({ isCreating: false })
-          }
-          // Throw error to signal that this request was invalidated by a delete
-          // This prevents re-introducing a deleted currency and avoids showing success toasts
-          throw new SupersededRequestError('Currency creation was invalidated by a concurrent deletion')
-        }
-
         // Invalidate ALL in-flight fetchCurrencies() requests that started before this refetch completed
         // This includes fetches that started before AND during this create operation
         // to prevent them from overwriting the just-created currency list with stale data
