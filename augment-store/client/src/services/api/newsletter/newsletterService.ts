@@ -48,7 +48,10 @@ export interface UnsubscribeNewsletterByEmailResponse {
  * Newsletter item from API
  */
 export interface NewsletterAPI {
+  id: string
   email: string
+  is_active: boolean
+  created_at: string
 }
 
 /**
@@ -108,6 +111,38 @@ export const newsletterService = {
       }
     } catch (error) {
       console.error('Failed to fetch newsletters:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get all newsletters from admin endpoint
+   * Backend returns paginated response with count, next, previous, results
+   * Note: Backend has fixed page_size of 100 (configured in settings.py)
+   * The limit parameter is ignored by the backend's PageNumberPagination
+   * This endpoint returns ALL newsletters (both active and inactive)
+   * Requires admin authentication
+   */
+  getAdminNewsletters: async (page = 1): Promise<NewsletterListResponse> => {
+    try {
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
+      const response = await apiClient.get<PaginatedNewslettersAPI>(
+        API_ENDPOINTS.NEWSLETTER.ADMIN_LIST,
+        {
+          params: { page },
+        }
+      )
+
+      return {
+        newsletters: response.results,
+        total: response.count,
+        page,
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin newsletters:', error)
       throw error
     }
   },
