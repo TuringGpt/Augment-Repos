@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.test import TestCase
 from accounts.factory import UserFactory
 from products.factory import ProductBrandFactory, ProductFactory
@@ -117,7 +118,7 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         self.assertEqual(len(response.data['results']), 2)
 
     def test_merchant_orders_are_newest_first(self):
-        self.order.created_at = timezone.now() - timezone.timedelta(days=1)
+        self.order.created_at = timezone.now() - timedelta(days=1)
         self.order.save(update_fields=["created_at"])
         self.order_2.created_at = timezone.now()
         self.order_2.save(update_fields=["created_at"])
