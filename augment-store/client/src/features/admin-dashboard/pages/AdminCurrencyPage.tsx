@@ -523,7 +523,7 @@ const AdminCurrencyPage = () => {
             <IconButton
               onClick={handleCloseCreateDrawer}
               sx={{ color: 'white' }}
-              aria-label="Close create currency drawer"
+              aria-label={t('admin.currencyPage.closeCreateDrawer', 'Close create currency drawer')}
             >
               <CloseIcon />
             </IconButton>
@@ -640,7 +640,7 @@ const AdminCurrencyPage = () => {
             <IconButton
               onClick={handleCloseEditDrawer}
               sx={{ color: 'white' }}
-              aria-label="Close edit currency drawer"
+              aria-label={t('admin.currencyPage.closeEditDrawer', 'Close edit currency drawer')}
             >
               <CloseIcon />
             </IconButton>
