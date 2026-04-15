@@ -1376,7 +1376,9 @@
       "refresh": "Actualizar",
       "addCurrency": "Agregar Moneda",
       "createCurrency": "Crear Moneda",
+      "editCurrency": "Editar Moneda",
       "closeDrawer": "Cerrar cajón de crear moneda",
+      "closeEditDrawer": "Cerrar cajón de editar moneda",
       "wipBanner": "Esta página está actualmente en desarrollo. Las funciones completas de gestión de monedas estarán disponibles pronto.",
       "noCurrencies": "No hay monedas disponibles",
       "deleteCurrency": "Eliminar Moneda",
@@ -1407,7 +1409,8 @@
         "symbolHelper": "Ingrese el símbolo de la moneda",
         "cancel": "Cancelar",
         "create": "Crear",
-        "creating": "Creando..."
+        "creating": "Creando...",
+        "update": "Actualizar"
       }
     },
     "brandsPage": {
