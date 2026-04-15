@@ -122,6 +122,8 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         self.order.save(update_fields=["created_at"])
         self.order_2.created_at = timezone.now()
         self.order_2.save(update_fields=["created_at"])
+        from merchant.views import MerchantOrdersCacheService
+        MerchantOrdersCacheService().clear_namespace()
 
         merchant_client = self.authenticated_client
         merchant_client.force_authenticate(user=self.merchant)
