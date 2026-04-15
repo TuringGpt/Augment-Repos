@@ -10,6 +10,7 @@ from products.services import ProductBrandCacheService, ProductCacheService, Pro
 from django.core.cache import cache
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
+from django.utils import timezone
 # Create your tests here.
 class MerchantBrandListViewTests(TestCase):
     
@@ -114,6 +115,22 @@ class MerchantOrdersListViewTests(BaseAPITestCase):
         response = merchant_client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
+
+    def test_merchant_orders_are_newest_first(self):
+        self.order.created_at = timezone.now() - timezone.timedelta(days=1)
+        self.order.save(update_fields=["created_at"])
+        self.order_2.created_at = timezone.now()
+        self.order_2.save(update_fields=["created_at"])
+
+        merchant_client = self.authenticated_client
+        merchant_client.force_authenticate(user=self.merchant)
+        response = merchant_client.get(reverse("v1:merchant:merchant_order_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [item["id"] for item in response.data["results"]],
+            [str(self.order_2.id), str(self.order.id)],
+        )
 
     def test_merchant_authorization(self):
         merchant_client = self.authenticated_client
@@ -362,4 +379,3 @@ class AdminMerchantOrdersListViewTests(BaseAPITestCase):
         url = reverse("v1:merchant:admin_merchant_order_list")
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, 403)
-
