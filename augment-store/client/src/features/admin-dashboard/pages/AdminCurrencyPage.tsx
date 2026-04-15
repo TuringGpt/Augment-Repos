@@ -33,6 +33,7 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   Close as CloseIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
@@ -68,6 +69,15 @@ const AdminCurrencyPage = () => {
   // Local state for create drawer
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
   const [createFormData, setCreateFormData] = useState({
+    code: '',
+    name: '',
+    symbol: '',
+  })
+
+  // Local state for edit drawer
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null)
+  const [editFormData, setEditFormData] = useState({
     code: '',
     name: '',
     symbol: '',
@@ -238,6 +248,33 @@ const AdminCurrencyPage = () => {
     }
   }
 
+  // Edit drawer handlers
+  const handleEditClick = (currency: Currency) => {
+    setSelectedCurrency(currency)
+    setEditFormData({
+      code: currency.code,
+      name: currency.name,
+      symbol: currency.symbol,
+    })
+    setIsEditDrawerOpen(true)
+  }
+
+  const handleCloseEditDrawer = () => {
+    setIsEditDrawerOpen(false)
+    setSelectedCurrency(null)
+    setEditFormData({
+      code: '',
+      name: '',
+      symbol: '',
+    })
+  }
+
+  const handleEditCurrency = async () => {
+    // Empty submit handler - don't call any store actions
+    console.log('Edit currency submitted:', editFormData)
+    handleCloseEditDrawer()
+  }
+
   // Check if user is authenticated and is an admin
   if (!isAuthenticated) {
     return (
@@ -379,6 +416,16 @@ const AdminCurrencyPage = () => {
 
                   {/* Actions */}
                   <TableCell align="center">
+                    <Tooltip title={t('common.edit', 'Edit')}>
+                      <IconButton
+                        onClick={() => handleEditClick(currency)}
+                        color="primary"
+                        size="small"
+                        aria-label={t('common.edit', 'Edit')}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title={t('common.delete', 'Delete')}>
                       <IconButton
                         onClick={() => handleDeleteClick(currency)}
@@ -556,6 +603,121 @@ const AdminCurrencyPage = () => {
               {isCreating
                 ? t('admin.currencyPage.form.creating', 'Creating...')
                 : t('admin.currencyPage.form.create', 'Create')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Edit Currency Drawer */}
+      <Drawer
+        anchor="right"
+        open={isEditDrawerOpen}
+        onClose={handleCloseEditDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.currencyPage.editCurrency', 'Edit Currency')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseEditDrawer}
+              sx={{ color: 'white' }}
+              aria-label="Close edit currency drawer"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Form Content */}
+          <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+            <Grid container spacing={3}>
+              {/* Currency Code */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.code', 'Currency Code')}
+                  value={editFormData.code}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, code: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.codePlaceholder', 'e.g., USD')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.codeHelper',
+                    'Enter the 3-letter currency code'
+                  )}
+                />
+              </Grid>
+
+              {/* Currency Name */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.name', 'Currency Name')}
+                  value={editFormData.name}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, name: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.namePlaceholder', 'e.g., US Dollar')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.nameHelper',
+                    'Enter the full name of the currency'
+                  )}
+                />
+              </Grid>
+
+              {/* Currency Symbol */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('admin.currencyPage.form.symbol', 'Currency Symbol')}
+                  value={editFormData.symbol}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, symbol: e.target.value })
+                  }
+                  placeholder={t('admin.currencyPage.form.symbolPlaceholder', 'e.g., $')}
+                  required
+                  helperText={t(
+                    'admin.currencyPage.form.symbolHelper',
+                    'Enter the currency symbol'
+                  )}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button variant="outlined" onClick={handleCloseEditDrawer}>
+              {t('admin.currencyPage.form.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={handleEditCurrency}
+              disabled={!editFormData.code.trim() || !editFormData.name.trim() || !editFormData.symbol.trim()}
+            >
+              {t('admin.currencyPage.form.update', 'Update')}
             </Button>
           </Box>
         </Box>

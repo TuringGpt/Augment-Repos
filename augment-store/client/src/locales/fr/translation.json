@@ -1376,6 +1376,7 @@
       "refresh": "Actualiser",
       "addCurrency": "Ajouter une Devise",
       "createCurrency": "Créer une Devise",
+      "editCurrency": "Modifier la Devise",
       "closeDrawer": "Fermer le tiroir de création de devise",
       "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
       "noCurrencies": "Aucune devise disponible",
@@ -1407,7 +1408,8 @@
         "symbolHelper": "Entrez le symbole de la devise",
         "cancel": "Annuler",
         "create": "Créer",
-        "creating": "Création..."
+        "creating": "Création...",
+        "update": "Mettre à jour"
       }
     },
     "brandsPage": {

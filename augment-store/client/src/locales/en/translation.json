@@ -1376,6 +1376,7 @@
       "refresh": "Refresh",
       "addCurrency": "Add Currency",
       "createCurrency": "Create Currency",
+      "editCurrency": "Edit Currency",
       "closeDrawer": "Close create currency drawer",
       "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
       "noCurrencies": "No currencies available",
@@ -1407,7 +1408,8 @@
         "symbolHelper": "Enter the currency symbol",
         "cancel": "Cancel",
         "create": "Create",
-        "creating": "Creating..."
+        "creating": "Creating...",
+        "update": "Update"
       }
     },
     "brandsPage": {

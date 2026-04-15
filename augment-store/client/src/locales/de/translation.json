@@ -1376,6 +1376,7 @@
       "refresh": "Aktualisieren",
       "addCurrency": "Währung hinzufügen",
       "createCurrency": "Währung erstellen",
+      "editCurrency": "Währung bearbeiten",
       "closeDrawer": "Währungserstellungs-Drawer schließen",
       "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
       "noCurrencies": "Keine Währungen verfügbar",
@@ -1407,7 +1408,8 @@
         "symbolHelper": "Geben Sie das Währungssymbol ein",
         "cancel": "Abbrechen",
         "create": "Erstellen",
-        "creating": "Wird erstellt..."
+        "creating": "Wird erstellt...",
+        "update": "Aktualisieren"
       }
     },
     "brandsPage": {
