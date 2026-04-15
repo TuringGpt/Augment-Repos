@@ -1378,6 +1378,7 @@
       "createCurrency": "Währung erstellen",
       "editCurrency": "Währung bearbeiten",
       "closeDrawer": "Währungserstellungs-Drawer schließen",
+      "closeEditDrawer": "Währungsbearbeitungs-Drawer schließen",
       "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
       "noCurrencies": "Keine Währungen verfügbar",
       "deleteCurrency": "Währung löschen",

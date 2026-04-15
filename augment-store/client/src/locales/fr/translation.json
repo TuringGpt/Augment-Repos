@@ -1378,6 +1378,7 @@
       "createCurrency": "Créer une Devise",
       "editCurrency": "Modifier la Devise",
       "closeDrawer": "Fermer le tiroir de création de devise",
+      "closeEditDrawer": "Fermer le tiroir de modification de devise",
       "wipBanner": "Cette page est actuellement en développement. Les fonctionnalités complètes de gestion des devises seront bientôt disponibles.",
       "noCurrencies": "Aucune devise disponible",
       "deleteCurrency": "Supprimer la Devise",
