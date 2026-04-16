@@ -40,7 +40,7 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
-import { isSupersededError, isAbortError } from '@utils/errorUtils'
+import { isSupersededError, isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
 import type { Currency } from '@services/api'
 
 /**
@@ -165,7 +165,8 @@ const AdminCurrencyPage = () => {
       }
 
       // For actual errors, show error toast and keep dialog open for retry
-      console.error('Failed to delete currency:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to delete currency:', sanitizeErrorForLogging(err, 'Failed to delete currency'))
       toast.error(t('admin.currencyPage.errorDeleteCurrency', 'Failed to delete currency'))
       // Keep dialog open on error so user can retry or cancel
     } finally {
@@ -245,7 +246,8 @@ const AdminCurrencyPage = () => {
 
       // For actual errors, show error toast and keep drawer open for retry
       // The error message from the store is already user-friendly (parsed by parseApiError)
-      console.error('Failed to create currency:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to create currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
       const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency')
       toast.error(errorMessage)
       // Keep drawer open on error so user can retry or cancel
@@ -337,7 +339,8 @@ const AdminCurrencyPage = () => {
 
       // For actual errors, show error toast and keep drawer open for retry
       // The error message from the store is already user-friendly (parsed by parseApiError)
-      console.error('Failed to update currency:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to update currency:', sanitizeErrorForLogging(err, 'Failed to update currency'))
       const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorUpdateCurrency', 'Failed to update currency')
       toast.error(errorMessage)
       // Keep drawer open on error so user can retry or cancel

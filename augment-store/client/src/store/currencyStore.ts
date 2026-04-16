@@ -497,26 +497,31 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
 
 // Subscribe to auth state changes and clear currencies when user logs out
 // This prevents retaining admin currency data after logout, ensuring data privacy
-import('@store/authStore').then(({ useAuthStore }) => {
-  let previousAuthState = useAuthStore.getState().isAuthenticated
+import('@store/authStore')
+  .then(({ useAuthStore }) => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated
 
-  const unsubscribe = useAuthStore.subscribe((state) => {
-    const currentAuthState = state.isAuthenticated
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const currentAuthState = state.isAuthenticated
 
-    // Detect transition from authenticated to unauthenticated
-    if (previousAuthState === true && currentAuthState === false) {
-      console.log('🔒 User logged out - clearing currencies from memory')
-      useCurrencyStore.getState().clearCurrencies()
-    }
+      // Detect transition from authenticated to unauthenticated
+      if (previousAuthState === true && currentAuthState === false) {
+        console.log('🔒 User logged out - clearing currencies from memory')
+        useCurrencyStore.getState().clearCurrencies()
+      }
 
-    previousAuthState = currentAuthState
-  })
-
-  // Clean up subscription on HMR module disposal to prevent memory leaks
-  if (import.meta.hot) {
-    import.meta.hot.dispose(() => {
-      unsubscribe()
+      previousAuthState = currentAuthState
     })
-  }
-})
+
+    // Clean up subscription on HMR module disposal to prevent memory leaks
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        unsubscribe()
+      })
+    }
+  })
+  .catch((error) => {
+    console.error('Failed to load authStore for currency cleanup subscription:', error)
+    // Gracefully degrade: currency store will still work, but won't auto-clear on logout
+  })
 
