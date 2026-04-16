@@ -505,11 +505,8 @@ import('@store/authStore').then(({ useAuthStore }) => {
 
     // Detect transition from authenticated to unauthenticated
     if (previousAuthState === true && currentAuthState === false) {
-      const currentCurrencies = useCurrencyStore.getState().currencies
-      if (currentCurrencies.length > 0) {
-        console.log('🔒 User logged out - clearing currencies from memory')
-        useCurrencyStore.getState().clearCurrencies()
-      }
+      console.log('🔒 User logged out - clearing currencies from memory')
+      useCurrencyStore.getState().clearCurrencies()
     }
 
     previousAuthState = currentAuthState
