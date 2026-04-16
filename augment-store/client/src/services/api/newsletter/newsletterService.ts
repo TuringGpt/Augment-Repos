@@ -179,5 +179,15 @@ export const newsletterService = {
   unsubscribeByEmailPut: async (data: UnsubscribeNewsletterByEmailRequest): Promise<UnsubscribeNewsletterByEmailResponse> => {
     return apiClient.put<UnsubscribeNewsletterByEmailResponse>(API_ENDPOINTS.NEWSLETTER.UNSUBSCRIBE_BY_EMAIL, data)
   },
+
+  /**
+   * Get a single newsletter subscription by ID (admin only)
+   * Backend expects GET to /newsletter/admin/<id>/
+   * Backend returns { id: string, email: string, is_active: boolean, created_at: string }
+   * Requires admin authentication
+   */
+  getAdminNewsletterById: async (id: string): Promise<NewsletterAPI> => {
+    return apiClient.get<NewsletterAPI>(API_ENDPOINTS.NEWSLETTER.ADMIN_DETAIL(id))
+  },
 }
 
