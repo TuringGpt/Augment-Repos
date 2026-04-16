@@ -1679,6 +1679,28 @@ class ProductSearchViewTests(BaseAPITestCase):
         # Instead, check SearchQuery count.
         self.assertEqual(SearchQuery.objects.count(), 2)
 
+    def test_search_cache_invalidated_on_create(self):
+        ProductFactory(name="Test Phone", created_by=self.merchant_user)
+        ProductSearchCacheService().clear_namespace()
+
+        search_url = reverse("v1:product_search")
+        self.client.get(search_url, {"search": "Phone"})
+
+        create_url = reverse("v1:create_product")
+        payload = {
+            "name": "New Phone",
+            "description": "New Product Description",
+            "price": "199.99",
+            "brand": str(ProductBrandFactory(created_by=self.merchant_user).id),
+            "category": str(ProductCategoryFactory(created_by=self.merchant_user).id),
+            "quantity": 20,
+        }
+        self.merchant_client.post(create_url, payload)
+
+        response = self.client.get(search_url, {"search": "Phone"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("New Phone", [item["name"] for item in response.data.get("results", [])])
+
 class AdminProductTests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
