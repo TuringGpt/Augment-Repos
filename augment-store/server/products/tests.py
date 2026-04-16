@@ -1684,7 +1684,13 @@ class ProductSearchViewTests(BaseAPITestCase):
         ProductSearchCacheService().clear_namespace()
 
         search_url = reverse("v1:product_search")
-        self.client.get(search_url, {"search": "Phone"})
+        first_response = self.client.get(search_url, {"search": "Phone"})
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+        cache_key = ProductSearchCacheService().get_cache_key(
+            user_id=None,
+            query_params={"search": "Phone"},
+        )
+        self.assertIsNotNone(ProductSearchCacheService().get(cache_key))
 
         create_url = reverse("v1:create_product")
         payload = {
