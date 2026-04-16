@@ -305,8 +305,9 @@ const AdminCurrencyPage = () => {
         const currencyStillExists = currencies.some((c) => c.id === submittedCurrencyId)
 
         if (!currencyStillExists) {
-          // Currency was deleted mid-flight - close the drawer to avoid stale UI
-          // Don't show an error toast since the deletion was intentional
+          // Currency was deleted mid-flight - inform the user and close the drawer
+          // This provides feedback that the currency they were editing no longer exists
+          toast.info(t('admin.currencyPage.currencyDeletedDuringEdit', 'The currency you were editing has been deleted'))
           handleCloseEditDrawer()
           return
         }
