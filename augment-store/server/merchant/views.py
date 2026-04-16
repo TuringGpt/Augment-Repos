@@ -78,7 +78,7 @@ class MerchantOrdersListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
         return super().get_queryset().filter(
             Q(items__product__brand__created_by=user) |
             Q(items__cart_item__product__brand__created_by=user)
-        ).distinct().order_by('created_at', 'id')  # Subtle bug: changed '-created_at' to 'created_at'
+        ).distinct().order_by('-created_at', '-id')
 
 
 class AdminMerchantOrdersListView(MerchantOrdersListView):
