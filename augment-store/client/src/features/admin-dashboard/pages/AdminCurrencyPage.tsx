@@ -272,6 +272,10 @@ const AdminCurrencyPage = () => {
   const handleEditCurrency = async () => {
     if (!selectedCurrency) return
 
+    // Capture the currency ID being submitted to guard against race conditions
+    // If user opens a different currency's drawer mid-flight, we shouldn't close it
+    const submittedCurrencyId = selectedCurrency.id
+
     try {
       // Normalize the payload by trimming all fields to keep validation and persisted data consistent
       // This ensures symbols (and code/name) with leading/trailing whitespace are not persisted
@@ -287,8 +291,11 @@ const AdminCurrencyPage = () => {
       // Show success message
       toast.success(t('admin.currencyPage.updateSuccess', 'Currency updated successfully'))
 
-      // Close drawer
-      handleCloseEditDrawer()
+      // Close drawer only if it's still editing the same currency that was submitted
+      // This prevents closing a different currency's drawer if user opened it mid-flight
+      if (selectedCurrency?.id === submittedCurrencyId) {
+        handleCloseEditDrawer()
+      }
     } catch (err) {
       // Handle superseded request errors separately - don't show error toast
       // This occurs when overlapping updates or clearCurrencies() happens mid-flight
