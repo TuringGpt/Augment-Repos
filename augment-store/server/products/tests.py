@@ -1688,7 +1688,7 @@ class ProductSearchViewTests(BaseAPITestCase):
         self.assertEqual(first_response.status_code, status.HTTP_200_OK)
         cache_key = ProductSearchCacheService().get_cache_key(
             user_id=None,
-            query_params={"search": "Phone"},
+            query_params={"search": ["Phone"]},
         )
         self.assertIsNotNone(ProductSearchCacheService().get(cache_key))
 
