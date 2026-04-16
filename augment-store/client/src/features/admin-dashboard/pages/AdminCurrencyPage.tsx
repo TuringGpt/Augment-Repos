@@ -300,9 +300,20 @@ const AdminCurrencyPage = () => {
       // Handle superseded request errors separately - don't show error toast
       // This occurs when overlapping updates or clearCurrencies() happens mid-flight
       if (isSupersededError(err)) {
-        // Request was superseded by a newer request - treat as no-op for UI state
-        // The newer in-flight request will handle all UI updates when it completes
-        // (either showing success message and closing drawer, or showing error and keeping drawer open)
+        // Check if the currency still exists in the store
+        // If it doesn't exist, it was deleted while this update was in-flight
+        const currencyStillExists = currencies.some((c) => c.id === submittedCurrencyId)
+
+        if (!currencyStillExists) {
+          // Currency was deleted mid-flight - close the drawer to avoid stale UI
+          // Don't show an error toast since the deletion was intentional
+          handleCloseEditDrawer()
+          return
+        }
+
+        // Currency still exists - request was superseded by a newer update
+        // Treat as no-op for UI state - the newer in-flight request will handle all UI updates
+        // when it completes (either showing success message and closing drawer, or showing error and keeping drawer open)
         // Closing the drawer or resetting the form here would interfere with the newer request:
         // - If the newer request succeeds, the user won't see the success message
         // - If the newer request fails, the user won't see the error or be able to retry
