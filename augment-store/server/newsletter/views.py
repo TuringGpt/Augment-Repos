@@ -100,7 +100,7 @@ class NewsletterStatusView(GenericAPIView):
         email = request.query_params.get('email', '').strip().lower()
         if not email:
             return Response({"error": "Email is required"}, status=400)
-        if not request.user.is_admin and email != request.user.email.strip().lower():
+        if not request.user.is_admin and email != request.user.email.lower():
             raise PermissionDenied("You can only check your own subscription status")
             
         service = NewsletterStatusCacheService()
