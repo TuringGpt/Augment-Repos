@@ -6,7 +6,7 @@ from .serializers import (NewsletterSerializer, SubscribeNewsletterSerializer,
                           UnsubscribeNewsletterSerializer, AdminNewsletterUpdateSerializer)
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from accounts.permissions import hasAdminRole
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.throttling import ScopedRateThrottle
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedListMixin, CacheInvalidatorMixin, BaseCacheService
@@ -100,6 +100,8 @@ class NewsletterStatusView(GenericAPIView):
         email = request.query_params.get('email', '').strip().lower()
         if not email:
             return Response({"error": "Email is required"}, status=400)
+        if not request.user.is_admin and email != request.user.email.strip().lower():
+            raise PermissionDenied("You can only check your own subscription status")
             
         service = NewsletterStatusCacheService()
         cache_key = service.get_cache_key(custom_key=f"status:{email}")
