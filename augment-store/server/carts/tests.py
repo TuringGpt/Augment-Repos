@@ -244,6 +244,19 @@ class AddToCartViewTests(BaseAPITestCase):
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
 
+    def test_update_cart_item_with_deleted_product_returns_validation_error(self):
+        user = self.member_user
+        cart = Cart.objects.get_user_cart(user)
+        cart_item = CartItemFactory(product=self.product1, quantity=2, created_by=user)
+        cart.items.add(cart_item)
+        self.product1.delete()
+
+        url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
+        response = self.member_client.patch(url, {"operation": "set", "quantity": 3})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Product does not exist", str(response.data))
+
 class AddToWishlistViewTests(BaseAPITestCase):
 
     def setUp(self):
