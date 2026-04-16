@@ -1695,7 +1695,8 @@ class ProductSearchViewTests(BaseAPITestCase):
             "category": str(ProductCategoryFactory(created_by=self.merchant_user).id),
             "quantity": 20,
         }
-        self.merchant_client.post(create_url, payload)
+        create_response = self.merchant_client.post(create_url, payload)
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
         response = self.client.get(search_url, {"search": "Phone"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
