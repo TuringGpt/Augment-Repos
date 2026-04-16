@@ -318,8 +318,11 @@ const AdminCurrencyPage = () => {
           // This provides feedback that the currency they were editing no longer exists
           // We check wasStoreCleared to distinguish "store cleared during logout/navigation" from an actual deletion
           // preventing misleading "currency deleted" toasts when clearCurrencies() empties the store
-          toast.info(t('admin.currencyPage.currencyDeletedDuringEdit', 'The currency you were editing has been deleted'))
-          handleCloseEditDrawer()
+          // Guard against closing a different currency's drawer if user switched mid-flight
+          if (selectedCurrencyRef.current?.id === submittedCurrencyId) {
+            toast.info(t('admin.currencyPage.currencyDeletedDuringEdit', 'The currency you were editing has been deleted'))
+            handleCloseEditDrawer()
+          }
           return
         }
 
