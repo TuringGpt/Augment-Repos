@@ -97,10 +97,10 @@ class NewsletterStatusView(GenericAPIView):
     throttle_scope = "newsletter_status"
     
     def get(self, request, *args, **kwargs):
-        email = request.query_params.get('email', '').strip().lower()
+        email = _normalize_email(request.query_params.get('email'))
         if not email:
             return Response({"error": "Email is required"}, status=400)
-        if not request.user.is_admin and email != request.user.email.lower():
+        if not request.user.is_admin and email != _normalize_email(request.user.email):
             raise PermissionDenied("You can only check your own subscription status")
             
         service = NewsletterStatusCacheService()
