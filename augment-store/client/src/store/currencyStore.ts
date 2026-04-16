@@ -512,7 +512,10 @@ import('@store/authStore')
 
       // Detect transition from authenticated to unauthenticated
       if (previousAuthState === true && currentAuthState === false) {
-        console.log('🔒 User logged out - clearing currencies from memory')
+        // Log only in development to prevent noisy console output in production
+        if (import.meta.env.DEV) {
+          console.log('🔒 User logged out - clearing currencies from memory')
+        }
         useCurrencyStore.getState().clearCurrencies()
       }
 
