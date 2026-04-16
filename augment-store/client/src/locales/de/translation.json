@@ -1390,6 +1390,7 @@
       "errorCreateCurrency": "Fehler beim Erstellen der Währung",
       "updateSuccess": "Währung erfolgreich aktualisiert",
       "errorUpdateCurrency": "Fehler beim Aktualisieren der Währung",
+      "currencyDeletedDuringEdit": "Die Währung, die Sie bearbeitet haben, wurde gelöscht",
       "table": {
         "code": "Code",
         "name": "Name",

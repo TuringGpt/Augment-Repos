@@ -1390,6 +1390,7 @@
       "errorCreateCurrency": "Error al crear la moneda",
       "updateSuccess": "Moneda actualizada con éxito",
       "errorUpdateCurrency": "Error al actualizar la moneda",
+      "currencyDeletedDuringEdit": "La moneda que estaba editando ha sido eliminada",
       "table": {
         "code": "Código",
         "name": "Nombre",
