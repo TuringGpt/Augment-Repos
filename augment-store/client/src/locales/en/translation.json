@@ -1388,6 +1388,8 @@
       "deleting": "Deleting...",
       "createSuccess": "Currency created successfully",
       "errorCreateCurrency": "Failed to create currency",
+      "updateSuccess": "Currency updated successfully",
+      "errorUpdateCurrency": "Failed to update currency",
       "table": {
         "code": "Code",
         "name": "Name",
@@ -1410,7 +1412,8 @@
         "cancel": "Cancel",
         "create": "Create",
         "creating": "Creating...",
-        "update": "Update"
+        "update": "Update",
+        "updating": "Updating..."
       }
     },
     "brandsPage": {

@@ -54,7 +54,7 @@ const AdminCurrencyPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
-  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating } = useCurrencyStore()
+  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating, updateCurrency, isUpdating } = useCurrencyStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -270,9 +270,45 @@ const AdminCurrencyPage = () => {
   }
 
   const handleEditCurrency = async () => {
-    // Empty submit handler - don't call any store actions
-    console.log('Edit currency submitted:', editFormData)
-    handleCloseEditDrawer()
+    if (!selectedCurrency) return
+
+    try {
+      // Normalize the payload by trimming all fields to keep validation and persisted data consistent
+      // This ensures symbols (and code/name) with leading/trailing whitespace are not persisted
+      const normalizedPayload = {
+        code: editFormData.code.trim(),
+        name: editFormData.name.trim(),
+        symbol: editFormData.symbol.trim(),
+      }
+
+      // Call the store action to update the currency
+      await updateCurrency(selectedCurrency.id, normalizedPayload)
+
+      // Show success message
+      toast.success(t('admin.currencyPage.updateSuccess', 'Currency updated successfully'))
+
+      // Close drawer
+      handleCloseEditDrawer()
+    } catch (err) {
+      // Handle superseded request errors separately - don't show error toast
+      // This occurs when overlapping updates or clearCurrencies() happens mid-flight
+      if (isSupersededError(err)) {
+        // Request was superseded by a newer request - treat as no-op for UI state
+        // The newer in-flight request will handle all UI updates when it completes
+        // (either showing success message and closing drawer, or showing error and keeping drawer open)
+        // Closing the drawer or resetting the form here would interfere with the newer request:
+        // - If the newer request succeeds, the user won't see the success message
+        // - If the newer request fails, the user won't see the error or be able to retry
+        return
+      }
+
+      // For actual errors, show error toast and keep drawer open for retry
+      // The error message from the store is already user-friendly (parsed by parseApiError)
+      console.error('Failed to update currency:', err)
+      const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorUpdateCurrency', 'Failed to update currency')
+      toast.error(errorMessage)
+      // Keep drawer open on error so user can retry or cancel
+    }
   }
 
   // Check if user is authenticated and is an admin
@@ -715,9 +751,11 @@ const AdminCurrencyPage = () => {
               variant="contained"
               startIcon={<EditIcon />}
               onClick={handleEditCurrency}
-              disabled={!editFormData.code.trim() || !editFormData.name.trim() || !editFormData.symbol.trim()}
+              disabled={!editFormData.code.trim() || !editFormData.name.trim() || !editFormData.symbol.trim() || isUpdating}
             >
-              {t('admin.currencyPage.form.update', 'Update')}
+              {isUpdating
+                ? t('admin.currencyPage.form.updating', 'Updating...')
+                : t('admin.currencyPage.form.update', 'Update')}
             </Button>
           </Box>
         </Box>

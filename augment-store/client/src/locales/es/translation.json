@@ -1388,6 +1388,8 @@
       "deleting": "Eliminando...",
       "createSuccess": "Moneda creada con éxito",
       "errorCreateCurrency": "Error al crear la moneda",
+      "updateSuccess": "Moneda actualizada con éxito",
+      "errorUpdateCurrency": "Error al actualizar la moneda",
       "table": {
         "code": "Código",
         "name": "Nombre",
@@ -1410,7 +1412,8 @@
         "cancel": "Cancelar",
         "create": "Crear",
         "creating": "Creando...",
-        "update": "Actualizar"
+        "update": "Actualizar",
+        "updating": "Actualizando..."
       }
     },
     "brandsPage": {

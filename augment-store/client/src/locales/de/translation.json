@@ -1388,6 +1388,8 @@
       "deleting": "Wird gelöscht...",
       "createSuccess": "Währung erfolgreich erstellt",
       "errorCreateCurrency": "Fehler beim Erstellen der Währung",
+      "updateSuccess": "Währung erfolgreich aktualisiert",
+      "errorUpdateCurrency": "Fehler beim Aktualisieren der Währung",
       "table": {
         "code": "Code",
         "name": "Name",
@@ -1410,7 +1412,8 @@
         "cancel": "Abbrechen",
         "create": "Erstellen",
         "creating": "Wird erstellt...",
-        "update": "Aktualisieren"
+        "update": "Aktualisieren",
+        "updating": "Wird aktualisiert..."
       }
     },
     "brandsPage": {
