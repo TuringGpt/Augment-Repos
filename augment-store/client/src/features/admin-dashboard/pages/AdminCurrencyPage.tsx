@@ -83,6 +83,10 @@ const AdminCurrencyPage = () => {
     symbol: '',
   })
 
+  // Track the current selectedCurrency in a ref to avoid stale closure issues
+  // This allows async handlers to check the CURRENT selected currency, not the one captured when the handler started
+  const selectedCurrencyRef = useRef<Currency | null>(null)
+
   // Load currencies function
   const loadCurrencies = () => {
     // Cancel any pending request
@@ -251,6 +255,7 @@ const AdminCurrencyPage = () => {
   // Edit drawer handlers
   const handleEditClick = (currency: Currency) => {
     setSelectedCurrency(currency)
+    selectedCurrencyRef.current = currency
     setEditFormData({
       code: currency.code,
       name: currency.name,
@@ -262,6 +267,7 @@ const AdminCurrencyPage = () => {
   const handleCloseEditDrawer = () => {
     setIsEditDrawerOpen(false)
     setSelectedCurrency(null)
+    selectedCurrencyRef.current = null
     setEditFormData({
       code: '',
       name: '',
@@ -292,8 +298,9 @@ const AdminCurrencyPage = () => {
       toast.success(t('admin.currencyPage.updateSuccess', 'Currency updated successfully'))
 
       // Close drawer only if it's still editing the same currency that was submitted
+      // Use ref to get the CURRENT selectedCurrency value instead of the stale closure value
       // This prevents closing a different currency's drawer if user opened it mid-flight
-      if (selectedCurrency?.id === submittedCurrencyId) {
+      if (selectedCurrencyRef.current?.id === submittedCurrencyId) {
         handleCloseEditDrawer()
       }
     } catch (err) {
@@ -301,8 +308,10 @@ const AdminCurrencyPage = () => {
       // This occurs when overlapping updates or clearCurrencies() happens mid-flight
       if (isSupersededError(err)) {
         // Check if the currency still exists in the store
-        // If it doesn't exist, it was deleted while this update was in-flight
-        const currencyStillExists = currencies.some((c) => c.id === submittedCurrencyId)
+        // Use getState() to get the CURRENT currencies list instead of the stale closure value
+        // This prevents stale closure from incorrectly determining if currency exists
+        const currentCurrencies = useCurrencyStore.getState().currencies
+        const currencyStillExists = currentCurrencies.some((c) => c.id === submittedCurrencyId)
 
         if (!currencyStillExists) {
           // Currency was deleted mid-flight - inform the user and close the drawer
