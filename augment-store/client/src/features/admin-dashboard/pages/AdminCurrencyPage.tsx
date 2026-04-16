@@ -310,12 +310,14 @@ const AdminCurrencyPage = () => {
         // Check if the currency still exists in the store
         // Use getState() to get the CURRENT currencies list instead of the stale closure value
         // This prevents stale closure from incorrectly determining if currency exists
-        const currentCurrencies = useCurrencyStore.getState().currencies
-        const currencyStillExists = currentCurrencies.some((c) => c.id === submittedCurrencyId)
+        const currentState = useCurrencyStore.getState()
+        const currencyStillExists = currentState.currencies.some((c) => c.id === submittedCurrencyId)
 
-        if (!currencyStillExists) {
-          // Currency was deleted mid-flight - inform the user and close the drawer
+        if (!currencyStillExists && !currentState.wasStoreCleared) {
+          // Currency was actually deleted mid-flight (not just store cleared) - inform the user and close the drawer
           // This provides feedback that the currency they were editing no longer exists
+          // We check wasStoreCleared to distinguish "store cleared during logout/navigation" from an actual deletion
+          // preventing misleading "currency deleted" toasts when clearCurrencies() empties the store
           toast.info(t('admin.currencyPage.currencyDeletedDuringEdit', 'The currency you were editing has been deleted'))
           handleCloseEditDrawer()
           return

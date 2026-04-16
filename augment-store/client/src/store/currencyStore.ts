@@ -12,6 +12,7 @@ interface CurrencyState {
   updateError: string | null
   isDeleting: boolean
   deleteError: string | null
+  wasStoreCleared: boolean
 
   // Actions
   fetchCurrencies: (signal?: AbortSignal) => Promise<void>
@@ -49,6 +50,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   updateError: null,
   isDeleting: false,
   deleteError: null,
+  wasStoreCleared: false,
 
   // Actions
   fetchCurrencies: async (signal?: AbortSignal) => {
@@ -71,7 +73,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale fetched data from reintroducing deleted currencies
         // when a fetchCurrencies request started before deleteCurrency completes after it
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, error: null, isLoading: false })
+        set({ currencies: filteredCurrencies, error: null, isLoading: false, wasStoreCleared: false })
       }
       // Don't clear isLoading if this is an old request - a newer request may still be in-flight
     } catch (err) {
@@ -487,7 +489,37 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // and allow previously deleted currencies to be fetched again in future sessions
     locallyDeletedCurrencyIds.clear()
     // Reset all loading state to prevent being stuck in loading state if called during active requests
-    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, updateError: null, isUpdating: false, deleteError: null, isDeleting: false })
+    // Set wasStoreCleared to true to distinguish "store cleared" from an actual deletion
+    // This prevents misleading "currency deleted" toasts when the store was cleared during logout/navigation
+    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, updateError: null, isUpdating: false, deleteError: null, isDeleting: false, wasStoreCleared: true })
   },
 }))
+
+// Subscribe to auth state changes and clear currencies when user logs out
+// This prevents retaining admin currency data after logout, ensuring data privacy
+import('@store/authStore').then(({ useAuthStore }) => {
+  let previousAuthState = useAuthStore.getState().isAuthenticated
+
+  const unsubscribe = useAuthStore.subscribe((state) => {
+    const currentAuthState = state.isAuthenticated
+
+    // Detect transition from authenticated to unauthenticated
+    if (previousAuthState === true && currentAuthState === false) {
+      const currentCurrencies = useCurrencyStore.getState().currencies
+      if (currentCurrencies.length > 0) {
+        console.log('🔒 User logged out - clearing currencies from memory')
+        useCurrencyStore.getState().clearCurrencies()
+      }
+    }
+
+    previousAuthState = currentAuthState
+  })
+
+  // Clean up subscription on HMR module disposal to prevent memory leaks
+  if (import.meta.hot) {
+    import.meta.hot.dispose(() => {
+      unsubscribe()
+    })
+  }
+})
 
