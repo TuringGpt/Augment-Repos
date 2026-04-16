@@ -155,7 +155,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale refetched data from reintroducing deleted currencies
         // when a deleteCurrency call completes while this createCurrency was in-flight
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, createError: null, isCreating: false, error: null })
+        // Reset wasStoreCleared to false since we're repopulating the store
+        // This ensures the flag accurately reflects only the most recent clear event
+        set({ currencies: filteredCurrencies, createError: null, isCreating: false, error: null, wasStoreCleared: false })
       } else {
         // Only reset isCreating state if this is still the latest request
         // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
@@ -299,7 +301,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale refetched data from reintroducing deleted currencies
         // when a deleteCurrency call completes while this updateCurrency was in-flight
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, isLoading: false, isCreating: false, error: null })
+        // Reset wasStoreCleared to false since we're repopulating the store
+        // This ensures the flag accurately reflects only the most recent clear event
+        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, isLoading: false, isCreating: false, error: null, wasStoreCleared: false })
       } else {
         // Only reset isUpdating state if this is still the latest request
         // This prevents an older request from clearing isUpdating while a newer updateCurrency() is still in-flight
@@ -471,7 +475,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     }
   },
 
-  setCurrencies: (currencies) => set({ currencies }),
+  // Reset wasStoreCleared to false since we're repopulating the store
+  // This ensures the flag accurately reflects only the most recent clear event
+  setCurrencies: (currencies) => set({ currencies, wasStoreCleared: false }),
 
   setLoading: (isLoading) => set({ isLoading }),
 
