@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
 import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest } from '@services/api/newsletter/newsletterService'
-import { parseApiError } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface NewsletterState {
   newsletters: NewsletterAPI[]
@@ -123,9 +123,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         })
       }
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to fetch admin newsletters:', error)
-
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         // Use parseApiError to get a user-friendly message
@@ -138,6 +135,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
           error: errorMessage,
           isLoading: false,
         })
+
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch admin newsletters:', sanitizeErrorForLogging(error))
       }
     }
   },
