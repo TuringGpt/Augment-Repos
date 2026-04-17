@@ -244,6 +244,25 @@ class AddToCartViewTests(BaseAPITestCase):
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
 
+    def test_update_cart_item_rejects_deleted_product(self):
+        user = UserFactory(
+            email="member@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MEMBER
+        )
+        client = self.authenticated_client
+        client.force_authenticate(user=user)
+        cart = Cart.objects.get_user_cart(user)
+        product = ProductFactory(quantity=10)
+        cart_item = CartItemFactory(product=product, quantity=2, created_by=user)
+        cart.items.add(cart_item)
+        product.delete()
+
+        url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
+        response = client.patch(url, {"operation": "set", "quantity": 1})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 class AddToWishlistViewTests(BaseAPITestCase):
 
     def setUp(self):
