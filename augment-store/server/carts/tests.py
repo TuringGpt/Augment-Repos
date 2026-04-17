@@ -262,6 +262,7 @@ class AddToCartViewTests(BaseAPITestCase):
         url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
         response = client.patch(url, {"operation": "set", "quantity": 1})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Product does not exist", str(response.data))
 
 class AddToWishlistViewTests(BaseAPITestCase):
 
