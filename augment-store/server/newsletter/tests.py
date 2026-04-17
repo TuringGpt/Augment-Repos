@@ -160,8 +160,30 @@ class NewsletterTests(BaseAPITestCase):
     def test_newsletter_status_not_subscribed(self):
         url = reverse("v1:newsletter_status")
         response = self.authenticated_client.get(url, {"email": "nobody@example.com"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_newsletter_status_self_not_subscribed(self):
+        self.user.email = "nobody@example.com"
+        self.user.save(update_fields=["email"])
+        url = reverse("v1:newsletter_status")
+        response = self.authenticated_client.get(url, {"email": "nobody@example.com"})
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.data["is_subscribed"])
+
+    def test_newsletter_status_for_other_user_is_forbidden(self):
+        NewsletterFactory(email="other@example.com")
+        url = reverse("v1:newsletter_status")
+        response = self.authenticated_client.get(url, {"email": "other@example.com"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_newsletter_status_admin_can_query_other_email(self):
+        NewsletterFactory(email="other@example.com")
+        admin = UserFactory(role="admin", email="admin@example.com")
+        self.authenticated_client.force_authenticate(user=admin)
+        url = reverse("v1:newsletter_status")
+        response = self.authenticated_client.get(url, {"email": "other@example.com"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["is_subscribed"])
 
     def test_newsletter_status_missing_email(self):
         url = reverse("v1:newsletter_status")
