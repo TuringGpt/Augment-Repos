@@ -20,6 +20,7 @@ interface NewsletterState {
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
+  fetchAdminNewsletters: (page?: number) => Promise<void>
   clearNewsletters: () => void
   setPage: (page: number) => void
   subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
@@ -76,6 +77,50 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     } catch (error) {
       // Log the error for debugging
       console.error('Failed to fetch newsletters:', error)
+
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'NEWSLETTER_FETCH_ERROR', // Error key for component to translate
+        })
+
+        set({
+          error: errorMessage,
+          isLoading: false,
+        })
+      }
+    }
+  },
+
+  fetchAdminNewsletters: async (page?: number) => {
+    const state = get()
+    const currentPage = page ?? state.page
+
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
+    set({ isLoading: true, error: null })
+    try {
+      const response = await newsletterService.getAdminNewsletters(currentPage)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchRequestCounter) {
+        set({
+          newsletters: response.newsletters,
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+          isLoading: false,
+        })
+      }
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to fetch admin newsletters:', error)
 
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
