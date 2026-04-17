@@ -12,6 +12,7 @@ interface CurrencyState {
   updateError: string | null
   isDeleting: boolean
   deleteError: string | null
+  wasStoreCleared: boolean
 
   // Actions
   fetchCurrencies: (signal?: AbortSignal) => Promise<void>
@@ -49,6 +50,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
   updateError: null,
   isDeleting: false,
   deleteError: null,
+  wasStoreCleared: false,
 
   // Actions
   fetchCurrencies: async (signal?: AbortSignal) => {
@@ -71,7 +73,7 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale fetched data from reintroducing deleted currencies
         // when a fetchCurrencies request started before deleteCurrency completes after it
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, error: null, isLoading: false })
+        set({ currencies: filteredCurrencies, error: null, isLoading: false, wasStoreCleared: false })
       }
       // Don't clear isLoading if this is an old request - a newer request may still be in-flight
     } catch (err) {
@@ -153,7 +155,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale refetched data from reintroducing deleted currencies
         // when a deleteCurrency call completes while this createCurrency was in-flight
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, createError: null, isCreating: false, error: null })
+        // Reset wasStoreCleared to false since we're repopulating the store
+        // This ensures the flag accurately reflects only the most recent clear event
+        set({ currencies: filteredCurrencies, createError: null, isCreating: false, error: null, wasStoreCleared: false })
       } else {
         // Only reset isCreating state if this is still the latest request
         // This prevents an older request from clearing isCreating while a newer createCurrency() is still in-flight
@@ -297,7 +301,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
         // This prevents stale refetched data from reintroducing deleted currencies
         // when a deleteCurrency call completes while this updateCurrency was in-flight
         const filteredCurrencies = currencies.filter(currency => !locallyDeletedCurrencyIds.has(currency.id))
-        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, isLoading: false, isCreating: false, error: null })
+        // Reset wasStoreCleared to false since we're repopulating the store
+        // This ensures the flag accurately reflects only the most recent clear event
+        set({ currencies: filteredCurrencies, updateError: null, isUpdating: false, isLoading: false, isCreating: false, error: null, wasStoreCleared: false })
       } else {
         // Only reset isUpdating state if this is still the latest request
         // This prevents an older request from clearing isUpdating while a newer updateCurrency() is still in-flight
@@ -469,7 +475,9 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     }
   },
 
-  setCurrencies: (currencies) => set({ currencies }),
+  // Reset wasStoreCleared to false since we're repopulating the store
+  // This ensures the flag accurately reflects only the most recent clear event
+  setCurrencies: (currencies) => set({ currencies, wasStoreCleared: false }),
 
   setLoading: (isLoading) => set({ isLoading }),
 
@@ -487,7 +495,42 @@ export const useCurrencyStore = create<CurrencyState>((set) => ({
     // and allow previously deleted currencies to be fetched again in future sessions
     locallyDeletedCurrencyIds.clear()
     // Reset all loading state to prevent being stuck in loading state if called during active requests
-    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, updateError: null, isUpdating: false, deleteError: null, isDeleting: false })
+    // Set wasStoreCleared to true to distinguish "store cleared" from an actual deletion
+    // This prevents misleading "currency deleted" toasts when the store was cleared during logout/navigation
+    set({ currencies: [], error: null, isLoading: false, createError: null, isCreating: false, updateError: null, isUpdating: false, deleteError: null, isDeleting: false, wasStoreCleared: true })
   },
 }))
+
+// Subscribe to auth state changes and clear currencies when user logs out
+// This prevents retaining admin currency data after logout, ensuring data privacy
+import('@store/authStore')
+  .then(({ useAuthStore }) => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated
+
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const currentAuthState = state.isAuthenticated
+
+      // Detect transition from authenticated to unauthenticated
+      if (previousAuthState === true && currentAuthState === false) {
+        // Log only in development to prevent noisy console output in production
+        if (import.meta.env.DEV) {
+          console.log('🔒 User logged out - clearing currencies from memory')
+        }
+        useCurrencyStore.getState().clearCurrencies()
+      }
+
+      previousAuthState = currentAuthState
+    })
+
+    // Clean up subscription on HMR module disposal to prevent memory leaks
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        unsubscribe()
+      })
+    }
+  })
+  .catch((error) => {
+    console.error('Failed to load authStore for currency cleanup subscription:', error)
+    // Gracefully degrade: currency store will still work, but won't auto-clear on logout
+  })
 
