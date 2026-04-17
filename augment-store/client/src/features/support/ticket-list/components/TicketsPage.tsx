@@ -203,7 +203,7 @@ const TicketsPage = () => {
             px: 3,
           }}
         >
-          {t('admin.createTicketPage.title')}
+          {t('admin.createTicketPage.createTicket')}
         </Button>
       </Box>
 
