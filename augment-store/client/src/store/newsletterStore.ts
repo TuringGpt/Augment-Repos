@@ -17,6 +17,7 @@ interface NewsletterState {
   isUnsubscribing: boolean
   unsubscribeError: string | null
   unsubscribeSuccess: boolean
+  isAdminMode: boolean
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
@@ -49,6 +50,7 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   isUnsubscribing: false,
   unsubscribeError: null,
   unsubscribeSuccess: false,
+  isAdminMode: false,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -58,7 +60,8 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null })
+    // Set isAdminMode to false to indicate we're using the regular endpoint
+    set({ isLoading: true, error: null, isAdminMode: false })
     try {
       const response = await newsletterService.getNewsletters(currentPage)
 
@@ -102,7 +105,8 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null })
+    // Set isAdminMode to true to indicate we're using the admin endpoint
+    set({ isLoading: true, error: null, isAdminMode: true })
     try {
       const response = await newsletterService.getAdminNewsletters(currentPage)
 
@@ -150,12 +154,20 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       totalPages: 0,
       isLoading: false,
       error: null,
+      isAdminMode: false,
     })
   },
 
   setPage: (page: number) => {
+    const state = get()
     set({ page })
-    get().fetchNewsletters(page)
+    // Use isAdminMode to determine which fetch function to use
+    // This prevents admin views from accidentally calling the wrong endpoint when paging
+    if (state.isAdminMode) {
+      state.fetchAdminNewsletters(page)
+    } else {
+      state.fetchNewsletters(page)
+    }
   },
 
   subscribe: async (data: SubscribeNewsletterRequest) => {
