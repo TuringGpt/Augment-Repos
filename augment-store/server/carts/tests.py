@@ -307,6 +307,8 @@ class AddToCartViewTests(BaseAPITestCase):
         subtract_response = client.patch(url, {"operation": "subtract", "quantity": 3})
         self.assertEqual(subtract_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Quantity cannot be less than 1", str(subtract_response.data))
+
+
 class AddToWishlistViewTests(BaseAPITestCase):
 
     def setUp(self):
