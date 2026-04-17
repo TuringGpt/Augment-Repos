@@ -176,11 +176,33 @@ const TicketsPage = () => {
   }
 
   const formatStatus = (status: TicketStatus) => {
-    return status.replace('_', ' ').toUpperCase()
+    switch (status) {
+      case 'open':
+        return t('admin.ticketsPage.statusOpen')
+      case 'in_progress':
+        return t('admin.ticketsPage.statusInProgress')
+      case 'resolved':
+        return t('admin.ticketsPage.statusResolved')
+      case 'closed':
+        return t('admin.ticketsPage.statusClosed')
+      default:
+        return status
+    }
   }
 
   const formatPriority = (priority: TicketPriority) => {
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
+    switch (priority) {
+      case 'low':
+        return t('admin.ticketsPage.priorityLow')
+      case 'medium':
+        return t('admin.ticketsPage.priorityMedium')
+      case 'high':
+        return t('admin.ticketsPage.priorityHigh')
+      case 'urgent':
+        return t('admin.ticketsPage.priorityUrgent')
+      default:
+        return priority
+    }
   }
 
   return (
