@@ -52,7 +52,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         quantity = attrs.get("quantity")
         if cart_item.product is None:
             raise serializers.ValidationError("Product does not exist")
-        if not cart_item.product.check_stock(quantity):
+        if not cart_item.product.check_stock(quantity - 1):
             raise serializers.ValidationError("Quantity exceeds stock")
 
         return attrs
