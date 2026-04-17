@@ -85,6 +85,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
             instance.quantity = quantity
         instance.save()
         return instance
+
 class CartItemListSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
     subtotal = serializers.SerializerMethodField()
