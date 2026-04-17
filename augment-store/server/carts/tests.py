@@ -375,6 +375,8 @@ class AddToCartViewTests(BaseAPITestCase):
         response = client.patch(url, {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Quantity is required for set operations", str(response.data))
+        cart_item.refresh_from_db()
+        self.assertEqual(cart_item.quantity, 2)
 
 class AddToWishlistViewTests(BaseAPITestCase):
 
