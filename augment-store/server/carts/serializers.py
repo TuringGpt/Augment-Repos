@@ -53,6 +53,8 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         operation = attrs.get("operation")
         if cart_item.product is None:
             raise serializers.ValidationError("Product does not exist")
+        if operation is None and quantity is None:
+            raise serializers.ValidationError("Quantity is required for set operations")
         if operation in ("add", "subtract") and quantity is None:
             raise serializers.ValidationError("Quantity is required for add and subtract operations")
         if operation == "set" and quantity is None:
