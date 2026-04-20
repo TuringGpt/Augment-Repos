@@ -15,7 +15,10 @@ const AdminNewslettersPage = () => {
         icon={<ConstructionIcon />}
         sx={{
           mb: 3,
-          backgroundColor: 'info.lighter',
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'dark'
+              ? 'rgba(2, 136, 209, 0.15)'
+              : 'rgba(3, 169, 244, 0.1)',
           borderLeft: 4,
           borderColor: 'info.main',
           '& .MuiAlert-icon': {
