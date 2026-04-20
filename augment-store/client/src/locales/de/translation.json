@@ -1012,6 +1012,13 @@
     "reports": "Berichte",
     "contactMessages": "Kontaktnachrichten",
     "tickets": "Tickets",
+    "newsletters": "Newsletter",
+    "newslettersPage": {
+      "title": "Newsletter-Abonnements",
+      "subtitle": "Alle Newsletter-Abonnements von Benutzern verwalten",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Einige Funktionen sind möglicherweise noch nicht vollständig funktionsfähig."
+    },
     "currency": "Währung",
     "reportsPage": {
       "title": "Berichte",

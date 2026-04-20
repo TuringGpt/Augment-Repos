@@ -1012,6 +1012,13 @@
     "reports": "Reports",
     "contactMessages": "Contact Messages",
     "tickets": "Tickets",
+    "newsletters": "Newsletters",
+    "newslettersPage": {
+      "title": "Newsletter Subscriptions",
+      "subtitle": "Manage all newsletter subscriptions from users",
+      "workInProgress": "Work In Progress",
+      "underDevelopment": "This page is currently under development. Some features may not be fully functional yet."
+    },
     "currency": "Currency",
     "reportsPage": {
       "title": "Reports",
