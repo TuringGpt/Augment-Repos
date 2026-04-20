@@ -1388,6 +1388,9 @@
       "deleting": "Suppression...",
       "createSuccess": "Devise créée avec succès",
       "errorCreateCurrency": "Échec de la création de la devise",
+      "updateSuccess": "Devise mise à jour avec succès",
+      "errorUpdateCurrency": "Échec de la mise à jour de la devise",
+      "currencyDeletedDuringEdit": "La devise que vous modifiez a été supprimée",
       "table": {
         "code": "Code",
         "name": "Nom",
@@ -1410,7 +1413,8 @@
         "cancel": "Annuler",
         "create": "Créer",
         "creating": "Création...",
-        "update": "Mettre à jour"
+        "update": "Mettre à jour",
+        "updating": "Mise à jour..."
       }
     },
     "brandsPage": {

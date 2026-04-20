@@ -244,23 +244,16 @@ class AddToCartViewTests(BaseAPITestCase):
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
 
-    def test_update_cart_item_rejects_deleted_product(self):
-        user = UserFactory(
-            email="member@demo.com",
-            password="testpass123",
-            is_active=True,
-            role=User.Role.MEMBER
-        )
-        client = self.authenticated_client
-        client.force_authenticate(user=user)
+    def test_update_cart_item_with_deleted_product_returns_validation_error(self):
+        user = self.member_user
         cart = Cart.objects.get_user_cart(user)
-        product = ProductFactory(quantity=10)
-        cart_item = CartItemFactory(product=product, quantity=2, created_by=user)
+        cart_item = CartItemFactory(product=self.product1, quantity=2, created_by=user)
         cart.items.add(cart_item)
-        product.delete()
+        self.product1.delete()
 
         url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
-        response = client.patch(url, {"operation": "set", "quantity": 1})
+        response = self.member_client.patch(url, {"operation": "set", "quantity": 3})
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Product does not exist", str(response.data))
 
@@ -307,14 +300,13 @@ class AddToCartViewTests(BaseAPITestCase):
 
         url = reverse("v1:carts:update_cart_item", kwargs={"pk": str(cart_item.id)})
 
-        add_response = client.patch(url, {"operation": "add", "quantity": 9})
+        add_response = client.patch(url, {"operation": "add", "quantity": 200})
         self.assertEqual(add_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Quantity exceeds stock", str(add_response.data))
 
         subtract_response = client.patch(url, {"operation": "subtract", "quantity": 3})
         self.assertEqual(subtract_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Quantity cannot be less than 1", str(subtract_response.data))
-
 class AddToWishlistViewTests(BaseAPITestCase):
 
     def setUp(self):

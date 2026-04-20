@@ -124,6 +124,7 @@ export const API_ENDPOINTS = {
     SUBSCRIBE: '/newsletter/subscribe/',
     LIST: '/newsletter/',
     ADMIN_LIST: '/newsletter/admin/',
+    ADMIN_DETAIL: (id: string) => `/newsletter/admin/${encodeURIComponent(id)}/`,
     UNSUBSCRIBE: (id: string) => `/newsletter/unsubscribe/${id}`,
     UNSUBSCRIBE_BY_EMAIL: '/newsletter/unsubscribe-by-email/',
   },

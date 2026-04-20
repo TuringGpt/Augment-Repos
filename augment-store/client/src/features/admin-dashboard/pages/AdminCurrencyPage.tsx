@@ -40,7 +40,7 @@ import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useCurrencyStore } from '@store/currencyStore'
 import { formatDate } from '@utils/formatters'
-import { isSupersededError, isAbortError } from '@utils/errorUtils'
+import { isSupersededError, isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
 import type { Currency } from '@services/api'
 
 /**
@@ -54,7 +54,7 @@ const AdminCurrencyPage = () => {
   const { user, isAuthenticated } = useAuthStore()
 
   // Use currency store
-  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating } = useCurrencyStore()
+  const { currencies, isLoading, error, fetchCurrencies, deleteCurrency, createCurrency, isCreating, updateCurrency, isUpdating } = useCurrencyStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -82,6 +82,10 @@ const AdminCurrencyPage = () => {
     name: '',
     symbol: '',
   })
+
+  // Track the current selectedCurrency in a ref to avoid stale closure issues
+  // This allows async handlers to check the CURRENT selected currency, not the one captured when the handler started
+  const selectedCurrencyRef = useRef<Currency | null>(null)
 
   // Load currencies function
   const loadCurrencies = () => {
@@ -161,7 +165,8 @@ const AdminCurrencyPage = () => {
       }
 
       // For actual errors, show error toast and keep dialog open for retry
-      console.error('Failed to delete currency:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to delete currency:', sanitizeErrorForLogging(err, 'Failed to delete currency'))
       toast.error(t('admin.currencyPage.errorDeleteCurrency', 'Failed to delete currency'))
       // Keep dialog open on error so user can retry or cancel
     } finally {
@@ -241,7 +246,8 @@ const AdminCurrencyPage = () => {
 
       // For actual errors, show error toast and keep drawer open for retry
       // The error message from the store is already user-friendly (parsed by parseApiError)
-      console.error('Failed to create currency:', err)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to create currency:', sanitizeErrorForLogging(err, 'Failed to create currency'))
       const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorCreateCurrency', 'Failed to create currency')
       toast.error(errorMessage)
       // Keep drawer open on error so user can retry or cancel
@@ -251,6 +257,7 @@ const AdminCurrencyPage = () => {
   // Edit drawer handlers
   const handleEditClick = (currency: Currency) => {
     setSelectedCurrency(currency)
+    selectedCurrencyRef.current = currency
     setEditFormData({
       code: currency.code,
       name: currency.name,
@@ -262,6 +269,7 @@ const AdminCurrencyPage = () => {
   const handleCloseEditDrawer = () => {
     setIsEditDrawerOpen(false)
     setSelectedCurrency(null)
+    selectedCurrencyRef.current = null
     setEditFormData({
       code: '',
       name: '',
@@ -270,9 +278,73 @@ const AdminCurrencyPage = () => {
   }
 
   const handleEditCurrency = async () => {
-    // Empty submit handler - don't call any store actions
-    console.log('Edit currency submitted:', editFormData)
-    handleCloseEditDrawer()
+    if (!selectedCurrency) return
+
+    // Capture the currency ID being submitted to guard against race conditions
+    // If user opens a different currency's drawer mid-flight, we shouldn't close it
+    const submittedCurrencyId = selectedCurrency.id
+
+    try {
+      // Normalize the payload by trimming all fields to keep validation and persisted data consistent
+      // This ensures symbols (and code/name) with leading/trailing whitespace are not persisted
+      const normalizedPayload = {
+        code: editFormData.code.trim(),
+        name: editFormData.name.trim(),
+        symbol: editFormData.symbol.trim(),
+      }
+
+      // Call the store action to update the currency
+      await updateCurrency(selectedCurrency.id, normalizedPayload)
+
+      // Show success message
+      toast.success(t('admin.currencyPage.updateSuccess', 'Currency updated successfully'))
+
+      // Close drawer only if it's still editing the same currency that was submitted
+      // Use ref to get the CURRENT selectedCurrency value instead of the stale closure value
+      // This prevents closing a different currency's drawer if user opened it mid-flight
+      if (selectedCurrencyRef.current?.id === submittedCurrencyId) {
+        handleCloseEditDrawer()
+      }
+    } catch (err) {
+      // Handle superseded request errors separately - don't show error toast
+      // This occurs when overlapping updates or clearCurrencies() happens mid-flight
+      if (isSupersededError(err)) {
+        // Check if the currency still exists in the store
+        // Use getState() to get the CURRENT currencies list instead of the stale closure value
+        // This prevents stale closure from incorrectly determining if currency exists
+        const currentState = useCurrencyStore.getState()
+        const currencyStillExists = currentState.currencies.some((c) => c.id === submittedCurrencyId)
+
+        if (!currencyStillExists && !currentState.wasStoreCleared) {
+          // Currency was actually deleted mid-flight (not just store cleared) - inform the user and close the drawer
+          // This provides feedback that the currency they were editing no longer exists
+          // We check wasStoreCleared to distinguish "store cleared during logout/navigation" from an actual deletion
+          // preventing misleading "currency deleted" toasts when clearCurrencies() empties the store
+          // Guard against closing a different currency's drawer if user switched mid-flight
+          if (selectedCurrencyRef.current?.id === submittedCurrencyId) {
+            toast.info(t('admin.currencyPage.currencyDeletedDuringEdit', 'The currency you were editing has been deleted'))
+            handleCloseEditDrawer()
+          }
+          return
+        }
+
+        // Currency still exists - request was superseded by a newer update
+        // Treat as no-op for UI state - the newer in-flight request will handle all UI updates
+        // when it completes (either showing success message and closing drawer, or showing error and keeping drawer open)
+        // Closing the drawer or resetting the form here would interfere with the newer request:
+        // - If the newer request succeeds, the user won't see the success message
+        // - If the newer request fails, the user won't see the error or be able to retry
+        return
+      }
+
+      // For actual errors, show error toast and keep drawer open for retry
+      // The error message from the store is already user-friendly (parsed by parseApiError)
+      // Log only sanitized error information to avoid exposing sensitive details (e.g., Authorization headers)
+      console.error('Failed to update currency:', sanitizeErrorForLogging(err, 'Failed to update currency'))
+      const errorMessage = err instanceof Error ? err.message : t('admin.currencyPage.errorUpdateCurrency', 'Failed to update currency')
+      toast.error(errorMessage)
+      // Keep drawer open on error so user can retry or cancel
+    }
   }
 
   // Check if user is authenticated and is an admin
@@ -715,9 +787,11 @@ const AdminCurrencyPage = () => {
               variant="contained"
               startIcon={<EditIcon />}
               onClick={handleEditCurrency}
-              disabled={!editFormData.code.trim() || !editFormData.name.trim() || !editFormData.symbol.trim()}
+              disabled={!editFormData.code.trim() || !editFormData.name.trim() || !editFormData.symbol.trim() || isUpdating}
             >
-              {t('admin.currencyPage.form.update', 'Update')}
+              {isUpdating
+                ? t('admin.currencyPage.form.updating', 'Updating...')
+                : t('admin.currencyPage.form.update', 'Update')}
             </Button>
           </Box>
         </Box>

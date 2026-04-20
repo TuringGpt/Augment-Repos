@@ -218,6 +218,7 @@ class CreateProductView(CacheInvalidatorMixin, BaseProductView, CreateAPIView):
 
     def invalidate_cache(self):
         super().invalidate_cache()
+        ProductSearchCacheService().clear_namespace()
         FeaturedProductCacheService().clear_namespace()
 
 
@@ -294,5 +295,3 @@ class AdminSearchQueryListView(CachedListMixin, AutoOptimizeMixin, ListAPIView):
             user_id=None,
             query_params=self.request.query_params
         )
-
-

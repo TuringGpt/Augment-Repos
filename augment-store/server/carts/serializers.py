@@ -50,21 +50,25 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         cart_item = self.instance
         quantity = attrs.get("quantity")
-        operation = attrs.get("operation")
+        operation = attrs.get("operation") or "set"
+
         if cart_item.product is None:
             raise serializers.ValidationError("Product does not exist")
-        if operation is None and quantity is None:
+
+        if quantity is None:
+            if operation in ("add", "subtract"):
+                raise serializers.ValidationError(
+                    "Quantity is required for add and subtract operations"
+                )
             raise serializers.ValidationError("Quantity is required for set operations")
-        if operation in ("add", "subtract") and quantity is None:
-            raise serializers.ValidationError("Quantity is required for add and subtract operations")
-        if operation == "set" and quantity is None:
-            raise serializers.ValidationError("Quantity is required for set operations")
+
         if operation == "add":
             updated_quantity = cart_item.quantity + quantity
         elif operation == "subtract":
             updated_quantity = cart_item.quantity - quantity
         else:
             updated_quantity = quantity
+
         if updated_quantity < 1:
             raise serializers.ValidationError("Quantity cannot be less than 1")
         if not cart_item.product.check_stock(updated_quantity):
