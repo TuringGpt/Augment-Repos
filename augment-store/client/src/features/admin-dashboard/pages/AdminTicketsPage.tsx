@@ -24,7 +24,6 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment,
   Drawer,
   IconButton,
   Divider,
@@ -41,7 +40,6 @@ import {
   Flag as StatusIcon,
   CheckCircle as ResolvedIcon,
   Schedule as PendingIcon,
-  Search as SearchIcon,
   Add as AddIcon,
   Close as CloseIcon,
   Send as SendIcon,
@@ -108,12 +106,12 @@ const AdminTicketsPage = () => {
     pendingPage,
     isLoading: ticketsLoading,
     error: ticketsError,
-    fetchTickets,
+    fetchAdminTickets,
     setPage,
-    stats,
-    isFetchingStats,
-    statsError,
-    getTicketStats,
+    adminStats,
+    isFetchingAdminStats,
+    adminStatsError,
+    getAdminTicketStats,
     createTicket,
     isCreating,
     createError,
@@ -121,10 +119,6 @@ const AdminTicketsPage = () => {
     deleteTicket,
     isDeleting,
   } = useTicketStore()
-
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
-  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
-  const [searchQuery, setSearchQuery] = useState('')
 
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -175,29 +169,27 @@ const AdminTicketsPage = () => {
     }
   }, [])
 
-  // Load tickets on mount and when filters change
+  // Load tickets on mount
+  // Note: Admin endpoint does not support status/priority/search filtering - only user_id filtering
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      fetchTickets({
+      fetchAdminTickets({
         page: 1,
-        status: statusFilter,
-        priority: priorityFilter,
-        search: searchQuery,
       })
     }
-  }, [isAuthenticated, user?.role, statusFilter, priorityFilter, searchQuery, fetchTickets])
+  }, [isAuthenticated, user?.role, fetchAdminTickets])
 
   // Load ticket stats on mount
   useEffect(() => {
     const fetchStats = async () => {
       if (isAuthenticated && user?.role === 'admin') {
-        // No try/catch needed - getTicketStats sets error in store state and returns null on failure
-        await getTicketStats()
+        // No try/catch needed - getAdminTicketStats sets error in store state and returns null on failure
+        await getAdminTicketStats()
       }
     }
 
     fetchStats()
-  }, [isAuthenticated, user?.role, getTicketStats])
+  }, [isAuthenticated, user?.role, getAdminTicketStats])
 
   // Helper functions for formatting
   const getStatusColor = (status: TicketStatus) => {
@@ -218,10 +210,10 @@ const AdminTicketsPage = () => {
   // Helper function to format stat values
   // Shows loading state, error state, or actual value
   const formatStatValue = (value: number | undefined): string | number => {
-    // Check error state first - if there's an error, stats will be null but we should show N/A, not loading
-    if (statsError) return t('admin.ticketDetailPage.notAvailable')
-    // Treat null stats (not yet fetched) or actively fetching as loading state to avoid showing misleading zeros
-    if (stats === null || isFetchingStats) return '...'
+    // Check error state first - if there's an error, adminStats will be null but we should show N/A, not loading
+    if (adminStatsError) return t('admin.ticketDetailPage.notAvailable')
+    // Treat null adminStats (not yet fetched) or actively fetching as loading state to avoid showing misleading zeros
+    if (adminStats === null || isFetchingAdminStats) return '...'
     return value ?? 0
   }
 
@@ -310,9 +302,9 @@ const AdminTicketsPage = () => {
 
       // Refresh ticket stats to reflect the deletion
       // This ensures the dashboard stats cards show updated counts
-      // No try/catch needed - getTicketStats sets error in store state and returns null on failure
+      // No try/catch needed - getAdminTicketStats sets error in store state and returns null on failure
       // Stats refresh failures won't interfere with deletion success toast
-      await getTicketStats()
+      await getAdminTicketStats()
     } catch (err) {
       console.error('Failed to delete ticket:', err)
       toast.error(t('admin.ticketsPage.deleteError'))
@@ -475,7 +467,7 @@ const AdminTicketsPage = () => {
                 <TicketIcon sx={{ color: 'primary.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {formatStatValue(stats?.total)}
+                {formatStatValue(adminStats?.total)}
               </Typography>
             </CardContent>
           </Card>
@@ -492,7 +484,7 @@ const AdminTicketsPage = () => {
                 <PendingIcon sx={{ color: 'info.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {formatStatValue(stats?.open)}
+                {formatStatValue(adminStats?.open)}
               </Typography>
             </CardContent>
           </Card>
@@ -509,7 +501,7 @@ const AdminTicketsPage = () => {
                 <StatusIcon sx={{ color: 'warning.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {formatStatValue(stats?.in_progress)}
+                {formatStatValue(adminStats?.in_progress)}
               </Typography>
             </CardContent>
           </Card>
@@ -526,7 +518,7 @@ const AdminTicketsPage = () => {
                 <ResolvedIcon sx={{ color: 'success.main', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {formatStatValue(stats?.resolved)}
+                {formatStatValue(adminStats?.resolved)}
               </Typography>
             </CardContent>
           </Card>
@@ -543,7 +535,7 @@ const AdminTicketsPage = () => {
                 <ResolvedIcon sx={{ color: 'text.secondary', fontSize: 24 }} />
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {formatStatValue(stats?.closed)}
+                {formatStatValue(adminStats?.closed)}
               </Typography>
             </CardContent>
           </Card>
@@ -567,51 +559,6 @@ const AdminTicketsPage = () => {
         </Grid>
       </Grid>
 
-      {/* Filters */}
-      <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          placeholder={t('admin.ticketsPage.searchPlaceholder')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ flex: 1, minWidth: 250 }}
-        />
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>{t('admin.ticketsPage.status')}</InputLabel>
-          <Select
-            value={statusFilter}
-            label={t('admin.ticketsPage.status')}
-            onChange={(e) => setStatusFilter(e.target.value as TicketStatus | '')}
-          >
-            <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
-            <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
-            <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
-            <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
-            <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>{t('admin.ticketsPage.priority')}</InputLabel>
-          <Select
-            value={priorityFilter}
-            label={t('admin.ticketsPage.priority')}
-            onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | '')}
-          >
-            <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
-            <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
-            <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
-            <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
-            <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
       {/* Tickets Table */}
       {ticketsLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -624,11 +571,8 @@ const AdminTicketsPage = () => {
           </Typography>
           <Button
             onClick={() =>
-              fetchTickets({
+              fetchAdminTickets({
                 page: pendingPage,
-                status: statusFilter,
-                priority: priorityFilter,
-                search: searchQuery,
               })
             }
             sx={{ mt: 2 }}
@@ -640,14 +584,10 @@ const AdminTicketsPage = () => {
         <Paper sx={{ p: 8, textAlign: 'center' }}>
           <TicketIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            {searchQuery || statusFilter || priorityFilter
-              ? t('admin.ticketsPage.noTicketsFound')
-              : t('admin.ticketsPage.noTickets')}
+            {t('admin.ticketsPage.noTickets')}
           </Typography>
           <Typography color="text.secondary">
-            {searchQuery || statusFilter || priorityFilter
-              ? t('admin.ticketsPage.tryAdjustingFilters')
-              : t('admin.ticketsPage.noTicketsCreated')}
+            {t('admin.ticketsPage.noTicketsCreated')}
           </Typography>
         </Paper>
       ) : (
