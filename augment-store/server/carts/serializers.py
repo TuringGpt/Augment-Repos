@@ -61,14 +61,12 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
                     "Quantity is required for add and subtract operations"
                 )
             raise serializers.ValidationError("Quantity is required for set operations")
-
         if operation == "add":
             updated_quantity = cart_item.quantity + quantity
         elif operation == "subtract":
             updated_quantity = cart_item.quantity - quantity
         else:
             updated_quantity = quantity
-
         if updated_quantity < 1:
             raise serializers.ValidationError("Quantity cannot be less than 1")
         if not cart_item.product.check_stock(updated_quantity):
@@ -78,7 +76,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         quantity = validated_data.get("quantity")
-        operation = validated_data.get("operation")
+        operation = validated_data.get("operation") or "set"
         if operation == "add":
             instance.quantity += quantity
         elif operation == "subtract":
@@ -87,6 +85,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
             instance.quantity = quantity
         instance.save()
         return instance
+
 class CartItemListSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
     subtotal = serializers.SerializerMethodField()
