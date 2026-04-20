@@ -1,5 +1,6 @@
 import { Container, Typography, Box, Alert } from '@mui/material'
 import { Email as EmailIcon, Construction as ConstructionIcon } from '@mui/icons-material'
+import { useTranslation } from '@hooks/useTranslation'
 
 /**
  * AdminNewslettersPage Component
@@ -7,6 +8,7 @@ import { Email as EmailIcon, Construction as ConstructionIcon } from '@mui/icons
  * Currently displays a work in progress banner
  */
 const AdminNewslettersPage = () => {
+  const { t } = useTranslation()
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Work In Progress Banner */}
@@ -27,10 +29,10 @@ const AdminNewslettersPage = () => {
         }}
       >
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-          🚧 Work In Progress
+          🚧 {t('admin.newslettersPage.workInProgress')}
         </Typography>
         <Typography variant="body2">
-          This page is currently under development. Some features may not be fully functional yet.
+          {t('admin.newslettersPage.underDevelopment')}
         </Typography>
       </Alert>
 
@@ -39,11 +41,11 @@ const AdminNewslettersPage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <EmailIcon sx={{ fontSize: 32, color: 'primary.main' }} />
           <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Newsletter Subscriptions
+            {t('admin.newslettersPage.title')}
           </Typography>
         </Box>
         <Typography color="text.secondary">
-          Manage all newsletter subscriptions from users
+          {t('admin.newslettersPage.subtitle')}
         </Typography>
       </Box>
     </Container>

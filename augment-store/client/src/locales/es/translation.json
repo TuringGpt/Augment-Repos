@@ -1013,6 +1013,12 @@
     "contactMessages": "Mensajes de Contacto",
     "tickets": "Tickets",
     "newsletters": "Boletines",
+    "newslettersPage": {
+      "title": "Suscripciones de Boletines",
+      "subtitle": "Gestionar todas las suscripciones de boletines de los usuarios",
+      "workInProgress": "Trabajo en Progreso",
+      "underDevelopment": "Esta página está actualmente en desarrollo. Algunas funciones pueden no estar completamente funcionales aún."
+    },
     "currency": "Moneda",
     "reportsPage": {
       "title": "Informes",

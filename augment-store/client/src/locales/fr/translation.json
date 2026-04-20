@@ -1013,6 +1013,12 @@
     "contactMessages": "Messages de Contact",
     "tickets": "Tickets",
     "newsletters": "Newsletters",
+    "newslettersPage": {
+      "title": "Abonnements aux Newsletters",
+      "subtitle": "Gérer tous les abonnements aux newsletters des utilisateurs",
+      "workInProgress": "Travaux en Cours",
+      "underDevelopment": "Cette page est actuellement en cours de développement. Certaines fonctionnalités peuvent ne pas être entièrement opérationnelles."
+    },
     "currency": "Devises",
     "reportsPage": {
       "title": "Rapports",
