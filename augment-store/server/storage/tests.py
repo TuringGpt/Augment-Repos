@@ -106,7 +106,7 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user
         )
 
         # WHEN we make a post request to upload the actual file
@@ -257,7 +257,7 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_finish.jpg",
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user
         )
 
         # WHEN we make a post request to finish the upload
