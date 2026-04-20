@@ -24,7 +24,6 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment,
   Drawer,
   IconButton,
   Divider,
@@ -41,7 +40,6 @@ import {
   Flag as StatusIcon,
   CheckCircle as ResolvedIcon,
   Schedule as PendingIcon,
-  Search as SearchIcon,
   Add as AddIcon,
   Close as CloseIcon,
   Send as SendIcon,
@@ -122,10 +120,6 @@ const AdminTicketsPage = () => {
     isDeleting,
   } = useTicketStore()
 
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
-  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | ''>('')
-  const [searchQuery, setSearchQuery] = useState('')
-
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
@@ -175,7 +169,8 @@ const AdminTicketsPage = () => {
     }
   }, [])
 
-  // Load tickets on mount and when filters change
+  // Load tickets on mount
+  // Note: Admin endpoint does not support status/priority/search filtering - only user_id filtering
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       fetchAdminTickets({
@@ -564,51 +559,6 @@ const AdminTicketsPage = () => {
         </Grid>
       </Grid>
 
-      {/* Filters */}
-      <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          placeholder={t('admin.ticketsPage.searchPlaceholder')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ flex: 1, minWidth: 250 }}
-        />
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>{t('admin.ticketsPage.status')}</InputLabel>
-          <Select
-            value={statusFilter}
-            label={t('admin.ticketsPage.status')}
-            onChange={(e) => setStatusFilter(e.target.value as TicketStatus | '')}
-          >
-            <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
-            <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
-            <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
-            <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
-            <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>{t('admin.ticketsPage.priority')}</InputLabel>
-          <Select
-            value={priorityFilter}
-            label={t('admin.ticketsPage.priority')}
-            onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | '')}
-          >
-            <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
-            <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
-            <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
-            <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
-            <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
       {/* Tickets Table */}
       {ticketsLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -634,14 +584,10 @@ const AdminTicketsPage = () => {
         <Paper sx={{ p: 8, textAlign: 'center' }}>
           <TicketIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            {searchQuery || statusFilter || priorityFilter
-              ? t('admin.ticketsPage.noTicketsFound')
-              : t('admin.ticketsPage.noTickets')}
+            {t('admin.ticketsPage.noTickets')}
           </Typography>
           <Typography color="text.secondary">
-            {searchQuery || statusFilter || priorityFilter
-              ? t('admin.ticketsPage.tryAdjustingFilters')
-              : t('admin.ticketsPage.noTicketsCreated')}
+            {t('admin.ticketsPage.noTicketsCreated')}
           </Typography>
         </Paper>
       ) : (
