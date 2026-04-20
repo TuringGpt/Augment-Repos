@@ -176,11 +176,33 @@ const TicketsPage = () => {
   }
 
   const formatStatus = (status: TicketStatus) => {
-    return status.replace('_', ' ').toUpperCase()
+    switch (status) {
+      case 'open':
+        return t('admin.ticketsPage.statusOpen')
+      case 'in_progress':
+        return t('admin.ticketsPage.statusInProgress')
+      case 'resolved':
+        return t('admin.ticketsPage.statusResolved')
+      case 'closed':
+        return t('admin.ticketsPage.statusClosed')
+      default:
+        return status
+    }
   }
 
   const formatPriority = (priority: TicketPriority) => {
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
+    switch (priority) {
+      case 'low':
+        return t('admin.ticketsPage.priorityLow')
+      case 'medium':
+        return t('admin.ticketsPage.priorityMedium')
+      case 'high':
+        return t('admin.ticketsPage.priorityHigh')
+      case 'urgent':
+        return t('admin.ticketsPage.priorityUrgent')
+      default:
+        return priority
+    }
   }
 
   return (
@@ -190,7 +212,7 @@ const TicketsPage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <TicketIcon sx={{ fontSize: 40, color: 'primary.main' }} />
           <Typography variant="h4" fontWeight="bold">
-            Support Tickets
+            {t('admin.ticketsPage.title')}
           </Typography>
         </Box>
         <Button
@@ -203,7 +225,7 @@ const TicketsPage = () => {
             px: 3,
           }}
         >
-          Create Ticket
+          {t('admin.createTicketPage.createTicket')}
         </Button>
       </Box>
 
@@ -211,7 +233,7 @@ const TicketsPage = () => {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <TextField
-            placeholder="Search tickets..."
+            placeholder={t('admin.ticketsPage.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             InputProps={{
@@ -224,31 +246,31 @@ const TicketsPage = () => {
             sx={{ flex: 1, minWidth: 250 }}
           />
           <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
+            <InputLabel>{t('admin.ticketsPage.status')}</InputLabel>
             <Select
               value={statusFilter}
-              label="Status"
+              label={t('admin.ticketsPage.status')}
               onChange={(e) => setStatusFilter(e.target.value as TicketStatus | '')}
             >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="open">Open</MenuItem>
-              <MenuItem value="in_progress">In Progress</MenuItem>
-              <MenuItem value="resolved">Resolved</MenuItem>
-              <MenuItem value="closed">Closed</MenuItem>
+              <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
+              <MenuItem value="open">{t('admin.ticketsPage.statusOpen')}</MenuItem>
+              <MenuItem value="in_progress">{t('admin.ticketsPage.statusInProgress')}</MenuItem>
+              <MenuItem value="resolved">{t('admin.ticketsPage.statusResolved')}</MenuItem>
+              <MenuItem value="closed">{t('admin.ticketsPage.statusClosed')}</MenuItem>
             </Select>
           </FormControl>
           <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Priority</InputLabel>
+            <InputLabel>{t('admin.ticketsPage.priority')}</InputLabel>
             <Select
               value={priorityFilter}
-              label="Priority"
+              label={t('admin.ticketsPage.priority')}
               onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | '')}
             >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="low">Low</MenuItem>
-              <MenuItem value="medium">Medium</MenuItem>
-              <MenuItem value="high">High</MenuItem>
-              <MenuItem value="urgent">Urgent</MenuItem>
+              <MenuItem value="">{t('admin.ticketsPage.all')}</MenuItem>
+              <MenuItem value="low">{t('admin.ticketsPage.priorityLow')}</MenuItem>
+              <MenuItem value="medium">{t('admin.ticketsPage.priorityMedium')}</MenuItem>
+              <MenuItem value="high">{t('admin.ticketsPage.priorityHigh')}</MenuItem>
+              <MenuItem value="urgent">{t('admin.ticketsPage.priorityUrgent')}</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -265,20 +287,20 @@ const TicketsPage = () => {
             {error}
           </Typography>
           <Button onClick={handleRetry} sx={{ mt: 2 }}>
-            Retry
+            {t('common.retry')}
           </Button>
         </Paper>
       ) : tickets.length === 0 ? (
         <Paper sx={{ p: 8, textAlign: 'center' }}>
           <TicketIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No tickets found
+            {t('admin.ticketsPage.noTicketsFound')}
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Create your first support ticket to get started
+            {t('admin.ticketsPage.noTicketsCreated')}
           </Typography>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateTicket}>
-            Create Ticket
+            {t('admin.createTicketPage.title')}
           </Button>
         </Paper>
       ) : (
@@ -288,13 +310,13 @@ const TicketsPage = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   <TableCell>
-                    <Typography fontWeight="bold">Title</Typography>
+                    <Typography fontWeight="bold">{t('admin.ticketsPage.table.title')}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography fontWeight="bold">Status</Typography>
+                    <Typography fontWeight="bold">{t('admin.ticketsPage.table.status')}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Typography fontWeight="bold">Priority</Typography>
+                    <Typography fontWeight="bold">{t('admin.ticketsPage.table.priority')}</Typography>
                   </TableCell>
                   {isAdmin && (
                     <TableCell align="center">
