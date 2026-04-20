@@ -89,7 +89,12 @@ class DirectLocalFileUploadSerializer(serializers.Serializer):
         file_id = validated_data["file_id"]
         file_obj = validated_data["file"]
 
-        file = get_object_or_404(File, id=file_id)
+        file = get_object_or_404(
+            File,
+            id=file_id,
+            created_by=user,
+            upload_finished_at__isnull=True,
+        )
 
         service = FileDirectUploadService(user)
         file = service.upload_local(file=file, file_obj=file_obj)
@@ -113,5 +118,4 @@ class FinishFileUploadSerializer(serializers.Serializer):
         file = obj.get("file")
         if not file: return
         return FileSerializer(file).data
-
 
