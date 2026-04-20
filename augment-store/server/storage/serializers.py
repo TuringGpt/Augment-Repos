@@ -108,7 +108,7 @@ class FinishFileUploadSerializer(serializers.Serializer):
         user = self.context["request"].user
         file_id = validated_data["file_id"]
 
-        file = get_object_or_404(File, id=file_id)
+        file = get_object_or_404(File, id=file_id, created_by=user)
 
         service = FileDirectUploadService(user)
         file = service.finish(file=file)
@@ -118,4 +118,3 @@ class FinishFileUploadSerializer(serializers.Serializer):
         file = obj.get("file")
         if not file: return
         return FileSerializer(file).data
-
