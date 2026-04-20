@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
 import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest } from '@services/api/newsletter/newsletterService'
-import { parseApiError } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface NewsletterState {
   newsletters: NewsletterAPI[]
@@ -17,9 +17,11 @@ interface NewsletterState {
   isUnsubscribing: boolean
   unsubscribeError: string | null
   unsubscribeSuccess: boolean
+  isAdminMode: boolean
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
+  fetchAdminNewsletters: (page?: number) => Promise<void>
   clearNewsletters: () => void
   setPage: (page: number) => void
   subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
@@ -48,6 +50,7 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   isUnsubscribing: false,
   unsubscribeError: null,
   unsubscribeSuccess: false,
+  isAdminMode: false,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -57,7 +60,8 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    set({ isLoading: true, error: null })
+    // Set isAdminMode to false to indicate we're using the regular endpoint
+    set({ isLoading: true, error: null, isAdminMode: false })
     try {
       const response = await newsletterService.getNewsletters(currentPage)
 
@@ -93,6 +97,52 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
     }
   },
 
+  fetchAdminNewsletters: async (page?: number) => {
+    const state = get()
+    const currentPage = page ?? state.page
+
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
+    // Set isAdminMode to true to indicate we're using the admin endpoint
+    set({ isLoading: true, error: null, isAdminMode: true })
+    try {
+      const response = await newsletterService.getAdminNewsletters(currentPage)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchRequestCounter) {
+        set({
+          newsletters: response.newsletters,
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+          isLoading: false,
+        })
+      }
+    } catch (error) {
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'NEWSLETTER_FETCH_ERROR', // Error key for component to translate
+        })
+
+        set({
+          error: errorMessage,
+          isLoading: false,
+        })
+
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch admin newsletters:', sanitizeErrorForLogging(error))
+      }
+    }
+  },
+
   clearNewsletters: () => {
     // Increment counter to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
@@ -105,12 +155,20 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       totalPages: 0,
       isLoading: false,
       error: null,
+      isAdminMode: false,
     })
   },
 
   setPage: (page: number) => {
+    const state = get()
     set({ page })
-    get().fetchNewsletters(page)
+    // Use isAdminMode to determine which fetch function to use
+    // This prevents admin views from accidentally calling the wrong endpoint when paging
+    if (state.isAdminMode) {
+      state.fetchAdminNewsletters(page)
+    } else {
+      state.fetchNewsletters(page)
+    }
   },
 
   subscribe: async (data: SubscribeNewsletterRequest) => {
