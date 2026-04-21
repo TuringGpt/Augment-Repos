@@ -183,7 +183,7 @@ const AdminNewslettersPage = () => {
         >
           <CircularProgress />
           <Typography color="text.secondary">
-            {t('common.loading')}
+            {t('admin.newslettersPage.loading')}
           </Typography>
         </Box>
       ) : newsletters.length > 0 ? (
