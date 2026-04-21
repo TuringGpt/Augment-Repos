@@ -518,6 +518,7 @@ class ProductCategoryTests(BaseAPITestCase):
             response_2 = self.client.get(url)
 
             # THEN the second request should hit the database
+
             self.assertGreater(len(ctx2), 0)
 
         # AND the response should contain the new category (items are ordered by name)
@@ -525,6 +526,22 @@ class ProductCategoryTests(BaseAPITestCase):
 
         # AND the count of items should be 2
         self.assertEqual(response_2.data["count"], 2)
+
+    def test_category_update_clears_product_caches(self):
+        category = ProductCategoryFactory(created_by=self.merchant_user)
+        product_key = ProductCacheService().get_cache_key(custom_key="category-update")
+        search_key = ProductSearchCacheService().get_cache_key(custom_key="category-update")
+        ProductCacheService().set(product_key, {"cached": True})
+        ProductSearchCacheService().set(search_key, {"cached": True})
+
+        response = self.merchant_client.patch(
+            reverse("v1:product_category_detail", kwargs={"pk": str(category.id)}),
+            {"name": "Updated Category"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(ProductCacheService().get(product_key))
+        self.assertIsNone(ProductSearchCacheService().get(search_key))
 
 
 class ProductTests(BaseAPITestCase):

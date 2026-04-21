@@ -127,6 +127,11 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
     serializer_class = ProductCategoryDetailSerializer
     cache_service_class = ProductCategoryCacheService
 
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
+
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
             return [IsAuthenticatedOrReadOnly()]
