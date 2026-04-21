@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from storage.models import File
 from django.test import override_settings
 from django.conf import settings
+from storage.services import FileStandardUploadService
 import os
 
 
@@ -339,6 +340,22 @@ class StorageTests(BaseAPITestCase):
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_standard_upload_update_changes_owner(self):
+        file_record = File.objects.create(
+            original_file_name="old.jpg",
+            file_name="old.jpg",
+            file_type="image/jpeg",
+            created_by=self.merchant_user,
+        )
+
+        service = FileStandardUploadService(
+            self.member_user,
+            SimpleUploadedFile("new.jpg", b"file_content", content_type="image/jpeg"),
+        )
+        updated_file = service.update(file_record)
+
+        self.assertEqual(updated_file.created_by, self.member_user)
 
 import tempfile
 import shutil
