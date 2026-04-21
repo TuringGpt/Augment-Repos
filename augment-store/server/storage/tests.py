@@ -106,7 +106,8 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.merchant_user,
+            upload_finished_at=None,
         )
 
         # WHEN we make a post request to upload the actual file
@@ -165,7 +166,8 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_upload.jpg",
             file_name="test_upload_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user,
+            upload_finished_at=None,
         )
 
         # WHEN we make a post request to upload the actual file
@@ -187,6 +189,22 @@ class StorageTests(BaseAPITestCase):
         # AND the file record should be updated with the file
         file_record.refresh_from_db()
         self.assertIsNotNone(file_record.file)
+
+    def test_direct_local_upload_rejects_other_users_file(self):
+        member_client = self.authenticated_client
+        member_client.force_authenticate(user=self.member_user)
+        file_record = File.objects.create(
+            original_file_name="test_upload.jpg",
+            file_name="test_upload_123.jpg",
+            file_type="image/jpeg",
+            created_by=self.merchant_user,
+        )
+        response = member_client.post(
+            reverse("v1:storage:direct_local_upload", kwargs={"file_id": str(file_record.id)}),
+            {"file": SimpleUploadedFile("test_upload.jpg", b"file_content", content_type="image/jpeg"), "file_id": str(file_record.id)},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_direct_local_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated
@@ -241,7 +259,7 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_finish.jpg",
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user
         )
 
         # WHEN we make a post request to finish the upload
@@ -264,7 +282,8 @@ class StorageTests(BaseAPITestCase):
             original_file_name="test_finish.jpg",
             file_name="test_finish_123.jpg",
             file_type="image/jpeg",
-            created_by=self.merchant_user
+            created_by=self.member_user,
+            upload_finished_at=None,
         )
 
         # WHEN we make a post request to finish the upload
@@ -283,6 +302,21 @@ class StorageTests(BaseAPITestCase):
         # AND the file record should have upload_finished_at set
         file_record.refresh_from_db()
         self.assertIsNotNone(file_record.upload_finished_at)
+
+    def test_finish_direct_upload_rejects_other_users_file(self):
+        member_client = self.authenticated_client
+        member_client.force_authenticate(user=self.member_user)
+        file_record = File.objects.create(
+            original_file_name="test_finish.jpg",
+            file_name="test_finish_123.jpg",
+            file_type="image/jpeg",
+            created_by=self.merchant_user,
+        )
+        response = member_client.post(
+            reverse("v1:storage:finish_direct_upload"),
+            {"file_id": str(file_record.id)},
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_finish_direct_upload_file_not_found(self):
         # GIVEN a merchant user is authenticated
@@ -405,4 +439,3 @@ class AdminFileTests(BaseAPITestCase):
         url = reverse("v1:storage:admin_file_delete", kwargs={"pk": self.file1.id})
         response = self.authenticated_client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
