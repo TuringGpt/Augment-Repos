@@ -250,7 +250,11 @@ const AdminNewslettersPage = () => {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <Tooltip title={t('admin.newslettersPage.actions.view')}>
-                          <IconButton size="small" color="primary">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            aria-label={t('admin.newslettersPage.actions.view')}
+                          >
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -265,6 +269,11 @@ const AdminNewslettersPage = () => {
                             size="small"
                             color={newsletter.is_active ? 'warning' : 'success'}
                             onClick={() => handleToggleStatus(newsletter.id)}
+                            aria-label={
+                              newsletter.is_active
+                                ? t('admin.newslettersPage.actions.deactivate')
+                                : t('admin.newslettersPage.actions.activate')
+                            }
                           >
                             {newsletter.is_active ? (
                               <ToggleOffIcon fontSize="small" />
