@@ -41,6 +41,10 @@ interface NewsletterState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
+// Request counter to track the latest fetch-by-id request
+// Prevents stale responses from overwriting newer state or repopulating after clear
+let fetchByIdRequestCounter = 0
+
 export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   newsletters: [],
   total: 0,
@@ -152,32 +156,41 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   },
 
   fetchAdminNewsletterById: async (id: string) => {
+    // Increment counter and capture the current request ID
+    fetchByIdRequestCounter += 1
+    const requestId = fetchByIdRequestCounter
+
     set({ isFetchingById: true, fetchByIdError: null, currentNewsletter: null })
     try {
       const newsletter = await newsletterService.getAdminNewsletterById(id)
-      set({
-        currentNewsletter: newsletter,
-        isFetchingById: false,
-      })
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchByIdRequestCounter) {
+        set({
+          currentNewsletter: newsletter,
+          isFetchingById: false,
+        })
+      }
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to fetch admin newsletter by ID:', error)
+      // Only update error state if this is still the latest request
+      if (requestId === fetchByIdRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          defaultMessage: 'NEWSLETTER_FETCH_BY_ID_ERROR', // Error key for component to translate
+        })
 
-      // Use parseApiError to get a user-friendly message
-      // Note: The actual user-facing message will be translated in the component
-      const errorMessage = parseApiError(error, {
-        defaultMessage: 'NEWSLETTER_FETCH_BY_ID_ERROR', // Error key for component to translate
-      })
+        set({
+          fetchByIdError: errorMessage,
+          isFetchingById: false,
+          currentNewsletter: null,
+        })
 
-      set({
-        fetchByIdError: errorMessage,
-        isFetchingById: false,
-        currentNewsletter: null,
-      })
-
-      // Log only sanitized error information to avoid leaking sensitive data
-      // (e.g., Authorization headers in Axios config)
-      console.error('Failed to fetch admin newsletter by ID:', sanitizeErrorForLogging(error))
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch admin newsletter by ID:', sanitizeErrorForLogging(error))
+      }
     }
   },
 
@@ -338,6 +351,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   },
 
   clearCurrentNewsletter: () => {
+    // Increment counter to invalidate any in-flight fetch-by-id requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchByIdRequestCounter += 1
+
     set({
       currentNewsletter: null,
       isFetchingById: false,
