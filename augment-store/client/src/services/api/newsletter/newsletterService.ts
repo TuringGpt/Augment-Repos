@@ -1,5 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
+import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 /**
  * Newsletter subscription request
@@ -110,7 +111,9 @@ export const newsletterService = {
         totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
-      console.error('Failed to fetch newsletters:', error)
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch newsletters:', sanitizeErrorForLogging(error))
       throw error
     }
   },
@@ -142,7 +145,9 @@ export const newsletterService = {
         totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
-      console.error('Failed to fetch admin newsletters:', error)
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch admin newsletters:', sanitizeErrorForLogging(error))
       throw error
     }
   },
