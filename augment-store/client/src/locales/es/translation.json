@@ -1017,7 +1017,25 @@
       "title": "Suscripciones de Boletines",
       "subtitle": "Gestionar todas las suscripciones de boletines de los usuarios",
       "workInProgress": "Trabajo en Progreso",
-      "underDevelopment": "Esta página está actualmente en desarrollo. Algunas funciones pueden no estar completamente funcionales aún."
+      "underDevelopment": "Esta página está actualmente en desarrollo. Algunas funciones pueden no estar completamente funcionales aún.",
+      "refresh": "Actualizar",
+      "table": {
+        "email": "Correo Electrónico",
+        "status": "Estado",
+        "createdAt": "Fecha de Suscripción",
+        "actions": "Acciones"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "actions": {
+        "view": "Ver Detalles",
+        "deactivate": "Desactivar",
+        "activate": "Activar"
+      },
+      "noNewsletters": "No se encontraron suscripciones de boletines.",
+      "loading": "Cargando suscripciones de boletines..."
     },
     "currency": "Moneda",
     "reportsPage": {
