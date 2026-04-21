@@ -196,9 +196,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   },
 
   clearNewsletters: () => {
-    // Increment counter to invalidate any in-flight fetch requests
+    // Increment counters to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
     fetchRequestCounter += 1
+    fetchByIdRequestCounter += 1
 
     set({
       newsletters: [],
@@ -208,6 +209,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       isLoading: false,
       error: null,
       isAdminMode: false,
+      currentNewsletter: null,
+      isFetchingById: false,
+      fetchByIdError: null,
     })
   },
 
