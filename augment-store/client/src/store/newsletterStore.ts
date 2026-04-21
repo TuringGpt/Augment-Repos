@@ -90,9 +90,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         })
       }
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to fetch newsletters:', error)
-
       // Only update error state if this is still the latest request
       if (requestId === fetchRequestCounter) {
         // Use parseApiError to get a user-friendly message
@@ -105,6 +102,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
           error: errorMessage,
           isLoading: false,
         })
+
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch newsletters:', sanitizeErrorForLogging(error))
       }
     }
   },
@@ -231,9 +232,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         subscribeSuccess: true,
       })
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to subscribe to newsletter:', error)
-
       // Use parseApiError to get a user-friendly message
       // Note: The actual user-facing message will be translated in the component
       const errorMessage = parseApiError(error, {
@@ -246,6 +244,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         isSubscribing: false,
         subscribeSuccess: false,
       })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to subscribe to newsletter:', sanitizeErrorForLogging(error))
       throw error
     }
   },
@@ -267,9 +269,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         unsubscribeSuccess: true,
       })
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to unsubscribe from newsletter:', error)
-
       // Use parseApiError to get a user-friendly message
       // Note: The actual user-facing message will be translated in the component
       const errorMessage = parseApiError(error, {
@@ -282,6 +281,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         isUnsubscribing: false,
         unsubscribeSuccess: false,
       })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to unsubscribe from newsletter:', sanitizeErrorForLogging(error))
       throw error
     }
   },
@@ -295,9 +298,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         unsubscribeSuccess: true,
       })
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to unsubscribe from newsletter by email (PATCH):', error)
-
       // Use parseApiError to get a user-friendly message
       // Note: The actual user-facing message will be translated in the component
       const errorMessage = parseApiError(error, {
@@ -310,6 +310,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         isUnsubscribing: false,
         unsubscribeSuccess: false,
       })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to unsubscribe from newsletter by email (PATCH):', sanitizeErrorForLogging(error))
       throw error
     }
   },
@@ -323,9 +327,6 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         unsubscribeSuccess: true,
       })
     } catch (error) {
-      // Log the error for debugging
-      console.error('Failed to unsubscribe from newsletter by email (PUT):', error)
-
       // Use parseApiError to get a user-friendly message
       // Note: The actual user-facing message will be translated in the component
       const errorMessage = parseApiError(error, {
@@ -338,6 +339,10 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         isUnsubscribing: false,
         unsubscribeSuccess: false,
       })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to unsubscribe from newsletter by email (PUT):', sanitizeErrorForLogging(error))
       throw error
     }
   },
