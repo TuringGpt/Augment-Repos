@@ -176,8 +176,15 @@ const AdminNewslettersPage = () => {
 
       {/* Loading State */}
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <Box
+          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}
+          role="status"
+          aria-live="polite"
+        >
           <CircularProgress />
+          <Typography color="text.secondary">
+            {t('common.loading')}
+          </Typography>
         </Box>
       ) : newsletters.length > 0 ? (
         <Box>
