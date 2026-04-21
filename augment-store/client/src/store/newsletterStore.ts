@@ -179,7 +179,7 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         // Use parseApiError to get a user-friendly message
         // Note: The actual user-facing message will be translated in the component
         const errorMessage = parseApiError(error, {
-          defaultMessage: 'NEWSLETTER_FETCH_BY_ID_ERROR', // Error key for component to translate
+          defaultMessage: 'NEWSLETTER_FETCH_ERROR', // Error key for component to translate
         })
 
         set({
