@@ -18,10 +18,14 @@ interface NewsletterState {
   unsubscribeError: string | null
   unsubscribeSuccess: boolean
   isAdminMode: boolean
+  currentNewsletter: NewsletterAPI | null
+  isFetchingById: boolean
+  fetchByIdError: string | null
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
   fetchAdminNewsletters: (page?: number) => Promise<void>
+  fetchAdminNewsletterById: (id: string) => Promise<void>
   clearNewsletters: () => void
   setPage: (page: number) => void
   subscribe: (data: SubscribeNewsletterRequest) => Promise<void>
@@ -30,6 +34,7 @@ interface NewsletterState {
   unsubscribeByEmailPatch: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
   unsubscribeByEmailPut: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
   clearUnsubscribeState: () => void
+  clearCurrentNewsletter: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -51,6 +56,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   unsubscribeError: null,
   unsubscribeSuccess: false,
   isAdminMode: false,
+  currentNewsletter: null,
+  isFetchingById: false,
+  fetchByIdError: null,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -140,6 +148,36 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         // (e.g., Authorization headers in Axios config)
         console.error('Failed to fetch admin newsletters:', sanitizeErrorForLogging(error))
       }
+    }
+  },
+
+  fetchAdminNewsletterById: async (id: string) => {
+    set({ isFetchingById: true, fetchByIdError: null, currentNewsletter: null })
+    try {
+      const newsletter = await newsletterService.getAdminNewsletterById(id)
+      set({
+        currentNewsletter: newsletter,
+        isFetchingById: false,
+      })
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to fetch admin newsletter by ID:', error)
+
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'NEWSLETTER_FETCH_BY_ID_ERROR', // Error key for component to translate
+      })
+
+      set({
+        fetchByIdError: errorMessage,
+        isFetchingById: false,
+        currentNewsletter: null,
+      })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch admin newsletter by ID:', sanitizeErrorForLogging(error))
     }
   },
 
@@ -296,6 +334,14 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       isUnsubscribing: false,
       unsubscribeError: null,
       unsubscribeSuccess: false,
+    })
+  },
+
+  clearCurrentNewsletter: () => {
+    set({
+      currentNewsletter: null,
+      isFetchingById: false,
+      fetchByIdError: null,
     })
   },
 }))
