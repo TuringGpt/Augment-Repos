@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Container,
   Typography,
@@ -75,19 +75,34 @@ const AdminNewslettersPage = () => {
   const [page, setPage] = useState(1)
   const itemsPerPage = 10
   const totalPages = Math.ceil(newsletters.length / itemsPerPage)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleRefresh = () => {
     setIsLoading(true)
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
     // Simulate API call
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setNewsletters(DUMMY_NEWSLETTERS)
       setIsLoading(false)
+      timeoutRef.current = null
     }, 1000)
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
   }
+
+  // Cleanup timeout on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleToggleStatus = (id: string) => {
     setNewsletters(prev =>
