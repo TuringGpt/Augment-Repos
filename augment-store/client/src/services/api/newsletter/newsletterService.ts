@@ -1,6 +1,5 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 /**
  * Newsletter subscription request
@@ -93,28 +92,21 @@ export const newsletterService = {
    * The limit parameter is ignored by the backend's PageNumberPagination
    */
   getNewsletters: async (page = 1): Promise<NewsletterListResponse> => {
-    try {
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      const response = await apiClient.get<PaginatedNewslettersAPI>(
-        API_ENDPOINTS.NEWSLETTER.LIST,
-        {
-          params: { page },
-        }
-      )
-
-      return {
-        newsletters: response.results,
-        total: response.count,
-        page,
-        limit: backendPageSize,
-        totalPages: Math.ceil(response.count / backendPageSize),
+    const response = await apiClient.get<PaginatedNewslettersAPI>(
+      API_ENDPOINTS.NEWSLETTER.LIST,
+      {
+        params: { page },
       }
-    } catch (error) {
-      // Log only sanitized error information to avoid leaking sensitive data
-      // (e.g., Authorization headers in Axios config)
-      console.error('Failed to fetch newsletters:', sanitizeErrorForLogging(error))
-      throw error
+    )
+
+    return {
+      newsletters: response.results,
+      total: response.count,
+      page,
+      limit: backendPageSize,
+      totalPages: Math.ceil(response.count / backendPageSize),
     }
   },
 
@@ -127,28 +119,21 @@ export const newsletterService = {
    * Requires admin authentication
    */
   getAdminNewsletters: async (page = 1): Promise<NewsletterListResponse> => {
-    try {
-      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
 
-      const response = await apiClient.get<PaginatedNewslettersAPI>(
-        API_ENDPOINTS.NEWSLETTER.ADMIN_LIST,
-        {
-          params: { page },
-        }
-      )
-
-      return {
-        newsletters: response.results,
-        total: response.count,
-        page,
-        limit: backendPageSize,
-        totalPages: Math.ceil(response.count / backendPageSize),
+    const response = await apiClient.get<PaginatedNewslettersAPI>(
+      API_ENDPOINTS.NEWSLETTER.ADMIN_LIST,
+      {
+        params: { page },
       }
-    } catch (error) {
-      // Log only sanitized error information to avoid leaking sensitive data
-      // (e.g., Authorization headers in Axios config)
-      console.error('Failed to fetch admin newsletters:', sanitizeErrorForLogging(error))
-      throw error
+    )
+
+    return {
+      newsletters: response.results,
+      total: response.count,
+      page,
+      limit: backendPageSize,
+      totalPages: Math.ceil(response.count / backendPageSize),
     }
   },
 
