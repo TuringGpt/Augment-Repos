@@ -82,7 +82,7 @@ const AdminNewsletterDetailPage = () => {
           {t('common.back')}
         </Button>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {t('admin.newsletterDetailPage.notFound')}
+          {t('admin.newsletterDetailPage.provideValidId')}
         </Alert>
       </Container>
     )
