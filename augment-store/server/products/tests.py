@@ -543,6 +543,7 @@ class ProductCategoryTests(BaseAPITestCase):
         response = self.merchant_client.patch(
             reverse("v1:product_category_detail", kwargs={"pk": str(category.id)}),
             {"name": "Updated Category"},
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
