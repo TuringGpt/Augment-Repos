@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDate } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
 import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
 
 // Dummy data for demonstration
@@ -70,7 +71,7 @@ const AdminNewsletterDetailPage = () => {
   const navigate = useNavigate()
 
   const handleBack = () => {
-    navigate('/admin/newsletters')
+    navigate(ROUTES.ADMIN_NEWSLETTERS)
   }
 
   // Handle missing ID
