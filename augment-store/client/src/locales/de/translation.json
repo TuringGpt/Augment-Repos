@@ -1017,7 +1017,25 @@
       "title": "Newsletter-Abonnements",
       "subtitle": "Alle Newsletter-Abonnements von Benutzern verwalten",
       "workInProgress": "In Arbeit",
-      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Einige Funktionen sind möglicherweise noch nicht vollständig funktionsfähig."
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Einige Funktionen sind möglicherweise noch nicht vollständig funktionsfähig.",
+      "refresh": "Aktualisieren",
+      "table": {
+        "email": "E-Mail",
+        "status": "Status",
+        "createdAt": "Abonnementdatum",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "actions": {
+        "view": "Details Anzeigen",
+        "deactivate": "Deaktivieren",
+        "activate": "Aktivieren"
+      },
+      "noNewsletters": "Keine Newsletter-Abonnements gefunden.",
+      "loading": "Lade Newsletter-Abonnements..."
     },
     "currency": "Währung",
     "reportsPage": {

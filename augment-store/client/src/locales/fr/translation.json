@@ -1017,7 +1017,25 @@
       "title": "Abonnements aux Newsletters",
       "subtitle": "Gérer tous les abonnements aux newsletters des utilisateurs",
       "workInProgress": "Travaux en Cours",
-      "underDevelopment": "Cette page est actuellement en cours de développement. Certaines fonctionnalités peuvent ne pas être entièrement opérationnelles."
+      "underDevelopment": "Cette page est actuellement en cours de développement. Certaines fonctionnalités peuvent ne pas être entièrement opérationnelles.",
+      "refresh": "Actualiser",
+      "table": {
+        "email": "E-mail",
+        "status": "Statut",
+        "createdAt": "Date d'Abonnement",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
+      "actions": {
+        "view": "Voir les Détails",
+        "deactivate": "Désactiver",
+        "activate": "Activer"
+      },
+      "noNewsletters": "Aucun abonnement à la newsletter trouvé.",
+      "loading": "Chargement des abonnements à la newsletter..."
     },
     "currency": "Devises",
     "reportsPage": {

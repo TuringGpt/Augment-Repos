@@ -1017,7 +1017,25 @@
       "title": "Newsletter Subscriptions",
       "subtitle": "Manage all newsletter subscriptions from users",
       "workInProgress": "Work In Progress",
-      "underDevelopment": "This page is currently under development. Some features may not be fully functional yet."
+      "underDevelopment": "This page is currently under development. Some features may not be fully functional yet.",
+      "refresh": "Refresh",
+      "table": {
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Subscribed Date",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "view": "View Details",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "noNewsletters": "No newsletter subscriptions found.",
+      "loading": "Loading newsletter subscriptions..."
     },
     "currency": "Currency",
     "reportsPage": {
