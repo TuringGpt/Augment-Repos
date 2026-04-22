@@ -66,11 +66,25 @@ const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
  */
 const AdminNewsletterDetailPage = () => {
   const { t } = useTranslation()
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
 
   const handleBack = () => {
     navigate('/admin/newsletters')
+  }
+
+  // Handle missing ID
+  if (!id) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mb: 3 }}>
+          {t('common.back')}
+        </Button>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {t('admin.newsletterDetailPage.notFound')}
+        </Alert>
+      </Container>
+    )
   }
 
   // Find newsletter in dummy data
