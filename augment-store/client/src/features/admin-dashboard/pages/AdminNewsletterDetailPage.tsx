@@ -86,11 +86,6 @@ const AdminNewsletterDetailPage = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           {t('admin.newsletterDetailPage.notFound')}
         </Alert>
-        {!id && (
-          <Alert severity="info">
-            {t('admin.newsletterDetailPage.provideValidId')}
-          </Alert>
-        )}
       </Container>
     )
   }
