@@ -50,15 +50,14 @@ const AdminNewslettersPage = () => {
 
   // Fetch newsletters on mount
   useEffect(() => {
-    // Clear any existing newsletters before fetching to prevent stale data from being displayed
-    // during the loading state or if the fetch fails (e.g., from a previous non-admin fetch)
-    clearNewsletters()
-
-    // Always start from page 1 to avoid cross-page state bleed-through
-    // (e.g., if user was on page 3 in NewslettersPage, admin page should still start at page 1)
+    // Fetch admin newsletters starting from page 1
+    // fetchAdminNewsletters sets isAdminMode=true and handles loading state appropriately
+    // We don't call clearNewsletters() here to avoid affecting other components
+    // that may be using the same store (e.g., Footer subscription form)
     fetchAdminNewsletters(1)
 
-    // Cleanup: clear newsletters when component unmounts
+    // Cleanup: clear newsletters when component unmounts to prevent stale admin data
+    // from being displayed when navigating to non-admin newsletter views
     return () => {
       clearNewsletters()
     }
