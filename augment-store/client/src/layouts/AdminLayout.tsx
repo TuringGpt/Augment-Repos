@@ -87,7 +87,7 @@ const AdminLayout = () => {
     },
     {
       labelKey: 'admin.newsletters',
-      path: '/admin/newsletters',
+      path: ROUTES.ADMIN_NEWSLETTERS,
       icon: <NewsletterIcon />,
     },
     {
