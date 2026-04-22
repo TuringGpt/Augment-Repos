@@ -99,6 +99,7 @@ class FileStandardUploadService:
         file.file_name = file_generate_name(file_name)
         file.file_type = file_type
         file.created_by = self.user
+        file.upload_finished_at = timezone.now()
 
         file.full_clean()
         file.save()

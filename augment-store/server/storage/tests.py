@@ -354,8 +354,10 @@ class StorageTests(BaseAPITestCase):
             SimpleUploadedFile("new.jpg", b"file_content", content_type="image/jpeg"),
         )
         updated_file = service.update(file_record)
+        self.addCleanup(updated_file.file.delete, save=False)
 
         self.assertEqual(updated_file.created_by, self.member_user)
+        self.assertIsNotNone(updated_file.upload_finished_at)
 
 import tempfile
 import shutil
