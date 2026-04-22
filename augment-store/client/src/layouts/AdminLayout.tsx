@@ -89,6 +89,7 @@ const AdminLayout = () => {
       labelKey: 'admin.newsletters',
       path: ROUTES.ADMIN_NEWSLETTERS,
       icon: <NewsletterIcon />,
+      activePaths: [ROUTES.ADMIN_NEWSLETTERS, ROUTES.ADMIN_NEWSLETTER_DETAIL],
     },
     {
       labelKey: 'admin.currency',
@@ -108,7 +109,19 @@ const AdminLayout = () => {
 
     // Check if current path matches any of the item's active paths
     if (item.activePaths) {
-      return item.activePaths.includes(location.pathname)
+      return item.activePaths.some(activePath => {
+        // For exact match
+        if (location.pathname === activePath) return true
+
+        // For dynamic routes (e.g., /admin/newsletters/:id)
+        // Check if the current path starts with the base path
+        if (activePath.includes('/:')) {
+          const basePath = activePath.split('/:')[0]
+          return location.pathname.startsWith(basePath + '/')
+        }
+
+        return false
+      })
     }
 
     return false
