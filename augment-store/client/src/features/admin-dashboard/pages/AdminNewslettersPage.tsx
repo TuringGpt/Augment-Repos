@@ -50,6 +50,10 @@ const AdminNewslettersPage = () => {
 
   // Fetch newsletters on mount
   useEffect(() => {
+    // Clear any existing newsletters before fetching to prevent stale data from being displayed
+    // during the loading state or if the fetch fails (e.g., from a previous non-admin fetch)
+    clearNewsletters()
+
     // Always start from page 1 to avoid cross-page state bleed-through
     // (e.g., if user was on page 3 in NewslettersPage, admin page should still start at page 1)
     fetchAdminNewsletters(1)
