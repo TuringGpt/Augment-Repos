@@ -536,6 +536,9 @@ class ProductCategoryTests(BaseAPITestCase):
         ProductCacheService().set(product_key, {"cached": True})
         ProductSearchCacheService().set(search_key, {"cached": True})
         FeaturedProductCacheService().set(featured_key, {"cached": True})
+        self.assertIsNotNone(ProductCacheService().get(product_key))
+        self.assertIsNotNone(ProductSearchCacheService().get(search_key))
+        self.assertIsNotNone(FeaturedProductCacheService().get(featured_key))
 
         response = self.merchant_client.patch(
             reverse("v1:product_category_detail", kwargs={"pk": str(category.id)}),

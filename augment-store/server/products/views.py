@@ -84,7 +84,6 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
         ProductCacheService().clear_namespace()
         ProductSearchCacheService().clear_namespace()
         FeaturedProductCacheService().clear_namespace()
-        FeaturedProductCacheService().clear_namespace()
 
 
 # Category views
@@ -132,6 +131,7 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
         super().invalidate_cache()
         ProductCacheService().clear_namespace()
         ProductSearchCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
