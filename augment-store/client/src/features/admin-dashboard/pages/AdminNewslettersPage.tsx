@@ -267,6 +267,7 @@ const AdminNewslettersPage = () => {
                 page={page}
                 onChange={handlePageChange}
                 color="primary"
+                disabled={isLoading}
               />
             </Box>
           )}
