@@ -45,7 +45,6 @@ const AdminNewslettersPage = () => {
     isLoading,
     error,
     fetchAdminNewsletters,
-    setPage,
     clearNewsletters,
   } = useNewsletterStore()
 
@@ -67,7 +66,10 @@ const AdminNewslettersPage = () => {
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
+    // Directly call fetchAdminNewsletters instead of setPage
+    // This ensures the page state is only updated if the fetch succeeds
+    // If the fetch fails, the page remains at the old value, keeping UI and data in sync
+    fetchAdminNewsletters(value)
   }
 
   const handleToggleStatus = (id: string) => {
