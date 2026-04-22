@@ -1037,6 +1037,22 @@
       "noNewsletters": "No se encontraron suscripciones de boletines.",
       "loading": "Cargando suscripciones de boletines..."
     },
+    "newsletterDetailPage": {
+      "notFound": "Suscripción al boletín no encontrada.",
+      "provideValidId": "Por favor proporcione un ID de suscripción válido.",
+      "subscriptionInfo": "Información de Suscripción",
+      "additionalInfo": "Información Adicional",
+      "email": "Dirección de Correo Electrónico",
+      "status": "Estado",
+      "subscribedOn": "Suscrito el",
+      "subscriptionId": "ID de Suscripción",
+      "totalEmailsSent": "Total de Correos Enviados",
+      "lastEmailSent": "Último Correo Enviado",
+      "never": "Nunca",
+      "subscriptionSource": "Fuente de Suscripción",
+      "website": "Sitio Web",
+      "dummyDataNotice": "Estos son datos de prueba. Las funciones de seguimiento reales se implementarán pronto."
+    },
     "currency": "Moneda",
     "reportsPage": {
       "title": "Informes",

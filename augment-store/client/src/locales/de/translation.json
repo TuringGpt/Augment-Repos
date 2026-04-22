@@ -1037,6 +1037,22 @@
       "noNewsletters": "Keine Newsletter-Abonnements gefunden.",
       "loading": "Lade Newsletter-Abonnements..."
     },
+    "newsletterDetailPage": {
+      "notFound": "Newsletter-Abonnement nicht gefunden.",
+      "provideValidId": "Bitte geben Sie eine gültige Abonnement-ID an.",
+      "subscriptionInfo": "Abonnementinformationen",
+      "additionalInfo": "Zusätzliche Informationen",
+      "email": "E-Mail-Adresse",
+      "status": "Status",
+      "subscribedOn": "Abonniert am",
+      "subscriptionId": "Abonnement-ID",
+      "totalEmailsSent": "Gesendete E-Mails Gesamt",
+      "lastEmailSent": "Letzte E-Mail Gesendet",
+      "never": "Nie",
+      "subscriptionSource": "Abonnementquelle",
+      "website": "Webseite",
+      "dummyDataNotice": "Dies sind Testdaten. Echte Tracking-Funktionen werden bald implementiert."
+    },
     "currency": "Währung",
     "reportsPage": {
       "title": "Berichte",

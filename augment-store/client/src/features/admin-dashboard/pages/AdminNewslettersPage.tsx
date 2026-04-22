@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Container,
   Typography,
@@ -27,6 +28,7 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDate } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
 import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
 
 // Dummy data for demonstration
@@ -70,6 +72,7 @@ const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
  */
 const AdminNewslettersPage = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [newsletters, setNewsletters] = useState<NewsletterAPI[]>(DUMMY_NEWSLETTERS)
   const [page, setPage] = useState(1)
@@ -260,6 +263,7 @@ const AdminNewslettersPage = () => {
                           <IconButton
                             size="small"
                             color="primary"
+                            onClick={() => navigate(ROUTES.ADMIN_NEWSLETTER_DETAIL.replace(':id', newsletter.id))}
                             aria-label={t('admin.newslettersPage.actions.view')}
                           >
                             <VisibilityIcon fontSize="small" />

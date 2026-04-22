@@ -23,6 +23,8 @@ export const ROUTES = {
   ADMIN_PRODUCTS_STATISTICS: '/admin/products/statistics',
   ADMIN_PRODUCTS_STATISTICS_DETAIL: '/admin/products/statistics/:id',
   ADMIN_TICKETS: '/admin/tickets',
+  ADMIN_NEWSLETTERS: '/admin/newsletters',
+  ADMIN_NEWSLETTER_DETAIL: '/admin/newsletters/:id',
   LOGIN: '/login',
   REGISTER: '/register',
   ABOUT: '/about',
