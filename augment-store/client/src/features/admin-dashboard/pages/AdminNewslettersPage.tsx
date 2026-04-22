@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import {
   Container,
   Typography,
@@ -19,7 +19,6 @@ import {
 } from '@mui/material'
 import {
   Email as EmailIcon,
-  Construction as ConstructionIcon,
   Refresh as RefreshIcon,
   Visibility as VisibilityIcon,
   ToggleOff as ToggleOffIcon,
@@ -27,125 +26,87 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDate } from '@utils/formatters'
-import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
-
-// Dummy data for demonstration
-const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
-  {
-    id: '1',
-    email: 'john.doe@example.com',
-    is_active: true,
-    created_at: '2024-01-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    email: 'jane.smith@example.com',
-    is_active: true,
-    created_at: '2024-02-20T14:45:00Z',
-  },
-  {
-    id: '3',
-    email: 'mike.johnson@example.com',
-    is_active: false,
-    created_at: '2024-03-10T09:15:00Z',
-  },
-  {
-    id: '4',
-    email: 'sarah.williams@example.com',
-    is_active: true,
-    created_at: '2024-03-25T16:20:00Z',
-  },
-  {
-    id: '5',
-    email: 'david.brown@example.com',
-    is_active: true,
-    created_at: '2024-04-05T11:00:00Z',
-  },
-]
+import { useNewsletterStore } from '@store/newsletterStore'
 
 /**
  * AdminNewslettersPage Component
  * Admin page for managing newsletter subscriptions
- * Currently displays dummy data with table functionality
+ * Fetches and displays newsletter data from the backend
  */
 const AdminNewslettersPage = () => {
   const { t } = useTranslation()
-  const [isLoading, setIsLoading] = useState(false)
-  const [newsletters, setNewsletters] = useState<NewsletterAPI[]>(DUMMY_NEWSLETTERS)
-  const [page, setPage] = useState(1)
-  const itemsPerPage = 10
-  const totalPages = Math.ceil(newsletters.length / itemsPerPage)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Get newsletter store state and actions
+  const {
+    newsletters,
+    total,
+    page,
+    totalPages,
+    isLoading,
+    error,
+    fetchAdminNewsletters,
+    clearNewsletters,
+  } = useNewsletterStore()
+
+  // Fetch newsletters on mount
+  useEffect(() => {
+    // Fetch admin newsletters starting from page 1
+    // fetchAdminNewsletters sets isAdminMode=true and handles loading state appropriately
+    // We don't call clearNewsletters() here to avoid affecting other components
+    // that may be using the same store (e.g., Footer subscription form)
+    fetchAdminNewsletters(1)
+
+    // Cleanup: clear newsletters when component unmounts to prevent stale admin data
+    // from being displayed when navigating to non-admin newsletter views
+    return () => {
+      clearNewsletters()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleRefresh = () => {
-    setIsLoading(true)
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    // Simulate API call
-    timeoutRef.current = setTimeout(() => {
-      setNewsletters(DUMMY_NEWSLETTERS)
-      setIsLoading(false)
-      timeoutRef.current = null
-    }, 1000)
+    fetchAdminNewsletters(page)
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value)
+    // Directly call fetchAdminNewsletters instead of setPage
+    // This ensures the page state is only updated if the fetch succeeds
+    // If the fetch fails, the page remains at the old value, keeping UI and data in sync
+    fetchAdminNewsletters(value)
   }
-
-  // Cleanup timeout on unmount to prevent state updates on unmounted component
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
 
   const handleToggleStatus = (id: string) => {
-    setNewsletters(prev =>
-      prev.map(newsletter =>
-        newsletter.id === id
-          ? { ...newsletter, is_active: !newsletter.is_active }
-          : newsletter
-      )
-    )
+    // TODO: Implement actual API call to toggle newsletter status
+    console.log('Toggle status for newsletter:', id)
   }
 
-  // Get paginated newsletters
-  const paginatedNewsletters = newsletters.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  )
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_FETCH_ERROR') {
+      return t('newsletter.errors.fetchFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Work In Progress Banner */}
-      <Alert
-        severity="info"
-        icon={<ConstructionIcon />}
-        sx={{
-          mb: 3,
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'rgba(2, 136, 209, 0.15)'
-              : 'rgba(3, 169, 244, 0.1)',
-          borderLeft: 4,
-          borderColor: 'info.main',
-          '& .MuiAlert-icon': {
-            fontSize: 28,
-          },
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-          🚧 {t('admin.newslettersPage.workInProgress')}
-        </Typography>
-        <Typography variant="body2">
-          {t('admin.newslettersPage.underDevelopment')}
-        </Typography>
-      </Alert>
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+            {t('common.error')}
+          </Typography>
+          <Typography variant="body2">
+            {getErrorMessage(error)}
+          </Typography>
+        </Alert>
+      )}
 
       {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -158,6 +119,7 @@ const AdminNewslettersPage = () => {
           </Box>
           <Typography color="text.secondary">
             {t('admin.newslettersPage.subtitle')}
+            {total > 0 && ` (${total} ${t('admin.newslettersPage.totalSubscribers')})`}
           </Typography>
         </Box>
         <Tooltip title={t('admin.newslettersPage.refresh')}>
@@ -208,7 +170,7 @@ const AdminNewslettersPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedNewsletters.map((newsletter) => (
+                {newsletters.map((newsletter) => (
                   <TableRow
                     key={newsletter.id}
                     hover
@@ -305,6 +267,7 @@ const AdminNewslettersPage = () => {
                 page={page}
                 onChange={handlePageChange}
                 color="primary"
+                disabled={isLoading}
               />
             </Box>
           )}
