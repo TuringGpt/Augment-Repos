@@ -8,6 +8,7 @@ from products.factory import ProductBrandFactory, ProductCategoryFactory, Produc
 from decimal import Decimal
 from storage.factory import FileFactory
 from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService, ProductSearchCacheService
+from products.views import FeaturedProductCacheService
 from products.models import SearchQuery
 from django.test.utils import CaptureQueriesContext
 from django.db import connection
@@ -531,8 +532,10 @@ class ProductCategoryTests(BaseAPITestCase):
         category = ProductCategoryFactory(created_by=self.merchant_user)
         product_key = ProductCacheService().get_cache_key(custom_key="category-update")
         search_key = ProductSearchCacheService().get_cache_key(custom_key="category-update")
+        featured_key = FeaturedProductCacheService().get_cache_key(custom_key="category-update")
         ProductCacheService().set(product_key, {"cached": True})
         ProductSearchCacheService().set(search_key, {"cached": True})
+        FeaturedProductCacheService().set(featured_key, {"cached": True})
 
         response = self.merchant_client.patch(
             reverse("v1:product_category_detail", kwargs={"pk": str(category.id)}),
@@ -542,6 +545,7 @@ class ProductCategoryTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(ProductCacheService().get(product_key))
         self.assertIsNone(ProductSearchCacheService().get(search_key))
+        self.assertIsNone(FeaturedProductCacheService().get(featured_key))
 
 
 class ProductTests(BaseAPITestCase):

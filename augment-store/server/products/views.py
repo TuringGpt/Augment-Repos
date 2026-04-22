@@ -84,6 +84,7 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
         ProductCacheService().clear_namespace()
         ProductSearchCacheService().clear_namespace()
         FeaturedProductCacheService().clear_namespace()
+        FeaturedProductCacheService().clear_namespace()
 
 
 # Category views
