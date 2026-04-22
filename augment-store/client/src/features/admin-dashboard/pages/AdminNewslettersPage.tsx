@@ -73,6 +73,20 @@ const AdminNewslettersPage = () => {
     console.log('Toggle status for newsletter:', id)
   }
 
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_FETCH_ERROR') {
+      return t('newsletter.errors.fetchFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Error Alert */}
@@ -82,7 +96,7 @@ const AdminNewslettersPage = () => {
             {t('common.error')}
           </Typography>
           <Typography variant="body2">
-            {error}
+            {getErrorMessage(error)}
           </Typography>
         </Alert>
       )}
