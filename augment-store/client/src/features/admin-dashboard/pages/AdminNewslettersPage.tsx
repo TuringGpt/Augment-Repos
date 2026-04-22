@@ -51,7 +51,9 @@ const AdminNewslettersPage = () => {
 
   // Fetch newsletters on mount
   useEffect(() => {
-    fetchAdminNewsletters()
+    // Always start from page 1 to avoid cross-page state bleed-through
+    // (e.g., if user was on page 3 in NewslettersPage, admin page should still start at page 1)
+    fetchAdminNewsletters(1)
 
     // Cleanup: clear newsletters when component unmounts
     return () => {
