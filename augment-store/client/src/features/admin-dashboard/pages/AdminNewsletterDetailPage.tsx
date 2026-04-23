@@ -63,6 +63,20 @@ const AdminNewsletterDetailPage = () => {
     navigate(ROUTES.ADMIN_NEWSLETTERS)
   }
 
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_FETCH_ERROR') {
+      return t('newsletter.errors.fetchFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
+  }
+
   // Handle missing ID
   if (!id) {
     return (
@@ -99,7 +113,7 @@ const AdminNewsletterDetailPage = () => {
           {t('common.back')}
         </Button>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {fetchByIdError}
+          {getErrorMessage(fetchByIdError)}
         </Alert>
         <Button variant="contained" onClick={() => fetchAdminNewsletterById(id)}>
           {t('common.retry')}
