@@ -105,6 +105,8 @@ class CreateOrderViewTests(BaseAPITestCase):
 
         # THEN we should get a 400 response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("cart_items", response.data)
+        self.assertIn("cannot be empty", response.data["cart_items"][0])
 
         # AND no order should be created
         self.assertEqual(Order.objects.count(), 0)

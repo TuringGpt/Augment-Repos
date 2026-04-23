@@ -94,8 +94,10 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if not value:
             raise serializers.ValidationError("cart_items cannot be empty")
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("cart_items must not contain duplicates")
         cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=value)
-        if cart_items.count() != len(set(value)):
+        if cart_items.count() != len(value):
             raise serializers.ValidationError("One or more cart items do not exist")
         return cart_items
     
