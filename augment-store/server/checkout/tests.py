@@ -790,6 +790,7 @@ class OrderPaymentTest(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         order.payment.refresh_from_db()
         self.assertEqual(order.payment.amount, order.total)
+        self.assertEqual(order.payment.payment_method, Payment.PaymentMethod.STRIPE)
 
 
 
