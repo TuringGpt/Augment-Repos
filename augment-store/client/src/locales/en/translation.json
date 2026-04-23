@@ -1037,6 +1037,22 @@
       "noNewsletters": "No newsletter subscriptions found.",
       "loading": "Loading newsletter subscriptions..."
     },
+    "newsletterDetailPage": {
+      "notFound": "Newsletter subscription not found.",
+      "provideValidId": "Please provide a valid newsletter subscription ID.",
+      "subscriptionInfo": "Subscription Information",
+      "additionalInfo": "Additional Information",
+      "email": "Email Address",
+      "status": "Status",
+      "subscribedOn": "Subscribed On",
+      "subscriptionId": "Subscription ID",
+      "totalEmailsSent": "Total Emails Sent",
+      "lastEmailSent": "Last Email Sent",
+      "never": "Never",
+      "subscriptionSource": "Subscription Source",
+      "website": "Website",
+      "dummyDataNotice": "This is dummy data. Real tracking features will be implemented soon."
+    },
     "currency": "Currency",
     "reportsPage": {
       "title": "Reports",

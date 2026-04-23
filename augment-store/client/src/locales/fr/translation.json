@@ -1037,6 +1037,22 @@
       "noNewsletters": "Aucun abonnement à la newsletter trouvé.",
       "loading": "Chargement des abonnements à la newsletter..."
     },
+    "newsletterDetailPage": {
+      "notFound": "Abonnement à la newsletter introuvable.",
+      "provideValidId": "Veuillez fournir un ID d'abonnement valide.",
+      "subscriptionInfo": "Informations d'Abonnement",
+      "additionalInfo": "Informations Supplémentaires",
+      "email": "Adresse E-mail",
+      "status": "Statut",
+      "subscribedOn": "Abonné le",
+      "subscriptionId": "ID d'Abonnement",
+      "totalEmailsSent": "Total d'E-mails Envoyés",
+      "lastEmailSent": "Dernier E-mail Envoyé",
+      "never": "Jamais",
+      "subscriptionSource": "Source d'Abonnement",
+      "website": "Site Web",
+      "dummyDataNotice": "Ce sont des données fictives. Les fonctionnalités de suivi réelles seront bientôt implémentées."
+    },
     "currency": "Devises",
     "reportsPage": {
       "title": "Rapports",
