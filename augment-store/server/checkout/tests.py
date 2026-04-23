@@ -774,7 +774,7 @@ class OrderPaymentTest(BaseAPITestCase):
             order=order,
             created_by=self.user,
             amount=Decimal("1.00"),
-            payment_method=Payment.PaymentMethod.CASH_ON_DELIVERY,
+            payment_method=Payment.PaymentMethod.PAYPAL,
         )
 
         # WHEN I make a payment for the order
