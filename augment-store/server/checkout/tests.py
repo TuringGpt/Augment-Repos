@@ -103,12 +103,11 @@ class CreateOrderViewTests(BaseAPITestCase):
         }
         response = self.member_client.post(url, payload, format='json')
 
-        # THEN we should get a 201 response (order created but empty)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # THEN we should get a 400 response
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # AND an order should be created with no items
-        order = Order.objects.first()
-        self.assertEqual(order.items.count(), 0)
+        # AND no order should be created
+        self.assertEqual(Order.objects.count(), 0)
 
     def test_create_order_with_invalid_cart_item_id(self):
         # GIVEN an authenticated user exists
