@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -12,6 +13,7 @@ import {
   Card,
   CardContent,
   Avatar,
+  CircularProgress,
 } from '@mui/material'
 import {
   ArrowBack as ArrowBackIcon,
@@ -24,54 +26,55 @@ import {
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDate } from '@utils/formatters'
 import { ROUTES } from '@constants/index'
-import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
-
-// Dummy data for demonstration
-const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
-  {
-    id: '1',
-    email: 'john.doe@example.com',
-    is_active: true,
-    created_at: '2024-01-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    email: 'jane.smith@example.com',
-    is_active: true,
-    created_at: '2024-02-20T14:45:00Z',
-  },
-  {
-    id: '3',
-    email: 'mike.johnson@example.com',
-    is_active: false,
-    created_at: '2024-03-10T09:15:00Z',
-  },
-  {
-    id: '4',
-    email: 'sarah.williams@example.com',
-    is_active: true,
-    created_at: '2024-03-25T16:20:00Z',
-  },
-  {
-    id: '5',
-    email: 'david.brown@example.com',
-    is_active: true,
-    created_at: '2024-04-05T11:00:00Z',
-  },
-]
+import { useNewsletterStore } from '@store/newsletterStore'
 
 /**
  * AdminNewsletterDetailPage Component
  * Displays detailed information about a newsletter subscription
- * Currently uses dummy data only
+ * Fetches data from the backend using the newsletter store
  */
 const AdminNewsletterDetailPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
 
+  // Get newsletter store state and actions
+  const {
+    currentNewsletter: newsletter,
+    isFetchingById,
+    fetchByIdError,
+    fetchAdminNewsletterById,
+    clearCurrentNewsletter,
+  } = useNewsletterStore()
+
+  // Fetch newsletter data when component mounts or id changes
+  useEffect(() => {
+    if (id) {
+      fetchAdminNewsletterById(id)
+    }
+
+    // Cleanup on unmount
+    return () => {
+      clearCurrentNewsletter()
+    }
+  }, [id, fetchAdminNewsletterById, clearCurrentNewsletter])
+
   const handleBack = () => {
     navigate(ROUTES.ADMIN_NEWSLETTERS)
+  }
+
+  // Map error to user-friendly translated message
+  const getErrorMessage = (error: string | null): string => {
+    if (!error) return ''
+
+    // If error is our error key, translate it
+    if (error === 'NEWSLETTER_FETCH_ERROR') {
+      return t('newsletter.errors.fetchFailed')
+    }
+
+    // If error contains backend validation messages, display them
+    // (parseApiError already extracts user-friendly messages from backend)
+    return error
   }
 
   // Handle missing ID
@@ -88,8 +91,36 @@ const AdminNewsletterDetailPage = () => {
     )
   }
 
-  // Find newsletter in dummy data
-  const newsletter = DUMMY_NEWSLETTERS.find(n => n.id === id)
+  // Loading state
+  if (isFetchingById && !newsletter) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mb: 3 }}>
+          {t('common.back')}
+        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
+  }
+
+  // Error state - fetch failed
+  if (fetchByIdError) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={handleBack} sx={{ mb: 3 }}>
+          {t('common.back')}
+        </Button>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {getErrorMessage(fetchByIdError)}
+        </Alert>
+        <Button variant="contained" onClick={() => fetchAdminNewsletterById(id)}>
+          {t('common.retry')}
+        </Button>
+      </Container>
+    )
+  }
 
   // Error state - newsletter not found
   if (!newsletter) {
@@ -237,10 +268,6 @@ const AdminNewsletterDetailPage = () => {
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
                 {t('admin.newsletterDetailPage.additionalInfo')}
               </Typography>
-
-              <Alert severity="info" sx={{ mb: 2 }}>
-                {t('admin.newsletterDetailPage.dummyDataNotice')}
-              </Alert>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box>

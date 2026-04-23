@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import {
   Container,
   Typography,
@@ -27,42 +26,9 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDate } from '@utils/formatters'
+import { useNewsletterStore } from '@store/newsletterStore'
+import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@constants/index'
-import type { NewsletterAPI } from '@services/api/newsletter/newsletterService'
-
-// Dummy data for demonstration
-const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
-  {
-    id: '1',
-    email: 'john.doe@example.com',
-    is_active: true,
-    created_at: '2024-01-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    email: 'jane.smith@example.com',
-    is_active: true,
-    created_at: '2024-02-20T14:45:00Z',
-  },
-  {
-    id: '3',
-    email: 'mike.johnson@example.com',
-    is_active: false,
-    created_at: '2024-03-10T09:15:00Z',
-  },
-  {
-    id: '4',
-    email: 'sarah.williams@example.com',
-    is_active: true,
-    created_at: '2024-03-25T16:20:00Z',
-  },
-  {
-    id: '5',
-    email: 'david.brown@example.com',
-    is_active: true,
-    created_at: '2024-04-05T11:00:00Z',
-  },
-]
 
 /**
  * AdminNewslettersPage Component
@@ -72,12 +38,6 @@ const DUMMY_NEWSLETTERS: NewsletterAPI[] = [
 const AdminNewslettersPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(false)
-  const [newsletters, setNewsletters] = useState<NewsletterAPI[]>(DUMMY_NEWSLETTERS)
-  const [page, setPage] = useState(1)
-  const itemsPerPage = 10
-  const totalPages = Math.ceil(newsletters.length / itemsPerPage)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Get newsletter store state and actions
   const {
@@ -145,9 +105,7 @@ const AdminNewslettersPage = () => {
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
             {t('common.error')}
           </Typography>
-          <Typography variant="body2">
-            {getErrorMessage(error)}
-          </Typography>
+          <Typography variant="body2">{getErrorMessage(error)}</Typography>
         </Alert>
       )}
 
@@ -187,9 +145,7 @@ const AdminNewslettersPage = () => {
           aria-live="polite"
         >
           <CircularProgress />
-          <Typography color="text.secondary">
-            {t('admin.newslettersPage.loading')}
-          </Typography>
+          <Typography color="text.secondary">{t('admin.newslettersPage.loading')}</Typography>
         </Box>
       ) : newsletters.length > 0 ? (
         <Box>
@@ -265,8 +221,10 @@ const AdminNewslettersPage = () => {
                           <IconButton
                             size="small"
                             color="primary"
-                            onClick={() => navigate(ROUTES.ADMIN_NEWSLETTER_DETAIL.replace(':id', newsletter.id))}
                             aria-label={t('admin.newslettersPage.actions.view')}
+                            onClick={() =>
+                              navigate(ROUTES.ADMIN_NEWSLETTER_DETAIL.replace(':id', newsletter.id))
+                            }
                           >
                             <VisibilityIcon fontSize="small" />
                           </IconButton>
@@ -318,9 +276,7 @@ const AdminNewslettersPage = () => {
         </Box>
       ) : (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="text.secondary">
-            {t('admin.newslettersPage.noNewsletters')}
-          </Typography>
+          <Typography color="text.secondary">{t('admin.newslettersPage.noNewsletters')}</Typography>
         </Paper>
       )}
     </Container>
