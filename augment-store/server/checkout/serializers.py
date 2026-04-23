@@ -266,6 +266,7 @@ class OrderPaymentSerializer(serializers.ModelSerializer):
         try:
             payment = order.payment
             Payment.objects.filter(id=payment.id).update(amount=amount, payment_method=payment_method)
+            payment.refresh_from_db(fields=["amount"])
         except Payment.DoesNotExist:
             payment = Payment.objects.create(
                 order=order, 

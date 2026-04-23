@@ -770,6 +770,12 @@ class OrderPaymentTest(BaseAPITestCase):
         order = OrderFactory(created_by=self.user)
         cart_item = CartItemFactory(quantity=1)
         OrderItemFactory(order=order, cart_item=cart_item)
+        PaymentFactory(
+            order=order,
+            created_by=self.user,
+            amount=Decimal("1.00"),
+            payment_method=Payment.PaymentMethod.CASH_ON_DELIVERY,
+        )
 
         # WHEN I make a payment for the order
         url = reverse("v1:checkout_payments:payment_order")
@@ -782,6 +788,8 @@ class OrderPaymentTest(BaseAPITestCase):
 
         # THEN we should get a 201 response
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        order.payment.refresh_from_db()
+        self.assertEqual(order.payment.amount, order.total)
 
 
 
