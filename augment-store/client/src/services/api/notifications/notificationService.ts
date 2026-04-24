@@ -7,6 +7,7 @@ import type {
   NotificationListResponse,
   MarkAsReadRequest,
   MarkAsReadResponse,
+  UnreadCountResponse,
 } from '@features/notifications/types'
 
 /**
@@ -73,6 +74,22 @@ export const notificationService = {
       return response
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get unread notification count from backend API
+   * @returns The count of unread notifications
+   */
+  getUnreadCount: async (): Promise<number> => {
+    try {
+      const response = await apiClient.get<UnreadCountResponse>(
+        API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT
+      )
+      return response.unread_count
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error)
       throw error
     }
   },
