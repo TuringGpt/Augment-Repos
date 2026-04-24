@@ -940,12 +940,17 @@ export const useContactStore = create<ContactState>((set, get) => ({
 
       await contactService.deleteContact(id)
 
+      // CRITICAL: Always remove from originalContactStates when delete succeeds, even if superseded
+      // This prevents a race condition where:
+      // 1. Request A succeeds but is superseded (doesn't update state)
+      // 2. originalContactStates still has the contact
+      // 3. Request B fails and rolls back, re-adding a contact that was deleted on the server
+      // By removing here unconditionally, we ensure no failed request can rollback to a deleted contact
+      originalContactStates.delete(id)
+
       // Only update state if this is still the most recent request for this contact
       // If a newer request has been made for this contact, discard this response
       if (currentRequestId === deleteRequestCounters.get(id)) {
-        // Remove from the stored server state map since it no longer exists
-        originalContactStates.delete(id)
-
         // Invalidate any in-flight getContacts() requests that started BEFORE this delete
         // to prevent them from re-adding the just-deleted contact with stale data
         // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
