@@ -1,5 +1,6 @@
 
 from rest_framework import serializers
+from django.db import transaction
 from .models import Order, OrderItem, Payment, ShippingAddress, BillingAddress, ContactInformation
 from carts.models import CartItem
 from products.serializers import ProductListSerializer
@@ -189,23 +190,27 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-
         user = self.context.get("request").user
-        order = Order.objects.create(
-            created_by=user,
-            shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
-            billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
-            contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
-        )
+        with transaction.atomic():
+            cart_items = list(validated_data.get("cart_items").select_for_update())
+            if any(cart_item.product_id is None for cart_item in cart_items):
+                raise serializers.ValidationError("One or more cart items have no associated product")
 
-        for cart_item in validated_data.get("cart_items"):
-            OrderItem.objects.create(
-                order=order, 
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                cart_item=cart_item,
+            order = Order.objects.create(
                 created_by=user,
+                shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
+                billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
+                contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
             )
+
+            for cart_item in cart_items:
+                OrderItem.objects.create(
+                    order=order, 
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    cart_item=cart_item,
+                    created_by=user,
+                )
 
         return order
 
