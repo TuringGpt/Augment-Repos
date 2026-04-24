@@ -917,6 +917,9 @@ export const useContactStore = create<ContactState>((set, get) => ({
         }
       }
 
+      // Check if the contact actually exists in the results array
+      const contactExists = state.contacts.results.some((contact) => contact.id === id)
+
       return {
         deletingContactIds: newDeletingContactIds,
         deleteErrors: newDeleteErrors,
@@ -925,8 +928,8 @@ export const useContactStore = create<ContactState>((set, get) => ({
           ...state.contacts,
           // Remove the contact from the results array
           results: state.contacts.results.filter((contact) => contact.id !== id),
-          // Decrement the count to reflect the deletion
-          count: state.contacts.count - 1
+          // Only decrement the count if the contact actually existed in the results
+          count: contactExists ? state.contacts.count - 1 : state.contacts.count
         },
       }
     })
