@@ -1007,15 +1007,24 @@ export const useContactStore = create<ContactState>((set, get) => ({
             }
           }
 
-          // Re-add the contact back to the results array
+          // Check if the contact already exists in the results array
+          // This can happen if a concurrent getContacts() refresh repopulated the contact
+          // while the delete was in-flight
+          const contactExists = state.contacts.results.some((contact) => contact.id === id)
+
+          // Re-add the contact back to the results array only if it doesn't already exist
           return {
             deleteErrors: newDeleteErrors,
             deletingContactIds: newDeletingContactIds,
             contacts: {
               ...state.contacts,
-              results: [...state.contacts.results, rollbackContact],
-              // Restore the count
-              count: state.contacts.count + 1
+              results: contactExists
+                ? state.contacts.results
+                : [...state.contacts.results, rollbackContact],
+              // Restore the count only if we're actually adding the contact back
+              count: contactExists
+                ? state.contacts.count
+                : state.contacts.count + 1
             },
           }
         })
