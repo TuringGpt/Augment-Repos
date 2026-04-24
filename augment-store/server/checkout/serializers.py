@@ -99,7 +99,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=value)
         if cart_items.count() != len(value):
             raise serializers.ValidationError("One or more cart items do not exist")
-        if not cart_items.filter(product__isnull=False).exists():
+        if cart_items.filter(product__isnull=True).exists():
             raise serializers.ValidationError("One or more cart items have no associated product")
         return cart_items
     
