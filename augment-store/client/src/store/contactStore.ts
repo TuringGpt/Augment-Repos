@@ -962,7 +962,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
           set({ isLoading: false })
         }
 
-        // Update success state
+        // Update success state and ensure contact is removed from state
+        // IMPORTANT: Even if fetchRequestCounter changed (new getContacts() started after delete),
+        // we still need to ensure the deleted contact is removed from state to prevent
+        // race conditions where the newer fetch completes and reintroduces the contact
         set((state) => {
           // Remove this contact ID from the set of contacts being deleted
           const newDeletingContactIds = new Set(state.deletingContactIds)
@@ -975,6 +978,25 @@ export const useContactStore = create<ContactState>((set, get) => ({
           // Clear any error for this specific contact
           const newDeleteErrors = new Map(state.deleteErrors)
           newDeleteErrors.delete(id)
+
+          // Ensure the contact is removed from the results array
+          // This handles the race condition where a getContacts() that started after
+          // this delete began has already completed and reintroduced the contact
+          if (state.contacts) {
+            const contactStillExists = state.contacts.results.some((contact) => contact.id === id)
+            if (contactStillExists) {
+              return {
+                lastDeletedContactIds: newLastDeletedContactIds,
+                deleteErrors: newDeleteErrors,
+                deletingContactIds: newDeletingContactIds,
+                contacts: {
+                  ...state.contacts,
+                  results: state.contacts.results.filter((contact) => contact.id !== id),
+                  count: state.contacts.count - 1,
+                },
+              }
+            }
+          }
 
           return {
             lastDeletedContactIds: newLastDeletedContactIds,
