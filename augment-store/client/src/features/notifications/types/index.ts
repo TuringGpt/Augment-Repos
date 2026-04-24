@@ -63,3 +63,10 @@ export interface MarkAsReadResponse {
   id: string
   is_read: boolean
 }
+
+/**
+ * Unread Count Response
+ */
+export interface UnreadCountResponse {
+  unread_count: number
+}
