@@ -75,6 +75,13 @@ export interface NewsletterListResponse {
   totalPages: number
 }
 
+/**
+ * Newsletter status response
+ */
+export interface NewsletterStatusResponse {
+  is_subscribed: boolean
+}
+
 export const newsletterService = {
   /**
    * Subscribe to newsletter
@@ -178,6 +185,19 @@ export const newsletterService = {
    */
   getAdminNewsletterById: async (id: string): Promise<NewsletterAPI> => {
     return apiClient.get<NewsletterAPI>(API_ENDPOINTS.NEWSLETTER.ADMIN_DETAIL(id))
+  },
+
+  /**
+   * Check newsletter subscription status for an email
+   * Backend expects GET to /newsletter/status/ with email query parameter
+   * Backend returns { is_subscribed: boolean }
+   * Users can only check their own email unless they are admin
+   * Requires authentication
+   */
+  getStatus: async (email: string): Promise<NewsletterStatusResponse> => {
+    return apiClient.get<NewsletterStatusResponse>(API_ENDPOINTS.NEWSLETTER.STATUS, {
+      params: { email },
+    })
   },
 }
 

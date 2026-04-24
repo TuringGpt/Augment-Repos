@@ -127,6 +127,7 @@ export const API_ENDPOINTS = {
     ADMIN_DETAIL: (id: string) => `/newsletter/admin/${encodeURIComponent(id)}/`,
     UNSUBSCRIBE: (id: string) => `/newsletter/unsubscribe/${id}`,
     UNSUBSCRIBE_BY_EMAIL: '/newsletter/unsubscribe-by-email/',
+    STATUS: '/newsletter/status/',
   },
 
   // Admin Dashboard endpoints
