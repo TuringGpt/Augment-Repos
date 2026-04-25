@@ -194,7 +194,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             cart_items = list(validated_data.get("cart_items").select_for_update())
             if any(cart_item.product_id is None for cart_item in cart_items):
-                raise serializers.ValidationError("One or more cart items have no associated product")
+                raise serializers.ValidationError({"cart_items": ["One or more cart items have no associated product"]})
 
             order = Order.objects.create(
                 created_by=user,
