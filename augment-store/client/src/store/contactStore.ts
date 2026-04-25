@@ -26,6 +26,15 @@ const updateRequestCounters = new Map<string, number>()
 // only the most recent request should update the state
 let bulkUpdateRequestCounter = 0
 
+// Request counter map to prevent race conditions when deleting contacts
+// Tracks request counters per contact ID to allow concurrent deletes to different contacts
+// while preventing race conditions for deletes to the same contact
+// When multiple delete calls are made to the SAME contact in quick succession,
+// only the most recent request for that contact should update the state
+// Counters are never deleted to prevent request ID reuse which could allow stale
+// responses to incorrectly pass the currentRequestId check
+const deleteRequestCounters = new Map<string, number>()
+
 // Map to store the original server state for each contact ID
 // This prevents rollback to optimistic states when multiple requests fail
 // When request A optimistically updates, then request B starts and both fail,
@@ -44,6 +53,9 @@ interface ContactState {
   // This allows concurrent updates to different contacts without race conditions
   updatingContactIds: Set<string>
   isBulkUpdating: boolean
+  // Track which contact IDs are currently being deleted
+  // This allows concurrent deletes to different contacts without race conditions
+  deletingContactIds: Set<string>
 
   // Error states
   error: string | null
@@ -51,12 +63,16 @@ interface ContactState {
   // Track update errors per contact ID to prevent concurrent updates from clearing each other's errors
   updateErrors: Map<string, string>
   bulkUpdateError: string | null
+  // Track delete errors per contact ID to prevent concurrent deletes from clearing each other's errors
+  deleteErrors: Map<string, string>
 
   // Success state
   lastSubmittedContact: CreateContactResponse | null
   // Track last updated contact per contact ID to prevent concurrent updates from clearing each other's success states
   lastUpdatedContacts: Map<string, UpdateContactResponse>
   lastBulkUpdateResult: BulkUpdateContactResponse | null
+  // Track last deleted contact IDs to show success feedback
+  lastDeletedContactIds: Set<string>
 
   // Data state
   contacts: ContactListResponse | null
@@ -66,12 +82,15 @@ interface ContactState {
   getContacts: () => Promise<void>
   updateContact: (id: string, data: UpdateContactRequest) => Promise<UpdateContactResponse>
   bulkUpdateContacts: (ids: string[], status: ContactStatus) => Promise<BulkUpdateContactResponse>
+  deleteContact: (id: string) => Promise<void>
   clearError: () => void
   clearFetchError: () => void
   clearUpdateError: (id?: string) => void
   clearBulkUpdateError: () => void
+  clearDeleteError: (id?: string) => void
   clearLastSubmitted: () => void
   clearLastUpdated: (id?: string) => void
+  clearLastDeleted: (id?: string) => void
   clearContacts: () => void
 }
 
@@ -81,13 +100,16 @@ export const useContactStore = create<ContactState>((set, get) => ({
   isLoading: false,
   updatingContactIds: new Set<string>(),
   isBulkUpdating: false,
+  deletingContactIds: new Set<string>(),
   error: null,
   fetchError: null,
   updateErrors: new Map(),
   bulkUpdateError: null,
+  deleteErrors: new Map(),
   lastSubmittedContact: null,
   lastUpdatedContacts: new Map(),
   lastBulkUpdateResult: null,
+  lastDeletedContactIds: new Set<string>(),
   contacts: null,
 
   // Actions
@@ -233,6 +255,11 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Invalidate all in-flight bulkUpdateContacts() requests by incrementing the counter
     // This prevents in-flight bulk updates from writing PII back to state after logout/clearContacts
     bulkUpdateRequestCounter += 1
+    // Invalidate all in-flight deleteContact() requests by incrementing their counters
+    // This prevents in-flight deletes from writing PII back to state after logout/clearContacts has been called
+    deleteRequestCounters.forEach((value, key) => {
+      deleteRequestCounters.set(key, value + 1)
+    })
     // Clear the original contact states since we're clearing all contacts
     originalContactStates.clear()
     // Always reset isLoading to prevent it from being stuck in true state
@@ -240,6 +267,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
     // Also clear update-related state to prevent PII retention and stale UI
     // Also clear submit-related state to prevent PII retention from in-flight submitContact() calls
     // Also clear bulk update-related state to prevent PII retention from in-flight bulkUpdateContacts() calls
+    // Also clear delete-related state to prevent PII retention from in-flight deleteContact() calls
     set({
       contacts: null,
       fetchError: null,
@@ -252,7 +280,10 @@ export const useContactStore = create<ContactState>((set, get) => ({
       lastBulkUpdateResult: null,
       isSubmitting: false,
       error: null,
-      lastSubmittedContact: null
+      lastSubmittedContact: null,
+      deletingContactIds: new Set<string>(),
+      deleteErrors: new Map(),
+      lastDeletedContactIds: new Set<string>()
     })
   },
 
@@ -802,6 +833,265 @@ export const useContactStore = create<ContactState>((set, get) => ({
       // Return a response indicating this was a stale request (0 updated)
       return { updated: 0, status }
     }
+  },
+
+  /**
+   * Delete a contact by ID with optimistic updates.
+   *
+   * **IMPORTANT - Race Condition Handling:**
+   * This method uses optimistic updates to ensure the UI reflects changes immediately.
+   * - Deletes to DIFFERENT contacts can proceed concurrently without interfering
+   * - Deletes to the SAME contact are serialized: only the most recent request
+   *   for that specific contact will update the store state
+   * - The contact is removed from the list IMMEDIATELY (optimistically) before the API call
+   * - If the API call fails, the optimistic deletion is rolled back
+   *
+   * **Example Usage:**
+   * ```tsx
+   * const isDeleting = useContactStore((s) => s.deletingContactIds.has(contactId))
+   * const deleteError = useContactStore((s) => s.deleteErrors.get(contactId))
+   * const wasDeleted = useContactStore((s) => s.lastDeletedContactIds.has(contactId))
+   * const deleteContact = useContactStore((s) => s.deleteContact)
+   *
+   * // Call the delete and handle potential rejections
+   * deleteContact(contactId).catch((error) => {
+   *   // Error is already handled by the store
+   *   console.error('Delete failed - check deleteError state for details')
+   * })
+   *
+   * // Use store state for UI updates
+   * if (isDeleting) return <Spinner />
+   * if (deleteError) return <Error message={deleteError} />
+   * if (wasDeleted) return <Success message="Contact deleted" />
+   * ```
+   *
+   * @param id - Contact ID to delete
+   * @returns Promise that resolves when the deletion completes (may be stale if superseded)
+   */
+  deleteContact: async (id: string) => {
+    // Increment counter for this specific contact ID to track this request
+    // This prevents race conditions when multiple calls are made rapidly to the SAME contact
+    // while allowing concurrent deletes to DIFFERENT contacts
+    const currentCounter = (deleteRequestCounters.get(id) ?? 0) + 1
+    deleteRequestCounters.set(id, currentCounter)
+    const currentRequestId = currentCounter
+
+    // Capture the current fetchRequestCounter at the start of this delete
+    // This allows us to invalidate only getContacts() calls that started BEFORE this delete
+    // preventing invalidation of newer fetches that started after this delete began
+    const fetchCounterAtDeleteStart = fetchRequestCounter
+
+    // Get the original server state for rollback
+    // We use the stored original state from the Map instead of the current state
+    // to prevent rolling back to an optimistic state if multiple requests fail
+    // If not in the Map yet, fall back to current state (first delete for this contact)
+    let originalContact = originalContactStates.get(id)
+    if (!originalContact) {
+      const currentState = get()
+      originalContact = currentState.contacts?.results.find((contact) => contact.id === id)
+      // Store it in the Map for future operations
+      if (originalContact) {
+        originalContactStates.set(id, originalContact)
+      }
+    }
+
+    // OPTIMISTIC UPDATE: Remove the contact from the list immediately before the API call
+    // This ensures the UI reflects the change instantly
+    set((state) => {
+      // Add this contact ID to the set of contacts being deleted
+      const newDeletingContactIds = new Set(state.deletingContactIds)
+      newDeletingContactIds.add(id)
+
+      // Clear any previous error/success for this specific contact
+      const newDeleteErrors = new Map(state.deleteErrors)
+      newDeleteErrors.delete(id)
+      const newLastDeletedContactIds = new Set(state.lastDeletedContactIds)
+      newLastDeletedContactIds.delete(id)
+
+      // Avoid no-op update when contacts is null to prevent spurious re-renders
+      if (!state.contacts || !originalContact) {
+        return {
+          deletingContactIds: newDeletingContactIds,
+          deleteErrors: newDeleteErrors,
+          lastDeletedContactIds: newLastDeletedContactIds
+        }
+      }
+
+      // Check if the contact actually exists in the results array
+      const contactExists = state.contacts.results.some((contact) => contact.id === id)
+
+      return {
+        deletingContactIds: newDeletingContactIds,
+        deleteErrors: newDeleteErrors,
+        lastDeletedContactIds: newLastDeletedContactIds,
+        contacts: {
+          ...state.contacts,
+          // Remove the contact from the results array
+          results: state.contacts.results.filter((contact) => contact.id !== id),
+          // Only decrement the count if the contact actually existed in the results
+          count: contactExists ? state.contacts.count - 1 : state.contacts.count
+        },
+      }
+    })
+
+    try {
+      // Import contactService dynamically to avoid circular dependency
+      const { contactService } = await import('@services/api/contact/contactService')
+
+      await contactService.deleteContact(id)
+
+      // CRITICAL: Always remove from originalContactStates when delete succeeds, even if superseded
+      // This prevents a race condition where:
+      // 1. Request A succeeds but is superseded (doesn't update state)
+      // 2. originalContactStates still has the contact
+      // 3. Request B fails and rolls back, re-adding a contact that was deleted on the server
+      // By removing here unconditionally, we ensure no failed request can rollback to a deleted contact
+      originalContactStates.delete(id)
+
+      // Only update state if this is still the most recent request for this contact
+      // If a newer request has been made for this contact, discard this response
+      if (currentRequestId === deleteRequestCounters.get(id)) {
+        // Invalidate any in-flight getContacts() requests that started BEFORE this delete
+        // to prevent them from re-adding the just-deleted contact with stale data
+        // Only invalidate if no newer fetch has started (fetchRequestCounter hasn't changed)
+        // This prevents invalidating user-triggered refreshes that started after this delete
+        if (fetchRequestCounter === fetchCounterAtDeleteStart) {
+          fetchRequestCounter += 1
+          // Reset isLoading to prevent it from being stuck true when invalidated
+          // fetch requests skip their finally block (request id no longer matches)
+          set({ isLoading: false })
+        }
+
+        // Update success state and ensure contact is removed from state
+        // IMPORTANT: Even if fetchRequestCounter changed (new getContacts() started after delete),
+        // we still need to ensure the deleted contact is removed from state to prevent
+        // race conditions where the newer fetch completes and reintroduces the contact
+        set((state) => {
+          // Remove this contact ID from the set of contacts being deleted
+          const newDeletingContactIds = new Set(state.deletingContactIds)
+          newDeletingContactIds.delete(id)
+
+          // Set success state for this specific contact
+          const newLastDeletedContactIds = new Set(state.lastDeletedContactIds)
+          newLastDeletedContactIds.add(id)
+
+          // Clear any error for this specific contact
+          const newDeleteErrors = new Map(state.deleteErrors)
+          newDeleteErrors.delete(id)
+
+          // Ensure the contact is removed from the results array
+          // This handles the race condition where a getContacts() that started after
+          // this delete began has already completed and reintroduced the contact
+          if (state.contacts) {
+            const contactStillExists = state.contacts.results.some((contact) => contact.id === id)
+            if (contactStillExists) {
+              return {
+                lastDeletedContactIds: newLastDeletedContactIds,
+                deleteErrors: newDeleteErrors,
+                deletingContactIds: newDeletingContactIds,
+                contacts: {
+                  ...state.contacts,
+                  results: state.contacts.results.filter((contact) => contact.id !== id),
+                  count: state.contacts.count - 1,
+                },
+              }
+            }
+          }
+
+          return {
+            lastDeletedContactIds: newLastDeletedContactIds,
+            deleteErrors: newDeleteErrors,
+            deletingContactIds: newDeletingContactIds,
+          }
+        })
+      }
+    } catch (err) {
+      // ROLLBACK: Revert the optimistic deletion on error
+      // Only rollback if this is still the most recent request for this contact
+      if (currentRequestId === deleteRequestCounters.get(id)) {
+        // Use parseApiError to handle DRF/Axios errors with proper priority order
+        const errorMessage = parseApiError(err, {
+          defaultMessage: 'Failed to delete contact. Please try again.',
+        })
+
+        set((state) => {
+          // Remove this contact ID from the set of contacts being deleted
+          const newDeletingContactIds = new Set(state.deletingContactIds)
+          newDeletingContactIds.delete(id)
+
+          // Set error state for this specific contact
+          const newDeleteErrors = new Map(state.deleteErrors)
+          newDeleteErrors.set(id, errorMessage)
+
+          // Get the latest confirmed server state from the Map at rollback time
+          const rollbackContact = originalContactStates.get(id)
+
+          // Avoid no-op update when contacts is null to prevent spurious re-renders
+          if (!state.contacts || !rollbackContact) {
+            return {
+              deleteErrors: newDeleteErrors,
+              deletingContactIds: newDeletingContactIds,
+            }
+          }
+
+          // Check if the contact already exists in the results array
+          // This can happen if a concurrent getContacts() refresh repopulated the contact
+          // while the delete was in-flight
+          const contactExists = state.contacts.results.some((contact) => contact.id === id)
+
+          // Re-add the contact back to the results array only if it doesn't already exist
+          return {
+            deleteErrors: newDeleteErrors,
+            deletingContactIds: newDeletingContactIds,
+            contacts: {
+              ...state.contacts,
+              results: contactExists
+                ? state.contacts.results
+                : [...state.contacts.results, rollbackContact],
+              // Restore the count only if we're actually adding the contact back
+              count: contactExists
+                ? state.contacts.count
+                : state.contacts.count + 1
+            },
+          }
+        })
+
+        // Log only sanitized error information to avoid exposing PII
+        console.error('Error deleting contact:', sanitizeErrorForLogging(err, 'Failed to delete contact'))
+      }
+
+      throw err
+    }
+  },
+
+  clearDeleteError: (id?: string) => {
+    // Clear the error state for a specific contact or all contacts
+    set((state) => {
+      if (id) {
+        // Clear error for specific contact
+        const newDeleteErrors = new Map(state.deleteErrors)
+        newDeleteErrors.delete(id)
+        return { deleteErrors: newDeleteErrors }
+      } else {
+        // Clear all errors
+        return { deleteErrors: new Map() }
+      }
+    })
+  },
+
+  clearLastDeleted: (id?: string) => {
+    // Clear the success state for a specific contact or all contacts
+    set((state) => {
+      if (id) {
+        // Clear success for specific contact
+        const newLastDeletedContactIds = new Set(state.lastDeletedContactIds)
+        newLastDeletedContactIds.delete(id)
+        return { lastDeletedContactIds: newLastDeletedContactIds }
+      } else {
+        // Clear all success states
+        return { lastDeletedContactIds: new Set<string>() }
+      }
+    })
   },
 }))
 
