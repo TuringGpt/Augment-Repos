@@ -191,7 +191,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context.get("request").user
-        requested_cart_item_ids = self.initial_data.get("cart_items", [])
+        requested_cart_item_ids = list(validated_data.get("cart_items").values_list("id", flat=True))
         with transaction.atomic():
             cart_items = list(
                 CartItem.objects.get_user_cart_items(user)
