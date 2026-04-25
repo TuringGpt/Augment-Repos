@@ -191,8 +191,15 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context.get("request").user
+        requested_cart_item_ids = self.initial_data.get("cart_items", [])
         with transaction.atomic():
-            cart_items = list(validated_data.get("cart_items").select_for_update())
+            cart_items = list(
+                CartItem.objects.get_user_cart_items(user)
+                .select_for_update()
+                .filter(id__in=requested_cart_item_ids)
+            )
+            if len(cart_items) != len(requested_cart_item_ids):
+                raise serializers.ValidationError({"cart_items": ["One or more cart items do not exist"]})
             if any(cart_item.product_id is None for cart_item in cart_items):
                 raise serializers.ValidationError({"cart_items": ["One or more cart items have no associated product"]})
 
