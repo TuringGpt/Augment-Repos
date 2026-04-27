@@ -1,5 +1,6 @@
 
 from rest_framework import serializers
+from django.db import transaction
 from .models import Order, OrderItem, Payment, ShippingAddress, BillingAddress, ContactInformation
 from carts.models import CartItem
 from products.serializers import ProductListSerializer
@@ -96,10 +97,13 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("cart_items cannot be empty")
         if len(value) != len(set(value)):
             raise serializers.ValidationError("cart_items must not contain duplicates")
-        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=value)
-        if cart_items.count() != len(value):
+        requested_cart_item_ids = list(value)
+        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=requested_cart_item_ids)
+        if cart_items.count() != len(requested_cart_item_ids):
             raise serializers.ValidationError("One or more cart items do not exist")
-        return cart_items
+        if cart_items.filter(product__isnull=True).exists():
+            raise serializers.ValidationError("One or more cart items have no associated product")
+        return requested_cart_item_ids
     
 
     def validate_shipping_address(self, value):
@@ -187,23 +191,36 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-
         user = self.context.get("request").user
-        order = Order.objects.create(
-            created_by=user,
-            shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
-            billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
-            contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
-        )
-
-        for cart_item in validated_data.get("cart_items"):
-            OrderItem.objects.create(
-                order=order, 
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                cart_item=cart_item,
-                created_by=user,
+        requested_cart_item_ids = list(validated_data.get("cart_items") or [])
+        if len(requested_cart_item_ids) != len(set(requested_cart_item_ids)):
+            raise serializers.ValidationError({"cart_items": ["cart_items must not contain duplicates"]})
+        with transaction.atomic():
+            cart_items = list(
+                CartItem.objects.get_user_cart_items(user)
+                .select_for_update()
+                .filter(id__in=requested_cart_item_ids)
             )
+            if len(cart_items) != len(requested_cart_item_ids):
+                raise serializers.ValidationError({"cart_items": ["One or more cart items do not exist"]})
+            if any(cart_item.product_id is None for cart_item in cart_items):
+                raise serializers.ValidationError({"cart_items": ["One or more cart items have no associated product"]})
+
+            order = Order.objects.create(
+                created_by=user,
+                shipping_address=validated_data.get("shipping_address_id") or validated_data.get("shipping_address"), 
+                billing_address= validated_data.get("billing_address_id") or validated_data.get("billing_address"),
+                contact_information= validated_data.get("contact_information_id") or validated_data.get("contact_information"),
+            )
+
+            for cart_item in cart_items:
+                OrderItem.objects.create(
+                    order=order, 
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    cart_item=cart_item,
+                    created_by=user,
+                )
 
         return order
 

@@ -150,6 +150,22 @@ class CreateOrderViewTests(BaseAPITestCase):
         # AND no order should be created
         self.assertEqual(Order.objects.count(), 0)
 
+    def test_create_order_with_deleted_product_cart_item(self):
+        cart_item = CartItemFactory(
+            product=self.product1,
+            quantity=1,
+            created_by=self.member_user
+        )
+        self.product1.delete()
+        cart_item.refresh_from_db()
+        url = reverse("v1:checkout:create_order")
+        payload = {"cart_items": [str(cart_item.id)]}
+        response = self.member_client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIsNone(cart_item.product)
+        self.assertIn("One or more cart items have no associated product", str(response.data))
+        self.assertEqual(Order.objects.count(), 0)
+
     def test_create_order_unauthenticated(self):
         # GIVEN a user is not authenticated
         cart_item = CartItemFactory(
