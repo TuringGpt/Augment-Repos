@@ -98,11 +98,16 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         if len(value) != len(set(value)):
             raise serializers.ValidationError("cart_items must not contain duplicates")
         requested_cart_item_ids = list(value)
-        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=requested_cart_item_ids)
+        cart_items = CartItem.objects.get_user_cart_items(user).select_related("product").filter(
+            id__in=requested_cart_item_ids
+        )
         if cart_items.count() != len(requested_cart_item_ids):
             raise serializers.ValidationError("One or more cart items do not exist")
-        if cart_items.filter(product__isnull=True).exists():
-            raise serializers.ValidationError("One or more cart items have no associated product")
+        for cart_item in cart_items:
+            if cart_item.product is None:
+                raise serializers.ValidationError("One or more cart items have no associated product")
+            if not cart_item.product.check_stock(cart_item.quantity):
+                raise serializers.ValidationError("One or more cart items are out of stock")
         return requested_cart_item_ids
     
 
@@ -205,6 +210,8 @@ class CreateOrderSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"cart_items": ["One or more cart items do not exist"]})
             if any(cart_item.product_id is None for cart_item in cart_items):
                 raise serializers.ValidationError({"cart_items": ["One or more cart items have no associated product"]})
+            if any(not cart_item.product.check_stock(cart_item.quantity) for cart_item in cart_items):
+                raise serializers.ValidationError({"cart_items": ["One or more cart items are out of stock"]})
 
             order = Order.objects.create(
                 created_by=user,
