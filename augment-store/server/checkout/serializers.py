@@ -97,12 +97,13 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("cart_items cannot be empty")
         if len(value) != len(set(value)):
             raise serializers.ValidationError("cart_items must not contain duplicates")
-        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=value)
-        if cart_items.count() != len(value):
+        requested_cart_item_ids = list(value)
+        cart_items = CartItem.objects.get_user_cart_items(user).filter(id__in=requested_cart_item_ids)
+        if cart_items.count() != len(requested_cart_item_ids):
             raise serializers.ValidationError("One or more cart items do not exist")
         if cart_items.filter(product__isnull=True).exists():
             raise serializers.ValidationError("One or more cart items have no associated product")
-        return cart_items
+        return requested_cart_item_ids
     
 
     def validate_shipping_address(self, value):
@@ -191,7 +192,9 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context.get("request").user
-        requested_cart_item_ids = list(validated_data.get("cart_items").values_list("id", flat=True))
+        requested_cart_item_ids = list(validated_data.get("cart_items") or [])
+        if len(requested_cart_item_ids) != len(set(requested_cart_item_ids)):
+            raise serializers.ValidationError({"cart_items": ["cart_items must not contain duplicates"]})
         with transaction.atomic():
             cart_items = list(
                 CartItem.objects.get_user_cart_items(user)
