@@ -10,6 +10,7 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
         fields = ["email"]
+        extra_kwargs = {"email": {"validators": []}}
 
     def validate_email(self, value):
         return value.strip().lower()
