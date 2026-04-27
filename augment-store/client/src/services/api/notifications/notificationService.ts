@@ -41,16 +41,12 @@ export const notificationService = {
       // Transform backend notifications to frontend format
       const notifications: Notification[] = response.results.map(transformNotificationFromAPI)
 
-      // Calculate unread count
-      const unreadCount = notifications.filter((n) => !n.isRead).length
-
       return {
         notifications,
         total: response.count,
         page,
         limit,
         totalPages: Math.ceil(response.count / limit),
-        unreadCount,
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error)

@@ -58,7 +58,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       if (requestId === fetchRequestCounter) {
         set({
           notifications: response.notifications,
-          unreadCount: response.unreadCount,
           total: response.total,
           page: response.page,
           limit: response.limit,
@@ -109,15 +108,23 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       return
     }
 
+    // Find the notification to check if it's already read
+    const notification = initialState.notifications.find((n) => n.id === notificationId)
+    if (!notification || notification.isRead) {
+      // Already read or not found, nothing to do
+      return
+    }
+
     // Add to marking set
     const newMarkingAsRead = new Set(initialState.markingAsRead)
     newMarkingAsRead.add(notificationId)
 
     // OPTIMISTIC UPDATE: Update local state immediately before API call
-    const optimisticNotifications = initialState.notifications.map((notification) =>
-      notification.id === notificationId ? { ...notification, isRead: true } : notification
+    const optimisticNotifications = initialState.notifications.map((n) =>
+      n.id === notificationId ? { ...n, isRead: true } : n
     )
-    const optimisticUnreadCount = optimisticNotifications.filter((n) => !n.isRead).length
+    // Decrement total unread count by 1 (not recalculate from local list)
+    const optimisticUnreadCount = Math.max(0, initialState.unreadCount - 1)
 
     set({
       notifications: optimisticNotifications,
@@ -145,10 +152,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const latestState = get()
 
       // Revert notification back to unread
-      const revertedNotifications = latestState.notifications.map((notification) =>
-        notification.id === notificationId ? { ...notification, isRead: false } : notification
+      const revertedNotifications = latestState.notifications.map((n) =>
+        n.id === notificationId ? { ...n, isRead: false } : n
       )
-      const revertedUnreadCount = revertedNotifications.filter((n) => !n.isRead).length
+      // Increment total unread count back by 1 (not recalculate from local list)
+      const revertedUnreadCount = latestState.unreadCount + 1
 
       // Remove from marking set on error using latest state
       const finalMarkingAsRead = new Set(latestState.markingAsRead)

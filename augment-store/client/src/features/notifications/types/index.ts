@@ -39,6 +39,7 @@ export interface Notification {
 
 /**
  * Notification List Response
+ * Note: unreadCount is managed separately via fetchUnreadCount() for consistency
  */
 export interface NotificationListResponse {
   notifications: Notification[]
@@ -46,7 +47,6 @@ export interface NotificationListResponse {
   page: number
   limit: number
   totalPages: number
-  unreadCount: number
 }
 
 /**
