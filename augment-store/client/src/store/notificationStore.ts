@@ -81,7 +81,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     fetchUnreadCountRequestCounter += 1
     const requestId = fetchUnreadCountRequestCounter
 
-    set({ error: null })
     try {
       const count = await notificationService.getUnreadCount()
 
