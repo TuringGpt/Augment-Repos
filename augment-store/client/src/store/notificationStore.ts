@@ -25,6 +25,10 @@ interface NotificationState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
+// Request counter for unread count fetches
+// Prevents concurrent calls from racing and stale responses from overwriting newer count
+let fetchUnreadCountRequestCounter = 0
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -74,13 +78,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   fetchUnreadCount: async () => {
+    // Increment counter and capture the current request ID
+    fetchUnreadCountRequestCounter += 1
+    const requestId = fetchUnreadCountRequestCounter
+
     try {
       const count = await notificationService.getUnreadCount()
-      set({ unreadCount: count })
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchUnreadCountRequestCounter) {
+        set({ unreadCount: count })
+      }
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to fetch unread count',
-      })
+      // Only update error state if this is still the latest request
+      if (requestId === fetchUnreadCountRequestCounter) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch unread count',
+        })
+      }
     }
   },
 
