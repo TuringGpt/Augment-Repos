@@ -93,6 +93,24 @@ export const notificationService = {
     notificationIds?: string[]
   }): Promise<MarkAllAsReadResponse> => {
     try {
+      // Validate that exactly one option is provided
+      const hasMarkAllAsRead = options.markAllAsRead === true
+      const hasNotificationIds =
+        options.notificationIds !== undefined &&
+        options.notificationIds.length > 0
+
+      if (!hasMarkAllAsRead && !hasNotificationIds) {
+        throw new Error(
+          'Either markAllAsRead must be true or notificationIds array must be provided with at least one ID'
+        )
+      }
+
+      if (hasMarkAllAsRead && hasNotificationIds) {
+        throw new Error(
+          'Cannot provide both markAllAsRead and notificationIds - only one option is allowed'
+        )
+      }
+
       const requestData: MarkAllAsReadRequest = {
         mark_all_as_read: options.markAllAsRead,
         notification_ids: options.notificationIds,
