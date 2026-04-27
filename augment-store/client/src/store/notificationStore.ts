@@ -129,6 +129,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // This prevents incorrect rollback when unreadCount was already 0
     const actualDecrement = initialState.unreadCount - optimisticUnreadCount
 
+    // Invalidate any in-flight fetchUnreadCount() requests to prevent them
+    // from overwriting this optimistic update with stale server data
+    fetchUnreadCountRequestCounter += 1
+
     set({
       notifications: optimisticNotifications,
       unreadCount: optimisticUnreadCount,
