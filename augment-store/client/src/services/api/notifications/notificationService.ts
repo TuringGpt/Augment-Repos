@@ -7,6 +7,8 @@ import type {
   NotificationListResponse,
   MarkAsReadRequest,
   MarkAsReadResponse,
+  MarkAllAsReadRequest,
+  MarkAllAsReadResponse,
   UnreadCountResponse,
 } from '@features/notifications/types'
 
@@ -74,6 +76,34 @@ export const notificationService = {
       return response
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Mark all notifications as read or mark specific notifications as read
+   * @param options - Options for marking notifications as read
+   * @param options.markAllAsRead - If true, marks all notifications as read
+   * @param options.notificationIds - Array of notification IDs to mark as read
+   * @returns Response containing count and array of updated notifications
+   * @note Either markAllAsRead or notificationIds must be provided, but not both
+   */
+  markAllAsRead: async (options: {
+    markAllAsRead?: boolean
+    notificationIds?: string[]
+  }): Promise<MarkAllAsReadResponse> => {
+    try {
+      const requestData: MarkAllAsReadRequest = {
+        mark_all_as_read: options.markAllAsRead,
+        notification_ids: options.notificationIds,
+      }
+      const response = await apiClient.patch<MarkAllAsReadResponse>(
+        API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_AS_READ,
+        requestData
+      )
+      return response
+    } catch (error) {
+      console.error('Failed to mark notifications as read:', error)
       throw error
     }
   },
