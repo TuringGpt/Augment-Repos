@@ -621,7 +621,7 @@ const AdminContactMessagesPage = () => {
                 // Multiple errors: show all errors with contact identifiers
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                    Failed to delete {deleteErrors.size} contacts:
+                    {t('admin.contactMessagesPage.deleteErrors.failedToDelete', { count: deleteErrors.size })}:
                   </Typography>
                   <Box component="ul" sx={{ m: 0, pl: 2 }}>
                     {Array.from(deleteErrors.entries()).map(([contactId, errorMessage]) => {

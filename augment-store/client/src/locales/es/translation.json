@@ -1120,6 +1120,10 @@
         "date": "Fecha",
         "actions": "Acciones",
         "id": "ID del Mensaje"
+      },
+      "deleteErrors": {
+        "failedToDelete": "Error al eliminar {{count}} contacto",
+        "failedToDelete_other": "Error al eliminar {{count}} contactos"
       }
     },
     "ticketsPage": {

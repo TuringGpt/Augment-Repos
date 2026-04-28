@@ -1120,6 +1120,10 @@
         "date": "Datum",
         "actions": "Aktionen",
         "id": "Nachrichten-ID"
+      },
+      "deleteErrors": {
+        "failedToDelete": "Fehler beim Löschen von {{count}} Kontakt",
+        "failedToDelete_other": "Fehler beim Löschen von {{count}} Kontakten"
       }
     },
     "ticketsPage": {
