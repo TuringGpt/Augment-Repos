@@ -906,7 +906,10 @@ const AdminContactMessagesPage = () => {
                               size="small"
                               color="error"
                               onClick={(e) => handleDeleteContact(contact.id, e)}
-                              disabled={deletingContactIds.has(contact.id)}
+                              disabled={
+                                deletingContactIds.has(contact.id) ||
+                                inFlightUpdatesRef.current.has(contact.id)
+                              }
                               aria-label={t('admin.contactMessagesPage.deleteMessage')}
                             >
                               {deletingContactIds.has(contact.id) ? (
