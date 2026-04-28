@@ -137,4 +137,33 @@ export const notificationService = {
       throw error
     }
   },
+
+  /**
+   * Get admin notifications from backend API
+   * Admin endpoint returns paginated response with count, next, previous, results
+   */
+  getAdminNotifications: async (page = 1, limit = 10): Promise<NotificationListResponse> => {
+    try {
+      const response = await apiClient.get<PaginatedNotificationsAPI>(
+        API_ENDPOINTS.NOTIFICATIONS.ADMIN,
+        {
+          params: { page, limit },
+        }
+      )
+
+      // Transform backend notifications to frontend format
+      const notifications: Notification[] = response.results.map(transformNotificationFromAPI)
+
+      return {
+        notifications,
+        total: response.count,
+        page,
+        limit,
+        totalPages: Math.ceil(response.count / limit),
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin notifications:', error)
+      throw error
+    }
+  },
 }
