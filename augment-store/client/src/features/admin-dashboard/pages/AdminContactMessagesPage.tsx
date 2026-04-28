@@ -601,9 +601,8 @@ const AdminContactMessagesPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : contacts.length > 0 ? (
-        /* Contact Messages Table */
-        <Box>
+      ) : (
+        <>
           {/* Bulk Update Error State */}
           {bulkUpdateError && (
             <Alert severity="error" sx={{ mb: 3 }}>
@@ -642,6 +641,10 @@ const AdminContactMessagesPage = () => {
               )}
             </Alert>
           )}
+
+          {contacts.length > 0 ? (
+            /* Contact Messages Table */
+            <Box>
 
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -927,14 +930,16 @@ const AdminContactMessagesPage = () => {
             </Table>
           </TableContainer>
         </Box>
-      ) : !fetchError ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography color="text.secondary">
-            {t('admin.contactMessagesPage.noMessages')}
-          </Typography>
-        </Paper>
-      ) : null}
+          ) : !fetchError ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+              <Typography color="text.secondary">
+                {t('admin.contactMessagesPage.noMessages')}
+              </Typography>
+            </Paper>
+          ) : null}
+        </>
+      )}
 
       {/* Contact Message Details Drawer */}
       <Drawer
