@@ -397,9 +397,15 @@ const AdminContactMessagesPage = () => {
         }
 
         // If the deleted contact was being viewed in the drawer, close the drawer
-        if (selectedContact?.id === contactId) {
-          handleCloseDetailsDrawer()
-        }
+        // Check the current drawer selection at completion time to avoid closing
+        // unexpectedly if the user has opened a different contact
+        setSelectedContact((currentContact) => {
+          if (currentContact?.id === contactId) {
+            handleCloseDetailsDrawer()
+            return null
+          }
+          return currentContact
+        })
       }
     } catch (error) {
       // Error is already handled by the store and stored in deleteErrors
