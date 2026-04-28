@@ -44,8 +44,9 @@ class NewsletterTests(BaseAPITestCase):
             "email": "inactive@example.com",
         }
         response = self.authenticated_client.post(url, payload)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("email", response.data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Newsletter.objects.filter(email="inactive@example.com").count(), 1)
+        self.assertTrue(Newsletter.objects.get(email="inactive@example.com").is_active)
 
     def test_subscribe_newsletter_normalizes_email(self):
         url = reverse("v1:create_newsletter")
