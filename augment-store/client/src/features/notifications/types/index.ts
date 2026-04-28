@@ -70,3 +70,22 @@ export interface MarkAsReadResponse {
 export interface UnreadCountResponse {
   unread_count: number
 }
+
+/**
+ * Mark All as Read Request
+ */
+export interface MarkAllAsReadRequest {
+  mark_all_as_read?: boolean
+  notification_ids?: string[]
+}
+
+/**
+ * Mark All as Read Response
+ */
+export interface MarkAllAsReadResponse {
+  count: number
+  notifications: Array<{
+    id: string
+    is_read: boolean
+  }>
+}
