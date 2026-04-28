@@ -1132,6 +1132,22 @@ class ProductTests(BaseAPITestCase):
         self.assertIn(image2, product.images.all())
         self.assertIn(image3, product.images.all())
 
+    def test_create_product_rejects_unowned_images(self):
+        other_image = FileFactory(created_by=self.merchant_user_2)
+        url = reverse("v1:create_product")
+        payload = {
+            "name": "New Product with Unowned Image",
+            "description": "New Product Description",
+            "price": "299.99",
+            "brand": str(self.brand.id),
+            "category": str(self.category.id),
+            "quantity": 15,
+            "images": [str(other_image.id)],
+        }
+        response = self.merchant_client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("images", response.data)
+
     def test_create_product_unauthenticated(self):
         # GIVEN a user is not authenticated
         # WHEN we make a post request to create a product
