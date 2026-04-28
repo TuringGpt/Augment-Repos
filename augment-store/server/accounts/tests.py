@@ -185,6 +185,16 @@ class UserProfileTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("profile_image", response.data)
 
+    def test_update_user_profile_profile_image_owner_succeeds(self):
+        user = UserFactory(email="owner-ok@example.com", is_active=True)
+        owned_file = FileFactory(created_by=user)
+        self.authenticated_client.force_authenticate(user=user)
+        url = reverse("v1:user_profile")
+        response = self.authenticated_client.patch(url, {"profile_image": str(owned_file.id)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user.refresh_from_db()
+        self.assertEqual(user.profile_image_id, owned_file.id)
+
     def test_user_profile_caching(self):
         # GIVEN an authenticated user exists
         user = UserFactory(email="cachetest@example.com")

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import User
 from storage.serializers import FileSerializer, FileListSerializer
-from storage.models import File
 from currencies.serializers import ListCurrencySerializer
 
 
@@ -58,8 +57,12 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
         return value
 
     def validate_profile_image(self, value):
-        user = self.context.get("request").user
-        if value and value.created_by_id and value.created_by_id != user.id:
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not user or getattr(user, "is_anonymous", True):
+            raise serializers.ValidationError("Profile image does not exist")
+
+        if value and value.created_by_id != user.id:
             raise serializers.ValidationError("Profile image does not exist")
         return value
 
