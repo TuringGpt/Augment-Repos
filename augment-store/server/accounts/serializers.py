@@ -56,6 +56,16 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Mobile number is too long")
         return value
 
+    def validate_profile_image(self, value):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not user or getattr(user, "is_anonymous", True):
+            raise serializers.ValidationError("Profile image does not exist")
+
+        if value and value.created_by_id != user.id:
+            raise serializers.ValidationError("Profile image does not exist")
+        return value
+
 
 class UserListSerializer(serializers.ModelSerializer):
     """Serializer for retrieving list of users"""
