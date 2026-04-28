@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import Newsletter
 
 class NewsletterSerializer(serializers.ModelSerializer):
@@ -10,7 +11,16 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
         fields = ["email"]
-        extra_kwargs = {"email": {"validators": []}}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        email_field = self.fields.get("email")
+        if email_field:
+            email_field.validators = [
+                validator
+                for validator in email_field.validators
+                if not isinstance(validator, UniqueValidator)
+            ]
 
     def validate_email(self, value):
         return value.lower()
