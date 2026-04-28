@@ -360,10 +360,20 @@ const AdminContactMessagesPage = () => {
     // Prevent row click event from firing
     event.stopPropagation()
 
-    // Check if delete is already in-flight for this contact (from store state)
+    // Ref-based guard: Check if delete is already in-flight for this contact
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (inFlightUpdatesRef.current.has(contactId)) {
+      return
+    }
+
+    // Also check the store state as an additional guard
     if (deletingContactIds.has(contactId)) {
       return
     }
+
+    // Mark as in-flight immediately (synchronous update)
+    inFlightUpdatesRef.current.add(contactId)
 
     try {
       // Call the deleteContact store action
@@ -387,6 +397,9 @@ const AdminContactMessagesPage = () => {
       // Error is already handled by the store and stored in deleteErrors
       // Log only the error message to avoid leaking sensitive information
       console.error('Failed to delete contact - check deleteErrors state for details')
+    } finally {
+      // Remove from in-flight set (synchronous update)
+      inFlightUpdatesRef.current.delete(contactId)
     }
   }
 
