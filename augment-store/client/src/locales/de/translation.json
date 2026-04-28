@@ -1098,6 +1098,7 @@
       "messageDetails": "Nachrichtendetails",
       "markAsRead": "Als gelesen markieren",
       "markAsResolved": "Als gelöst markieren",
+      "deleteMessage": "Nachricht löschen",
       "selectAllContacts": "Alle Kontakte auswählen",
       "selectContact": "Kontakt {{name}} auswählen",
       "toolbar": {

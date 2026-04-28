@@ -67,7 +67,10 @@ const AdminContactMessagesPage = () => {
     updateContact,
     bulkUpdateContacts,
     isBulkUpdating,
-    bulkUpdateError
+    bulkUpdateError,
+    deleteContact,
+    deletingContactIds,
+    deleteErrors,
   } = useContactStore()
   const contacts = contactsData?.results || []
 
@@ -353,6 +356,40 @@ const AdminContactMessagesPage = () => {
     }
   }
 
+  const handleDeleteContact = async (contactId: string, event: React.MouseEvent) => {
+    // Prevent row click event from firing
+    event.stopPropagation()
+
+    // Check if delete is already in-flight for this contact (from store state)
+    if (deletingContactIds.has(contactId)) {
+      return
+    }
+
+    try {
+      // Call the deleteContact store action
+      // The store handles optimistic updates and rollback on error
+      await deleteContact(contactId)
+
+      // If the deleted contact was selected, remove it from selection
+      if (selectedContactIds.has(contactId)) {
+        setSelectedContactIds((prev) => {
+          const newSelected = new Set(prev)
+          newSelected.delete(contactId)
+          return newSelected
+        })
+      }
+
+      // If the deleted contact was being viewed in the drawer, close the drawer
+      if (selectedContact?.id === contactId) {
+        handleCloseDetailsDrawer()
+      }
+    } catch (error) {
+      // Error is already handled by the store and stored in deleteErrors
+      // Log only the error message to avoid leaking sensitive information
+      console.error('Failed to delete contact - check deleteErrors state for details')
+    }
+  }
+
   // Toolbar action handlers
   const handleBulkMarkAsRead = async () => {
     // Only operate on contacts selected in the current page to match the UI count
@@ -548,6 +585,13 @@ const AdminContactMessagesPage = () => {
           {bulkUpdateError && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {bulkUpdateError}
+            </Alert>
+          )}
+
+          {/* Delete Error State */}
+          {deleteErrors.size > 0 && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {Array.from(deleteErrors.values())[0]}
             </Alert>
           )}
 
@@ -804,6 +848,23 @@ const AdminContactMessagesPage = () => {
                             </span>
                           </Tooltip>
                         )}
+                        <Tooltip title={t('admin.contactMessagesPage.deleteMessage')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={(e) => handleDeleteContact(contact.id, e)}
+                              disabled={deletingContactIds.has(contact.id)}
+                              aria-label={t('admin.contactMessagesPage.deleteMessage')}
+                            >
+                              {deletingContactIds.has(contact.id) ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
