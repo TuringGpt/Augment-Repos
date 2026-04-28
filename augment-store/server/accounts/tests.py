@@ -3,6 +3,7 @@ from accounts.factory import UserFactory
 from rest_framework import status
 from django.urls import reverse
 from accounts.services import UserProfileCacheService
+from storage.factory import FileFactory
 
 
 class UserProfileTests(BaseAPITestCase):
@@ -173,6 +174,16 @@ class UserProfileTests(BaseAPITestCase):
         # THEN we should get a 400 Bad Request response
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("mobile", response.data)
+
+    def test_update_user_profile_profile_image_must_be_owned(self):
+        user = UserFactory(email="owner@example.com", is_active=True)
+        other_user = UserFactory(email="other@example.com", is_active=True)
+        other_file = FileFactory(created_by=other_user)
+        self.authenticated_client.force_authenticate(user=user)
+        url = reverse("v1:user_profile")
+        response = self.authenticated_client.patch(url, {"profile_image": str(other_file.id)})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("profile_image", response.data)
 
     def test_user_profile_caching(self):
         # GIVEN an authenticated user exists

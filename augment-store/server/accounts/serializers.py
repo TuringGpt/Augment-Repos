@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User
 from storage.serializers import FileSerializer, FileListSerializer
+from storage.models import File
 from currencies.serializers import ListCurrencySerializer
 
 
@@ -54,6 +55,12 @@ class UpdateUserProfileSerializer(serializers.ModelSerializer):
         """Validate mobile number format"""
         if value and len(value) > 20:
             raise serializers.ValidationError("Mobile number is too long")
+        return value
+
+    def validate_profile_image(self, value):
+        user = self.context.get("request").user
+        if value and value.created_by_id and value.created_by_id != user.id:
+            raise serializers.ValidationError("Profile image does not exist")
         return value
 
 
