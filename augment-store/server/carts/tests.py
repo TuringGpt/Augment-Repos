@@ -196,6 +196,16 @@ class AddToCartViewTests(BaseAPITestCase):
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 5)
 
+    def test_add_to_cart_existing_product_rejects_exceeding_stock(self):
+        cart = Cart.objects.get_user_cart(self.member_user)
+        cart_item = CartItemFactory(product=self.product_low_stock, quantity=4, created_by=self.member_user)
+        cart.items.add(cart_item)
+        response = self.member_client.post(
+            reverse("v1:carts:add_to_cart"),
+            {"product_id": str(self.product_low_stock.id), "quantity": 2},
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_add_to_cart_invalid_product_id(self):
         # GIVEN an authenticated user exists
         # AND an invalid product ID

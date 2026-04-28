@@ -13,6 +13,7 @@ class AddToCartSerializer(serializers.Serializer):
     def validate(self, attrs):
         product_id = attrs.get("product_id")
         quantity = attrs.get("quantity")
+        user = self.context.get("request").user
 
         try:
             product: Product = Product.objects.get(id=product_id)
@@ -20,6 +21,13 @@ class AddToCartSerializer(serializers.Serializer):
             raise serializers.ValidationError("Product does not exist")
 
         if not product.check_stock(quantity):
+            raise serializers.ValidationError("Quantity exceeds stock")
+
+        user_cart = Cart.objects.get_user_cart(user)
+        existing_quantity = (
+            user_cart.items.filter(product=product).values_list("quantity", flat=True).first() or 1
+        )
+        if not product.check_stock(existing_quantity + quantity):
             raise serializers.ValidationError("Quantity exceeds stock")
 
         attrs['product'] = product
