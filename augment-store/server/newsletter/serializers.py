@@ -23,7 +23,7 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
             ]
 
     def validate_email(self, value):
-        return value.lower()
+        return value.strip().lower()
 
     def create(self, validated_data):
         newsletter, created = Newsletter.objects.update_or_create(
