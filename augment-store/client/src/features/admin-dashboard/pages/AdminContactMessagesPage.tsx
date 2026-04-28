@@ -385,18 +385,21 @@ const AdminContactMessagesPage = () => {
       // The store handles optimistic updates and rollback on error
       await deleteContact(contactId)
 
-      // If the deleted contact was selected, remove it from selection
-      if (selectedContactIds.has(contactId)) {
-        setSelectedContactIds((prev) => {
-          const newSelected = new Set(prev)
-          newSelected.delete(contactId)
-          return newSelected
-        })
-      }
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // If the deleted contact was selected, remove it from selection
+        if (selectedContactIds.has(contactId)) {
+          setSelectedContactIds((prev) => {
+            const newSelected = new Set(prev)
+            newSelected.delete(contactId)
+            return newSelected
+          })
+        }
 
-      // If the deleted contact was being viewed in the drawer, close the drawer
-      if (selectedContact?.id === contactId) {
-        handleCloseDetailsDrawer()
+        // If the deleted contact was being viewed in the drawer, close the drawer
+        if (selectedContact?.id === contactId) {
+          handleCloseDetailsDrawer()
+        }
       }
     } catch (error) {
       // Error is already handled by the store and stored in deleteErrors
