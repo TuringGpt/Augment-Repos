@@ -13,7 +13,7 @@ class SubscribeNewsletterSerializer(serializers.ModelSerializer):
         extra_kwargs = {"email": {"validators": []}}
 
     def validate_email(self, value):
-        return value.strip().lower()
+        return value.lower()
 
     def create(self, validated_data):
         newsletter, created = Newsletter.objects.update_or_create(
