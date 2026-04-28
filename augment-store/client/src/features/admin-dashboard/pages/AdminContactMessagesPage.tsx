@@ -609,7 +609,32 @@ const AdminContactMessagesPage = () => {
           {/* Delete Error State */}
           {deleteErrors.size > 0 && (
             <Alert severity="error" sx={{ mb: 3 }}>
-              {Array.from(deleteErrors.values())[0]}
+              {deleteErrors.size === 1 ? (
+                // Single error: show just the error message
+                Array.from(deleteErrors.values())[0]
+              ) : (
+                // Multiple errors: show all errors with contact identifiers
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                    Failed to delete {deleteErrors.size} contacts:
+                  </Typography>
+                  <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                    {Array.from(deleteErrors.entries()).map(([contactId, errorMessage]) => {
+                      // Find contact info for better error context
+                      const contact = contacts.find((c) => c.id === contactId)
+                      const contactIdentifier = contact
+                        ? `${contact.name} (${contact.email})`
+                        : `Contact ID: ${contactId}`
+
+                      return (
+                        <Typography component="li" variant="body2" key={contactId} sx={{ mb: 0.5 }}>
+                          <strong>{contactIdentifier}:</strong> {errorMessage}
+                        </Typography>
+                      )
+                    })}
+                  </Box>
+                </Box>
+              )}
             </Alert>
           )}
 
