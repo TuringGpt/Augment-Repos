@@ -214,10 +214,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       ? Math.max(0, initialState.unreadCount - 1)
       : initialState.unreadCount
 
-    // Capture the pre-optimistic unread count for rollback
-    // This prevents race conditions where fetchUnreadCount() updates the count
-    // while markAsRead() API call is in-flight, causing incorrect rollback values
-    const preOptimisticUnreadCount = initialState.unreadCount
+    // Track how much we actually decremented for rollback
+    // This allows us to revert only our own change while preserving
+    // any other updates that happened during the in-flight API call
+    const actualDecrement = initialState.unreadCount - optimisticUnreadCount
 
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
@@ -269,10 +269,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         n.id === notificationId ? { ...n, isRead: false } : n
       )
 
-      // Restore unread count to the pre-optimistic snapshot value
-      // This prevents race conditions where fetchUnreadCount() may have updated
-      // the count during the in-flight markAsRead() API call
-      const revertedUnreadCount = preOptimisticUnreadCount
+      // Revert unread count by adding back the exact amount we decremented
+      // This preserves any other updates (e.g., from fetchUnreadCount() or other
+      // markAsRead() calls) that happened while this API call was in-flight
+      const revertedUnreadCount = latestState.unreadCount + actualDecrement
 
       // Remove from marking set on error using latest state
       const finalMarkingAsRead = new Set(latestState.markingAsRead)
