@@ -227,9 +227,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // from overwriting this optimistic update with stale server data
     fetchUnreadCountRequestCounter += 1
 
-    // Invalidate any in-flight fetchNotifications() requests to prevent
-    // stale responses from reverting the optimistic read state in the main list
-    fetchRequestCounter += 1
+    // Only invalidate fetchNotifications() when called from NotificationsPage (not from menu)
+    // This prevents menu-driven markAsRead from canceling unrelated page pagination requests
+    // which would leave page/notifications out of sync with no loading indicator
+    if (!fromMenu) {
+      fetchRequestCounter += 1
+    }
 
     // Invalidate any in-flight fetchNotificationsWithoutPaginationUpdate() requests
     // to prevent stale menu fetch responses from reverting the optimistic read state
@@ -240,9 +243,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuNotifications: optimisticMenuNotifications,
       unreadCount: optimisticUnreadCount,
       markingAsRead: newMarkingAsRead,
-      // Clear loading states to prevent them from being stranded at true
-      // when in-flight requests are invalidated by the counter increments above
-      isLoading: false,
+      // Only clear isLoading when we actually invalidated the request (not from menu)
+      // This prevents removing the loading indicator from an ongoing page fetch
+      isLoading: fromMenu ? initialState.isLoading : false,
       menuIsLoading: false,
     })
 
