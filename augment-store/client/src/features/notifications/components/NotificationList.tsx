@@ -133,7 +133,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       )}
 
       {/* Notification Items */}
-      {!menuIsLoading && menuNotifications.length > 0 && (
+      {!menuIsLoading && !menuError && menuNotifications.length > 0 && (
         <>
           {menuNotifications.slice(0, 5).map((notification) => {
             const isMarking = markingAsRead.has(notification.id)
