@@ -223,6 +223,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // any other updates that happened during the in-flight API call
     const actualDecrement = initialState.unreadCount - optimisticUnreadCount
 
+    // Store the original isRead state for rollback
+    // This ensures we revert to the pre-optimistic state per list
+    // rather than always setting isRead: false on rollback
+    const originalIsReadInNotifications = isReadInNotifications
+    const originalIsReadInMenuNotifications = isReadInMenuNotifications
+
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
     fetchUnreadCountRequestCounter += 1
@@ -268,12 +274,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Read latest state in catch block to avoid stale data
       const latestState = get()
 
-      // Revert notification back to unread in both arrays
+      // Revert notification back to original isRead state in both arrays
+      // Use the pre-optimistic state for each list to avoid incorrectly
+      // flipping a notification that was already read in one list
       const revertedNotifications = latestState.notifications.map((n) =>
-        n.id === notificationId ? { ...n, isRead: false } : n
+        n.id === notificationId ? { ...n, isRead: originalIsReadInNotifications } : n
       )
       const revertedMenuNotifications = latestState.menuNotifications.map((n) =>
-        n.id === notificationId ? { ...n, isRead: false } : n
+        n.id === notificationId ? { ...n, isRead: originalIsReadInMenuNotifications } : n
       )
 
       // Revert unread count by adding back the exact amount we decremented
