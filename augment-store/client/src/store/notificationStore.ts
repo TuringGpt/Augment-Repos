@@ -165,16 +165,17 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const notification = initialState.notifications.find((n) => n.id === notificationId)
     const menuNotification = initialState.menuNotifications.find((n) => n.id === notificationId)
 
-    // Check if the notification is already read (in either array)
-    if (notification && notification.isRead) {
-      return
-    }
-    if (menuNotification && menuNotification.isRead) {
+    // If not found in either array, nothing to do
+    if (!notification && !menuNotification) {
       return
     }
 
-    // If not found in either array, nothing to do
-    if (!notification && !menuNotification) {
+    // Only return early if the notification is already read in ALL places where it exists
+    // This prevents inconsistency between the two arrays
+    const isReadInNotifications = notification ? notification.isRead : true
+    const isReadInMenuNotifications = menuNotification ? menuNotification.isRead : true
+
+    if (isReadInNotifications && isReadInMenuNotifications) {
       return
     }
 
