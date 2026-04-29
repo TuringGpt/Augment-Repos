@@ -179,6 +179,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       return
     }
 
+    // Check if the notification is currently unread in at least one location
+    // Only decrement unread count if it's actually contributing to the unread total
+    const isCurrentlyUnread = !isReadInNotifications || !isReadInMenuNotifications
+
     // Add to marking set
     const newMarkingAsRead = new Set(initialState.markingAsRead)
     newMarkingAsRead.add(notificationId)
@@ -192,8 +196,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       n.id === notificationId ? { ...n, isRead: true } : n
     )
 
-    // Decrement total unread count by 1 (not recalculate from local list)
-    const optimisticUnreadCount = Math.max(0, initialState.unreadCount - 1)
+    // Decrement total unread count by 1 only if the notification was actually unread
+    // This prevents undercounting when one list is stale
+    const optimisticUnreadCount = isCurrentlyUnread
+      ? Math.max(0, initialState.unreadCount - 1)
+      : initialState.unreadCount
 
     // Capture the actual change made for accurate rollback
     // This prevents incorrect rollback when unreadCount was already 0
