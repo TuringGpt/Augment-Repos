@@ -47,7 +47,13 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
     if (!isRead) {
-      await markAsRead(notificationId)
+      try {
+        await markAsRead(notificationId)
+      } catch (error) {
+        // Error is already handled by the store (sets error state and rolls back optimistic update)
+        // Just log it here and continue to close the menu for consistent behavior
+        console.error('Failed to mark notification as read:', error)
+      }
     }
     onClose()
   }
