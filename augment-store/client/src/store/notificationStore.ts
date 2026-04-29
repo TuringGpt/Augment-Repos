@@ -282,6 +282,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       unreadCount: 0,
       total: 0,
       page: 1,
+      limit: 10,
       totalPages: 0,
       // Clear loading states to prevent them from being stranded at true
       // when in-flight requests are invalidated by the counter increments above
