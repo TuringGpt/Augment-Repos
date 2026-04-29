@@ -50,6 +50,10 @@ let fetchRequestCounter = 0
 // Prevents stale responses from overwriting newer state or repopulating after clear
 let fetchByIdRequestCounter = 0
 
+// Request counter to track the latest status request
+// Prevents stale responses from overwriting newer state or repopulating after clear
+let fetchStatusRequestCounter = 0
+
 export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   newsletters: [],
   total: 0,
@@ -380,35 +384,51 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   },
 
   getStatus: async (email: string) => {
+    // Increment counter and capture the current request ID
+    fetchStatusRequestCounter += 1
+    const requestId = fetchStatusRequestCounter
+
     set({ isFetchingStatus: true, fetchStatusError: null, statusData: null })
     try {
       const response = await newsletterService.getStatus(email)
-      set({
-        statusData: response,
-        isFetchingStatus: false,
-      })
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchStatusRequestCounter) {
+        set({
+          statusData: response,
+          isFetchingStatus: false,
+        })
+      }
     } catch (error) {
-      // Use parseApiError to get a user-friendly message
-      // Note: The actual user-facing message will be translated in the component
-      const errorMessage = parseApiError(error, {
-        fieldNames: ['email'],
-        defaultMessage: 'NEWSLETTER_STATUS_FETCH_ERROR', // Error key for component to translate
-      })
+      // Only update error state if this is still the latest request
+      if (requestId === fetchStatusRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          fieldNames: ['email'],
+          defaultMessage: 'NEWSLETTER_STATUS_FETCH_ERROR', // Error key for component to translate
+        })
 
-      set({
-        fetchStatusError: errorMessage,
-        isFetchingStatus: false,
-        statusData: null,
-      })
+        set({
+          fetchStatusError: errorMessage,
+          isFetchingStatus: false,
+          statusData: null,
+        })
 
-      // Log only sanitized error information to avoid leaking sensitive data
-      // (e.g., Authorization headers in Axios config)
-      console.error('Failed to fetch newsletter status:', sanitizeErrorForLogging(error))
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch newsletter status:', sanitizeErrorForLogging(error))
+      }
       throw error
     }
   },
 
   clearStatusState: () => {
+    // Increment counter to invalidate any in-flight status requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchStatusRequestCounter += 1
+
     set({
       statusData: null,
       isFetchingStatus: false,
