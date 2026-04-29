@@ -41,6 +41,10 @@ let fetchWithoutPaginationUpdateRequestCounter = 0
 // Prevents concurrent calls from racing and stale responses from overwriting newer count
 let fetchUnreadCountRequestCounter = 0
 
+// Track last error state to prevent log spam during polling
+// Only log when transitioning from success to error or when error message changes
+let lastUnreadCountError: string | null = null
+
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
@@ -138,17 +142,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // This prevents older responses from overwriting newer state
       if (requestId === fetchUnreadCountRequestCounter) {
         set({ unreadCount: count, unreadCountError: null })
+        // Clear the last error state when successfully fetching
+        lastUnreadCountError = null
       }
     } catch (error) {
       // Only update error state if this is still the latest request
       // Use separate unreadCountError to avoid affecting NotificationList error display
       if (requestId === fetchUnreadCountRequestCounter) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch unread count'
         set({
-          unreadCountError: error instanceof Error ? error.message : 'Failed to fetch unread count',
+          unreadCountError: errorMessage,
         })
+
+        // Only log when error state changes to prevent spam during polling
+        // This avoids flooding logs during outages while still capturing state transitions
+        if (lastUnreadCountError !== errorMessage) {
+          console.error('Failed to fetch unread count:', error)
+          lastUnreadCountError = errorMessage
+        }
       }
-      // Silently log the error - don't disrupt the UI for background polling failures
-      console.error('Failed to fetch unread count:', error)
     }
   },
 
