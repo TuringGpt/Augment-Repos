@@ -202,6 +202,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // from overwriting this optimistic update with stale server data
     fetchUnreadCountRequestCounter += 1
 
+    // Invalidate any in-flight fetchNotifications() requests to prevent
+    // stale responses from reverting the optimistic read state in the main list
+    fetchRequestCounter += 1
+
+    // Invalidate any in-flight fetchNotificationsWithoutPaginationUpdate() requests
+    // to prevent stale menu fetch responses from reverting the optimistic read state
+    fetchWithoutPaginationUpdateRequestCounter += 1
+
     set({
       notifications: optimisticNotifications,
       menuNotifications: optimisticMenuNotifications,
