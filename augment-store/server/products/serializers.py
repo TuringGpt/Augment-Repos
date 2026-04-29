@@ -79,7 +79,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if not user or getattr(user, "is_anonymous", True):
             raise serializers.ValidationError("Images are invalid")
-        if value and not any(image.created_by_id == user.id for image in value):
+        if value and not all(image.created_by_id == user.id for image in value):
             raise serializers.ValidationError("Images are invalid")
         return value
 

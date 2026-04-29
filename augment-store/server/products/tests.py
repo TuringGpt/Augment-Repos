@@ -1133,6 +1133,7 @@ class ProductTests(BaseAPITestCase):
         self.assertIn(image3, product.images.all())
 
     def test_create_product_rejects_unowned_images(self):
+        owned_image = FileFactory(created_by=self.merchant_user)
         other_image = FileFactory(created_by=self.merchant_user_2)
         url = reverse("v1:create_product")
         payload = {
@@ -1142,7 +1143,7 @@ class ProductTests(BaseAPITestCase):
             "brand": str(self.brand.id),
             "category": str(self.category.id),
             "quantity": 15,
-            "images": [str(other_image.id)],
+            "images": [str(owned_image.id), str(other_image.id)],
         }
         response = self.merchant_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
