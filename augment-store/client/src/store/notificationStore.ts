@@ -11,6 +11,7 @@ interface NotificationState {
   totalPages: number
   isLoading: boolean
   error: string | null
+  unreadCountError: string | null // Separate error state for unread count polling
   markingAsRead: Set<string> // Track which notifications are being marked as read
 
   // Actions
@@ -38,6 +39,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   totalPages: 0,
   isLoading: false,
   error: null,
+  unreadCountError: null,
   markingAsRead: new Set<string>(),
 
   fetchNotifications: async (page?: number, limit?: number) => {
@@ -87,15 +89,18 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
       if (requestId === fetchUnreadCountRequestCounter) {
-        set({ unreadCount: count })
+        set({ unreadCount: count, unreadCountError: null })
       }
     } catch (error) {
       // Only update error state if this is still the latest request
+      // Use separate unreadCountError to avoid affecting NotificationList error display
       if (requestId === fetchUnreadCountRequestCounter) {
         set({
-          error: error instanceof Error ? error.message : 'Failed to fetch unread count',
+          unreadCountError: error instanceof Error ? error.message : 'Failed to fetch unread count',
         })
       }
+      // Silently log the error - don't disrupt the UI for background polling failures
+      console.error('Failed to fetch unread count:', error)
     }
   },
 
@@ -196,6 +201,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       totalPages: 0,
       isLoading: false,
       error: null,
+      unreadCountError: null,
       markingAsRead: new Set<string>(),
     })
   },
