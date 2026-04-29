@@ -1148,6 +1148,7 @@ class ProductTests(BaseAPITestCase):
         response = self.merchant_client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("images", response.data)
+        self.assertFalse(Product.objects.filter(name=payload["name"]).exists())
 
     def test_create_product_unauthenticated(self):
         # GIVEN a user is not authenticated
