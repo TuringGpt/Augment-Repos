@@ -14,6 +14,12 @@ interface NotificationState {
   unreadCountError: string | null // Separate error state for unread count polling
   markingAsRead: Set<string> // Track which notifications are being marked as read
 
+  // Separate state for NotificationList dropdown menu
+  // This prevents the menu from interfering with NotificationsPage state
+  menuNotifications: Notification[]
+  menuIsLoading: boolean
+  menuError: string | null
+
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
@@ -46,6 +52,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   error: null,
   unreadCountError: null,
   markingAsRead: new Set<string>(),
+
+  // Menu-specific state
+  menuNotifications: [],
+  menuIsLoading: false,
+  menuError: null,
 
   fetchNotifications: async (page?: number, limit?: number) => {
     const state = get()
@@ -89,7 +100,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     fetchWithoutPaginationUpdateRequestCounter += 1
     const requestId = fetchWithoutPaginationUpdateRequestCounter
 
-    set({ isLoading: true, error: null })
+    // Use menu-specific state to avoid interfering with NotificationsPage
+    set({ menuIsLoading: true, menuError: null })
     try {
       const response = await notificationService.getNotifications(page, limit)
 
@@ -97,19 +109,18 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // This prevents older responses from overwriting newer state
       if (requestId === fetchWithoutPaginationUpdateRequestCounter) {
         set({
-          notifications: response.notifications,
-          total: response.total,
-          // DO NOT update page/limit to avoid interfering with NotificationsPage pagination
-          totalPages: response.totalPages,
-          isLoading: false,
+          menuNotifications: response.notifications,
+          // DO NOT update shared state (notifications, total, totalPages, page, limit, isLoading, error)
+          // to avoid interfering with NotificationsPage
+          menuIsLoading: false,
         })
       }
     } catch (error) {
       // Only update error state if this is still the latest request
       if (requestId === fetchWithoutPaginationUpdateRequestCounter) {
         set({
-          error: error instanceof Error ? error.message : 'Failed to fetch notifications',
-          isLoading: false,
+          menuError: error instanceof Error ? error.message : 'Failed to fetch notifications',
+          menuIsLoading: false,
         })
       }
     }
@@ -241,6 +252,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       error: null,
       unreadCountError: null,
       markingAsRead: new Set<string>(),
+      // Also clear menu-specific state
+      menuNotifications: [],
+      menuIsLoading: false,
+      menuError: null,
     })
   },
 
