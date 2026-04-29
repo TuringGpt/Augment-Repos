@@ -165,6 +165,14 @@ class AddToCartViewTests(BaseAPITestCase):
         self.assertEqual(cart_item.product.id, self.product1.id)
         self.assertEqual(cart_item.quantity, 2)
 
+    def test_add_to_cart_equals_stock_succeeds(self):
+        url = reverse("v1:carts:add_to_cart")
+        response = self.member_client.post(
+            url,
+            {"product_id": str(self.product_low_stock.id), "quantity": 5},
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_add_to_cart_existing_product_updates_quantity(self):
         # GIVEN an authenticated user exists
         # AND the user already has the product in their cart
