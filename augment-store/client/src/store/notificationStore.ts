@@ -298,6 +298,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     fetchWithoutPaginationUpdateRequestCounter += 1
     fetchUnreadCountRequestCounter += 1
 
+    // Reset error tracking to ensure errors are logged correctly in new sessions
+    // This prevents stale error state from suppressing logs after logout/login
+    lastUnreadCountError = null
+
     set({
       notifications: [],
       unreadCount: 0,
