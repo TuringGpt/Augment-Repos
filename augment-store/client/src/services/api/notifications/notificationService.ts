@@ -30,13 +30,19 @@ export const notificationService = {
   /**
    * Get notifications from backend API
    * Backend returns paginated response with count, next, previous, results
+   * Note: Backend has fixed page_size of 100 (configured in settings.py)
+   * The limit parameter is ignored by the backend's PageNumberPagination
    */
-  getNotifications: async (page = 1, limit = 10): Promise<NotificationListResponse> => {
+  getNotifications: async (page = 1, _limit = 10): Promise<NotificationListResponse> => {
+    // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+    // The _limit parameter is kept for API consistency but is not used since the backend ignores it
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
     try {
       const response = await apiClient.get<PaginatedNotificationsAPI>(
         API_ENDPOINTS.NOTIFICATIONS.LIST,
         {
-          params: { page, limit },
+          params: { page },
         }
       )
 
@@ -47,8 +53,8 @@ export const notificationService = {
         notifications,
         total: response.count,
         page,
-        limit,
-        totalPages: Math.ceil(response.count / limit),
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
@@ -134,6 +140,41 @@ export const notificationService = {
       return response.unread_count
     } catch (error) {
       console.error('Failed to fetch unread count:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get admin notifications from backend API
+   * Admin endpoint returns paginated response with count, next, previous, results
+   * Note: Backend has fixed page_size of 100 (configured in settings.py)
+   * The limit parameter is ignored by the backend's PageNumberPagination
+   */
+  getAdminNotifications: async (page = 1, _limit = 10): Promise<NotificationListResponse> => {
+    // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+    // The _limit parameter is kept for API consistency but is not used since the backend ignores it
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
+    try {
+      const response = await apiClient.get<PaginatedNotificationsAPI>(
+        API_ENDPOINTS.NOTIFICATIONS.ADMIN,
+        {
+          params: { page },
+        }
+      )
+
+      // Transform backend notifications to frontend format
+      const notifications: Notification[] = response.results.map(transformNotificationFromAPI)
+
+      return {
+        notifications,
+        total: response.count,
+        page,
+        limit: backendPageSize,
+        totalPages: Math.ceil(response.count / backendPageSize),
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin notifications:', error)
       throw error
     }
   },
