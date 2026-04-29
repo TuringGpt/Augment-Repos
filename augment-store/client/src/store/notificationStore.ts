@@ -160,10 +160,21 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       return
     }
 
-    // Find the notification to check if it's already read
+    // Find the notification in either notifications or menuNotifications array
+    // This ensures we can mark notifications from both the NotificationsPage and NotificationList
     const notification = initialState.notifications.find((n) => n.id === notificationId)
-    if (!notification || notification.isRead) {
-      // Already read or not found, nothing to do
+    const menuNotification = initialState.menuNotifications.find((n) => n.id === notificationId)
+
+    // Check if the notification is already read (in either array)
+    if (notification && notification.isRead) {
+      return
+    }
+    if (menuNotification && menuNotification.isRead) {
+      return
+    }
+
+    // If not found in either array, nothing to do
+    if (!notification && !menuNotification) {
       return
     }
 
@@ -172,9 +183,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     newMarkingAsRead.add(notificationId)
 
     // OPTIMISTIC UPDATE: Update local state immediately before API call
+    // Update both notifications and menuNotifications arrays
     const optimisticNotifications = initialState.notifications.map((n) =>
       n.id === notificationId ? { ...n, isRead: true } : n
     )
+    const optimisticMenuNotifications = initialState.menuNotifications.map((n) =>
+      n.id === notificationId ? { ...n, isRead: true } : n
+    )
+
     // Decrement total unread count by 1 (not recalculate from local list)
     const optimisticUnreadCount = Math.max(0, initialState.unreadCount - 1)
 
@@ -188,6 +204,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
     set({
       notifications: optimisticNotifications,
+      menuNotifications: optimisticMenuNotifications,
       unreadCount: optimisticUnreadCount,
       markingAsRead: newMarkingAsRead,
     })
@@ -211,10 +228,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Read latest state in catch block to avoid stale data
       const latestState = get()
 
-      // Revert notification back to unread
+      // Revert notification back to unread in both arrays
       const revertedNotifications = latestState.notifications.map((n) =>
         n.id === notificationId ? { ...n, isRead: false } : n
       )
+      const revertedMenuNotifications = latestState.menuNotifications.map((n) =>
+        n.id === notificationId ? { ...n, isRead: false } : n
+      )
+
       // Revert unread count by the exact amount we decremented
       // This handles the case where unreadCount was 0 and didn't actually decrement
       const revertedUnreadCount = latestState.unreadCount + actualDecrement
@@ -225,6 +246,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       set({
         notifications: revertedNotifications,
+        menuNotifications: revertedMenuNotifications,
         unreadCount: revertedUnreadCount,
         markingAsRead: finalMarkingAsRead,
         error: error instanceof Error ? error.message : 'Failed to mark notification as read',
