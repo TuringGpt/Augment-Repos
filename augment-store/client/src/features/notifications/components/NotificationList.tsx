@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
   Menu,
   MenuItem,
@@ -27,6 +28,13 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   const navigate = useNavigate()
   const { notifications, isLoading, error, fetchNotifications, markAsRead, markingAsRead } =
     useNotificationStore()
+
+  // Fetch notifications when the popup opens
+  useEffect(() => {
+    if (open) {
+      fetchNotifications(1, 10)
+    }
+  }, [open, fetchNotifications])
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read

@@ -10,27 +10,27 @@ import NotificationList from './NotificationList'
 const NotificationBell = () => {
   const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
-  const { unreadCount, fetchNotifications } = useNotificationStore()
+  const { unreadCount, fetchUnreadCount } = useNotificationStore()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
-  // Fetch notifications when component mounts (only if authenticated)
+  // Fetch unread count when component mounts (only if authenticated)
   useEffect(() => {
     if (isAuthenticated) {
-      fetchNotifications(1, 10)
+      fetchUnreadCount()
     }
-  }, [isAuthenticated, fetchNotifications])
+  }, [isAuthenticated, fetchUnreadCount])
 
-  // Poll for new notifications every 30 seconds
+  // Poll for unread count every 30 seconds
   useEffect(() => {
     if (!isAuthenticated) return
 
     const interval = setInterval(() => {
-      fetchNotifications(1, 10)
+      fetchUnreadCount()
     }, POLLING_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [isAuthenticated, fetchNotifications])
+  }, [isAuthenticated, fetchUnreadCount])
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
