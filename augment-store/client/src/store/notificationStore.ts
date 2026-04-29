@@ -27,6 +27,10 @@ interface NotificationState {
 // Prevents stale responses from overwriting newer state
 let fetchRequestCounter = 0
 
+// Separate request counter for fetchNotificationsWithoutPaginationUpdate
+// Prevents it from interfering with fetchNotifications and causing page/notifications out of sync
+let fetchWithoutPaginationUpdateRequestCounter = 0
+
 // Request counter for unread count fetches
 // Prevents concurrent calls from racing and stale responses from overwriting newer count
 let fetchUnreadCountRequestCounter = 0
@@ -81,8 +85,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   fetchNotificationsWithoutPaginationUpdate: async (page: number, limit: number) => {
     // Increment counter and capture the current request ID
-    fetchRequestCounter += 1
-    const requestId = fetchRequestCounter
+    // Use separate counter to avoid invalidating fetchNotifications() calls
+    fetchWithoutPaginationUpdateRequestCounter += 1
+    const requestId = fetchWithoutPaginationUpdateRequestCounter
 
     set({ isLoading: true, error: null })
     try {
@@ -90,7 +95,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
-      if (requestId === fetchRequestCounter) {
+      if (requestId === fetchWithoutPaginationUpdateRequestCounter) {
         set({
           notifications: response.notifications,
           total: response.total,
@@ -101,7 +106,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       }
     } catch (error) {
       // Only update error state if this is still the latest request
-      if (requestId === fetchRequestCounter) {
+      if (requestId === fetchWithoutPaginationUpdateRequestCounter) {
         set({
           error: error instanceof Error ? error.message : 'Failed to fetch notifications',
           isLoading: false,
@@ -223,6 +228,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // Increment counters to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
     fetchRequestCounter += 1
+    fetchWithoutPaginationUpdateRequestCounter += 1
     fetchUnreadCountRequestCounter += 1
 
     set({
