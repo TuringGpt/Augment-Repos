@@ -24,7 +24,7 @@ interface NotificationState {
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
-  markAsRead: (notificationId: string) => Promise<void>
+  markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
   clearNotifications: () => void
   setPage: (page: number) => void
 }
@@ -164,7 +164,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  markAsRead: async (notificationId: string) => {
+  markAsRead: async (notificationId: string, options?: { fromMenu?: boolean }) => {
     const initialState = get()
 
     // Don't mark if already being marked
@@ -190,6 +190,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     if (isReadInNotifications && isReadInMenuNotifications) {
       return
     }
+
+    // Determine if this is a menu-context action based on options
+    // This allows us to set the appropriate error field on failure
+    const fromMenu = options?.fromMenu ?? false
 
     // Check if the notification is currently unread in at least one location
     // Only decrement unread count if it's actually contributing to the unread total
@@ -278,12 +282,17 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const finalMarkingAsRead = new Set(latestState.markingAsRead)
       finalMarkingAsRead.delete(notificationId)
 
+      // Set error in the appropriate scope based on context
+      // Menu errors go to menuError to preserve isolation from NotificationsPage
+      // Page errors go to the shared error field
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mark notification as read'
+
       set({
         notifications: revertedNotifications,
         menuNotifications: revertedMenuNotifications,
         unreadCount: revertedUnreadCount,
         markingAsRead: finalMarkingAsRead,
-        error: error instanceof Error ? error.message : 'Failed to mark notification as read',
+        ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
       })
 
       // Re-throw to allow UI to handle error
