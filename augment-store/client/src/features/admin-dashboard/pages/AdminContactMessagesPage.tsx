@@ -67,7 +67,10 @@ const AdminContactMessagesPage = () => {
     updateContact,
     bulkUpdateContacts,
     isBulkUpdating,
-    bulkUpdateError
+    bulkUpdateError,
+    deleteContact,
+    deletingContactIds,
+    deleteErrors,
   } = useContactStore()
   const contacts = contactsData?.results || []
 
@@ -127,18 +130,23 @@ const AdminContactMessagesPage = () => {
     }
   }, [])
 
-  // Clear selections when contacts change (refresh/pagination)
+  // Remove stale selections when contacts change (refresh/pagination/deletion)
   // This prevents selectedContactIds from accumulating stale IDs that are no longer visible
   // and ensures the UI count and bulk actions always operate on the same set of contacts
   useEffect(() => {
-    // Only clear if we have selections and contacts have changed
+    // Only process if we have selections
     if (selectedContactIds.size > 0) {
       const currentContactIds = new Set(contacts.map((contact) => contact.id))
-      const hasStaleSelections = Array.from(selectedContactIds).some((id) => !currentContactIds.has(id))
+      const staleIds = Array.from(selectedContactIds).filter((id) => !currentContactIds.has(id))
 
-      if (hasStaleSelections) {
-        // Clear all selections to avoid confusion about what's selected
-        setSelectedContactIds(new Set())
+      if (staleIds.length > 0) {
+        // Remove only the stale IDs, preserve other selections
+        // This ensures that deleting a selected contact doesn't clear other selections
+        setSelectedContactIds((prev) => {
+          const newSelected = new Set(prev)
+          staleIds.forEach((id) => newSelected.delete(id))
+          return newSelected
+        })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -353,6 +361,58 @@ const AdminContactMessagesPage = () => {
     }
   }
 
+  const handleDeleteContact = async (contactId: string, event: React.MouseEvent) => {
+    // Prevent row click event from firing
+    event.stopPropagation()
+
+    // Ref-based guard: Check if delete is already in-flight for this contact
+    // This prevents double-click race conditions because refs update synchronously
+    // Unlike React state which updates asynchronously and can be bypassed by rapid clicks
+    if (inFlightUpdatesRef.current.has(contactId)) {
+      return
+    }
+
+    // Also check the store state as an additional guard
+    if (deletingContactIds.has(contactId)) {
+      return
+    }
+
+    // Mark as in-flight immediately (synchronous update)
+    inFlightUpdatesRef.current.add(contactId)
+
+    try {
+      // Call the deleteContact store action
+      // The store handles optimistic updates and rollback on error
+      await deleteContact(contactId)
+
+      // Only update state if component is still mounted to prevent React warnings
+      if (isMountedRef.current) {
+        // If the deleted contact was selected, remove it from selection
+        if (selectedContactIds.has(contactId)) {
+          setSelectedContactIds((prev) => {
+            const newSelected = new Set(prev)
+            newSelected.delete(contactId)
+            return newSelected
+          })
+        }
+
+        // If the deleted contact was being viewed in the drawer, close the drawer
+        // Check the current drawer selection at completion time to avoid closing
+        // unexpectedly if the user has opened a different contact
+        if (selectedContact?.id === contactId) {
+          handleCloseDetailsDrawer()
+        }
+      }
+    } catch (error) {
+      // Error is already handled by the store and stored in deleteErrors
+      // Log only the error message to avoid leaking sensitive information
+      console.error('Failed to delete contact - check deleteErrors state for details')
+    } finally {
+      // Remove from in-flight set (synchronous update)
+      inFlightUpdatesRef.current.delete(contactId)
+    }
+  }
+
   // Toolbar action handlers
   const handleBulkMarkAsRead = async () => {
     // Only operate on contacts selected in the current page to match the UI count
@@ -541,15 +601,50 @@ const AdminContactMessagesPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : contacts.length > 0 ? (
-        /* Contact Messages Table */
-        <Box>
+      ) : (
+        <>
           {/* Bulk Update Error State */}
           {bulkUpdateError && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {bulkUpdateError}
             </Alert>
           )}
+
+          {/* Delete Error State */}
+          {deleteErrors.size > 0 && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {deleteErrors.size === 1 ? (
+                // Single error: show just the error message
+                Array.from(deleteErrors.values())[0]
+              ) : (
+                // Multiple errors: show all errors with contact identifiers
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                    {t('admin.contactMessagesPage.deleteErrors.failedToDelete', { count: deleteErrors.size })}:
+                  </Typography>
+                  <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                    {Array.from(deleteErrors.entries()).map(([contactId, errorMessage]) => {
+                      // Find contact info for better error context
+                      const contact = contacts.find((c) => c.id === contactId)
+                      const contactIdentifier = contact
+                        ? `${contact.name} (${contact.email})`
+                        : `Contact ID: ${contactId}`
+
+                      return (
+                        <Typography component="li" variant="body2" key={contactId} sx={{ mb: 0.5 }}>
+                          <strong>{contactIdentifier}:</strong> {errorMessage}
+                        </Typography>
+                      )
+                    })}
+                  </Box>
+                </Box>
+              )}
+            </Alert>
+          )}
+
+          {contacts.length > 0 ? (
+            /* Contact Messages Table */
+            <Box>
 
           <Paper sx={{ mb: 2, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -804,6 +899,28 @@ const AdminContactMessagesPage = () => {
                             </span>
                           </Tooltip>
                         )}
+                        <Tooltip title={t('admin.contactMessagesPage.deleteMessage')}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={(e) => handleDeleteContact(contact.id, e)}
+                              disabled={
+                                deletingContactIds.has(contact.id) ||
+                                inFlightUpdatesRef.current.has(contact.id) ||
+                                isBulkUpdating ||
+                                isBulkUpdateInFlightRef.current
+                              }
+                              aria-label={t('admin.contactMessagesPage.deleteMessage')}
+                            >
+                              {deletingContactIds.has(contact.id) ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <DeleteIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -813,14 +930,16 @@ const AdminContactMessagesPage = () => {
             </Table>
           </TableContainer>
         </Box>
-      ) : !fetchError ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography color="text.secondary">
-            {t('admin.contactMessagesPage.noMessages')}
-          </Typography>
-        </Paper>
-      ) : null}
+          ) : !fetchError ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <EmailIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+              <Typography color="text.secondary">
+                {t('admin.contactMessagesPage.noMessages')}
+              </Typography>
+            </Paper>
+          ) : null}
+        </>
+      )}
 
       {/* Contact Message Details Drawer */}
       <Drawer

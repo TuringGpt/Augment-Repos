@@ -1098,6 +1098,7 @@
       "messageDetails": "Détails du Message",
       "markAsRead": "Marquer comme lu",
       "markAsResolved": "Marquer comme résolu",
+      "deleteMessage": "Supprimer le message",
       "selectAllContacts": "Sélectionner tous les contacts",
       "selectContact": "Sélectionner le contact {{name}}",
       "toolbar": {
@@ -1119,6 +1120,10 @@
         "date": "Date",
         "actions": "Actions",
         "id": "ID du Message"
+      },
+      "deleteErrors": {
+        "failedToDelete": "Échec de la suppression de {{count}} contact",
+        "failedToDelete_other": "Échec de la suppression de {{count}} contacts"
       }
     },
     "ticketsPage": {
