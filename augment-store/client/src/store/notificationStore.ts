@@ -216,6 +216,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuNotifications: optimisticMenuNotifications,
       unreadCount: optimisticUnreadCount,
       markingAsRead: newMarkingAsRead,
+      // Clear loading states to prevent them from being stranded at true
+      // when in-flight requests are invalidated by the counter increments above
+      isLoading: false,
+      menuIsLoading: false,
     })
 
     try {
@@ -279,6 +283,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       total: 0,
       page: 1,
       totalPages: 0,
+      // Clear loading states to prevent them from being stranded at true
+      // when in-flight requests are invalidated by the counter increments above
       isLoading: false,
       error: null,
       unreadCountError: null,
