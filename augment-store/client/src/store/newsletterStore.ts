@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
-import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest } from '@services/api/newsletter/newsletterService'
+import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest, NewsletterStatusResponse } from '@services/api/newsletter/newsletterService'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface NewsletterState {
@@ -21,6 +21,9 @@ interface NewsletterState {
   currentNewsletter: NewsletterAPI | null
   isFetchingById: boolean
   fetchByIdError: string | null
+  statusData: NewsletterStatusResponse | null
+  isFetchingStatus: boolean
+  fetchStatusError: string | null
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
@@ -35,6 +38,8 @@ interface NewsletterState {
   unsubscribeByEmailPut: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
   clearUnsubscribeState: () => void
   clearCurrentNewsletter: () => void
+  getStatus: (email: string) => Promise<void>
+  clearStatusState: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -63,6 +68,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   currentNewsletter: null,
   isFetchingById: false,
   fetchByIdError: null,
+  statusData: null,
+  isFetchingStatus: false,
+  fetchStatusError: null,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -368,6 +376,43 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       currentNewsletter: null,
       isFetchingById: false,
       fetchByIdError: null,
+    })
+  },
+
+  getStatus: async (email: string) => {
+    set({ isFetchingStatus: true, fetchStatusError: null, statusData: null })
+    try {
+      const response = await newsletterService.getStatus(email)
+      set({
+        statusData: response,
+        isFetchingStatus: false,
+      })
+    } catch (error) {
+      // Use parseApiError to get a user-friendly message
+      // Note: The actual user-facing message will be translated in the component
+      const errorMessage = parseApiError(error, {
+        fieldNames: ['email'],
+        defaultMessage: 'NEWSLETTER_STATUS_FETCH_ERROR', // Error key for component to translate
+      })
+
+      set({
+        fetchStatusError: errorMessage,
+        isFetchingStatus: false,
+        statusData: null,
+      })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch newsletter status:', sanitizeErrorForLogging(error))
+      throw error
+    }
+  },
+
+  clearStatusState: () => {
+    set({
+      statusData: null,
+      isFetchingStatus: false,
+      fetchStatusError: null,
     })
   },
 }))
