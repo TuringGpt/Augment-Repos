@@ -419,8 +419,11 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
         // Log only sanitized error information to avoid leaking sensitive data
         // (e.g., Authorization headers in Axios config)
         console.error('Failed to fetch newsletter status:', sanitizeErrorForLogging(error))
+
+        // Only throw error for the latest request to avoid spurious errors from stale requests
+        throw error
       }
-      throw error
+      // Silently ignore errors from stale requests since newer state has already superseded them
     }
   },
 
