@@ -16,6 +16,7 @@ interface NotificationState {
 
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
+  fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
   markAsRead: (notificationId: string) => Promise<void>
   clearNotifications: () => void
@@ -63,6 +64,37 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
           total: response.total,
           page: response.page,
           limit: response.limit,
+          totalPages: response.totalPages,
+          isLoading: false,
+        })
+      }
+    } catch (error) {
+      // Only update error state if this is still the latest request
+      if (requestId === fetchRequestCounter) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to fetch notifications',
+          isLoading: false,
+        })
+      }
+    }
+  },
+
+  fetchNotificationsWithoutPaginationUpdate: async (page: number, limit: number) => {
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
+    set({ isLoading: true, error: null })
+    try {
+      const response = await notificationService.getNotifications(page, limit)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchRequestCounter) {
+        set({
+          notifications: response.notifications,
+          total: response.total,
+          // DO NOT update page/limit to avoid interfering with NotificationsPage pagination
           totalPages: response.totalPages,
           isLoading: false,
         })

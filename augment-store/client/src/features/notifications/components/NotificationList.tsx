@@ -26,15 +26,23 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { notifications, isLoading, error, fetchNotifications, markAsRead, markingAsRead } =
-    useNotificationStore()
+  const {
+    notifications,
+    isLoading,
+    error,
+    fetchNotificationsWithoutPaginationUpdate,
+    markAsRead,
+    markingAsRead,
+  } = useNotificationStore()
 
   // Fetch notifications when the popup opens
+  // Use fetchNotificationsWithoutPaginationUpdate to avoid mutating shared store.page/store.limit
+  // This prevents resetting pagination state for NotificationsPage if it's mounted
   useEffect(() => {
     if (open) {
-      fetchNotifications(1, 10)
+      fetchNotificationsWithoutPaginationUpdate(1, 10)
     }
-  }, [open, fetchNotifications])
+  }, [open, fetchNotificationsWithoutPaginationUpdate])
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
@@ -50,7 +58,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   }
 
   const handleRetry = () => {
-    fetchNotifications(1, 10)
+    fetchNotificationsWithoutPaginationUpdate(1, 10)
   }
 
   const formatNotificationTime = (dateString: string) => {
