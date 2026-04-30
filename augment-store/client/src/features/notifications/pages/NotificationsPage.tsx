@@ -13,12 +13,15 @@ import {
 } from '@mui/material'
 import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
+import { useUIStore } from '@store/uiStore'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { formatDistanceToNow } from 'date-fns'
+import type { Notification } from '@features/notifications/types'
 
 const NotificationsPage = () => {
   const { t } = useTranslation()
+  const { setNotificationDetailsDrawerOpen } = useUIStore()
   const {
     notifications,
     isLoading,
@@ -30,6 +33,7 @@ const NotificationsPage = () => {
     markAsRead,
     markingAsRead,
     setPage,
+    setSelectedNotification,
   } = useNotificationStore()
   const toast = useToast()
 
@@ -45,17 +49,20 @@ const NotificationsPage = () => {
     setPage(value)
   }
 
-  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+  const handleNotificationClick = async (notification: Notification) => {
     // Mark as read if not already read
-    if (!isRead) {
+    if (!notification.isRead) {
       try {
-        await markAsRead(notificationId)
+        await markAsRead(notification.id)
         toast.success(t('notifications.markedAsRead'))
       } catch (error) {
         // Store handles optimistic update rollback; show user-friendly error toast
         toast.error(t('notifications.markAsReadError'))
       }
     }
+    // Set the selected notification and open the drawer
+    setSelectedNotification(notification)
+    setNotificationDetailsDrawerOpen(true)
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -128,15 +135,15 @@ const NotificationsPage = () => {
             return (
               <Card
                 key={notification.id}
-                onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                onClick={() => handleNotificationClick(notification)}
                 sx={{
                   backgroundColor: notification.isRead ? 'background.paper' : 'action.hover',
                   transition: 'all 0.2s',
-                  cursor: notification.isRead ? 'default' : 'pointer',
+                  cursor: 'pointer',
                   opacity: isMarking ? 0.6 : 1,
                   pointerEvents: isMarking ? 'none' : 'auto',
                   '&:hover': {
-                    boxShadow: notification.isRead ? 1 : 4,
+                    boxShadow: 4,
                   },
                 }}
               >

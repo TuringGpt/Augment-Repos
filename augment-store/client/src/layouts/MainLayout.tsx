@@ -7,6 +7,7 @@ import Sidebar from '@components/Sidebar'
 import BottomNavigation from '@components/BottomNavigation'
 import PageTransition from '@components/PageTransition'
 import CartDrawer from '@features/cart/components/CartDrawer'
+import { NotificationDetailsDrawer } from '@features/notifications/components'
 import { useCartSync } from '@features/cart/hooks/useCartSync'
 
 const MainLayout = () => {
@@ -41,6 +42,7 @@ const MainLayout = () => {
       <Footer />
       <BottomNavigation />
       <CartDrawer />
+      <NotificationDetailsDrawer />
     </Box>
   )
 }

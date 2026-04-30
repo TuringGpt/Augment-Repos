@@ -77,7 +77,14 @@
     "unreadCount": "{{count}} ungelesene Benachrichtigung",
     "unreadCount_other": "{{count}} ungelesene Benachrichtigungen",
     "markedAsRead": "Benachrichtigung als gelesen markiert",
-    "markAsReadError": "Fehler beim Markieren der Benachrichtigung als gelesen"
+    "markAsReadError": "Fehler beim Markieren der Benachrichtigung als gelesen",
+    "details": "Benachrichtigungsdetails",
+    "read": "Gelesen",
+    "unread": "Ungelesen",
+    "metadata": "Details",
+    "type": "Typ",
+    "objectId": "Referenz-ID",
+    "noSelection": "Keine Benachrichtigung ausgewählt"
   },
   "auth": {
     "login": "Anmelden",

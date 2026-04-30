@@ -77,7 +77,14 @@
     "unreadCount": "{{count}} unread notification",
     "unreadCount_other": "{{count}} unread notifications",
     "markedAsRead": "Notification marked as read",
-    "markAsReadError": "Failed to mark notification as read"
+    "markAsReadError": "Failed to mark notification as read",
+    "details": "Notification Details",
+    "read": "Read",
+    "unread": "Unread",
+    "metadata": "Details",
+    "type": "Type",
+    "objectId": "Reference ID",
+    "noSelection": "No notification selected"
   },
   "auth": {
     "login": "Login",
