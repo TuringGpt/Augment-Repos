@@ -60,8 +60,10 @@ const NotificationsPage = () => {
         toast.error(t('notifications.markAsReadError'))
       }
     }
-    // Set the selected notification and open the drawer
-    setSelectedNotification(notification)
+    // Derive the latest notification state from the store by ID to avoid stale isRead value
+    // This ensures the drawer displays the updated read status after the optimistic update
+    const latestNotification = notifications.find((n) => n.id === notification.id) ?? notification
+    setSelectedNotification(latestNotification)
     setNotificationDetailsDrawerOpen(true)
   }
 
