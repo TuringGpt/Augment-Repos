@@ -306,3 +306,14 @@ class AdminContactBulkUpdateTests(BaseAPITestCase):
             'status': 'invalid_status_value'
         }, format='json')
         self.assertEqual(response.status_code, 400)
+
+    def test_bulk_update_missing_ids_rejected(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(
+            url,
+            {'ids': [str(self.msg1.id), str(uuid.uuid4())], 'status': 'read'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ids", response.data)

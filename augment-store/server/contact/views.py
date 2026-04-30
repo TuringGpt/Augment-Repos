@@ -98,6 +98,9 @@ class AdminContactBulkUpdateView(GenericAPIView):
         ids = serializer.validated_data['ids']
         new_status = serializer.validated_data['status']
 
+        if ContactMessage.objects.filter(id__in=ids).count() != len(ids):
+            raise ValidationError({"ids": ["One or more contact messages do not exist"]})
+
         updated = ContactMessage.objects.filter(id__in=ids).update(
             status=new_status,
             updated_at=timezone.now()
