@@ -26,6 +26,22 @@ const NotificationDetailsDrawer = () => {
     setNotificationDetailsDrawerOpen(false)
   }
 
+  const formatNotificationTime = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+    } catch {
+      return dateString
+    }
+  }
+
+  const formatNotificationDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'PPp')
+    } catch {
+      return dateString
+    }
+  }
+
   return (
     <Drawer
       anchor="right"
@@ -84,15 +100,13 @@ const NotificationDetailsDrawer = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <AccessTime fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                {formatDistanceToNow(new Date(selectedNotification.createdAt), {
-                  addSuffix: true,
-                })}
+                {formatNotificationTime(selectedNotification.createdAt)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 •
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {format(new Date(selectedNotification.createdAt), 'PPp')}
+                {formatNotificationDate(selectedNotification.createdAt)}
               </Typography>
             </Box>
 
