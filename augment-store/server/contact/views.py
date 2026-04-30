@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.exceptions import ValidationError
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer, ContactMessageAdminSerializer
@@ -98,10 +99,11 @@ class AdminContactBulkUpdateView(GenericAPIView):
         ids = serializer.validated_data['ids']
         new_status = serializer.validated_data['status']
 
-        if ContactMessage.objects.filter(id__in=ids).count() != len(ids):
+        unique_ids = set(ids)
+        if ContactMessage.objects.filter(id__in=unique_ids).count() != len(unique_ids):
             raise ValidationError({"ids": ["One or more contact messages do not exist"]})
 
-        updated = ContactMessage.objects.filter(id__in=ids).update(
+        updated = ContactMessage.objects.filter(id__in=unique_ids).update(
             status=new_status,
             updated_at=timezone.now()
         )
