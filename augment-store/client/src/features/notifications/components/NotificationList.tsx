@@ -59,10 +59,12 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
         console.error('Failed to mark notification as read:', error)
       }
     }
-    // Derive the latest notification state from the store by ID to avoid stale isRead value
-    // This ensures the drawer displays the updated read status after the optimistic update
+    // Derive the latest notification state from the store's CURRENT state to avoid stale isRead value
+    // After await markAsRead(), the menuNotifications captured in this handler's closure
+    // can still be the pre-optimistic-update array, so we must read fresh state from the store
     const latestNotification =
-      menuNotifications.find((n) => n.id === notification.id) ?? notification
+      useNotificationStore.getState().menuNotifications.find((n) => n.id === notification.id) ??
+      notification
     setSelectedNotification(latestNotification)
     setNotificationDetailsDrawerOpen(true)
     onClose()
