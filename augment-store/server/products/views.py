@@ -81,7 +81,7 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
     
     def get_queryset(self) -> "QuerySet[ProductBrand]":
         queryset = super().get_queryset()
-        if self.request.user.is_admin:
+        if self.request.method in SAFE_METHODS or self.request.user.is_admin:
             return queryset
         return queryset.filter(created_by=self.request.user)
 
