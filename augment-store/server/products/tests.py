@@ -186,6 +186,12 @@ class ProductBrandTests(BaseAPITestCase):
         # AND the brand should be deleted from the database
         self.assertFalse(ProductBrand.objects.filter(id=brand.id).exists())
 
+    def test_update_other_merchant_brand_forbidden(self):
+        brand = ProductBrandFactory(created_by=self.merchant_user_2)
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.patch(url, {"description": "nope"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_list_brands_uses_cache(self):
         # Given that I have clear all caches related to product brands
         ProductBrandCacheService().clear_namespace()
