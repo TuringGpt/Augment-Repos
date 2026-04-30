@@ -74,6 +74,15 @@ class CreateProductSerializer(serializers.ModelSerializer):
         attrs["created_by"] = request.user
         return attrs
 
+    def validate_images(self, value):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not user or getattr(user, "is_anonymous", True):
+            raise serializers.ValidationError("Images are invalid")
+        if value and not all(image.created_by_id == user.id for image in value):
+            raise serializers.ValidationError("Images are invalid")
+        return value
+
 
 class ProductListSerializer(serializers.ModelSerializer):
     brand = ProductBrandListSerializer(read_only=True)
