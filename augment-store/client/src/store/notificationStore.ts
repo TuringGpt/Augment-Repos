@@ -346,6 +346,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuNotifications: [],
       menuIsLoading: false,
       menuError: null,
+      // Clear selected notification to prevent stale details after logout/clear
+      selectedNotification: null,
     })
   },
 
