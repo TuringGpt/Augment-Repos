@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { newsletterService } from '@services/api'
-import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest } from '@services/api/newsletter/newsletterService'
+import type { NewsletterAPI, SubscribeNewsletterRequest, UnsubscribeNewsletterRequest, UnsubscribeNewsletterByEmailRequest, NewsletterStatusResponse } from '@services/api/newsletter/newsletterService'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 interface NewsletterState {
@@ -21,6 +21,9 @@ interface NewsletterState {
   currentNewsletter: NewsletterAPI | null
   isFetchingById: boolean
   fetchByIdError: string | null
+  statusData: NewsletterStatusResponse | null
+  isFetchingStatus: boolean
+  fetchStatusError: string | null
 
   // Actions
   fetchNewsletters: (page?: number) => Promise<void>
@@ -35,6 +38,8 @@ interface NewsletterState {
   unsubscribeByEmailPut: (data: UnsubscribeNewsletterByEmailRequest) => Promise<void>
   clearUnsubscribeState: () => void
   clearCurrentNewsletter: () => void
+  getStatus: (email: string) => Promise<void>
+  clearStatusState: () => void
 }
 
 // Request counter to track the latest fetch request
@@ -44,6 +49,10 @@ let fetchRequestCounter = 0
 // Request counter to track the latest fetch-by-id request
 // Prevents stale responses from overwriting newer state or repopulating after clear
 let fetchByIdRequestCounter = 0
+
+// Request counter to track the latest status request
+// Prevents stale responses from overwriting newer state or repopulating after clear
+let fetchStatusRequestCounter = 0
 
 export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   newsletters: [],
@@ -63,6 +72,9 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
   currentNewsletter: null,
   isFetchingById: false,
   fetchByIdError: null,
+  statusData: null,
+  isFetchingStatus: false,
+  fetchStatusError: null,
 
   fetchNewsletters: async (page?: number) => {
     const state = get()
@@ -368,6 +380,62 @@ export const useNewsletterStore = create<NewsletterState>((set, get) => ({
       currentNewsletter: null,
       isFetchingById: false,
       fetchByIdError: null,
+    })
+  },
+
+  getStatus: async (email: string) => {
+    // Increment counter and capture the current request ID
+    fetchStatusRequestCounter += 1
+    const requestId = fetchStatusRequestCounter
+
+    set({ isFetchingStatus: true, fetchStatusError: null, statusData: null })
+    try {
+      const response = await newsletterService.getStatus(email)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === fetchStatusRequestCounter) {
+        set({
+          statusData: response,
+          isFetchingStatus: false,
+        })
+      }
+    } catch (error) {
+      // Only update error state if this is still the latest request
+      if (requestId === fetchStatusRequestCounter) {
+        // Use parseApiError to get a user-friendly message
+        // Note: The actual user-facing message will be translated in the component
+        const errorMessage = parseApiError(error, {
+          fieldNames: ['email'],
+          defaultMessage: 'NEWSLETTER_STATUS_FETCH_ERROR', // Error key for component to translate
+        })
+
+        set({
+          fetchStatusError: errorMessage,
+          isFetchingStatus: false,
+          statusData: null,
+        })
+
+        // Log only sanitized error information to avoid leaking sensitive data
+        // (e.g., Authorization headers in Axios config)
+        console.error('Failed to fetch newsletter status:', sanitizeErrorForLogging(error))
+
+        // Only throw error for the latest request to avoid spurious errors from stale requests
+        throw error
+      }
+      // Silently ignore errors from stale requests since newer state has already superseded them
+    }
+  },
+
+  clearStatusState: () => {
+    // Increment counter to invalidate any in-flight status requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchStatusRequestCounter += 1
+
+    set({
+      statusData: null,
+      isFetchingStatus: false,
+      fetchStatusError: null,
     })
   },
 }))
