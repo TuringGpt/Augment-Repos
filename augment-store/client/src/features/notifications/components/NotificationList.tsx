@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
   Menu,
   MenuItem,
@@ -25,13 +26,34 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { notifications, isLoading, error, fetchNotifications, markAsRead, markingAsRead } =
-    useNotificationStore()
+  const {
+    menuNotifications,
+    menuIsLoading,
+    menuError,
+    fetchNotificationsWithoutPaginationUpdate,
+    markAsRead,
+    markingAsRead,
+  } = useNotificationStore()
+
+  // Fetch notifications when the popup opens
+  // Use fetchNotificationsWithoutPaginationUpdate which populates menu-specific state
+  // This prevents interfering with NotificationsPage state (notifications, isLoading, error, etc.)
+  useEffect(() => {
+    if (open) {
+      fetchNotificationsWithoutPaginationUpdate(1, 10)
+    }
+  }, [open, fetchNotificationsWithoutPaginationUpdate])
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     // Mark as read if not already read
     if (!isRead) {
-      await markAsRead(notificationId)
+      try {
+        await markAsRead(notificationId, { fromMenu: true })
+      } catch (error) {
+        // Error is already handled by the store (sets menuError and rolls back optimistic update)
+        // Just log it here and continue to close the menu for consistent behavior
+        console.error('Failed to mark notification as read:', error)
+      }
     }
     onClose()
   }
@@ -42,7 +64,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
   }
 
   const handleRetry = () => {
-    fetchNotifications(1, 10)
+    fetchNotificationsWithoutPaginationUpdate(1, 10)
   }
 
   const formatNotificationTime = (dateString: string) => {
@@ -80,7 +102,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       <Divider />
 
       {/* Error State */}
-      {error && !isLoading && (
+      {menuError && !menuIsLoading && (
         <Box sx={{ p: 2 }}>
           <Alert
             severity="error"
@@ -95,20 +117,20 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
               </Button>
             }
           >
-            {error}
+            {menuError}
           </Alert>
         </Box>
       )}
 
       {/* Loading State */}
-      {isLoading && (
+      {menuIsLoading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />
         </Box>
       )}
 
       {/* Empty State */}
-      {!isLoading && !error && notifications.length === 0 && (
+      {!menuIsLoading && !menuError && menuNotifications.length === 0 && (
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             {t('notifications.empty')}
@@ -117,9 +139,9 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
       )}
 
       {/* Notification Items */}
-      {!isLoading && notifications.length > 0 && (
+      {!menuIsLoading && !menuError && menuNotifications.length > 0 && (
         <>
-          {notifications.slice(0, 5).map((notification) => {
+          {menuNotifications.slice(0, 5).map((notification) => {
             const isMarking = markingAsRead.has(notification.id)
             return (
               <MenuItem
