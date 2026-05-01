@@ -103,11 +103,15 @@ class AdminContactBulkUpdateView(GenericAPIView):
 
         unique_ids = set(ids)
         with transaction.atomic():
-            queryset = ContactMessage.objects.select_for_update().filter(id__in=unique_ids)
-            if queryset.count() != len(unique_ids):
+            locked_ids = list(
+                ContactMessage.objects.select_for_update()
+                .filter(id__in=unique_ids)
+                .values_list("id", flat=True)
+            )
+            if len(locked_ids) != len(unique_ids):
                 raise ValidationError({"ids": ["One or more contact messages do not exist"]})
 
-            updated = queryset.update(
+            updated = ContactMessage.objects.filter(id__in=locked_ids).update(
                 status=new_status,
                 updated_at=timezone.now()
             )
