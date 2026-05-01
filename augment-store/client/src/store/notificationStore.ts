@@ -309,12 +309,19 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // Revert selectedNotification's isRead state if it matches the notification being reverted
       // Only revert the isRead field to avoid overwriting other changes (e.g., user selected a different notification)
-      // Use the original selectedNotification's isRead state to ensure correct reversion
-      // regardless of which array (notifications or menuNotifications) the notification exists in
-      const revertedSelectedNotification =
-        latestState.selectedNotification?.id === notificationId && originalSelectedIsRead !== undefined
-          ? { ...latestState.selectedNotification, isRead: originalSelectedIsRead }
-          : latestState.selectedNotification
+      // If we snapshotted selectedNotification's isRead state, use it; otherwise fall back to the
+      // original state from the list to handle the race condition where user selects this notification
+      // after the request started (but before it failed)
+      let revertedSelectedNotification = latestState.selectedNotification
+      if (latestState.selectedNotification?.id === notificationId) {
+        const fallbackIsRead = originalSelectedIsRead !== undefined
+          ? originalSelectedIsRead
+          : (originalIsReadInNotifications ?? originalIsReadInMenuNotifications)
+        revertedSelectedNotification = {
+          ...latestState.selectedNotification,
+          isRead: fallbackIsRead,
+        }
+      }
 
       // Revert unread count by adding back the exact amount we decremented
       // This preserves any other updates (e.g., from fetchUnreadCount() or other
