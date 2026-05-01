@@ -178,4 +178,24 @@ export const notificationService = {
       throw error
     }
   },
+
+  /**
+   * Get a single admin notification by ID
+   * @param notificationId - The ID of the notification to retrieve
+   * @returns The notification details
+   * @note Admin-only endpoint - requires admin role
+   */
+  getAdminNotificationById: async (notificationId: string): Promise<Notification> => {
+    try {
+      const response = await apiClient.get<NotificationAPI>(
+        API_ENDPOINTS.NOTIFICATIONS.ADMIN_DETAIL(notificationId)
+      )
+
+      // Transform backend notification to frontend format
+      return transformNotificationFromAPI(response)
+    } catch (error) {
+      console.error('Failed to fetch admin notification:', error)
+      throw error
+    }
+  },
 }
