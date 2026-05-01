@@ -1,3 +1,5 @@
+import uuid
+
 from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from rest_framework import status
@@ -306,3 +308,25 @@ class AdminContactBulkUpdateTests(BaseAPITestCase):
             'status': 'invalid_status_value'
         }, format='json')
         self.assertEqual(response.status_code, 400)
+
+    def test_bulk_update_missing_ids_rejected(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(
+            url,
+            {'ids': [str(self.msg1.id), str(uuid.uuid4())], 'status': 'read'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("ids", response.data)
+
+    def test_bulk_update_duplicate_ids_allowed(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(
+            url,
+            {'ids': [str(self.msg1.id), str(self.msg1.id)], 'status': 'resolved'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['updated'], 1)

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.exceptions import ValidationError
 from accounts.permissions import hasAdminRole
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer, ContactMessageAdminSerializer
@@ -92,16 +93,28 @@ class AdminContactBulkUpdateView(GenericAPIView):
     serializer_class = BulkStatusUpdateSerializer
 
     def post(self, request, *args, **kwargs):
+        from django.db import transaction
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         ids = serializer.validated_data['ids']
         new_status = serializer.validated_data['status']
 
-        updated = ContactMessage.objects.filter(id__in=ids).update(
-            status=new_status,
-            updated_at=timezone.now()
-        )
+        unique_ids = set(ids)
+        with transaction.atomic():
+            locked_ids = list(
+                ContactMessage.objects.select_for_update()
+                .filter(id__in=unique_ids)
+                .values_list("id", flat=True)
+            )
+            if len(locked_ids) != len(unique_ids):
+                raise ValidationError({"ids": ["One or more contact messages do not exist"]})
+
+            updated = ContactMessage.objects.filter(id__in=locked_ids).update(
+                status=new_status,
+                updated_at=timezone.now()
+            )
 
         # Invalidate the contact list cache so admins see fresh data
         ContactCacheService().clear_namespace()
