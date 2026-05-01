@@ -35,6 +35,12 @@ class ProductBrandTests(BaseAPITestCase):
             is_active=True,
             role=User.Role.MEMBER
         )
+        self.merchant_user_2 = UserFactory(
+            email="merchant2@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
 
     def test_list_brands_unauthenticated(self):
         # GIVEN some brands exist in the database
@@ -146,6 +152,16 @@ class ProductBrandTests(BaseAPITestCase):
         self.assertEqual(response.data["name"], "Test Brand")
         self.assertEqual(response.data["description"], "Test Description")
 
+    def test_retrieve_other_merchant_brand_detail(self):
+        brand = ProductBrandFactory(
+            name="Other Brand",
+            description="Other Description",
+            created_by=self.merchant_user_2,
+        )
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_update_brand_success(self):
         # GIVEN a brand exists in the database
         brand = ProductBrandFactory(
@@ -185,6 +201,12 @@ class ProductBrandTests(BaseAPITestCase):
 
         # AND the brand should be deleted from the database
         self.assertFalse(ProductBrand.objects.filter(id=brand.id).exists())
+
+    def test_update_other_merchant_brand_forbidden(self):
+        brand = ProductBrandFactory(created_by=self.merchant_user_2)
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.patch(url, {"description": "nope"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_list_brands_uses_cache(self):
         # Given that I have clear all caches related to product brands

@@ -78,6 +78,12 @@ class ProductBrandDetailView(CacheInvalidatorMixin, BaseBrandView, RetrieveUpdat
     serializer_class = ProductBrandDetailSerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductBrandCacheService
+    
+    def get_queryset(self) -> "QuerySet[ProductBrand]":
+        queryset = super().get_queryset()
+        if self.request.method in SAFE_METHODS or self.request.user.is_admin:
+            return queryset
+        return queryset.filter(created_by=self.request.user)
 
     def invalidate_cache(self):
         super().invalidate_cache()
