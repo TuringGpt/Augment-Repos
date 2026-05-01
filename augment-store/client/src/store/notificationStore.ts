@@ -219,6 +219,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       n.id === notificationId ? { ...n, isRead: true } : n
     )
 
+    // Update selectedNotification if it matches the notification being marked as read
+    // This ensures the details drawer shows the latest state
+    const optimisticSelectedNotification =
+      initialState.selectedNotification?.id === notificationId
+        ? { ...initialState.selectedNotification, isRead: true }
+        : initialState.selectedNotification
+
     // Decrement total unread count by 1 only if the notification was actually unread
     // This prevents undercounting when one list is stale
     const optimisticUnreadCount = isCurrentlyUnread
@@ -235,6 +242,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // rather than always setting isRead: false on rollback
     const originalIsReadInNotifications = isReadInNotifications
     const originalIsReadInMenuNotifications = isReadInMenuNotifications
+
+    // Store the original isRead state of selectedNotification separately
+    // Only snapshot when selectedNotification.id === notificationId to prevent
+    // rollback from incorrectly applying an isRead value from an unrelated notification
+    const originalSelectedIsRead =
+      initialState.selectedNotification?.id === notificationId
+        ? initialState.selectedNotification.isRead
+        : undefined
 
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
@@ -254,6 +269,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     set({
       notifications: optimisticNotifications,
       menuNotifications: optimisticMenuNotifications,
+      selectedNotification: optimisticSelectedNotification,
       unreadCount: optimisticUnreadCount,
       markingAsRead: newMarkingAsRead,
       // Only clear isLoading when we actually invalidated the request (not from menu)
@@ -291,6 +307,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         n.id === notificationId ? { ...n, isRead: originalIsReadInMenuNotifications } : n
       )
 
+      // Revert selectedNotification's isRead state if it matches the notification being reverted
+      // Only revert the isRead field to avoid overwriting other changes (e.g., user selected a different notification)
+      // If we snapshotted selectedNotification's isRead state, use it; otherwise fall back to the
+      // original state from the list to handle the race condition where user selects this notification
+      // after the request started (but before it failed)
+      let revertedSelectedNotification = latestState.selectedNotification
+      if (latestState.selectedNotification?.id === notificationId) {
+        const fallbackIsRead = originalSelectedIsRead !== undefined
+          ? originalSelectedIsRead
+          : (originalIsReadInNotifications ?? originalIsReadInMenuNotifications)
+        revertedSelectedNotification = {
+          ...latestState.selectedNotification,
+          isRead: fallbackIsRead,
+        }
+      }
+
       // Revert unread count by adding back the exact amount we decremented
       // This preserves any other updates (e.g., from fetchUnreadCount() or other
       // markAsRead() calls) that happened while this API call was in-flight
@@ -308,6 +340,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       set({
         notifications: revertedNotifications,
         menuNotifications: revertedMenuNotifications,
+        selectedNotification: revertedSelectedNotification,
         unreadCount: revertedUnreadCount,
         markingAsRead: finalMarkingAsRead,
         ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),

@@ -122,6 +122,7 @@ export const API_ENDPOINTS = {
     UNREAD_COUNT: '/notifications/unread-count/',
     ADMIN: '/notifications/admin/',
     ADMIN_DETAIL: (id: string) => `/notifications/admin/${id}/`,
+    DELETE: (id: string) => `/notifications/${id}/`,
   },
 
   // Newsletter endpoints

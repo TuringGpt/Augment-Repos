@@ -198,4 +198,18 @@ export const notificationService = {
       throw error
     }
   },
+
+  /**
+   * Delete a notification by ID
+   * @param notificationId - The ID of the notification to delete
+   * @returns void - DELETE request returns no content (204 status)
+   */
+  deleteNotification: async (notificationId: string): Promise<void> => {
+    try {
+      await apiClient.delete<void>(API_ENDPOINTS.NOTIFICATIONS.DELETE(notificationId))
+    } catch (error) {
+      console.error('Failed to delete notification:', error)
+      throw error
+    }
+  },
 }
