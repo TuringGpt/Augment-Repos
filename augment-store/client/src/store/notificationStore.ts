@@ -242,7 +242,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // rather than always setting isRead: false on rollback
     const originalIsReadInNotifications = isReadInNotifications
     const originalIsReadInMenuNotifications = isReadInMenuNotifications
-    const originalSelectedNotification = initialState.selectedNotification
 
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
@@ -300,11 +299,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         n.id === notificationId ? { ...n, isRead: originalIsReadInMenuNotifications } : n
       )
 
-      // Revert selectedNotification to its original state if it matches the notification being reverted
-      // This ensures the details drawer shows the correct state after a failed mark as read
+      // Revert selectedNotification's isRead state if it matches the notification being reverted
+      // Only revert the isRead field to avoid overwriting other changes (e.g., user selected a different notification)
       const revertedSelectedNotification =
         latestState.selectedNotification?.id === notificationId
-          ? originalSelectedNotification
+          ? { ...latestState.selectedNotification, isRead: originalIsReadInNotifications }
           : latestState.selectedNotification
 
       // Revert unread count by adding back the exact amount we decremented
