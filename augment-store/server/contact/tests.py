@@ -319,3 +319,14 @@ class AdminContactBulkUpdateTests(BaseAPITestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("ids", response.data)
+
+    def test_bulk_update_duplicate_ids_allowed(self):
+        self.authenticated_client.force_authenticate(user=self.admin)
+        url = reverse("v1:admin_contact_bulk_update")
+        response = self.authenticated_client.post(
+            url,
+            {'ids': [str(self.msg1.id), str(self.msg1.id)], 'status': 'resolved'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['updated'], 1)

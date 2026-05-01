@@ -93,6 +93,8 @@ class AdminContactBulkUpdateView(GenericAPIView):
     serializer_class = BulkStatusUpdateSerializer
 
     def post(self, request, *args, **kwargs):
+        from django.db import transaction
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -100,13 +102,15 @@ class AdminContactBulkUpdateView(GenericAPIView):
         new_status = serializer.validated_data['status']
 
         unique_ids = set(ids)
-        if ContactMessage.objects.filter(id__in=unique_ids).count() != len(unique_ids):
-            raise ValidationError({"ids": ["One or more contact messages do not exist"]})
+        with transaction.atomic():
+            queryset = ContactMessage.objects.select_for_update().filter(id__in=unique_ids)
+            if queryset.count() != len(unique_ids):
+                raise ValidationError({"ids": ["One or more contact messages do not exist"]})
 
-        updated = ContactMessage.objects.filter(id__in=unique_ids).update(
-            status=new_status,
-            updated_at=timezone.now()
-        )
+            updated = queryset.update(
+                status=new_status,
+                updated_at=timezone.now()
+            )
 
         # Invalidate the contact list cache so admins see fresh data
         ContactCacheService().clear_namespace()
