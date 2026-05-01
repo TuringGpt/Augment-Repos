@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
+import type { Cart, AddToCartRequest, UpdateCartItemRequest, PaginatedCartsAPI } from '@features/cart/types'
 import { enrichCart } from '@utils/cartUtils'
 
 export const cartService = {
@@ -9,6 +9,13 @@ export const cartService = {
     // This prevents overwriting existing cart on transient failures
     const cart = await apiClient.get<Cart>(API_ENDPOINTS.CART.GET)
     return enrichCart(cart)
+  },
+
+  getAdminCarts: async (): Promise<Cart[]> => {
+    const response = await apiClient.get<PaginatedCartsAPI>(API_ENDPOINTS.CART.ADMIN)
+    // Normalize paginated response to array
+    const carts = response.results
+    return carts.map(enrichCart)
   },
 
   addToCart: async (data: AddToCartRequest): Promise<void> => {
