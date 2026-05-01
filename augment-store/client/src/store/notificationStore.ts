@@ -219,6 +219,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       n.id === notificationId ? { ...n, isRead: true } : n
     )
 
+    // Update selectedNotification if it matches the notification being marked as read
+    // This ensures the details drawer shows the latest state
+    const optimisticSelectedNotification =
+      initialState.selectedNotification?.id === notificationId
+        ? { ...initialState.selectedNotification, isRead: true }
+        : initialState.selectedNotification
+
     // Decrement total unread count by 1 only if the notification was actually unread
     // This prevents undercounting when one list is stale
     const optimisticUnreadCount = isCurrentlyUnread
@@ -235,6 +242,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // rather than always setting isRead: false on rollback
     const originalIsReadInNotifications = isReadInNotifications
     const originalIsReadInMenuNotifications = isReadInMenuNotifications
+    const originalSelectedNotification = initialState.selectedNotification
 
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
@@ -254,6 +262,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     set({
       notifications: optimisticNotifications,
       menuNotifications: optimisticMenuNotifications,
+      selectedNotification: optimisticSelectedNotification,
       unreadCount: optimisticUnreadCount,
       markingAsRead: newMarkingAsRead,
       // Only clear isLoading when we actually invalidated the request (not from menu)
@@ -291,6 +300,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         n.id === notificationId ? { ...n, isRead: originalIsReadInMenuNotifications } : n
       )
 
+      // Revert selectedNotification to its original state if it matches the notification being reverted
+      // This ensures the details drawer shows the correct state after a failed mark as read
+      const revertedSelectedNotification =
+        latestState.selectedNotification?.id === notificationId
+          ? originalSelectedNotification
+          : latestState.selectedNotification
+
       // Revert unread count by adding back the exact amount we decremented
       // This preserves any other updates (e.g., from fetchUnreadCount() or other
       // markAsRead() calls) that happened while this API call was in-flight
@@ -308,6 +324,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       set({
         notifications: revertedNotifications,
         menuNotifications: revertedMenuNotifications,
+        selectedNotification: revertedSelectedNotification,
         unreadCount: revertedUnreadCount,
         markingAsRead: finalMarkingAsRead,
         ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
