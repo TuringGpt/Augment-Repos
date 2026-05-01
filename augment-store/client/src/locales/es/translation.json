@@ -77,7 +77,14 @@
     "unreadCount": "{{count}} notificación sin leer",
     "unreadCount_other": "{{count}} notificaciones sin leer",
     "markedAsRead": "Notificación marcada como leída",
-    "markAsReadError": "Error al marcar la notificación como leída"
+    "markAsReadError": "Error al marcar la notificación como leída",
+    "details": "Detalles de Notificación",
+    "read": "Leída",
+    "unread": "Sin leer",
+    "metadata": "Detalles",
+    "type": "Tipo",
+    "objectId": "ID de Referencia",
+    "noSelection": "Ninguna notificación seleccionada"
   },
   "auth": {
     "login": "Iniciar Sesión",

@@ -77,7 +77,14 @@
     "unreadCount": "{{count}} notification non lue",
     "unreadCount_other": "{{count}} notifications non lues",
     "markedAsRead": "Notification marquée comme lue",
-    "markAsReadError": "Échec du marquage de la notification comme lue"
+    "markAsReadError": "Échec du marquage de la notification comme lue",
+    "details": "Détails de la Notification",
+    "read": "Lue",
+    "unread": "Non lue",
+    "metadata": "Détails",
+    "type": "Type",
+    "objectId": "ID de Référence",
+    "noSelection": "Aucune notification sélectionnée"
   },
   "auth": {
     "login": "Connexion",

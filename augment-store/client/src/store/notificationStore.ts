@@ -20,6 +20,9 @@ interface NotificationState {
   menuIsLoading: boolean
   menuError: string | null
 
+  // Selected notification for details drawer
+  selectedNotification: Notification | null
+
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
@@ -27,6 +30,7 @@ interface NotificationState {
   markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
   clearNotifications: () => void
   setPage: (page: number) => void
+  setSelectedNotification: (notification: Notification | null) => void
 }
 
 // Request counter to track the latest fetch request
@@ -61,6 +65,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   menuNotifications: [],
   menuIsLoading: false,
   menuError: null,
+
+  // Selected notification for details drawer
+  selectedNotification: null,
 
   fetchNotifications: async (page?: number, limit?: number) => {
     const state = get()
@@ -339,11 +346,17 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuNotifications: [],
       menuIsLoading: false,
       menuError: null,
+      // Clear selected notification to prevent stale details after logout/clear
+      selectedNotification: null,
     })
   },
 
   setPage: (page: number) => {
     set({ page })
     get().fetchNotifications(page, get().limit)
+  },
+
+  setSelectedNotification: (notification: Notification | null) => {
+    set({ selectedNotification: notification })
   },
 }))

@@ -12,10 +12,12 @@ import {
 } from '@mui/material'
 import { CheckCircle, Circle, Refresh as RefreshIcon } from '@mui/icons-material'
 import { useNotificationStore } from '@store/notificationStore'
+import { useUIStore } from '@store/uiStore'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from '@hooks/useTranslation'
 import { formatDistanceToNow } from 'date-fns'
 import { ROUTES } from '@constants/index'
+import type { Notification } from '@features/notifications/types'
 
 interface NotificationListProps {
   anchorEl: null | HTMLElement
@@ -26,6 +28,7 @@ interface NotificationListProps {
 const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { setNotificationDetailsDrawerOpen } = useUIStore()
   const {
     menuNotifications,
     menuIsLoading,
@@ -33,6 +36,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
     fetchNotificationsWithoutPaginationUpdate,
     markAsRead,
     markingAsRead,
+    setSelectedNotification,
   } = useNotificationStore()
 
   // Fetch notifications when the popup opens
@@ -44,17 +48,25 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
     }
   }, [open, fetchNotificationsWithoutPaginationUpdate])
 
-  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+  const handleNotificationClick = async (notification: Notification) => {
     // Mark as read if not already read
-    if (!isRead) {
+    if (!notification.isRead) {
       try {
-        await markAsRead(notificationId, { fromMenu: true })
+        await markAsRead(notification.id, { fromMenu: true })
       } catch (error) {
         // Error is already handled by the store (sets menuError and rolls back optimistic update)
-        // Just log it here and continue to close the menu for consistent behavior
+        // Just log it here and continue to open the drawer for consistent behavior
         console.error('Failed to mark notification as read:', error)
       }
     }
+    // Derive the latest notification state from the store's CURRENT state to avoid stale isRead value
+    // After await markAsRead(), the menuNotifications captured in this handler's closure
+    // can still be the pre-optimistic-update array, so we must read fresh state from the store
+    const latestNotification =
+      useNotificationStore.getState().menuNotifications.find((n) => n.id === notification.id) ??
+      notification
+    setSelectedNotification(latestNotification)
+    setNotificationDetailsDrawerOpen(true)
     onClose()
   }
 
@@ -146,7 +158,7 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
             return (
               <MenuItem
                 key={notification.id}
-                onClick={() => handleNotificationClick(notification.id, notification.isRead)}
+                onClick={() => handleNotificationClick(notification)}
                 disabled={isMarking}
                 sx={{
                   py: 1.5,
