@@ -41,6 +41,14 @@ export interface UpdateCartItemRequest {
   operation?: 'add' | 'subtract' | 'set'
 }
 
+// Paginated Cart response from Django REST Framework (for admin endpoints)
+export interface PaginatedCartsAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Cart[]
+}
+
 // Helper type for cart items with calculated fields
 export interface CartItemWithCalculations extends CartItem {
   price: number

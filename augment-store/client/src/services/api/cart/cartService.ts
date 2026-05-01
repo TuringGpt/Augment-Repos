@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Cart, AddToCartRequest, UpdateCartItemRequest } from '@features/cart/types'
+import type { Cart, AddToCartRequest, UpdateCartItemRequest, PaginatedCartsAPI } from '@features/cart/types'
 import { enrichCart } from '@utils/cartUtils'
 
 export const cartService = {
@@ -12,7 +12,9 @@ export const cartService = {
   },
 
   getAdminCarts: async (): Promise<Cart[]> => {
-    const carts = await apiClient.get<Cart[]>(API_ENDPOINTS.CART.ADMIN)
+    const response = await apiClient.get<PaginatedCartsAPI>(API_ENDPOINTS.CART.ADMIN)
+    // Normalize paginated response to array
+    const carts = response.results
     return carts.map(enrichCart)
   },
 
