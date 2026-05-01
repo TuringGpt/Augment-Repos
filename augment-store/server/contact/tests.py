@@ -1,3 +1,5 @@
+import uuid
+
 from core.tests import BaseAPITestCase
 from accounts.factory import UserFactory
 from rest_framework import status
