@@ -244,8 +244,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const originalIsReadInMenuNotifications = isReadInMenuNotifications
 
     // Store the original isRead state of selectedNotification separately
-    // This prevents incorrect reversion when selectedNotification exists only in menuNotifications
-    const originalSelectedIsRead = initialState.selectedNotification?.isRead
+    // Only snapshot when selectedNotification.id === notificationId to prevent
+    // rollback from incorrectly applying an isRead value from an unrelated notification
+    const originalSelectedIsRead =
+      initialState.selectedNotification?.id === notificationId
+        ? initialState.selectedNotification.isRead
+        : undefined
 
     // Invalidate any in-flight fetchUnreadCount() requests to prevent them
     // from overwriting this optimistic update with stale server data
