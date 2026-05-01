@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
   // Cart endpoints
   CART: {
     GET: '/carts',
+    ADMIN: '/carts/admin/',
     REMOVE: (itemId: string) => `/carts/items/${itemId}/`,
     UPDATE: (itemId: string) => `/carts/items/${itemId}/`,
     ADD: '/carts/add-item/',

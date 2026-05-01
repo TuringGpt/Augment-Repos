@@ -11,6 +11,11 @@ export const cartService = {
     return enrichCart(cart)
   },
 
+  getAdminCarts: async (): Promise<Cart[]> => {
+    const carts = await apiClient.get<Cart[]>(API_ENDPOINTS.CART.ADMIN)
+    return carts.map(enrichCart)
+  },
+
   addToCart: async (data: AddToCartRequest): Promise<void> => {
     // Backend returns 200/201 with no response body
     await apiClient.post(API_ENDPOINTS.CART.ADD, data)
