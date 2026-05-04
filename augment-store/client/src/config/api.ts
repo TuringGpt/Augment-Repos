@@ -122,7 +122,9 @@ export const API_ENDPOINTS = {
     UNREAD_COUNT: '/notifications/unread-count/',
     ADMIN: '/notifications/admin/',
     ADMIN_DETAIL: (id: string) => `/notifications/admin/${id}/`,
-    ADMIN_DELETE: (id: string) => `/notifications/admin/${id}/`,
+    get ADMIN_DELETE() {
+      return this.ADMIN_DETAIL;
+    },
     DELETE: (id: string) => `/notifications/${id}/`,
   },
 
