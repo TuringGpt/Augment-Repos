@@ -367,8 +367,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const notification = initialState.notifications.find((n) => n.id === notificationId)
     const menuNotification = initialState.menuNotifications.find((n) => n.id === notificationId)
 
-    // If not found in either array, nothing to do
-    if (!notification && !menuNotification) {
+    // Check if the notification is the currently selected one
+    const isSelectedNotification = initialState.selectedNotification?.id === notificationId
+
+    // If not found in either array AND not the selected notification, nothing to do
+    if (!notification && !menuNotification && !isSelectedNotification) {
       return
     }
 
@@ -379,7 +382,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // We need to decrement unread count if it's unread anywhere
     const isUnreadInNotifications = notification ? !notification.isRead : false
     const isUnreadInMenuNotifications = menuNotification ? !menuNotification.isRead : false
-    const isCurrentlyUnread = isUnreadInNotifications || isUnreadInMenuNotifications
+    const isUnreadInSelectedNotification =
+      isSelectedNotification && initialState.selectedNotification ? !initialState.selectedNotification.isRead : false
+    const isCurrentlyUnread = isUnreadInNotifications || isUnreadInMenuNotifications || isUnreadInSelectedNotification
 
     // Add to deleting set
     const newDeletingNotifications = new Set(initialState.deletingNotifications)
