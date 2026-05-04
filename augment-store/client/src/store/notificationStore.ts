@@ -462,6 +462,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const revertedTotal = latestState.total + totalDecrement
       const revertedUnreadCount = latestState.unreadCount + unreadDecrement
 
+      // Restore selectedNotification if it was cleared by the optimistic update
+      const revertedSelectedNotification =
+        initialState.selectedNotification?.id === notificationId
+          ? initialState.selectedNotification
+          : latestState.selectedNotification
+
       // Remove from deleting set
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
@@ -473,6 +479,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       set({
         notifications: revertedNotifications,
         menuNotifications: revertedMenuNotifications,
+        selectedNotification: revertedSelectedNotification,
         total: revertedTotal,
         unreadCount: revertedUnreadCount,
         deletingNotifications: finalDeletingNotifications,
