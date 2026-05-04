@@ -552,15 +552,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Revert total and unread count only if we're actually adding the notification back
       // If the notification already exists in latestState (from an in-flight fetch), don't adjust counts
       // to prevent over-correction that would cause counts to drift upward
-      // IMPORTANT: Also check if we're restoring selectedNotification - if the notification existed only in
-      // selectedNotification (e.g., when deleting from details drawer with stale/paginated lists), we still
-      // need to restore counts even though we're not adding it back to notifications/menuNotifications arrays
+      // IMPORTANT: Also check if the notification originally existed (even if only in selectedNotification)
+      // and we decremented counts for it. If the user selected a different notification before rollback,
+      // we can't restore selectedNotification but we MUST still restore counts to prevent drift.
+      const wasNotificationOriginally =
+        notification !== undefined ||
+        menuNotification !== undefined ||
+        (isSelectedNotification && initialState.selectedNotification !== null)
       const wasNotificationAddedBack =
         (notification && !notificationAlreadyExists) ||
         (menuNotification && !menuNotificationAlreadyExists) ||
         isRestoringSelectedNotification
-      const revertedTotal = wasNotificationAddedBack ? latestState.total + totalDecrement : latestState.total
-      const revertedUnreadCount = wasNotificationAddedBack ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
+      // Restore counts if we added notification back OR if it existed originally and we decremented counts for it
+      // (even if we can't restore it to selectedNotification because user selected something else)
+      const shouldRestoreCounts = wasNotificationAddedBack || wasNotificationOriginally
+      const revertedTotal = shouldRestoreCounts ? latestState.total + totalDecrement : latestState.total
+      const revertedUnreadCount = shouldRestoreCounts ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
 
       // Recalculate totalPages based on reverted total to keep pagination consistent
       const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
