@@ -381,12 +381,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   deleteNotification: async (notificationId: string, options?: { fromMenu?: boolean }) => {
     const initialState = get()
 
-    // Increment counter and capture the current request ID
-    // This prevents stale delete success/rollback from applying after clearNotifications
-    deleteRequestCounter += 1
-    const requestId = deleteRequestCounter
-
     // Don't delete if already being deleted
+    // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
+    // If we increment counter then early-return, in-flight requests become stale and skip cleanup
     if (initialState.deletingNotifications.has(notificationId)) {
       return
     }
@@ -399,9 +396,15 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const isSelectedNotification = initialState.selectedNotification?.id === notificationId
 
     // If not found in either array AND not the selected notification, nothing to do
+    // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
     if (!notification && !menuNotification && !isSelectedNotification) {
       return
     }
+
+    // Increment counter and capture the current request ID
+    // This prevents stale delete success/rollback from applying after clearNotifications
+    deleteRequestCounter += 1
+    const requestId = deleteRequestCounter
 
     // Determine if this is a menu-context action based on options
     const fromMenu = options?.fromMenu ?? false
