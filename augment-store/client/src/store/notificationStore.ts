@@ -408,9 +408,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
     // Invalidate in-flight requests to prevent stale data from overwriting optimistic updates
     fetchUnreadCountRequestCounter += 1
-    if (!fromMenu) {
-      fetchRequestCounter += 1
-    }
+    fetchRequestCounter += 1
     fetchWithoutPaginationUpdateRequestCounter += 1
 
     set({
