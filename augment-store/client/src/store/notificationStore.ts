@@ -416,6 +416,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // Recalculate totalPages based on optimistic total to keep pagination consistent
     const optimisticTotalPages = Math.ceil(optimisticTotal / initialState.limit)
 
+    // Clamp page to valid range to prevent page > totalPages
+    // This is critical when deleting notifications on the last page
+    const optimisticPage = Math.min(initialState.page, Math.max(1, optimisticTotalPages))
+
     // Track the actual decrements for rollback
     const totalDecrement = initialState.total - optimisticTotal
     const unreadDecrement = initialState.unreadCount - optimisticUnreadCount
@@ -431,6 +435,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       selectedNotification: optimisticSelectedNotification,
       total: optimisticTotal,
       totalPages: optimisticTotalPages,
+      page: optimisticPage,
       unreadCount: optimisticUnreadCount,
       deletingNotifications: newDeletingNotifications,
       isLoading: fromMenu ? initialState.isLoading : false,
@@ -480,6 +485,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Recalculate totalPages based on reverted total to keep pagination consistent
       const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
 
+      // Clamp page to valid range after rollback
+      const revertedPage = Math.min(latestState.page, Math.max(1, revertedTotalPages))
+
       // Restore selectedNotification if it was cleared by the optimistic update
       const revertedSelectedNotification =
         initialState.selectedNotification?.id === notificationId
@@ -505,6 +513,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         selectedNotification: revertedSelectedNotification,
         total: revertedTotal,
         totalPages: revertedTotalPages,
+        page: revertedPage,
         unreadCount: revertedUnreadCount,
         deletingNotifications: finalDeletingNotifications,
         ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
