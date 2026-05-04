@@ -473,25 +473,30 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // Add notification back to both arrays if it was present there originally
       // Check for duplicates to prevent issues if a fetch repopulated the item during the in-flight delete
+      const notificationAlreadyExists = latestState.notifications.some((n) => n.id === notificationId)
       const revertedNotifications = notification
-        ? latestState.notifications.some((n) => n.id === notificationId)
+        ? notificationAlreadyExists
           ? latestState.notifications // Already exists, don't add duplicate
           : [...latestState.notifications, notification].sort(
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
         : latestState.notifications
 
+      const menuNotificationAlreadyExists = latestState.menuNotifications.some((n) => n.id === notificationId)
       const revertedMenuNotifications = menuNotification
-        ? latestState.menuNotifications.some((n) => n.id === notificationId)
+        ? menuNotificationAlreadyExists
           ? latestState.menuNotifications // Already exists, don't add duplicate
           : [...latestState.menuNotifications, menuNotification].sort(
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
         : latestState.menuNotifications
 
-      // Revert total and unread count
-      const revertedTotal = latestState.total + totalDecrement
-      const revertedUnreadCount = latestState.unreadCount + unreadDecrement
+      // Revert total and unread count only if we're actually adding the notification back
+      // If the notification already exists in latestState (from an in-flight fetch), don't adjust counts
+      // to prevent over-correction that would cause counts to drift upward
+      const wasNotificationAddedBack = (notification && !notificationAlreadyExists) || (menuNotification && !menuNotificationAlreadyExists)
+      const revertedTotal = wasNotificationAddedBack ? latestState.total + totalDecrement : latestState.total
+      const revertedUnreadCount = wasNotificationAddedBack ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
 
       // Recalculate totalPages based on reverted total to keep pagination consistent
       const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
