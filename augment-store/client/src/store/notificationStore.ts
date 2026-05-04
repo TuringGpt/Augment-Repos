@@ -447,6 +447,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       deletingNotifications: newDeletingNotifications,
       isLoading: fromMenu ? initialState.isLoading : false,
       menuIsLoading: false,
+      // Clear error state on optimistic update to prevent stale errors from persisting
+      ...(fromMenu ? { menuError: null } : { error: null }),
     })
 
     try {
@@ -462,6 +464,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       set({
         deletingNotifications: finalDeletingNotifications,
+        // Clear error state on success to prevent stale errors from persisting
+        ...(fromMenu ? { menuError: null } : { error: null }),
       })
     } catch (error) {
       // ROLLBACK: Revert the optimistic update on error
@@ -501,11 +505,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
           ? initialState.selectedNotification
           : latestState.selectedNotification
 
-      // Re-open the drawer if we closed it during the optimistic update
-      if (shouldCloseDrawer) {
-        useUIStore.getState().setNotificationDetailsDrawerOpen(true)
-      }
-
       // Remove from deleting set
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
@@ -525,6 +524,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         deletingNotifications: finalDeletingNotifications,
         ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
       })
+
+      // Re-open the drawer if we closed it during the optimistic update
+      // AND we're actually restoring the selectedNotification
+      if (shouldCloseDrawer && revertedSelectedNotification?.id === notificationId) {
+        useUIStore.getState().setNotificationDetailsDrawerOpen(true)
+      }
 
       // Re-throw to allow UI to handle error
       throw error
