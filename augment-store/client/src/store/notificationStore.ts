@@ -408,6 +408,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       ? Math.max(0, initialState.unreadCount - 1)
       : initialState.unreadCount
 
+    // Recalculate totalPages based on optimistic total to keep pagination consistent
+    const optimisticTotalPages = Math.ceil(optimisticTotal / initialState.limit)
+
     // Track the actual decrements for rollback
     const totalDecrement = initialState.total - optimisticTotal
     const unreadDecrement = initialState.unreadCount - optimisticUnreadCount
@@ -422,6 +425,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuNotifications: optimisticMenuNotifications,
       selectedNotification: optimisticSelectedNotification,
       total: optimisticTotal,
+      totalPages: optimisticTotalPages,
       unreadCount: optimisticUnreadCount,
       deletingNotifications: newDeletingNotifications,
       isLoading: fromMenu ? initialState.isLoading : false,
@@ -468,6 +472,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const revertedTotal = latestState.total + totalDecrement
       const revertedUnreadCount = latestState.unreadCount + unreadDecrement
 
+      // Recalculate totalPages based on reverted total to keep pagination consistent
+      const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
+
       // Restore selectedNotification if it was cleared by the optimistic update
       const revertedSelectedNotification =
         initialState.selectedNotification?.id === notificationId
@@ -492,6 +499,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         menuNotifications: revertedMenuNotifications,
         selectedNotification: revertedSelectedNotification,
         total: revertedTotal,
+        totalPages: revertedTotalPages,
         unreadCount: revertedUnreadCount,
         deletingNotifications: finalDeletingNotifications,
         ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
