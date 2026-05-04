@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { notificationService } from '@services/api'
 import type { Notification } from '@features/notifications/types'
+import { useUIStore } from './uiStore'
 
 interface NotificationState {
   notifications: Notification[]
@@ -391,10 +392,15 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     )
 
     // Close details drawer if the deleted notification is currently selected
-    const optimisticSelectedNotification =
-      initialState.selectedNotification?.id === notificationId
-        ? null
-        : initialState.selectedNotification
+    const shouldCloseDrawer = initialState.selectedNotification?.id === notificationId
+    const optimisticSelectedNotification = shouldCloseDrawer
+      ? null
+      : initialState.selectedNotification
+
+    // Close the drawer in uiStore if we're clearing the selected notification
+    if (shouldCloseDrawer) {
+      useUIStore.getState().setNotificationDetailsDrawerOpen(false)
+    }
 
     // Decrement total count and unread count if the notification was unread
     const optimisticTotal = Math.max(0, initialState.total - 1)
@@ -467,6 +473,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         initialState.selectedNotification?.id === notificationId
           ? initialState.selectedNotification
           : latestState.selectedNotification
+
+      // Re-open the drawer if we closed it during the optimistic update
+      if (shouldCloseDrawer) {
+        useUIStore.getState().setNotificationDetailsDrawerOpen(true)
+      }
 
       // Remove from deleting set
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
