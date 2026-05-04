@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { notificationService } from '@services/api'
 import type { Notification } from '@features/notifications/types'
-import { useUIStore } from './uiStore'
+import { useUIStore } from '@store/uiStore'
 
 interface NotificationState {
   notifications: Notification[]
