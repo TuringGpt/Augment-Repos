@@ -301,6 +301,23 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Read latest state in catch block to avoid stale data
       const latestState = get()
 
+      // Check if the notification was deleted while markAsRead was in-flight
+      // If deleted, skip rollback to prevent race where we increment unreadCount for a deleted notification
+      const wasDeleted = latestState.deletingNotifications.has(notificationId) ||
+        (!latestState.notifications.some((n) => n.id === notificationId) &&
+         !latestState.menuNotifications.some((n) => n.id === notificationId) &&
+         latestState.selectedNotification?.id !== notificationId)
+
+      // If notification was deleted, just clean up the marking set and return
+      // Don't revert unreadCount or notification state since delete already handled it
+      if (wasDeleted) {
+        const finalMarkingAsRead = new Set(latestState.markingAsRead)
+        finalMarkingAsRead.delete(notificationId)
+        set({ markingAsRead: finalMarkingAsRead })
+        // Don't re-throw error since the notification is gone anyway
+        return
+      }
+
       // Revert notification back to original isRead state in both arrays
       // Use the pre-optimistic state for each list to avoid incorrectly
       // flipping a notification that was already read in one list
@@ -390,6 +407,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     const newDeletingNotifications = new Set(initialState.deletingNotifications)
     newDeletingNotifications.add(notificationId)
 
+    // Clear any in-flight markAsRead operations for this notification
+    // This prevents a race where markAsRead rollback increments unreadCount after deletion
+    const newMarkingAsRead = new Set(initialState.markingAsRead)
+    newMarkingAsRead.delete(notificationId)
+
     // OPTIMISTIC UPDATE: Remove notification from both arrays immediately
     const optimisticNotifications = initialState.notifications.filter((n) => n.id !== notificationId)
     const optimisticMenuNotifications = initialState.menuNotifications.filter(
@@ -445,6 +467,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       page: optimisticPage,
       unreadCount: optimisticUnreadCount,
       deletingNotifications: newDeletingNotifications,
+      markingAsRead: newMarkingAsRead, // Clear in-flight markAsRead to prevent race
       isLoading: fromMenu ? initialState.isLoading : false,
       menuIsLoading: false,
       // Clear error state on optimistic update to prevent stale errors from persisting
