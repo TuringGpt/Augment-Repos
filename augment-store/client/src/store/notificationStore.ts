@@ -13,6 +13,7 @@ interface NotificationState {
   error: string | null
   unreadCountError: string | null // Separate error state for unread count polling
   markingAsRead: Set<string> // Track which notifications are being marked as read
+  deletingNotifications: Set<string> // Track which notifications are being deleted
 
   // Separate state for NotificationList dropdown menu
   // This prevents the menu from interfering with NotificationsPage state
@@ -28,6 +29,7 @@ interface NotificationState {
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
   markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
+  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
   clearNotifications: () => void
   setPage: (page: number) => void
   setSelectedNotification: (notification: Notification | null) => void
@@ -60,6 +62,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   error: null,
   unreadCountError: null,
   markingAsRead: new Set<string>(),
+  deletingNotifications: new Set<string>(),
 
   // Menu-specific state
   menuNotifications: [],
@@ -351,6 +354,133 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
+  deleteNotification: async (notificationId: string, options?: { fromMenu?: boolean }) => {
+    const initialState = get()
+
+    // Don't delete if already being deleted
+    if (initialState.deletingNotifications.has(notificationId)) {
+      return
+    }
+
+    // Find the notification in either notifications or menuNotifications array
+    const notification = initialState.notifications.find((n) => n.id === notificationId)
+    const menuNotification = initialState.menuNotifications.find((n) => n.id === notificationId)
+
+    // If not found in either array, nothing to do
+    if (!notification && !menuNotification) {
+      return
+    }
+
+    // Determine if this is a menu-context action based on options
+    const fromMenu = options?.fromMenu ?? false
+
+    // Check if the notification is unread in at least one location
+    // We need to decrement unread count if it's unread anywhere
+    const isUnreadInNotifications = notification ? !notification.isRead : false
+    const isUnreadInMenuNotifications = menuNotification ? !menuNotification.isRead : false
+    const isCurrentlyUnread = isUnreadInNotifications || isUnreadInMenuNotifications
+
+    // Add to deleting set
+    const newDeletingNotifications = new Set(initialState.deletingNotifications)
+    newDeletingNotifications.add(notificationId)
+
+    // OPTIMISTIC UPDATE: Remove notification from both arrays immediately
+    const optimisticNotifications = initialState.notifications.filter((n) => n.id !== notificationId)
+    const optimisticMenuNotifications = initialState.menuNotifications.filter(
+      (n) => n.id !== notificationId
+    )
+
+    // Close details drawer if the deleted notification is currently selected
+    const optimisticSelectedNotification =
+      initialState.selectedNotification?.id === notificationId
+        ? null
+        : initialState.selectedNotification
+
+    // Decrement total count and unread count if the notification was unread
+    const optimisticTotal = Math.max(0, initialState.total - 1)
+    const optimisticUnreadCount = isCurrentlyUnread
+      ? Math.max(0, initialState.unreadCount - 1)
+      : initialState.unreadCount
+
+    // Track the actual decrements for rollback
+    const totalDecrement = initialState.total - optimisticTotal
+    const unreadDecrement = initialState.unreadCount - optimisticUnreadCount
+
+    // Invalidate in-flight requests to prevent stale data from overwriting optimistic updates
+    fetchUnreadCountRequestCounter += 1
+    if (!fromMenu) {
+      fetchRequestCounter += 1
+    }
+    fetchWithoutPaginationUpdateRequestCounter += 1
+
+    set({
+      notifications: optimisticNotifications,
+      menuNotifications: optimisticMenuNotifications,
+      selectedNotification: optimisticSelectedNotification,
+      total: optimisticTotal,
+      unreadCount: optimisticUnreadCount,
+      deletingNotifications: newDeletingNotifications,
+      isLoading: fromMenu ? initialState.isLoading : false,
+      menuIsLoading: false,
+    })
+
+    try {
+      // Call API to delete notification
+      await notificationService.deleteNotification(notificationId)
+
+      // Read latest state after await
+      const latestState = get()
+
+      // Remove from deleting set using latest state
+      const finalDeletingNotifications = new Set(latestState.deletingNotifications)
+      finalDeletingNotifications.delete(notificationId)
+
+      set({
+        deletingNotifications: finalDeletingNotifications,
+      })
+    } catch (error) {
+      // ROLLBACK: Revert the optimistic update on error
+      const latestState = get()
+
+      // Add notification back to both arrays if it was present there originally
+      const revertedNotifications = notification
+        ? [...latestState.notifications, notification].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        : latestState.notifications
+
+      const revertedMenuNotifications = menuNotification
+        ? [...latestState.menuNotifications, menuNotification].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        : latestState.menuNotifications
+
+      // Revert total and unread count
+      const revertedTotal = latestState.total + totalDecrement
+      const revertedUnreadCount = latestState.unreadCount + unreadDecrement
+
+      // Remove from deleting set
+      const finalDeletingNotifications = new Set(latestState.deletingNotifications)
+      finalDeletingNotifications.delete(notificationId)
+
+      // Set error in the appropriate scope
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to delete notification'
+
+      set({
+        notifications: revertedNotifications,
+        menuNotifications: revertedMenuNotifications,
+        total: revertedTotal,
+        unreadCount: revertedUnreadCount,
+        deletingNotifications: finalDeletingNotifications,
+        ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
+      })
+
+      // Re-throw to allow UI to handle error
+      throw error
+    }
+  },
+
   clearNotifications: () => {
     // Increment counters to invalidate any in-flight fetch requests
     // This prevents in-flight responses from repopulating the store after clear
@@ -375,6 +505,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       error: null,
       unreadCountError: null,
       markingAsRead: new Set<string>(),
+      deletingNotifications: new Set<string>(),
       // Also clear menu-specific state
       menuNotifications: [],
       menuIsLoading: false,
