@@ -48,6 +48,10 @@ let fetchWithoutPaginationUpdateRequestCounter = 0
 // Prevents concurrent calls from racing and stale responses from overwriting newer count
 let fetchUnreadCountRequestCounter = 0
 
+// Request counter for delete operations
+// Prevents stale delete success/rollback from applying after clearNotifications
+let deleteRequestCounter = 0
+
 // Track last error state to prevent log spam during polling
 // Only log when transitioning from success to error or when error message changes
 let lastUnreadCountError: string | null = null
@@ -377,6 +381,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   deleteNotification: async (notificationId: string, options?: { fromMenu?: boolean }) => {
     const initialState = get()
 
+    // Increment counter and capture the current request ID
+    // This prevents stale delete success/rollback from applying after clearNotifications
+    deleteRequestCounter += 1
+    const requestId = deleteRequestCounter
+
     // Don't delete if already being deleted
     if (initialState.deletingNotifications.has(notificationId)) {
       return
@@ -480,6 +489,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Call API to delete notification
       await notificationService.deleteNotification(notificationId)
 
+      // Only update state if this is still the latest delete request
+      // This prevents stale success updates from applying after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        return
+      }
+
       // Read latest state after await
       const latestState = get()
 
@@ -493,6 +508,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         ...(fromMenu ? { menuError: null } : { error: null }),
       })
     } catch (error) {
+      // Only rollback if this is still the latest delete request
+      // This prevents stale rollback from repopulating the store after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        return
+      }
+
       // ROLLBACK: Revert the optimistic update on error
       const latestState = get()
 
@@ -579,11 +600,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   },
 
   clearNotifications: () => {
-    // Increment counters to invalidate any in-flight fetch requests
-    // This prevents in-flight responses from repopulating the store after clear
+    // Increment counters to invalidate any in-flight fetch and delete requests
+    // This prevents in-flight responses/rollbacks from repopulating the store after clear
     fetchRequestCounter += 1
     fetchWithoutPaginationUpdateRequestCounter += 1
     fetchUnreadCountRequestCounter += 1
+    deleteRequestCounter += 1
 
     // Reset error tracking to ensure errors are logged correctly in new sessions
     // This prevents stale error state from suppressing logs after logout/login
