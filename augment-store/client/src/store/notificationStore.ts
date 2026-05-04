@@ -527,9 +527,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Clamp page to valid range after rollback
       const revertedPage = Math.min(latestState.page, Math.max(1, revertedTotalPages))
 
-      // Restore selectedNotification if it was cleared by the optimistic update
+      // Restore selectedNotification only if:
+      // 1. The deleted notification was the selected one (initialState.selectedNotification?.id === notificationId)
+      // 2. AND the user hasn't selected a new notification in the meantime (latestState.selectedNotification === null)
+      // This prevents overwriting a newer user selection made after the optimistic close
       const revertedSelectedNotification =
-        initialState.selectedNotification?.id === notificationId
+        initialState.selectedNotification?.id === notificationId && latestState.selectedNotification === null
           ? initialState.selectedNotification
           : latestState.selectedNotification
 
