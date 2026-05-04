@@ -426,7 +426,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
     // Invalidate in-flight requests to prevent stale data from overwriting optimistic updates
     fetchUnreadCountRequestCounter += 1
-    fetchRequestCounter += 1
+
+    // Only invalidate fetchNotifications() when called from NotificationsPage (not from menu)
+    // This prevents menu-driven deleteNotification from canceling unrelated page pagination requests
+    // which would leave page/notifications out of sync with no loading indicator
+    if (!fromMenu) {
+      fetchRequestCounter += 1
+    }
+
     fetchWithoutPaginationUpdateRequestCounter += 1
 
     set({
