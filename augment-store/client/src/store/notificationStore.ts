@@ -303,8 +303,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       // Check if the notification was deleted while markAsRead was in-flight
       // If deleted, skip rollback to prevent race where we increment unreadCount for a deleted notification
-      // Only rely on deletingNotifications set - absence from arrays could be due to pagination/refetch
-      const wasDeleted = latestState.deletingNotifications.has(notificationId)
+      // Check both deletingNotifications (in-progress) and absence from all arrays (completed delete)
+      const isBeingDeleted = latestState.deletingNotifications.has(notificationId)
+      const existsInNotifications = latestState.notifications.some((n) => n.id === notificationId)
+      const existsInMenuNotifications = latestState.menuNotifications.some((n) => n.id === notificationId)
+      const isSelectedNotification = latestState.selectedNotification?.id === notificationId
+      const wasDeleted = isBeingDeleted || (!existsInNotifications && !existsInMenuNotifications && !isSelectedNotification)
 
       // If notification was deleted, just clean up the marking set and return
       // Don't revert unreadCount or notification state since delete already handled it
