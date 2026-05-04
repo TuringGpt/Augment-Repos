@@ -516,19 +516,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             )
         : latestState.menuNotifications
 
-      // Revert total and unread count only if we're actually adding the notification back
-      // If the notification already exists in latestState (from an in-flight fetch), don't adjust counts
-      // to prevent over-correction that would cause counts to drift upward
-      const wasNotificationAddedBack = (notification && !notificationAlreadyExists) || (menuNotification && !menuNotificationAlreadyExists)
-      const revertedTotal = wasNotificationAddedBack ? latestState.total + totalDecrement : latestState.total
-      const revertedUnreadCount = wasNotificationAddedBack ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
-
-      // Recalculate totalPages based on reverted total to keep pagination consistent
-      const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
-
-      // Clamp page to valid range after rollback
-      const revertedPage = Math.min(latestState.page, Math.max(1, revertedTotalPages))
-
       // Restore selectedNotification only if:
       // 1. The deleted notification was the selected one (initialState.selectedNotification?.id === notificationId)
       // 2. AND the user hasn't selected a new notification in the meantime (latestState.selectedNotification === null)
@@ -537,6 +524,28 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         initialState.selectedNotification?.id === notificationId && latestState.selectedNotification === null
           ? initialState.selectedNotification
           : latestState.selectedNotification
+
+      // Determine if we're restoring the selectedNotification
+      const isRestoringSelectedNotification = revertedSelectedNotification?.id === notificationId && latestState.selectedNotification === null
+
+      // Revert total and unread count only if we're actually adding the notification back
+      // If the notification already exists in latestState (from an in-flight fetch), don't adjust counts
+      // to prevent over-correction that would cause counts to drift upward
+      // IMPORTANT: Also check if we're restoring selectedNotification - if the notification existed only in
+      // selectedNotification (e.g., when deleting from details drawer with stale/paginated lists), we still
+      // need to restore counts even though we're not adding it back to notifications/menuNotifications arrays
+      const wasNotificationAddedBack =
+        (notification && !notificationAlreadyExists) ||
+        (menuNotification && !menuNotificationAlreadyExists) ||
+        isRestoringSelectedNotification
+      const revertedTotal = wasNotificationAddedBack ? latestState.total + totalDecrement : latestState.total
+      const revertedUnreadCount = wasNotificationAddedBack ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
+
+      // Recalculate totalPages based on reverted total to keep pagination consistent
+      const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
+
+      // Clamp page to valid range after rollback
+      const revertedPage = Math.min(latestState.page, Math.max(1, revertedTotalPages))
 
       // Remove from deleting set
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
