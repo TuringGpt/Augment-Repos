@@ -441,16 +441,21 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const latestState = get()
 
       // Add notification back to both arrays if it was present there originally
+      // Check for duplicates to prevent issues if a fetch repopulated the item during the in-flight delete
       const revertedNotifications = notification
-        ? [...latestState.notifications, notification].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
+        ? latestState.notifications.some((n) => n.id === notificationId)
+          ? latestState.notifications // Already exists, don't add duplicate
+          : [...latestState.notifications, notification].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
         : latestState.notifications
 
       const revertedMenuNotifications = menuNotification
-        ? [...latestState.menuNotifications, menuNotification].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
+        ? latestState.menuNotifications.some((n) => n.id === notificationId)
+          ? latestState.menuNotifications // Already exists, don't add duplicate
+          : [...latestState.menuNotifications, menuNotification].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
         : latestState.menuNotifications
 
       // Revert total and unread count
