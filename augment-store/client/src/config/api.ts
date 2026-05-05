@@ -74,6 +74,11 @@ export const API_ENDPOINTS = {
     DELETE_ADDRESS: (id: string) => `/user/addresses/${id}`,
   },
 
+  // Accounts endpoints (admin)
+  ACCOUNTS: {
+    ADMIN_USERS: '/accounts/admin/users/',
+  },
+
   // Wishlist endpoints
   WISHLIST: {
     GET: '/wishlist/',

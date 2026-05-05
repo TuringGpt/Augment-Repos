@@ -12,6 +12,7 @@ export { adminDashboardService } from './admin-dashboard/adminDashboardService'
 export { adminReportService } from './admin-reports/adminReportService'
 export { productStatisticsService } from './product-statistics/productStatisticsService'
 export { customerStatisticsService } from './customer-statistics/customerStatisticsService'
+export { accountsService } from './accounts/accountsService'
 export { contactService } from './contact/contactService'
 export type {
   ContactStatus,
