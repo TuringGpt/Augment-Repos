@@ -49,6 +49,8 @@ export interface AdminUser {
 export interface AdminUsersListResponse {
   users: AdminUser[]
   count: number
+  next: string | null
+  previous: string | null
 }
 
 // Backend API response format (DRF ListAPIView with pagination)

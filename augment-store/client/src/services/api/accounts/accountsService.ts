@@ -30,8 +30,8 @@ const transformAdminUser = (apiUser: AdminUserAPI): AdminUser => {
 export const accountsService = {
   /**
    * Get paginated list of users (admin only)
-   * Note: Returns only the first page of results from the DRF-paginated response.
-   * @returns Promise with list of users (first page) and total count
+   * Includes pagination fields (next/previous) to support fetching multiple pages
+   * @returns Promise with list of users, total count, and pagination URLs
    */
   getAdminUsers: async (): Promise<AdminUsersListResponse> => {
     const response = await apiClient.get<AdminUsersListResponseAPI>(
@@ -39,10 +39,12 @@ export const accountsService = {
     )
 
     // Transform backend response to frontend format
-    // Backend returns DRF paginated response with 'results' array
+    // Backend returns DRF paginated response with 'results' array and pagination fields
     return {
       users: response.results.map(transformAdminUser),
       count: response.count,
+      next: response.next,
+      previous: response.previous,
     }
   },
 }
