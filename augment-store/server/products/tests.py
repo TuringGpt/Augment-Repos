@@ -457,6 +457,14 @@ class ProductCategoryTests(BaseAPITestCase):
         response = other_client.patch(url, {"description": "Updated Description"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_update_category_cannot_change_created_by(self):
+        category = ProductCategoryFactory(created_by=self.merchant_user)
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        category.refresh_from_db()
+        self.assertEqual(category.created_by_id, self.merchant_user.id)
+
     def test_delete_category_success(self):
         # GIVEN a category exists in the database
         category = ProductCategoryFactory(
