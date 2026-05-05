@@ -65,8 +65,14 @@ const NotificationDetailsDrawer = () => {
       setDeleteDialogOpen(false)
       // Call deleteNotification with fromMenu: false since this is from the details drawer
       // The store action will automatically close the drawer on successful delete
-      await deleteNotification(selectedNotification.id, { fromMenu: false })
-      toast.success(t('notifications.deleteSuccess'))
+      // It returns true if deletion was performed, false if no-op (e.g., race condition)
+      const deleted = await deleteNotification(selectedNotification.id, { fromMenu: false })
+
+      // Only show success toast if deletion actually occurred
+      // This prevents misleading success messages when the store action returns early
+      if (deleted) {
+        toast.success(t('notifications.deleteSuccess'))
+      }
     } catch (error) {
       toast.error(t('notifications.deleteError'))
     }

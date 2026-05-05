@@ -30,7 +30,7 @@ interface NotificationState {
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
   markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
-  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
+  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<boolean>
   clearNotifications: () => void
   setPage: (page: number) => void
   setSelectedNotification: (notification: Notification | null) => void
@@ -385,7 +385,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
     // If we increment counter then early-return, in-flight requests become stale and skip cleanup
     if (initialState.deletingNotifications.has(notificationId)) {
-      return
+      return false
     }
 
     // Find the notification in either notifications or menuNotifications array
@@ -398,7 +398,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // If not found in either array AND not the selected notification, nothing to do
     // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
     if (!notification && !menuNotification && !isSelectedNotification) {
-      return
+      return false
     }
 
     // Increment counter and capture the current request ID
@@ -495,7 +495,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Only update state if this is still the latest delete request
       // This prevents stale success updates from applying after clearNotifications
       if (requestId !== deleteRequestCounter) {
-        return
+        return false
       }
 
       // Read latest state after await
@@ -510,11 +510,13 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         // Clear error state on success to prevent stale errors from persisting
         ...(fromMenu ? { menuError: null } : { error: null }),
       })
+
+      return true
     } catch (error) {
       // Only rollback if this is still the latest delete request
       // This prevents stale rollback from repopulating the store after clearNotifications
       if (requestId !== deleteRequestCounter) {
-        return
+        return false
       }
 
       // ROLLBACK: Revert the optimistic update on error
