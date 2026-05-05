@@ -50,6 +50,12 @@ const NotificationDetailsDrawer = () => {
   const handleDeleteConfirm = async () => {
     if (!selectedNotification) return
 
+    // Check if already being deleted to prevent false success toasts
+    if (deletingNotifications.has(selectedNotification.id)) {
+      setDeleteDialogOpen(false)
+      return
+    }
+
     try {
       setDeleteDialogOpen(false)
       // Call deleteNotification with fromMenu: false since this is from the details drawer
