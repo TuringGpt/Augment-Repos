@@ -44,6 +44,8 @@ const NotificationDetailsDrawer = () => {
   }
 
   const handleDeleteCancel = () => {
+    // Prevent dismissal during delete operation
+    if (isDeleting) return
     setDeleteDialogOpen(false)
   }
 
