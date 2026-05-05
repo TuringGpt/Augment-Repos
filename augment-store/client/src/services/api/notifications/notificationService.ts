@@ -212,4 +212,19 @@ export const notificationService = {
       throw error
     }
   },
+
+  /**
+   * Delete an admin notification by ID
+   * @param notificationId - The ID of the notification to delete
+   * @returns void - DELETE request returns no content (204 status)
+   * @note Admin-only endpoint - requires admin role
+   */
+  deleteAdminNotification: async (notificationId: string): Promise<void> => {
+    try {
+      await apiClient.delete<void>(API_ENDPOINTS.NOTIFICATIONS.ADMIN_DELETE(notificationId))
+    } catch (error) {
+      console.error('Failed to delete admin notification:', error)
+      throw error
+    }
+  },
 }
