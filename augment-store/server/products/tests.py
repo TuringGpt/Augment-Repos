@@ -1266,8 +1266,15 @@ class ProductTests(BaseAPITestCase):
         url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
         response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
         product.refresh_from_db()
         self.assertEqual(product.created_by_id, self.merchant_user.id)
+
+    def test_update_product_allows_created_by_when_unchanged(self):
+        product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
+        url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user.id), "description": "Updated"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_product_by_different_merchant_forbidden(self):
         # GIVEN a product exists created by merchant_user
