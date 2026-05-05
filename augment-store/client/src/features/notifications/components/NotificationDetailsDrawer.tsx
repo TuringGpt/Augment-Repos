@@ -50,7 +50,10 @@ const NotificationDetailsDrawer = () => {
   }
 
   const handleDeleteConfirm = async () => {
-    if (!selectedNotification) return
+    if (!selectedNotification) {
+      setDeleteDialogOpen(false)
+      return
+    }
 
     // Check if already being deleted to prevent false success toasts
     if (deletingNotifications.has(selectedNotification.id)) {
