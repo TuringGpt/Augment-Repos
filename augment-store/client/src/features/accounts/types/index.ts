@@ -8,7 +8,7 @@ export interface AdminUserAPI {
   mobile: string | null
   gender: string | null
   image: string | null
-  role: 'customer' | 'admin'
+  role: 'admin' | 'merchant' | 'member'
   is_active: boolean
   date_joined: string
 }
@@ -23,7 +23,7 @@ export interface AdminUser {
   mobile: string | null
   gender: string | null
   image: string | null
-  role: 'customer' | 'admin'
+  role: 'admin' | 'merchant' | 'member'
   isActive: boolean
   dateJoined: string
 }
