@@ -496,18 +496,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Call API to delete notification
       await notificationService.deleteNotification(notificationId)
 
-      // Only update state if this is still the latest delete request
-      // This prevents stale success updates from applying after clearNotifications
-      if (requestId !== deleteRequestCounter) {
-        return false
-      }
-
       // Read latest state after await
       const latestState = get()
 
       // Remove from deleting set using latest state
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
+
+      // Only update state if this is still the latest delete request
+      // This prevents stale success updates from applying after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        // Still perform cleanup even if stale to prevent notification from being stuck in deleting state
+        set({
+          deletingNotifications: finalDeletingNotifications,
+        })
+        return false
+      }
 
       set({
         deletingNotifications: finalDeletingNotifications,
@@ -517,13 +521,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
       return true
     } catch (error) {
-      // Only rollback if this is still the latest delete request
-      // This prevents stale rollback from repopulating the store after clearNotifications
-      if (requestId !== deleteRequestCounter) {
-        return false
-      }
-
       // ROLLBACK: Revert the optimistic update on error
+      // This must happen even for stale requests to prevent state drift
       const latestState = get()
 
       // Add notification back to both arrays if it was present there originally
@@ -588,7 +587,31 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
 
-      // Set error in the appropriate scope
+      // Check if this is a stale request after performing rollback
+      // Stale requests should still rollback but shouldn't set error or re-throw
+      if (requestId !== deleteRequestCounter) {
+        // Perform minimal cleanup for stale request without setting error
+        set({
+          notifications: revertedNotifications,
+          menuNotifications: revertedMenuNotifications,
+          selectedNotification: revertedSelectedNotification,
+          total: revertedTotal,
+          totalPages: revertedTotalPages,
+          page: revertedPage,
+          unreadCount: revertedUnreadCount,
+          deletingNotifications: finalDeletingNotifications,
+        })
+
+        // Re-open the drawer if we closed it during the optimistic update
+        // AND we're actually restoring the selectedNotification
+        if (shouldCloseDrawer && revertedSelectedNotification?.id === notificationId) {
+          useUIStore.getState().setNotificationDetailsDrawerOpen(true)
+        }
+
+        return false
+      }
+
+      // Set error in the appropriate scope for non-stale requests
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to delete notification'
 
