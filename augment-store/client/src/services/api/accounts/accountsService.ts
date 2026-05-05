@@ -29,8 +29,9 @@ const transformAdminUser = (apiUser: AdminUserAPI): AdminUser => {
 
 export const accountsService = {
   /**
-   * Get list of all users (admin only)
-   * @returns Promise with list of users and count
+   * Get paginated list of users (admin only)
+   * Note: Returns only the first page of results from the DRF-paginated response.
+   * @returns Promise with list of users (first page) and total count
    */
   getAdminUsers: async (): Promise<AdminUsersListResponse> => {
     const response = await apiClient.get<AdminUsersListResponseAPI>(
