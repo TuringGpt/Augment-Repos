@@ -9,18 +9,19 @@ import type {
 
 /**
  * Transform backend API user data (snake_case) to frontend format (camelCase)
+ * Maps UserListSerializer fields from the backend to frontend AdminUser type
  */
 const transformAdminUser = (apiUser: AdminUserAPI): AdminUser => {
   return {
     id: apiUser.id,
     email: apiUser.email,
+    username: apiUser.username,
     firstName: apiUser.first_name,
     lastName: apiUser.last_name,
-    username: apiUser.username,
-    mobile: apiUser.mobile,
-    gender: apiUser.gender,
-    image: apiUser.image,
+    fullName: apiUser.full_name,
+    profileImage: apiUser.profile_image,
     role: apiUser.role,
+    preferredCurrency: apiUser.preferred_currency,
     isActive: apiUser.is_active,
     dateJoined: apiUser.date_joined,
   }

@@ -1,14 +1,31 @@
+// File object from FileListSerializer (backend returns { id, file })
+export interface FileListAPI {
+  id: string
+  file: string | null
+}
+
+// Currency object from ListCurrencySerializer
+export interface CurrencyAPI {
+  id: string
+  code: string
+  name: string
+  symbol: string
+  created_at: string
+  updated_at: string
+}
+
 // User data structure from backend API (snake_case)
+// Matches UserListSerializer fields from augment-store/server/accounts/serializers.py
 export interface AdminUserAPI {
   id: string
   email: string
+  username: string | null
   first_name: string
   last_name: string
-  username: string | null
-  mobile: string | null
-  gender: string | null
-  image: string | null
+  full_name: string
+  profile_image: FileListAPI | null
   role: 'admin' | 'merchant' | 'member'
+  preferred_currency: CurrencyAPI | null
   is_active: boolean
   date_joined: string
 }
@@ -17,13 +34,13 @@ export interface AdminUserAPI {
 export interface AdminUser {
   id: string
   email: string
+  username: string | null
   firstName: string
   lastName: string
-  username: string | null
-  mobile: string | null
-  gender: string | null
-  image: string | null
+  fullName: string
+  profileImage: FileListAPI | null
   role: 'admin' | 'merchant' | 'member'
+  preferredCurrency: CurrencyAPI | null
   isActive: boolean
   dateJoined: string
 }
