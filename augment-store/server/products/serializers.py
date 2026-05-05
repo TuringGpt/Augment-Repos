@@ -60,6 +60,7 @@ class ProductCategoryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = "__all__"
+        read_only_fields = ("created_by",)
 
 
 #  Product Serializers

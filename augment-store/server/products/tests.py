@@ -476,6 +476,16 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be deleted from the database
         self.assertFalse(ProductCategory.objects.filter(id=category.id).exists())
 
+    def test_delete_category_cross_merchant_not_found(self):
+        other_merchant = UserFactory(role=User.Role.MERCHANT)
+        category = ProductCategoryFactory(created_by=other_merchant)
+        other_client = APIClient()
+        other_client.force_authenticate(user=self.merchant_user)
+
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = other_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_list_categories_uses_cache(self):
         # Given that I have clear all caches related to product categories
         ProductCategoryCacheService().clear_namespace()
