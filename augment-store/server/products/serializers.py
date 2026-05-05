@@ -121,6 +121,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
+        read_only_fields = ("created_by",)
 
 class SearchQueryListSerializer(serializers.ModelSerializer):
     user = UserListSerializer(read_only=True)
