@@ -36,6 +36,7 @@ const NotificationDetailsDrawer = () => {
 
   const handleClose = () => {
     setNotificationDetailsDrawerOpen(false)
+    setDeleteDialogOpen(false)
   }
 
   const handleDeleteClick = () => {
