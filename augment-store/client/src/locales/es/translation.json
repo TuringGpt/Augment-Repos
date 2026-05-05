@@ -84,7 +84,13 @@
     "metadata": "Detalles",
     "type": "Tipo",
     "objectId": "ID de Referencia",
-    "noSelection": "Ninguna notificación seleccionada"
+    "noSelection": "Ninguna notificación seleccionada",
+    "deleteNotification": "Eliminar Notificación",
+    "deleteConfirmTitle": "¿Eliminar Notificación?",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar esta notificación? Esta acción no se puede deshacer.",
+    "deleting": "Eliminando...",
+    "deleteSuccess": "Notificación eliminada exitosamente",
+    "deleteError": "Error al eliminar la notificación"
   },
   "auth": {
     "login": "Iniciar Sesión",

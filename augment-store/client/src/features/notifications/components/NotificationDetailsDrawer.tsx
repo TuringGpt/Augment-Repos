@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Drawer,
   Box,
@@ -5,26 +6,63 @@ import {
   IconButton,
   Divider,
   Chip,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
 } from '@mui/material'
 import {
   Close as CloseIcon,
   CheckCircle,
   Circle,
   AccessTime,
+  Delete as DeleteIcon,
 } from '@mui/icons-material'
 import { useUIStore } from '@store/uiStore'
 import { useNotificationStore } from '@store/notificationStore'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { format, formatDistanceToNow } from 'date-fns'
 
 const NotificationDetailsDrawer = () => {
   const { t } = useTranslation()
+  const toast = useToast()
   const { isNotificationDetailsDrawerOpen, setNotificationDetailsDrawerOpen } = useUIStore()
-  const { selectedNotification } = useNotificationStore()
+  const { selectedNotification, deleteNotification, deletingNotifications } = useNotificationStore()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleClose = () => {
     setNotificationDetailsDrawerOpen(false)
   }
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedNotification) return
+
+    try {
+      setDeleteDialogOpen(false)
+      // Call deleteNotification with fromMenu: false since this is from the details drawer
+      // The store action will automatically close the drawer on successful delete
+      await deleteNotification(selectedNotification.id, { fromMenu: false })
+      toast.success(t('notifications.deleteSuccess'))
+    } catch (error) {
+      toast.error(t('notifications.deleteError'))
+    }
+  }
+
+  const isDeleting = selectedNotification
+    ? deletingNotifications.has(selectedNotification.id)
+    : false
 
   const formatNotificationTime = (dateString: string) => {
     try {
@@ -43,36 +81,49 @@ const NotificationDetailsDrawer = () => {
   }
 
   return (
-    <Drawer
-      anchor="right"
-      open={isNotificationDetailsDrawerOpen}
-      onClose={handleClose}
-      sx={{
-        '& .MuiDrawer-paper': {
-          width: { xs: '100%', sm: 480 },
-          maxWidth: '100%',
-        },
-      }}
-    >
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <Box
-          sx={{
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: 1,
-            borderColor: 'divider',
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {t('notifications.details')}
-          </Typography>
-          <IconButton onClick={handleClose} aria-label={t('common.close')}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
+    <>
+      <Drawer
+        anchor="right"
+        open={isNotificationDetailsDrawerOpen}
+        onClose={handleClose}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 480 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('notifications.details')}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {selectedNotification && (
+                <IconButton
+                  onClick={handleDeleteClick}
+                  aria-label={t('notifications.deleteNotification')}
+                  disabled={isDeleting}
+                  color="error"
+                >
+                  {isDeleting ? <CircularProgress size={24} /> : <DeleteIcon />}
+                </IconButton>
+              )}
+              <IconButton onClick={handleClose} aria-label={t('common.close')}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Box>
 
         {/* Content */}
         {selectedNotification ? (
@@ -166,6 +217,38 @@ const NotificationDetailsDrawer = () => {
         )}
       </Box>
     </Drawer>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog
+      open={deleteDialogOpen}
+      onClose={handleDeleteCancel}
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description"
+    >
+      <DialogTitle id="delete-dialog-title">
+        {t('notifications.deleteConfirmTitle')}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="delete-dialog-description">
+          {t('notifications.deleteConfirmMessage')}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDeleteCancel} disabled={isDeleting}>
+          {t('common.cancel')}
+        </Button>
+        <Button
+          onClick={handleDeleteConfirm}
+          color="error"
+          variant="contained"
+          disabled={isDeleting}
+          startIcon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
+        >
+          {isDeleting ? t('notifications.deleting') : t('common.delete')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>
   )
 }
 

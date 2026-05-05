@@ -84,7 +84,13 @@
     "metadata": "Détails",
     "type": "Type",
     "objectId": "ID de Référence",
-    "noSelection": "Aucune notification sélectionnée"
+    "noSelection": "Aucune notification sélectionnée",
+    "deleteNotification": "Supprimer la Notification",
+    "deleteConfirmTitle": "Supprimer la Notification?",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette notification? Cette action ne peut pas être annulée.",
+    "deleting": "Suppression...",
+    "deleteSuccess": "Notification supprimée avec succès",
+    "deleteError": "Échec de la suppression de la notification"
   },
   "auth": {
     "login": "Connexion",
