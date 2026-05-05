@@ -24,6 +24,9 @@ interface NotificationState {
 
   // Selected notification for details drawer
   selectedNotification: Notification | null
+  // Track the source context of the selected notification (menu vs page)
+  // This determines whether delete/update operations should use fromMenu: true or false
+  selectedNotificationSource: 'menu' | 'page' | null
 
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
@@ -33,7 +36,7 @@ interface NotificationState {
   deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<boolean>
   clearNotifications: () => void
   setPage: (page: number) => void
-  setSelectedNotification: (notification: Notification | null) => void
+  setSelectedNotification: (notification: Notification | null, source?: 'menu' | 'page') => void
 }
 
 // Request counter to track the latest fetch request
@@ -76,6 +79,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   // Selected notification for details drawer
   selectedNotification: null,
+  selectedNotificationSource: null,
 
   fetchNotifications: async (page?: number, limit?: number) => {
     const state = get()
@@ -643,6 +647,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuError: null,
       // Clear selected notification to prevent stale details after logout/clear
       selectedNotification: null,
+      selectedNotificationSource: null,
     })
   },
 
@@ -651,7 +656,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     get().fetchNotifications(page, get().limit)
   },
 
-  setSelectedNotification: (notification: Notification | null) => {
-    set({ selectedNotification: notification })
+  setSelectedNotification: (notification: Notification | null, source?: 'menu' | 'page') => {
+    set({
+      selectedNotification: notification,
+      // Clear source when notification is cleared, otherwise use provided source or default to 'page'
+      selectedNotificationSource: notification === null ? null : (source ?? 'page')
+    })
   },
 }))

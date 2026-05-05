@@ -31,7 +31,7 @@ const NotificationDetailsDrawer = () => {
   const { t } = useTranslation()
   const toast = useToast()
   const { isNotificationDetailsDrawerOpen, setNotificationDetailsDrawerOpen } = useUIStore()
-  const { selectedNotification, deleteNotification, deletingNotifications } = useNotificationStore()
+  const { selectedNotification, selectedNotificationSource, deleteNotification, deletingNotifications } = useNotificationStore()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleClose = () => {
@@ -63,10 +63,14 @@ const NotificationDetailsDrawer = () => {
 
     try {
       setDeleteDialogOpen(false)
-      // Call deleteNotification with fromMenu: false since this is from the details drawer
+      // Use the selectedNotificationSource to determine the correct fromMenu value
+      // If the drawer was opened from the menu (selectedNotificationSource === 'menu'), use fromMenu: true
+      // If the drawer was opened from the page (selectedNotificationSource === 'page'), use fromMenu: false
+      // This ensures delete operations correctly isolate menu state from page state
+      const fromMenu = selectedNotificationSource === 'menu'
       // The store action will automatically close the drawer on successful delete
       // It returns true if deletion was performed, false if no-op (e.g., race condition)
-      const deleted = await deleteNotification(selectedNotification.id, { fromMenu: false })
+      const deleted = await deleteNotification(selectedNotification.id, { fromMenu })
 
       // Only show success toast if deletion actually occurred
       // This prevents misleading success messages when the store action returns early

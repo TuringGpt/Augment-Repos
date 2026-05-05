@@ -65,7 +65,9 @@ const NotificationList = ({ anchorEl, open, onClose }: NotificationListProps) =>
     const latestNotification =
       useNotificationStore.getState().menuNotifications.find((n) => n.id === notification.id) ??
       notification
-    setSelectedNotification(latestNotification)
+    // Set the notification source to 'menu' to track that this drawer was opened from the menu context
+    // This ensures delete operations use fromMenu: true to isolate menu state from page state
+    setSelectedNotification(latestNotification, 'menu')
     setNotificationDetailsDrawerOpen(true)
     onClose()
   }
