@@ -1261,6 +1261,14 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(product.description, "Updated Description")
         self.assertEqual(product.price, Decimal("149.99"))
 
+    def test_update_product_cannot_change_created_by(self):
+        product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
+        url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        product.refresh_from_db()
+        self.assertEqual(product.created_by_id, self.merchant_user.id)
+
     def test_update_product_by_different_merchant_forbidden(self):
         # GIVEN a product exists created by merchant_user
         product = ProductFactory(
