@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { notificationService } from '@services/api'
 import type { Notification } from '@features/notifications/types'
+import { useUIStore } from '@store/uiStore'
 
 interface NotificationState {
   notifications: Notification[]
@@ -13,6 +14,7 @@ interface NotificationState {
   error: string | null
   unreadCountError: string | null // Separate error state for unread count polling
   markingAsRead: Set<string> // Track which notifications are being marked as read
+  deletingNotifications: Set<string> // Track which notifications are being deleted
 
   // Separate state for NotificationList dropdown menu
   // This prevents the menu from interfering with NotificationsPage state
@@ -28,6 +30,7 @@ interface NotificationState {
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
   markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
+  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
   clearNotifications: () => void
   setPage: (page: number) => void
   setSelectedNotification: (notification: Notification | null) => void
@@ -45,6 +48,10 @@ let fetchWithoutPaginationUpdateRequestCounter = 0
 // Prevents concurrent calls from racing and stale responses from overwriting newer count
 let fetchUnreadCountRequestCounter = 0
 
+// Request counter for delete operations
+// Prevents stale delete success/rollback from applying after clearNotifications
+let deleteRequestCounter = 0
+
 // Track last error state to prevent log spam during polling
 // Only log when transitioning from success to error or when error message changes
 let lastUnreadCountError: string | null = null
@@ -60,6 +67,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   error: null,
   unreadCountError: null,
   markingAsRead: new Set<string>(),
+  deletingNotifications: new Set<string>(),
 
   // Menu-specific state
   menuNotifications: [],
@@ -297,6 +305,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Read latest state in catch block to avoid stale data
       const latestState = get()
 
+      // Check if the notification was deleted while markAsRead was in-flight
+      // If deleted, skip rollback to prevent race where we increment unreadCount for a deleted notification
+      // Check both deletingNotifications (in-progress) and absence from all arrays (completed delete)
+      const isBeingDeleted = latestState.deletingNotifications.has(notificationId)
+      const existsInNotifications = latestState.notifications.some((n) => n.id === notificationId)
+      const existsInMenuNotifications = latestState.menuNotifications.some((n) => n.id === notificationId)
+      const isSelectedNotification = latestState.selectedNotification?.id === notificationId
+      const wasDeleted = isBeingDeleted || (!existsInNotifications && !existsInMenuNotifications && !isSelectedNotification)
+
+      // If notification was deleted, just clean up the marking set and return
+      // Don't revert unreadCount or notification state since delete already handled it
+      if (wasDeleted) {
+        const finalMarkingAsRead = new Set(latestState.markingAsRead)
+        finalMarkingAsRead.delete(notificationId)
+        set({ markingAsRead: finalMarkingAsRead })
+        // Don't re-throw error since the notification is gone anyway
+        return
+      }
+
       // Revert notification back to original isRead state in both arrays
       // Use the pre-optimistic state for each list to avoid incorrectly
       // flipping a notification that was already read in one list
@@ -351,12 +378,244 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
+  deleteNotification: async (notificationId: string, options?: { fromMenu?: boolean }) => {
+    const initialState = get()
+
+    // Don't delete if already being deleted
+    // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
+    // If we increment counter then early-return, in-flight requests become stale and skip cleanup
+    if (initialState.deletingNotifications.has(notificationId)) {
+      return
+    }
+
+    // Find the notification in either notifications or menuNotifications array
+    const notification = initialState.notifications.find((n) => n.id === notificationId)
+    const menuNotification = initialState.menuNotifications.find((n) => n.id === notificationId)
+
+    // Check if the notification is the currently selected one
+    const isSelectedNotification = initialState.selectedNotification?.id === notificationId
+
+    // If not found in either array AND not the selected notification, nothing to do
+    // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
+    if (!notification && !menuNotification && !isSelectedNotification) {
+      return
+    }
+
+    // Increment counter and capture the current request ID
+    // This prevents stale delete success/rollback from applying after clearNotifications
+    deleteRequestCounter += 1
+    const requestId = deleteRequestCounter
+
+    // Determine if this is a menu-context action based on options
+    const fromMenu = options?.fromMenu ?? false
+
+    // Check if the notification is unread in at least one location
+    // We need to decrement unread count if it's unread anywhere
+    const isUnreadInNotifications = notification ? !notification.isRead : false
+    const isUnreadInMenuNotifications = menuNotification ? !menuNotification.isRead : false
+    const isUnreadInSelectedNotification =
+      isSelectedNotification && initialState.selectedNotification ? !initialState.selectedNotification.isRead : false
+    const isCurrentlyUnread = isUnreadInNotifications || isUnreadInMenuNotifications || isUnreadInSelectedNotification
+
+    // Add to deleting set
+    const newDeletingNotifications = new Set(initialState.deletingNotifications)
+    newDeletingNotifications.add(notificationId)
+
+    // Clear any in-flight markAsRead operations for this notification
+    // This prevents a race where markAsRead rollback increments unreadCount after deletion
+    const newMarkingAsRead = new Set(initialState.markingAsRead)
+    newMarkingAsRead.delete(notificationId)
+
+    // OPTIMISTIC UPDATE: Remove notification from both arrays immediately
+    const optimisticNotifications = initialState.notifications.filter((n) => n.id !== notificationId)
+    const optimisticMenuNotifications = initialState.menuNotifications.filter(
+      (n) => n.id !== notificationId
+    )
+
+    // Close details drawer if the deleted notification is currently selected
+    const shouldCloseDrawer = initialState.selectedNotification?.id === notificationId
+    const optimisticSelectedNotification = shouldCloseDrawer
+      ? null
+      : initialState.selectedNotification
+
+    // Close the drawer in uiStore if we're clearing the selected notification
+    if (shouldCloseDrawer) {
+      useUIStore.getState().setNotificationDetailsDrawerOpen(false)
+    }
+
+    // Decrement total count and unread count if the notification was unread
+    const optimisticTotal = Math.max(0, initialState.total - 1)
+    const optimisticUnreadCount = isCurrentlyUnread
+      ? Math.max(0, initialState.unreadCount - 1)
+      : initialState.unreadCount
+
+    // Recalculate totalPages based on optimistic total to keep pagination consistent
+    const optimisticTotalPages = Math.ceil(optimisticTotal / initialState.limit)
+
+    // Clamp page to valid range to prevent page > totalPages
+    // This is critical when deleting notifications on the last page
+    const optimisticPage = Math.min(initialState.page, Math.max(1, optimisticTotalPages))
+
+    // Track the actual decrements for rollback
+    const totalDecrement = initialState.total - optimisticTotal
+    const unreadDecrement = initialState.unreadCount - optimisticUnreadCount
+
+    // Invalidate in-flight requests to prevent stale data from overwriting optimistic updates
+    fetchUnreadCountRequestCounter += 1
+
+    // Only invalidate fetchNotifications() when called from NotificationsPage (not from menu)
+    // This prevents menu-driven deleteNotification from canceling unrelated page pagination requests
+    // which would leave page/notifications out of sync with no loading indicator
+    if (!fromMenu) {
+      fetchRequestCounter += 1
+    }
+
+    fetchWithoutPaginationUpdateRequestCounter += 1
+
+    set({
+      notifications: optimisticNotifications,
+      menuNotifications: optimisticMenuNotifications,
+      selectedNotification: optimisticSelectedNotification,
+      total: optimisticTotal,
+      totalPages: optimisticTotalPages,
+      page: optimisticPage,
+      unreadCount: optimisticUnreadCount,
+      deletingNotifications: newDeletingNotifications,
+      markingAsRead: newMarkingAsRead, // Clear in-flight markAsRead to prevent race
+      isLoading: fromMenu ? initialState.isLoading : false,
+      menuIsLoading: false,
+      // Clear error state on optimistic update to prevent stale errors from persisting
+      ...(fromMenu ? { menuError: null } : { error: null }),
+    })
+
+    try {
+      // Call API to delete notification
+      await notificationService.deleteNotification(notificationId)
+
+      // Only update state if this is still the latest delete request
+      // This prevents stale success updates from applying after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        return
+      }
+
+      // Read latest state after await
+      const latestState = get()
+
+      // Remove from deleting set using latest state
+      const finalDeletingNotifications = new Set(latestState.deletingNotifications)
+      finalDeletingNotifications.delete(notificationId)
+
+      set({
+        deletingNotifications: finalDeletingNotifications,
+        // Clear error state on success to prevent stale errors from persisting
+        ...(fromMenu ? { menuError: null } : { error: null }),
+      })
+    } catch (error) {
+      // Only rollback if this is still the latest delete request
+      // This prevents stale rollback from repopulating the store after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        return
+      }
+
+      // ROLLBACK: Revert the optimistic update on error
+      const latestState = get()
+
+      // Add notification back to both arrays if it was present there originally
+      // Check for duplicates to prevent issues if a fetch repopulated the item during the in-flight delete
+      const notificationAlreadyExists = latestState.notifications.some((n) => n.id === notificationId)
+      const revertedNotifications = notification
+        ? notificationAlreadyExists
+          ? latestState.notifications // Already exists, don't add duplicate
+          : [...latestState.notifications, notification].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
+        : latestState.notifications
+
+      const menuNotificationAlreadyExists = latestState.menuNotifications.some((n) => n.id === notificationId)
+      const revertedMenuNotifications = menuNotification
+        ? menuNotificationAlreadyExists
+          ? latestState.menuNotifications // Already exists, don't add duplicate
+          : [...latestState.menuNotifications, menuNotification].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
+        : latestState.menuNotifications
+
+      // Restore selectedNotification only if:
+      // 1. The deleted notification was the selected one (initialState.selectedNotification?.id === notificationId)
+      // 2. AND the user hasn't selected a new notification in the meantime (latestState.selectedNotification === null)
+      // This prevents overwriting a newer user selection made after the optimistic close
+      const revertedSelectedNotification =
+        initialState.selectedNotification?.id === notificationId && latestState.selectedNotification === null
+          ? initialState.selectedNotification
+          : latestState.selectedNotification
+
+      // Determine if we're restoring the selectedNotification
+      const isRestoringSelectedNotification = revertedSelectedNotification?.id === notificationId && latestState.selectedNotification === null
+
+      // Revert total and unread count only if we're actually adding the notification back
+      // If the notification already exists in latestState (from an in-flight fetch), don't adjust counts
+      // to prevent over-correction that would cause counts to drift upward
+      // IMPORTANT: Also check if the notification originally existed (even if only in selectedNotification)
+      // and we decremented counts for it. If the user selected a different notification before rollback,
+      // we can't restore selectedNotification but we MUST still restore counts to prevent drift.
+      const wasNotificationOriginally =
+        notification !== undefined ||
+        menuNotification !== undefined ||
+        (isSelectedNotification && initialState.selectedNotification !== null)
+      const wasNotificationAddedBack =
+        (notification && !notificationAlreadyExists) ||
+        (menuNotification && !menuNotificationAlreadyExists) ||
+        isRestoringSelectedNotification
+      // Restore counts if we added notification back OR if it existed originally and we decremented counts for it
+      // (even if we can't restore it to selectedNotification because user selected something else)
+      const shouldRestoreCounts = wasNotificationAddedBack || wasNotificationOriginally
+      const revertedTotal = shouldRestoreCounts ? latestState.total + totalDecrement : latestState.total
+      const revertedUnreadCount = shouldRestoreCounts ? latestState.unreadCount + unreadDecrement : latestState.unreadCount
+
+      // Recalculate totalPages based on reverted total to keep pagination consistent
+      const revertedTotalPages = Math.ceil(revertedTotal / latestState.limit)
+
+      // Clamp page to valid range after rollback
+      const revertedPage = Math.min(latestState.page, Math.max(1, revertedTotalPages))
+
+      // Remove from deleting set
+      const finalDeletingNotifications = new Set(latestState.deletingNotifications)
+      finalDeletingNotifications.delete(notificationId)
+
+      // Set error in the appropriate scope
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to delete notification'
+
+      set({
+        notifications: revertedNotifications,
+        menuNotifications: revertedMenuNotifications,
+        selectedNotification: revertedSelectedNotification,
+        total: revertedTotal,
+        totalPages: revertedTotalPages,
+        page: revertedPage,
+        unreadCount: revertedUnreadCount,
+        deletingNotifications: finalDeletingNotifications,
+        ...(fromMenu ? { menuError: errorMessage } : { error: errorMessage }),
+      })
+
+      // Re-open the drawer if we closed it during the optimistic update
+      // AND we're actually restoring the selectedNotification
+      if (shouldCloseDrawer && revertedSelectedNotification?.id === notificationId) {
+        useUIStore.getState().setNotificationDetailsDrawerOpen(true)
+      }
+
+      // Re-throw to allow UI to handle error
+      throw error
+    }
+  },
+
   clearNotifications: () => {
-    // Increment counters to invalidate any in-flight fetch requests
-    // This prevents in-flight responses from repopulating the store after clear
+    // Increment counters to invalidate any in-flight fetch and delete requests
+    // This prevents in-flight responses/rollbacks from repopulating the store after clear
     fetchRequestCounter += 1
     fetchWithoutPaginationUpdateRequestCounter += 1
     fetchUnreadCountRequestCounter += 1
+    deleteRequestCounter += 1
 
     // Reset error tracking to ensure errors are logged correctly in new sessions
     // This prevents stale error state from suppressing logs after logout/login
@@ -375,6 +634,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       error: null,
       unreadCountError: null,
       markingAsRead: new Set<string>(),
+      deletingNotifications: new Set<string>(),
       // Also clear menu-specific state
       menuNotifications: [],
       menuIsLoading: false,
