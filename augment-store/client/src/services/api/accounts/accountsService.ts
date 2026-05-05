@@ -37,8 +37,9 @@ export const accountsService = {
     )
 
     // Transform backend response to frontend format
+    // Backend returns DRF paginated response with 'results' array
     return {
-      users: response.users.map(transformAdminUser),
+      users: response.results.map(transformAdminUser),
       count: response.count,
     }
   },
