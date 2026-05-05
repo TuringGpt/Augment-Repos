@@ -1265,7 +1265,7 @@ class ProductTests(BaseAPITestCase):
         product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
         url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
         response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         product.refresh_from_db()
         self.assertEqual(product.created_by_id, self.merchant_user.id)
 

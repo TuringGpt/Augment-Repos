@@ -99,6 +99,12 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     category = ProductCategoryListSerializer(read_only=True)
     images = FileListSerializer(many=True, read_only=True)
     created_by = UserListSerializer(read_only=True)
+
+    def validate(self, attrs):
+        if self.instance is not None and "created_by" in getattr(self, "initial_data", {}):
+            raise serializers.ValidationError({"created_by": "This field is read-only."})
+        return attrs
+
     class Meta:
         model = Product
         fields = "__all__"
