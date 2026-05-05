@@ -102,7 +102,12 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if self.instance is not None and "created_by" in getattr(self, "initial_data", {}):
-            requested_owner_id = str(self.initial_data.get("created_by"))
+            requested_owner = self.initial_data.get("created_by")
+            if isinstance(requested_owner, dict):
+                requested_owner_id = requested_owner.get("id")
+            else:
+                requested_owner_id = requested_owner
+            requested_owner_id = str(requested_owner_id)
             if requested_owner_id != str(self.instance.created_by_id):
                 raise serializers.ValidationError({"created_by": "This field is read-only."})
         return attrs
