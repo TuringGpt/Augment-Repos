@@ -8,6 +8,7 @@ from products.factory import ProductBrandFactory, ProductCategoryFactory, Produc
 from decimal import Decimal
 from storage.factory import FileFactory
 from products.services import ProductBrandCacheService, ProductCacheService, ProductCategoryCacheService, ProductSearchCacheService
+from rest_framework.test import APIClient
 from products.views import FeaturedProductCacheService
 from products.models import SearchQuery
 from django.test.utils import CaptureQueriesContext
@@ -445,6 +446,16 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be updated in the database
         category.refresh_from_db()
         self.assertEqual(category.description, "Updated Description")
+
+    def test_update_category_cross_merchant_not_found(self):
+        other_merchant = UserFactory(role=User.Role.MERCHANT)
+        category = ProductCategoryFactory(created_by=other_merchant)
+        other_client = APIClient()
+        other_client.force_authenticate(user=self.merchant_user)
+
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = other_client.patch(url, {"description": "Updated Description"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_category_success(self):
         # GIVEN a category exists in the database

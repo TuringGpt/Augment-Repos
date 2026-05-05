@@ -133,6 +133,12 @@ class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, Retriev
     serializer_class = ProductCategoryDetailSerializer
     cache_service_class = ProductCategoryCacheService
 
+    def get_queryset(self) -> "QuerySet[ProductCategory]":
+        queryset = super().get_queryset()
+        if self.request.method in SAFE_METHODS or self.request.user.is_admin:
+            return queryset
+        return queryset.filter(created_by=self.request.user)
+
     def invalidate_cache(self):
         super().invalidate_cache()
         ProductCacheService().clear_namespace()
