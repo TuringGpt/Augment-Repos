@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AdminUser } from '@features/accounts/types'
-import { sanitizeErrorForLogging } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -74,14 +74,20 @@ export const useAccountStore = create<AccountState>((set) => ({
         return
       }
 
-      // Log only sanitized error information to avoid leaking sensitive data
-      // (e.g., Authorization headers in Axios config)
-      console.error('Failed to fetch admin users:', sanitizeErrorForLogging(error))
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch admin users'
+      // Use parseApiError to extract user-friendly error message from API response
+      // This properly handles Django/DRF error responses including detail, non_field_errors, etc.
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to fetch admin users. Please try again.',
+      })
+
       set({
         error: errorMessage,
         isLoading: false,
       })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch admin users:', sanitizeErrorForLogging(error))
     }
   },
 
