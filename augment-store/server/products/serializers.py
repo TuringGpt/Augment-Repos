@@ -6,7 +6,7 @@ from accounts.serializers import UserListSerializer
 
 def validate_owned_image(value, request):
     user = getattr(request, "user", None)
-    if value and (not user or value.created_by_id != user.id):
+    if value and (not user or getattr(user, "is_anonymous", True) or value.created_by_id != user.id):
         raise serializers.ValidationError("Image is invalid")
     return value
 
