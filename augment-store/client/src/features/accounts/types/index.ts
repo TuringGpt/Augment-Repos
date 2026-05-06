@@ -44,6 +44,13 @@ export interface AdminUserUpdateAPI {
 
 // Frontend user detail structure (camelCase) - from detail endpoint
 // Only includes fields returned by AdminUserUpdateSerializer
+//
+// ⚠️ WARNING: This is a PARTIAL user object with limited fields.
+// DO NOT merge or spread this into AdminUser objects, as it lacks:
+// - username, firstName, lastName, fullName
+// - profileImage, preferredCurrency
+// Treating this as a complete AdminUser will result in data loss.
+// Use getAdminUsers() list endpoint if you need full user details.
 export interface AdminUserDetail {
   id: string
   email: string
