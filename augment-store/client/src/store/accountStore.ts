@@ -101,6 +101,7 @@ export const useAccountStore = create<AccountState>((set) => ({
       total: 0,
       next: null,
       previous: null,
+      isLoading: false,
       error: null,
     })
   },
