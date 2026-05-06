@@ -242,8 +242,7 @@ class ProductUpdateDeleteView(CacheInvalidatorMixin, BaseProductView, RetrieveUp
     def invalidate_cache(self):
         super().invalidate_cache()
         FeaturedProductCacheService().clear_namespace()
-        if self.request.method == "PUT":
-            ProductSearchCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
