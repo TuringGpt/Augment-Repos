@@ -11,6 +11,13 @@ class CreateProductBrandSerializer(serializers.ModelSerializer):
         model = ProductBrand
         fields = ["name", "description" , "image"]
 
+    def validate_image(self, value):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if value and value.created_by_id != user.id:
+            raise serializers.ValidationError("Image is invalid")
+        return value
+
     def validate(self, attrs):
         request = self.context.get("request")
         attrs["created_by"] = request.user
@@ -43,7 +50,11 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
         if parent and parent.is_child_node():
             raise serializers.ValidationError("Parent category cannot be a child category")
         
+        image = attrs.get("image")
         request = self.context.get("request")
+        if image and image.created_by_id != request.user.pk:
+            raise serializers.ValidationError({"image": "Image is invalid"})
+
         attrs["created_by"] = request.user
         return attrs
 
