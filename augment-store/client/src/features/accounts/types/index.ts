@@ -42,7 +42,18 @@ export interface AdminUserUpdateAPI {
   date_joined: string
 }
 
-// Frontend user data structure (camelCase)
+// Frontend user detail structure (camelCase) - from detail endpoint
+// Only includes fields returned by AdminUserUpdateSerializer
+export interface AdminUserDetail {
+  id: string
+  email: string
+  role: 'admin' | 'merchant' | 'member'
+  isActive: boolean
+  dateJoined: string
+}
+
+// Frontend user data structure (camelCase) - from list endpoint
+// Full user details with all fields
 export interface AdminUser {
   id: string
   email: string
