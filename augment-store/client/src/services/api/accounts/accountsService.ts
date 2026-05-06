@@ -5,6 +5,7 @@ import type {
   AdminUsersListResponseAPI,
   AdminUser,
   AdminUserAPI,
+  AdminUserUpdateAPI,
 } from '@features/accounts/types'
 
 /**
@@ -50,15 +51,35 @@ export const accountsService = {
 
   /**
    * Get a single user by ID (admin only)
+   *
+   * Note: The backend endpoint uses AdminUserUpdateSerializer which only returns:
+   * id, email, role, is_active, date_joined
+   *
+   * Missing fields (username, first_name, last_name, full_name, profile_image, preferred_currency)
+   * will be set to null/empty string to match the AdminUser type.
+   *
    * @param id - User ID to fetch
-   * @returns Promise with user details
+   * @returns Promise with partial user details (some fields will be null/empty)
    */
   getAdminUserById: async (id: string): Promise<AdminUser> => {
-    const response = await apiClient.get<AdminUserAPI>(
+    const response = await apiClient.get<AdminUserUpdateAPI>(
       API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id)
     )
 
     // Transform backend response to frontend format
-    return transformAdminUser(response)
+    // Since AdminUserUpdateSerializer has limited fields, we populate missing fields with defaults
+    return {
+      id: response.id,
+      email: response.email,
+      username: null, // Not returned by AdminUserUpdateSerializer
+      firstName: '', // Not returned by AdminUserUpdateSerializer
+      lastName: '', // Not returned by AdminUserUpdateSerializer
+      fullName: '', // Not returned by AdminUserUpdateSerializer
+      profileImage: null, // Not returned by AdminUserUpdateSerializer
+      role: response.role,
+      preferredCurrency: null, // Not returned by AdminUserUpdateSerializer
+      isActive: response.is_active,
+      dateJoined: response.date_joined,
+    }
   },
 }

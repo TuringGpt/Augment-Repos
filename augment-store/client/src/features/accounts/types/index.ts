@@ -30,6 +30,18 @@ export interface AdminUserAPI {
   date_joined: string
 }
 
+// User detail data structure from backend detail endpoint (snake_case)
+// Matches AdminUserUpdateSerializer fields from augment-store/server/accounts/serializers.py
+// Used by GET /api/v1/accounts/admin/users/<uuid:pk>/
+// This serializer has limited fields compared to UserListSerializer
+export interface AdminUserUpdateAPI {
+  id: string
+  email: string
+  role: 'admin' | 'merchant' | 'member'
+  is_active: boolean
+  date_joined: string
+}
+
 // Frontend user data structure (camelCase)
 export interface AdminUser {
   id: string
