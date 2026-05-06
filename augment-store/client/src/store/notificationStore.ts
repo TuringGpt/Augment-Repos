@@ -24,16 +24,19 @@ interface NotificationState {
 
   // Selected notification for details drawer
   selectedNotification: Notification | null
+  // Track the source context of the selected notification (menu vs page)
+  // This determines whether delete/update operations should use fromMenu: true or false
+  selectedNotificationSource: 'menu' | 'page' | null
 
   // Actions
   fetchNotifications: (page?: number, limit?: number) => Promise<void>
   fetchNotificationsWithoutPaginationUpdate: (page: number, limit: number) => Promise<void>
   fetchUnreadCount: () => Promise<void>
   markAsRead: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
-  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<void>
+  deleteNotification: (notificationId: string, options?: { fromMenu?: boolean }) => Promise<boolean>
   clearNotifications: () => void
   setPage: (page: number) => void
-  setSelectedNotification: (notification: Notification | null) => void
+  setSelectedNotification: (notification: Notification | null, source?: 'menu' | 'page') => void
 }
 
 // Request counter to track the latest fetch request
@@ -76,6 +79,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   // Selected notification for details drawer
   selectedNotification: null,
+  selectedNotificationSource: null,
 
   fetchNotifications: async (page?: number, limit?: number) => {
     const state = get()
@@ -385,7 +389,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
     // If we increment counter then early-return, in-flight requests become stale and skip cleanup
     if (initialState.deletingNotifications.has(notificationId)) {
-      return
+      return false
     }
 
     // Find the notification in either notifications or menuNotifications array
@@ -398,7 +402,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // If not found in either array AND not the selected notification, nothing to do
     // IMPORTANT: Check this BEFORE incrementing deleteRequestCounter to prevent stale request IDs
     if (!notification && !menuNotification && !isSelectedNotification) {
-      return
+      return false
     }
 
     // Increment counter and capture the current request ID
@@ -492,12 +496,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       // Call API to delete notification
       await notificationService.deleteNotification(notificationId)
 
-      // Only update state if this is still the latest delete request
-      // This prevents stale success updates from applying after clearNotifications
-      if (requestId !== deleteRequestCounter) {
-        return
-      }
-
       // Read latest state after await
       const latestState = get()
 
@@ -505,19 +503,26 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
 
+      // Only update state if this is still the latest delete request
+      // This prevents stale success updates from applying after clearNotifications
+      if (requestId !== deleteRequestCounter) {
+        // Still perform cleanup even if stale to prevent notification from being stuck in deleting state
+        set({
+          deletingNotifications: finalDeletingNotifications,
+        })
+        return false
+      }
+
       set({
         deletingNotifications: finalDeletingNotifications,
         // Clear error state on success to prevent stale errors from persisting
         ...(fromMenu ? { menuError: null } : { error: null }),
       })
-    } catch (error) {
-      // Only rollback if this is still the latest delete request
-      // This prevents stale rollback from repopulating the store after clearNotifications
-      if (requestId !== deleteRequestCounter) {
-        return
-      }
 
+      return true
+    } catch (error) {
       // ROLLBACK: Revert the optimistic update on error
+      // This must happen even for stale requests to prevent state drift
       const latestState = get()
 
       // Add notification back to both arrays if it was present there originally
@@ -582,7 +587,31 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const finalDeletingNotifications = new Set(latestState.deletingNotifications)
       finalDeletingNotifications.delete(notificationId)
 
-      // Set error in the appropriate scope
+      // Check if this is a stale request after performing rollback
+      // Stale requests should still rollback but shouldn't set error or re-throw
+      if (requestId !== deleteRequestCounter) {
+        // Perform minimal cleanup for stale request without setting error
+        set({
+          notifications: revertedNotifications,
+          menuNotifications: revertedMenuNotifications,
+          selectedNotification: revertedSelectedNotification,
+          total: revertedTotal,
+          totalPages: revertedTotalPages,
+          page: revertedPage,
+          unreadCount: revertedUnreadCount,
+          deletingNotifications: finalDeletingNotifications,
+        })
+
+        // Re-open the drawer if we closed it during the optimistic update
+        // AND we're actually restoring the selectedNotification
+        if (shouldCloseDrawer && revertedSelectedNotification?.id === notificationId) {
+          useUIStore.getState().setNotificationDetailsDrawerOpen(true)
+        }
+
+        return false
+      }
+
+      // Set error in the appropriate scope for non-stale requests
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to delete notification'
 
@@ -641,6 +670,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       menuError: null,
       // Clear selected notification to prevent stale details after logout/clear
       selectedNotification: null,
+      selectedNotificationSource: null,
     })
   },
 
@@ -649,7 +679,11 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     get().fetchNotifications(page, get().limit)
   },
 
-  setSelectedNotification: (notification: Notification | null) => {
-    set({ selectedNotification: notification })
+  setSelectedNotification: (notification: Notification | null, source?: 'menu' | 'page') => {
+    set({
+      selectedNotification: notification,
+      // Clear source when notification is cleared, otherwise use provided source or default to 'page'
+      selectedNotificationSource: notification === null ? null : (source ?? 'page')
+    })
   },
 }))

@@ -84,7 +84,13 @@
     "metadata": "Details",
     "type": "Typ",
     "objectId": "Referenz-ID",
-    "noSelection": "Keine Benachrichtigung ausgewählt"
+    "noSelection": "Keine Benachrichtigung ausgewählt",
+    "deleteNotification": "Benachrichtigung Löschen",
+    "deleteConfirmTitle": "Benachrichtigung Löschen?",
+    "deleteConfirmMessage": "Sind Sie sicher, dass Sie diese Benachrichtigung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Löschen...",
+    "deleteSuccess": "Benachrichtigung erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Benachrichtigung"
   },
   "auth": {
     "login": "Anmelden",

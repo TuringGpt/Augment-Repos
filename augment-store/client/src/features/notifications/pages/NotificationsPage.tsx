@@ -66,7 +66,9 @@ const NotificationsPage = () => {
     const latestNotification =
       useNotificationStore.getState().notifications.find((n) => n.id === notification.id) ??
       notification
-    setSelectedNotification(latestNotification)
+    // Set the notification source to 'page' to track that this drawer was opened from the page context
+    // This ensures delete operations use fromMenu: false to affect page state correctly
+    setSelectedNotification(latestNotification, 'page')
     setNotificationDetailsDrawerOpen(true)
   }
 
