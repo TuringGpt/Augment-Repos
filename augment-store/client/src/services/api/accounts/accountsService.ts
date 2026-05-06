@@ -47,4 +47,18 @@ export const accountsService = {
       previous: response.previous,
     }
   },
+
+  /**
+   * Get a single user by ID (admin only)
+   * @param id - User ID to fetch
+   * @returns Promise with user details
+   */
+  getAdminUserById: async (id: string): Promise<AdminUser> => {
+    const response = await apiClient.get<AdminUserAPI>(
+      API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id)
+    )
+
+    // Transform backend response to frontend format
+    return transformAdminUser(response)
+  },
 }

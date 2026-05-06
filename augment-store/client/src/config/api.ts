@@ -77,6 +77,7 @@ export const API_ENDPOINTS = {
   // Accounts endpoints (admin)
   ACCOUNTS: {
     ADMIN_USERS: '/accounts/admin/users/',
+    ADMIN_USER_DETAIL: (id: string) => `/accounts/admin/users/${id}/`,
   },
 
   // Wishlist endpoints
