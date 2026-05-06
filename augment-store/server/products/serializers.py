@@ -4,6 +4,13 @@ from storage.serializers import FileListSerializer
 from accounts.serializers import UserListSerializer
 
 
+def validate_owned_image(value, request):
+    user = getattr(request, "user", None)
+    if value and (not user or value.created_by_id != user.id):
+        raise serializers.ValidationError("Image is invalid")
+    return value
+
+
 #  Product Brand Serializers
 
 class CreateProductBrandSerializer(serializers.ModelSerializer):
@@ -12,11 +19,7 @@ class CreateProductBrandSerializer(serializers.ModelSerializer):
         fields = ["name", "description" , "image"]
 
     def validate_image(self, value):
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        if value and value.created_by_id != user.id:
-            raise serializers.ValidationError("Image is invalid")
-        return value
+        return validate_owned_image(value, self.context.get("request"))
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -33,6 +36,9 @@ class ProductBrandListSerializer(serializers.ModelSerializer):
 
 
 class ProductBrandDetailSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
+
     class Meta:
         model = ProductBrand
         fields = "__all__"
@@ -45,16 +51,15 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
         model = ProductCategory
         fields = ["name", "slug", "description", "parent", "image"]
 
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
+
     def validate(self, attrs):
         parent = attrs.get("parent")
         if parent and parent.is_child_node():
             raise serializers.ValidationError("Parent category cannot be a child category")
         
-        image = attrs.get("image")
         request = self.context.get("request")
-        if image and image.created_by_id != request.user.pk:
-            raise serializers.ValidationError({"image": "Image is invalid"})
-
         attrs["created_by"] = request.user
         return attrs
 
@@ -68,6 +73,9 @@ class ProductCategoryListSerializer(serializers.ModelSerializer):
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
+
     class Meta:
         model = ProductCategory
         fields = "__all__"
