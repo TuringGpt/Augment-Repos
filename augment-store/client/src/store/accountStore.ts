@@ -38,10 +38,10 @@ export const useAccountStore = create<AccountState>((set) => ({
     }),
 
   fetchAdminUsers: async () => {
-    // Import accountsService dynamically to avoid circular dependency
-    const { accountsService } = await import('@services/api/accounts/accountsService')
     try {
       set({ isLoading: true, error: null })
+      // Import accountsService dynamically to avoid circular dependency
+      const { accountsService } = await import('@services/api/accounts/accountsService')
       const response = await accountsService.getAdminUsers()
       set({
         adminUsers: response.users,
