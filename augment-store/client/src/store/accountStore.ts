@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AdminUser } from '@features/accounts/types'
+import { sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -73,7 +74,9 @@ export const useAccountStore = create<AccountState>((set) => ({
         return
       }
 
-      console.error('Failed to fetch admin users:', error)
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch admin users:', sanitizeErrorForLogging(error))
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch admin users'
       set({
         error: errorMessage,
