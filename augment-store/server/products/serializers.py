@@ -4,12 +4,22 @@ from storage.serializers import FileListSerializer
 from accounts.serializers import UserListSerializer
 
 
+def validate_owned_image(value, request):
+    user = getattr(request, "user", None)
+    if value and (not user or getattr(user, "is_anonymous", True) or value.created_by_id != user.id):
+        raise serializers.ValidationError("Image is invalid")
+    return value
+
+
 #  Product Brand Serializers
 
 class CreateProductBrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductBrand
         fields = ["name", "description" , "image"]
+
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
 
     def validate(self, attrs):
         request = self.context.get("request")
@@ -26,6 +36,9 @@ class ProductBrandListSerializer(serializers.ModelSerializer):
 
 
 class ProductBrandDetailSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
+
     class Meta:
         model = ProductBrand
         fields = "__all__"
@@ -37,6 +50,9 @@ class CreateProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
         fields = ["name", "slug", "description", "parent", "image"]
+
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
 
     def validate(self, attrs):
         parent = attrs.get("parent")
@@ -57,6 +73,9 @@ class ProductCategoryListSerializer(serializers.ModelSerializer):
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
+    def validate_image(self, value):
+        return validate_owned_image(value, self.context.get("request"))
+
     class Meta:
         model = ProductCategory
         fields = "__all__"
