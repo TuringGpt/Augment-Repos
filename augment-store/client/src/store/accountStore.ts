@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import type { AdminUser } from '@features/accounts/types'
 
+// Request counter to track the latest fetch request
+// Prevents stale responses from overwriting newer state
+let fetchRequestCounter = 0
+
 interface AccountState {
   // Admin users list state
   adminUsers: AdminUser[]
@@ -38,11 +42,22 @@ export const useAccountStore = create<AccountState>((set) => ({
     }),
 
   fetchAdminUsers: async () => {
+    // Increment counter and capture the current request ID
+    fetchRequestCounter += 1
+    const requestId = fetchRequestCounter
+
     try {
       set({ isLoading: true, error: null })
       // Import accountsService dynamically to avoid circular dependency
       const { accountsService } = await import('@services/api/accounts/accountsService')
       const response = await accountsService.getAdminUsers()
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId !== fetchRequestCounter) {
+        return
+      }
+
       set({
         adminUsers: response.users,
         total: response.count,
@@ -52,6 +67,12 @@ export const useAccountStore = create<AccountState>((set) => ({
         error: null,
       })
     } catch (error) {
+      // Only update error state if this is still the latest request
+      // This prevents older errors from overwriting newer state
+      if (requestId !== fetchRequestCounter) {
+        return
+      }
+
       console.error('Failed to fetch admin users:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch admin users'
       set({
@@ -67,12 +88,17 @@ export const useAccountStore = create<AccountState>((set) => ({
 
   clearError: () => set({ error: null }),
 
-  clearAdminUsers: () =>
+  clearAdminUsers: () => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from repopulating the store after clear
+    fetchRequestCounter += 1
+
     set({
       adminUsers: [],
       total: 0,
       next: null,
       previous: null,
       error: null,
-    }),
+    })
+  },
 }))
