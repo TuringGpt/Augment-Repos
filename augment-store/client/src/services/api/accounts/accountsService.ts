@@ -5,6 +5,8 @@ import type {
   AdminUsersListResponseAPI,
   AdminUser,
   AdminUserAPI,
+  AdminUserUpdateAPI,
+  AdminUserDetail,
 } from '@features/accounts/types'
 
 /**
@@ -45,6 +47,33 @@ export const accountsService = {
       count: response.count,
       next: response.next,
       previous: response.previous,
+    }
+  },
+
+  /**
+   * Get a single user by ID (admin only)
+   *
+   * Note: The backend endpoint uses AdminUserUpdateSerializer which only returns:
+   * id, email, role, is_active, date_joined
+   *
+   * This is a limited subset compared to the list endpoint which uses UserListSerializer.
+   * Use getAdminUsers() if you need full user details including name, profile image, etc.
+   *
+   * @param id - User ID to fetch
+   * @returns Promise with limited user details (id, email, role, isActive, dateJoined only)
+   */
+  getAdminUserById: async (id: string): Promise<AdminUserDetail> => {
+    const response = await apiClient.get<AdminUserUpdateAPI>(
+      API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id)
+    )
+
+    // Transform backend response to frontend format
+    return {
+      id: response.id,
+      email: response.email,
+      role: response.role,
+      isActive: response.is_active,
+      dateJoined: response.date_joined,
     }
   },
 }

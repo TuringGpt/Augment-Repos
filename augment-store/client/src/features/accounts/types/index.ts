@@ -30,7 +30,37 @@ export interface AdminUserAPI {
   date_joined: string
 }
 
-// Frontend user data structure (camelCase)
+// User detail data structure from backend detail endpoint (snake_case)
+// Matches AdminUserUpdateSerializer fields from augment-store/server/accounts/serializers.py
+// Used by GET /api/v1/accounts/admin/users/<uuid:pk>/
+// This serializer has limited fields compared to UserListSerializer
+export interface AdminUserUpdateAPI {
+  id: string
+  email: string
+  role: 'admin' | 'merchant' | 'member'
+  is_active: boolean
+  date_joined: string
+}
+
+// Frontend user detail structure (camelCase) - from detail endpoint
+// Only includes fields returned by AdminUserUpdateSerializer
+//
+// ⚠️ WARNING: This is a PARTIAL user object with limited fields.
+// DO NOT merge or spread this into AdminUser objects, as it lacks:
+// - username, firstName, lastName, fullName
+// - profileImage, preferredCurrency
+// Treating this as a complete AdminUser will result in data loss.
+// Use getAdminUsers() list endpoint if you need full user details.
+export interface AdminUserDetail {
+  id: string
+  email: string
+  role: 'admin' | 'merchant' | 'member'
+  isActive: boolean
+  dateJoined: string
+}
+
+// Frontend user data structure (camelCase) - from list endpoint
+// Full user details with all fields
 export interface AdminUser {
   id: string
   email: string
