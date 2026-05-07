@@ -193,8 +193,7 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
         from merchant.views import MerchantOrdersCacheService
 
         super().perform_update(serializer)
-        if serializer.instance.status == Order.OrderStatus.COMPLETED:
-            MerchantOrdersCacheService().clear_namespace()
+        MerchantOrdersCacheService().clear_namespace()
 
     def get_queryset(self):
         # Allow admins to retrieve/update any order
