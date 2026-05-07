@@ -189,6 +189,13 @@ class AdminOrderUpdateView(BaseOrderView, RetrieveUpdateAPIView):
     serializer_class = AdminOrderUpdateSerializer
     permission_classes = [IsAuthenticated, hasAdminRole]
 
+    def perform_update(self, serializer):
+        from merchant.views import MerchantOrdersCacheService
+
+        super().perform_update(serializer)
+        if serializer.instance.status == Order.OrderStatus.COMPLETED:
+            MerchantOrdersCacheService().clear_namespace()
+
     def get_queryset(self):
         # Allow admins to retrieve/update any order
         return super(BaseOrderView, self).get_queryset()
