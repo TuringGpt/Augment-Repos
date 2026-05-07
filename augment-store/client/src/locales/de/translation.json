@@ -1022,6 +1022,13 @@
     "categories": "Kategorien",
     "brands": "Marken",
     "users": "Benutzer",
+    "accounts": "Konten",
+    "accountsPage": {
+      "title": "Konten",
+      "subtitle": "Benutzerkonten und Berechtigungen verwalten",
+      "workInProgress": "In Bearbeitung",
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein."
+    },
     "reports": "Berichte",
     "contactMessages": "Kontaktnachrichten",
     "tickets": "Tickets",

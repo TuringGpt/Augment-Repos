@@ -1022,6 +1022,13 @@
     "categories": "Categorías",
     "brands": "Marcas",
     "users": "Usuarios",
+    "accounts": "Cuentas",
+    "accountsPage": {
+      "title": "Cuentas",
+      "subtitle": "Administrar cuentas de usuario y permisos",
+      "workInProgress": "Trabajo en Progreso",
+      "underDevelopment": "Esta página está actualmente en desarrollo. Las funciones de administración de cuentas estarán disponibles pronto."
+    },
     "reports": "Informes",
     "contactMessages": "Mensajes de Contacto",
     "tickets": "Tickets",
