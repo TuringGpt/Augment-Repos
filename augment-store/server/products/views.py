@@ -20,7 +20,6 @@ from .serializers import (
     CreateProductSerializer, ProductListSerializer, ProductDetailSerializer, SearchQueryListSerializer
 )
 from .filters import ProductFilter, ProductSearchFilter
-from .filters import ProductFilter, ProductSearchFilter
 from .services import ProductCacheService, ProductCategoryCacheService, ProductService, ProductBrandCacheService, SearchService, ProductSearchCacheService, SearchQueryCacheService
 from core.service import CacheInvalidatorMixin, CachedListMixin
 from core.optimization import AutoOptimizeMixin
@@ -128,6 +127,11 @@ class CreateProductCategoryView(CacheInvalidatorMixin, BaseCategoryView, CreateA
     serializer_class = CreateProductCategorySerializer
     permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     cache_service_class = ProductCategoryCacheService
+
+    def invalidate_cache(self):
+        super().invalidate_cache()
+        ProductCacheService().clear_namespace()
+        ProductSearchCacheService().clear_namespace()
 
 class ProductCategoryDetailView(CacheInvalidatorMixin, BaseCategoryView, RetrieveUpdateDestroyAPIView):
     serializer_class = ProductCategoryDetailSerializer
