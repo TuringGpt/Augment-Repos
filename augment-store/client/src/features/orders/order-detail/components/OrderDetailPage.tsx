@@ -35,6 +35,7 @@ import { useOrderStore } from '@store/orderStore'
 import type { Order } from '@features/orders/types'
 import { format } from 'date-fns'
 import { useTranslation } from '@hooks/useTranslation'
+import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -241,7 +242,7 @@ const OrderDetailPage = () => {
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <Avatar
-                                src="/placeholder.png"
+                                src={PLACEHOLDER_IMAGE}
                                 alt="Deleted Product"
                                 variant="rounded"
                                 sx={{ width: 60, height: 60, opacity: 0.5 }}
@@ -281,7 +282,7 @@ const OrderDetailPage = () => {
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Avatar
-                              src={product.images?.[0] || '/placeholder.png'}
+                              src={product.images?.[0] || PLACEHOLDER_IMAGE}
                               alt={product.name}
                               variant="rounded"
                               sx={{ width: 60, height: 60 }}
