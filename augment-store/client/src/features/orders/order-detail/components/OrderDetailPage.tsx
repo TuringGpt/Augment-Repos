@@ -230,9 +230,10 @@ const OrderDetailPage = () => {
                 <TableBody>
                   {order.items.map((orderItem) => {
                     const cartItem = orderItem.cart_item
-                    const product = cartItem?.product
-                    if (!product) return null
+                    // Skip items where cart_item or product is null (deleted items)
+                    if (!cartItem || !cartItem.product) return null
 
+                    const product = cartItem.product
                     const subtotal = product.price * cartItem.quantity
 
                     return (

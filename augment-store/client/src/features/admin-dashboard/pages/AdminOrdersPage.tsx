@@ -321,9 +321,9 @@ const AdminOrdersPage = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {order.items.slice(0, 2).map((item) => (
                       <Typography key={item.id} variant="body2" color="text.secondary">
-                        {item.cart_item.product
+                        {item.cart_item && item.cart_item.product
                           ? `${item.cart_item.product.name} (x${item.cart_item.quantity})`
-                          : `${t('admin.ordersPage.table.deletedProduct')} (x${item.cart_item.quantity})`}
+                          : `${t('admin.ordersPage.table.deletedProduct')} (x${item.cart_item?.quantity ?? 0})`}
                       </Typography>
                     ))}
                     {order.items.length > 2 && (
