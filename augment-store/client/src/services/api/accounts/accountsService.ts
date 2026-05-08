@@ -7,6 +7,7 @@ import type {
   AdminUserAPI,
   AdminUserUpdateAPI,
   AdminUserDetail,
+  UpdateAdminUserRequest,
 } from '@features/accounts/types'
 
 /**
@@ -65,6 +66,35 @@ export const accountsService = {
   getAdminUserById: async (id: string): Promise<AdminUserDetail> => {
     const response = await apiClient.get<AdminUserUpdateAPI>(
       API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id)
+    )
+
+    // Transform backend response to frontend format
+    return {
+      id: response.id,
+      email: response.email,
+      role: response.role,
+      isActive: response.is_active,
+      dateJoined: response.date_joined,
+    }
+  },
+
+  /**
+   * Update a user by ID (admin only)
+   *
+   * Only role and is_active fields can be updated.
+   * Other fields (id, email, date_joined) are read-only.
+   *
+   * Note: The backend endpoint uses AdminUserUpdateSerializer which only returns:
+   * id, email, role, is_active, date_joined
+   *
+   * @param id - User ID to update
+   * @param data - Partial user data to update (role and/or is_active)
+   * @returns Promise with updated user details (id, email, role, isActive, dateJoined)
+   */
+  updateAdminUser: async (id: string, data: UpdateAdminUserRequest): Promise<AdminUserDetail> => {
+    const response = await apiClient.put<AdminUserUpdateAPI>(
+      API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id),
+      data
     )
 
     // Transform backend response to frontend format

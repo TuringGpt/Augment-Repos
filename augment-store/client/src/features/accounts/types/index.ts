@@ -90,3 +90,12 @@ export interface AdminUsersListResponseAPI {
   previous: string | null
   results: AdminUserAPI[]
 }
+
+// Update Admin User Request (snake_case for backend)
+// Used for PUT/PATCH /api/v1/accounts/admin/users/<uuid:pk>/
+// Only role and is_active can be updated (other fields are read-only)
+// Based on AdminUserUpdateSerializer writable fields
+export interface UpdateAdminUserRequest {
+  role?: 'admin' | 'merchant' | 'member'
+  is_active?: boolean
+}
