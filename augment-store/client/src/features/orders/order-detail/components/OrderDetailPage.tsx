@@ -243,7 +243,7 @@ const OrderDetailPage = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <Avatar
                                 src={PLACEHOLDER_IMAGE}
-                                alt="Deleted Product"
+                                alt={t('order.deletedProduct')}
                                 variant="rounded"
                                 sx={{ width: 60, height: 60, opacity: 0.5 }}
                               />
