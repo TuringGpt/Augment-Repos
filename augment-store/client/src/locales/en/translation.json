@@ -462,6 +462,8 @@
     "lastUpdated": "Last Updated",
     "orderNotFound": "Order not found",
     "provideValidOrderId": "Please provide a valid order ID in the URL.",
+    "deletedProduct": "Deleted Product",
+    "productNoLongerAvailable": "Product no longer available",
     "status": {
       "pending": "Pending",
       "confirmed": "Confirmed",

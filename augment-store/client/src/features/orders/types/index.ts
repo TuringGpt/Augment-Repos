@@ -28,9 +28,10 @@ export interface OrderAddress {
 }
 
 // Order Item type matching backend format
+// cart_item can be null when the original cart item has been deleted (backend uses on_delete=SET_NULL)
 export interface OrderItem {
   id: string
-  cart_item: CartItem
+  cart_item: CartItem | null
   created_at: string
 }
 

@@ -43,7 +43,7 @@ const OrdersPage = () => {
   } = useOrderStore()
 
   useEffect(() => {
-    getAllOrders(currentPage, 10).catch((error) => {
+    getAllOrders(currentPage).catch((error) => {
       // Error is already handled in the store, just prevent unhandled rejection
       console.error('Error fetching orders:', error)
     })
@@ -115,7 +115,7 @@ const OrdersPage = () => {
           <Button
             variant="contained"
             onClick={() => {
-              getAllOrders(currentPage, 10).catch((error) => {
+              getAllOrders(currentPage).catch((error) => {
                 // Error is already handled in the store, just prevent unhandled rejection
                 console.error('Error retrying orders fetch:', error)
               })
@@ -212,12 +212,12 @@ const OrdersPage = () => {
                 <TableCell>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {(() => {
-                      const validItems = order.items.filter((item) => item.cart_item.product != null)
+                      const validItems = order.items.filter((item) => item.cart_item && item.cart_item.product != null)
                       return (
                         <>
                           {validItems.slice(0, 2).map((item) => (
                             <Typography key={item.id} variant="body2" color="text.secondary">
-                              {item.cart_item.product!.name} (x{item.cart_item.quantity})
+                              {item.cart_item!.product!.name} (x{item.cart_item!.quantity})
                             </Typography>
                           ))}
                           {validItems.length > 2 && (
