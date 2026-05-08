@@ -344,10 +344,19 @@ export const useOrderStore = create<OrderState>()(
 
           return response
         } catch (error) {
-          console.error('Failed to fetch admin orders:', error)
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Failed to fetch admin orders:', error)
+          }
 
           // Only update error state if this is still the latest request
           if (requestId === fetchAdminRequestCounter) {
+            // Don't treat intentional cancellations as fetch errors
+            if (isAbortError(error)) {
+              // Request was intentionally cancelled, don't set error state
+              throw error
+            }
+
             // Check if this is a 404 error, which likely means the requested page is out of range
             // This can happen when total pages shrink (e.g., items deleted) and the current page
             // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
