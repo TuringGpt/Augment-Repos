@@ -209,8 +209,8 @@ export const useOrderStore = create<OrderState>()(
 
         try {
           set({ isFetchingMerchantOrders: true, fetchMerchantOrdersError: null })
-          // Note: Backend has fixed page size of 100, limit parameter is not supported
-          const response = await orderService.getMerchantOrders(validPage, 10, signal)
+          // Note: Backend has fixed page size of 100
+          const response = await orderService.getMerchantOrders(validPage, signal)
 
           // Only update state if this is still the latest request
           // This prevents older responses from overwriting newer state
@@ -251,7 +251,7 @@ export const useOrderStore = create<OrderState>()(
               // Page is out of range - reset to page 1 and retry to get fresh data
               console.log(`Page ${validPage} returned 404, retrying with page 1`)
               try {
-                const retryResponse = await orderService.getMerchantOrders(1, 10, signal)
+                const retryResponse = await orderService.getMerchantOrders(1, signal)
 
                 // Only update state if this is still the latest request
                 if (requestId === fetchMerchantRequestCounter) {
