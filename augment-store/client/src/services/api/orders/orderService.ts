@@ -16,7 +16,7 @@ export const orderService = {
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
         cart_item: {
-          id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
+          id: itemAPI.cart_item ?? itemAPI.id, // cart_item can be null if deleted, use item ID as unique fallback
           product: itemAPI.product,
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
@@ -67,7 +67,7 @@ export const orderService = {
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
       cart_item: {
-        id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
+        id: itemAPI.cart_item ?? itemAPI.id, // cart_item can be null if deleted, use item ID as unique fallback
         product: itemAPI.product,
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
@@ -111,7 +111,7 @@ export const orderService = {
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
       cart_item: {
-        id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
+        id: itemAPI.cart_item ?? itemAPI.id, // cart_item can be null if deleted, use item ID as unique fallback
         product: itemAPI.product,
         quantity: itemAPI.quantity,
         created_at: itemAPI.created_at,
@@ -158,7 +158,7 @@ export const orderService = {
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
         cart_item: {
-          id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
+          id: itemAPI.cart_item ?? itemAPI.id, // cart_item can be null if deleted, use item ID as unique fallback
           product: itemAPI.product,
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
@@ -216,7 +216,7 @@ export const orderService = {
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
         cart_item: {
-          id: itemAPI.cart_item ?? '', // cart_item can be null if deleted, use empty string as fallback
+          id: itemAPI.cart_item ?? itemAPI.id, // cart_item can be null if deleted, use item ID as unique fallback
           product: itemAPI.product,
           quantity: itemAPI.quantity,
           created_at: itemAPI.created_at,
