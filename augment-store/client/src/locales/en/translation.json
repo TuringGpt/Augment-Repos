@@ -1022,6 +1022,13 @@
     "categories": "Categories",
     "brands": "Brands",
     "users": "Users",
+    "accounts": "Accounts",
+    "accountsPage": {
+      "title": "Accounts",
+      "subtitle": "Manage user accounts and permissions",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "This page is currently under development. Account management features will be available soon."
+    },
     "reports": "Reports",
     "contactMessages": "Contact Messages",
     "tickets": "Tickets",

@@ -13,4 +13,5 @@ export { default as AdminNewsletterDetailPage } from './AdminNewsletterDetailPag
 export { default as ProductStatisticsViewPage } from './ProductStatisticsViewPage'
 export { default as AdminSettingsPage } from './AdminSettingsPage'
 export { default as AdminCurrencyPage } from './AdminCurrencyPage'
+export { default as AdminAccountsPage } from './AdminAccountsPage'
 
