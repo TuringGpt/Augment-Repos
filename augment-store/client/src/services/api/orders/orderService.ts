@@ -3,9 +3,12 @@ import { API_ENDPOINTS } from '@config/api'
 import type { Order, OrderItem, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse } from '@features/orders/types'
 
 export const orderService = {
-  getOrders: async (page = 1, limit = 10): Promise<OrderListResponse> => {
+  getOrders: async (page = 1): Promise<OrderListResponse> => {
+    // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+
     const response = await apiClient.get<OrderListAPIResponse>(API_ENDPOINTS.ORDERS.LIST, {
-      params: { page, limit },
+      params: { page },
     })
 
     const orders: Order[] = response.results.map((orderAPI) => {
@@ -51,10 +54,10 @@ export const orderService = {
       orders,
       total: response.count,
       page,
-      limit,
+      limit: backendPageSize,
       // Normalize totalPages to minimum of 1 for pagination UI compatibility (1-based pagination)
       // When count is 0, Math.ceil returns 0, but pagination consumers expect at least 1 page
-      totalPages: Math.max(1, Math.ceil(response.count / limit)),
+      totalPages: Math.max(1, Math.ceil(response.count / backendPageSize)),
     }
   },
 

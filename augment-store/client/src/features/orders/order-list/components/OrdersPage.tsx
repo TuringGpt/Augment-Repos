@@ -43,7 +43,7 @@ const OrdersPage = () => {
   } = useOrderStore()
 
   useEffect(() => {
-    getAllOrders(currentPage, 10).catch((error) => {
+    getAllOrders(currentPage).catch((error) => {
       // Error is already handled in the store, just prevent unhandled rejection
       console.error('Error fetching orders:', error)
     })
@@ -115,7 +115,7 @@ const OrdersPage = () => {
           <Button
             variant="contained"
             onClick={() => {
-              getAllOrders(currentPage, 10).catch((error) => {
+              getAllOrders(currentPage).catch((error) => {
                 // Error is already handled in the store, just prevent unhandled rejection
                 console.error('Error retrying orders fetch:', error)
               })

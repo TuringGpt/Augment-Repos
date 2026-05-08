@@ -40,7 +40,7 @@ import { isAbortError } from '@utils/errorUtils'
 
 /**
  * AdminOrdersPage Component
- * Admin page for managing merchant orders with table view and pagination
+ * Admin page for managing all orders with table view and pagination
  *
  * Note: Authentication and admin role checks are handled by the AdminRoute guard.
  * This component will only render for authenticated admin users.
@@ -52,20 +52,20 @@ const AdminOrdersPage = () => {
 
   // Use order store
   const {
-    merchantOrders,
-    currentMerchantPage,
-    totalMerchantPages,
-    isFetchingMerchantOrders,
-    fetchMerchantOrdersError,
-    getMerchantOrders,
-    setMerchantPage,
+    adminOrders,
+    currentAdminPage,
+    totalAdminPages,
+    isFetchingAdminOrders,
+    fetchAdminOrdersError,
+    getAdminOrders,
+    setAdminPage,
   } = useOrderStore()
 
   // Track current abort controller for request cancellation
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Load merchant orders
-  const loadMerchantOrders = async () => {
+  // Load admin orders
+  const loadAdminOrders = async () => {
     // Abort any pending request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -75,24 +75,24 @@ const AdminOrdersPage = () => {
     abortControllerRef.current = new AbortController()
 
     try {
-      // Fetch merchant orders using the store with abort signal
-      await getMerchantOrders(currentMerchantPage, abortControllerRef.current.signal)
+      // Fetch admin orders using the store with abort signal
+      await getAdminOrders(currentAdminPage, abortControllerRef.current.signal)
     } catch (error) {
       // Ignore abort errors - these are expected when requests are intentionally cancelled
       // (e.g., on refresh or component unmount)
       if (isAbortError(error)) {
         return
       }
-      // Error is already handled in getMerchantOrders and stored in fetchMerchantOrdersError
+      // Error is already handled in getAdminOrders and stored in fetchAdminOrdersError
       // This catch prevents unhandled promise rejections
-      console.error('Error loading merchant orders:', error)
+      console.error('Error loading admin orders:', error)
     }
   }
 
-  // Fetch merchant orders on mount
+  // Fetch admin orders on mount
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      loadMerchantOrders()
+      loadAdminOrders()
     }
 
     return () => {
@@ -105,13 +105,13 @@ const AdminOrdersPage = () => {
   }, [isAuthenticated, user?.role])
 
   const handleRefresh = () => {
-    loadMerchantOrders()
+    loadAdminOrders()
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setMerchantPage(value)
+    setAdminPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    // Note: setMerchantPage internally calls getMerchantOrders, which is handled in setMerchantPage implementation
+    // Note: setAdminPage internally calls getAdminOrders, which is handled in setAdminPage implementation
   }
 
   const getStatusColor = (
@@ -157,7 +157,7 @@ const AdminOrdersPage = () => {
   }
 
   // Loading state
-  if (isFetchingMerchantOrders && merchantOrders.length === 0) {
+  if (isFetchingAdminOrders && adminOrders.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
@@ -181,7 +181,7 @@ const AdminOrdersPage = () => {
   }
 
   // Error state
-  if (fetchMerchantOrdersError && merchantOrders.length === 0) {
+  if (fetchAdminOrdersError && adminOrders.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
@@ -205,14 +205,14 @@ const AdminOrdersPage = () => {
             </Button>
           }
         >
-          {fetchMerchantOrdersError}
+          {fetchAdminOrdersError}
         </Alert>
       </Container>
     )
   }
 
   // Empty state
-  if (merchantOrders.length === 0) {
+  if (adminOrders.length === 0) {
     return (
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
@@ -263,7 +263,7 @@ const AdminOrdersPage = () => {
           <Tooltip title={t('common.refresh')}>
             <IconButton
               onClick={handleRefresh}
-              disabled={isFetchingMerchantOrders}
+              disabled={isFetchingAdminOrders}
               color="primary"
             >
               <RefreshIcon />
@@ -276,9 +276,9 @@ const AdminOrdersPage = () => {
       </Box>
 
       {/* Error Alert */}
-      {fetchMerchantOrdersError && merchantOrders.length > 0 && (
+      {fetchAdminOrdersError && adminOrders.length > 0 && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {fetchMerchantOrdersError}
+          {fetchAdminOrdersError}
         </Alert>
       )}
 
@@ -300,7 +300,7 @@ const AdminOrdersPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {merchantOrders.map((order) => (
+            {adminOrders.map((order) => (
               <TableRow
                 key={order.id}
                 sx={{
@@ -366,14 +366,14 @@ const AdminOrdersPage = () => {
       </TableContainer>
 
       {/* Pagination */}
-      {totalMerchantPages > 1 && (
+      {totalAdminPages > 1 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <Pagination
-            count={totalMerchantPages}
-            page={currentMerchantPage}
+            count={totalAdminPages}
+            page={currentAdminPage}
             onChange={handlePageChange}
             color="primary"
-            disabled={isFetchingMerchantOrders}
+            disabled={isFetchingAdminOrders}
           />
         </Box>
       )}
