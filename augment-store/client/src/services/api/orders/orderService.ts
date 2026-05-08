@@ -12,20 +12,19 @@ export const orderService = {
       // Transform OrderItemAPI[] to OrderItem[]
       // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
       // Frontend expects: { id, cart_item: CartItem | null, created_at }
-      // When cart_item is null (deleted), we set it to null instead of creating a fake CartItem
+      // When cart_item is null (deleted), we still construct a CartItem with the product/quantity data
+      // and mark it as deleted so the frontend can display it properly
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
-        cart_item: itemAPI.cart_item
-          ? {
-              id: itemAPI.cart_item,
-              product: itemAPI.product,
-              quantity: itemAPI.quantity,
-              created_at: itemAPI.created_at,
-              updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-              is_deleted: false,
-              created_by: '', // Not provided by backend
-            }
-          : null, // cart_item was deleted, set to null
+        cart_item: {
+          id: itemAPI.cart_item ?? '', // Use empty string when cart_item was deleted
+          product: itemAPI.product,
+          quantity: itemAPI.quantity,
+          created_at: itemAPI.created_at,
+          updated_at: itemAPI.created_at, // Not provided by backend, use created_at
+          is_deleted: itemAPI.cart_item === null, // Mark as deleted when cart_item is null
+          created_by: '', // Not provided by backend
+        },
         created_at: itemAPI.created_at,
       }))
 
@@ -65,20 +64,19 @@ export const orderService = {
     // Transform OrderItemAPI[] to OrderItem[] - same as getOrders
     // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
     // Frontend expects: { id, cart_item: CartItem | null, created_at }
-    // When cart_item is null (deleted), we set it to null instead of creating a fake CartItem
+    // When cart_item is null (deleted), we still construct a CartItem with the product/quantity data
+    // and mark it as deleted so the frontend can display it properly
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
-      cart_item: itemAPI.cart_item
-        ? {
-            id: itemAPI.cart_item,
-            product: itemAPI.product,
-            quantity: itemAPI.quantity,
-            created_at: itemAPI.created_at,
-            updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-            is_deleted: false,
-            created_by: '', // Not provided by backend
-          }
-        : null, // cart_item was deleted, set to null
+      cart_item: {
+        id: itemAPI.cart_item ?? '', // Use empty string when cart_item was deleted
+        product: itemAPI.product,
+        quantity: itemAPI.quantity,
+        created_at: itemAPI.created_at,
+        updated_at: itemAPI.created_at, // Not provided by backend, use created_at
+        is_deleted: itemAPI.cart_item === null, // Mark as deleted when cart_item is null
+        created_by: '', // Not provided by backend
+      },
       created_at: itemAPI.created_at,
     }))
 
@@ -111,20 +109,19 @@ export const orderService = {
     // Transform OrderItemAPI[] to OrderItem[] - same as getOrders and getOrderById
     // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
     // Frontend expects: { id, cart_item: CartItem | null, created_at }
-    // When cart_item is null (deleted), we set it to null instead of creating a fake CartItem
+    // When cart_item is null (deleted), we still construct a CartItem with the product/quantity data
+    // and mark it as deleted so the frontend can display it properly
     const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
       id: itemAPI.id,
-      cart_item: itemAPI.cart_item
-        ? {
-            id: itemAPI.cart_item,
-            product: itemAPI.product,
-            quantity: itemAPI.quantity,
-            created_at: itemAPI.created_at,
-            updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-            is_deleted: false,
-            created_by: '', // Not provided by backend
-          }
-        : null, // cart_item was deleted, set to null
+      cart_item: {
+        id: itemAPI.cart_item ?? '', // Use empty string when cart_item was deleted
+        product: itemAPI.product,
+        quantity: itemAPI.quantity,
+        created_at: itemAPI.created_at,
+        updated_at: itemAPI.created_at, // Not provided by backend, use created_at
+        is_deleted: itemAPI.cart_item === null, // Mark as deleted when cart_item is null
+        created_by: '', // Not provided by backend
+      },
       created_at: itemAPI.created_at,
     }))
 
@@ -160,20 +157,19 @@ export const orderService = {
       // Transform OrderItemAPI[] to OrderItem[]
       // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
       // Frontend expects: { id, cart_item: CartItem | null, created_at }
-      // When cart_item is null (deleted), we set it to null instead of creating a fake CartItem
+      // When cart_item is null (deleted), we still construct a CartItem with the product/quantity data
+      // and mark it as deleted so the frontend can display it properly
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
-        cart_item: itemAPI.cart_item
-          ? {
-              id: itemAPI.cart_item,
-              product: itemAPI.product,
-              quantity: itemAPI.quantity,
-              created_at: itemAPI.created_at,
-              updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-              is_deleted: false,
-              created_by: '', // Not provided by backend
-            }
-          : null, // cart_item was deleted, set to null
+        cart_item: {
+          id: itemAPI.cart_item ?? '', // Use empty string when cart_item was deleted
+          product: itemAPI.product,
+          quantity: itemAPI.quantity,
+          created_at: itemAPI.created_at,
+          updated_at: itemAPI.created_at, // Not provided by backend, use created_at
+          is_deleted: itemAPI.cart_item === null, // Mark as deleted when cart_item is null
+          created_by: '', // Not provided by backend
+        },
         created_at: itemAPI.created_at,
       }))
 
@@ -220,20 +216,19 @@ export const orderService = {
       // Transform OrderItemAPI[] to OrderItem[]
       // Backend returns: { id, cart_item (UUID or null), product, quantity, created_at }
       // Frontend expects: { id, cart_item: CartItem | null, created_at }
-      // When cart_item is null (deleted), we set it to null instead of creating a fake CartItem
+      // When cart_item is null (deleted), we still construct a CartItem with the product/quantity data
+      // and mark it as deleted so the frontend can display it properly
       const items: OrderItem[] = orderAPI.items.map((itemAPI) => ({
         id: itemAPI.id,
-        cart_item: itemAPI.cart_item
-          ? {
-              id: itemAPI.cart_item,
-              product: itemAPI.product,
-              quantity: itemAPI.quantity,
-              created_at: itemAPI.created_at,
-              updated_at: itemAPI.created_at, // Not provided by backend, use created_at
-              is_deleted: false,
-              created_by: '', // Not provided by backend
-            }
-          : null, // cart_item was deleted, set to null
+        cart_item: {
+          id: itemAPI.cart_item ?? '', // Use empty string when cart_item was deleted
+          product: itemAPI.product,
+          quantity: itemAPI.quantity,
+          created_at: itemAPI.created_at,
+          updated_at: itemAPI.created_at, // Not provided by backend, use created_at
+          is_deleted: itemAPI.cart_item === null, // Mark as deleted when cart_item is null
+          created_by: '', // Not provided by backend
+        },
         created_at: itemAPI.created_at,
       }))
 
