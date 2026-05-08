@@ -348,12 +348,11 @@ export const useOrderStore = create<OrderState>()(
 
           // Only update error state if this is still the latest request
           if (requestId === fetchAdminRequestCounter) {
-            // Check if error is a 404 (page out of range) to handle gracefully
-            const is404Error =
-              error &&
-              typeof error === 'object' &&
-              'status' in error &&
-              error.status === 404
+            // Check if this is a 404 error, which likely means the requested page is out of range
+            // This can happen when total pages shrink (e.g., items deleted) and the current page
+            // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
+            const axiosError = error as { response?: { status?: number } }
+            const is404Error = axiosError?.response?.status === 404
 
             if (is404Error && validPage > 1) {
               // Page is out of range - reset to page 1 and retry to get fresh data
