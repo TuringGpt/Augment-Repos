@@ -453,6 +453,8 @@
     "billingAddress": "Dirección de Facturación",
     "noShippingAddress": "No hay dirección de envío disponible",
     "noBillingAddress": "No hay dirección de facturación disponible",
+    "deletedProduct": "Producto Eliminado",
+    "productNoLongerAvailable": "Producto ya no disponible",
     "orderSummary": "Resumen del Pedido",
     "tax": "Impuesto",
     "shipping": "Envío",

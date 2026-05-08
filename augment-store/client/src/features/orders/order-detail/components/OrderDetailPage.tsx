@@ -230,8 +230,48 @@ const OrderDetailPage = () => {
                 <TableBody>
                   {order.items.map((orderItem) => {
                     const cartItem = orderItem.cart_item
-                    // Skip items where cart_item or product is null (deleted items)
-                    if (!cartItem || !cartItem.product) return null
+
+                    // Handle deleted products - show placeholder info instead of hiding
+                    // This ensures displayed items match order totals
+                    if (!cartItem || !cartItem.product) {
+                      // Calculate subtotal from order totals if we can't get product price
+                      // For now, show as unavailable since we don't have individual item pricing
+                      return (
+                        <TableRow key={orderItem.id}>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <Avatar
+                                src="/placeholder.png"
+                                alt="Deleted Product"
+                                variant="rounded"
+                                sx={{ width: 60, height: 60, opacity: 0.5 }}
+                              />
+                              <Box>
+                                <Typography variant="body1" fontWeight={600} color="text.secondary">
+                                  {t('order.deletedProduct')}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {t('order.productNoLongerAvailable')}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography variant="body2" color="text.secondary">
+                              {cartItem?.quantity ?? '-'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" color="text.secondary">-</Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2" fontWeight={600} color="text.secondary">
+                              -
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    }
 
                     const product = cartItem.product
                     const subtotal = product.price * cartItem.quantity

@@ -453,6 +453,8 @@
     "billingAddress": "Rechnungsadresse",
     "noShippingAddress": "Keine Lieferadresse verfügbar",
     "noBillingAddress": "Keine Rechnungsadresse verfügbar",
+    "deletedProduct": "Gelöschtes Produkt",
+    "productNoLongerAvailable": "Produkt nicht mehr verfügbar",
     "orderSummary": "Bestellübersicht",
     "tax": "Steuer",
     "shipping": "Versand",
