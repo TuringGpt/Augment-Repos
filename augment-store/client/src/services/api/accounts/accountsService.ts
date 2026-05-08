@@ -92,7 +92,7 @@ export const accountsService = {
    * @returns Promise with updated user details (id, email, role, isActive, dateJoined)
    */
   updateAdminUser: async (id: string, data: UpdateAdminUserRequest): Promise<AdminUserDetail> => {
-    const response = await apiClient.put<AdminUserUpdateAPI>(
+    const response = await apiClient.patch<AdminUserUpdateAPI>(
       API_ENDPOINTS.ACCOUNTS.ADMIN_USER_DETAIL(id),
       data
     )
