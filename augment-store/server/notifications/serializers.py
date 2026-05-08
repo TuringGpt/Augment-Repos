@@ -36,7 +36,7 @@ class MarkAsReadSerializer(serializers.Serializer):
     def validate_notification_ids(self, value):
         user = self.context.get("request").user
         notifications = Notification.objects.get_user_notifications(user).filter(id__in=value)
-        found_ids = {str(notification_id) for notification_id in notifications.values_list("id", flat=True)}
+        found_ids = set(notifications.values_list("id", flat=True))
         
         invalid_ids = [
             notification_id
