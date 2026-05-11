@@ -39,7 +39,7 @@ import { useAccountStore } from '@store/accountStore'
  */
 const AdminAccountsPage = () => {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const {
     adminUsers,
@@ -129,13 +129,14 @@ const AdminAccountsPage = () => {
   }
 
   // Helper function to format date
+  // Uses the app's selected i18n language to ensure date formatting matches the UI locale
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     // Check if the date is valid before formatting
     if (isNaN(date.getTime())) {
       return dateString
     }
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(i18n.language, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

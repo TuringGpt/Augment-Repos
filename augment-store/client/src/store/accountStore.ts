@@ -212,12 +212,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     const currentTotalPages = get().totalPages
     const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
 
-    // Set loading state immediately to provide visual feedback and prevent
-    // displaying mismatched page number and data during the fetch.
-    // fetchAdminUsers will update currentPage when the new data arrives (line 96),
-    // ensuring the page number and row data are always aligned. This eliminates
-    // the race condition where the UI briefly shows the new page number while
-    // still rendering the previous page's adminUsers rows.
+    // Set loading state immediately to provide visual feedback.
+    // Note: currentPage is not updated here - it will be updated by fetchAdminUsers
+    // only when the new data arrives successfully (line 96).
     set({ isLoading: true, error: null })
     get().fetchAdminUsers(validPage).catch((error) => {
       // Error is already handled in fetchAdminUsers, just prevent unhandled rejection
