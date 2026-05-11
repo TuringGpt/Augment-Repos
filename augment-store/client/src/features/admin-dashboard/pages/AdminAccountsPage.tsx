@@ -40,7 +40,7 @@ const AdminAccountsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
-  const { adminUsers, isLoading, error, fetchAdminUsers, clearError } = useAccountStore()
+  const { adminUsers, total, isLoading, error, fetchAdminUsers, clearError } = useAccountStore()
 
   // Fetch admin users on mount
   useEffect(() => {
@@ -247,7 +247,7 @@ const AdminAccountsPage = () => {
           {adminUsers.length > 0 && (
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Typography variant="body2" color="text.secondary">
-                {t('admin.accountsPage.summary.totalAccounts')} {adminUsers.length}
+                {t('admin.accountsPage.summary.totalAccounts')} {total}
               </Typography>
             </Box>
           )}
