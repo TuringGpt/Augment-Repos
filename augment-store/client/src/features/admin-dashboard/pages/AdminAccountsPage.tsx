@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -7,12 +8,24 @@ import {
   CircularProgress,
   Alert,
   Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  Avatar,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
+  Refresh as RefreshIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useAccountStore } from '@store/accountStore'
 
 /**
  * AdminAccountsPage Component
@@ -27,6 +40,19 @@ const AdminAccountsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
+  const { adminUsers, isLoading, error, fetchAdminUsers, clearError } = useAccountStore()
+
+  // Fetch admin users on mount
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      fetchAdminUsers()
+    }
+  }, [isAuthenticated, user?.role, fetchAdminUsers])
+
+  const handleRefresh = () => {
+    clearError()
+    fetchAdminUsers()
+  }
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -68,41 +94,165 @@ const AdminAccountsPage = () => {
     )
   }
 
+  // Helper function to get role color
+  const getRoleColor = (role: string): 'error' | 'warning' | 'success' | 'default' => {
+    switch (role) {
+      case 'admin':
+        return 'error'
+      case 'merchant':
+        return 'warning'
+      case 'member':
+        return 'success'
+      default:
+        return 'default'
+    }
+  }
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    } catch {
+      return dateString
+    }
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-          <AccountCircleIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('admin.accountsPage.title')}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <AccountCircleIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.accountsPage.title')}
+            </Typography>
+          </Box>
+          <Typography color="text.secondary">
+            {t('admin.accountsPage.subtitle')}
           </Typography>
         </Box>
-        <Typography color="text.secondary">
-          {t('admin.accountsPage.subtitle')}
-        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          {t('common.refresh')}
+        </Button>
       </Box>
 
-      {/* Work in Progress Content */}
-      <Paper
-        sx={{
-          p: 6,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 400,
-          textAlign: 'center',
-        }}
-      >
-        <AccountCircleIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 3, opacity: 0.5 }} />
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: 'text.secondary' }}>
-          {t('admin.accountsPage.workInProgress')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500 }}>
-          {t('admin.accountsPage.underDevelopment')}
-        </Typography>
-      </Paper>
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading State */}
+      {isLoading && adminUsers.length === 0 ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {/* Accounts Table */}
+          <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Username</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Joined</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {adminUsers.length > 0 ? (
+                  adminUsers.map((account) => (
+                    <TableRow
+                      key={account.id}
+                      sx={{
+                        '&:hover': { bgcolor: 'action.hover' },
+                        transition: 'background-color 0.2s',
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Avatar
+                            src={account.profileImage?.file || undefined}
+                            alt={account.fullName}
+                            sx={{ width: 40, height: 40 }}
+                          >
+                            {account.fullName.charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {account.fullName}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{account.email}</TableCell>
+                      <TableCell>{account.username || '-'}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={account.role.toUpperCase()}
+                          color={getRoleColor(account.role)}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {account.isActive ? (
+                          <Chip
+                            icon={<CheckCircleIcon />}
+                            label="Active"
+                            color="success"
+                            size="small"
+                            variant="outlined"
+                          />
+                        ) : (
+                          <Chip
+                            icon={<CancelIcon />}
+                            label="Inactive"
+                            color="default"
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(account.dateJoined)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <Typography color="text.secondary">
+                        No accounts found
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Summary */}
+          {adminUsers.length > 0 && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Typography variant="body2" color="text.secondary">
+                Total Accounts: {adminUsers.length}
+              </Typography>
+            </Box>
+          )}
+        </>
+      )}
     </Container>
   )
 }
