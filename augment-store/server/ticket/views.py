@@ -76,7 +76,7 @@ class UserTicketsView(TicketBaseView, ListAPIView):
 
 class AdminTicketsView(TicketBaseView, ListAPIView):
     serializer_class = TicketListSerializer
-    permission_classes = [hasAdminRole]
+    permission_classes = [IsAuthenticated, hasAdminRole]
 
     def get_queryset(self):
         queryset = super().get_queryset().annotate(
