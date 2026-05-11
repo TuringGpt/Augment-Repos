@@ -80,7 +80,7 @@ class Cart(BaseModel):
     @property
     def shipping(self):
         # TODO: I will get the shipping cost from the shipping service later (this unblock frontend for now)
-        return 10 if self.subtotal < 50 else 0
+        return Decimal("10.00") if self.subtotal < 50 else Decimal("0.00")
 
     @property
     def total(self):
