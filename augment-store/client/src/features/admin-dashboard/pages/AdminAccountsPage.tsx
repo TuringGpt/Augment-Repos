@@ -53,10 +53,12 @@ const AdminAccountsPage = () => {
     setPage,
   } = useAccountStore()
 
-  // Fetch admin users on mount
+  // Fetch admin users on mount using the stored currentPage to avoid page/data mismatch
+  // If the user previously paged through the data and revisits this page, they will see
+  // the same page they were on before, maintaining a consistent UI state
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      fetchAdminUsers()
+      fetchAdminUsers(currentPage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.role])
