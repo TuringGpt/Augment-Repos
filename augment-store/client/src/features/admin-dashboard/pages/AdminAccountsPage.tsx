@@ -130,16 +130,16 @@ const AdminAccountsPage = () => {
 
   // Helper function to format date
   const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    } catch {
+    const date = new Date(dateString)
+    // Check if the date is valid before formatting
+    if (isNaN(date.getTime())) {
       return dateString
     }
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
   }
 
   return (
