@@ -131,6 +131,22 @@ export interface OrderItemAPI {
   created_at: string
 }
 
+// Admin order detail data structure from backend detail endpoint (snake_case)
+// Matches AdminOrderUpdateSerializer fields from augment-store/server/checkout/serializers.py
+// Used by GET/PATCH /api/v1/checkout/admin/orders/<uuid:pk>/
+// This serializer has limited fields compared to OrderListSerializer
+//
+// ⚠️ WARNING: This is a PARTIAL order object with limited fields.
+// The AdminOrderUpdateSerializer only returns id and status, lacking:
+// - items, subtotal, tax, shipping, total
+// - created_at, updated_at
+// DO NOT use this endpoint for fetching full order details.
+// Use the admin list endpoint or regular order detail endpoint instead.
+export interface AdminOrderUpdateAPI {
+  id: string
+  status: OrderStatus
+}
+
 export interface CreateOrderResponse {
   id: string
   status: OrderStatus
