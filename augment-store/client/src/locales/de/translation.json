@@ -1030,7 +1030,25 @@
       "title": "Konten",
       "subtitle": "Benutzerkonten und Berechtigungen verwalten",
       "workInProgress": "In Bearbeitung",
-      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein."
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein.",
+      "table": {
+        "user": "Benutzer",
+        "email": "E-Mail",
+        "username": "Benutzername",
+        "role": "Rolle",
+        "status": "Status",
+        "joined": "Beigetreten"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "emptyState": {
+        "noAccounts": "Keine Konten gefunden"
+      },
+      "summary": {
+        "totalAccounts": "Konten Gesamt:"
+      }
     },
     "reports": "Berichte",
     "contactMessages": "Kontaktnachrichten",

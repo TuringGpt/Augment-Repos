@@ -1030,7 +1030,25 @@
       "title": "Comptes",
       "subtitle": "Gérer les comptes utilisateurs et les permissions",
       "workInProgress": "Travaux en Cours",
-      "underDevelopment": "Cette page est actuellement en développement. Les fonctionnalités de gestion des comptes seront bientôt disponibles."
+      "underDevelopment": "Cette page est actuellement en développement. Les fonctionnalités de gestion des comptes seront bientôt disponibles.",
+      "table": {
+        "user": "Utilisateur",
+        "email": "E-mail",
+        "username": "Nom d'utilisateur",
+        "role": "Rôle",
+        "status": "Statut",
+        "joined": "Rejoint"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
+      "emptyState": {
+        "noAccounts": "Aucun compte trouvé"
+      },
+      "summary": {
+        "totalAccounts": "Total des Comptes :"
+      }
     },
     "reports": "Rapports",
     "contactMessages": "Messages de Contact",

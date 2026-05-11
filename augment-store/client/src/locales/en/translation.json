@@ -1030,7 +1030,25 @@
       "title": "Accounts",
       "subtitle": "Manage user accounts and permissions",
       "workInProgress": "Work in Progress",
-      "underDevelopment": "This page is currently under development. Account management features will be available soon."
+      "underDevelopment": "This page is currently under development. Account management features will be available soon.",
+      "table": {
+        "user": "User",
+        "email": "Email",
+        "username": "Username",
+        "role": "Role",
+        "status": "Status",
+        "joined": "Joined"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "emptyState": {
+        "noAccounts": "No accounts found"
+      },
+      "summary": {
+        "totalAccounts": "Total Accounts:"
+      }
     },
     "reports": "Reports",
     "contactMessages": "Contact Messages",

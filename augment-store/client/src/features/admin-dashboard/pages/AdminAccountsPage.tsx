@@ -166,12 +166,12 @@ const AdminAccountsPage = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: 'action.hover' }}>
-                  <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Username</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Joined</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.user')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.email')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.username')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.role')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.status')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.joined')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -212,7 +212,7 @@ const AdminAccountsPage = () => {
                         {account.isActive ? (
                           <Chip
                             icon={<CheckCircleIcon />}
-                            label="Active"
+                            label={t('admin.accountsPage.status.active')}
                             color="success"
                             size="small"
                             variant="outlined"
@@ -220,7 +220,7 @@ const AdminAccountsPage = () => {
                         ) : (
                           <Chip
                             icon={<CancelIcon />}
-                            label="Inactive"
+                            label={t('admin.accountsPage.status.inactive')}
                             color="default"
                             size="small"
                             variant="outlined"
@@ -234,7 +234,7 @@ const AdminAccountsPage = () => {
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Typography color="text.secondary">
-                        No accounts found
+                        {t('admin.accountsPage.emptyState.noAccounts')}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -247,7 +247,7 @@ const AdminAccountsPage = () => {
           {adminUsers.length > 0 && (
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
               <Typography variant="body2" color="text.secondary">
-                Total Accounts: {adminUsers.length}
+                {t('admin.accountsPage.summary.totalAccounts')} {adminUsers.length}
               </Typography>
             </Box>
           )}

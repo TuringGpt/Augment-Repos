@@ -1030,7 +1030,25 @@
       "title": "Cuentas",
       "subtitle": "Administrar cuentas de usuario y permisos",
       "workInProgress": "Trabajo en Progreso",
-      "underDevelopment": "Esta página está actualmente en desarrollo. Las funciones de administración de cuentas estarán disponibles pronto."
+      "underDevelopment": "Esta página está actualmente en desarrollo. Las funciones de administración de cuentas estarán disponibles pronto.",
+      "table": {
+        "user": "Usuario",
+        "email": "Correo electrónico",
+        "username": "Nombre de usuario",
+        "role": "Rol",
+        "status": "Estado",
+        "joined": "Se unió"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "emptyState": {
+        "noAccounts": "No se encontraron cuentas"
+      },
+      "summary": {
+        "totalAccounts": "Total de Cuentas:"
+      }
     },
     "reports": "Informes",
     "contactMessages": "Mensajes de Contacto",
