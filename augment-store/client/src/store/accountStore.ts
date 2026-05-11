@@ -206,7 +206,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
   setPage: (page: number) => {
     // Validate page before fetching
-    // Clamp page to valid range to match the validation in fetchAdminUsers
+    // Clamp page to valid range (1 to totalPages). This provides stricter validation
+    // than fetchAdminUsers, which only clamps the lower bound. This prevents unnecessary
+    // API calls for out-of-range pages and provides immediate user feedback.
     const currentTotalPages = get().totalPages
     const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
 

@@ -253,13 +253,16 @@ const AdminAccountsPage = () => {
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography color="text.secondary">
-                        {t('admin.accountsPage.emptyState.noAccounts')}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                  // Only show empty state when there's no error
+                  !error && (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography color="text.secondary">
+                          {t('admin.accountsPage.emptyState.noAccounts')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )
                 )}
               </TableBody>
             </Table>
