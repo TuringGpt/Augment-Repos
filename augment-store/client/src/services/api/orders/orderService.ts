@@ -272,6 +272,10 @@ export const orderService = {
    * which uses AdminOrderUpdateSerializer that ONLY returns {id, status}.
    * This means orderAPI.items/totals will be undefined and cause runtime errors.
    *
+   * This function is typed as Promise<never> because it always throws an error and never
+   * returns a value. This prevents accidental usage and ensures TypeScript catches any
+   * attempt to use the result at compile time rather than failing at runtime.
+   *
    * @deprecated This function is broken due to backend serializer limitations.
    * Use getAdminOrders() to fetch the order from the list instead, or update the backend
    * to add a proper admin detail endpoint that returns full order details.
@@ -280,7 +284,7 @@ export const orderService = {
    * - View: augment-store/server/checkout/views.py - AdminOrderUpdateView
    * - Serializer: augment-store/server/checkout/serializers.py - AdminOrderUpdateSerializer
    */
-  getAdminOrderById: async (_id: string): Promise<Order> => {
+  getAdminOrderById: async (_id: string): Promise<never> => {
     // This will throw at runtime because AdminOrderUpdateSerializer only returns {id, status}
     // and does not include items, subtotal, tax, shipping, total fields
     throw new Error(
