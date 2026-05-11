@@ -205,14 +205,18 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   },
 
   setPage: (page: number) => {
-    // Validate page before setting it optimistically to prevent invalid pagination state
+    // Validate page before fetching
     // Clamp page to valid range to match the validation in fetchAdminUsers
     const currentTotalPages = get().totalPages
     const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
 
-    // Update currentPage optimistically so UI state remains consistent even if fetch fails
-    // This ensures retry logic and pagination controls use the intended page
-    set({ currentPage: validPage })
+    // Set loading state immediately to provide visual feedback and prevent
+    // displaying mismatched page number and data during the fetch.
+    // fetchAdminUsers will update currentPage when the new data arrives (line 96),
+    // ensuring the page number and row data are always aligned. This eliminates
+    // the race condition where the UI briefly shows the new page number while
+    // still rendering the previous page's adminUsers rows.
+    set({ isLoading: true, error: null })
     get().fetchAdminUsers(validPage).catch((error) => {
       // Error is already handled in fetchAdminUsers, just prevent unhandled rejection
       console.error('Error fetching admin users on page change:', error)
