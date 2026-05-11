@@ -211,10 +211,12 @@ const AdminAccountsPage = () => {
                             alt={account.fullName}
                             sx={{ width: 40, height: 40 }}
                           >
-                            {account.fullName.charAt(0).toUpperCase()}
+                            {account.fullName && account.fullName.length > 0
+                              ? account.fullName.charAt(0).toUpperCase()
+                              : '?'}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {account.fullName}
+                            {account.fullName || '-'}
                           </Typography>
                         </Box>
                       </TableCell>

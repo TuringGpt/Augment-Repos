@@ -434,7 +434,7 @@ const OrderDetailPage = () => {
                   {t('order.paymentMethod')}
                 </Typography>
                 <Typography variant="body1" fontWeight={600}>
-                  {order.payment?.payment_method
+                  {order.payment?.payment_method && order.payment.payment_method.length > 0
                     ? order.payment.payment_method.charAt(0).toUpperCase() + order.payment.payment_method.slice(1)
                     : 'N/A'}
                 </Typography>
