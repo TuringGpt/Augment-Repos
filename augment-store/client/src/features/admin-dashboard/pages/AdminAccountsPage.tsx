@@ -16,6 +16,7 @@ import {
   TableRow,
   Chip,
   Avatar,
+  Pagination,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
@@ -40,18 +41,35 @@ const AdminAccountsPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
-  const { adminUsers, total, isLoading, error, fetchAdminUsers, clearError } = useAccountStore()
+  const {
+    adminUsers,
+    total,
+    currentPage,
+    totalPages,
+    isLoading,
+    error,
+    fetchAdminUsers,
+    clearError,
+    setPage,
+  } = useAccountStore()
 
   // Fetch admin users on mount
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       fetchAdminUsers()
     }
-  }, [isAuthenticated, user?.role, fetchAdminUsers])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
 
   const handleRefresh = () => {
     clearError()
     fetchAdminUsers()
+  }
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Note: setPage internally calls fetchAdminUsers
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -243,12 +261,23 @@ const AdminAccountsPage = () => {
             </Table>
           </TableContainer>
 
-          {/* Summary */}
+          {/* Summary and Pagination */}
           {adminUsers.length > 0 && (
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
                 {t('admin.accountsPage.summary.totalAccounts')} {total}
               </Typography>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  disabled={isLoading}
+                />
+              )}
             </Box>
           )}
         </>
