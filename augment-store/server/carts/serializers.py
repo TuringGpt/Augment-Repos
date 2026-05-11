@@ -6,6 +6,14 @@ from products.models import Product
 from products.serializers import ProductListSerializer
 
 
+def validate_existing_product_ids(value):
+    existing_ids = set(Product.objects.filter(id__in=value).values_list('id', flat=True))
+    if len(existing_ids) != len(value):
+        missing_ids = [product_id for product_id in value if product_id not in existing_ids]
+        raise serializers.ValidationError(f"Product {missing_ids} does not exist")
+    return value
+
+
 class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.UUIDField(write_only=True)
     quantity = serializers.IntegerField(min_value=1, write_only=True)
@@ -132,11 +140,7 @@ class AddToWishlistSerializer(serializers.ModelSerializer):
         fields = ["product_ids","products", "created_at", "updated_at"]
 
     def validate_product_ids(self, value):
-        existing_ids = set(Product.objects.filter(id__in=value).values_list('id', flat=True))
-        for product_id in value:
-            if product_id not in existing_ids:
-                raise serializers.ValidationError(f"Product {product_id} does not exist")
-        return value
+        return validate_existing_product_ids(value)
 
     
     def create(self, validated_data):
@@ -154,11 +158,7 @@ class RemoveFromWishlistSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.UUIDField())
 
     def validate_product_ids(self, value):
-        existing_ids = set(Product.objects.filter(id__in=value).values_list('id', flat=True))
-        for product_id in value:
-            if product_id not in existing_ids:
-                raise serializers.ValidationError(f"Product {product_id} does not exist")
-        return value
+        return validate_existing_product_ids(value)
 
 
     
