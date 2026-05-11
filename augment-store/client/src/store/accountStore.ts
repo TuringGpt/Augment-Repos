@@ -68,8 +68,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
     // Only clamp the lower bound to prevent page <= 0
     // Don't clamp the upper bound here because totalPages might not be accurate yet
-    // (it's initialized to 1 and not persisted). The 404 retry logic below will
-    // handle truly out-of-range pages, allowing deep-links to valid higher pages.
+    // (it's initialized to 1 and not persisted). If the page is out of range, the
+    // API will return an error which will be caught and displayed to the user.
     const validPage = Math.max(1, page)
 
     try {
