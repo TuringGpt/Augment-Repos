@@ -63,7 +63,7 @@ const AdminAccountsPage = () => {
 
   const handleRefresh = () => {
     clearError()
-    fetchAdminUsers()
+    fetchAdminUsers(currentPage)
   }
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
