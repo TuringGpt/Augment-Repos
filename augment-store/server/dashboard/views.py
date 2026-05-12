@@ -1207,7 +1207,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminRole])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated, hasAdminOrMerchantRole])
     def new_vs_returning(self, request):
         """
         Compare new vs returning customer metrics.
