@@ -154,6 +154,12 @@ const AdminAccountsPage = () => {
     }
   }
 
+  // Helper function to normalize fullName (trim whitespace)
+  // Returns the trimmed fullName if it's not empty after trimming, otherwise returns an empty string
+  const getNormalizedFullName = (fullName?: string | null): string => {
+    return fullName?.trim() || ''
+  }
+
   // Helper function to format date
   // Uses the app's selected i18n language to ensure date formatting matches the UI locale
   const formatDate = (dateString: string) => {
@@ -223,49 +229,52 @@ const AdminAccountsPage = () => {
               </TableHead>
               <TableBody>
                 {adminUsers.length > 0 ? (
-                  adminUsers.map((account) => (
-                    <TableRow
-                      key={account.id}
-                      hover
-                      onClick={() => handleAccountClick(account)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          handleAccountClick(account)
-                        }
-                      }}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={t('admin.accountsPage.aria.viewAccountDetails', {
-                        name: account.fullName || account.email,
-                      })}
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' },
-                        transition: 'background-color 0.2s',
-                        '&:focus': {
-                          outline: '2px solid',
-                          outlineColor: 'primary.main',
-                          outlineOffset: '-2px',
-                        },
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar
-                            src={account.profileImage?.file || undefined}
-                            alt={account.fullName}
-                            sx={{ width: 40, height: 40 }}
-                          >
-                            {account.fullName && account.fullName.length > 0
-                              ? account.fullName.charAt(0).toUpperCase()
-                              : '?'}
-                          </Avatar>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {account.fullName || '-'}
-                          </Typography>
-                        </Box>
-                      </TableCell>
+                  adminUsers.map((account) => {
+                    const normalizedFullName = getNormalizedFullName(account.fullName)
+                    const displayName = normalizedFullName || account.email
+                    const avatarInitial = normalizedFullName ? normalizedFullName[0]?.toUpperCase() : '?'
+
+                    return (
+                      <TableRow
+                        key={account.id}
+                        hover
+                        onClick={() => handleAccountClick(account)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleAccountClick(account)
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={t('admin.accountsPage.aria.viewAccountDetails', {
+                          name: displayName,
+                        })}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' },
+                          transition: 'background-color 0.2s',
+                          '&:focus': {
+                            outline: '2px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '-2px',
+                          },
+                        }}
+                      >
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar
+                              src={account.profileImage?.file || undefined}
+                              alt={displayName}
+                              sx={{ width: 40, height: 40 }}
+                            >
+                              {avatarInitial}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {normalizedFullName || '-'}
+                            </Typography>
+                          </Box>
+                        </TableCell>
                       <TableCell>{account.email}</TableCell>
                       <TableCell>{account.username || '-'}</TableCell>
                       <TableCell>
@@ -297,7 +306,8 @@ const AdminAccountsPage = () => {
                       </TableCell>
                       <TableCell>{formatDate(account.dateJoined)}</TableCell>
                     </TableRow>
-                  ))
+                    )
+                  })
                 ) : (
                   // Only show empty state when there's no error
                   !error && (
@@ -386,11 +396,11 @@ const AdminAccountsPage = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                     <Avatar
                       src={selectedAccount.profileImage?.file || undefined}
-                      alt={selectedAccount.fullName}
+                      alt={getNormalizedFullName(selectedAccount.fullName) || selectedAccount.email}
                       sx={{ width: 120, height: 120 }}
                     >
-                      {selectedAccount.fullName && selectedAccount.fullName.length > 0
-                        ? selectedAccount.fullName.charAt(0).toUpperCase()
+                      {getNormalizedFullName(selectedAccount.fullName)
+                        ? getNormalizedFullName(selectedAccount.fullName)[0]?.toUpperCase()
                         : '?'}
                     </Avatar>
                   </Box>
@@ -402,7 +412,7 @@ const AdminAccountsPage = () => {
                     {t('admin.accountsPage.table.user')}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                    {selectedAccount.fullName || '-'}
+                    {getNormalizedFullName(selectedAccount.fullName) || '-'}
                   </Typography>
                 </Grid>
 
