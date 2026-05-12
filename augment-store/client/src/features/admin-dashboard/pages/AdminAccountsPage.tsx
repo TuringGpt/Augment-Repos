@@ -241,7 +241,7 @@ const AdminAccountsPage = () => {
                         hover
                         onClick={() => handleAccountClick(account)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+                          if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
                             e.preventDefault()
                             handleAccountClick(account)
                           }
