@@ -34,11 +34,16 @@ export const accountsService = {
   /**
    * Get paginated list of users (admin only)
    * Includes pagination fields (next/previous) to support fetching multiple pages
+   * @param page - Page number to fetch (1-based, defaults to 1)
    * @returns Promise with list of users, total count, and pagination URLs
    */
-  getAdminUsers: async (): Promise<AdminUsersListResponse> => {
+  getAdminUsers: async (page = 1): Promise<AdminUsersListResponse> => {
+    // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
     const response = await apiClient.get<AdminUsersListResponseAPI>(
-      API_ENDPOINTS.ACCOUNTS.ADMIN_USERS
+      API_ENDPOINTS.ACCOUNTS.ADMIN_USERS,
+      {
+        params: { page },
+      }
     )
 
     // Transform backend response to frontend format

@@ -16,6 +16,8 @@ interface AccountState {
   total: number
   next: string | null
   previous: string | null
+  currentPage: number
+  totalPages: number
   isLoading: boolean
   error: string | null
 
@@ -26,21 +28,24 @@ interface AccountState {
 
   // Actions
   setAdminUsers: (users: AdminUser[], count: number, next: string | null, previous: string | null) => void
-  fetchAdminUsers: () => Promise<void>
+  fetchAdminUsers: (page?: number) => Promise<void>
   fetchAdminUserById: (id: string) => Promise<void>
   clearCurrentAdminUser: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearError: () => void
   clearAdminUsers: () => void
+  setPage: (page: number) => void
 }
 
-export const useAccountStore = create<AccountState>((set) => ({
+export const useAccountStore = create<AccountState>((set, get) => ({
   // Initial state
   adminUsers: [],
   total: 0,
   next: null,
   previous: null,
+  currentPage: 1,
+  totalPages: 1,
   isLoading: false,
   error: null,
   currentAdminUser: null,
@@ -56,16 +61,22 @@ export const useAccountStore = create<AccountState>((set) => ({
       previous,
     }),
 
-  fetchAdminUsers: async () => {
+  fetchAdminUsers: async (page = 1) => {
     // Increment counter and capture the current request ID
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
+
+    // Only clamp the lower bound to prevent page <= 0
+    // Don't clamp the upper bound here because totalPages might not be accurate yet
+    // (it's initialized to 1 and not persisted). If the page is out of range, the
+    // API will return an error which will be caught and displayed to the user.
+    const validPage = Math.max(1, page)
 
     try {
       set({ isLoading: true, error: null })
       // Import accountsService dynamically to avoid circular dependency
       const { accountsService } = await import('@services/api/accounts/accountsService')
-      const response = await accountsService.getAdminUsers()
+      const response = await accountsService.getAdminUsers(validPage)
 
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
@@ -73,11 +84,17 @@ export const useAccountStore = create<AccountState>((set) => ({
         return
       }
 
+      // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+      const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+      const totalPages = Math.max(1, Math.ceil(response.count / backendPageSize))
+
       set({
         adminUsers: response.users,
         total: response.count,
         next: response.next,
         previous: response.previous,
+        currentPage: validPage,
+        totalPages,
         isLoading: false,
         error: null,
       })
@@ -177,11 +194,31 @@ export const useAccountStore = create<AccountState>((set) => ({
       total: 0,
       next: null,
       previous: null,
+      currentPage: 1,
+      totalPages: 1,
       isLoading: false,
       error: null,
       currentAdminUser: null,
       isFetchingById: false,
       fetchByIdError: null,
+    })
+  },
+
+  setPage: (page: number) => {
+    // Validate page before fetching
+    // Clamp page to valid range (1 to totalPages). This provides stricter validation
+    // than fetchAdminUsers, which only clamps the lower bound. This prevents unnecessary
+    // API calls for out-of-range pages and provides immediate user feedback.
+    const currentTotalPages = get().totalPages
+    const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+
+    // Set loading state immediately to provide visual feedback.
+    // Note: currentPage is not updated here - it will be updated by fetchAdminUsers
+    // only when the new data arrives successfully (line 96).
+    set({ isLoading: true, error: null })
+    get().fetchAdminUsers(validPage).catch((error) => {
+      // Error is already handled in fetchAdminUsers, just prevent unhandled rejection
+      console.error('Error fetching admin users on page change:', error)
     })
   },
 }))

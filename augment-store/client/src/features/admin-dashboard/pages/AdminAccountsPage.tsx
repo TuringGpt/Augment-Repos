@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -7,12 +8,25 @@ import {
   CircularProgress,
   Alert,
   Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  Avatar,
+  Pagination,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
+  Refresh as RefreshIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
+import { useAccountStore } from '@store/accountStore'
 
 /**
  * AdminAccountsPage Component
@@ -25,8 +39,40 @@ import { useAuthStore } from '@store/authStore'
  */
 const AdminAccountsPage = () => {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
+  const {
+    adminUsers,
+    total,
+    currentPage,
+    totalPages,
+    isLoading,
+    error,
+    fetchAdminUsers,
+    clearError,
+    setPage,
+  } = useAccountStore()
+
+  // Fetch admin users on mount using the stored currentPage to avoid page/data mismatch
+  // If the user previously paged through the data and revisits this page, they will see
+  // the same page they were on before, maintaining a consistent UI state
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'admin') {
+      fetchAdminUsers(currentPage)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  const handleRefresh = () => {
+    clearError()
+    fetchAdminUsers(currentPage)
+  }
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Note: setPage internally calls fetchAdminUsers
+  }
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -68,41 +114,182 @@ const AdminAccountsPage = () => {
     )
   }
 
+  // Helper function to get role color
+  const getRoleColor = (role: string): 'error' | 'warning' | 'success' | 'default' => {
+    switch (role) {
+      case 'admin':
+        return 'error'
+      case 'merchant':
+        return 'warning'
+      case 'member':
+        return 'success'
+      default:
+        return 'default'
+    }
+  }
+
+  // Helper function to format date
+  // Uses the app's selected i18n language to ensure date formatting matches the UI locale
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    // Check if the date is valid before formatting
+    if (isNaN(date.getTime())) {
+      return dateString
+    }
+    return date.toLocaleDateString(i18n.language, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-          <AccountCircleIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('admin.accountsPage.title')}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <AccountCircleIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {t('admin.accountsPage.title')}
+            </Typography>
+          </Box>
+          <Typography color="text.secondary">
+            {t('admin.accountsPage.subtitle')}
           </Typography>
         </Box>
-        <Typography color="text.secondary">
-          {t('admin.accountsPage.subtitle')}
-        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          {t('common.refresh')}
+        </Button>
       </Box>
 
-      {/* Work in Progress Content */}
-      <Paper
-        sx={{
-          p: 6,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 400,
-          textAlign: 'center',
-        }}
-      >
-        <AccountCircleIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 3, opacity: 0.5 }} />
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: 'text.secondary' }}>
-          {t('admin.accountsPage.workInProgress')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500 }}>
-          {t('admin.accountsPage.underDevelopment')}
-        </Typography>
-      </Paper>
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearError}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Loading State */}
+      {isLoading && adminUsers.length === 0 ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {/* Accounts Table */}
+          <TableContainer component={Paper} sx={{ boxShadow: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: 'action.hover' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.user')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.email')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.username')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.role')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.status')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.joined')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {adminUsers.length > 0 ? (
+                  adminUsers.map((account) => (
+                    <TableRow
+                      key={account.id}
+                      sx={{
+                        '&:hover': { bgcolor: 'action.hover' },
+                        transition: 'background-color 0.2s',
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Avatar
+                            src={account.profileImage?.file || undefined}
+                            alt={account.fullName}
+                            sx={{ width: 40, height: 40 }}
+                          >
+                            {account.fullName && account.fullName.length > 0
+                              ? account.fullName.charAt(0).toUpperCase()
+                              : '?'}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {account.fullName || '-'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{account.email}</TableCell>
+                      <TableCell>{account.username || '-'}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={account.role.toUpperCase()}
+                          color={getRoleColor(account.role)}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {account.isActive ? (
+                          <Chip
+                            icon={<CheckCircleIcon />}
+                            label={t('admin.accountsPage.status.active')}
+                            color="success"
+                            size="small"
+                            variant="outlined"
+                          />
+                        ) : (
+                          <Chip
+                            icon={<CancelIcon />}
+                            label={t('admin.accountsPage.status.inactive')}
+                            color="default"
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>{formatDate(account.dateJoined)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  // Only show empty state when there's no error
+                  !error && (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <Typography color="text.secondary">
+                          {t('admin.accountsPage.emptyState.noAccounts')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Summary and Pagination */}
+          {adminUsers.length > 0 && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                {t('admin.accountsPage.summary.totalAccounts')} {total}
+              </Typography>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  disabled={isLoading}
+                />
+              )}
+            </Box>
+          )}
+        </>
+      )}
     </Container>
   )
 }

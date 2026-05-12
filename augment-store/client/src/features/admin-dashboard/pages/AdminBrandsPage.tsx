@@ -765,7 +765,7 @@ const AdminBrandsPage = () => {
                       variant="rounded"
                       sx={{ width: 120, height: 120, bgcolor: 'grey.200' }}
                     >
-                      {!detailsBrand.image && detailsBrand.name && detailsBrand.name.charAt(0).toUpperCase()}
+                      {!detailsBrand.image && detailsBrand.name && detailsBrand.name.length > 0 && detailsBrand.name.charAt(0).toUpperCase()}
                     </Avatar>
                   </Box>
                 </Grid>
