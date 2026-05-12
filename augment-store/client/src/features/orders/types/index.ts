@@ -147,6 +147,12 @@ export interface AdminOrderUpdateAPI {
   status: OrderStatus
 }
 
+// Update admin order request
+// All fields are optional for partial updates (PATCH)
+export interface UpdateAdminOrderRequest {
+  status?: OrderStatus
+}
+
 export interface CreateOrderResponse {
   id: string
   status: OrderStatus
