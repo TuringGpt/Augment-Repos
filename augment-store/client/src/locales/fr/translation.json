@@ -1051,6 +1051,9 @@
       },
       "summary": {
         "totalAccounts": "Total des Comptes :"
+      },
+      "aria": {
+        "viewAccountDetails": "Voir les détails de {{name}}"
       }
     },
     "reports": "Rapports",

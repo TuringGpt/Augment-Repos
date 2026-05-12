@@ -228,10 +228,26 @@ const AdminAccountsPage = () => {
                       key={account.id}
                       hover
                       onClick={() => handleAccountClick(account)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleAccountClick(account)
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={t('admin.accountsPage.aria.viewAccountDetails', {
+                        name: account.fullName || account.email,
+                      })}
                       sx={{
                         cursor: 'pointer',
                         '&:hover': { bgcolor: 'action.hover' },
                         transition: 'background-color 0.2s',
+                        '&:focus': {
+                          outline: '2px solid',
+                          outlineColor: 'primary.main',
+                          outlineOffset: '-2px',
+                        },
                       }}
                     >
                       <TableCell>
