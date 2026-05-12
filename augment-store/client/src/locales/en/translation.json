@@ -1053,7 +1053,8 @@
         "totalAccounts": "Total Accounts:"
       },
       "aria": {
-        "viewAccountDetails": "View details for {{name}}"
+        "viewAccountDetails": "View details for {{name}}",
+        "closeDrawer": "Close account details drawer"
       }
     },
     "reports": "Reports",

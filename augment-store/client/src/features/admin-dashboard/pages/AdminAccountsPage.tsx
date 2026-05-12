@@ -368,7 +368,11 @@ const AdminAccountsPage = () => {
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {t('admin.accountsPage.accountDetails')}
             </Typography>
-            <IconButton onClick={handleCloseDetailsDrawer} sx={{ color: 'white' }}>
+            <IconButton
+              onClick={handleCloseDetailsDrawer}
+              sx={{ color: 'white' }}
+              aria-label={t('admin.accountsPage.aria.closeDrawer')}
+            >
               <CloseIcon />
             </IconButton>
           </Box>

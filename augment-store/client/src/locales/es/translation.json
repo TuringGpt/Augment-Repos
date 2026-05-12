@@ -1053,7 +1053,8 @@
         "totalAccounts": "Total de Cuentas:"
       },
       "aria": {
-        "viewAccountDetails": "Ver detalles de {{name}}"
+        "viewAccountDetails": "Ver detalles de {{name}}",
+        "closeDrawer": "Cerrar cajón de detalles de cuenta"
       }
     },
     "reports": "Informes",
