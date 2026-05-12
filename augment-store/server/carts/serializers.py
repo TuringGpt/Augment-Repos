@@ -9,9 +9,9 @@ from products.serializers import ProductListSerializer
 def validate_existing_product_ids(value):
     requested_ids = set(value)
     existing_ids = set(Product.objects.filter(id__in=requested_ids).values_list('id', flat=True))
-    if existing_ids != requested_ids:
-        missing_ids = [product_id for product_id in requested_ids if product_id not in existing_ids]
-        raise serializers.ValidationError(f"Product {missing_ids} does not exist")
+    for product_id in value:
+        if product_id not in existing_ids:
+            raise serializers.ValidationError(f"Product {product_id} does not exist")
     return value
 
 
