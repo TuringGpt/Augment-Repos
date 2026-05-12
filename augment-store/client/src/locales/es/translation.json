@@ -1031,6 +1031,9 @@
       "subtitle": "Administrar cuentas de usuario y permisos",
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "Esta página está actualmente en desarrollo. Las funciones de administración de cuentas estarán disponibles pronto.",
+      "accountDetails": "Detalles de la Cuenta",
+      "preferredCurrency": "Moneda Preferida",
+      "accountId": "ID de Cuenta",
       "table": {
         "user": "Usuario",
         "email": "Correo electrónico",

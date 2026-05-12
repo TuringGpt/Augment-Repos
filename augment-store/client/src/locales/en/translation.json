@@ -1031,6 +1031,9 @@
       "subtitle": "Manage user accounts and permissions",
       "workInProgress": "Work in Progress",
       "underDevelopment": "This page is currently under development. Account management features will be available soon.",
+      "accountDetails": "Account Details",
+      "preferredCurrency": "Preferred Currency",
+      "accountId": "Account ID",
       "table": {
         "user": "User",
         "email": "Email",

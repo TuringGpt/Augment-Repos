@@ -1031,6 +1031,9 @@
       "subtitle": "Gérer les comptes utilisateurs et les permissions",
       "workInProgress": "Travaux en Cours",
       "underDevelopment": "Cette page est actuellement en développement. Les fonctionnalités de gestion des comptes seront bientôt disponibles.",
+      "accountDetails": "Détails du Compte",
+      "preferredCurrency": "Devise Préférée",
+      "accountId": "ID du Compte",
       "table": {
         "user": "Utilisateur",
         "email": "E-mail",
