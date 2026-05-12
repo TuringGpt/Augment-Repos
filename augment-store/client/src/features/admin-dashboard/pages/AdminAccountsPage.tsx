@@ -97,7 +97,8 @@ const AdminAccountsPage = () => {
   const handleDrawerExited = () => {
     // Clear selectedAccount after the drawer has fully closed
     // This prevents the content from flashing empty during the close transition
-    setSelectedAccount(null)
+    // Only clear if the drawer is still closed (prevents race condition if reopened quickly)
+    setSelectedAccount((prevAccount) => (isDetailsDrawerOpen ? prevAccount : null))
   }
 
   // Wait for persisted state to rehydrate before checking auth state
