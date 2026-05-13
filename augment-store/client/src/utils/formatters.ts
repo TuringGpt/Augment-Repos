@@ -28,9 +28,9 @@ export const formatCurrency = (amount: number | string, currency = 'USD'): strin
     } else {
       numericAmount = parseFloat(trimmedAmount)
 
-      // Additional check: ensure parseFloat didn't produce NaN
+      // Additional check: ensure parseFloat didn't produce NaN, Infinity, or -Infinity
       if (!Number.isFinite(numericAmount)) {
-        console.warn(`formatCurrency: Parsing "${amount}" resulted in NaN. Defaulting to 0.`)
+        console.warn(`formatCurrency: Parsing "${amount}" resulted in non-finite value (NaN, Infinity, or -Infinity). Defaulting to 0.`)
         numericAmount = 0
       }
     }
