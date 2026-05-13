@@ -33,4 +33,13 @@ export type {
   CreateCurrencyResponse,
   UpdateCurrencyRequest,
 } from './currency/currencyService'
+export { paymentService } from './payment/paymentService'
+export type {
+  CreatePaymentSessionRequest,
+  CreatePaymentSessionResponse,
+  Payment,
+  PaymentAPI,
+  AdminPaymentsListResponse,
+  AdminPaymentsListResponseAPI,
+} from '@features/payment/types'
 export { apiClient } from './client'

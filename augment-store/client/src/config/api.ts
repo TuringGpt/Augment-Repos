@@ -98,6 +98,7 @@ export const API_ENDPOINTS = {
   // Payment endpoints
   PAYMENT: {
     CREATE_SESSION: '/payments/',
+    ADMIN_LIST: '/checkout/admin/payments/',
   },
 
   // Support Ticket endpoints
