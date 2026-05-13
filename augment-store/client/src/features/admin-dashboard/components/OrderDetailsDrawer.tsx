@@ -37,10 +37,11 @@ import type { OrderStatus } from '@features/orders/types'
 const OrderDetailsDrawer = () => {
   const { t } = useTranslation()
   const { isOrderDetailsDrawerOpen, setOrderDetailsDrawerOpen } = useUIStore()
-  const { selectedOrder } = useOrderStore()
+  const { selectedOrder, clearSelectedOrder } = useOrderStore()
 
   const handleClose = () => {
     setOrderDetailsDrawerOpen(false)
+    clearSelectedOrder()
   }
 
   const getStatusIcon = (status: OrderStatus) => {
