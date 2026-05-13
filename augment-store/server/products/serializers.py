@@ -36,7 +36,7 @@ class ProductBrandListSerializer(serializers.ModelSerializer):
 
 
 class ProductBrandDetailSerializer(serializers.ModelSerializer):
-    created_by = UserListSerializer(read_only=True)
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
 
     def validate_image(self, value):
         return validate_owned_image(value, self.context.get("request"))
@@ -88,7 +88,7 @@ class ProductCategoryListSerializer(serializers.ModelSerializer):
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
-    created_by = UserListSerializer(read_only=True)
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
 
     def validate_image(self, value):
         return validate_owned_image(value, self.context.get("request"))

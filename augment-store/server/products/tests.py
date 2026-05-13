@@ -191,6 +191,7 @@ class ProductBrandTests(BaseAPITestCase):
         response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
 
         brand.refresh_from_db()
         self.assertEqual(brand.created_by_id, self.merchant_user.id)
@@ -464,6 +465,7 @@ class ProductCategoryTests(BaseAPITestCase):
         response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
 
         category.refresh_from_db()
         self.assertEqual(category.created_by_id, self.merchant_user.id)
