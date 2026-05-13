@@ -5,17 +5,17 @@ import type {
   CreatePaymentSessionResponse,
   AdminPaymentsListResponse,
   AdminPaymentsListResponseAPI,
-  Payment,
-  PaymentAPI,
+  AdminPayment,
+  AdminPaymentAPI,
 } from '@features/payment/types'
 
 /**
- * Transform backend payment API response to frontend format
- * Converts snake_case to camelCase and string amount to number
+ * Transform backend admin payment API response to frontend format
+ * Converts snake_case to camelCase while preserving string amount for exact currency representation
  */
-const transformPayment = (payment: PaymentAPI): Payment => ({
+const transformAdminPayment = (payment: AdminPaymentAPI): AdminPayment => ({
   id: payment.id,
-  amount: parseFloat(payment.amount),
+  amount: payment.amount, // Keep as string to avoid floating-point precision issues
   paymentMethod: payment.payment_method,
   paymentStatus: payment.payment_status,
   order: payment.order,
@@ -49,7 +49,7 @@ export const paymentService = {
     )
 
     // Transform backend response to frontend format
-    const payments = response.results.map(transformPayment)
+    const payments = response.results.map(transformAdminPayment)
 
     return {
       payments,

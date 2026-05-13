@@ -37,8 +37,8 @@ export { paymentService } from './payment/paymentService'
 export type {
   CreatePaymentSessionRequest,
   CreatePaymentSessionResponse,
-  Payment,
-  PaymentAPI,
+  AdminPayment,
+  AdminPaymentAPI,
   AdminPaymentsListResponse,
   AdminPaymentsListResponseAPI,
 } from '@features/payment/types'

@@ -15,7 +15,7 @@ export interface CreatePaymentSessionResponse {
 }
 
 // Payment type for admin list (matches backend format)
-export interface PaymentAPI {
+export interface AdminPaymentAPI {
   id: string
   amount: string // Django returns Decimal as string
   payment_method: 'stripe' | 'paypal'
@@ -25,10 +25,10 @@ export interface PaymentAPI {
   updated_at: string
 }
 
-// Frontend payment type (camelCase with number amount)
-export interface Payment {
+// Frontend admin payment type (camelCase with string amount for exact currency representation)
+export interface AdminPayment {
   id: string
-  amount: number
+  amount: string // Keep as string to avoid floating-point precision issues with currency
   paymentMethod: 'stripe' | 'paypal'
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
   order: string
@@ -41,12 +41,12 @@ export interface AdminPaymentsListResponseAPI {
   count: number
   next: string | null
   previous: string | null
-  results: PaymentAPI[]
+  results: AdminPaymentAPI[]
 }
 
 // Frontend admin payments list response
 export interface AdminPaymentsListResponse {
-  payments: Payment[]
+  payments: AdminPayment[]
   count: number
   next: string | null
   previous: string | null

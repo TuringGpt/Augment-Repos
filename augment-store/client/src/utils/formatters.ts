@@ -1,11 +1,14 @@
 /**
- * Format a number as currency
+ * Format a number or string as currency
+ * Accepts both number and string to support exact decimal representations from backend
  */
-export const formatCurrency = (amount: number, currency = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount: number | string, currency = 'USD'): string => {
+  const numericAmount: number = typeof amount === 'string' ? parseFloat(amount) : amount
+  const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
-  }).format(amount)
+  })
+  return formatter.format(numericAmount)
 }
 
 /**
