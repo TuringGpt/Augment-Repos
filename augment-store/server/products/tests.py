@@ -85,6 +85,16 @@ class ProductBrandTests(BaseAPITestCase):
         brand = ProductBrand.objects.get(name="New Brand")
         self.assertEqual(brand.created_by, self.merchant_user)
 
+    def test_create_brand_with_other_merchants_image_rejected(self):
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:create_product_brand")
+        payload = {"name": "Brand With Image", "image": str(other_merchants_file.id)}
+        response = self.merchant_client.post(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(ProductBrand.objects.filter(name="Brand With Image").exists())
+
     def test_create_brand_unauthenticated(self):
         # GIVEN a user is not authenticated
         # WHEN we make a post request to create a brand
@@ -323,6 +333,20 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be created by the merchant user
         category = ProductCategory.objects.get(name="New Category")
         self.assertEqual(category.created_by, self.merchant_user)
+
+    def test_create_category_with_other_merchants_image_rejected(self):
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:create_product_category")
+        payload = {
+            "name": "Category With Image",
+            "slug": "category-with-image",
+            "image": str(other_merchants_file.id),
+        }
+        response = self.merchant_client.post(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(ProductCategory.objects.filter(name="Category With Image").exists())
 
     def test_create_category_with_parent(self):
         # GIVEN a parent category exists
