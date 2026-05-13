@@ -1015,7 +1015,8 @@
         "total": "Total",
         "actions": "Acciones",
         "moreItems": "+{{count}} más",
-        "deletedProduct": "(Producto Eliminado)"
+        "deletedProduct": "(Producto Eliminado)",
+        "viewOrderDetails": "Ver detalles del pedido {{orderNumber}}"
       },
       "emptyState": {
         "noOrders": "Aún No Hay Pedidos",

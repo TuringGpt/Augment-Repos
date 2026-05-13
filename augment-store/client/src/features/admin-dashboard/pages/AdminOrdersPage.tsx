@@ -119,6 +119,14 @@ const AdminOrdersPage = () => {
     setOrderDetailsDrawerOpen(true)
   }
 
+  const handleOrderKeyDown = (event: React.KeyboardEvent, order: Order) => {
+    // Handle Enter and Space keys for accessibility
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleOrderClick(order)
+    }
+  }
+
   const getStatusColor = (
     status: OrderStatus
   ): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
@@ -306,11 +314,22 @@ const AdminOrdersPage = () => {
               <TableRow
                 key={order.id}
                 onClick={() => handleOrderClick(order)}
+                onKeyDown={(e) => handleOrderKeyDown(e, order)}
+                tabIndex={0}
+                role="button"
+                aria-label={t('admin.ordersPage.table.viewOrderDetails', {
+                  orderNumber: order.id.slice(0, 8).toUpperCase(),
+                })}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                   cursor: 'pointer',
                   '&:hover': {
                     bgcolor: 'action.hover',
+                  },
+                  '&:focus': {
+                    outline: '2px solid',
+                    outlineColor: 'primary.main',
+                    outlineOffset: '-2px',
                   },
                 }}
               >
