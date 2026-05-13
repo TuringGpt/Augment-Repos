@@ -11,4 +11,5 @@ export { default as CustomerSegmentsChart } from './CustomerSegmentsChart'
 export { default as CustomerPurchaseBehaviorChart } from './CustomerPurchaseBehaviorChart'
 export { default as NewVsReturningChart } from './NewVsReturningChart'
 export { default as ChurnRiskChart } from './ChurnRiskChart'
+export { default as OrderDetailsDrawer } from './OrderDetailsDrawer'
 

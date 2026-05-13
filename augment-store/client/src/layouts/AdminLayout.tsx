@@ -24,6 +24,7 @@ import BottomNavigation from '@components/BottomNavigation'
 import PageTransition from '@components/PageTransition'
 import CartDrawer from '@features/cart/components/CartDrawer'
 import { NotificationDetailsDrawer } from '@features/notifications/components'
+import { OrderDetailsDrawer } from '@features/admin-dashboard/components'
 import { ROUTES } from '@constants/index'
 
 const DRAWER_WIDTH = 260
@@ -233,6 +234,7 @@ const AdminLayout = () => {
       <BottomNavigation />
       <CartDrawer />
       <NotificationDetailsDrawer />
+      <OrderDetailsDrawer />
     </Box>
   )
 }

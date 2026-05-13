@@ -27,13 +27,12 @@ import {
   HourglassEmpty as HourglassEmptyIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
 import type { Order, OrderStatus } from '@features/orders/types'
 import { formatCurrency, formatDate } from '@utils/formatters'
-import { ROUTES } from '@constants/index'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useOrderStore } from '@store/orderStore'
+import { useUIStore } from '@store/uiStore'
 import { isAbortError } from '@utils/errorUtils'
 
 
@@ -46,9 +45,9 @@ import { isAbortError } from '@utils/errorUtils'
  * This component will only render for authenticated admin users.
  */
 const AdminOrdersPage = () => {
-  const navigate = useNavigate()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuthStore()
+  const { setOrderDetailsDrawerOpen } = useUIStore()
 
   // Use order store
   const {
@@ -59,6 +58,7 @@ const AdminOrdersPage = () => {
     fetchAdminOrdersError,
     getAdminOrders,
     setAdminPage,
+    setSelectedOrder,
   } = useOrderStore()
 
   // Track current abort controller for request cancellation
@@ -112,6 +112,11 @@ const AdminOrdersPage = () => {
     setAdminPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     // Note: setAdminPage internally calls getAdminOrders, which is handled in setAdminPage implementation
+  }
+
+  const handleOrderClick = (order: Order) => {
+    setSelectedOrder(order)
+    setOrderDetailsDrawerOpen(true)
   }
 
   const getStatusColor = (
@@ -294,17 +299,19 @@ const AdminOrdersPage = () => {
               <TableCell sx={{ fontWeight: 700 }} align="right">
                 {t('admin.ordersPage.table.total')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="center">
-                {t('admin.ordersPage.table.actions')}
-              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {adminOrders.map((order) => (
               <TableRow
                 key={order.id}
+                onClick={() => handleOrderClick(order)}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
+                  cursor: 'pointer',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
                 }}
               >
                 <TableCell>
@@ -346,18 +353,6 @@ const AdminOrdersPage = () => {
                   <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.main' }}>
                     {formatCurrency(order.total)}
                   </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigate(ROUTES.ORDER_DETAIL.replace(':id', order.id))
-                    }}
-                  >
-                    {t('order.viewOrder')}
-                  </Button>
                 </TableCell>
               </TableRow>
             ))}
