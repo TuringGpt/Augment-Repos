@@ -203,6 +203,7 @@ const OrderDetailsDrawer = () => {
                       <TableCell>{t('order.product')}</TableCell>
                       <TableCell align="center">{t('order.quantity')}</TableCell>
                       <TableCell align="right">{t('order.price')}</TableCell>
+                      <TableCell align="right">{t('order.subtotal')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -214,7 +215,7 @@ const OrderDetailsDrawer = () => {
                       if (!cartItem || !product) {
                         return (
                           <TableRow key={orderItem.id}>
-                            <TableCell colSpan={3}>
+                            <TableCell colSpan={4}>
                               <Typography variant="body2" color="text.secondary" fontStyle="italic">
                                 {t('order.deletedProduct')} - {t('order.productNoLongerAvailable')}
                               </Typography>
@@ -255,6 +256,11 @@ const OrderDetailsDrawer = () => {
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2">{cartItem.quantity}</Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body2">
+                              {formatCurrency(itemPrice)}
+                            </Typography>
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body2" fontWeight={600}>
