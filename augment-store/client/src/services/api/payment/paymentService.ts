@@ -15,10 +15,12 @@ import type {
  */
 const transformAdminPayment = (payment: AdminPaymentAPI): AdminPayment => ({
   id: payment.id,
+  orderId: payment.order_id,
+  customerEmail: payment.customer_email,
   amount: payment.amount, // Keep as string to avoid floating-point precision issues
   paymentMethod: payment.payment_method,
   paymentStatus: payment.payment_status,
-  order: payment.order,
+  stripeSessionId: payment.stripe_session_id,
   createdAt: payment.created_at,
   updatedAt: payment.updated_at,
 })

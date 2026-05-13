@@ -17,10 +17,12 @@ export interface CreatePaymentSessionResponse {
 // Payment type for admin list (matches backend format)
 export interface AdminPaymentAPI {
   id: string
+  order_id: string // UUID string - Backend returns order_id from AdminPaymentListSerializer
+  customer_email: string // Customer email from created_by.email
   amount: string // Django returns Decimal as string
   payment_method: 'stripe' | 'paypal'
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
-  order: string // UUID string
+  stripe_session_id: string | null // Stripe session ID
   created_at: string
   updated_at: string
 }
@@ -28,10 +30,12 @@ export interface AdminPaymentAPI {
 // Frontend admin payment type (camelCase with string amount for exact currency representation)
 export interface AdminPayment {
   id: string
+  orderId: string
+  customerEmail: string
   amount: string // Keep as string to avoid floating-point precision issues with currency
   paymentMethod: 'stripe' | 'paypal'
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
-  order: string
+  stripeSessionId: string | null
   createdAt: string
   updatedAt: string
 }
