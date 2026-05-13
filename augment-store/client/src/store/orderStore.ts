@@ -447,7 +447,12 @@ export const useOrderStore = create<OrderState>()(
 
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
 
-      setSelectedOrder: (order) => set({ selectedOrder: order }),
+      setSelectedOrder: (order) => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight getOrderById responses from overwriting the manually selected order
+        fetchOrderRequestCounter += 1
+        set({ selectedOrder: order })
+      },
 
       clearSelectedOrder: () => {
         // Increment counter to invalidate any in-flight fetch requests
