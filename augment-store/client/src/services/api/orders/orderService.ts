@@ -1,6 +1,6 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Order, OrderItem, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse } from '@features/orders/types'
+import type { Order, OrderItem, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse, UpdateAdminOrderRequest, AdminOrderUpdateAPI } from '@features/orders/types'
 
 export const orderService = {
   getOrders: async (page = 1): Promise<OrderListResponse> => {
@@ -292,5 +292,19 @@ export const orderService = {
       'The backend admin detail endpoint only returns {id, status} without order items or totals. ' +
       'Use getAdminOrders() to fetch orders with full details instead.'
     )
+  },
+
+  /**
+   * Update admin order (PATCH /api/v1/checkout/admin/orders/{id}/)
+   *
+   * Updates an order's status (admin only)
+   * Backend returns AdminOrderUpdateSerializer with only {id, status}
+   *
+   * Related backend code:
+   * - View: augment-store/server/checkout/views.py - AdminOrderUpdateView
+   * - Serializer: augment-store/server/checkout/serializers.py - AdminOrderUpdateSerializer
+   */
+  updateAdminOrder: async (id: string, data: UpdateAdminOrderRequest): Promise<AdminOrderUpdateAPI> => {
+    return apiClient.patch<AdminOrderUpdateAPI>(API_ENDPOINTS.ORDERS.ADMIN_DETAIL(id), data)
   },
 }

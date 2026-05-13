@@ -147,6 +147,13 @@ export interface AdminOrderUpdateAPI {
   status: OrderStatus
 }
 
+// Update admin order request
+// Status is required since it's the only updatable field for this endpoint
+// An empty PATCH body would be meaningless, so we require status to ensure intentional updates
+export interface UpdateAdminOrderRequest {
+  status: OrderStatus
+}
+
 export interface CreateOrderResponse {
   id: string
   status: OrderStatus
