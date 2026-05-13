@@ -451,7 +451,8 @@ export const useOrderStore = create<OrderState>()(
         // Increment counter to invalidate any in-flight fetch requests
         // This prevents in-flight getOrderById responses from overwriting the manually selected order
         fetchOrderRequestCounter += 1
-        set({ selectedOrder: order })
+        // Clear fetch-related state to prevent stale error/loading state from leaking into UI
+        set({ selectedOrder: order, fetchOrderError: null, isFetchingOrder: false })
       },
 
       clearSelectedOrder: () => {
