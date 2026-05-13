@@ -43,8 +43,9 @@ export const paymentService = {
    */
   getAdminPayments: async (page = 1, signal?: AbortSignal): Promise<AdminPaymentsListResponse> => {
     // Validate and normalize page parameter to ensure valid 1-based page number
-    // This prevents invalid values (0, negatives, non-integers) from causing backend errors
-    const normalizedPage = Math.max(1, Math.floor(Number(page) || 1))
+    // This prevents invalid values (0, negatives, non-integers, Infinity) from causing backend errors
+    const pageNum = Number(page)
+    const normalizedPage = Number.isFinite(pageNum) ? Math.max(1, Math.floor(pageNum)) : 1
 
     const response = await apiClient.get<AdminPaymentsListResponseAPI>(
       API_ENDPOINTS.PAYMENT.ADMIN_LIST,
