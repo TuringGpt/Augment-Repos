@@ -289,6 +289,12 @@ class ProductCategoryTests(BaseAPITestCase):
             is_active=True,
             role=User.Role.MEMBER
         )
+        self.merchant_user_2 = UserFactory(
+            email="merchant2@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
+        )
 
     def test_list_categories_unauthenticated(self):
         # GIVEN some categories exist in the database
