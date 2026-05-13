@@ -41,6 +41,9 @@ const OrderDetailsDrawer = () => {
 
   const handleClose = () => {
     setOrderDetailsDrawerOpen(false)
+  }
+
+  const handleTransitionExited = () => {
     clearSelectedOrder()
   }
 
@@ -134,6 +137,9 @@ const OrderDetailsDrawer = () => {
       anchor="right"
       open={isOrderDetailsDrawerOpen}
       onClose={handleClose}
+      SlideProps={{
+        onExited: handleTransitionExited,
+      }}
       sx={{
         '& .MuiDrawer-paper': {
           width: { xs: '100%', sm: 500, md: 600 },
