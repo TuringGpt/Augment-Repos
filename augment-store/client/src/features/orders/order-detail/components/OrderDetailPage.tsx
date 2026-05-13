@@ -70,7 +70,7 @@ const OrderDetailPage = () => {
   }, [id, getOrderById, clearSelectedOrder])
 
   // Calculate total current value for proportional pricing
-  // This includes ALL items (even deleted products) to ensure accurate proportional allocation
+  // Note: This only includes items with valid product references (deleted products are excluded)
   // Must be called before any early returns to comply with React Hooks rules
   const totalCurrentValue = useMemo(() => {
     if (!selectedOrder) return 0

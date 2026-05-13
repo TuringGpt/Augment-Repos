@@ -111,7 +111,7 @@ const OrderDetailsDrawer = () => {
   }, [selectedOrder])
 
   // Calculate total current value for proportional pricing
-  // This includes ALL items (even deleted products) to ensure accurate proportional allocation
+  // Note: This only includes items with valid product references (deleted products are excluded)
   const totalCurrentValue = useMemo(() => {
     if (!selectedOrder) return 0
     return selectedOrder.items.reduce((sum, item) => {
