@@ -9,6 +9,9 @@
  * @example
  * formatCurrency(123.45) // '$123.45'
  * formatCurrency('123.45') // '$123.45'
+ * formatCurrency('.5') // '$0.50' (leading decimal)
+ * formatCurrency('5.') // '$5.00' (trailing decimal)
+ * formatCurrency('+123') // '$123.00' (positive sign)
  * formatCurrency('12abc') // '$0.00' (invalid input)
  * formatCurrency('') // '$0.00' (invalid input)
  */
@@ -20,18 +23,31 @@ export const formatCurrency = (amount: number | string, currency = 'USD'): strin
     // Trim whitespace and check if it's a valid number format
     const trimmedAmount = amount.trim()
 
-    // Check if the string is empty or contains non-numeric characters (except decimal point, minus sign, and leading/trailing spaces)
-    // This regex ensures the entire string is a valid number (including decimals and negative numbers)
-    if (trimmedAmount === '' || !/^-?\d+(\.\d+)?$/.test(trimmedAmount)) {
-      console.warn(`formatCurrency: Invalid numeric string "${amount}". Defaulting to 0.`)
+    // Check if the string is empty
+    if (trimmedAmount === '') {
+      console.warn(`formatCurrency: Empty string provided. Defaulting to 0.`)
       numericAmount = 0
     } else {
-      numericAmount = parseFloat(trimmedAmount)
+      // Validate using a more permissive regex that accepts various valid numeric formats:
+      // - Standard numbers: '123', '123.45', '-123.45'
+      // - Numbers with leading decimal: '.5'
+      // - Numbers with trailing decimal: '5.'
+      // - Numbers with positive sign: '+123'
+      // Pattern breakdown: optional +/-, then either (digits with optional decimal) or (decimal with digits)
+      const validNumberPattern = /^[+-]?(\d+\.?\d*|\.\d+)$/
 
-      // Additional check: ensure parseFloat didn't produce NaN, Infinity, or -Infinity
-      if (!Number.isFinite(numericAmount)) {
-        console.warn(`formatCurrency: Parsing "${amount}" resulted in non-finite value (NaN, Infinity, or -Infinity). Defaulting to 0.`)
+      if (!validNumberPattern.test(trimmedAmount)) {
+        console.warn(`formatCurrency: Invalid numeric string "${amount}". Defaulting to 0.`)
         numericAmount = 0
+      } else {
+        numericAmount = parseFloat(trimmedAmount)
+
+        // Additional check: ensure parseFloat didn't produce NaN, Infinity, or -Infinity
+        // (This should not happen if regex passed, but defense in depth)
+        if (!Number.isFinite(numericAmount)) {
+          console.warn(`formatCurrency: Parsing "${amount}" resulted in non-finite value. Defaulting to 0.`)
+          numericAmount = 0
+        }
       }
     }
   } else if (typeof amount === 'number') {
