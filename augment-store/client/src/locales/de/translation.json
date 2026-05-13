@@ -478,7 +478,8 @@
       "pending": "Ausstehend",
       "paid": "Bezahlt",
       "failed": "Fehlgeschlagen",
-      "refunded": "Erstattet"
+      "refunded": "Erstattet",
+      "notAvailable": "k. A."
     }
   },
   "user": {
@@ -1014,7 +1015,8 @@
         "total": "Gesamt",
         "actions": "Aktionen",
         "moreItems": "+{{count}} weitere",
-        "deletedProduct": "(Gelöschtes Produkt)"
+        "deletedProduct": "(Gelöschtes Produkt)",
+        "viewOrderDetails": "Details für Bestellung {{orderNumber}} anzeigen"
       },
       "emptyState": {
         "noOrders": "Noch Keine Bestellungen",

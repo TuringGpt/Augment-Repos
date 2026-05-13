@@ -63,6 +63,7 @@ interface OrderState {
   getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getAdminOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
+  setSelectedOrder: (order: Order | null) => void
   clearSelectedOrder: () => void
   clearOrders: () => void
   clearMerchantOrders: () => void
@@ -445,6 +446,14 @@ export const useOrderStore = create<OrderState>()(
       },
 
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
+
+      setSelectedOrder: (order) => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight getOrderById responses from overwriting the manually selected order
+        fetchOrderRequestCounter += 1
+        // Clear fetch-related state to prevent stale error/loading state from leaking into UI
+        set({ selectedOrder: order, fetchOrderError: null, isFetchingOrder: false })
+      },
 
       clearSelectedOrder: () => {
         // Increment counter to invalidate any in-flight fetch requests

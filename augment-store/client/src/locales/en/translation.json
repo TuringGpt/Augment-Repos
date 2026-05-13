@@ -478,7 +478,8 @@
       "pending": "Pending",
       "paid": "Paid",
       "failed": "Failed",
-      "refunded": "Refunded"
+      "refunded": "Refunded",
+      "notAvailable": "N/A"
     }
   },
   "user": {
@@ -1014,7 +1015,8 @@
         "total": "Total",
         "actions": "Actions",
         "moreItems": "+{{count}} more",
-        "deletedProduct": "(Deleted Product)"
+        "deletedProduct": "(Deleted Product)",
+        "viewOrderDetails": "View details for order {{orderNumber}}"
       },
       "emptyState": {
         "noOrders": "No Orders Yet",

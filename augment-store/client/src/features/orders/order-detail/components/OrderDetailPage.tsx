@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -36,6 +36,7 @@ import type { Order } from '@features/orders/types'
 import { format } from 'date-fns'
 import { useTranslation } from '@hooks/useTranslation'
 import { PLACEHOLDER_IMAGE } from '@features/products/types/api'
+import { formatCurrency } from '@utils/formatters'
 
 const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -67,6 +68,27 @@ const OrderDetailPage = () => {
 
     fetchOrder()
   }, [id, getOrderById, clearSelectedOrder])
+
+  // Calculate total current value for proportional pricing
+  // Note: This only includes items with valid product references (deleted products are excluded)
+  // Must be called before any early returns to comply with React Hooks rules
+  const totalCurrentValue = useMemo(() => {
+    if (!selectedOrder) return 0
+    return selectedOrder.items.reduce((sum, item) => {
+      const cartItem = item.cart_item
+      const product = cartItem?.product
+      if (!cartItem || !product) return sum
+      return sum + product.price * cartItem.quantity
+    }, 0)
+  }, [selectedOrder])
+
+  // Check if we have any deleted products - proportional pricing won't work correctly
+  // when some products are missing because totalCurrentValue won't include deleted items
+  // Must be called before any early returns to comply with React Hooks rules
+  const hasDeletedProducts = useMemo(() => {
+    if (!selectedOrder) return false
+    return selectedOrder.items.some(item => !item.cart_item || !item.cart_item.product)
+  }, [selectedOrder])
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
@@ -275,7 +297,35 @@ const OrderDetailPage = () => {
                     }
 
                     const product = cartItem.product
-                    const subtotal = product.price * cartItem.quantity
+                    // Calculate item price and subtotal
+                    // If there are deleted products, we can't use proportional pricing because
+                    // totalCurrentValue won't include deleted items, causing remaining items to be
+                    // allocated the entire order subtotal and showing inflated prices.
+                    // In that case, fall back to current product prices (which may not sum to order total).
+                    let itemPrice: number
+                    let subtotal: number
+
+                    if (hasDeletedProducts) {
+                      // Fall back to current product prices when we have deleted products
+                      // This prevents inflated prices for remaining items
+                      itemPrice = product.price
+                      subtotal = product.price * cartItem.quantity
+                    } else if (totalCurrentValue === 0 && order.subtotal > 0) {
+                      // When all current prices are 0 but order has a stored subtotal,
+                      // distribute the subtotal proportionally based on quantities
+                      const totalQuantity = order.items.reduce((sum, item) =>
+                        sum + (item.cart_item?.quantity || 0), 0)
+                      const quantityProportion = totalQuantity > 0 ? cartItem.quantity / totalQuantity : 0
+                      subtotal = order.subtotal * quantityProportion
+                      itemPrice = cartItem.quantity > 0 ? subtotal / cartItem.quantity : 0
+                    } else {
+                      // Use proportional pricing when all products are available
+                      // This ensures the sum matches the stored order subtotal
+                      const itemCurrentValue = product.price * cartItem.quantity
+                      const proportion = totalCurrentValue > 0 ? itemCurrentValue / totalCurrentValue : 0
+                      itemPrice = proportion > 0 ? (order.subtotal * proportion) / cartItem.quantity : 0
+                      subtotal = itemPrice * cartItem.quantity
+                    }
 
                     return (
                       <TableRow key={orderItem.id}>
@@ -301,11 +351,11 @@ const OrderDetailPage = () => {
                           <Typography variant="body2">{cartItem.quantity}</Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2">${product.price.toFixed(2)}</Typography>
+                          <Typography variant="body2">{formatCurrency(itemPrice)}</Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" fontWeight={600}>
-                            ${subtotal.toFixed(2)}
+                            {formatCurrency(subtotal)}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -397,20 +447,20 @@ const OrderDetailPage = () => {
                   <Typography variant="body2" color="text.secondary">
                     {t('order.subtotal')}
                   </Typography>
-                  <Typography variant="body2">${order.subtotal.toFixed(2)}</Typography>
+                  <Typography variant="body2">{formatCurrency(order.subtotal)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     {t('order.tax')}
                   </Typography>
-                  <Typography variant="body2">${order.tax.toFixed(2)}</Typography>
+                  <Typography variant="body2">{formatCurrency(order.tax)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">
                     {t('order.shipping')}
                   </Typography>
                   <Typography variant="body2">
-                    {order.shipping === 0 ? t('order.free') : `$${order.shipping.toFixed(2)}`}
+                    {order.shipping === 0 ? t('order.free') : formatCurrency(order.shipping)}
                   </Typography>
                 </Box>
               </Box>
@@ -422,7 +472,7 @@ const OrderDetailPage = () => {
                   {t('order.total')}
                 </Typography>
                 <Typography variant="h6" fontWeight={700} sx={{ color: 'primary.main' }}>
-                  ${order.total.toFixed(2)}
+                  {formatCurrency(order.total)}
                 </Typography>
               </Box>
 

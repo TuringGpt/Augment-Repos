@@ -11,6 +11,7 @@ interface UIState {
   isSidebarOpen: boolean
   isCartDrawerOpen: boolean
   isNotificationDetailsDrawerOpen: boolean
+  isOrderDetailsDrawerOpen: boolean
   notifications: Notification[]
   isLoading: boolean
 
@@ -23,6 +24,8 @@ interface UIState {
   setCartDrawerOpen: (isOpen: boolean) => void
   toggleNotificationDetailsDrawer: () => void
   setNotificationDetailsDrawerOpen: (isOpen: boolean) => void
+  toggleOrderDetailsDrawer: () => void
+  setOrderDetailsDrawerOpen: (isOpen: boolean) => void
   addNotification: (notification: Omit<Notification, 'id'>) => void
   removeNotification: (id: string) => void
   setGlobalLoading: (isLoading: boolean) => void
@@ -32,6 +35,7 @@ export const useUIStore = create<UIState>((set) => ({
   isSidebarOpen: false,
   isCartDrawerOpen: false,
   isNotificationDetailsDrawerOpen: false,
+  isOrderDetailsDrawerOpen: false,
   notifications: [],
   isLoading: false,
 
@@ -52,6 +56,12 @@ export const useUIStore = create<UIState>((set) => ({
 
   setNotificationDetailsDrawerOpen: (isOpen) =>
     set({ isNotificationDetailsDrawerOpen: isOpen }),
+
+  toggleOrderDetailsDrawer: () =>
+    set((state) => ({ isOrderDetailsDrawerOpen: !state.isOrderDetailsDrawerOpen })),
+
+  setOrderDetailsDrawerOpen: (isOpen) =>
+    set({ isOrderDetailsDrawerOpen: isOpen }),
 
   addNotification: (notification) =>
     set((state) => ({
