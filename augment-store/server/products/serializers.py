@@ -36,12 +36,27 @@ class ProductBrandListSerializer(serializers.ModelSerializer):
 
 
 class ProductBrandDetailSerializer(serializers.ModelSerializer):
+    created_by = UserListSerializer(read_only=True)
+
     def validate_image(self, value):
         return validate_owned_image(value, self.context.get("request"))
+
+    def validate(self, attrs):
+        if self.instance is not None and "created_by" in getattr(self, "initial_data", {}):
+            requested_owner = self.initial_data.get("created_by")
+            if isinstance(requested_owner, dict):
+                requested_owner_id = requested_owner.get("id")
+            else:
+                requested_owner_id = requested_owner
+            requested_owner_id = str(requested_owner_id)
+            if requested_owner_id != str(self.instance.created_by_id):
+                raise serializers.ValidationError({"created_by": "This field is read-only."})
+        return attrs
 
     class Meta:
         model = ProductBrand
         fields = "__all__"
+        read_only_fields = ("created_by",)
 
 
 # Product Category Serializers
@@ -73,12 +88,27 @@ class ProductCategoryListSerializer(serializers.ModelSerializer):
 
 
 class ProductCategoryDetailSerializer(serializers.ModelSerializer):
+    created_by = UserListSerializer(read_only=True)
+
     def validate_image(self, value):
         return validate_owned_image(value, self.context.get("request"))
+
+    def validate(self, attrs):
+        if self.instance is not None and "created_by" in getattr(self, "initial_data", {}):
+            requested_owner = self.initial_data.get("created_by")
+            if isinstance(requested_owner, dict):
+                requested_owner_id = requested_owner.get("id")
+            else:
+                requested_owner_id = requested_owner
+            requested_owner_id = str(requested_owner_id)
+            if requested_owner_id != str(self.instance.created_by_id):
+                raise serializers.ValidationError({"created_by": "This field is read-only."})
+        return attrs
 
     class Meta:
         model = ProductCategory
         fields = "__all__"
+        read_only_fields = ("created_by",)
 
 
 #  Product Serializers

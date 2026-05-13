@@ -184,6 +184,17 @@ class ProductBrandTests(BaseAPITestCase):
         brand.refresh_from_db()
         self.assertEqual(brand.description, "Updated Description")
 
+    def test_update_brand_cannot_change_created_by(self):
+        brand = ProductBrandFactory(created_by=self.merchant_user)
+
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        brand.refresh_from_db()
+        self.assertEqual(brand.created_by_id, self.merchant_user.id)
+
     def test_delete_brand_success(self):
         # GIVEN a brand exists in the database
         brand = ProductBrandFactory(
@@ -445,6 +456,17 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be updated in the database
         category.refresh_from_db()
         self.assertEqual(category.description, "Updated Description")
+
+    def test_update_category_cannot_change_created_by(self):
+        category = ProductCategoryFactory(created_by=self.merchant_user)
+
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        category.refresh_from_db()
+        self.assertEqual(category.created_by_id, self.merchant_user.id)
 
     def test_delete_category_success(self):
         # GIVEN a category exists in the database
