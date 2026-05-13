@@ -478,7 +478,8 @@
       "pending": "Ausstehend",
       "paid": "Bezahlt",
       "failed": "Fehlgeschlagen",
-      "refunded": "Erstattet"
+      "refunded": "Erstattet",
+      "notAvailable": "k. A."
     }
   },
   "user": {

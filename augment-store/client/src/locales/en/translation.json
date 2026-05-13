@@ -478,7 +478,8 @@
       "pending": "Pending",
       "paid": "Paid",
       "failed": "Failed",
-      "refunded": "Refunded"
+      "refunded": "Refunded",
+      "notAvailable": "N/A"
     }
   },
   "user": {

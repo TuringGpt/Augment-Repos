@@ -478,7 +478,8 @@
       "pending": "En Attente",
       "paid": "Payé",
       "failed": "Échoué",
-      "refunded": "Remboursé"
+      "refunded": "Remboursé",
+      "notAvailable": "N/D"
     }
   },
   "user": {

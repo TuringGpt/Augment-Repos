@@ -82,7 +82,7 @@ const OrderDetailsDrawer = () => {
   }
 
   const getPaymentStatusLabel = (status: 'pending' | 'paid' | 'failed' | 'refunded' | null) => {
-    if (!status) return 'N/A'
+    if (!status) return t('order.paymentStatus.notAvailable')
     return t(`order.paymentStatus.${status}`)
   }
 
