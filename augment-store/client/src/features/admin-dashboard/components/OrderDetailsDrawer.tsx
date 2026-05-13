@@ -110,6 +110,17 @@ const OrderDetailsDrawer = () => {
     }, 0)
   }, [selectedOrder])
 
+  // Calculate total current value for proportional pricing
+  const totalCurrentValue = useMemo(() => {
+    if (!selectedOrder) return 0
+    return selectedOrder.items.reduce((sum, item) => {
+      const cartItem = item.cart_item
+      const product = cartItem?.product
+      if (!cartItem || !product) return sum
+      return sum + product.price * cartItem.quantity
+    }, 0)
+  }, [selectedOrder])
+
   return (
     <Drawer
       anchor="right"
@@ -212,7 +223,13 @@ const OrderDetailsDrawer = () => {
                         )
                       }
 
-                      const subtotal = product.price * cartItem.quantity
+                      // Calculate item price and subtotal using proportional pricing
+                      // This ensures the sum matches the stored order subtotal
+                      // Instead of using current product price, we calculate proportional price from order subtotal
+                      const itemCurrentValue = product.price * cartItem.quantity
+                      const proportion = totalCurrentValue > 0 ? itemCurrentValue / totalCurrentValue : 0
+                      const itemPrice = proportion > 0 ? (selectedOrder.subtotal * proportion) / cartItem.quantity : 0
+                      const subtotal = itemPrice * cartItem.quantity
 
                       return (
                         <TableRow key={orderItem.id}>

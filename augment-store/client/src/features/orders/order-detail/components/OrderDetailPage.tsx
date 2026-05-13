@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -166,6 +166,17 @@ const OrderDetailPage = () => {
 
   const order = selectedOrder
 
+  // Calculate total current value for proportional pricing
+  const totalCurrentValue = useMemo(() => {
+    if (!order) return 0
+    return order.items.reduce((sum, item) => {
+      const cartItem = item.cart_item
+      const product = cartItem?.product
+      if (!cartItem || !product) return sum
+      return sum + product.price * cartItem.quantity
+    }, 0)
+  }, [order])
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Back Button */}
@@ -275,7 +286,13 @@ const OrderDetailPage = () => {
                     }
 
                     const product = cartItem.product
-                    const subtotal = product.price * cartItem.quantity
+                    // Calculate item price and subtotal using proportional pricing
+                    // This ensures the sum matches the stored order subtotal
+                    // Instead of using current product price, we calculate proportional price from order subtotal
+                    const itemCurrentValue = product.price * cartItem.quantity
+                    const proportion = totalCurrentValue > 0 ? itemCurrentValue / totalCurrentValue : 0
+                    const itemPrice = proportion > 0 ? (order.subtotal * proportion) / cartItem.quantity : 0
+                    const subtotal = itemPrice * cartItem.quantity
 
                     return (
                       <TableRow key={orderItem.id}>
@@ -301,7 +318,7 @@ const OrderDetailPage = () => {
                           <Typography variant="body2">{cartItem.quantity}</Typography>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2">${product.price.toFixed(2)}</Typography>
+                          <Typography variant="body2">${itemPrice.toFixed(2)}</Typography>
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" fontWeight={600}>
