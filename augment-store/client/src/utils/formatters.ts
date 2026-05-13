@@ -1,11 +1,74 @@
 /**
- * Format a number as currency
+ * Format a number or string as currency
+ * Accepts both number and string to support exact decimal representations from backend
+ *
+ * @param amount - The amount to format (number or numeric string)
+ * @param currency - The currency code (default: 'USD')
+ * @returns Formatted currency string, or '$0.00' (or equivalent) for invalid input
+ *
+ * @example
+ * formatCurrency(123.45) // '$123.45'
+ * formatCurrency('123.45') // '$123.45'
+ * formatCurrency('.5') // '$0.50' (leading decimal)
+ * formatCurrency('5.') // '$5.00' (trailing decimal)
+ * formatCurrency('+123') // '$123.00' (positive sign)
+ * formatCurrency('12abc') // '$0.00' (invalid input)
+ * formatCurrency('') // '$0.00' (invalid input)
  */
-export const formatCurrency = (amount: number, currency = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount: number | string, currency = 'USD'): string => {
+  let numericAmount: number
+
+  if (typeof amount === 'string') {
+    // Validate that the string is fully numeric before parsing
+    // Trim whitespace and check if it's a valid number format
+    const trimmedAmount = amount.trim()
+
+    // Check if the string is empty
+    if (trimmedAmount === '') {
+      console.warn(`formatCurrency: Empty string provided. Defaulting to 0.`)
+      numericAmount = 0
+    } else {
+      // Validate using a more permissive regex that accepts various valid numeric formats:
+      // - Standard numbers: '123', '123.45', '-123.45'
+      // - Numbers with leading decimal: '.5'
+      // - Numbers with trailing decimal: '5.'
+      // - Numbers with positive sign: '+123'
+      // Pattern breakdown: optional +/-, then either (digits with optional decimal) or (decimal with digits)
+      const validNumberPattern = /^[+-]?(\d+\.?\d*|\.\d+)$/
+
+      if (!validNumberPattern.test(trimmedAmount)) {
+        console.warn(`formatCurrency: Invalid numeric string "${amount}". Defaulting to 0.`)
+        numericAmount = 0
+      } else {
+        numericAmount = parseFloat(trimmedAmount)
+
+        // Additional check: ensure parseFloat didn't produce NaN, Infinity, or -Infinity
+        // (This should not happen if regex passed, but defense in depth)
+        if (!Number.isFinite(numericAmount)) {
+          console.warn(`formatCurrency: Parsing "${amount}" resulted in non-finite value. Defaulting to 0.`)
+          numericAmount = 0
+        }
+      }
+    }
+  } else if (typeof amount === 'number') {
+    // Validate that the number is finite (not NaN, Infinity, or -Infinity)
+    if (!Number.isFinite(amount)) {
+      console.warn(`formatCurrency: Invalid number ${amount}. Defaulting to 0.`)
+      numericAmount = 0
+    } else {
+      numericAmount = amount
+    }
+  } else {
+    // Fallback for any other type (should not happen with proper typing)
+    console.warn(`formatCurrency: Unexpected type ${typeof amount}. Defaulting to 0.`)
+    numericAmount = 0
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
-  }).format(amount)
+  })
+  return formatter.format(numericAmount)
 }
 
 /**
