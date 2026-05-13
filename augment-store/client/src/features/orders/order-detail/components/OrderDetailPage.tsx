@@ -310,6 +310,14 @@ const OrderDetailPage = () => {
                       // This prevents inflated prices for remaining items
                       itemPrice = product.price
                       subtotal = product.price * cartItem.quantity
+                    } else if (totalCurrentValue === 0 && order.subtotal > 0) {
+                      // When all current prices are 0 but order has a stored subtotal,
+                      // distribute the subtotal proportionally based on quantities
+                      const totalQuantity = order.items.reduce((sum, item) =>
+                        sum + (item.cart_item?.quantity || 0), 0)
+                      const quantityProportion = totalQuantity > 0 ? cartItem.quantity / totalQuantity : 0
+                      subtotal = order.subtotal * quantityProportion
+                      itemPrice = cartItem.quantity > 0 ? subtotal / cartItem.quantity : 0
                     } else {
                       // Use proportional pricing when all products are available
                       // This ensures the sum matches the stored order subtotal

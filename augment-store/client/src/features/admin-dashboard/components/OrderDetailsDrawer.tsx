@@ -245,6 +245,14 @@ const OrderDetailsDrawer = () => {
                         // This prevents inflated prices for remaining items
                         itemPrice = product.price
                         subtotal = product.price * cartItem.quantity
+                      } else if (totalCurrentValue === 0 && selectedOrder.subtotal > 0) {
+                        // When all current prices are 0 but order has a stored subtotal,
+                        // distribute the subtotal proportionally based on quantities
+                        const totalQuantity = selectedOrder.items.reduce((sum, item) =>
+                          sum + (item.cart_item?.quantity || 0), 0)
+                        const quantityProportion = totalQuantity > 0 ? cartItem.quantity / totalQuantity : 0
+                        subtotal = selectedOrder.subtotal * quantityProportion
+                        itemPrice = cartItem.quantity > 0 ? subtotal / cartItem.quantity : 0
                       } else {
                         // Use proportional pricing when all products are available
                         // This ensures the sum matches the stored order subtotal
