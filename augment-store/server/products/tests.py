@@ -178,6 +178,7 @@ class ProductBrandTests(BaseAPITestCase):
 
     def test_update_brand_success(self):
         # GIVEN a brand exists in the database
+        brand_image = FileFactory(created_by=self.merchant_user)
         brand = ProductBrandFactory(
             name="Test Brand",
             description="Test Description",
@@ -188,6 +189,7 @@ class ProductBrandTests(BaseAPITestCase):
         url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
         payload = {
             "description": "Updated Description",
+            "image": str(brand_image.id),
         }
         response = self.merchant_client.patch(url, payload)
 
@@ -197,6 +199,7 @@ class ProductBrandTests(BaseAPITestCase):
         # AND the brand should be updated in the database
         brand.refresh_from_db()
         self.assertEqual(brand.description, "Updated Description")
+        self.assertEqual(brand.image_id, brand_image.id)
 
     def test_update_brand_with_other_merchants_image_rejected(self):
         brand = ProductBrandFactory(created_by=self.merchant_user)
@@ -474,6 +477,7 @@ class ProductCategoryTests(BaseAPITestCase):
 
     def test_update_category_success(self):
         # GIVEN a category exists in the database
+        category_image = FileFactory(created_by=self.merchant_user)
         category = ProductCategoryFactory(
             name="Test Category",
             slug="test-category",
@@ -485,6 +489,7 @@ class ProductCategoryTests(BaseAPITestCase):
         url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
         payload = {
             "description": "Updated Description",
+            "image": str(category_image.id),
         }
         response = self.merchant_client.patch(url, payload)
 
@@ -494,6 +499,7 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be updated in the database
         category.refresh_from_db()
         self.assertEqual(category.description, "Updated Description")
+        self.assertEqual(category.image_id, category_image.id)
 
     def test_update_category_with_other_merchants_image_rejected(self):
         category = ProductCategoryFactory(created_by=self.merchant_user)
