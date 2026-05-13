@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -17,16 +17,22 @@ import {
   Chip,
   Avatar,
   Pagination,
+  Drawer,
+  IconButton,
+  Divider,
+  Grid,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
   Refresh as RefreshIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useAuthStore } from '@store/authStore'
 import { useAccountStore } from '@store/accountStore'
+import type { AdminUser } from '@features/accounts/types'
 
 /**
  * AdminAccountsPage Component
@@ -53,6 +59,10 @@ const AdminAccountsPage = () => {
     setPage,
   } = useAccountStore()
 
+  // Details drawer state
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
+  const [selectedAccount, setSelectedAccount] = useState<AdminUser | null>(null)
+
   // Fetch admin users on mount using the stored currentPage to avoid page/data mismatch
   // If the user previously paged through the data and revisits this page, they will see
   // the same page they were on before, maintaining a consistent UI state
@@ -72,6 +82,23 @@ const AdminAccountsPage = () => {
     setPage(value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     // Note: setPage internally calls fetchAdminUsers
+  }
+
+  // Details drawer handlers
+  const handleAccountClick = (account: AdminUser) => {
+    setSelectedAccount(account)
+    setIsDetailsDrawerOpen(true)
+  }
+
+  const handleCloseDetailsDrawer = () => {
+    setIsDetailsDrawerOpen(false)
+  }
+
+  const handleDrawerExited = () => {
+    // Clear selectedAccount after the drawer has fully closed
+    // This prevents the content from flashing empty during the close transition
+    // Only clear if the drawer is still closed (prevents race condition if reopened quickly)
+    setSelectedAccount((prevAccount) => (isDetailsDrawerOpen ? prevAccount : null))
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -126,6 +153,12 @@ const AdminAccountsPage = () => {
       default:
         return 'default'
     }
+  }
+
+  // Helper function to normalize fullName (trim whitespace)
+  // Returns the trimmed fullName if it's not empty after trimming, otherwise returns an empty string
+  const getNormalizedFullName = (fullName?: string | null): string => {
+    return fullName?.trim() || ''
   }
 
   // Helper function to format date
@@ -197,30 +230,52 @@ const AdminAccountsPage = () => {
               </TableHead>
               <TableBody>
                 {adminUsers.length > 0 ? (
-                  adminUsers.map((account) => (
-                    <TableRow
-                      key={account.id}
-                      sx={{
-                        '&:hover': { bgcolor: 'action.hover' },
-                        transition: 'background-color 0.2s',
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar
-                            src={account.profileImage?.file || undefined}
-                            alt={account.fullName}
-                            sx={{ width: 40, height: 40 }}
-                          >
-                            {account.fullName && account.fullName.length > 0
-                              ? account.fullName.charAt(0).toUpperCase()
-                              : '?'}
-                          </Avatar>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {account.fullName || '-'}
-                          </Typography>
-                        </Box>
-                      </TableCell>
+                  adminUsers.map((account) => {
+                    const normalizedFullName = getNormalizedFullName(account.fullName)
+                    const displayName = normalizedFullName || account.email
+                    const avatarInitial = normalizedFullName ? normalizedFullName[0]?.toUpperCase() : '?'
+
+                    return (
+                      <TableRow
+                        key={account.id}
+                        hover
+                        onClick={() => handleAccountClick(account)}
+                        onKeyDown={(e) => {
+                          if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+                            e.preventDefault()
+                            handleAccountClick(account)
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={t('admin.accountsPage.aria.viewAccountDetails', {
+                          name: displayName,
+                        })}
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' },
+                          transition: 'background-color 0.2s',
+                          '&:focus': {
+                            outline: '2px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '-2px',
+                          },
+                        }}
+                      >
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar
+                              src={account.profileImage?.file || undefined}
+                              alt={displayName}
+                              sx={{ width: 40, height: 40 }}
+                            >
+                              {avatarInitial}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {normalizedFullName || '-'}
+                            </Typography>
+                          </Box>
+                        </TableCell>
                       <TableCell>{account.email}</TableCell>
                       <TableCell>{account.username || '-'}</TableCell>
                       <TableCell>
@@ -252,7 +307,8 @@ const AdminAccountsPage = () => {
                       </TableCell>
                       <TableCell>{formatDate(account.dateJoined)}</TableCell>
                     </TableRow>
-                  ))
+                    )
+                  })
                 ) : (
                   // Only show empty state when there's no error
                   !error && (
@@ -290,6 +346,194 @@ const AdminAccountsPage = () => {
           )}
         </>
       )}
+
+      {/* Account Details Drawer */}
+      <Drawer
+        anchor="right"
+        open={isDetailsDrawerOpen}
+        onClose={handleCloseDetailsDrawer}
+        SlideProps={{
+          onExited: handleDrawerExited,
+        }}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'info.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.accountsPage.accountDetails')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseDetailsDrawer}
+              sx={{ color: 'white' }}
+              aria-label={t('admin.accountsPage.aria.closeDrawer')}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {selectedAccount && (
+              <Grid container spacing={3}>
+                {/* Profile Image */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Avatar
+                      src={selectedAccount.profileImage?.file || undefined}
+                      alt={getNormalizedFullName(selectedAccount.fullName) || selectedAccount.email}
+                      sx={{ width: 120, height: 120 }}
+                    >
+                      {getNormalizedFullName(selectedAccount.fullName)
+                        ? getNormalizedFullName(selectedAccount.fullName)[0]?.toUpperCase()
+                        : '?'}
+                    </Avatar>
+                  </Box>
+                </Grid>
+
+                {/* Full Name */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.user')}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {getNormalizedFullName(selectedAccount.fullName) || '-'}
+                  </Typography>
+                </Grid>
+
+                {/* Email */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.email')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAccount.email}
+                  </Typography>
+                </Grid>
+
+                {/* Username */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.username')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAccount.username || '-'}
+                  </Typography>
+                </Grid>
+
+                {/* Role */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.role')}
+                  </Typography>
+                  <Box>
+                    <Chip
+                      label={selectedAccount.role.toUpperCase()}
+                      color={getRoleColor(selectedAccount.role)}
+                      size="medium"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
+                </Grid>
+
+                {/* Status */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.status')}
+                  </Typography>
+                  <Box>
+                    {selectedAccount.isActive ? (
+                      <Chip
+                        icon={<CheckCircleIcon />}
+                        label={t('admin.accountsPage.status.active')}
+                        color="success"
+                        size="medium"
+                        variant="outlined"
+                      />
+                    ) : (
+                      <Chip
+                        icon={<CancelIcon />}
+                        label={t('admin.accountsPage.status.inactive')}
+                        color="default"
+                        size="medium"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                </Grid>
+
+                {/* Preferred Currency */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.preferredCurrency')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAccount.preferredCurrency
+                      ? `${selectedAccount.preferredCurrency.name} (${selectedAccount.preferredCurrency.symbol})`
+                      : '-'}
+                  </Typography>
+                </Grid>
+
+                {/* Date Joined */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.joined')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {formatDate(selectedAccount.dateJoined)}
+                  </Typography>
+                </Grid>
+
+                {/* Account ID */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.accountId')}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      bgcolor: 'grey.100',
+                      p: 1,
+                      borderRadius: 1,
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {selectedAccount.id}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseDetailsDrawer}
+            >
+              {t('common.close')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
     </Container>
   )
 }

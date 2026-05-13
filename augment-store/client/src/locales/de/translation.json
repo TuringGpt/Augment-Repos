@@ -1031,6 +1031,9 @@
       "subtitle": "Benutzerkonten und Berechtigungen verwalten",
       "workInProgress": "In Bearbeitung",
       "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein.",
+      "accountDetails": "Kontodetails",
+      "preferredCurrency": "Bevorzugte Währung",
+      "accountId": "Konto-ID",
       "table": {
         "user": "Benutzer",
         "email": "E-Mail",
@@ -1048,6 +1051,10 @@
       },
       "summary": {
         "totalAccounts": "Konten Gesamt:"
+      },
+      "aria": {
+        "viewAccountDetails": "Details anzeigen für {{name}}",
+        "closeDrawer": "Kontodetails-Schublade schließen"
       }
     },
     "reports": "Berichte",
