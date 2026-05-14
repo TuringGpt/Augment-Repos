@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { AdminPayment } from '@features/payment/types'
-import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
+import { parseApiError, sanitizeErrorForLogging, isAbortError } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -96,6 +96,14 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchRequestCounter) {
+        return
+      }
+
+      // Don't treat intentional cancellations as fetch errors
+      if (isAbortError(error)) {
+        // Request was intentionally cancelled (e.g., component unmount or navigation)
+        // Reset loading state but don't set error
+        set({ isLoading: false })
         return
       }
 
