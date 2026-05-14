@@ -139,7 +139,7 @@ def create_merchant_detail(sender, instance, created, **kwargs):
 
 
 def ensure_merchant_detail(user):
-    if user.role == User.Role.MERCHANT and user.is_active:
+    if user.role == User.Role.MERCHANT:
         MerchantDetail.objects.get_or_create(user=user, defaults={
             "store_name": user.username or user.email,
             "store_description": "",

@@ -287,6 +287,15 @@ class AdminUserTests(BaseAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(MerchantDetail.objects.filter(user=self.regular_user).exists())
 
+    def test_admin_update_inactive_user_role_creates_merchant_detail(self):
+        inactive_user = UserFactory(role="member", is_active=False)
+        url = reverse("v1:admin_user_update", kwargs={"pk": inactive_user.id})
+
+        response = self.admin_client.patch(url, {"role": "merchant"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(MerchantDetail.objects.filter(user=inactive_user).exists())
+
     def test_member_update_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)
         url = reverse("v1:admin_user_update", kwargs={"pk": self.regular_user.id})
