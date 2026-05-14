@@ -46,7 +46,9 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
     // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
     const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
-    const totalPages = Math.max(1, Math.ceil(count / backendPageSize))
+    // Normalize count to a finite non-negative number to prevent NaN in totalPages
+    const normalizedCount = Number.isFinite(count) && count >= 0 ? count : 0
+    const totalPages = Math.max(1, Math.ceil(normalizedCount / backendPageSize))
 
     // Normalize and validate currentPage to prevent invalid values (NaN, Infinity, floats)
     // If currentPage is provided and valid, use it; otherwise keep the current page
@@ -94,7 +96,9 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
       // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
       const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
-      const totalPages = Math.max(1, Math.ceil(response.count / backendPageSize))
+      // Normalize response.count to a finite non-negative number to prevent NaN in totalPages
+      const normalizedCount = Number.isFinite(response.count) && response.count >= 0 ? response.count : 0
+      const totalPages = Math.max(1, Math.ceil(normalizedCount / backendPageSize))
 
       // Clamp validPage to totalPages to ensure it's within valid range
       const clampedPage = Math.min(validPage, totalPages)
