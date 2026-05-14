@@ -1,7 +1,7 @@
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from .permissions import hasAdminRole
-from .models import User
+from .models import User, ensure_merchant_detail
 from .serializers import UserProfileSerializer, UpdateUserProfileSerializer, UserListSerializer, AdminUserUpdateSerializer
 from core.optimization import AutoOptimizeMixin
 from core.service import CachedRetrieveMixin, CachedListMixin, CacheInvalidatorMixin
@@ -72,6 +72,7 @@ class AdminUserUpdateView(CacheInvalidatorMixin, RetrieveUpdateAPIView):
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
+        ensure_merchant_detail(serializer.instance)
         # Evict the entire user_profile cache namespace. Per-key deletion is
         # possible via BaseCacheService.delete(key), but deriving the exact
         # cache keys for the affected user's profile responses is non-trivial
