@@ -40,6 +40,10 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
   // Actions
   setAdminPayments: (payments, count, next, previous, currentPage) => {
+    // Increment counter to invalidate any in-flight fetch requests
+    // This prevents in-flight responses from overwriting manually set state
+    fetchRequestCounter += 1
+
     // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
     const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
     const totalPages = Math.max(1, Math.ceil(count / backendPageSize))
