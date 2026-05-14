@@ -59,6 +59,8 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       previous,
       currentPage: validCurrentPage,
       totalPages,
+      isLoading: false,
+      error: null,
     })
   },
 
