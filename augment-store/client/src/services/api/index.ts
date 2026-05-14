@@ -42,4 +42,10 @@ export type {
   AdminPaymentsListResponse,
   AdminPaymentsListResponseAPI,
 } from '@features/payment/types'
+export type {
+  AdminShippingAddress,
+  AdminShippingAddressAPI,
+  AdminShippingAddressesListResponse,
+  AdminShippingAddressesListResponseAPI,
+} from '@features/orders/types'
 export { apiClient } from './client'

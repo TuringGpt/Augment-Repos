@@ -1,6 +1,19 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
-import type { Order, OrderItem, CreateOrderRequest, OrderListResponse, CreateOrderResponse, OrderListAPIResponse, UpdateAdminOrderRequest, AdminOrderUpdateAPI } from '@features/orders/types'
+import type {
+  Order,
+  OrderItem,
+  CreateOrderRequest,
+  OrderListResponse,
+  CreateOrderResponse,
+  OrderListAPIResponse,
+  UpdateAdminOrderRequest,
+  AdminOrderUpdateAPI,
+  AdminShippingAddressesListResponse,
+  AdminShippingAddressesListResponseAPI,
+  AdminShippingAddressAPI,
+  AdminShippingAddress,
+} from '@features/orders/types'
 
 export const orderService = {
   getOrders: async (page = 1): Promise<OrderListResponse> => {
@@ -307,4 +320,60 @@ export const orderService = {
   updateAdminOrder: async (id: string, data: UpdateAdminOrderRequest): Promise<AdminOrderUpdateAPI> => {
     return apiClient.patch<AdminOrderUpdateAPI>(API_ENDPOINTS.ORDERS.ADMIN_DETAIL(id), data)
   },
+
+  /**
+   * Get paginated list of all shipping addresses (admin only)
+   * Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+   *
+   * Related backend code:
+   * - View: augment-store/server/checkout/views.py - AdminShippingAddressListView
+   * - Serializer: augment-store/server/checkout/serializers.py - ShippingAddressListSerializer
+   *
+   * @param page - Page number to fetch (1-based, defaults to 1)
+   * @param signal - Optional AbortSignal for request cancellation
+   * @returns Promise with list of shipping addresses, total count, and pagination URLs
+   */
+  getAdminShippingAddresses: async (page = 1, signal?: AbortSignal): Promise<AdminShippingAddressesListResponse> => {
+    // Validate and normalize page parameter to ensure valid 1-based page number
+    // This prevents invalid values (0, negatives, non-integers, Infinity) from causing backend errors
+    const pageNum = Number(page)
+    const normalizedPage = Number.isFinite(pageNum) ? Math.max(1, Math.floor(pageNum)) : 1
+
+    const response = await apiClient.get<AdminShippingAddressesListResponseAPI>(
+      API_ENDPOINTS.ORDERS.ADMIN_SHIPPING_ADDRESSES,
+      {
+        params: { page: normalizedPage },
+        signal,
+      }
+    )
+
+    // Transform backend response to frontend format
+    return {
+      shippingAddresses: response.results.map(transformAdminShippingAddress),
+      count: response.count,
+      next: response.next,
+      previous: response.previous,
+    }
+  },
+}
+
+/**
+ * Transform backend admin shipping address (snake_case) to frontend format (camelCase)
+ */
+function transformAdminShippingAddress(address: AdminShippingAddressAPI): AdminShippingAddress {
+  return {
+    id: address.id,
+    user: address.user,
+    firstName: address.first_name,
+    lastName: address.last_name,
+    addressLine1: address.address_line_1,
+    addressLine2: address.address_line_2,
+    city: address.city,
+    state: address.state,
+    postalCode: address.postal_code,
+    country: address.country,
+    createdAt: address.created_at,
+    updatedAt: address.updated_at,
+    isDeleted: address.is_deleted,
+  }
 }
