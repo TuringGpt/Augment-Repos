@@ -169,7 +169,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
     // Set loading state immediately to provide visual feedback.
     // Note: currentPage is not updated here - it will be updated by fetchAdminPayments
-    // only when the new data arrives successfully (line 86).
+    // only when the new data arrives successfully.
     set({ isLoading: true, error: null })
     get().fetchAdminPayments(validPage).catch((error) => {
       // Error is already handled in fetchAdminPayments, just prevent unhandled rejection
