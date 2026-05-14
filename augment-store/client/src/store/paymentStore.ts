@@ -182,3 +182,40 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     })
   },
 }))
+
+// Subscribe to auth state changes and clear admin payment data when user logs out
+// This prevents retaining PII (customerEmail) in memory after logout, addressing
+// security concerns about admin payment data retention across user sessions
+import('@store/authStore')
+  .then(({ useAuthStore }) => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated
+
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const currentAuthState = state.isAuthenticated
+
+      // Detect transition from authenticated to unauthenticated
+      if (previousAuthState === true && currentAuthState === false) {
+        // Log only in development to prevent noisy console output in production
+        if (import.meta.env.DEV) {
+          console.log('🔒 User logged out - clearing admin payment data from memory')
+        }
+        usePaymentStore.getState().clearAdminPayments()
+      }
+
+      previousAuthState = currentAuthState
+    })
+
+    // Clean up subscription on HMR module disposal to prevent memory leaks
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        unsubscribe()
+      })
+    }
+  })
+  .catch((error) => {
+    // Log import errors in development, but don't break the application
+    // This prevents failures during tests or if authStore is not available
+    if (import.meta.env.DEV) {
+      console.warn('Failed to subscribe to auth state changes in paymentStore:', error)
+    }
+  })
