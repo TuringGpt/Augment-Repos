@@ -71,8 +71,8 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
     // Normalize page to a finite integer, then clamp to >= 1
     // This handles NaN, Infinity, -Infinity, and non-integer values
-    // Only clamp the lower bound here because totalPages might not be accurate yet
-    // (it's initialized to 1 and not persisted). If the page is out of range, the
+    // Only clamp the lower bound here because we don't have the updated totalPages
+    // value until the API response completes. If the page is out of range, the
     // API will return an error which will be caught and displayed to the user.
     const validPage = Math.max(1, Number.isFinite(page) ? Math.floor(page) : 1)
 
