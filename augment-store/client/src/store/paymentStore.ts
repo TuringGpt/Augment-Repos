@@ -44,12 +44,18 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
     const totalPages = Math.max(1, Math.ceil(count / backendPageSize))
 
+    // Normalize and validate currentPage to prevent invalid values (NaN, Infinity, floats)
+    // If currentPage is provided and valid, use it; otherwise keep the current page
+    const validCurrentPage = currentPage !== undefined
+      ? Math.max(1, Number.isFinite(currentPage) ? Math.floor(currentPage) : 1)
+      : get().currentPage
+
     set({
       adminPayments: payments,
       total: count,
       next,
       previous,
-      currentPage: currentPage ?? get().currentPage, // Use provided page or keep current
+      currentPage: validCurrentPage,
       totalPages,
     })
   },
