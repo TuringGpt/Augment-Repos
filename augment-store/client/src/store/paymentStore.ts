@@ -24,7 +24,7 @@ interface PaymentState {
   setError: (error: string | null) => void
   clearError: () => void
   clearAdminPayments: () => void
-  setPage: (page: number) => void
+  setPage: (page: number, signal?: AbortSignal) => void
 }
 
 export const usePaymentStore = create<PaymentState>((set, get) => ({
@@ -160,7 +160,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     })
   },
 
-  setPage: (page: number) => {
+  setPage: (page: number, signal?: AbortSignal) => {
     // Normalize page to a finite integer first to handle NaN, Infinity, etc.
     // Then clamp page to valid range (1 to totalPages). This provides stricter validation
     // than fetchAdminPayments, which only clamps the lower bound. This prevents unnecessary
@@ -173,9 +173,12 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     // Note: currentPage is not updated here - it will be updated by fetchAdminPayments
     // only when the new data arrives successfully.
     set({ isLoading: true, error: null })
-    get().fetchAdminPayments(validPage).catch((error) => {
+    get().fetchAdminPayments(validPage, signal).catch((error) => {
       // Error is already handled in fetchAdminPayments, just prevent unhandled rejection
-      console.error('Error fetching admin payments on page change:', sanitizeErrorForLogging(error))
+      // Don't log abort errors - these are expected when requests are intentionally cancelled
+      if (!isAbortError(error)) {
+        console.error('Error fetching admin payments on page change:', sanitizeErrorForLogging(error))
+      }
     })
   },
 }))
