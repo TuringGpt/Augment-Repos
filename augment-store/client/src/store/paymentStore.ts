@@ -60,7 +60,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
     set({
       adminPayments: payments,
-      total: count,
+      total: normalizedCount,
       next,
       previous,
       currentPage: validCurrentPage,
@@ -105,7 +105,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
       set({
         adminPayments: response.payments,
-        total: response.count,
+        total: normalizedCount,
         next: response.next,
         previous: response.previous,
         currentPage: clampedPage,
