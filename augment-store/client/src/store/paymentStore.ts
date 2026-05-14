@@ -46,9 +46,11 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
 
     // Normalize and validate currentPage to prevent invalid values (NaN, Infinity, floats)
     // If currentPage is provided and valid, use it; otherwise keep the current page
-    const validCurrentPage = currentPage !== undefined
+    // Clamp to totalPages to ensure page is within valid range
+    const normalizedPage = currentPage !== undefined
       ? Math.max(1, Number.isFinite(currentPage) ? Math.floor(currentPage) : 1)
       : get().currentPage
+    const validCurrentPage = Math.min(normalizedPage, totalPages)
 
     set({
       adminPayments: payments,
@@ -88,12 +90,15 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
       const totalPages = Math.max(1, Math.ceil(response.count / backendPageSize))
 
+      // Clamp validPage to totalPages to ensure it's within valid range
+      const clampedPage = Math.min(validPage, totalPages)
+
       set({
         adminPayments: response.payments,
         total: response.count,
         next: response.next,
         previous: response.previous,
-        currentPage: validPage,
+        currentPage: clampedPage,
         totalPages,
         isLoading: false,
         error: null,
