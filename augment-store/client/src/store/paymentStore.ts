@@ -217,9 +217,10 @@ import('@store/authStore')
     }
   })
   .catch((error) => {
-    // Log import errors in development, but don't break the application
-    // This prevents failures during tests or if authStore is not available
-    if (import.meta.env.DEV) {
-      console.warn('Failed to subscribe to auth state changes in paymentStore:', error)
-    }
+    // CRITICAL: Log import errors in ALL environments (dev AND production)
+    // A silent failure in production would disable logout-clearing behavior,
+    // potentially leaving admin payment PII (customerEmail) in memory across
+    // logout/login within the same SPA session. This is a security issue that
+    // must be visible in production logs.
+    console.error('Failed to subscribe to auth state changes in paymentStore:', error)
   })
