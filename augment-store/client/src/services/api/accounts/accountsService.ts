@@ -9,6 +9,7 @@ import type {
   AdminUserDetail,
   UpdateAdminUserRequest,
 } from '@features/accounts/types'
+import type { UserProfile } from '@features/user/types'
 
 /**
  * Transform backend API user data (snake_case) to frontend format (camelCase)
@@ -31,6 +32,14 @@ const transformAdminUser = (apiUser: AdminUserAPI): AdminUser => {
 }
 
 export const accountsService = {
+  /**
+   * Get the current user's profile
+   * @returns Promise with the user's profile data
+   */
+  getProfile: async (): Promise<UserProfile> => {
+    return apiClient.get<UserProfile>(API_ENDPOINTS.USER.PROFILE)
+  },
+
   /**
    * Get paginated list of users (admin only)
    * Includes pagination fields (next/previous) to support fetching multiple pages
