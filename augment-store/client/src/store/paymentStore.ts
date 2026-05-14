@@ -180,13 +180,8 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     // Note: currentPage is not updated here - it will be updated by fetchAdminPayments
     // only when the new data arrives successfully.
     set({ isLoading: true, error: null })
-    get().fetchAdminPayments(validPage, signal).catch((error) => {
-      // Error is already handled in fetchAdminPayments, just prevent unhandled rejection
-      // Don't log abort errors - these are expected when requests are intentionally cancelled
-      if (!isAbortError(error)) {
-        console.error('Error fetching admin payments on page change:', sanitizeErrorForLogging(error))
-      }
-    })
+    // fetchAdminPayments handles all errors internally, no need for .catch() here
+    void get().fetchAdminPayments(validPage, signal)
   },
 }))
 
