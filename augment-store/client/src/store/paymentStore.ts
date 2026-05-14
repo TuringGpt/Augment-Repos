@@ -162,7 +162,7 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     set({ isLoading: true, error: null })
     get().fetchAdminPayments(validPage).catch((error) => {
       // Error is already handled in fetchAdminPayments, just prevent unhandled rejection
-      console.error('Error fetching admin payments on page change:', error)
+      console.error('Error fetching admin payments on page change:', sanitizeErrorForLogging(error))
     })
   },
 }))
