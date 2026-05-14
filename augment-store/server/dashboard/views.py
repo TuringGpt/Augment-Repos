@@ -69,7 +69,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = ProductStatistics.objects.all()
     serializer_class = ProductStatisticsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     lookup_field = 'product_id'
 
     @action(detail=False, methods=['get'])
@@ -179,7 +179,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'metric': 'cart_remove_count',
         })
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def general_statistics(self, request):
         """
         Get general statistics for all products.

@@ -8,6 +8,8 @@ from datetime import timedelta
 from django.utils import timezone
 from decimal import Decimal
 from checkout.factory import PaymentFactory
+from accounts.factory import UserFactory
+from rest_framework.test import APIClient
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
@@ -116,6 +118,8 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         super().setUp()
         # Reuse the user from BaseAPITestCase instead of creating a new one
         self.member_user = self.user
+        self.member_user.role = "merchant"
+        self.member_user.save()
         self.member_client = self.authenticated_client
         self.member_client.force_authenticate(user=self.member_user)
 
@@ -277,6 +281,15 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_member_access_denied(self):
+        member_client = APIClient()
+        member_client.force_authenticate(user=UserFactory(role="member"))
+
+        url = reverse("v1:product-statistics-most-viewed")
+        response = member_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_most_viewed_invalid_limit_parameter(self):
         """Test that most_viewed handles invalid limit parameter gracefully."""
