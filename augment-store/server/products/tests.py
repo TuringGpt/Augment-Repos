@@ -184,6 +184,18 @@ class ProductBrandTests(BaseAPITestCase):
         brand.refresh_from_db()
         self.assertEqual(brand.description, "Updated Description")
 
+    def test_update_brand_cannot_change_created_by(self):
+        brand = ProductBrandFactory(created_by=self.merchant_user)
+
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
+
+        brand.refresh_from_db()
+        self.assertEqual(brand.created_by_id, self.merchant_user.id)
+
     def test_delete_brand_success(self):
         # GIVEN a brand exists in the database
         brand = ProductBrandFactory(
@@ -276,6 +288,12 @@ class ProductCategoryTests(BaseAPITestCase):
             password="testpass123",
             is_active=True,
             role=User.Role.MEMBER
+        )
+        self.merchant_user_2 = UserFactory(
+            email="merchant2@demo.com",
+            password="testpass123",
+            is_active=True,
+            role=User.Role.MERCHANT
         )
 
     def test_list_categories_unauthenticated(self):
@@ -445,6 +463,18 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be updated in the database
         category.refresh_from_db()
         self.assertEqual(category.description, "Updated Description")
+
+    def test_update_category_cannot_change_created_by(self):
+        category = ProductCategoryFactory(created_by=self.merchant_user)
+
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
+
+        category.refresh_from_db()
+        self.assertEqual(category.created_by_id, self.merchant_user.id)
 
     def test_delete_category_success(self):
         # GIVEN a category exists in the database
@@ -1260,6 +1290,37 @@ class ProductTests(BaseAPITestCase):
         product.refresh_from_db()
         self.assertEqual(product.description, "Updated Description")
         self.assertEqual(product.price, Decimal("149.99"))
+
+    def test_update_product_cannot_change_created_by(self):
+        product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
+        url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user_2.id)})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("created_by", response.data)
+        product.refresh_from_db()
+        self.assertEqual(product.created_by_id, self.merchant_user.id)
+
+    def test_update_product_allows_created_by_when_unchanged(self):
+        product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
+        url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+        response = self.merchant_client.patch(url, {"created_by": str(self.merchant_user.id), "description": "Updated"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        product.refresh_from_db()
+        self.assertEqual(product.created_by_id, self.merchant_user.id)
+        self.assertEqual(product.description, "Updated")
+
+    def test_update_product_allows_created_by_object_when_unchanged(self):
+        product = ProductFactory(created_by=self.merchant_user, brand=self.brand, category=self.category)
+        url = reverse("v1:product_update_delete", kwargs={"pk": str(product.id)})
+        response = self.merchant_client.patch(
+            url,
+            {"created_by": {"id": str(self.merchant_user.id)}, "description": "Updated"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        product.refresh_from_db()
+        self.assertEqual(product.created_by_id, self.merchant_user.id)
+        self.assertEqual(product.description, "Updated")
 
     def test_update_product_by_different_merchant_forbidden(self):
         # GIVEN a product exists created by merchant_user
