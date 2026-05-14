@@ -179,7 +179,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             'metric': 'cart_remove_count',
         })
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
     def general_statistics(self, request):
         """
         Get general statistics for all products.

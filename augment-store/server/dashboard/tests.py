@@ -282,14 +282,16 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_member_access_denied(self):
+    def test_member_access_denied_to_statistics_endpoints(self):
         member_client = APIClient()
         member_client.force_authenticate(user=UserFactory(role="member"))
 
-        url = reverse("v1:product-statistics-most-viewed")
-        response = member_client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        for route_name in [
+            "v1:product-statistics-most-viewed",
+            "v1:product-statistics-general-statistics",
+        ]:
+            response = member_client.get(reverse(route_name))
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_most_viewed_invalid_limit_parameter(self):
         """Test that most_viewed handles invalid limit parameter gracefully."""
