@@ -59,11 +59,12 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     fetchRequestCounter += 1
     const requestId = fetchRequestCounter
 
-    // Only clamp the lower bound to prevent page <= 0
-    // Don't clamp the upper bound here because totalPages might not be accurate yet
+    // Normalize page to a finite integer, then clamp to >= 1
+    // This handles NaN, Infinity, -Infinity, and non-integer values
+    // Only clamp the lower bound here because totalPages might not be accurate yet
     // (it's initialized to 1 and not persisted). If the page is out of range, the
     // API will return an error which will be caught and displayed to the user.
-    const validPage = Math.max(1, page)
+    const validPage = Math.max(1, Number.isFinite(page) ? Math.floor(page) : 1)
 
     try {
       set({ isLoading: true, error: null })
@@ -139,12 +140,13 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
   },
 
   setPage: (page: number) => {
-    // Validate page before fetching
-    // Clamp page to valid range (1 to totalPages). This provides stricter validation
+    // Normalize page to a finite integer first to handle NaN, Infinity, etc.
+    // Then clamp page to valid range (1 to totalPages). This provides stricter validation
     // than fetchAdminPayments, which only clamps the lower bound. This prevents unnecessary
     // API calls for out-of-range pages and provides immediate user feedback.
+    const normalizedPage = Number.isFinite(page) ? Math.floor(page) : 1
     const currentTotalPages = get().totalPages
-    const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+    const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(normalizedPage, currentTotalPages) : normalizedPage)
 
     // Set loading state immediately to provide visual feedback.
     // Note: currentPage is not updated here - it will be updated by fetchAdminPayments
