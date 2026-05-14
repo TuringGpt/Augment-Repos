@@ -18,7 +18,7 @@ interface PaymentState {
   error: string | null
 
   // Actions
-  setAdminPayments: (payments: AdminPayment[], count: number, next: string | null, previous: string | null) => void
+  setAdminPayments: (payments: AdminPayment[], count: number, next: string | null, previous: string | null, currentPage?: number) => void
   fetchAdminPayments: (page?: number, signal?: AbortSignal) => Promise<void>
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -39,13 +39,20 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
   error: null,
 
   // Actions
-  setAdminPayments: (payments, count, next, previous) =>
+  setAdminPayments: (payments, count, next, previous, currentPage) => {
+    // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+    const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+    const totalPages = Math.max(1, Math.ceil(count / backendPageSize))
+
     set({
       adminPayments: payments,
       total: count,
       next,
       previous,
-    }),
+      currentPage: currentPage ?? get().currentPage, // Use provided page or keep current
+      totalPages,
+    })
+  },
 
   fetchAdminPayments: async (page = 1, signal?: AbortSignal) => {
     // Increment counter and capture the current request ID
