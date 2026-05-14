@@ -226,5 +226,5 @@ import('@store/authStore')
     // potentially leaving admin payment PII (customerEmail) in memory across
     // logout/login within the same SPA session. This is a security issue that
     // must be visible in production logs.
-    console.error('Failed to subscribe to auth state changes in paymentStore:', error)
+    console.error('Failed to subscribe to auth state changes in paymentStore:', sanitizeErrorForLogging(error))
   })
