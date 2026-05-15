@@ -195,6 +195,12 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         return
       }
 
+      // Invalidate any in-flight fetchAdminUsers() requests to prevent them
+      // from overwriting the updated adminUsers list with stale data.
+      // This fixes the race condition where an older fetch can resolve after
+      // the update and revert the locally-updated role/isActive values.
+      fetchRequestCounter += 1
+
       // Update currentAdminUser if it matches the updated user
       const currentUser = get().currentAdminUser
       if (currentUser && currentUser.id === id) {
