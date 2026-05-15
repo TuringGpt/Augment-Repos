@@ -10,6 +10,10 @@ let fetchRequestCounter = 0
 // Prevents stale responses from overwriting newer state when fetching individual users
 let fetchByIdRequestCounter = 0
 
+// Track the user ID currently being fetched to prevent race conditions
+// where updateAdminUser() might update currentAdminUser for a different user
+let currentFetchingUserId: string | null = null
+
 // Request counter to track the latest update request
 // Prevents stale responses from overwriting newer state when updating users
 let updateRequestCounter = 0
@@ -140,6 +144,10 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     fetchByIdRequestCounter += 1
     const requestId = fetchByIdRequestCounter
 
+    // Track which user ID we're fetching to prevent updateAdminUser from
+    // incorrectly updating currentAdminUser when fetching a different user
+    currentFetchingUserId = id
+
     set({ isFetchingById: true, fetchByIdError: null, currentAdminUser: null })
     try {
       // Import accountsService dynamically to avoid circular dependency
@@ -153,6 +161,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           currentAdminUser: user,
           isFetchingById: false,
         })
+        // Clear the tracking variable since fetch completed
+        currentFetchingUserId = null
       }
       // else: Request was invalidated - don't touch state as a newer request may be in-flight
     } catch (error) {
@@ -173,6 +183,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         fetchByIdError: errorMessage,
         isFetchingById: false,
       })
+      // Clear the tracking variable since fetch failed
+      currentFetchingUserId = null
 
       // Log only sanitized error information to avoid leaking sensitive data
       // (e.g., Authorization headers in Axios config)
@@ -211,12 +223,17 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // the update and revert the locally-updated currentAdminUser.
       fetchByIdRequestCounter += 1
 
-      // Update currentAdminUser if it's for the same user (even if null from an in-flight fetch)
-      // This ensures the UI gets updated data even if a fetch-by-id was in progress
+      // Update currentAdminUser if it's for the same user
+      // Check both the existing currentAdminUser and the tracked fetching ID
+      // to ensure we only update when we're certain we're dealing with the same user
       const currentUser = get().currentAdminUser
-      if (currentUser?.id === id || (!currentUser && get().isFetchingById)) {
+      const wasFetchingThisUser = currentFetchingUserId === id
+      if (currentUser?.id === id || wasFetchingThisUser) {
         set({ currentAdminUser: updatedUser })
       }
+
+      // Clear the tracking variable to prevent the invalidated fetch from matching
+      currentFetchingUserId = null
 
       // Update the user in the adminUsers list if it exists
       const adminUsers = get().adminUsers
