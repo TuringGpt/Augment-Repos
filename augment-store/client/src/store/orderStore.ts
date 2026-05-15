@@ -63,7 +63,7 @@ interface OrderState {
   getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getAdminOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
-  getAdminOrderById: (id: string) => Promise<Order>
+  getAdminOrderById: (id: string) => Promise<Order | null>
   setSelectedOrder: (order: Order | null) => void
   clearSelectedOrder: () => void
   clearOrders: () => void
@@ -463,7 +463,7 @@ export const useOrderStore = create<OrderState>()(
         if (cachedOrder) {
           // Order found in cache, use it directly without triggering loading state
           if (currentRequestId === fetchOrderRequestCounter) {
-            set({ selectedOrder: cachedOrder, fetchOrderError: null })
+            set({ selectedOrder: cachedOrder, fetchOrderError: null, isFetchingOrder: false })
           }
           return cachedOrder
         }
@@ -483,6 +483,13 @@ export const useOrderStore = create<OrderState>()(
 
           // Search through pages until we find the order or exhaust all pages
           while (!foundOrder) {
+            // Check if this request has been superseded by a newer one
+            // This prevents unnecessary API calls when users click between orders quickly
+            if (currentRequestId !== fetchOrderRequestCounter) {
+              // Request is stale, exit early without updating state
+              return null
+            }
+
             const result = await orderService.getAdminOrders(currentPage)
 
             // Check if order exists in current page
