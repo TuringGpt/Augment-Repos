@@ -38,7 +38,7 @@ interface AccountState {
   setAdminUsers: (users: AdminUser[], count: number, next: string | null, previous: string | null) => void
   fetchAdminUsers: (page?: number) => Promise<void>
   fetchAdminUserById: (id: string) => Promise<void>
-  updateAdminUser: (id: string, data: UpdateAdminUserRequest) => Promise<AdminUserDetail>
+  updateAdminUser: (id: string, data: UpdateAdminUserRequest) => Promise<AdminUserDetail | undefined>
   clearCurrentAdminUser: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -190,7 +190,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
       if (requestId !== updateRequestCounter) {
-        return updatedUser
+        // Request was superseded - silently ignore the result to prevent
+        // misleading success UI for stale requests
+        return
       }
 
       // Update currentAdminUser if it matches the updated user
@@ -220,7 +222,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== updateRequestCounter) {
-        throw error
+        // Request was superseded - silently ignore the error to prevent
+        // misleading error UI for stale requests
+        return
       }
 
       // Use parseApiError to extract user-friendly error message from API response
