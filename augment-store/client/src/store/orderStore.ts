@@ -63,6 +63,7 @@ interface OrderState {
   getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getAdminOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
+  getAdminOrderById: (id: string) => Promise<Order>
   setSelectedOrder: (order: Order | null) => void
   clearSelectedOrder: () => void
   clearOrders: () => void
@@ -78,6 +79,9 @@ interface OrderState {
 // When multiple getOrderById calls are made in quick succession,
 // only the most recent request should update the selectedOrder state
 let fetchOrderRequestCounter = 0
+
+// Request counter for admin order by ID to prevent race conditions
+let fetchAdminOrderRequestCounter = 0
 
 export const useOrderStore = create<OrderState>()(
   persist(
@@ -440,6 +444,46 @@ export const useOrderStore = create<OrderState>()(
         } finally {
           // Only clear loading state if this is still the most recent request
           if (currentRequestId === fetchOrderRequestCounter) {
+            set({ isFetchingOrder: false })
+          }
+        }
+      },
+
+      getAdminOrderById: async (id: string) => {
+        // Increment counter to track this request
+        // This prevents race conditions when multiple calls are made rapidly
+        fetchAdminOrderRequestCounter += 1
+        const currentRequestId = fetchAdminOrderRequestCounter
+
+        // Set loading state and clear stale data BEFORE any awaited work
+        set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
+
+        try {
+          // Import orderService dynamically to avoid circular dependency
+          const { orderService } = await import('@services/api/orders/orderService')
+          // Use the regular getOrderById endpoint since admins should have access to it
+          const order = await orderService.getOrderById(id)
+
+          // Only update state if this is still the most recent request
+          // If a newer request has been made, discard this response
+          if (currentRequestId === fetchAdminOrderRequestCounter) {
+            set({ selectedOrder: order })
+          }
+
+          return order
+        } catch (error) {
+          console.error('Failed to fetch admin order:', error)
+
+          // Only update error state if this is still the most recent request
+          if (currentRequestId === fetchAdminOrderRequestCounter) {
+            const errorMessage = 'Failed to fetch order. Please try again.'
+            set({ fetchOrderError: errorMessage })
+          }
+
+          throw error
+        } finally {
+          // Only clear loading state if this is still the most recent request
+          if (currentRequestId === fetchAdminOrderRequestCounter) {
             set({ isFetchingOrder: false })
           }
         }
