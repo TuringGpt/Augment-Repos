@@ -64,6 +64,7 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/checkout/orders/${id}/`,
     CREATE: '/checkout/orders/create/',
     CANCEL: (id: string) => `/checkout/orders/${id}/cancel/`,
+    ADMIN_SHIPPING_ADDRESSES: '/checkout/admin/shipping-addresses/',
   },
 
   // User endpoints

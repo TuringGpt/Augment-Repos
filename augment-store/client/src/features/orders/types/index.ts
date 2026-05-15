@@ -185,3 +185,55 @@ export interface CreateOrderResponse {
     phone: string
   }
 }
+
+// Admin Shipping Address type matching backend ShippingAddressListSerializer (snake_case)
+// Used by GET /api/v1/checkout/admin/shipping-addresses/
+// Backend serializer uses fields = "__all__" so includes all model fields from ShippingAddress model
+export interface AdminShippingAddressAPI {
+  id: string
+  user: string // UUID of the user who owns this address
+  first_name: string
+  last_name: string
+  address_line_1: string
+  address_line_2: string | null
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
+// Frontend admin shipping address type (camelCase)
+export interface AdminShippingAddress {
+  id: string
+  user: string
+  firstName: string
+  lastName: string
+  addressLine1: string
+  addressLine2: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  createdAt: string
+  updatedAt: string
+  isDeleted: boolean
+}
+
+// Paginated admin shipping addresses response from backend (DRF ListAPIView)
+export interface AdminShippingAddressesListResponseAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: AdminShippingAddressAPI[]
+}
+
+// Frontend admin shipping addresses list response
+export interface AdminShippingAddressesListResponse {
+  shippingAddresses: AdminShippingAddress[]
+  count: number
+  next: string | null
+  previous: string | null
+}
