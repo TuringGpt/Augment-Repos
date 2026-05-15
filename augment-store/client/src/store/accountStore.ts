@@ -162,19 +162,28 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           isFetchingById: false,
         })
         // Clear the tracking variable since fetch completed
-        currentFetchingUserId = null
+        // Only clear if it still matches this request's ID to prevent wiping a newer fetch
+        if (currentFetchingUserId === id) {
+          currentFetchingUserId = null
+        }
       } else {
         // Request was invalidated - don't touch state as a newer request may be in-flight
-        // Clear the tracking variable to prevent stale fetch from affecting updateAdminUser
-        currentFetchingUserId = null
+        // Only clear the tracking variable if it still matches this request's ID
+        // to prevent wiping a newer in-flight fetch's ID
+        if (currentFetchingUserId === id) {
+          currentFetchingUserId = null
+        }
       }
     } catch (error) {
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchByIdRequestCounter) {
         // Request was invalidated - don't touch state as a newer request may be in-flight
-        // Clear the tracking variable to prevent stale fetch from affecting updateAdminUser
-        currentFetchingUserId = null
+        // Only clear the tracking variable if it still matches this request's ID
+        // to prevent wiping a newer in-flight fetch's ID
+        if (currentFetchingUserId === id) {
+          currentFetchingUserId = null
+        }
         return
       }
 
