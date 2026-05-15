@@ -75,13 +75,12 @@ interface OrderState {
   setAdminPage: (page: number) => void
 }
 
-// Request counter to prevent race conditions in getOrderById
-// When multiple getOrderById calls are made in quick succession,
-// only the most recent request should update the selectedOrder state
+// Request counter to prevent race conditions in getOrderById and getAdminOrderById
+// When multiple calls are made in quick succession (either getOrderById or getAdminOrderById),
+// only the most recent request should update the selectedOrder state.
+// Both functions use the same counter because they update the same shared state
+// (selectedOrder, isFetchingOrder, fetchOrderError).
 let fetchOrderRequestCounter = 0
-
-// Request counter for admin order by ID to prevent race conditions
-let fetchAdminOrderRequestCounter = 0
 
 export const useOrderStore = create<OrderState>()(
   persist(
@@ -452,8 +451,9 @@ export const useOrderStore = create<OrderState>()(
       getAdminOrderById: async (id: string) => {
         // Increment counter to track this request
         // This prevents race conditions when multiple calls are made rapidly
-        fetchAdminOrderRequestCounter += 1
-        const currentRequestId = fetchAdminOrderRequestCounter
+        // Use the same counter as getOrderById since both update the same shared state
+        fetchOrderRequestCounter += 1
+        const currentRequestId = fetchOrderRequestCounter
 
         // Set loading state and clear stale data BEFORE any awaited work
         set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
@@ -461,29 +461,67 @@ export const useOrderStore = create<OrderState>()(
         try {
           // Import orderService dynamically to avoid circular dependency
           const { orderService } = await import('@services/api/orders/orderService')
-          // Use the regular getOrderById endpoint since admins should have access to it
-          const order = await orderService.getOrderById(id)
 
-          // Only update state if this is still the most recent request
-          // If a newer request has been made, discard this response
-          if (currentRequestId === fetchAdminOrderRequestCounter) {
-            set({ selectedOrder: order })
+          // First, check if the order exists in the currently loaded admin orders
+          const currentState = get()
+          const cachedOrder = currentState.adminOrders.find(order => order.id === id)
+
+          if (cachedOrder) {
+            // Order found in cache, use it directly
+            if (currentRequestId === fetchOrderRequestCounter) {
+              set({ selectedOrder: cachedOrder, isFetchingOrder: false })
+            }
+            return cachedOrder
           }
 
-          return order
+          // Order not in cache - need to search through admin orders pages
+          // Since the backend admin list endpoint returns full order details (using OrderListSerializer),
+          // we'll search through pages starting from page 1
+          let foundOrder: Order | null = null
+          let currentPage = 1
+
+          // Search through pages until we find the order or exhaust all pages
+          while (!foundOrder) {
+            const result = await orderService.getAdminOrders(currentPage)
+
+            // Check if order exists in current page
+            foundOrder = result.orders.find(order => order.id === id) || null
+
+            if (foundOrder) {
+              // Found the order!
+              break
+            }
+
+            // Check if there are more pages
+            if (currentPage >= result.totalPages) {
+              // Exhausted all pages without finding the order
+              throw new Error(`Order with ID ${id} not found`)
+            }
+
+            currentPage += 1
+          }
+
+          // Only update state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ selectedOrder: foundOrder })
+          }
+
+          return foundOrder
         } catch (error) {
           console.error('Failed to fetch admin order:', error)
 
           // Only update error state if this is still the most recent request
-          if (currentRequestId === fetchAdminOrderRequestCounter) {
-            const errorMessage = 'Failed to fetch order. Please try again.'
+          if (currentRequestId === fetchOrderRequestCounter) {
+            const errorMessage = error instanceof Error && error.message.includes('not found')
+              ? 'Order not found. It may have been deleted.'
+              : 'Failed to fetch order. Please try again.'
             set({ fetchOrderError: errorMessage })
           }
 
           throw error
         } finally {
           // Only clear loading state if this is still the most recent request
-          if (currentRequestId === fetchAdminOrderRequestCounter) {
+          if (currentRequestId === fetchOrderRequestCounter) {
             set({ isFetchingOrder: false })
           }
         }
@@ -493,7 +531,7 @@ export const useOrderStore = create<OrderState>()(
 
       setSelectedOrder: (order) => {
         // Increment counter to invalidate any in-flight fetch requests
-        // This prevents in-flight getOrderById responses from overwriting the manually selected order
+        // This prevents in-flight getOrderById/getAdminOrderById responses from overwriting the manually selected order
         fetchOrderRequestCounter += 1
         // Clear fetch-related state to prevent stale error/loading state from leaking into UI
         set({ selectedOrder: order, fetchOrderError: null, isFetchingOrder: false })
@@ -501,7 +539,7 @@ export const useOrderStore = create<OrderState>()(
 
       clearSelectedOrder: () => {
         // Increment counter to invalidate any in-flight fetch requests
-        // This prevents in-flight responses from repopulating the store after clear
+        // This prevents in-flight getOrderById/getAdminOrderById responses from repopulating the store after clear
         fetchOrderRequestCounter += 1
         set({ selectedOrder: null, fetchOrderError: null, isFetchingOrder: false })
       },
