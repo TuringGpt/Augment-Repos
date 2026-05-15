@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AdminUser, AdminUserDetail } from '@features/accounts/types'
+import type { AdminUser, AdminUserDetail, UpdateAdminUserRequest } from '@features/accounts/types'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
@@ -9,6 +9,10 @@ let fetchRequestCounter = 0
 // Request counter to track the latest fetch-by-id request
 // Prevents stale responses from overwriting newer state when fetching individual users
 let fetchByIdRequestCounter = 0
+
+// Request counter to track the latest update request
+// Prevents stale responses from overwriting newer state when updating users
+let updateRequestCounter = 0
 
 interface AccountState {
   // Admin users list state
@@ -26,10 +30,15 @@ interface AccountState {
   isFetchingById: boolean
   fetchByIdError: string | null
 
+  // Update admin user state
+  isUpdating: boolean
+  updateError: string | null
+
   // Actions
   setAdminUsers: (users: AdminUser[], count: number, next: string | null, previous: string | null) => void
   fetchAdminUsers: (page?: number) => Promise<void>
   fetchAdminUserById: (id: string) => Promise<void>
+  updateAdminUser: (id: string, data: UpdateAdminUserRequest) => Promise<AdminUserDetail>
   clearCurrentAdminUser: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -51,6 +60,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   currentAdminUser: null,
   isFetchingById: false,
   fetchByIdError: null,
+  isUpdating: false,
+  updateError: null,
 
   // Actions
   setAdminUsers: (users, count, next, previous) =>
@@ -165,6 +176,73 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
+  updateAdminUser: async (id: string, data: UpdateAdminUserRequest) => {
+    // Increment counter and capture the current request ID
+    updateRequestCounter += 1
+    const requestId = updateRequestCounter
+
+    try {
+      set({ isUpdating: true, updateError: null })
+      // Import accountsService dynamically to avoid circular dependency
+      const { accountsService } = await import('@services/api/accounts/accountsService')
+      const updatedUser = await accountsService.updateAdminUser(id, data)
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId !== updateRequestCounter) {
+        return updatedUser
+      }
+
+      // Update currentAdminUser if it matches the updated user
+      const currentUser = get().currentAdminUser
+      if (currentUser && currentUser.id === id) {
+        set({ currentAdminUser: updatedUser })
+      }
+
+      // Update the user in the adminUsers list if it exists
+      const adminUsers = get().adminUsers
+      const updatedAdminUsers = adminUsers.map((user) => {
+        if (user.id === id) {
+          // Merge the updated fields with the existing user data
+          // This preserves fields not returned by the update endpoint
+          return {
+            ...user,
+            role: updatedUser.role,
+            isActive: updatedUser.isActive,
+          }
+        }
+        return user
+      })
+      set({ adminUsers: updatedAdminUsers })
+
+      return updatedUser
+    } catch (error) {
+      // Only update error state if this is still the latest request
+      // This prevents older errors from overwriting newer state
+      if (requestId !== updateRequestCounter) {
+        throw error
+      }
+
+      // Use parseApiError to extract user-friendly error message from API response
+      // This properly handles Django/DRF error responses including detail, non_field_errors, etc.
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to update admin user. Please try again.',
+      })
+
+      set({ updateError: errorMessage })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to update admin user:', sanitizeErrorForLogging(error))
+      throw error
+    } finally {
+      // Only clear loading state if this is still the latest request
+      if (requestId === updateRequestCounter) {
+        set({ isUpdating: false })
+      }
+    }
+  },
+
   setLoading: (isLoading) => set({ isLoading }),
 
   setError: (error) => set({ error }),
@@ -172,14 +250,17 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   clearCurrentAdminUser: () => {
-    // Increment counter to invalidate any in-flight fetch-by-id requests
+    // Increment counters to invalidate any in-flight requests
     // This prevents in-flight responses from repopulating the store after clear
     fetchByIdRequestCounter += 1
+    updateRequestCounter += 1
 
     set({
       currentAdminUser: null,
       isFetchingById: false,
       fetchByIdError: null,
+      isUpdating: false,
+      updateError: null,
     })
   },
 
@@ -188,6 +269,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     // This prevents in-flight responses from repopulating the store after clear
     fetchRequestCounter += 1
     fetchByIdRequestCounter += 1
+    updateRequestCounter += 1
 
     set({
       adminUsers: [],
@@ -201,6 +283,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       currentAdminUser: null,
       isFetchingById: false,
       fetchByIdError: null,
+      isUpdating: false,
+      updateError: null,
     })
   },
 
