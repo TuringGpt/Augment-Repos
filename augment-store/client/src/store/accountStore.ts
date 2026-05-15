@@ -238,7 +238,11 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Log only sanitized error information to avoid leaking sensitive data
       // (e.g., Authorization headers in Axios config)
       console.error('Failed to update admin user:', sanitizeErrorForLogging(error))
-      throw error
+
+      // Re-throw with the parsed error message so callers can display it (e.g., in toast notifications)
+      // This ensures callers using `catch (e) => toast(e.message)` show the user-friendly parsed message
+      // instead of the raw technical error message from the original exception
+      throw new Error(errorMessage)
     } finally {
       // Only clear loading state if this is still the latest request
       if (requestId === updateRequestCounter) {
@@ -254,7 +258,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   clearCurrentAdminUser: () => {
-    // Increment counters to invalidate any in-flight requests
+    // Increment counters to invalidate any in-flight fetch-by-id and update requests
     // This prevents in-flight responses from repopulating the store after clear
     fetchByIdRequestCounter += 1
     updateRequestCounter += 1
