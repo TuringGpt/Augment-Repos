@@ -92,6 +92,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
       if (requestId !== fetchRequestCounter) {
+        // Request was invalidated - clear loading state to prevent stuck UI
+        set({ isLoading: false })
         return
       }
 
@@ -113,6 +115,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchRequestCounter) {
+        // Request was invalidated - clear loading state to prevent stuck UI
+        set({ isLoading: false })
         return
       }
 
