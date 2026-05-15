@@ -70,7 +70,7 @@ class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
     permission_classes = [AllowAny]
     cache_service_class = ContactCacheService
-    throttle_classes = [ContactFormAnonThrottle]
+    throttle_classes = [ContactFormAnonThrottle, ContactFormUserThrottle]
 
 class ContactDetailView(CacheInvalidatorMixin, BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageAdminSerializer
