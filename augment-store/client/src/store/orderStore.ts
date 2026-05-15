@@ -455,24 +455,25 @@ export const useOrderStore = create<OrderState>()(
         fetchOrderRequestCounter += 1
         const currentRequestId = fetchOrderRequestCounter
 
-        // Set loading state and clear stale data BEFORE any awaited work
+        // First, check if the order exists in the currently loaded admin orders
+        // Do this BEFORE setting loading state to avoid UI flicker for cache hits
+        const currentState = get()
+        const cachedOrder = currentState.adminOrders.find(order => order.id === id)
+
+        if (cachedOrder) {
+          // Order found in cache, use it directly without triggering loading state
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ selectedOrder: cachedOrder, fetchOrderError: null })
+          }
+          return cachedOrder
+        }
+
+        // Cache miss - set loading state and clear stale data before fetching
         set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
 
         try {
           // Import orderService dynamically to avoid circular dependency
           const { orderService } = await import('@services/api/orders/orderService')
-
-          // First, check if the order exists in the currently loaded admin orders
-          const currentState = get()
-          const cachedOrder = currentState.adminOrders.find(order => order.id === id)
-
-          if (cachedOrder) {
-            // Order found in cache, use it directly
-            if (currentRequestId === fetchOrderRequestCounter) {
-              set({ selectedOrder: cachedOrder, isFetchingOrder: false })
-            }
-            return cachedOrder
-          }
 
           // Order not in cache - need to search through admin orders pages
           // Since the backend admin list endpoint returns full order details (using OrderListSerializer),
