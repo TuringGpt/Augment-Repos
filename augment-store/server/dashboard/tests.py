@@ -8,6 +8,8 @@ from datetime import timedelta
 from django.utils import timezone
 from decimal import Decimal
 from checkout.factory import PaymentFactory
+from accounts.factory import UserFactory
+from rest_framework.test import APIClient
 
 class ProductStatisticsModelTests(BaseAPITestCase):
     """Test ProductStatistics model creation and tracking."""
@@ -115,9 +117,11 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def setUp(self):
         super().setUp()
         # Reuse the user from BaseAPITestCase instead of creating a new one
-        self.member_user = self.user
-        self.member_client = self.authenticated_client
-        self.member_client.force_authenticate(user=self.member_user)
+        self.merchant_user = self.user
+        self.merchant_user.role = "merchant"
+        self.merchant_user.save()
+        self.merchant_client = self.authenticated_client
+        self.merchant_client.force_authenticate(user=self.merchant_user)
 
         # Create test products with different statistics using SimpleProductFactory
         self.product1 = SimpleProductFactory(name="Product 1")
@@ -150,13 +154,13 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         """Test most_viewed endpoint returns products sorted by view count."""
         # GIVEN products with different view counts
         # Create ProductView records to track views
-        ProductView.objects.create(product=self.product1, user=self.member_user)
-        ProductView.objects.create(product=self.product1, user=self.member_user)
-        ProductView.objects.create(product=self.product2, user=self.member_user)
+        ProductView.objects.create(product=self.product1, user=self.merchant_user)
+        ProductView.objects.create(product=self.product1, user=self.merchant_user)
+        ProductView.objects.create(product=self.product2, user=self.merchant_user)
 
         # WHEN we call the most_viewed endpoint
         url = reverse("v1:product-statistics-most-viewed")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -173,7 +177,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we call the most_added_to_cart endpoint
         url = reverse("v1:product-statistics-most-added-to-cart")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -190,7 +194,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we call the best_selling endpoint
         url = reverse("v1:product-statistics-best-selling")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -207,7 +211,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we call the general_statistics endpoint
         url = reverse("v1:product-statistics-general-statistics")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -228,7 +232,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we call the general_statistics endpoint
         url = reverse("v1:product-statistics-general-statistics")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -244,19 +248,19 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # GIVEN products with views at different times
         # Create views for product1 within the last 5 days using bulk_create
         recent_views = [
-            ProductView(product=self.product1, user=self.member_user)
+            ProductView(product=self.product1, user=self.merchant_user)
             for _ in range(5)
         ]
         ProductView.objects.bulk_create(recent_views)
 
         # Create views for product2 outside the 5-day window (40 days ago)
-        old_view = ProductView.objects.create(product=self.product2, user=self.member_user)
+        old_view = ProductView.objects.create(product=self.product2, user=self.merchant_user)
         old_view.created_at = timezone.now() - timedelta(days=40)
         old_view.save()
 
         # WHEN we call most_viewed with days=5
         url = reverse("v1:product-statistics-most-viewed")
-        response = self.member_client.get(url, {'days': 5})
+        response = self.merchant_client.get(url, {'days': 5})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -278,13 +282,24 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # THEN we should get a 401 response
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_member_access_denied_to_statistics_endpoints(self):
+        member_client = APIClient()
+        member_client.force_authenticate(user=UserFactory(role="member"))
+
+        for route_name in [
+            "v1:product-statistics-most-viewed",
+            "v1:product-statistics-general-statistics",
+        ]:
+            response = member_client.get(reverse(route_name))
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_most_viewed_invalid_limit_parameter(self):
         """Test that most_viewed handles invalid limit parameter gracefully."""
         # GIVEN invalid limit parameters
         url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with non-integer limit
-        response = self.member_client.get(url, {'limit': 'invalid'})
+        response = self.merchant_client.get(url, {'limit': 'invalid'})
 
         # THEN we should get a 200 response (not 500) with default limit
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -295,7 +310,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with non-integer days
-        response = self.member_client.get(url, {'days': 'invalid'})
+        response = self.merchant_client.get(url, {'days': 'invalid'})
 
         # THEN we should get a 200 response (not 500) with default days
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -306,7 +321,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with negative limit
-        response = self.member_client.get(url, {'limit': '-5'})
+        response = self.merchant_client.get(url, {'limit': '-5'})
 
         # THEN we should get a 200 response with default limit (10)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -322,7 +337,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with limit > 100
-        response = self.member_client.get(url, {'limit': '500'})
+        response = self.merchant_client.get(url, {'limit': '500'})
 
         # THEN we should get a 200 response with max limit (100)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -334,7 +349,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         url = reverse("v1:product-statistics-most-viewed")
 
         # WHEN we call with days > 365
-        response = self.member_client.get(url, {'days': '1000'})
+        response = self.merchant_client.get(url, {'days': '1000'})
 
         # THEN we should get a 200 response with max days (365)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -352,7 +367,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # So we update the timestamps after creation
         old_time = timezone.now() - timedelta(days=40)
         old_views = [
-            ProductView(product=self.product1, user=self.member_user)
+            ProductView(product=self.product1, user=self.merchant_user)
             for _ in range(95)
         ]
         created_old_views = ProductView.objects.bulk_create(old_views)
@@ -363,21 +378,21 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # Create recent views for product1 (within the 5-day window)
         recent_views_p1 = [
-            ProductView(product=self.product1, user=self.member_user)
+            ProductView(product=self.product1, user=self.merchant_user)
             for _ in range(5)
         ]
         ProductView.objects.bulk_create(recent_views_p1)
 
         # Create recent views for product2 (within the 5-day window)
         recent_views_p2 = [
-            ProductView(product=self.product2, user=self.member_user)
+            ProductView(product=self.product2, user=self.merchant_user)
             for _ in range(10)
         ]
         ProductView.objects.bulk_create(recent_views_p2)
 
         # WHEN we call most_viewed with days=5
         url = reverse("v1:product-statistics-most-viewed")
-        response = self.member_client.get(url, {'days': 5})
+        response = self.merchant_client.get(url, {'days': 5})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -399,21 +414,21 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # Create abandonments for product1 (2 abandonments) using bulk_create
         abandonments_p1 = [
-            CartAbandonment(product=self.product1, user=self.member_user)
+            CartAbandonment(product=self.product1, user=self.merchant_user)
             for _ in range(2)
         ]
         CartAbandonment.objects.bulk_create(abandonments_p1)
 
         # Create abandonments for product2 (5 abandonments) using bulk_create
         abandonments_p2 = [
-            CartAbandonment(product=self.product2, user=self.member_user)
+            CartAbandonment(product=self.product2, user=self.merchant_user)
             for _ in range(5)
         ]
         CartAbandonment.objects.bulk_create(abandonments_p2)
 
         # WHEN we call frequently_abandoned endpoint
         url = reverse("v1:product-statistics-frequently-abandoned")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -431,13 +446,13 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         """Test product_performance endpoint returns all performance metrics."""
         # GIVEN products with different statistics
         # Create some abandonments for testing
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.merchant_user)
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -459,15 +474,15 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # Create views for all products to ensure they appear in results
         for _ in range(100):
-            ProductView.objects.create(product=self.product1, user=self.member_user)
+            ProductView.objects.create(product=self.product1, user=self.merchant_user)
         for _ in range(80):
-            ProductView.objects.create(product=self.product2, user=self.member_user)
+            ProductView.objects.create(product=self.product2, user=self.merchant_user)
         for _ in range(60):
-            ProductView.objects.create(product=self.product3, user=self.member_user)
+            ProductView.objects.create(product=self.product3, user=self.merchant_user)
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -484,16 +499,16 @@ class ProductStatisticsAPITests(BaseAPITestCase):
     def test_product_performance_low_performing_includes_zero_purchases(self):
         """Test that low_performing_products includes products with zero purchases but with views/cart adds."""
         # GIVEN a product with views and cart additions but zero purchases
-        ProductView.objects.create(product=self.product1, user=self.member_user)
-        ProductView.objects.create(product=self.product1, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        ProductView.objects.create(product=self.product1, user=self.merchant_user)
+        ProductView.objects.create(product=self.product1, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
 
         # AND other products with no period activity (no views, no cart adds, no purchases)
         # Product 2 and 3 have lifetime stats from setUp but no period activity
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -517,22 +532,22 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         # When rates are equal, products are sorted by abandonment_count (Product 2 before Product 1)
 
         # Create abandonments for product1 (2 abandonments in period)
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
 
         # Create abandonments for product2 (3 abandonments in period)
-        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
-        CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.merchant_user)
+        CartAbandonment.objects.create(product=self.product2, user=self.merchant_user)
 
         # Create an old abandonment for product3 (outside the default 30-day window)
-        old_abandonment = CartAbandonment.objects.create(product=self.product3, user=self.member_user)
+        old_abandonment = CartAbandonment.objects.create(product=self.product3, user=self.merchant_user)
         old_abandonment.created_at = timezone.now() - timedelta(days=31)
         old_abandonment.save()
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -568,15 +583,15 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # Create views for all products (no OrderItem records = 0 purchases in period)
         for _ in range(100):
-            ProductView.objects.create(product=self.product1, user=self.member_user)
+            ProductView.objects.create(product=self.product1, user=self.merchant_user)
         for _ in range(80):
-            ProductView.objects.create(product=self.product2, user=self.member_user)
+            ProductView.objects.create(product=self.product2, user=self.merchant_user)
         for _ in range(60):
-            ProductView.objects.create(product=self.product3, user=self.member_user)
+            ProductView.objects.create(product=self.product3, user=self.merchant_user)
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -597,15 +612,15 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # Create views for all products (but no OrderItem records = 0 purchases in period)
         for _ in range(100):
-            ProductView.objects.create(product=self.product1, user=self.member_user)
+            ProductView.objects.create(product=self.product1, user=self.merchant_user)
         for _ in range(80):
-            ProductView.objects.create(product=self.product2, user=self.member_user)
+            ProductView.objects.create(product=self.product2, user=self.merchant_user)
         for _ in range(60):
-            ProductView.objects.create(product=self.product3, user=self.member_user)
+            ProductView.objects.create(product=self.product3, user=self.merchant_user)
 
         # WHEN we call the product_performance endpoint
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -621,12 +636,12 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         for i in range(15):
             product = SimpleProductFactory(name=f"Product {i+4}")
             # Create period activity for each product so they appear in results
-            ProductView.objects.create(product=product, user=self.member_user)
-            CartAbandonment.objects.create(product=product, user=self.member_user)
+            ProductView.objects.create(product=product, user=self.merchant_user)
+            CartAbandonment.objects.create(product=product, user=self.merchant_user)
 
         # WHEN we call the product_performance endpoint with limit=5
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url, {'limit': 5})
+        response = self.merchant_client.get(url, {'limit': 5})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -646,16 +661,16 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         """Test that product_performance respects the days parameter for abandonment filtering."""
         # GIVEN abandonments at different times
         # Create recent abandonment
-        CartAbandonment.objects.create(product=self.product1, user=self.member_user)
+        CartAbandonment.objects.create(product=self.product1, user=self.merchant_user)
 
         # Create old abandonment (40 days ago)
-        old_abandonment = CartAbandonment.objects.create(product=self.product2, user=self.member_user)
+        old_abandonment = CartAbandonment.objects.create(product=self.product2, user=self.merchant_user)
         old_abandonment.created_at = timezone.now() - timedelta(days=40)
         old_abandonment.save()
 
         # WHEN we call the product_performance endpoint with days=5
         url = reverse("v1:product-statistics-product-performance")
-        response = self.member_client.get(url, {'days': 5})
+        response = self.merchant_client.get(url, {'days': 5})
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -682,7 +697,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we retrieve statistics using the product's ID (not the ProductStatistics ID)
         url = reverse("v1:product-statistics-detail", kwargs={'product_id': str(product.id)})
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 200 response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -701,7 +716,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
 
         # WHEN we try to retrieve statistics for this product
         url = reverse("v1:product-statistics-detail", kwargs={'product_id': invalid_product_id})
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
 
         # THEN we should get a 404 response
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -712,7 +727,7 @@ class ProductStatisticsAPITests(BaseAPITestCase):
         url = reverse("v1:product-statistics-analytics-overview")
         
         # WHEN: Call endpoint with no payments
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
         
         # THEN: Should return 0.00 (Decimal)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -731,24 +746,24 @@ class ProductStatisticsAPITests(BaseAPITestCase):
             amount=Decimal('100.00'), 
             payment_status='paid', 
             order__status='completed', 
-            created_by=self.member_user
+            created_by=self.merchant_user
         )
         PaymentFactory(
             amount=Decimal('50.50'), 
             payment_status='paid', 
             order__status='completed', 
-            created_by=self.member_user
+            created_by=self.merchant_user
         )
         # Add a pending payment (or paid but order pending) to ensure it filters correctly
         PaymentFactory(
             amount=Decimal('200.00'), 
             payment_status='pending', 
             order__status='completed', 
-            created_by=self.member_user
+            created_by=self.merchant_user
         )
         
         # WHEN: Call endpoint again
-        response = self.member_client.get(url)
+        response = self.merchant_client.get(url)
         
         # THEN: Should return sum of paid payments (150.50)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

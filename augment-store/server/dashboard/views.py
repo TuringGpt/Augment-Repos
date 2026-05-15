@@ -69,7 +69,7 @@ class ProductStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = ProductStatistics.objects.all()
     serializer_class = ProductStatisticsSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, hasAdminOrMerchantRole]
     lookup_field = 'product_id'
 
     @action(detail=False, methods=['get'])
