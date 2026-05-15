@@ -503,7 +503,11 @@ export const useOrderStore = create<OrderState>()(
             // Check if there are more pages
             if (currentPage >= result.totalPages) {
               // Exhausted all pages without finding the order
-              throw new Error(`Order with ID ${id} not found`)
+              // Return null to match the function signature Promise<Order | null>
+              if (currentRequestId === fetchOrderRequestCounter) {
+                set({ fetchOrderError: 'Order not found. It may have been deleted.' })
+              }
+              return null
             }
 
             currentPage += 1
@@ -520,10 +524,7 @@ export const useOrderStore = create<OrderState>()(
 
           // Only update error state if this is still the most recent request
           if (currentRequestId === fetchOrderRequestCounter) {
-            const errorMessage = error instanceof Error && error.message.includes('not found')
-              ? 'Order not found. It may have been deleted.'
-              : 'Failed to fetch order. Please try again.'
-            set({ fetchOrderError: errorMessage })
+            set({ fetchOrderError: 'Failed to fetch order. Please try again.' })
           }
 
           throw error
