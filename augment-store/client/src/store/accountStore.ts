@@ -92,8 +92,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update state if this is still the latest request
       // This prevents older responses from overwriting newer state
       if (requestId !== fetchRequestCounter) {
-        // Request was invalidated - clear loading state to prevent stuck UI
-        set({ isLoading: false })
+        // Request was invalidated - don't touch state as a newer request may be in-flight
         return
       }
 
@@ -115,8 +114,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchRequestCounter) {
-        // Request was invalidated - clear loading state to prevent stuck UI
-        set({ isLoading: false })
+        // Request was invalidated - don't touch state as a newer request may be in-flight
         return
       }
 
@@ -155,16 +153,13 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           currentAdminUser: user,
           isFetchingById: false,
         })
-      } else {
-        // Request was invalidated - clear loading state to prevent stuck UI
-        set({ isFetchingById: false })
       }
+      // else: Request was invalidated - don't touch state as a newer request may be in-flight
     } catch (error) {
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchByIdRequestCounter) {
-        // Request was invalidated - clear loading state to prevent stuck UI
-        set({ isFetchingById: false })
+        // Request was invalidated - don't touch state as a newer request may be in-flight
         return
       }
 
