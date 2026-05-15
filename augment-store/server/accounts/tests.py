@@ -4,6 +4,7 @@ from rest_framework import status
 from django.urls import reverse
 from accounts.services import UserProfileCacheService
 from storage.factory import FileFactory
+from accounts.models import MerchantDetail
 
 
 class UserProfileTests(BaseAPITestCase):
@@ -276,6 +277,24 @@ class AdminUserTests(BaseAPITestCase):
         # Verify the actual database object was updated
         self.regular_user.refresh_from_db()
         self.assertEqual(self.regular_user.role, "merchant")
+
+    def test_admin_update_user_role_creates_merchant_detail(self):
+        url = reverse("v1:admin_user_update", kwargs={"pk": self.regular_user.id})
+        self.assertFalse(MerchantDetail.objects.filter(user=self.regular_user).exists())
+
+        response = self.admin_client.patch(url, {"role": "merchant"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(MerchantDetail.objects.filter(user=self.regular_user).exists())
+
+    def test_admin_update_inactive_user_role_creates_merchant_detail(self):
+        inactive_user = UserFactory(role="member", is_active=False)
+        url = reverse("v1:admin_user_update", kwargs={"pk": inactive_user.id})
+
+        response = self.admin_client.patch(url, {"role": "merchant"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(MerchantDetail.objects.filter(user=inactive_user).exists())
 
     def test_member_update_forbidden(self):
         self.authenticated_client.force_authenticate(user=self.regular_user)

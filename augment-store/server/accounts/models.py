@@ -135,9 +135,13 @@ class MerchantDetail(BaseModel):
 
 @receiver(post_save, sender=User)
 def create_merchant_detail(sender, instance, created, **kwargs):
-    if instance.role == User.Role.MERCHANT:
-        MerchantDetail.objects.get_or_create(user=instance, defaults={
-            "store_name": instance.username or instance.email,
+    ensure_merchant_detail(instance)
+
+
+def ensure_merchant_detail(user):
+    if user.role == User.Role.MERCHANT:
+        MerchantDetail.objects.get_or_create(user=user, defaults={
+            "store_name": user.username or user.email,
             "store_description": "",
             "store_image": None,
         })
