@@ -155,11 +155,16 @@ export const useAccountStore = create<AccountState>((set, get) => ({
           currentAdminUser: user,
           isFetchingById: false,
         })
+      } else {
+        // Request was invalidated - clear loading state to prevent stuck UI
+        set({ isFetchingById: false })
       }
     } catch (error) {
       // Only update error state if this is still the latest request
       // This prevents older errors from overwriting newer state
       if (requestId !== fetchByIdRequestCounter) {
+        // Request was invalidated - clear loading state to prevent stuck UI
+        set({ isFetchingById: false })
         return
       }
 
@@ -211,9 +216,10 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // the update and revert the locally-updated currentAdminUser.
       fetchByIdRequestCounter += 1
 
-      // Update currentAdminUser if it matches the updated user
+      // Update currentAdminUser if it's for the same user (even if null from an in-flight fetch)
+      // This ensures the UI gets updated data even if a fetch-by-id was in progress
       const currentUser = get().currentAdminUser
-      if (currentUser && currentUser.id === id) {
+      if (currentUser?.id === id || (!currentUser && get().isFetchingById)) {
         set({ currentAdminUser: updatedUser })
       }
 
