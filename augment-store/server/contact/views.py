@@ -1,5 +1,5 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
@@ -68,8 +68,9 @@ class ContactListView(CachedListMixin, BaseContactView, ListAPIView):
 
 class CreateContactView(CacheInvalidatorMixin, BaseContactView, CreateAPIView):
     serializer_class = ContactMessageSerializer
+    permission_classes = [AllowAny]
     cache_service_class = ContactCacheService
-    throttle_classes = [ContactFormAnonThrottle, ContactFormUserThrottle]
+    throttle_classes = [ContactFormAnonThrottle]
 
 class ContactDetailView(CacheInvalidatorMixin, BaseContactView, RetrieveUpdateDestroyAPIView):
     serializer_class = ContactMessageAdminSerializer
