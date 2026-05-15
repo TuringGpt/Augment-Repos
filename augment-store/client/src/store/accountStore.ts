@@ -205,6 +205,12 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       // the update and revert the locally-updated role/isActive values.
       fetchRequestCounter += 1
 
+      // Invalidate any in-flight fetchAdminUserById() requests to prevent them
+      // from overwriting the currentAdminUser with stale data.
+      // This fixes the race condition where an older fetch-by-id can resolve after
+      // the update and revert the locally-updated currentAdminUser.
+      fetchByIdRequestCounter += 1
+
       // Update currentAdminUser if it matches the updated user
       const currentUser = get().currentAdminUser
       if (currentUser && currentUser.id === id) {
