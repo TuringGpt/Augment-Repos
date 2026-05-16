@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse } from '@features/orders/types'
-import { isAbortError } from '@utils/errorUtils'
+import { isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
 // Prevents stale responses from overwriting newer state
@@ -63,6 +63,7 @@ interface OrderState {
   getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getAdminOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getOrderById: (id: string) => Promise<Order>
+  getAdminOrderById: (id: string) => Promise<Order | null>
   setSelectedOrder: (order: Order | null) => void
   clearSelectedOrder: () => void
   clearOrders: () => void
@@ -74,9 +75,11 @@ interface OrderState {
   setAdminPage: (page: number) => void
 }
 
-// Request counter to prevent race conditions in getOrderById
-// When multiple getOrderById calls are made in quick succession,
-// only the most recent request should update the selectedOrder state
+// Request counter to prevent race conditions in getOrderById and getAdminOrderById
+// When multiple calls are made in quick succession (either getOrderById or getAdminOrderById),
+// only the most recent request should update the selectedOrder state.
+// Both functions use the same counter because they update the same shared state
+// (selectedOrder, isFetchingOrder, fetchOrderError).
 let fetchOrderRequestCounter = 0
 
 export const useOrderStore = create<OrderState>()(
@@ -125,7 +128,7 @@ export const useOrderStore = create<OrderState>()(
 
           return order
         } catch (error) {
-          console.error('Failed to create order:', error)
+          console.error('Failed to create order:', sanitizeErrorForLogging(error))
           const errorMessage = 'Failed to create order. Please try again.'
           set({ createOrderError: errorMessage })
           throw error
@@ -168,7 +171,7 @@ export const useOrderStore = create<OrderState>()(
 
           return response
         } catch (error) {
-          console.error('Failed to fetch orders:', error)
+          console.error('Failed to fetch orders:', sanitizeErrorForLogging(error))
 
           // Only update error state if this is still the latest request
           if (requestId === fetchRequestCounter) {
@@ -198,7 +201,7 @@ export const useOrderStore = create<OrderState>()(
                 return retryResponse
               } catch (retryError) {
                 // If retry also fails, fall through to normal error handling
-                console.error('Retry with page 1 also failed:', retryError)
+                console.error('Retry with page 1 also failed:', sanitizeErrorForLogging(retryError))
               }
             }
 
@@ -251,7 +254,7 @@ export const useOrderStore = create<OrderState>()(
         } catch (error) {
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
-            console.error('Failed to fetch merchant orders:', error)
+            console.error('Failed to fetch merchant orders:', sanitizeErrorForLogging(error))
           }
 
           // Only update error state if this is still the latest request
@@ -290,7 +293,7 @@ export const useOrderStore = create<OrderState>()(
                 // If retry also fails, fall through to normal error handling
                 // Don't log abort errors - these are expected when requests are intentionally cancelled
                 if (!isAbortError(retryError)) {
-                  console.error('Retry with page 1 also failed:', retryError)
+                  console.error('Retry with page 1 also failed:', sanitizeErrorForLogging(retryError))
                 } else {
                   // Retry was also cancelled, don't set error state
                   throw retryError
@@ -347,7 +350,7 @@ export const useOrderStore = create<OrderState>()(
         } catch (error) {
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
-            console.error('Failed to fetch admin orders:', error)
+            console.error('Failed to fetch admin orders:', sanitizeErrorForLogging(error))
           }
 
           // Only update error state if this is still the latest request
@@ -386,7 +389,7 @@ export const useOrderStore = create<OrderState>()(
                 // If retry also fails, fall through to normal error handling
                 // Don't log abort errors - these are expected when requests are intentionally cancelled
                 if (!isAbortError(retryError)) {
-                  console.error('Retry with page 1 also failed:', retryError)
+                  console.error('Retry with page 1 also failed:', sanitizeErrorForLogging(retryError))
                 } else {
                   // Retry was also cancelled, don't set error state
                   throw retryError
@@ -428,7 +431,7 @@ export const useOrderStore = create<OrderState>()(
 
           return order
         } catch (error) {
-          console.error('Failed to fetch order:', error)
+          console.error('Failed to fetch order:', sanitizeErrorForLogging(error))
 
           // Only update error state if this is still the most recent request
           if (currentRequestId === fetchOrderRequestCounter) {
@@ -445,11 +448,99 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
+      getAdminOrderById: async (id: string) => {
+        // Increment counter to track this request
+        // This prevents race conditions when multiple calls are made rapidly
+        // Use the same counter as getOrderById since both update the same shared state
+        fetchOrderRequestCounter += 1
+        const currentRequestId = fetchOrderRequestCounter
+
+        // First, check if the order exists in the currently loaded admin orders
+        // Do this BEFORE setting loading state to avoid UI flicker for cache hits
+        const currentState = get()
+        const cachedOrder = currentState.adminOrders.find(order => order.id === id)
+
+        if (cachedOrder) {
+          // Order found in cache, use it directly without triggering loading state
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ selectedOrder: cachedOrder, fetchOrderError: null, isFetchingOrder: false })
+          }
+          return cachedOrder
+        }
+
+        // Cache miss - set loading state and clear stale data before fetching
+        set({ isFetchingOrder: true, fetchOrderError: null, selectedOrder: null })
+
+        try {
+          // Import orderService dynamically to avoid circular dependency
+          const { orderService } = await import('@services/api/orders/orderService')
+
+          // Order not in cache - need to search through admin orders pages
+          // Since the backend admin list endpoint returns full order details (using OrderListSerializer),
+          // we'll search through pages starting from page 1
+          let foundOrder: Order | null = null
+          let currentPage = 1
+
+          // Search through pages until we find the order or exhaust all pages
+          while (!foundOrder) {
+            // Check if this request has been superseded by a newer one
+            // This prevents unnecessary API calls when users click between orders quickly
+            if (currentRequestId !== fetchOrderRequestCounter) {
+              // Request is stale, exit early without updating state
+              return null
+            }
+
+            const result = await orderService.getAdminOrders(currentPage)
+
+            // Check if order exists in current page
+            foundOrder = result.orders.find(order => order.id === id) || null
+
+            if (foundOrder) {
+              // Found the order!
+              break
+            }
+
+            // Check if there are more pages
+            if (currentPage >= result.totalPages) {
+              // Exhausted all pages without finding the order
+              // Return null to match the function signature Promise<Order | null>
+              if (currentRequestId === fetchOrderRequestCounter) {
+                set({ fetchOrderError: 'Order not found. It may have been deleted.' })
+              }
+              return null
+            }
+
+            currentPage += 1
+          }
+
+          // Only update state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ selectedOrder: foundOrder })
+          }
+
+          return foundOrder
+        } catch (error) {
+          console.error('Failed to fetch admin order:', sanitizeErrorForLogging(error))
+
+          // Only update error state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ fetchOrderError: 'Failed to fetch order. Please try again.' })
+          }
+
+          throw error
+        } finally {
+          // Only clear loading state if this is still the most recent request
+          if (currentRequestId === fetchOrderRequestCounter) {
+            set({ isFetchingOrder: false })
+          }
+        }
+      },
+
       clearCurrentOrder: () => set({ currentOrder: null, createOrderError: null }),
 
       setSelectedOrder: (order) => {
         // Increment counter to invalidate any in-flight fetch requests
-        // This prevents in-flight getOrderById responses from overwriting the manually selected order
+        // This prevents in-flight getOrderById/getAdminOrderById responses from overwriting the manually selected order
         fetchOrderRequestCounter += 1
         // Clear fetch-related state to prevent stale error/loading state from leaking into UI
         set({ selectedOrder: order, fetchOrderError: null, isFetchingOrder: false })
@@ -457,7 +548,7 @@ export const useOrderStore = create<OrderState>()(
 
       clearSelectedOrder: () => {
         // Increment counter to invalidate any in-flight fetch requests
-        // This prevents in-flight responses from repopulating the store after clear
+        // This prevents in-flight getOrderById/getAdminOrderById responses from repopulating the store after clear
         fetchOrderRequestCounter += 1
         set({ selectedOrder: null, fetchOrderError: null, isFetchingOrder: false })
       },
@@ -522,7 +613,7 @@ export const useOrderStore = create<OrderState>()(
 
           return canceledOrder
         } catch (error) {
-          console.error('Failed to cancel order:', error)
+          console.error('Failed to cancel order:', sanitizeErrorForLogging(error))
           const errorMessage = 'Failed to cancel order. Please try again.'
           set({ cancelOrderError: errorMessage })
           throw error
@@ -537,7 +628,7 @@ export const useOrderStore = create<OrderState>()(
         set({ currentPage: page })
         get().getAllOrders(page).catch((error) => {
           // Error is already handled in getAllOrders, just prevent unhandled rejection
-          console.error('Error fetching orders on page change:', error)
+          console.error('Error fetching orders on page change:', sanitizeErrorForLogging(error))
         })
       },
 
@@ -554,7 +645,7 @@ export const useOrderStore = create<OrderState>()(
           // Error is already handled in getMerchantOrders, just prevent unhandled rejection
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
-            console.error('Error fetching merchant orders on page change:', error)
+            console.error('Error fetching merchant orders on page change:', sanitizeErrorForLogging(error))
           }
         })
       },
@@ -572,7 +663,7 @@ export const useOrderStore = create<OrderState>()(
           // Error is already handled in getAdminOrders, just prevent unhandled rejection
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
-            console.error('Error fetching admin orders on page change:', error)
+            console.error('Error fetching admin orders on page change:', sanitizeErrorForLogging(error))
           }
         })
       },
