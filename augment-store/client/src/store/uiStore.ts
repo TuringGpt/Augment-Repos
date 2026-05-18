@@ -111,8 +111,9 @@ export const useUIStore = create<UIState>()(
       }),
       onRehydrateStorage: () => (state) => {
         // Validate and normalize toastDuration after rehydration from storage
+        // Use setToastDuration to ensure subscribers are notified of the validated value
         if (state?.toastDuration !== undefined) {
-          state.toastDuration = validateToastDuration(state.toastDuration)
+          state.setToastDuration(state.toastDuration)
         }
       },
     }
