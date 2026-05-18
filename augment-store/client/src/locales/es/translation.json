@@ -8,6 +8,7 @@
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "save": "Guardar",
+    "saving": "Guardando...",
     "delete": "Eliminar",
     "edit": "Editar",
     "view": "Ver",
@@ -1034,6 +1035,8 @@
       "workInProgress": "Trabajo en Progreso",
       "underDevelopment": "Esta página está actualmente en desarrollo. Las funciones de administración de cuentas estarán disponibles pronto.",
       "accountDetails": "Detalles de la Cuenta",
+      "editAccount": "Editar Cuenta",
+      "updateSuccess": "Cuenta actualizada exitosamente",
       "preferredCurrency": "Moneda Preferida",
       "accountId": "ID de Cuenta",
       "table": {
