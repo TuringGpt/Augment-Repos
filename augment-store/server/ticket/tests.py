@@ -229,6 +229,11 @@ class TicketTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_admin_tickets_unauthenticated_denied(self):
+        url = reverse("v1:ticket:admin_tickets")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_admin_tickets_returns_all(self):
         from accounts.models import User
         admin_user = UserFactory(role=User.Role.ADMIN)
