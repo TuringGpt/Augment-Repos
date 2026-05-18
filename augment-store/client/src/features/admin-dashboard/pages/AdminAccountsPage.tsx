@@ -86,6 +86,8 @@ const AdminAccountsPage = () => {
     role: 'member',
     isActive: true,
   })
+  // State to track pending edit drawer open (used to sequence drawer transitions)
+  const [pendingEditAccount, setPendingEditAccount] = useState<AdminUser | null>(null)
 
   // Fetch admin users on mount using the stored currentPage to avoid page/data mismatch
   // If the user previously paged through the data and revisits this page, they will see
@@ -119,6 +121,23 @@ const AdminAccountsPage = () => {
   }
 
   const handleDrawerExited = () => {
+    // If there's a pending edit, open the edit drawer now that the details drawer has fully closed
+    if (pendingEditAccount) {
+      const account = pendingEditAccount
+      setPendingEditAccount(null)
+
+      // Clear any previous update errors to avoid showing stale error UI
+      clearUpdateError()
+
+      setSelectedAccount(account)
+      setEditFormData({
+        role: account.role,
+        isActive: account.isActive,
+      })
+      setIsEditDrawerOpen(true)
+      return
+    }
+
     // Clear selectedAccount after the drawer has fully closed
     // This prevents the content from flashing empty during the close transition
     // Only clear if both drawers are closed (prevents race condition if edit drawer is opening)
@@ -129,11 +148,15 @@ const AdminAccountsPage = () => {
 
   // Edit drawer handlers
   const handleEditAccount = (account: AdminUser) => {
-    // Close details drawer if open
+    // If details drawer is open, close it first and defer opening edit drawer
+    // This prevents both drawers from being mounted simultaneously during transitions
     if (isDetailsDrawerOpen) {
+      setPendingEditAccount(account)
       handleCloseDetailsDrawer()
+      return
     }
 
+    // If details drawer is already closed, open edit drawer immediately
     // Clear any previous update errors to avoid showing stale error UI
     clearUpdateError()
 
