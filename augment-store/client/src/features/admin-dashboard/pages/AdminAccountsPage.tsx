@@ -210,10 +210,17 @@ const AdminAccountsPage = () => {
     if (!selectedAccount) return
 
     try {
-      await updateAdminUser(selectedAccount.id, {
+      const result = await updateAdminUser(selectedAccount.id, {
         role: editFormData.role,
         is_active: editFormData.isActive,
       })
+
+      // Guard against superseded requests - updateAdminUser returns undefined when
+      // the request was superseded by a newer request (see store's request counter guard)
+      // Don't show success toast or close drawer for stale requests to prevent false "updated successfully" signal
+      if (!result) {
+        return
+      }
 
       // Show success message via toast
       toast.success(t('admin.accountsPage.updateSuccess'))
