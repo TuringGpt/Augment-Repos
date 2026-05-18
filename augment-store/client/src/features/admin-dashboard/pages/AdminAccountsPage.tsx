@@ -778,7 +778,7 @@ const AdminAccountsPage = () => {
                       <MenuItem value="member">
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Chip
-                            label="MEMBER"
+                            label={t('admin.accountsPage.roles.member')}
                             color="success"
                             size="small"
                             sx={{ fontWeight: 600 }}
@@ -788,7 +788,7 @@ const AdminAccountsPage = () => {
                       <MenuItem value="merchant">
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Chip
-                            label="MERCHANT"
+                            label={t('admin.accountsPage.roles.merchant')}
                             color="warning"
                             size="small"
                             sx={{ fontWeight: 600 }}
@@ -798,7 +798,7 @@ const AdminAccountsPage = () => {
                       <MenuItem value="admin">
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Chip
-                            label="ADMIN"
+                            label={t('admin.accountsPage.roles.admin')}
                             color="error"
                             size="small"
                             sx={{ fontWeight: 600 }}

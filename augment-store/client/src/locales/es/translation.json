@@ -1051,6 +1051,11 @@
         "active": "Activo",
         "inactive": "Inactivo"
       },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "COMERCIANTE",
+        "member": "MIEMBRO"
+      },
       "emptyState": {
         "noAccounts": "No se encontraron cuentas"
       },
