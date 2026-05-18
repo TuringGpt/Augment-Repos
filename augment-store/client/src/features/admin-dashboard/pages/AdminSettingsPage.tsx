@@ -30,7 +30,7 @@ import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
 import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
-import { TOAST_DURATION_OPTIONS } from '@constants/index'
+import { TOAST_DURATION_VALUES } from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -99,14 +99,14 @@ const AdminSettingsPage = () => {
   // Normalize toast duration to a valid option and persist the normalized value
   // This ensures UI and actual toast behavior cannot diverge
   useEffect(() => {
-    const isValidToastDuration = TOAST_DURATION_OPTIONS.some(
-      (option) => option.value === toastDuration
+    const isValidToastDuration = (TOAST_DURATION_VALUES as readonly number[]).includes(
+      toastDuration
     )
 
     // If the persisted value doesn't match any valid option,
     // write the normalized value back to the store
     if (!isValidToastDuration) {
-      const normalizedValue = TOAST_DURATION_OPTIONS[0].value
+      const normalizedValue = TOAST_DURATION_VALUES[0]
       setToastDuration(normalizedValue)
     }
   }, [toastDuration, setToastDuration])
@@ -188,7 +188,9 @@ const AdminSettingsPage = () => {
     const value = Number(event.target.value)
 
     // Validate that the value is a valid toast duration option
-    const isValid = TOAST_DURATION_OPTIONS.some((option) => option.value === value)
+    const isValid = TOAST_DURATION_VALUES.includes(
+      value as (typeof TOAST_DURATION_VALUES)[number]
+    )
     if (!isValid) {
       console.error('Invalid toast duration:', value)
       toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
@@ -384,11 +386,26 @@ const AdminSettingsPage = () => {
                   },
                 }}
               >
-                {TOAST_DURATION_OPTIONS.map(({ value, label }) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
+                {TOAST_DURATION_VALUES.map((value) => {
+                  const seconds = value / 1000
+                  // Format duration label with proper localization and pluralization
+                  // Use a helper function to safely call i18n.t with count parameter
+                  const formatDuration = (count: number): string => {
+                    try {
+                      return i18n.t('admin.settingsPage.durationSeconds', {
+                        count,
+                      } as any)
+                    } catch {
+                      // Fallback if translation fails
+                      return `${count} second${count !== 1 ? 's' : ''}`
+                    }
+                  }
+                  return (
+                    <MenuItem key={value} value={value}>
+                      {formatDuration(seconds)}
+                    </MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
           </Box>

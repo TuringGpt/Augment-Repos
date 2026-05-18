@@ -1333,6 +1333,8 @@
       "currentToastDuration": "Currently set to {{duration}} seconds",
       "toastDurationChanged": "Toast duration changed successfully",
       "toastDurationChangeFailed": "Failed to change toast duration. Please try again.",
+      "durationSeconds": "{{count}} second",
+      "durationSeconds_other": "{{count}} seconds",
       "moreSettings": "More Settings Coming Soon",
       "moreSettingsDescription": "Additional configuration options will be available here in future updates."
     },
