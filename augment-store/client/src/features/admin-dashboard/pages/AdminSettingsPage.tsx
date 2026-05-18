@@ -95,6 +95,15 @@ const AdminSettingsPage = () => {
     )
   }
 
+  // Normalize toast duration to a valid option
+  // If the persisted value doesn't match any valid option, use the first option as default
+  const isValidToastDuration = TOAST_DURATION_OPTIONS.some(
+    (option) => option.value === toastDuration
+  )
+  const normalizedToastDuration = isValidToastDuration
+    ? toastDuration
+    : TOAST_DURATION_OPTIONS[0].value
+
   const handleThemeToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Check if user prefers reduced motion
     const prefersReducedMotion =
@@ -360,7 +369,7 @@ const AdminSettingsPage = () => {
                 labelId="toast-duration-select-label"
                 id="toast-duration-select"
                 label={t('admin.settingsPage.selectDuration')}
-                value={toastDuration}
+                value={normalizedToastDuration}
                 onChange={handleToastDurationChange}
                 sx={{
                   '& .MuiSelect-select': {
