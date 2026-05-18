@@ -66,6 +66,7 @@ const AdminAccountsPage = () => {
     error,
     fetchAdminUsers,
     clearError,
+    clearUpdateError,
     setPage,
     updateAdminUser,
     isUpdating,
@@ -133,6 +134,9 @@ const AdminAccountsPage = () => {
       handleCloseDetailsDrawer()
     }
 
+    // Clear any previous update errors to avoid showing stale error UI
+    clearUpdateError()
+
     setSelectedAccount(account)
     setEditFormData({
       role: account.role,
@@ -159,6 +163,8 @@ const AdminAccountsPage = () => {
         role: 'member',
         isActive: true,
       })
+      // Clear any update errors after drawer is fully closed
+      clearUpdateError()
     }
   }
 
