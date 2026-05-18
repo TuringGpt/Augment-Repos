@@ -291,7 +291,7 @@ class ProductStockView(RetrieveAPIView):
         instance = self.get_object()
         data = {
             "product_id": instance.id,
-            "in_stock": instance.check_stock(2),
+            "in_stock": instance.check_stock(1),
         }
         if request.user.is_admin or instance.created_by_id == request.user.id:
             data["quantity"] = instance.quantity

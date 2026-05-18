@@ -758,7 +758,7 @@ class ProductTests(BaseAPITestCase):
             price=Decimal("100.00"),
             brand=self.brand,
             category=self.category,
-            quantity=5,
+            quantity=1,
             rating=Decimal("4.0"),
             created_by=self.merchant_user
         )
@@ -766,7 +766,7 @@ class ProductTests(BaseAPITestCase):
         response = self.authenticated_client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data["in_stock"])
-        self.assertEqual(response.data["quantity"], 5)
+        self.assertEqual(response.data["quantity"], 1)
         self.assertEqual(str(response.data["product_id"]), str(product.id))
 
     def test_product_stock_out_of_stock(self):
