@@ -187,16 +187,13 @@ const AdminAccountsPage = () => {
       // Show success message via toast
       toast.success(t('admin.accountsPage.updateSuccess'))
 
-      // Close drawer and reset state
+      // Close drawer - state cleanup handled by handleEditDrawerExited
       // Note: We close the drawer directly here instead of calling handleCloseEditDrawer()
       // because setIsUpdating(false) won't update synchronously, which would cause the
       // isUpdating guard in handleCloseEditDrawer to block the close
+      // The selectedAccount and form state will be cleared in handleEditDrawerExited
+      // after the drawer close animation completes to prevent UI flashing
       setIsEditDrawerOpen(false)
-      setSelectedAccount(null)
-      setEditFormData({
-        role: 'member',
-        isActive: true,
-      })
     } catch (err) {
       console.error('Failed to update account:', err)
       // The error is already shown via the updateError state in the drawer
