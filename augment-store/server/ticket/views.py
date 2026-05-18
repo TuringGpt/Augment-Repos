@@ -112,7 +112,12 @@ class TicketDetailView(TicketBaseView, RetrieveAPIView):
 class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDestroyAPIView):
     serializer_class = TicketUpdateSerializer
     cache_service_class = TicketCacheService
-    permission_classes = [IsAuthenticated, hasAdminRole]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_admin:
+            return Ticket.objects.all()
+        return Ticket.objects.filter(reporter=self.request.user)
 
     def perform_update(self, serializer):
         instance = serializer.instance

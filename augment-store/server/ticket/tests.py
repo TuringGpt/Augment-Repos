@@ -307,11 +307,18 @@ class TicketTests(BaseAPITestCase):
             self.assertIn("created_at", result)
             self.assertNotIn("is_deleted", result)
 
-    def test_update_ticket_forbidden_for_regular_user(self):
+    def test_update_ticket_owner_allowed(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
         payload = {"title": "Updated Title"}
-        response = self.authenticated_client.put(url, payload)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Updated Title")
+
+    def test_update_unrelated_ticket_not_found(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:update_ticket", args=[other_ticket.id])
+        response = self.authenticated_client.patch(url, {"title": "Nope"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_ticket_as_admin(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
