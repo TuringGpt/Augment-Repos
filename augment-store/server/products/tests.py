@@ -786,6 +786,20 @@ class ProductTests(BaseAPITestCase):
         self.assertEqual(response.data["quantity"], 0)
         self.assertEqual(str(response.data["product_id"]), str(product.id))
 
+    def test_product_stock_member_hides_quantity(self):
+        product = ProductFactory(
+            brand=self.brand,
+            category=self.category,
+            quantity=5,
+            created_by=self.merchant_user
+        )
+        self.authenticated_client.force_authenticate(user=self.member_user)
+        url = reverse("v1:product_stock", kwargs={"pk": str(product.id)})
+        response = self.authenticated_client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["in_stock"])
+        self.assertNotIn("quantity", response.data)
+
     def test_product_stock_unauthenticated(self):
         product = ProductFactory(
             name="Anon Stock Check Product",
