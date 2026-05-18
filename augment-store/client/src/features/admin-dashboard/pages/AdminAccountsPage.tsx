@@ -682,7 +682,7 @@ const AdminAccountsPage = () => {
               onClick={handleCloseEditDrawer}
               disabled={isUpdating}
               sx={{ color: 'white' }}
-              aria-label={t('admin.accountsPage.aria.closeDrawer')}
+              aria-label={t('admin.accountsPage.aria.closeEditDrawer')}
             >
               <CloseIcon />
             </IconButton>

@@ -1059,7 +1059,8 @@
       },
       "aria": {
         "viewAccountDetails": "Voir les détails de {{name}}",
-        "closeDrawer": "Fermer le tiroir des détails du compte"
+        "closeDrawer": "Fermer le tiroir des détails du compte",
+        "closeEditDrawer": "Fermer le tiroir de modification du compte"
       }
     },
     "reports": "Rapports",

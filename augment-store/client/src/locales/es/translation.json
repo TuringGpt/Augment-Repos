@@ -1059,7 +1059,8 @@
       },
       "aria": {
         "viewAccountDetails": "Ver detalles de {{name}}",
-        "closeDrawer": "Cerrar cajón de detalles de cuenta"
+        "closeDrawer": "Cerrar cajón de detalles de cuenta",
+        "closeEditDrawer": "Cerrar cajón de editar cuenta"
       }
     },
     "reports": "Informes",

@@ -1059,7 +1059,8 @@
       },
       "aria": {
         "viewAccountDetails": "View details for {{name}}",
-        "closeDrawer": "Close account details drawer"
+        "closeDrawer": "Close account details drawer",
+        "closeEditDrawer": "Close edit account drawer"
       }
     },
     "reports": "Reports",

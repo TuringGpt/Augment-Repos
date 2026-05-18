@@ -1059,7 +1059,8 @@
       },
       "aria": {
         "viewAccountDetails": "Details anzeigen für {{name}}",
-        "closeDrawer": "Kontodetails-Schublade schließen"
+        "closeDrawer": "Kontodetails-Schublade schließen",
+        "closeEditDrawer": "Konto-Bearbeitungs-Schublade schließen"
       }
     },
     "reports": "Berichte",
