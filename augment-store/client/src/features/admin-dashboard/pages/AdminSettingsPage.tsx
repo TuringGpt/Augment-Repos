@@ -356,7 +356,7 @@ const AdminSettingsPage = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {t('admin.settingsPage.currentToastDuration', {
-                    duration: toastDuration / 1000
+                    duration: normalizedToastDuration / 1000
                   })}
                 </Typography>
               </Box>
