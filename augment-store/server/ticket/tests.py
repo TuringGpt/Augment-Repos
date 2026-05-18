@@ -312,11 +312,24 @@ class TicketTests(BaseAPITestCase):
             self.assertIn("created_at", result)
             self.assertNotIn("is_deleted", result)
 
-    def test_update_ticket_forbidden_for_regular_user(self):
+    def test_update_ticket_owner_allowed(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
         payload = {"title": "Updated Title"}
-        response = self.authenticated_client.put(url, payload)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.authenticated_client.patch(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Updated Title")
+
+    def test_update_unrelated_ticket_not_found(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:update_ticket", args=[other_ticket.id])
+        response = self.authenticated_client.patch(url, {"title": "Nope"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_assignee_can_update_ticket(self):
+        ticket = TicketFactory(reporter=self.user2, assignee=self.user)
+        url = reverse("v1:ticket:update_ticket", args=[ticket.id])
+        response = self.authenticated_client.patch(url, {"title": "Assignee Update"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_ticket_as_admin(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
@@ -366,6 +379,14 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:create_comment", args=[unrelated_ticket.id])
         response = self.authenticated_client.post(url, {"content": "Not allowed"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_comment_endpoints_for_deleted_ticket_return_not_found(self):
+        self.ticket.is_deleted = True
+        self.ticket.save(update_fields=["is_deleted"])
+        list_url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        create_url = reverse("v1:ticket:create_comment", args=[self.ticket.id])
+        self.assertEqual(self.authenticated_client.get(list_url).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.authenticated_client.post(create_url, {"content": "Nope"}).status_code, status.HTTP_404_NOT_FOUND)
     
     def test_list_comments_excludes_is_deleted(self):
         url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
@@ -375,10 +396,24 @@ class TicketTests(BaseAPITestCase):
             self.assertNotIn("is_deleted", comment)
             self.assertIn("created_at", comment)
     
-    def test_delete_ticket_forbidden_for_regular_user(self):
+    def test_delete_ticket_owner_allowed(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
         response = self.authenticated_client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.ticket.refresh_from_db()
+        self.assertTrue(self.ticket.is_deleted)
+
+    def test_delete_ticket_as_assignee_allowed(self):
+        ticket = TicketFactory(reporter=self.user2, assignee=self.user)
+        url = reverse("v1:ticket:delete_ticket", args=[ticket.id])
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_unrelated_ticket_not_found(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:delete_ticket", args=[other_ticket.id])
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_ticket_as_admin(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
@@ -443,6 +478,11 @@ class TicketStatsTests(BaseAPITestCase):
         self.assertEqual(response.data["total"], 2)
         self.assertEqual(response.data["open"], 1)
         self.assertEqual(response.data["closed"], 1)
+
+    def test_stats_exclude_deleted_tickets(self):
+        TicketFactory(reporter=self.user, assignee=self.user, is_deleted=True)
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 0)
 
     def test_stats_all_known_statuses(self):
         for s in Ticket.Status.values:
