@@ -320,6 +320,12 @@ class TicketTests(BaseAPITestCase):
         response = self.authenticated_client.patch(url, {"title": "Nope"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_assignee_can_update_ticket(self):
+        ticket = TicketFactory(reporter=self.user2, assignee=self.user)
+        url = reverse("v1:ticket:update_ticket", args=[ticket.id])
+        response = self.authenticated_client.patch(url, {"title": "Assignee Update"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_update_ticket_as_admin(self):
         url = reverse("v1:ticket:update_ticket", args=[self.ticket.id])
         payload = {
@@ -377,10 +383,18 @@ class TicketTests(BaseAPITestCase):
             self.assertNotIn("is_deleted", comment)
             self.assertIn("created_at", comment)
     
-    def test_delete_ticket_forbidden_for_regular_user(self):
+    def test_delete_ticket_owner_allowed(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])
         response = self.authenticated_client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.ticket.refresh_from_db()
+        self.assertTrue(self.ticket.is_deleted)
+
+    def test_delete_unrelated_ticket_not_found(self):
+        other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
+        url = reverse("v1:ticket:delete_ticket", args=[other_ticket.id])
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_ticket_as_admin(self):
         url = reverse("v1:ticket:delete_ticket", args=[self.ticket.id])

@@ -24,7 +24,7 @@ class CommentCacheService(BaseCacheService):
 
 class TicketBaseView(AutoOptimizeMixin):
     permission_classes = [IsAuthenticated]
-    queryset = Ticket.objects.all()
+    queryset = Ticket.objects.filter(is_deleted=False)
     auto_select_related = ['reporter', 'assignee']
 
     def get_queryset(self):
@@ -114,11 +114,6 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
     cache_service_class = TicketCacheService
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        if self.request.user.is_admin:
-            return Ticket.objects.all()
-        return Ticket.objects.filter(reporter=self.request.user)
-
     def perform_update(self, serializer):
         instance = serializer.instance
         reporter = instance.reporter
@@ -130,7 +125,8 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
 
     def perform_destroy(self, instance):
         reporter = instance.reporter
-        super().perform_destroy(instance)
+        instance.is_deleted = True
+        instance.save(update_fields=["is_deleted", "updated_at"])
         CommentCacheService().clear_namespace()
         _invalidate_stats_cache(self.request.user)
         if reporter != self.request.user:
