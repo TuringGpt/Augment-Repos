@@ -2,6 +2,27 @@ import { useEffect, useRef } from 'react'
 import { Snackbar, Alert, AlertColor } from '@mui/material'
 import { useUIStore } from '@store/uiStore'
 
+// Constants for toast duration validation
+const MIN_TOAST_DURATION = 1000 // 1 second
+const MAX_TOAST_DURATION = 30000 // 30 seconds
+const DEFAULT_TOAST_DURATION = 5000 // 5 seconds
+
+/**
+ * Validates and clamps toast duration to a safe range
+ * Ensures setTimeout receives a safe positive number
+ * @param duration - The duration to validate
+ * @returns A safe, clamped duration value
+ */
+const validateToastDuration = (duration: number): number => {
+  // Check if the value is a valid number
+  if (typeof duration !== 'number' || isNaN(duration) || !isFinite(duration)) {
+    return DEFAULT_TOAST_DURATION
+  }
+
+  // Clamp to safe range
+  return Math.max(MIN_TOAST_DURATION, Math.min(MAX_TOAST_DURATION, duration))
+}
+
 /**
  * Global Toast Notification Component
  *
@@ -53,10 +74,11 @@ const ToastNotification = () => {
     notifications.forEach((notification) => {
       if (!currentTimers.has(notification.id)) {
         const duration = notification.duration ?? toastDuration // Use configured default duration
+        const safeDuration = validateToastDuration(duration) // Validate before using in setTimeout
         const timer = setTimeout(() => {
           removeNotification(notification.id)
           currentTimers.delete(notification.id)
-        }, duration)
+        }, safeDuration)
         currentTimers.set(notification.id, timer)
       }
     })
