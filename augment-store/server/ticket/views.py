@@ -127,6 +127,7 @@ class TicketUpdateView(CacheInvalidatorMixin, TicketBaseView, RetrieveUpdateDest
         reporter = instance.reporter
         instance.is_deleted = True
         instance.save(update_fields=["is_deleted", "updated_at"])
+        self.invalidate_cache()
         CommentCacheService().clear_namespace()
         _invalidate_stats_cache(self.request.user)
         if reporter != self.request.user:
@@ -138,7 +139,7 @@ class CommentBaseView(AutoOptimizeMixin):
     auto_select_related = ['user', 'ticket']
 
     def get_ticket_queryset(self):
-        queryset = Ticket.objects.all()
+        queryset = Ticket.objects.filter(is_deleted=False)
         if self.request.user.is_admin:
             return queryset
         return queryset.filter(
@@ -207,7 +208,7 @@ class TicketStatsView(GenericAPIView):
         stats = django_cache.get(cache_key)
         if stats is None:
             known_statuses = Ticket.Status.values
-            aggregates = Ticket.objects.filter(reporter=request.user).aggregate(
+            aggregates = Ticket.objects.filter(reporter=request.user, is_deleted=False).aggregate(
                 total=Count("id"),
                 **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
             )
@@ -232,7 +233,7 @@ class AdminTicketStatsView(GenericAPIView):
         stats = django_cache.get(cache_key)
         if stats is None:
             known_statuses = Ticket.Status.values
-            aggregates = Ticket.objects.aggregate(
+            aggregates = Ticket.objects.filter(is_deleted=False).aggregate(
                 total=Count("id"),
                 **{s: Count("id", filter=Q(status=s)) for s in known_statuses},
             )

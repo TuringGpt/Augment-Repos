@@ -374,6 +374,14 @@ class TicketTests(BaseAPITestCase):
         url = reverse("v1:ticket:create_comment", args=[unrelated_ticket.id])
         response = self.authenticated_client.post(url, {"content": "Not allowed"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_comment_endpoints_for_deleted_ticket_return_not_found(self):
+        self.ticket.is_deleted = True
+        self.ticket.save(update_fields=["is_deleted"])
+        list_url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
+        create_url = reverse("v1:ticket:create_comment", args=[self.ticket.id])
+        self.assertEqual(self.authenticated_client.get(list_url).status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(self.authenticated_client.post(create_url, {"content": "Nope"}).status_code, status.HTTP_404_NOT_FOUND)
     
     def test_list_comments_excludes_is_deleted(self):
         url = reverse("v1:ticket:comment_list", args=[self.ticket.id])
@@ -459,6 +467,11 @@ class TicketStatsTests(BaseAPITestCase):
         self.assertEqual(response.data["total"], 2)
         self.assertEqual(response.data["open"], 1)
         self.assertEqual(response.data["closed"], 1)
+
+    def test_stats_exclude_deleted_tickets(self):
+        TicketFactory(reporter=self.user, assignee=self.user, is_deleted=True)
+        response = self.authenticated_client.get(self.stats_url)
+        self.assertEqual(response.data["total"], 0)
 
     def test_stats_all_known_statuses(self):
         for s in Ticket.Status.values:
