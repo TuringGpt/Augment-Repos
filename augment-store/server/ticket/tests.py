@@ -398,6 +398,12 @@ class TicketTests(BaseAPITestCase):
         self.ticket.refresh_from_db()
         self.assertTrue(self.ticket.is_deleted)
 
+    def test_delete_ticket_as_assignee_allowed(self):
+        ticket = TicketFactory(reporter=self.user2, assignee=self.user)
+        url = reverse("v1:ticket:delete_ticket", args=[ticket.id])
+        response = self.authenticated_client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     def test_delete_unrelated_ticket_not_found(self):
         other_ticket = TicketFactory(reporter=self.user2, assignee=self.user2)
         url = reverse("v1:ticket:delete_ticket", args=[other_ticket.id])
