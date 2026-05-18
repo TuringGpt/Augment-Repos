@@ -56,6 +56,23 @@ const AdminSettingsPage = () => {
       : FALLBACK_LANGUAGE
   const currentLanguageName = LANGUAGES[currentLanguage].nativeName
 
+  // Normalize toast duration to a valid option and persist the normalized value
+  // This ensures UI and actual toast behavior cannot diverge
+  // IMPORTANT: This useEffect must be placed before any conditional returns
+  // to comply with the Rules of Hooks
+  useEffect(() => {
+    const isValidToastDuration = (TOAST_DURATION_VALUES as readonly number[]).includes(
+      toastDuration
+    )
+
+    // If the persisted value doesn't match any valid option,
+    // write the normalized value back to the store
+    if (!isValidToastDuration) {
+      const normalizedValue = TOAST_DURATION_VALUES[0]
+      setToastDuration(normalizedValue)
+    }
+  }, [toastDuration, setToastDuration])
+
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
   // during the brief hydration period on initial page load
