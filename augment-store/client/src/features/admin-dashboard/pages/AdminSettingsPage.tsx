@@ -113,21 +113,6 @@ const AdminSettingsPage = () => {
     )
   }
 
-  // Normalize toast duration to a valid option and persist the normalized value
-  // This ensures UI and actual toast behavior cannot diverge
-  useEffect(() => {
-    const isValidToastDuration = (TOAST_DURATION_VALUES as readonly number[]).includes(
-      toastDuration
-    )
-
-    // If the persisted value doesn't match any valid option,
-    // write the normalized value back to the store
-    if (!isValidToastDuration) {
-      const normalizedValue = TOAST_DURATION_VALUES[0]
-      setToastDuration(normalizedValue)
-    }
-  }, [toastDuration, setToastDuration])
-
   const handleThemeToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Check if user prefers reduced motion
     const prefersReducedMotion =
