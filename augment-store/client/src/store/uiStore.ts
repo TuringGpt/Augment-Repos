@@ -109,6 +109,12 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         toastDuration: state.toastDuration,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Validate and normalize toastDuration after rehydration from storage
+        if (state?.toastDuration !== undefined) {
+          state.toastDuration = validateToastDuration(state.toastDuration)
+        }
+      },
     }
   )
 )
