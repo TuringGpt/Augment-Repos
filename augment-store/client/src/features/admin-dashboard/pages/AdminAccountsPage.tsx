@@ -191,10 +191,18 @@ const AdminAccountsPage = () => {
     }
   }
 
-  const handleEditFormChange = (field: 'role' | 'isActive', value: any) => {
+  // Type-safe form change handlers - separate functions for each field type
+  const handleRoleChange = (value: 'admin' | 'merchant' | 'member'): void => {
     setEditFormData((prev) => ({
       ...prev,
-      [field]: value,
+      role: value,
+    }))
+  }
+
+  const handleIsActiveChange = (value: boolean): void => {
+    setEditFormData((prev) => ({
+      ...prev,
+      isActive: value,
     }))
   }
 
@@ -755,7 +763,9 @@ const AdminAccountsPage = () => {
                       labelId="role-select-label"
                       value={editFormData.role}
                       label={t('admin.accountsPage.table.role')}
-                      onChange={(e) => handleEditFormChange('role', e.target.value)}
+                      onChange={(e) =>
+                        handleRoleChange(e.target.value as 'admin' | 'merchant' | 'member')
+                      }
                       disabled={isUpdating}
                     >
                       <MenuItem value="member">
@@ -798,7 +808,7 @@ const AdminAccountsPage = () => {
                     control={
                       <Switch
                         checked={editFormData.isActive}
-                        onChange={(e) => handleEditFormChange('isActive', e.target.checked)}
+                        onChange={(e) => handleIsActiveChange(e.target.checked)}
                         disabled={isUpdating}
                         color="success"
                       />
