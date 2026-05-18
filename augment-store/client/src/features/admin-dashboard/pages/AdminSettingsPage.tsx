@@ -21,12 +21,15 @@ import {
   Brightness4,
   Brightness7,
   Language as LanguageIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
+import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
+import { TOAST_DURATION_OPTIONS } from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -43,6 +46,7 @@ const AdminSettingsPage = () => {
   const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
+  const { toastDuration, setToastDuration } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
   const currentLanguage: LanguageCode =
@@ -161,6 +165,28 @@ const AdminSettingsPage = () => {
       console.error('Failed to change language:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.languageChangeFailed'))
+    }
+  }
+
+  const handleToastDurationChange = (event: SelectChangeEvent<number>) => {
+    const value = Number(event.target.value)
+
+    // Validate that the value is a valid toast duration option
+    const isValid = TOAST_DURATION_OPTIONS.some((option) => option.value === value)
+    if (!isValid) {
+      console.error('Invalid toast duration:', value)
+      toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
+      return
+    }
+
+    try {
+      setToastDuration(value)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.toastDurationChanged'))
+    } catch (error) {
+      console.error('Failed to change toast duration:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
     }
   }
 
@@ -284,6 +310,67 @@ const AdminSettingsPage = () => {
                 {Object.entries(LANGUAGES).map(([code, { nativeName }]) => (
                   <MenuItem key={code} value={code}>
                     {nativeName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Notifications Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {t('admin.settingsPage.notifications')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t('admin.settingsPage.notificationsDescription')}
+          </Typography>
+
+          {/* Toast Duration Selector */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.toastDuration')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.settingsPage.currentToastDuration', {
+                    duration: toastDuration / 1000
+                  })}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel id="toast-duration-select-label">
+                {t('admin.settingsPage.selectDuration')}
+              </InputLabel>
+              <Select
+                labelId="toast-duration-select-label"
+                id="toast-duration-select"
+                label={t('admin.settingsPage.selectDuration')}
+                value={toastDuration}
+                onChange={handleToastDurationChange}
+                sx={{
+                  '& .MuiSelect-select': {
+                    py: 1,
+                  },
+                }}
+              >
+                {TOAST_DURATION_OPTIONS.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
                   </MenuItem>
                 ))}
               </Select>

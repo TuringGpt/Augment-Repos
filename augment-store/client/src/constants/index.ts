@@ -68,6 +68,16 @@ export const PAYMENT_STATUS_LABELS = {
 
 export const POLLING_INTERVAL = 30000 // 30 seconds in milliseconds
 
+export const TOAST_DURATION_OPTIONS = [
+  { value: 2000, label: '2 seconds' },
+  { value: 3000, label: '3 seconds' },
+  { value: 4000, label: '4 seconds' },
+  { value: 5000, label: '5 seconds' },
+  { value: 6000, label: '6 seconds' },
+  { value: 8000, label: '8 seconds' },
+  { value: 10000, label: '10 seconds' },
+] as const
+
 export const CONTACT_INFO = {
   SUPPORT_EMAIL: 'support@augmentstore.com',
   SUPPORT_PHONE: '+1 (555) 123-4567',

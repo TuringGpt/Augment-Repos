@@ -1326,6 +1326,13 @@
       "currentLanguage": "Actualmente usando {{language}}",
       "languageChanged": "Idioma cambiado exitosamente",
       "languageChangeFailed": "Error al cambiar el idioma. Por favor, inténtalo de nuevo.",
+      "notifications": "Notificaciones",
+      "notificationsDescription": "Configurar preferencias de notificaciones y ajustes de mensajes toast",
+      "toastDuration": "Duración del Toast",
+      "selectDuration": "Seleccionar Duración",
+      "currentToastDuration": "Actualmente configurado a {{duration}} segundos",
+      "toastDurationChanged": "Duración del toast cambiada exitosamente",
+      "toastDurationChangeFailed": "Error al cambiar la duración del toast. Por favor, inténtalo de nuevo.",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },

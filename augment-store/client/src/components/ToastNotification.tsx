@@ -6,24 +6,24 @@ import { useUIStore } from '@store/uiStore'
  * Global Toast Notification Component
  *
  * Displays toast/snackbar notifications from the UI store.
- * Automatically dismisses after the specified duration (default: 5 seconds).
+ * Automatically dismisses after the specified duration (default: configured in settings).
  *
  * Usage:
  * ```tsx
  * const { addNotification } = useUIStore()
  *
- * // Success notification
+ * // Success notification (uses configured default duration)
  * addNotification({ type: 'success', message: 'Item added to cart!' })
  *
  * // Error notification
  * addNotification({ type: 'error', message: 'Failed to save changes' })
  *
- * // Custom duration (in milliseconds)
+ * // Custom duration (in milliseconds, overrides default)
  * addNotification({ type: 'info', message: 'Processing...', duration: 3000 })
  * ```
  */
 const ToastNotification = () => {
-  const { notifications, removeNotification } = useUIStore()
+  const { notifications, removeNotification, toastDuration } = useUIStore()
   // Track timers per notification to avoid resetting existing timers when new ones are added
   const timersRef = useRef<Map<string, TimeoutId>>(new Map())
 
@@ -52,7 +52,7 @@ const ToastNotification = () => {
     // Set up timers for new notifications only
     notifications.forEach((notification) => {
       if (!currentTimers.has(notification.id)) {
-        const duration = notification.duration ?? 5000 // Default 5 seconds
+        const duration = notification.duration ?? toastDuration // Use configured default duration
         const timer = setTimeout(() => {
           removeNotification(notification.id)
           currentTimers.delete(notification.id)
@@ -60,7 +60,7 @@ const ToastNotification = () => {
         currentTimers.set(notification.id, timer)
       }
     })
-  }, [notifications, removeNotification])
+  }, [notifications, removeNotification, toastDuration])
 
   const handleClose = (id: string) => {
     removeNotification(id)
