@@ -279,7 +279,7 @@ from rest_framework import serializers
 class ProductStockSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()
     in_stock = serializers.BooleanField()
-    quantity = serializers.IntegerField()
+    quantity = serializers.IntegerField(required=False)
 
 class ProductStockView(RetrieveAPIView):
     """Check stock for a specific product."""
@@ -291,9 +291,10 @@ class ProductStockView(RetrieveAPIView):
         instance = self.get_object()
         data = {
             "product_id": instance.id,
-            "in_stock": instance.check_stock(1),  # in stock if at least 1 unit available
-            "quantity": instance.quantity
+            "in_stock": instance.check_stock(1),
         }
+        if request.user.is_admin or instance.created_by_id == request.user.id:
+            data["quantity"] = instance.quantity
         serializer = self.get_serializer(data)
         return Response(serializer.data)
 
