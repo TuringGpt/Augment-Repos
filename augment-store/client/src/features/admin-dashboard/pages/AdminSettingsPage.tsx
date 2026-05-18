@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -95,14 +96,20 @@ const AdminSettingsPage = () => {
     )
   }
 
-  // Normalize toast duration to a valid option
-  // If the persisted value doesn't match any valid option, use the first option as default
-  const isValidToastDuration = TOAST_DURATION_OPTIONS.some(
-    (option) => option.value === toastDuration
-  )
-  const normalizedToastDuration = isValidToastDuration
-    ? toastDuration
-    : TOAST_DURATION_OPTIONS[0].value
+  // Normalize toast duration to a valid option and persist the normalized value
+  // This ensures UI and actual toast behavior cannot diverge
+  useEffect(() => {
+    const isValidToastDuration = TOAST_DURATION_OPTIONS.some(
+      (option) => option.value === toastDuration
+    )
+
+    // If the persisted value doesn't match any valid option,
+    // write the normalized value back to the store
+    if (!isValidToastDuration) {
+      const normalizedValue = TOAST_DURATION_OPTIONS[0].value
+      setToastDuration(normalizedValue)
+    }
+  }, [toastDuration, setToastDuration])
 
   const handleThemeToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Check if user prefers reduced motion
@@ -356,7 +363,7 @@ const AdminSettingsPage = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {t('admin.settingsPage.currentToastDuration', {
-                    duration: normalizedToastDuration / 1000
+                    duration: toastDuration / 1000
                   })}
                 </Typography>
               </Box>
@@ -369,7 +376,7 @@ const AdminSettingsPage = () => {
                 labelId="toast-duration-select-label"
                 id="toast-duration-select"
                 label={t('admin.settingsPage.selectDuration')}
-                value={normalizedToastDuration}
+                value={toastDuration}
                 onChange={handleToastDurationChange}
                 sx={{
                   '& .MuiSelect-select': {
