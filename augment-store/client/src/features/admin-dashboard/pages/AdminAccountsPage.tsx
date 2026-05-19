@@ -382,8 +382,8 @@ const AdminAccountsPage = () => {
                         onClick={(e) => {
                           // Only trigger row click if clicking outside the actions cell
                           // This prevents conflicts with the nested IconButton
-                          const target = e.target as HTMLElement
-                          if (!target.closest('[data-table-actions]')) {
+                          const target = e.target
+                          if (target instanceof Element && !target.closest('[data-table-actions]')) {
                             handleAccountClick(account)
                           }
                         }}
