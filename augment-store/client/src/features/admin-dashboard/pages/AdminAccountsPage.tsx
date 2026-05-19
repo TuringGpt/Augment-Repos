@@ -379,27 +379,18 @@ const AdminAccountsPage = () => {
                       <TableRow
                         key={account.id}
                         hover
-                        onClick={() => handleAccountClick(account)}
-                        onKeyDown={(e) => {
-                          if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
-                            e.preventDefault()
+                        onClick={(e) => {
+                          // Only trigger row click if clicking outside the actions cell
+                          // This prevents conflicts with the nested IconButton
+                          const target = e.target as HTMLElement
+                          if (!target.closest('[data-table-actions]')) {
                             handleAccountClick(account)
                           }
                         }}
-                        tabIndex={0}
-                        role="button"
-                        aria-label={t('admin.accountsPage.aria.viewAccountDetails', {
-                          name: displayName,
-                        })}
                         sx={{
                           cursor: 'pointer',
                           '&:hover': { bgcolor: 'action.hover' },
                           transition: 'background-color 0.2s',
-                          '&:focus': {
-                            outline: '2px solid',
-                            outlineColor: 'primary.main',
-                            outlineOffset: '-2px',
-                          },
                         }}
                       >
                         <TableCell>
@@ -446,17 +437,12 @@ const AdminAccountsPage = () => {
                         )}
                       </TableCell>
                       <TableCell>{formatDate(account.dateJoined)}</TableCell>
-                      <TableCell align="center">
+                      <TableCell align="center" data-table-actions>
                         <Tooltip title={t('common.edit')}>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditAccount(account)
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.stopPropagation()
-                              }
                             }}
                             color="primary"
                             size="small"
