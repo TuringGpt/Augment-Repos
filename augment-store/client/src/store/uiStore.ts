@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ToastPosition } from '@constants/index'
-import { DEFAULT_TOAST_POSITION } from '@constants/index'
+import { DEFAULT_TOAST_POSITION, TOAST_POSITION_OPTIONS } from '@constants/index'
 
 interface Notification {
   id: string
@@ -29,6 +29,21 @@ const validateToastDuration = (duration: number): number => {
 
   // Clamp to safe range
   return Math.max(MIN_TOAST_DURATION, Math.min(MAX_TOAST_DURATION, duration))
+}
+
+/**
+ * Validates toast position to ensure it's a valid key in TOAST_POSITION_OPTIONS
+ * Prevents undefined access when retrieving position from TOAST_POSITION_OPTIONS
+ * @param position - The position to validate
+ * @returns A valid ToastPosition, or DEFAULT_TOAST_POSITION if invalid
+ */
+const validateToastPosition = (position: unknown): ToastPosition => {
+  // Check if position is a valid key in TOAST_POSITION_OPTIONS
+  if (typeof position === 'string' && position in TOAST_POSITION_OPTIONS) {
+    return position as ToastPosition
+  }
+
+  return DEFAULT_TOAST_POSITION
 }
 
 interface UIState {
@@ -109,7 +124,7 @@ export const useUIStore = create<UIState>()(
 
       setToastDuration: (duration) => set({ toastDuration: validateToastDuration(duration) }),
 
-      setToastPosition: (position) => set({ toastPosition: position }),
+      setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
     }),
     {
       name: 'ui-storage',
@@ -118,10 +133,13 @@ export const useUIStore = create<UIState>()(
         toastPosition: state.toastPosition,
       }),
       onRehydrateStorage: () => (state) => {
-        // Validate and normalize toastDuration after rehydration from storage
-        // Use setToastDuration to ensure subscribers are notified of the validated value
+        // Validate and normalize toastDuration and toastPosition after rehydration from storage
+        // Use setter methods to ensure subscribers are notified of the validated values
         if (state?.toastDuration !== undefined) {
           state.setToastDuration(state.toastDuration)
+        }
+        if (state?.toastPosition !== undefined) {
+          state.setToastPosition(state.toastPosition)
         }
       },
     }

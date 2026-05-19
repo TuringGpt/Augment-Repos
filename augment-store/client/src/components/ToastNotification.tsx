@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Snackbar, Alert, AlertColor } from '@mui/material'
 import { useUIStore } from '@store/uiStore'
-import { TOAST_POSITION_OPTIONS } from '@constants/index'
+import { TOAST_POSITION_OPTIONS, DEFAULT_TOAST_POSITION } from '@constants/index'
 
 // Constants for toast duration validation
 const MIN_TOAST_DURATION = 1000 // 1 second
@@ -90,7 +90,8 @@ const ToastNotification = () => {
   }
 
   // Get the anchor origin from the selected position
-  const anchorOrigin = TOAST_POSITION_OPTIONS[toastPosition]
+  // Fall back to DEFAULT_TOAST_POSITION if toastPosition is invalid
+  const anchorOrigin = TOAST_POSITION_OPTIONS[toastPosition] ?? TOAST_POSITION_OPTIONS[DEFAULT_TOAST_POSITION]
 
   // Calculate position offset based on vertical alignment
   const getPositionOffset = (index: number) => {
