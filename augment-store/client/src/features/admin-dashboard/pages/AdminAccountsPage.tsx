@@ -383,7 +383,13 @@ const AdminAccountsPage = () => {
                           // Only trigger row click if clicking outside the actions cell
                           // This prevents conflicts with the nested IconButton
                           const target = e.target
-                          if (target instanceof Element && !target.closest('[data-table-actions]')) {
+                          if (target instanceof Element) {
+                            // Element node: check if it's outside the actions cell
+                            if (!target.closest('[data-table-actions]')) {
+                              handleAccountClick(account)
+                            }
+                          } else {
+                            // Non-Element node (e.g., Text node): treat as normal row click
                             handleAccountClick(account)
                           }
                         }}
