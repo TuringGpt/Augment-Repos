@@ -21,6 +21,12 @@ import {
   IconButton,
   Divider,
   Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
@@ -28,8 +34,11 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Close as CloseIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
+import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useAccountStore } from '@store/accountStore'
 import type { AdminUser } from '@features/accounts/types'
@@ -46,6 +55,7 @@ import type { AdminUser } from '@features/accounts/types'
 const AdminAccountsPage = () => {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const {
     adminUsers,
@@ -56,12 +66,28 @@ const AdminAccountsPage = () => {
     error,
     fetchAdminUsers,
     clearError,
+    clearUpdateError,
     setPage,
+    updateAdminUser,
+    isUpdating,
+    updateError,
   } = useAccountStore()
 
   // Details drawer state
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<AdminUser | null>(null)
+
+  // Edit drawer state
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState<{
+    role: 'admin' | 'merchant' | 'member'
+    isActive: boolean
+  }>({
+    role: 'member',
+    isActive: true,
+  })
+  // State to track pending edit drawer open (used to sequence drawer transitions)
+  const [pendingEditAccount, setPendingEditAccount] = useState<AdminUser | null>(null)
 
   // Fetch admin users on mount using the stored currentPage to avoid page/data mismatch
   // If the user previously paged through the data and revisits this page, they will see
@@ -95,10 +121,122 @@ const AdminAccountsPage = () => {
   }
 
   const handleDrawerExited = () => {
+    // If there's a pending edit, open the edit drawer now that the details drawer has fully closed
+    if (pendingEditAccount) {
+      const account = pendingEditAccount
+      setPendingEditAccount(null)
+
+      // Clear any previous update errors to avoid showing stale error UI
+      clearUpdateError()
+
+      setSelectedAccount(account)
+      setEditFormData({
+        role: account.role,
+        isActive: account.isActive,
+      })
+      setIsEditDrawerOpen(true)
+      return
+    }
+
     // Clear selectedAccount after the drawer has fully closed
     // This prevents the content from flashing empty during the close transition
-    // Only clear if the drawer is still closed (prevents race condition if reopened quickly)
-    setSelectedAccount((prevAccount) => (isDetailsDrawerOpen ? prevAccount : null))
+    // Only clear if both drawers are closed (prevents race condition if edit drawer is opening)
+    if (!isDetailsDrawerOpen && !isEditDrawerOpen) {
+      setSelectedAccount(null)
+    }
+  }
+
+  // Edit drawer handlers
+  const handleEditAccount = (account: AdminUser) => {
+    // If details drawer is open, close it first and defer opening edit drawer
+    // This prevents both drawers from being mounted simultaneously during transitions
+    if (isDetailsDrawerOpen) {
+      setPendingEditAccount(account)
+      handleCloseDetailsDrawer()
+      return
+    }
+
+    // If details drawer is already closed, open edit drawer immediately
+    // Clear any previous update errors to avoid showing stale error UI
+    clearUpdateError()
+
+    setSelectedAccount(account)
+    setEditFormData({
+      role: account.role,
+      isActive: account.isActive,
+    })
+    setIsEditDrawerOpen(true)
+  }
+
+  const handleCloseEditDrawer = () => {
+    // Prevent closing while update is in progress
+    if (isUpdating) {
+      return
+    }
+
+    setIsEditDrawerOpen(false)
+  }
+
+  const handleEditDrawerExited = () => {
+    // Clear selectedAccount and form data after the drawer has fully closed
+    // Only clear if both drawers are closed (prevents race condition if details drawer is opening)
+    if (!isEditDrawerOpen && !isDetailsDrawerOpen) {
+      setSelectedAccount(null)
+      setEditFormData({
+        role: 'member',
+        isActive: true,
+      })
+      // Clear any update errors after drawer is fully closed
+      clearUpdateError()
+    }
+  }
+
+  // Type-safe form change handlers - separate functions for each field type
+  const handleRoleChange = (value: 'admin' | 'merchant' | 'member'): void => {
+    setEditFormData((prev) => ({
+      ...prev,
+      role: value,
+    }))
+  }
+
+  const handleIsActiveChange = (value: boolean): void => {
+    setEditFormData((prev) => ({
+      ...prev,
+      isActive: value,
+    }))
+  }
+
+  const handleSaveAccount = async () => {
+    if (!selectedAccount) return
+
+    try {
+      const result = await updateAdminUser(selectedAccount.id, {
+        role: editFormData.role,
+        is_active: editFormData.isActive,
+      })
+
+      // Guard against superseded requests - updateAdminUser returns undefined when
+      // the request was superseded by a newer request (see store's request counter guard)
+      // Don't show success toast or close drawer for stale requests to prevent false "updated successfully" signal
+      if (!result) {
+        return
+      }
+
+      // Show success message via toast
+      toast.success(t('admin.accountsPage.updateSuccess'))
+
+      // Close drawer - state cleanup handled by handleEditDrawerExited
+      // Note: We close the drawer directly here instead of calling handleCloseEditDrawer()
+      // because setIsUpdating(false) won't update synchronously, which would cause the
+      // isUpdating guard in handleCloseEditDrawer to block the close
+      // The selectedAccount and form state will be cleared in handleEditDrawerExited
+      // after the drawer close animation completes to prevent UI flashing
+      setIsEditDrawerOpen(false)
+    } catch (err) {
+      console.error('Failed to update account:', err)
+      // The error is already shown via the updateError state in the drawer
+      // Keep drawer open on error so user can retry or cancel
+    }
   }
 
   // Wait for persisted state to rehydrate before checking auth state
@@ -530,6 +668,245 @@ const AdminAccountsPage = () => {
               onClick={handleCloseDetailsDrawer}
             >
               {t('common.close')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => selectedAccount && handleEditAccount(selectedAccount)}
+              disabled={!selectedAccount}
+            >
+              {t('common.edit')}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Edit Account Drawer */}
+      <Drawer
+        anchor="right"
+        open={isEditDrawerOpen}
+        onClose={handleCloseEditDrawer}
+        SlideProps={{
+          onExited: handleEditDrawerExited,
+        }}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '100%', sm: 500, md: 600 },
+            maxWidth: '100%',
+          },
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <Box
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: 1,
+              borderColor: 'divider',
+              bgcolor: 'primary.main',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {t('admin.accountsPage.editAccount')}
+            </Typography>
+            <IconButton
+              onClick={handleCloseEditDrawer}
+              disabled={isUpdating}
+              sx={{ color: 'white' }}
+              aria-label={t('admin.accountsPage.aria.closeEditDrawer')}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Content */}
+          <Box sx={{ flexGrow: 1, overflow: 'auto', p: 3 }}>
+            {selectedAccount && (
+              <Grid container spacing={3}>
+                {/* Profile Image */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Avatar
+                      src={selectedAccount.profileImage?.file || undefined}
+                      alt={getNormalizedFullName(selectedAccount.fullName) || selectedAccount.email}
+                      sx={{ width: 120, height: 120 }}
+                    >
+                      {getNormalizedFullName(selectedAccount.fullName)
+                        ? getNormalizedFullName(selectedAccount.fullName)[0]?.toUpperCase()
+                        : '?'}
+                    </Avatar>
+                  </Box>
+                </Grid>
+
+                {/* Full Name (Read-only) */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.user')}
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {getNormalizedFullName(selectedAccount.fullName) || '-'}
+                  </Typography>
+                </Grid>
+
+                {/* Email (Read-only) */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.email')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedAccount.email}
+                  </Typography>
+                </Grid>
+
+                {/* Role Selector */}
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel id="role-select-label">{t('admin.accountsPage.table.role')}</InputLabel>
+                    <Select
+                      labelId="role-select-label"
+                      value={editFormData.role}
+                      label={t('admin.accountsPage.table.role')}
+                      onChange={(e) =>
+                        handleRoleChange(e.target.value as 'admin' | 'merchant' | 'member')
+                      }
+                      disabled={isUpdating}
+                    >
+                      <MenuItem value="member">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip
+                            label={t('admin.accountsPage.roles.member')}
+                            color="success"
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="merchant">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip
+                            label={t('admin.accountsPage.roles.merchant')}
+                            color="warning"
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value="admin">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip
+                            label={t('admin.accountsPage.roles.admin')}
+                            color="error"
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </Box>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* Status Toggle */}
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={editFormData.isActive}
+                        onChange={(e) => handleIsActiveChange(e.target.checked)}
+                        disabled={isUpdating}
+                        color="success"
+                      />
+                    }
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography>
+                          {editFormData.isActive
+                            ? t('admin.accountsPage.status.active')
+                            : t('admin.accountsPage.status.inactive')}
+                        </Typography>
+                        {editFormData.isActive ? (
+                          <Chip
+                            icon={<CheckCircleIcon />}
+                            label={t('admin.accountsPage.status.active')}
+                            color="success"
+                            size="small"
+                            variant="outlined"
+                          />
+                        ) : (
+                          <Chip
+                            icon={<CancelIcon />}
+                            label={t('admin.accountsPage.status.inactive')}
+                            color="default"
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    }
+                  />
+                </Grid>
+
+                {/* Update Error Alert */}
+                {updateError && (
+                  <Grid item xs={12}>
+                    <Alert severity="error">
+                      {updateError}
+                    </Alert>
+                  </Grid>
+                )}
+
+                {/* Date Joined (Read-only) */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.table.joined')}
+                  </Typography>
+                  <Typography variant="body1">
+                    {formatDate(selectedAccount.dateJoined)}
+                  </Typography>
+                </Grid>
+
+                {/* Account ID (Read-only) */}
+                <Grid item xs={12}>
+                  <Typography variant="caption" color="text.secondary" gutterBottom>
+                    {t('admin.accountsPage.accountId')}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      bgcolor: 'grey.100',
+                      p: 1,
+                      borderRadius: 1,
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {selectedAccount.id}
+                  </Typography>
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+
+          {/* Footer Actions */}
+          <Divider />
+          <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseEditDrawer}
+              disabled={isUpdating}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveAccount}
+              disabled={isUpdating}
+            >
+              {isUpdating ? t('common.saving') : t('common.save')}
             </Button>
           </Box>
         </Box>

@@ -8,6 +8,7 @@
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "save": "Enregistrer",
+    "saving": "Enregistrement...",
     "delete": "Supprimer",
     "edit": "Modifier",
     "view": "Voir",
@@ -1034,6 +1035,8 @@
       "workInProgress": "Travaux en Cours",
       "underDevelopment": "Cette page est actuellement en développement. Les fonctionnalités de gestion des comptes seront bientôt disponibles.",
       "accountDetails": "Détails du Compte",
+      "editAccount": "Modifier le Compte",
+      "updateSuccess": "Compte mis à jour avec succès",
       "preferredCurrency": "Devise Préférée",
       "accountId": "ID du Compte",
       "table": {
@@ -1048,6 +1051,11 @@
         "active": "Actif",
         "inactive": "Inactif"
       },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "COMMERÇANT",
+        "member": "MEMBRE"
+      },
       "emptyState": {
         "noAccounts": "Aucun compte trouvé"
       },
@@ -1056,7 +1064,8 @@
       },
       "aria": {
         "viewAccountDetails": "Voir les détails de {{name}}",
-        "closeDrawer": "Fermer le tiroir des détails du compte"
+        "closeDrawer": "Fermer le tiroir des détails du compte",
+        "closeEditDrawer": "Fermer le tiroir de modification du compte"
       }
     },
     "reports": "Rapports",

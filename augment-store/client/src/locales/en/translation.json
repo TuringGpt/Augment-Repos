@@ -8,6 +8,7 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
+    "saving": "Saving...",
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
@@ -1034,6 +1035,8 @@
       "workInProgress": "Work in Progress",
       "underDevelopment": "This page is currently under development. Account management features will be available soon.",
       "accountDetails": "Account Details",
+      "editAccount": "Edit Account",
+      "updateSuccess": "Account updated successfully",
       "preferredCurrency": "Preferred Currency",
       "accountId": "Account ID",
       "table": {
@@ -1048,6 +1051,11 @@
         "active": "Active",
         "inactive": "Inactive"
       },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "MERCHANT",
+        "member": "MEMBER"
+      },
       "emptyState": {
         "noAccounts": "No accounts found"
       },
@@ -1056,7 +1064,8 @@
       },
       "aria": {
         "viewAccountDetails": "View details for {{name}}",
-        "closeDrawer": "Close account details drawer"
+        "closeDrawer": "Close account details drawer",
+        "closeEditDrawer": "Close edit account drawer"
       }
     },
     "reports": "Reports",

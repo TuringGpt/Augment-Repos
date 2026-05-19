@@ -47,6 +47,7 @@ interface AccountState {
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearError: () => void
+  clearUpdateError: () => void
   clearAdminUsers: () => void
   setPage: (page: number) => void
 }
@@ -304,6 +305,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   setError: (error) => set({ error }),
 
   clearError: () => set({ error: null }),
+
+  clearUpdateError: () => set({ updateError: null }),
 
   clearCurrentAdminUser: () => {
     // Increment counters to invalidate any in-flight fetch-by-id and update requests

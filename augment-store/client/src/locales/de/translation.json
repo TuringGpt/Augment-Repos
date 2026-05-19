@@ -8,6 +8,7 @@
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
     "save": "Speichern",
+    "saving": "Wird gespeichert...",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "view": "Ansehen",
@@ -1034,6 +1035,8 @@
       "workInProgress": "In Bearbeitung",
       "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein.",
       "accountDetails": "Kontodetails",
+      "editAccount": "Konto bearbeiten",
+      "updateSuccess": "Konto erfolgreich aktualisiert",
       "preferredCurrency": "Bevorzugte Währung",
       "accountId": "Konto-ID",
       "table": {
@@ -1048,6 +1051,11 @@
         "active": "Aktiv",
         "inactive": "Inaktiv"
       },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "HÄNDLER",
+        "member": "MITGLIED"
+      },
       "emptyState": {
         "noAccounts": "Keine Konten gefunden"
       },
@@ -1056,7 +1064,8 @@
       },
       "aria": {
         "viewAccountDetails": "Details anzeigen für {{name}}",
-        "closeDrawer": "Kontodetails-Schublade schließen"
+        "closeDrawer": "Kontodetails-Schublade schließen",
+        "closeEditDrawer": "Konto-Bearbeitungs-Schublade schließen"
       }
     },
     "reports": "Berichte",
