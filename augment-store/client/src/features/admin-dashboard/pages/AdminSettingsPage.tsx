@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -21,12 +22,15 @@ import {
   Brightness4,
   Brightness7,
   Language as LanguageIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material'
 import { useTranslation } from '@hooks/useTranslation'
 import { useToast } from '@hooks/useToast'
 import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
+import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
+import { TOAST_DURATION_VALUES } from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -43,6 +47,7 @@ const AdminSettingsPage = () => {
   const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
+  const { toastDuration, setToastDuration } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
   const currentLanguage: LanguageCode =
@@ -50,6 +55,23 @@ const AdminSettingsPage = () => {
       ? (i18n.resolvedLanguage as LanguageCode)
       : FALLBACK_LANGUAGE
   const currentLanguageName = LANGUAGES[currentLanguage].nativeName
+
+  // Normalize toast duration to a valid option and persist the normalized value
+  // This ensures UI and actual toast behavior cannot diverge
+  // IMPORTANT: This useEffect must be placed before any conditional returns
+  // to comply with the Rules of Hooks
+  useEffect(() => {
+    const isValidToastDuration = (TOAST_DURATION_VALUES as readonly number[]).includes(
+      toastDuration
+    )
+
+    // If the persisted value doesn't match any valid option,
+    // write the normalized value back to the store
+    if (!isValidToastDuration) {
+      const normalizedValue = TOAST_DURATION_VALUES[0]
+      setToastDuration(normalizedValue)
+    }
+  }, [toastDuration, setToastDuration])
 
   // Wait for persisted state to rehydrate before checking auth state
   // This prevents showing misleading "please login" or "access denied" UI
@@ -161,6 +183,30 @@ const AdminSettingsPage = () => {
       console.error('Failed to change language:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.languageChangeFailed'))
+    }
+  }
+
+  const handleToastDurationChange = (event: SelectChangeEvent<number>) => {
+    const value = Number(event.target.value)
+
+    // Validate that the value is a valid toast duration option
+    const isValid = TOAST_DURATION_VALUES.includes(
+      value as (typeof TOAST_DURATION_VALUES)[number]
+    )
+    if (!isValid) {
+      console.error('Invalid toast duration:', value)
+      toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
+      return
+    }
+
+    try {
+      setToastDuration(value)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.toastDurationChanged'))
+    } catch (error) {
+      console.error('Failed to change toast duration:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
     }
   }
 
@@ -286,6 +332,82 @@ const AdminSettingsPage = () => {
                     {nativeName}
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Notifications Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {t('admin.settingsPage.notifications')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t('admin.settingsPage.notificationsDescription')}
+          </Typography>
+
+          {/* Toast Duration Selector */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.toastDuration')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.settingsPage.currentToastDuration', {
+                    duration: toastDuration / 1000
+                  })}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel id="toast-duration-select-label">
+                {t('admin.settingsPage.selectDuration')}
+              </InputLabel>
+              <Select
+                labelId="toast-duration-select-label"
+                id="toast-duration-select"
+                label={t('admin.settingsPage.selectDuration')}
+                value={toastDuration}
+                onChange={handleToastDurationChange}
+                sx={{
+                  '& .MuiSelect-select': {
+                    py: 1,
+                  },
+                }}
+              >
+                {TOAST_DURATION_VALUES.map((value) => {
+                  const seconds = value / 1000
+                  // Format duration label with proper localization and pluralization
+                  // Use a helper function to safely call i18n.t with count parameter
+                  const formatDuration = (count: number): string => {
+                    try {
+                      return i18n.t('admin.settingsPage.durationSeconds', {
+                        count,
+                      } as any)
+                    } catch {
+                      // Fallback if translation fails
+                      return `${count} second${count !== 1 ? 's' : ''}`
+                    }
+                  }
+                  return (
+                    <MenuItem key={value} value={value}>
+                      {formatDuration(seconds)}
+                    </MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
           </Box>

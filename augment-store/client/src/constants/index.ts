@@ -68,6 +68,10 @@ export const PAYMENT_STATUS_LABELS = {
 
 export const POLLING_INTERVAL = 30000 // 30 seconds in milliseconds
 
+// Toast duration values in milliseconds
+// Labels should be formatted at render time using i18n for proper localization
+export const TOAST_DURATION_VALUES = [2000, 3000, 4000, 5000, 6000, 8000, 10000] as const
+
 export const CONTACT_INFO = {
   SUPPORT_EMAIL: 'support@augmentstore.com',
   SUPPORT_PHONE: '+1 (555) 123-4567',
