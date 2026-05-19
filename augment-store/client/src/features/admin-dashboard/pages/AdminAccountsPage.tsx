@@ -27,6 +27,7 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
+  Tooltip,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
@@ -364,6 +365,7 @@ const AdminAccountsPage = () => {
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.role')}</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.status')}</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.joined')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -444,6 +446,21 @@ const AdminAccountsPage = () => {
                         )}
                       </TableCell>
                       <TableCell>{formatDate(account.dateJoined)}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditAccount(account)
+                            }}
+                            color="primary"
+                            size="small"
+                            aria-label={t('common.edit')}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                     </TableRow>
                     )
                   })
@@ -451,7 +468,7 @@ const AdminAccountsPage = () => {
                   // Only show empty state when there's no error
                   !error && (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                         <Typography color="text.secondary">
                           {t('admin.accountsPage.emptyState.noAccounts')}
                         </Typography>

@@ -1045,7 +1045,8 @@
         "username": "Username",
         "role": "Role",
         "status": "Status",
-        "joined": "Joined"
+        "joined": "Joined",
+        "actions": "Actions"
       },
       "status": {
         "active": "Active",
