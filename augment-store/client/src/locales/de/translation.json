@@ -1344,6 +1344,19 @@
       "toastDurationChangeFailed": "Toast-Dauer konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
       "durationSeconds": "{{count}} Sekunde",
       "durationSeconds_other": "{{count}} Sekunden",
+      "toastPosition": "Toast-Position",
+      "selectPosition": "Position Auswählen",
+      "currentToastPosition": "Derzeit auf {{position}} eingestellt",
+      "toastPositionChanged": "Toast-Position erfolgreich geändert",
+      "toastPositionChangeFailed": "Toast-Position konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+      "position": {
+        "top-left": "Oben Links",
+        "top-center": "Oben Mitte",
+        "top-right": "Oben Rechts",
+        "bottom-left": "Unten Links",
+        "bottom-center": "Unten Mitte",
+        "bottom-right": "Unten Rechts"
+      },
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },

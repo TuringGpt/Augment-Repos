@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { ToastPosition } from '@constants/index'
+import { DEFAULT_TOAST_POSITION } from '@constants/index'
 
 interface Notification {
   id: string
@@ -37,6 +39,7 @@ interface UIState {
   notifications: Notification[]
   isLoading: boolean
   toastDuration: number // Default toast duration in milliseconds
+  toastPosition: ToastPosition // Default toast position
 
   // Actions
   toggleSidebar: () => void
@@ -53,6 +56,7 @@ interface UIState {
   removeNotification: (id: string) => void
   setGlobalLoading: (isLoading: boolean) => void
   setToastDuration: (duration: number) => void
+  setToastPosition: (position: ToastPosition) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -65,6 +69,7 @@ export const useUIStore = create<UIState>()(
       notifications: [],
       isLoading: false,
       toastDuration: DEFAULT_TOAST_DURATION,
+      toastPosition: DEFAULT_TOAST_POSITION,
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
@@ -103,11 +108,14 @@ export const useUIStore = create<UIState>()(
       setGlobalLoading: (isLoading) => set({ isLoading }),
 
       setToastDuration: (duration) => set({ toastDuration: validateToastDuration(duration) }),
+
+      setToastPosition: (position) => set({ toastPosition: position }),
     }),
     {
       name: 'ui-storage',
       partialize: (state) => ({
         toastDuration: state.toastDuration,
+        toastPosition: state.toastPosition,
       }),
       onRehydrateStorage: () => (state) => {
         // Validate and normalize toastDuration after rehydration from storage

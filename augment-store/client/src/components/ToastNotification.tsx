@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Snackbar, Alert, AlertColor } from '@mui/material'
 import { useUIStore } from '@store/uiStore'
+import { TOAST_POSITION_OPTIONS } from '@constants/index'
 
 // Constants for toast duration validation
 const MIN_TOAST_DURATION = 1000 // 1 second
@@ -44,7 +45,7 @@ const validateToastDuration = (duration: number): number => {
  * ```
  */
 const ToastNotification = () => {
-  const { notifications, removeNotification, toastDuration } = useUIStore()
+  const { notifications, removeNotification, toastDuration, toastPosition } = useUIStore()
   // Track timers per notification to avoid resetting existing timers when new ones are added
   const timersRef = useRef<Map<string, TimeoutId>>(new Map())
 
@@ -88,16 +89,28 @@ const ToastNotification = () => {
     removeNotification(id)
   }
 
+  // Get the anchor origin from the selected position
+  const anchorOrigin = TOAST_POSITION_OPTIONS[toastPosition]
+
+  // Calculate position offset based on vertical alignment
+  const getPositionOffset = (index: number) => {
+    const offset = 24 + index * 70
+    if (anchorOrigin.vertical === 'top') {
+      return { top: `${offset}px !important` }
+    }
+    return { bottom: `${offset}px !important` }
+  }
+
   return (
     <>
       {notifications.map((notification, index) => (
         <Snackbar
           key={notification.id}
           open={true}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          anchorOrigin={anchorOrigin}
           sx={{
             // Stack multiple notifications vertically
-            bottom: `${24 + index * 70}px !important`,
+            ...getPositionOffset(index),
           }}
         >
           <Alert
