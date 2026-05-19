@@ -91,7 +91,11 @@ const ToastNotification = () => {
 
   // Get the anchor origin from the selected position
   // Fall back to DEFAULT_TOAST_POSITION if toastPosition is invalid
-  const anchorOrigin = TOAST_POSITION_OPTIONS[toastPosition] ?? TOAST_POSITION_OPTIONS[DEFAULT_TOAST_POSITION]
+  // Use hasOwnProperty guard to prevent prototype pollution (e.g., "__proto__")
+  const hasValidPosition = Object.prototype.hasOwnProperty.call(TOAST_POSITION_OPTIONS, toastPosition)
+  const anchorOrigin = hasValidPosition
+    ? TOAST_POSITION_OPTIONS[toastPosition as keyof typeof TOAST_POSITION_OPTIONS]
+    : TOAST_POSITION_OPTIONS[DEFAULT_TOAST_POSITION]
 
   // Calculate position offset based on vertical alignment
   const getPositionOffset = (index: number) => {
