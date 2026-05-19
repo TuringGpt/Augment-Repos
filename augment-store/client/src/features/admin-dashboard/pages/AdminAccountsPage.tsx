@@ -453,6 +453,11 @@ const AdminAccountsPage = () => {
                               e.stopPropagation()
                               handleEditAccount(account)
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation()
+                              }
+                            }}
                             color="primary"
                             size="small"
                             aria-label={t('common.edit')}
