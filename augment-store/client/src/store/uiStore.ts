@@ -38,8 +38,12 @@ const validateToastDuration = (duration: number): number => {
  * @returns A valid ToastPosition, or DEFAULT_TOAST_POSITION if invalid
  */
 const validateToastPosition = (position: unknown): ToastPosition => {
-  // Check if position is a valid key in TOAST_POSITION_OPTIONS
-  if (typeof position === 'string' && position in TOAST_POSITION_OPTIONS) {
+  // Check if position is a valid own property key in TOAST_POSITION_OPTIONS
+  // Using hasOwnProperty to avoid prototype pollution (e.g., "__proto__", "toString")
+  if (
+    typeof position === 'string' &&
+    Object.prototype.hasOwnProperty.call(TOAST_POSITION_OPTIONS, position)
+  ) {
     return position as ToastPosition
   }
 
