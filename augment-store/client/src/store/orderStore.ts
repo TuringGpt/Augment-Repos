@@ -441,11 +441,12 @@ export const useOrderStore = create<OrderState>()(
         fetchAdminShippingAddressesRequestCounter += 1
         const requestId = fetchAdminShippingAddressesRequestCounter
 
-        // Only clamp the lower bound to prevent page <= 0
-        // Don't clamp the upper bound here because totalAdminShippingAddressesPages might not be accurate yet
+        // Normalize page to a finite integer, then clamp to >= 1
+        // This handles NaN, Infinity, -Infinity, and non-integer values
+        // Only clamp the lower bound here because totalAdminShippingAddressesPages might not be accurate yet
         // (it's initialized to 1 and not persisted). The 404 retry logic below will
         // handle truly out-of-range pages, allowing deep-links to valid higher pages.
-        const validPage = Math.max(1, page)
+        const validPage = Math.max(1, Number.isFinite(page) ? Math.floor(page) : 1)
 
         try {
           set({ isFetchingAdminShippingAddresses: true, fetchAdminShippingAddressesError: null })
