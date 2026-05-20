@@ -103,7 +103,7 @@ export const authService = {
       // This ensures users can reliably log out even if the backend endpoint fails
       useAuthStore.getState().logout()
 
-      // Clear wishlist, cart, and contacts to prevent showing previous user's data
+      // Clear wishlist, cart, contacts, and account profile to prevent showing previous user's data
       // Wrapped in try/catch to prevent chunk-load failures from breaking logout
       try {
         const { useWishlistStore } = await import('@store/wishlistStore')
@@ -114,9 +114,12 @@ export const authService = {
 
         const { useContactStore } = await import('@store/contactStore')
         useContactStore.getState().clearContacts()
+
+        const { useAccountStore } = await import('@store/accountStore')
+        useAccountStore.getState().clearAccountProfile()
       } catch (error) {
         // Ignore chunk-load errors - auth state is already cleared
-        console.warn('Failed to clear wishlist/cart/contacts during logout:', error)
+        console.warn('Failed to clear wishlist/cart/contacts/accountProfile during logout:', error)
       }
     }
   },
