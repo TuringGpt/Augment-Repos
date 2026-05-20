@@ -477,5 +477,5 @@ import('@store/authStore')
   })
   .catch((error) => {
     // Log error but don't fail - auth cleanup is a non-critical enhancement
-    console.error('Failed to set up auth state subscription for account profile cleanup:', error)
+    console.error('Failed to set up auth state subscription for account profile cleanup:', sanitizeErrorForLogging(error))
   })
