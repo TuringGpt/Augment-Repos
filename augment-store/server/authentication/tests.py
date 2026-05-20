@@ -3,15 +3,10 @@ from accounts.factory import UserFactory
 from rest_framework import status
 from django.urls import reverse
 from django.test import override_settings
-from django.core.cache import cache
 from accounts.models import User
 
 
 class AuthenticationTests(BaseAPITestCase):
-
-    def setUp(self):
-        super().setUp()
-        cache.clear()
 
     def test_register(self):
         # GIVEN a user does not exist
@@ -178,12 +173,29 @@ class AuthenticationTests(BaseAPITestCase):
         # AND the response should contain success message
         self.assertEqual(response.data["message"], "Password reset email sent")
 
+    @override_settings(CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "auth-throttle-tests",
+        }
+    })
     def test_register_is_throttled(self):
         url = reverse("v1:register")
-        payload = {"email": "limit@example.com", "password": "testpassword", "first_name": "Test", "last_name": "User"}
-        for _ in range(5):
-            self.client.post(url, payload)
-        response = self.client.post(url, payload)
+        for attempt in range(5):
+            payload = {
+                "email": f"limit{attempt}@example.com",
+                "password": "testpassword",
+                "first_name": "Test",
+                "last_name": "User",
+            }
+            response = self.client.post(url, payload)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(url, {
+            "email": "limit5@example.com",
+            "password": "testpassword",
+            "first_name": "Test",
+            "last_name": "User",
+        })
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
     def test_logout(self):
