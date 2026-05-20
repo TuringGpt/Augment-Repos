@@ -72,6 +72,20 @@ export const POLLING_INTERVAL = 30000 // 30 seconds in milliseconds
 // Labels should be formatted at render time using i18n for proper localization
 export const TOAST_DURATION_VALUES = [2000, 3000, 4000, 5000, 6000, 8000, 10000] as const
 
+// Toast position options for Snackbar anchorOrigin
+// Each value represents a combination of vertical and horizontal position
+export const TOAST_POSITION_OPTIONS = {
+  'top-left': { vertical: 'top' as const, horizontal: 'left' as const },
+  'top-center': { vertical: 'top' as const, horizontal: 'center' as const },
+  'top-right': { vertical: 'top' as const, horizontal: 'right' as const },
+  'bottom-left': { vertical: 'bottom' as const, horizontal: 'left' as const },
+  'bottom-center': { vertical: 'bottom' as const, horizontal: 'center' as const },
+  'bottom-right': { vertical: 'bottom' as const, horizontal: 'right' as const },
+} as const
+
+export type ToastPosition = keyof typeof TOAST_POSITION_OPTIONS
+export const DEFAULT_TOAST_POSITION: ToastPosition = 'bottom-right'
+
 export const CONTACT_INFO = {
   SUPPORT_EMAIL: 'support@augmentstore.com',
   SUPPORT_PHONE: '+1 (555) 123-4567',

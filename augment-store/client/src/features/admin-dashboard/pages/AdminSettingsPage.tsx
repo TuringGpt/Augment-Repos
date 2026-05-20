@@ -30,7 +30,7 @@ import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
 import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
-import { TOAST_DURATION_VALUES } from '@constants/index'
+import { TOAST_DURATION_VALUES, TOAST_POSITION_OPTIONS, type ToastPosition } from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -47,7 +47,7 @@ const AdminSettingsPage = () => {
   const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
-  const { toastDuration, setToastDuration } = useUIStore()
+  const { toastDuration, setToastDuration, toastPosition, setToastPosition } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
   const currentLanguage: LanguageCode =
@@ -207,6 +207,28 @@ const AdminSettingsPage = () => {
       console.error('Failed to change toast duration:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.toastDurationChangeFailed'))
+    }
+  }
+
+  const handleToastPositionChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as ToastPosition
+
+    // Validate that the value is a valid toast position option
+    const isValid = Object.keys(TOAST_POSITION_OPTIONS).includes(value)
+    if (!isValid) {
+      console.error('Invalid toast position:', value)
+      toast.error(t('admin.settingsPage.toastPositionChangeFailed'))
+      return
+    }
+
+    try {
+      setToastPosition(value)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.toastPositionChanged'))
+    } catch (error) {
+      console.error('Failed to change toast position:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.toastPositionChangeFailed'))
     }
   }
 
@@ -408,6 +430,56 @@ const AdminSettingsPage = () => {
                     </MenuItem>
                   )
                 })}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Toast Position Selector */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+              mt: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.toastPosition')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('admin.settingsPage.currentToastPosition', {
+                    position: t(`admin.settingsPage.position.${toastPosition}`)
+                  })}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel id="toast-position-select-label">
+                {t('admin.settingsPage.selectPosition')}
+              </InputLabel>
+              <Select
+                labelId="toast-position-select-label"
+                id="toast-position-select"
+                label={t('admin.settingsPage.selectPosition')}
+                value={toastPosition}
+                onChange={handleToastPositionChange}
+                sx={{
+                  '& .MuiSelect-select': {
+                    py: 1,
+                  },
+                }}
+              >
+                {Object.keys(TOAST_POSITION_OPTIONS).map((position) => (
+                  <MenuItem key={position} value={position}>
+                    {t(`admin.settingsPage.position.${position}`)}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>

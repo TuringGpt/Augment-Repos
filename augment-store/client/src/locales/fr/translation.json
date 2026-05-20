@@ -1344,6 +1344,19 @@
       "toastDurationChangeFailed": "Échec du changement de la durée du toast. Veuillez réessayer.",
       "durationSeconds": "{{count}} seconde",
       "durationSeconds_other": "{{count}} secondes",
+      "toastPosition": "Position du Toast",
+      "selectPosition": "Sélectionner la Position",
+      "currentToastPosition": "Actuellement défini à {{position}}",
+      "toastPositionChanged": "Position du toast modifiée avec succès",
+      "toastPositionChangeFailed": "Échec de la modification de la position du toast. Veuillez réessayer.",
+      "position": {
+        "top-left": "Haut Gauche",
+        "top-center": "Haut Centre",
+        "top-right": "Haut Droite",
+        "bottom-left": "Bas Gauche",
+        "bottom-center": "Bas Centre",
+        "bottom-right": "Bas Droite"
+      },
       "moreSettings": "Plus de Paramètres Bientôt",
       "moreSettingsDescription": "Des options de configuration supplémentaires seront disponibles ici dans les futures mises à jour."
     },

@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { ToastPosition } from '@constants/index'
+import { DEFAULT_TOAST_POSITION, TOAST_POSITION_OPTIONS } from '@constants/index'
 
 interface Notification {
   id: string
@@ -29,6 +31,25 @@ const validateToastDuration = (duration: number): number => {
   return Math.max(MIN_TOAST_DURATION, Math.min(MAX_TOAST_DURATION, duration))
 }
 
+/**
+ * Validates toast position to ensure it's a valid key in TOAST_POSITION_OPTIONS
+ * Prevents undefined access when retrieving position from TOAST_POSITION_OPTIONS
+ * @param position - The position to validate
+ * @returns A valid ToastPosition, or DEFAULT_TOAST_POSITION if invalid
+ */
+const validateToastPosition = (position: unknown): ToastPosition => {
+  // Check if position is a valid own property key in TOAST_POSITION_OPTIONS
+  // Using hasOwnProperty to avoid prototype pollution (e.g., "__proto__", "toString")
+  if (
+    typeof position === 'string' &&
+    Object.prototype.hasOwnProperty.call(TOAST_POSITION_OPTIONS, position)
+  ) {
+    return position as ToastPosition
+  }
+
+  return DEFAULT_TOAST_POSITION
+}
+
 interface UIState {
   isSidebarOpen: boolean
   isCartDrawerOpen: boolean
@@ -37,6 +58,7 @@ interface UIState {
   notifications: Notification[]
   isLoading: boolean
   toastDuration: number // Default toast duration in milliseconds
+  toastPosition: ToastPosition // Default toast position
 
   // Actions
   toggleSidebar: () => void
@@ -53,6 +75,7 @@ interface UIState {
   removeNotification: (id: string) => void
   setGlobalLoading: (isLoading: boolean) => void
   setToastDuration: (duration: number) => void
+  setToastPosition: (position: ToastPosition) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -65,6 +88,7 @@ export const useUIStore = create<UIState>()(
       notifications: [],
       isLoading: false,
       toastDuration: DEFAULT_TOAST_DURATION,
+      toastPosition: DEFAULT_TOAST_POSITION,
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
@@ -103,17 +127,23 @@ export const useUIStore = create<UIState>()(
       setGlobalLoading: (isLoading) => set({ isLoading }),
 
       setToastDuration: (duration) => set({ toastDuration: validateToastDuration(duration) }),
+
+      setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
     }),
     {
       name: 'ui-storage',
       partialize: (state) => ({
         toastDuration: state.toastDuration,
+        toastPosition: state.toastPosition,
       }),
       onRehydrateStorage: () => (state) => {
-        // Validate and normalize toastDuration after rehydration from storage
-        // Use setToastDuration to ensure subscribers are notified of the validated value
+        // Validate and normalize toastDuration and toastPosition after rehydration from storage
+        // Use setter methods to ensure subscribers are notified of the validated values
         if (state?.toastDuration !== undefined) {
           state.setToastDuration(state.toastDuration)
+        }
+        if (state?.toastPosition !== undefined) {
+          state.setToastPosition(state.toastPosition)
         }
       },
     }
