@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse } from '@features/orders/types'
+import type { Order, CreateOrderRequest, CreateOrderResponse, OrderListResponse, AdminShippingAddress, AdminShippingAddressesListResponse } from '@features/orders/types'
 import { isAbortError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
@@ -12,6 +12,9 @@ let fetchMerchantRequestCounter = 0
 
 // Request counter for admin orders to prevent race conditions
 let fetchAdminRequestCounter = 0
+
+// Request counter for admin shipping addresses to prevent race conditions
+let fetchAdminShippingAddressesRequestCounter = 0
 
 interface OrderState {
   // Current order (most recently created)
@@ -35,6 +38,14 @@ interface OrderState {
   currentAdminPage: number
   totalAdminPages: number
 
+  // Admin shipping addresses list
+  adminShippingAddresses: AdminShippingAddress[]
+  totalAdminShippingAddresses: number
+  adminShippingAddressesNext: string | null
+  adminShippingAddressesPrevious: string | null
+  currentAdminShippingAddressesPage: number
+  totalAdminShippingAddressesPages: number
+
   // Single order detail
   selectedOrder: Order | null
   isFetchingOrder: boolean
@@ -45,6 +56,7 @@ interface OrderState {
   isFetchingOrders: boolean
   isFetchingMerchantOrders: boolean
   isFetchingAdminOrders: boolean
+  isFetchingAdminShippingAddresses: boolean
   isCancelingOrder: boolean
 
   // Error states
@@ -52,6 +64,7 @@ interface OrderState {
   fetchOrdersError: string | null
   fetchMerchantOrdersError: string | null
   fetchAdminOrdersError: string | null
+  fetchAdminShippingAddressesError: string | null
   cancelOrderError: string | null
 
   // Actions
@@ -62,6 +75,7 @@ interface OrderState {
   getAllOrders: (page?: number) => Promise<OrderListResponse>
   getMerchantOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
   getAdminOrders: (page?: number, signal?: AbortSignal) => Promise<OrderListResponse>
+  getAdminShippingAddresses: (page?: number, signal?: AbortSignal) => Promise<AdminShippingAddressesListResponse>
   getOrderById: (id: string) => Promise<Order>
   getAdminOrderById: (id: string) => Promise<Order | null>
   setSelectedOrder: (order: Order | null) => void
@@ -69,10 +83,12 @@ interface OrderState {
   clearOrders: () => void
   clearMerchantOrders: () => void
   clearAdminOrders: () => void
+  clearAdminShippingAddresses: () => void
   cancelOrder: (id: string) => Promise<Order>
   setPage: (page: number) => void
   setMerchantPage: (page: number) => void
   setAdminPage: (page: number) => void
+  setAdminShippingAddressesPage: (page: number, signal?: AbortSignal) => void
 }
 
 // Request counter to prevent race conditions in getOrderById and getAdminOrderById
@@ -99,6 +115,12 @@ export const useOrderStore = create<OrderState>()(
       totalAdminOrders: 0,
       currentAdminPage: 1,
       totalAdminPages: 1,
+      adminShippingAddresses: [],
+      totalAdminShippingAddresses: 0,
+      adminShippingAddressesNext: null,
+      adminShippingAddressesPrevious: null,
+      currentAdminShippingAddressesPage: 1,
+      totalAdminShippingAddressesPages: 1,
       selectedOrder: null,
       isFetchingOrder: false,
       fetchOrderError: null,
@@ -106,11 +128,13 @@ export const useOrderStore = create<OrderState>()(
       isFetchingOrders: false,
       isFetchingMerchantOrders: false,
       isFetchingAdminOrders: false,
+      isFetchingAdminShippingAddresses: false,
       isCancelingOrder: false,
       createOrderError: null,
       fetchOrdersError: null,
       fetchMerchantOrdersError: null,
       fetchAdminOrdersError: null,
+      fetchAdminShippingAddressesError: null,
       cancelOrderError: null,
 
       // Actions
@@ -409,6 +433,73 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
+      getAdminShippingAddresses: async (page = 1, signal?: AbortSignal) => {
+        // Import orderService dynamically to avoid circular dependency
+        const { orderService } = await import('@services/api/orders/orderService')
+
+        // Increment counter and capture the current request ID
+        fetchAdminShippingAddressesRequestCounter += 1
+        const requestId = fetchAdminShippingAddressesRequestCounter
+
+        // Only clamp the lower bound to prevent page <= 0
+        // Don't clamp the upper bound here because totalAdminShippingAddressesPages might not be accurate yet
+        // (it's initialized to 1 and not persisted). The 404 retry logic would be handled by the caller.
+        const validPage = Math.max(1, page)
+
+        try {
+          set({ isFetchingAdminShippingAddresses: true, fetchAdminShippingAddressesError: null })
+          // Note: Backend has fixed page size of 100
+          const response = await orderService.getAdminShippingAddresses(validPage, signal)
+
+          // Only update state if this is still the latest request
+          // This prevents older responses from overwriting newer state
+          if (requestId !== fetchAdminShippingAddressesRequestCounter) {
+            return response
+          }
+
+          // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+          const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+          // Normalize response.count to a finite non-negative number to prevent NaN in totalPages
+          const normalizedCount = Number.isFinite(response.count) && response.count >= 0 ? response.count : 0
+          const totalPages = Math.max(1, Math.ceil(normalizedCount / backendPageSize))
+
+          // Update state with fetched admin shipping addresses
+          set({
+            adminShippingAddresses: response.shippingAddresses,
+            totalAdminShippingAddresses: normalizedCount,
+            adminShippingAddressesNext: response.next,
+            adminShippingAddressesPrevious: response.previous,
+            currentAdminShippingAddressesPage: validPage,
+            totalAdminShippingAddressesPages: totalPages,
+          })
+
+          return response
+        } catch (error) {
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Failed to fetch admin shipping addresses:', sanitizeErrorForLogging(error))
+          }
+
+          // Only update error state if this is still the latest request
+          if (requestId === fetchAdminShippingAddressesRequestCounter) {
+            // Don't treat intentional cancellations as fetch errors
+            if (isAbortError(error)) {
+              // Request was intentionally cancelled, don't set error state
+              throw error
+            }
+
+            const errorMessage = 'Failed to fetch admin shipping addresses. Please try again.'
+            set({ fetchAdminShippingAddressesError: errorMessage })
+          }
+          throw error
+        } finally {
+          // Only update loading state if this is still the latest request
+          if (requestId === fetchAdminShippingAddressesRequestCounter) {
+            set({ isFetchingAdminShippingAddresses: false })
+          }
+        }
+      },
+
       getOrderById: async (id: string) => {
         // Increment counter to track this request
         // This prevents race conditions when multiple calls are made rapidly
@@ -595,6 +686,22 @@ export const useOrderStore = create<OrderState>()(
         })
       },
 
+      clearAdminShippingAddresses: () => {
+        // Increment counter to invalidate any in-flight fetch requests
+        // This prevents in-flight responses from repopulating the store after clear
+        fetchAdminShippingAddressesRequestCounter += 1
+        set({
+          adminShippingAddresses: [],
+          totalAdminShippingAddresses: 0,
+          adminShippingAddressesNext: null,
+          adminShippingAddressesPrevious: null,
+          currentAdminShippingAddressesPage: 1,
+          totalAdminShippingAddressesPages: 1,
+          fetchAdminShippingAddressesError: null,
+          isFetchingAdminShippingAddresses: false,
+        })
+      },
+
       setCreateOrderError: (error) => set({ createOrderError: error }),
 
       cancelOrder: async (id: string) => {
@@ -664,6 +771,24 @@ export const useOrderStore = create<OrderState>()(
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
             console.error('Error fetching admin orders on page change:', sanitizeErrorForLogging(error))
+          }
+        })
+      },
+
+      setAdminShippingAddressesPage: (page: number, signal?: AbortSignal) => {
+        // Validate page before setting it optimistically to prevent invalid pagination state
+        // Clamp page to valid range to match the validation in getAdminShippingAddresses
+        const currentTotalPages = get().totalAdminShippingAddressesPages
+        const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
+
+        // Update currentAdminShippingAddressesPage optimistically so UI state remains consistent even if fetch fails
+        // This ensures retry logic and pagination controls use the intended page
+        set({ currentAdminShippingAddressesPage: validPage })
+        get().getAdminShippingAddresses(validPage, signal).catch((error) => {
+          // Error is already handled in getAdminShippingAddresses, just prevent unhandled rejection
+          // Don't log abort errors - these are expected when requests are intentionally cancelled
+          if (!isAbortError(error)) {
+            console.error('Error fetching admin shipping addresses on page change:', sanitizeErrorForLogging(error))
           }
         })
       },
