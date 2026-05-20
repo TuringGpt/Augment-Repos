@@ -1,6 +1,7 @@
 import { apiClient } from '../client'
 import { API_ENDPOINTS } from '@config/api'
 import { useAuthStore } from '@store/authStore'
+import { sanitizeErrorForLogging } from '@utils/errorUtils'
 import type {
   LoginRequest,
   LoginResponse,
@@ -97,7 +98,7 @@ export const authService = {
       await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
     } catch (error) {
       // Ignore API errors - client-side logout should always succeed
-      console.warn('Logout API call failed, but clearing client auth state:', error)
+      console.warn('Logout API call failed, but clearing client auth state:', sanitizeErrorForLogging(error))
     } finally {
       // Always clear auth state from Zustand store (which automatically syncs to localStorage)
       // This ensures users can reliably log out even if the backend endpoint fails
@@ -109,28 +110,28 @@ export const authService = {
         const { useWishlistStore } = await import('@store/wishlistStore')
         useWishlistStore.getState().clearWishlist()
       } catch (error) {
-        console.warn('Failed to clear wishlist during logout:', error)
+        console.warn('Failed to clear wishlist during logout:', sanitizeErrorForLogging(error))
       }
 
       try {
         const { useCartStore } = await import('@store/cartStore')
         useCartStore.getState().clearCart()
       } catch (error) {
-        console.warn('Failed to clear cart during logout:', error)
+        console.warn('Failed to clear cart during logout:', sanitizeErrorForLogging(error))
       }
 
       try {
         const { useContactStore } = await import('@store/contactStore')
         useContactStore.getState().clearContacts()
       } catch (error) {
-        console.warn('Failed to clear contacts during logout:', error)
+        console.warn('Failed to clear contacts during logout:', sanitizeErrorForLogging(error))
       }
 
       try {
         const { useAccountStore } = await import('@store/accountStore')
         useAccountStore.getState().clearAccountProfile()
       } catch (error) {
-        console.warn('Failed to clear account profile during logout:', error)
+        console.warn('Failed to clear account profile during logout:', sanitizeErrorForLogging(error))
       }
     }
   },
