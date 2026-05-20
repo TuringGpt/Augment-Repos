@@ -239,9 +239,9 @@ const AdminSettingsPage = () => {
     }
   }
 
-  const handleNotificationSoundsToggle = () => {
+  const handleNotificationSoundsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      const newValue = !notificationSoundsEnabled
+      const newValue = event.target.checked
       setNotificationSoundsEnabled(newValue)
       // Show success feedback to user
       toast.success(
