@@ -32,9 +32,10 @@ const NotificationBell = () => {
 
   // Play sound when unread count increases (new notifications arrive)
   useEffect(() => {
-    // On first render, just mark as initialized without storing count
+    // On first render, initialize the ref and mark as initialized
     if (!hasInitializedRef.current) {
       hasInitializedRef.current = true
+      prevUnreadCountRef.current = unreadCount
       return
     }
 
