@@ -18,10 +18,9 @@ const NotificationBell = () => {
   const open = Boolean(anchorEl)
 
   // Track previous unread count to detect new notifications
-  // Initialize to undefined to prevent sound on initial hydration
   const prevUnreadCountRef = useRef<number | undefined>(undefined)
-  // Track whether initial fetch has completed
-  const hasInitializedRef = useRef(false)
+  // Track the authenticated session to reset baseline on login
+  const prevAuthRef = useRef(isAuthenticated)
 
   // Fetch unread count when component mounts (only if authenticated)
   useEffect(() => {
@@ -32,22 +31,28 @@ const NotificationBell = () => {
 
   // Play sound when unread count increases (new notifications arrive)
   useEffect(() => {
-    // On first render, just mark as initialized without storing the count
-    // This ensures we skip the very first unreadCount value entirely
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true
+    // Reset baseline on login (when isAuthenticated transitions from false to true)
+    if (isAuthenticated && !prevAuthRef.current) {
+      prevAuthRef.current = true
+      prevUnreadCountRef.current = unreadCount
       return
     }
 
-    // On second render (after initial fetch), store the count but don't play sound
-    // This establishes the baseline for future comparisons
+    // Update auth tracking on logout
+    if (!isAuthenticated) {
+      prevAuthRef.current = false
+      prevUnreadCountRef.current = undefined
+      return
+    }
+
+    // Initialize baseline on first run when already authenticated
     if (prevUnreadCountRef.current === undefined) {
       prevUnreadCountRef.current = unreadCount
       return
     }
 
     // Only play sound if:
-    // 1. Previous count exists (this is at least the third update - after baseline is set)
+    // 1. Previous count exists (baseline is established)
     // 2. User is authenticated
     // 3. Count increased (new notifications arrived)
     if (isAuthenticated && unreadCount > prevUnreadCountRef.current) {
