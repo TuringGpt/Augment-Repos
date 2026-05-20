@@ -78,6 +78,20 @@ class AuthenticationTests(BaseAPITestCase):
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
 
+    def test_login_normalizes_email_whitespace_and_case(self):
+        UserFactory(email="user@demo.com", password="asdf1234", is_active=True)
+
+        url = reverse("v1:login")
+        payload = {
+            "email": "  USER@DEMO.COM  ",
+            "password": "asdf1234",
+        }
+        response = self.client.post(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+
     def test_inactive_user_login(self):
         # GIVEN a user with email:user@demo.com and passowrd:asdf1234 exist
         UserFactory(email="user@demo.com", password="asdf1234", is_active=False)
