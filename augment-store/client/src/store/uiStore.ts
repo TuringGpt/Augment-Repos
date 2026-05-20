@@ -50,6 +50,22 @@ const validateToastPosition = (position: unknown): ToastPosition => {
   return DEFAULT_TOAST_POSITION
 }
 
+/**
+ * Validates notification sounds enabled setting to ensure it's a boolean
+ * Prevents non-boolean values from corrupted/edited localStorage
+ * @param enabled - The value to validate
+ * @returns A boolean value, defaults to true if invalid
+ */
+const validateNotificationSoundsEnabled = (enabled: unknown): boolean => {
+  // Check if the value is a valid boolean
+  if (typeof enabled === 'boolean') {
+    return enabled
+  }
+
+  // Default to true for invalid values
+  return true
+}
+
 interface UIState {
   isSidebarOpen: boolean
   isCartDrawerOpen: boolean
@@ -133,7 +149,7 @@ export const useUIStore = create<UIState>()(
 
       setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
 
-      setNotificationSoundsEnabled: (enabled) => set({ notificationSoundsEnabled: enabled }),
+      setNotificationSoundsEnabled: (enabled) => set({ notificationSoundsEnabled: validateNotificationSoundsEnabled(enabled) }),
     }),
     {
       name: 'ui-storage',
@@ -143,13 +159,16 @@ export const useUIStore = create<UIState>()(
         notificationSoundsEnabled: state.notificationSoundsEnabled,
       }),
       onRehydrateStorage: () => (state) => {
-        // Validate and normalize toastDuration and toastPosition after rehydration from storage
+        // Validate and normalize toastDuration, toastPosition, and notificationSoundsEnabled after rehydration from storage
         // Use setter methods to ensure subscribers are notified of the validated values
         if (state?.toastDuration !== undefined) {
           state.setToastDuration(state.toastDuration)
         }
         if (state?.toastPosition !== undefined) {
           state.setToastPosition(state.toastPosition)
+        }
+        if (state?.notificationSoundsEnabled !== undefined) {
+          state.setNotificationSoundsEnabled(state.notificationSoundsEnabled)
         }
       },
     }
