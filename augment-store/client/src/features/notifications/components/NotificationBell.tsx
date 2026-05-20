@@ -18,7 +18,8 @@ const NotificationBell = () => {
   const open = Boolean(anchorEl)
 
   // Track previous unread count to detect new notifications
-  const prevUnreadCountRef = useRef<number>(unreadCount)
+  // Initialize to undefined to prevent sound on initial hydration
+  const prevUnreadCountRef = useRef<number | undefined>(undefined)
 
   // Fetch unread count when component mounts (only if authenticated)
   useEffect(() => {
