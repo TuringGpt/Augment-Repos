@@ -1,18 +1,18 @@
 from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .serializers import ForgotPasswordSerializer, LoginSerializer, RefreshTokenSerializer, RegisterSerializer
 
 
 class RegisterView(CreateAPIView):
     serializer_class = RegisterSerializer
-    permission_classes = []
+    permission_classes = [AllowAny]
 
 
 class LoginView(CreateAPIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         return LoginSerializer
@@ -28,12 +28,12 @@ class LogoutView(APIView):
 
 class RefreshTokenView(CreateAPIView):
     serializer_class = RefreshTokenSerializer
-    permission_classes = []
+    permission_classes = [AllowAny]
 
 
 class ResetPasswordView(CreateAPIView):
     serializer_class = ForgotPasswordSerializer
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
