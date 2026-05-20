@@ -59,6 +59,7 @@ interface UIState {
   isLoading: boolean
   toastDuration: number // Default toast duration in milliseconds
   toastPosition: ToastPosition // Default toast position
+  notificationSoundsEnabled: boolean // Enable/disable notification sounds
 
   // Actions
   toggleSidebar: () => void
@@ -76,6 +77,7 @@ interface UIState {
   setGlobalLoading: (isLoading: boolean) => void
   setToastDuration: (duration: number) => void
   setToastPosition: (position: ToastPosition) => void
+  setNotificationSoundsEnabled: (enabled: boolean) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -89,6 +91,7 @@ export const useUIStore = create<UIState>()(
       isLoading: false,
       toastDuration: DEFAULT_TOAST_DURATION,
       toastPosition: DEFAULT_TOAST_POSITION,
+      notificationSoundsEnabled: true, // Enable notification sounds by default
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
@@ -129,12 +132,15 @@ export const useUIStore = create<UIState>()(
       setToastDuration: (duration) => set({ toastDuration: validateToastDuration(duration) }),
 
       setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
+
+      setNotificationSoundsEnabled: (enabled) => set({ notificationSoundsEnabled: enabled }),
     }),
     {
       name: 'ui-storage',
       partialize: (state) => ({
         toastDuration: state.toastDuration,
         toastPosition: state.toastPosition,
+        notificationSoundsEnabled: state.notificationSoundsEnabled,
       }),
       onRehydrateStorage: () => (state) => {
         // Validate and normalize toastDuration and toastPosition after rehydration from storage
