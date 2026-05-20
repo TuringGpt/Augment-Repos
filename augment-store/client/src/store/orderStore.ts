@@ -443,7 +443,8 @@ export const useOrderStore = create<OrderState>()(
 
         // Only clamp the lower bound to prevent page <= 0
         // Don't clamp the upper bound here because totalAdminShippingAddressesPages might not be accurate yet
-        // (it's initialized to 1 and not persisted). The 404 retry logic would be handled by the caller.
+        // (it's initialized to 1 and not persisted). The 404 retry logic below will
+        // handle truly out-of-range pages, allowing deep-links to valid higher pages.
         const validPage = Math.max(1, page)
 
         try {
@@ -486,6 +487,50 @@ export const useOrderStore = create<OrderState>()(
             if (isAbortError(error)) {
               // Request was intentionally cancelled, don't set error state
               throw error
+            }
+
+            // Check if this is a 404 error, which likely means the requested page is out of range
+            // This can happen when total pages shrink (e.g., items deleted) and the current page
+            // becomes invalid. DRF PageNumberPagination returns 404 for out-of-range pages.
+            const axiosError = error as { response?: { status?: number } }
+            const is404Error = axiosError?.response?.status === 404
+
+            if (is404Error && validPage > 1) {
+              // Page is out of range - reset to page 1 and retry to get fresh data
+              console.log(`Page ${validPage} returned 404, retrying with page 1`)
+              try {
+                const retryResponse = await orderService.getAdminShippingAddresses(1, signal)
+
+                // Only update state if this is still the latest request
+                if (requestId === fetchAdminShippingAddressesRequestCounter) {
+                  // Backend uses DRF PageNumberPagination with fixed PAGE_SIZE of 100 (configured in settings.py)
+                  const backendPageSize = 100 // Fixed in backend REST_FRAMEWORK settings
+                  // Normalize response.count to a finite non-negative number to prevent NaN in totalPages
+                  const normalizedCount = Number.isFinite(retryResponse.count) && retryResponse.count >= 0 ? retryResponse.count : 0
+                  const totalPages = Math.max(1, Math.ceil(normalizedCount / backendPageSize))
+
+                  set({
+                    adminShippingAddresses: retryResponse.shippingAddresses,
+                    totalAdminShippingAddresses: normalizedCount,
+                    adminShippingAddressesNext: retryResponse.next,
+                    adminShippingAddressesPrevious: retryResponse.previous,
+                    currentAdminShippingAddressesPage: 1,
+                    totalAdminShippingAddressesPages: totalPages,
+                    isFetchingAdminShippingAddresses: false,
+                    fetchAdminShippingAddressesError: null,
+                  })
+                }
+                return retryResponse
+              } catch (retryError) {
+                // If retry also fails, fall through to normal error handling
+                // Don't log abort errors - these are expected when requests are intentionally cancelled
+                if (!isAbortError(retryError)) {
+                  console.error('Retry with page 1 also failed:', sanitizeErrorForLogging(retryError))
+                } else {
+                  // Retry was also cancelled, don't set error state
+                  throw retryError
+                }
+              }
             }
 
             const errorMessage = 'Failed to fetch admin shipping addresses. Please try again.'
