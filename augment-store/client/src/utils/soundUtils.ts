@@ -36,7 +36,9 @@ export const playNotificationSound = (): void => {
     oscillator.onended = () => {
       oscillator.disconnect()
       gainNode.disconnect()
-      audioContext.close()
+      audioContext.close().catch((error) => {
+        console.debug('Failed to close audio context:', error)
+      })
     }
   } catch (error) {
     // Silently fail if audio playback is not available or blocked
