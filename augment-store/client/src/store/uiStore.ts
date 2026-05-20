@@ -54,7 +54,7 @@ const validateToastPosition = (position: unknown): ToastPosition => {
  * Validates notification sounds enabled setting to ensure it's a boolean
  * Prevents non-boolean values from corrupted/edited localStorage
  * @param enabled - The value to validate
- * @returns A boolean value, defaults to true if invalid
+ * @returns A boolean value, defaults to false if invalid (opt-in behavior)
  */
 const validateNotificationSoundsEnabled = (enabled: unknown): boolean => {
   // Check if the value is a valid boolean
@@ -62,8 +62,8 @@ const validateNotificationSoundsEnabled = (enabled: unknown): boolean => {
     return enabled
   }
 
-  // Default to true for invalid values
-  return true
+  // Default to false for invalid values (opt-in behavior)
+  return false
 }
 
 interface UIState {
@@ -107,7 +107,7 @@ export const useUIStore = create<UIState>()(
       isLoading: false,
       toastDuration: DEFAULT_TOAST_DURATION,
       toastPosition: DEFAULT_TOAST_POSITION,
-      notificationSoundsEnabled: true, // Enable notification sounds by default
+      notificationSoundsEnabled: false, // Notification sounds disabled by default (opt-in)
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
