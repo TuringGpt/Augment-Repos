@@ -1358,6 +1358,14 @@
         "bottom-center": "Inferior Centro",
         "bottom-right": "Inferior Derecha"
       },
+      "notificationSounds": "Sonidos de Notificación",
+      "notificationSoundsEnabled": "Los sonidos de notificación están actualmente habilitados",
+      "notificationSoundsDisabled": "Los sonidos de notificación están actualmente deshabilitados",
+      "notificationSoundsEnabledLabel": "Habilitado",
+      "notificationSoundsDisabledLabel": "Deshabilitado",
+      "notificationSoundsEnabledSuccess": "Sonidos de notificación habilitados",
+      "notificationSoundsDisabledSuccess": "Sonidos de notificación deshabilitados",
+      "notificationSoundsToggleFailed": "Error al cambiar los sonidos de notificación. Por favor, inténtalo de nuevo.",
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },

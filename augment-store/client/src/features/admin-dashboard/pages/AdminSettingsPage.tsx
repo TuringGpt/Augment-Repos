@@ -246,13 +246,13 @@ const AdminSettingsPage = () => {
       // Show success feedback to user
       toast.success(
         newValue
-          ? 'Notification sounds enabled'
-          : 'Notification sounds disabled'
+          ? t('admin.settingsPage.notificationSoundsEnabledSuccess')
+          : t('admin.settingsPage.notificationSoundsDisabledSuccess')
       )
     } catch (error) {
       console.error('Failed to toggle notification sounds:', error)
       // Show error feedback to user
-      toast.error('Failed to toggle notification sounds. Please try again.')
+      toast.error(t('admin.settingsPage.notificationSoundsToggleFailed'))
     }
   }
 
@@ -524,12 +524,12 @@ const AdminSettingsPage = () => {
               <NotificationsIcon sx={{ fontSize: 24, color: 'primary.main' }} />
               <Box>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Notification Sounds
+                  {t('admin.settingsPage.notificationSounds')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {notificationSoundsEnabled
-                    ? 'Notification sounds are currently enabled'
-                    : 'Notification sounds are currently disabled'}
+                    ? t('admin.settingsPage.notificationSoundsEnabled')
+                    : t('admin.settingsPage.notificationSoundsDisabled')}
                 </Typography>
               </Box>
             </Box>
@@ -541,7 +541,7 @@ const AdminSettingsPage = () => {
                   color="primary"
                 />
               }
-              label={notificationSoundsEnabled ? 'Enabled' : 'Disabled'}
+              label={notificationSoundsEnabled ? t('admin.settingsPage.notificationSoundsEnabledLabel') : t('admin.settingsPage.notificationSoundsDisabledLabel')}
               labelPlacement="start"
             />
           </Box>

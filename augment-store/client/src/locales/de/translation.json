@@ -1358,6 +1358,14 @@
         "bottom-center": "Unten Mitte",
         "bottom-right": "Unten Rechts"
       },
+      "notificationSounds": "Benachrichtigungstöne",
+      "notificationSoundsEnabled": "Benachrichtigungstöne sind derzeit aktiviert",
+      "notificationSoundsDisabled": "Benachrichtigungstöne sind derzeit deaktiviert",
+      "notificationSoundsEnabledLabel": "Aktiviert",
+      "notificationSoundsDisabledLabel": "Deaktiviert",
+      "notificationSoundsEnabledSuccess": "Benachrichtigungstöne aktiviert",
+      "notificationSoundsDisabledSuccess": "Benachrichtigungstöne deaktiviert",
+      "notificationSoundsToggleFailed": "Benachrichtigungstöne konnten nicht umgeschaltet werden. Bitte versuchen Sie es erneut.",
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },
