@@ -27,6 +27,7 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
+  Tooltip,
 } from '@mui/material'
 import {
   AccountCircle as AccountCircleIcon,
@@ -364,6 +365,7 @@ const AdminAccountsPage = () => {
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.role')}</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.status')}</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.joined')}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>{t('admin.accountsPage.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -377,7 +379,20 @@ const AdminAccountsPage = () => {
                       <TableRow
                         key={account.id}
                         hover
-                        onClick={() => handleAccountClick(account)}
+                        onClick={(e) => {
+                          // Only trigger row click if clicking outside the actions cell
+                          // This prevents conflicts with the nested IconButton
+                          const target = e.target
+                          if (target instanceof Element) {
+                            // Element node: check if it's outside the actions cell
+                            if (!target.closest('[data-table-actions]')) {
+                              handleAccountClick(account)
+                            }
+                          } else {
+                            // Non-Element node (e.g., Text node): treat as normal row click
+                            handleAccountClick(account)
+                          }
+                        }}
                         onKeyDown={(e) => {
                           if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
                             e.preventDefault()
@@ -444,6 +459,26 @@ const AdminAccountsPage = () => {
                         )}
                       </TableCell>
                       <TableCell>{formatDate(account.dateJoined)}</TableCell>
+                      <TableCell align="center" data-table-actions>
+                        <Tooltip title={t('common.edit')}>
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditAccount(account)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation()
+                              }
+                            }}
+                            color="primary"
+                            size="small"
+                            aria-label={t('common.edit')}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
                     </TableRow>
                     )
                   })
@@ -451,7 +486,7 @@ const AdminAccountsPage = () => {
                   // Only show empty state when there's no error
                   !error && (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                         <Typography color="text.secondary">
                           {t('admin.accountsPage.emptyState.noAccounts')}
                         </Typography>
