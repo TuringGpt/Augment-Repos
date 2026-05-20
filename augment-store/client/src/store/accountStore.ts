@@ -445,3 +445,37 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     })
   },
 }))
+
+// Subscribe to auth state changes and clear account profile when user logs out
+// This prevents retaining the previous user's profile data after logout, addressing
+// security concerns about profile data retention across user sessions in same-session logout/login flows
+import('@store/authStore')
+  .then(({ useAuthStore }) => {
+    let previousAuthState = useAuthStore.getState().isAuthenticated
+
+    const unsubscribe = useAuthStore.subscribe((state) => {
+      const currentAuthState = state.isAuthenticated
+
+      // Detect transition from authenticated to unauthenticated
+      if (previousAuthState === true && currentAuthState === false) {
+        // Log only in development to prevent noisy console output in production
+        if (import.meta.env.DEV) {
+          console.log('🔒 User logged out - clearing account profile from memory')
+        }
+        useAccountStore.getState().clearAccountProfile()
+      }
+
+      previousAuthState = currentAuthState
+    })
+
+    // Clean up subscription on HMR module disposal to prevent memory leaks
+    if (import.meta.hot) {
+      import.meta.hot.dispose(() => {
+        unsubscribe()
+      })
+    }
+  })
+  .catch((error) => {
+    // Log error but don't fail - auth cleanup is a non-critical enhancement
+    console.error('Failed to set up auth state subscription for account profile cleanup:', error)
+  })
