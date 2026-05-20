@@ -20,6 +20,8 @@ const NotificationBell = () => {
   // Track previous unread count to detect new notifications
   // Initialize to undefined to prevent sound on initial hydration
   const prevUnreadCountRef = useRef<number | undefined>(undefined)
+  // Track whether initial fetch has completed
+  const hasInitializedRef = useRef(false)
 
   // Fetch unread count when component mounts (only if authenticated)
   useEffect(() => {
@@ -30,19 +32,20 @@ const NotificationBell = () => {
 
   // Play sound when unread count increases (new notifications arrive)
   useEffect(() => {
-    // Only play sound if:
-    // 1. User is authenticated
-    // 2. Previous count is defined (not initial mount)
-    // 3. Current count is greater than previous count (new notification)
-    if (
-      isAuthenticated &&
-      prevUnreadCountRef.current !== undefined &&
-      unreadCount > prevUnreadCountRef.current
-    ) {
+    // Skip initial hydration: wait until first fetch completes
+    if (!hasInitializedRef.current) {
+      // Mark as initialized and store initial count
+      hasInitializedRef.current = true
+      prevUnreadCountRef.current = unreadCount
+      return
+    }
+
+    // Only play sound if count increased (new notifications arrived)
+    if (isAuthenticated && unreadCount > prevUnreadCountRef.current!) {
       playNotificationSoundIfEnabled(notificationSoundsEnabled)
     }
 
-    // Update the previous count reference
+    // Always update the reference for subsequent comparisons
     prevUnreadCountRef.current = unreadCount
   }, [unreadCount, isAuthenticated, notificationSoundsEnabled])
 
