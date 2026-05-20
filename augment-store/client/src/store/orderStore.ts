@@ -822,15 +822,13 @@ export const useOrderStore = create<OrderState>()(
       },
 
       setAdminShippingAddressesPage: (page: number, signal?: AbortSignal) => {
-        // Validate page before setting it optimistically to prevent invalid pagination state
-        // Clamp page to valid range to match the validation in getAdminShippingAddresses
-        const currentTotalPages = get().totalAdminShippingAddressesPages
-        const validPage = Math.max(1, currentTotalPages > 0 ? Math.min(page, currentTotalPages) : page)
-
         // Update currentAdminShippingAddressesPage optimistically so UI state remains consistent even if fetch fails
         // This ensures retry logic and pagination controls use the intended page
-        set({ currentAdminShippingAddressesPage: validPage })
-        get().getAdminShippingAddresses(validPage, signal).catch((error) => {
+        // Don't clamp to totalAdminShippingAddressesPages here because it's initialized to 1 and not persisted,
+        // which would force any first-load navigation to page > 1 back to 1 even if valid.
+        // getAdminShippingAddresses handles validation and 404 retry logic.
+        set({ currentAdminShippingAddressesPage: page })
+        get().getAdminShippingAddresses(page, signal).catch((error) => {
           // Error is already handled in getAdminShippingAddresses, just prevent unhandled rejection
           // Don't log abort errors - these are expected when requests are intentionally cancelled
           if (!isAbortError(error)) {
