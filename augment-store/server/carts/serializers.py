@@ -1,0 +1,172 @@
+
+from decimal import Decimal
+from rest_framework import serializers
+from .models import Cart, CartItem, Wishlist
+from products.models import Product
+from products.serializers import ProductListSerializer
+
+
+def validate_existing_product_ids(value):
+    requested_ids = set(value)
+    existing_ids = set(Product.objects.filter(id__in=requested_ids).values_list('id', flat=True))
+    for product_id in value:
+        if product_id not in existing_ids:
+            raise serializers.ValidationError(f"Product {product_id} does not exist")
+    return value
+
+
+class AddToCartSerializer(serializers.Serializer):
+    product_id = serializers.UUIDField(write_only=True)
+    quantity = serializers.IntegerField(min_value=1, write_only=True)
+
+    def validate(self, attrs):
+        product_id = attrs.get("product_id")
+        quantity = attrs.get("quantity")
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not user or getattr(user, "is_anonymous", True):
+            raise serializers.ValidationError("Product does not exist")
+
+        try:
+            product: Product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("Product does not exist")
+
+        if not product.check_stock(quantity):
+            raise serializers.ValidationError("Quantity exceeds stock")
+
+        user_cart = Cart.objects.get_user_cart(user)
+        existing_quantity = (
+            user_cart.items.filter(product=product).values_list("quantity", flat=True).first() or 0
+        )
+        if not product.check_stock(existing_quantity + quantity):
+            raise serializers.ValidationError("Quantity exceeds stock")
+
+        attrs['product'] = product
+        return attrs
+    
+
+    def create(self, validated_data):
+     
+        user = self.context.get("request").user
+        user_cart = Cart.objects.get_user_cart(user)
+        quantity = validated_data.get("quantity")
+        product = validated_data.get("product")
+
+        user_cart = Cart.objects.add_to_cart(user, product, quantity)
+        return user_cart
+
+
+
+
+class UpdateCartItemSerializer(serializers.ModelSerializer):
+    quantity = serializers.IntegerField(min_value=1)
+    operation = serializers.ChoiceField(choices=["add", "subtract", "set"], default="set")
+
+    class Meta:
+        model = CartItem
+        fields = ["quantity", "operation"]
+
+    def validate(self, attrs):
+        cart_item = self.instance
+        quantity = attrs.get("quantity")
+        operation = attrs.get("operation") or "set"
+
+        if cart_item.product is None:
+            raise serializers.ValidationError("Product does not exist")
+
+        if quantity is None:
+            if operation in ("add", "subtract"):
+                raise serializers.ValidationError(
+                    "Quantity is required for add and subtract operations"
+                )
+            raise serializers.ValidationError("Quantity is required for set operations")
+        if operation == "add":
+            updated_quantity = cart_item.quantity + quantity
+        elif operation == "subtract":
+            updated_quantity = cart_item.quantity - quantity
+        else:
+            updated_quantity = quantity
+        if updated_quantity < 1:
+            raise serializers.ValidationError("Quantity cannot be less than 1")
+        if not cart_item.product.check_stock(updated_quantity):
+            raise serializers.ValidationError("Quantity exceeds stock")
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        quantity = validated_data.get("quantity")
+        operation = validated_data.get("operation") or "set"
+        if operation == "add":
+            instance.quantity += quantity
+        elif operation == "subtract":
+            instance.quantity -= quantity
+        else:
+            instance.quantity = quantity
+        instance.save()
+        return instance
+
+class CartItemListSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer()
+    subtotal = serializers.SerializerMethodField()
+
+    def get_subtotal(self, obj):
+        if obj.product:
+            return obj.product.price * obj.quantity
+        return Decimal('0.00')
+
+    class Meta:
+        model = CartItem
+        fields = "__all__"
+
+        
+class CartDetailSerializer(serializers.ModelSerializer):
+    items = CartItemListSerializer(many=True)
+    total = serializers.ReadOnlyField()
+    subtotal = serializers.ReadOnlyField()
+    tax = serializers.ReadOnlyField()
+    shipping = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Cart
+        fields = "__all__"
+
+
+class AddToWishlistSerializer(serializers.ModelSerializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField(), write_only=True)
+    products = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ["product_ids","products", "created_at", "updated_at"]
+
+    def validate_product_ids(self, value):
+        return validate_existing_product_ids(value)
+
+    
+    def create(self, validated_data):
+        user = self.context.get("request").user
+        wishlist = Wishlist.objects.get_user_wishlist(user)
+        wishlist.products.add(*validated_data.get("product_ids"))
+        return wishlist
+    
+
+
+
+        
+
+class RemoveFromWishlistSerializer(serializers.Serializer):
+    product_ids = serializers.ListField(child=serializers.UUIDField())
+
+    def validate_product_ids(self, value):
+        return validate_existing_product_ids(value)
+
+
+    
+
+class WishlistDetailSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True)
+
+    class Meta:
+        model = Wishlist
+        fields = "__all__"

@@ -1,0 +1,559 @@
+import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  CircularProgress,
+  Alert,
+  Button,
+  IconButton,
+  Tooltip,
+  Grid,
+} from '@mui/material'
+import {
+  Refresh as RefreshIcon,
+  Visibility as VisibilityIcon,
+  TrendingUp as TrendingUpIcon,
+  ShoppingCart as ShoppingCartIcon,
+  RemoveShoppingCart as RemoveCartIcon,
+  List as ListIcon,
+  BarChart as BarChartIcon,
+} from '@mui/icons-material'
+import { useTranslation } from '@hooks/useTranslation'
+import { useAuthStore } from '@store/authStore'
+import { useProductStatisticsStore } from '@store/productStatisticsStore'
+import { formatCurrency } from '@utils/formatters'
+import { ROUTES } from '@constants/index'
+import BestSellingProductsChart from '@features/admin-dashboard/components/BestSellingProductsChart'
+import MostViewedProductsChart from '@features/admin-dashboard/components/MostViewedProductsChart'
+import MostAddedToCartChart from '@features/admin-dashboard/components/MostAddedToCartChart'
+import ProductPerformanceChart from '@features/admin-dashboard/components/ProductPerformanceChart'
+
+/**
+ * AdminProductsPage Component
+ * Admin page for viewing product statistics with table view and pagination
+ */
+const AdminProductsPage = () => {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { user, isAuthenticated } = useAuthStore()
+  const {
+    statistics,
+    isLoading,
+    error,
+    fetchStatistics,
+    clearStatisticsError,
+    bestSellingProducts,
+    isBestSellingLoading,
+    bestSellingError,
+    fetchBestSellingProducts,
+    clearBestSellingError,
+    mostViewedProducts,
+    isMostViewedLoading,
+    mostViewedError,
+    fetchMostViewedProducts,
+    clearMostViewedError,
+    mostAddedToCartProducts,
+    isMostAddedToCartLoading,
+    mostAddedToCartError,
+    fetchMostAddedToCartProducts,
+    clearMostAddedToCartError,
+    productPerformance,
+    isProductPerformanceLoading,
+    productPerformanceError,
+    fetchProductPerformance,
+    clearProductPerformanceError,
+  } = useProductStatisticsStore()
+
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const bestSellingAbortControllerRef = useRef<AbortController | null>(null)
+  const mostViewedAbortControllerRef = useRef<AbortController | null>(null)
+  const mostAddedToCartAbortControllerRef = useRef<AbortController | null>(null)
+  const productPerformanceAbortControllerRef = useRef<AbortController | null>(null)
+
+  // Fetch statistics on mount and when page/rowsPerPage changes
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadStatistics()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, isAuthenticated, user?.role])
+
+  // Fetch best selling products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadBestSellingProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (bestSellingAbortControllerRef.current) {
+        bestSellingAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch most viewed products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadMostViewedProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (mostViewedAbortControllerRef.current) {
+        mostViewedAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch most added to cart products on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadMostAddedToCartProducts()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (mostAddedToCartAbortControllerRef.current) {
+        mostAddedToCartAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  // Fetch product performance on mount
+  useEffect(() => {
+    // Only fetch if user is authenticated and is an admin
+    if (isAuthenticated && user?.role === 'admin') {
+      loadProductPerformance()
+    }
+    return () => {
+      // Cleanup: abort any pending requests
+      if (productPerformanceAbortControllerRef.current) {
+        productPerformanceAbortControllerRef.current.abort()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role])
+
+  const loadStatistics = async () => {
+    // Abort previous request if any
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
+    try {
+      await fetchStatistics(
+        {
+          page: page + 1, // API uses 1-based pagination
+          page_size: rowsPerPage,
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Don't log abort/cancel errors - they're expected when pagination changes
+      // The store layer handles error state appropriately
+    }
+  }
+
+  const loadBestSellingProducts = async () => {
+    // Abort previous request if any
+    if (bestSellingAbortControllerRef.current) {
+      bestSellingAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    bestSellingAbortControllerRef.current = abortController
+
+    try {
+      await fetchBestSellingProducts(
+        {
+          limit: 10, // Get top 10 best selling products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
+    }
+  }
+
+  const loadMostViewedProducts = async () => {
+    // Abort previous request if any
+    if (mostViewedAbortControllerRef.current) {
+      mostViewedAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    mostViewedAbortControllerRef.current = abortController
+
+    try {
+      await fetchMostViewedProducts(
+        {
+          limit: 10, // Get top 10 most viewed products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
+    }
+  }
+
+  const loadMostAddedToCartProducts = async () => {
+    // Abort previous request if any
+    if (mostAddedToCartAbortControllerRef.current) {
+      mostAddedToCartAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    mostAddedToCartAbortControllerRef.current = abortController
+
+    try {
+      await fetchMostAddedToCartProducts(
+        {
+          limit: 10, // Get top 10 most added to cart products
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
+    }
+  }
+
+  const loadProductPerformance = async () => {
+    // Abort previous request if any
+    if (productPerformanceAbortControllerRef.current) {
+      productPerformanceAbortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    const abortController = new AbortController()
+    productPerformanceAbortControllerRef.current = abortController
+
+    try {
+      await fetchProductPerformance(
+        {
+          days: 30, // Get performance data for the last 30 days
+          limit: 10, // Get top 10 products in each category
+        },
+        abortController.signal
+      )
+    } catch (err) {
+      // Don't log abort/cancel errors - they're expected during normal usage
+      // The store layer handles error state appropriately
+    }
+  }
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0) // Reset to first page
+  }
+
+  const handleRefresh = () => {
+    loadStatistics()
+    loadBestSellingProducts()
+    loadMostViewedProducts()
+    loadMostAddedToCartProducts()
+    loadProductPerformance()
+  }
+
+  const handleViewProduct = (productId: string) => {
+    navigate(ROUTES.PRODUCT_DETAIL.replace(':id', productId))
+  }
+
+  // Check if user is authenticated and is an admin
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          {t('admin.dashboard.pleaseLogin')}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate(ROUTES.LOGIN)}>
+          {t('admin.dashboard.goToLogin')}
+        </Button>
+      </Container>
+    )
+  }
+
+  if (user?.role !== 'admin') {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {t('admin.dashboard.accessDenied')}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate(ROUTES.HOME)}>
+          {t('admin.dashboard.goToHome')}
+        </Button>
+      </Container>
+    )
+  }
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
+            {t('admin.productStatistics.title')}
+          </Typography>
+          <Typography color="text.secondary">
+            {t('admin.productStatistics.subtitle')}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<BarChartIcon />}
+            onClick={() => navigate(ROUTES.ADMIN_PRODUCTS_STATISTICS)}
+          >
+            {t('admin.productStatistics.viewStatisticsTable')}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<ListIcon />}
+            onClick={() => navigate(ROUTES.ADMIN_PRODUCTS_ALL)}
+          >
+            {t('admin.productStatistics.viewAllProducts')}
+          </Button>
+          <Tooltip title={t('admin.productStatistics.refresh')}>
+            <IconButton onClick={handleRefresh} color="primary" disabled={isLoading}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearStatisticsError}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Best Selling Error Alert */}
+      {bestSellingError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearBestSellingError}>
+          {bestSellingError}
+        </Alert>
+      )}
+
+      {/* Most Viewed Error Alert */}
+      {mostViewedError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearMostViewedError}>
+          {mostViewedError}
+        </Alert>
+      )}
+
+      {/* Most Added to Cart Error Alert */}
+      {mostAddedToCartError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearMostAddedToCartError}>
+          {mostAddedToCartError}
+        </Alert>
+      )}
+
+      {/* Product Performance Error Alert */}
+      {productPerformanceError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={clearProductPerformanceError}>
+          {productPerformanceError}
+        </Alert>
+      )}
+
+      {/* Best Selling Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <BestSellingProductsChart
+            data={bestSellingProducts?.results || []}
+            isLoading={isBestSellingLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Most Viewed Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <MostViewedProductsChart
+            data={mostViewedProducts?.results || []}
+            isLoading={isMostViewedLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Most Added to Cart Products Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <MostAddedToCartChart
+            data={mostAddedToCartProducts?.results || []}
+            isLoading={isMostAddedToCartLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Product Performance Chart */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12}>
+          <ProductPerformanceChart
+            data={productPerformance}
+            isLoading={isProductPerformanceLoading}
+          />
+        </Grid>
+      </Grid>
+
+      {/* Loading State */}
+      {isLoading && !statistics ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : statistics && statistics.count > 0 ? (
+        <Box sx={{ position: 'relative' }}>
+          {/* Loading overlay for pagination changes */}
+          {isLoading && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 1,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+
+          {/* Statistics Table */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+              {t('admin.productStatistics.table.title')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {t('admin.productStatistics.table.description')}
+            </Typography>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t('admin.productStatistics.table.productName')}</TableCell>
+                  <TableCell align="right">{t('admin.productStatistics.table.price')}</TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                      <TrendingUpIcon fontSize="small" />
+                      {t('admin.productStatistics.table.views')}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                      <ShoppingCartIcon fontSize="small" />
+                      {t('admin.productStatistics.table.cartAdds')}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                      <RemoveCartIcon fontSize="small" />
+                      {t('admin.productStatistics.table.cartRemoves')}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">{t('admin.productStatistics.table.purchases')}</TableCell>
+                  <TableCell align="center">{t('admin.productStatistics.table.actions')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statistics.results.length > 0 ? (
+                  statistics.results.map((item) => (
+                    <TableRow key={item.product_id} hover>
+                      <TableCell>{item.product_name}</TableCell>
+                      <TableCell align="right">{formatCurrency(parseFloat(item.product_price))}</TableCell>
+                      <TableCell align="right">{item.view_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.cart_add_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.cart_remove_count.toLocaleString()}</TableCell>
+                      <TableCell align="right">{item.purchase_count.toLocaleString()}</TableCell>
+                      <TableCell align="center">
+                        <Tooltip title={t('admin.productStatistics.table.viewProduct')}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleViewProduct(item.product_id)}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                      <Typography color="text.secondary">
+                        {t('admin.productStatistics.noDataOnPage')}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Pagination */}
+          <TablePagination
+            component="div"
+            count={statistics.count}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            labelRowsPerPage={t('admin.productStatistics.table.rowsPerPage')}
+          />
+        </Box>
+      ) : (
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography color="text.secondary">
+            {t('admin.productStatistics.noData')}
+          </Typography>
+        </Paper>
+      )}
+    </Container>
+  )
+}
+
+export default AdminProductsPage

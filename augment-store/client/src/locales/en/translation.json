@@ -1,0 +1,1874 @@
+{
+  "common": {
+    "appName": "Augment Store",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "clear": "Clear",
+    "apply": "Apply",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "viewAll": "View All",
+    "learnMore": "Learn More",
+    "readMore": "Read More",
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "clearAll": "Clear All"
+  },
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "categories": "Categories",
+    "brands": "Brands",
+    "products": "Products",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "orders": "Orders",
+    "profile": "Profile",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "account": "Account",
+    "settings": "Settings",
+    "menu": "Menu",
+    "support": "Support",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "adminDashboard": "Admin Dashboard"
+  },
+
+  "tooltip": {
+    "menu": "Open menu",
+    "cart": "Open cart",
+    "wishlist": "View wishlist",
+    "orders": "View orders",
+    "support": "Get support",
+    "profile": "View profile",
+    "logout": "Logout",
+    "products": "Browse products",
+    "login": "Login to your account",
+    "changeLanguage": "Change language",
+    "notifications": "Notifications",
+    "switchToDarkMode": "Switch to dark mode",
+    "switchToLightMode": "Switch to light mode"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "emptyDescription": "You'll see notifications here when you have updates",
+    "viewAll": "View all notifications",
+    "unreadCount": "{{count}} unread notification",
+    "unreadCount_other": "{{count}} unread notifications",
+    "markedAsRead": "Notification marked as read",
+    "markAsReadError": "Failed to mark notification as read",
+    "details": "Notification Details",
+    "read": "Read",
+    "unread": "Unread",
+    "metadata": "Details",
+    "type": "Type",
+    "objectId": "Reference ID",
+    "noSelection": "No notification selected",
+    "deleteNotification": "Delete Notification",
+    "deleteConfirmTitle": "Delete Notification?",
+    "deleteConfirmMessage": "Are you sure you want to delete this notification? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "deleteSuccess": "Notification deleted successfully",
+    "deleteError": "Failed to delete notification"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "rememberMe": "Remember Me",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "verifyEmail": "Verify Email",
+    "emailVerification": "Email Verification",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "fullName": "Full Name",
+    "loginPage": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to continue to Augment Store",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "forgotPasswordLink": "Forgot Password?",
+      "signInButton": "Sign In",
+      "continueAsGuest": "Continue as Guest",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign Up",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "loginSuccess": "Login successful! Redirecting...",
+      "loginFailed": "Login failed. Please try again."
+    },
+    "registerPage": {
+      "title": "Create Account",
+      "subtitle": "Join Augment Store today",
+      "firstNameLabel": "First Name",
+      "lastNameLabel": "Last Name",
+      "emailLabel": "Email Address",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "agreeToTerms": "I agree to the <termsLink>Terms and Conditions</termsLink> and <privacyLink>Privacy Policy</privacyLink>",
+      "signUpButton": "Sign Up",
+      "continueAsGuest": "Continue as Guest",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "firstNameRequired": "First name is required",
+      "firstNameMinLength": "First name must be at least 2 characters",
+      "lastNameRequired": "Last name is required",
+      "lastNameMinLength": "Last name must be at least 2 characters",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "termsRequired": "You must agree to the Terms and Conditions",
+      "registerSuccess": "Registration successful! Redirecting to email verification...",
+      "registerFailed": "Registration failed. Please try again.",
+      "passwordRequirementsTitle": "Password must contain:",
+      "passwordRequirements8Chars": "At least 8 characters",
+      "passwordRequirementsUppercase": "One uppercase letter",
+      "passwordRequirementsLowercase": "One lowercase letter",
+      "passwordRequirementsNumber": "One number"
+    },
+    "forgotPasswordPage": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email address and we'll send you instructions to reset your password",
+      "emailLabel": "Email Address",
+      "sendButton": "Send Reset Instructions",
+      "backToLogin": "Back to Login",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "successMessage": "Password reset instructions have been sent to your email address. Please check your inbox.",
+      "errorMessage": "Failed to send reset instructions. Please try again."
+    },
+    "resetPasswordPage": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password below",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "resetButton": "Reset Password",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordComplexity": "Password must contain uppercase, lowercase, and number",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "successMessage": "Your password has been reset successfully!",
+      "errorMessage": "Failed to reset password. Please try again or request a new reset link.",
+      "invalidToken": "Invalid or missing reset token. Please request a new password reset.",
+      "redirecting": "Redirecting to login...",
+      "passwordRequirementsTitle": "Password must contain:",
+      "passwordRequirements8Chars": "At least 8 characters",
+      "passwordRequirementsUppercase": "One uppercase letter",
+      "passwordRequirementsLowercase": "One lowercase letter",
+      "passwordRequirementsNumber": "One number"
+    },
+    "verifyEmailPage": {
+      "title": "Verify Your Email",
+      "subtitle": "We've sent a verification link to {{email}}",
+      "subtitleNoEmail": "Check your email for verification",
+      "waitingTitle": "Check Your Email",
+      "instructions": "Please check your email and click the verification link to activate your account.",
+      "notReceived": "Didn't receive the email?",
+      "notReceivedHelp": "Check your spam folder or contact support if you need assistance.",
+      "resendButton": "Resend Verification Email",
+      "backToLogin": "Back to Login",
+      "verifying": "Verifying your email...",
+      "successMessage": "Your email has been verified successfully! You can now log in.",
+      "errorMessage": "Failed to verify email. The link may be invalid or expired.",
+      "resendSuccess": "Verification email sent! Please check your inbox.",
+      "resendError": "Failed to resend verification email. Please try again."
+    }
+  },
+  "product": {
+    "products": "Products",
+    "product": "Product",
+    "price": "Price",
+    "description": "Description",
+    "details": "Details",
+    "specifications": "Specifications",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "lowStock": "Only {{count}} left in stock",
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "quantity": "Quantity",
+    "sku": "SKU",
+    "category": "Category",
+    "brand": "Brand",
+    "tags": "Tags",
+    "relatedProducts": "Related Products",
+    "recommendedProducts": "Recommended Products",
+    "newArrivals": "New Arrivals",
+    "bestSellers": "Best Sellers",
+    "featured": "Featured",
+    "onSale": "On Sale",
+    "discount": "Discount",
+    "recentlyViewed": "Recently Viewed"
+  },
+  "home": {
+    "featuredProducts": "Featured Products",
+    "noFeaturedProducts": "No featured products available at the moment.",
+    "banners": {
+      "clickToViewDetails": "Click to view details",
+      "summerSale": {
+        "title": "Summer Sale",
+        "subtitle": "Up to 50% Off",
+        "cta": "Shop Now"
+      },
+      "newArrivals": {
+        "title": "New Arrivals",
+        "subtitle": "Fresh Styles",
+        "cta": "Explore"
+      },
+      "megaSale": {
+        "title": "Mega Sale Event",
+        "subtitle": "Limited Time Offer",
+        "description": "Get amazing deals on all categories. Don't miss out!",
+        "cta": "Shop All Deals"
+      },
+      "winterCollection": {
+        "title": "Winter Collection",
+        "subtitle": "New Season Arrivals",
+        "description": "Discover the latest trends for the winter season",
+        "cta": "Explore Now"
+      },
+      "techDeals": {
+        "title": "Tech Deals",
+        "subtitle": "Up to 40% Off",
+        "description": "Latest gadgets and electronics at unbeatable prices",
+        "cta": "Shop Tech"
+      },
+      "electronics": {
+        "title": "Electronics",
+        "subtitle": "20% Off",
+        "cta": "View Deals"
+      },
+      "fashionWeek": {
+        "title": "Fashion Week",
+        "subtitle": "Trending Now",
+        "cta": "Discover"
+      }
+    }
+  },
+  "cart": {
+    "cart": "Cart",
+    "shoppingCart": "Shopping Cart",
+    "emptyCart": "Your cart is empty",
+    "continueShopping": "Continue Shopping",
+    "proceedToCheckout": "Proceed to Checkout",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "tax": "Tax",
+    "shipping": "Shipping",
+    "shippingFree": "FREE",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
+    "each": "each",
+    "remove": "Remove",
+    "update": "Update",
+    "itemsInCart": "{{count}} item in cart",
+    "itemsInCart_other": "{{count}} items in cart",
+    "quantity": "Quantity",
+    "maxStock": "Max stock",
+    "viewFullCart": "View Full Cart",
+    "emptyCartMessage": "Add some products to get started!",
+    "closeCart": "close cart",
+    "removeItem": "Remove item",
+    "removeItemTitle": "Remove Item?",
+    "removeItemConfirm": "Are you sure you want to remove <strong>{{name}}</strong> from your cart?",
+    "removing": "Removing...",
+    "items": "{{count}} item(s)",
+    "saveForLater": "Save for Later",
+    "savedItems": "Saved Items",
+    "moveToCart": "Move to Cart",
+    "movedToCart": "Item moved to cart",
+    "savedForLater": "Item saved for later",
+    "failedToSaveItem": "Failed to save item",
+    "failedToMoveItem": "Failed to move item to cart",
+    "removedFromSaved": "Item removed from saved items",
+    "emptySavedItems": "No saved items",
+    "emptySavedItemsMessage": "Items you save for later will appear here"
+  },
+  "wishlist": {
+    "myWishlist": "My Wishlist",
+    "wishlist": "Wishlist",
+    "emptyWishlist": "Your wishlist is empty",
+    "emptyWishlistMessage": "Save your favorite items to your wishlist and shop them later!",
+    "browseProducts": "Browse Products",
+    "itemsInWishlist": "{{count}} item in your wishlist",
+    "itemsInWishlist_other": "{{count}} items in your wishlist",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "loginToAddToWishlist": "Login to add to wishlist",
+    "addedToWishlist": "Added to wishlist",
+    "removedFromWishlist": "Removed from wishlist",
+    "failedToAddToWishlist": "Failed to add to wishlist",
+    "failedToRemoveFromWishlist": "Failed to remove from wishlist",
+    "viewWishlist": "View Wishlist",
+    "moveToCart": "Move to Cart"
+  },
+  "checkout": {
+    "checkout": "Checkout",
+    "checkoutDescription": "Complete your order by filling out the information below",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "billingAddressSubtitle": "Where should we send the invoice?",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "zipCode": "Zip Code",
+    "country": "Country",
+    "phone": "Phone",
+    "sameAsShipping": "Same as shipping address",
+    "discountCode": "Discount Code",
+    "enterDiscountCode": "Enter discount code",
+    "proceedToPayment": "Proceed to Payment",
+    "placingOrder": "Placing Order...",
+    "initializingPayment": "Initializing Payment...",
+    "agreement": "By placing an order, you agree to our",
+    "termsAndConditions": "Terms and Conditions",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "removeItem": "Remove Item?",
+    "removeItemBefore": "Are you sure you want to remove",
+    "removeItemAfter": "from your cart?",
+    "removing": "Removing...",
+    "orderConfirmed": "Order Confirmed!",
+    "thankYou": "Thank you for your purchase",
+    "orderSuccessMessage": "Your order has been successfully placed and is being processed.",
+    "orderId": "Order ID",
+    "totalAmount": "Total Amount",
+    "viewOrderDetails": "View Order Details",
+    "continueShopping": "Continue Shopping",
+    "orderDate": "Order Date",
+    "status": "Status",
+    "contactInformation": "Contact Information",
+    "confirmationEmailSent": "A confirmation email has been sent to",
+    "contactForm": {
+      "title": "Contact Information",
+      "subtitle": "We'll use this to contact you about your order",
+      "complete": "Complete",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "emailHelper": "We'll send your order confirmation here",
+      "phoneHelper": "Enter 10-15 digits. Format: {{supportPhone}} or 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email address",
+        "phoneRequired": "Phone number is required",
+        "phoneInvalidChars": "Phone number can only contain digits, spaces, hyphens, parentheses, and an optional + prefix",
+        "phoneInvalidLength": "Phone number must be between 10 and 15 digits",
+        "phoneInvalidFormat": "Invalid phone number format",
+        "firstNameRequired": "First name is required",
+        "firstNameTooLong": "First name is too long",
+        "firstNameInvalidChars": "First name can only contain letters, spaces, hyphens, and apostrophes",
+        "lastNameRequired": "Last name is required",
+        "lastNameTooLong": "Last name is too long",
+        "lastNameInvalidChars": "Last name can only contain letters, spaces, hyphens, and apostrophes"
+      }
+    },
+    "shippingForm": {
+      "title": "Shipping Address",
+      "subtitle": "Where should we deliver your order?",
+      "complete": "Complete",
+      "streetAddress": "Street Address",
+      "apartmentSuite": "Apartment, suite, etc. (optional)",
+      "city": "City",
+      "stateProvince": "State/Province",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "errors": {
+        "streetAddressRequired": "Street address is required",
+        "streetAddressTooLong": "Address is too long",
+        "cityRequired": "City is required",
+        "cityTooLong": "City name is too long",
+        "cityInvalidChars": "City can only contain letters, spaces, hyphens, and apostrophes",
+        "stateProvinceRequired": "State/Province is required",
+        "stateProvinceTooLong": "State/Province is too long",
+        "postalCodeRequired": "Postal code is required",
+        "postalCodeTooLong": "Postal code is too long",
+        "postalCodeInvalid": "Invalid postal code format",
+        "countryRequired": "Country is required"
+      }
+    }
+  },
+  "order": {
+    "orders": "Orders",
+    "order": "Order",
+    "orderNumber": "Order Number",
+    "orderDate": "Order Date",
+    "orderStatus": "Order Status",
+    "orderTotal": "Order Total",
+    "orderDetails": "Order Details",
+    "trackOrder": "Track Order",
+    "viewOrder": "View Order",
+    "cancelOrder": "Cancel Order",
+    "backToOrders": "Back to Orders",
+    "placedOn": "Placed on",
+    "orderItems": "Order Items",
+    "product": "Product",
+    "quantity": "Quantity",
+    "price": "Price",
+    "subtotal": "Subtotal",
+    "shippingAddress": "Shipping Address",
+    "billingAddress": "Billing Address",
+    "noShippingAddress": "No shipping address available",
+    "noBillingAddress": "No billing address available",
+    "orderSummary": "Order Summary",
+    "tax": "Tax",
+    "shipping": "Shipping",
+    "free": "FREE",
+    "total": "Total",
+    "paymentMethod": "Payment Method",
+    "lastUpdated": "Last Updated",
+    "orderNotFound": "Order not found",
+    "provideValidOrderId": "Please provide a valid order ID in the URL.",
+    "deletedProduct": "Deleted Product",
+    "productNoLongerAvailable": "Product no longer available",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "paymentStatus": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "notAvailable": "N/A"
+    }
+  },
+  "user": {
+    "profile": "Profile",
+    "account": "Account",
+    "personalInfo": "Personal Information",
+    "addresses": "Addresses",
+    "orderHistory": "Order History",
+    "wishlist": "Wishlist",
+    "settings": "Settings",
+    "changePassword": "Change Password",
+    "updateProfile": "Update Profile",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "profilePage": {
+      "title": "My Profile",
+      "subtitle": "Manage your personal information and account settings",
+      "editProfile": "Edit Profile",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "uploading": "Uploading...",
+      "cancel": "Cancel",
+      "memberSince": "Member since {{date}}",
+      "notAvailable": "N/A",
+      "userFallback": "User",
+      "personalInformation": "Personal Information",
+      "personalInformationSubtitle": "Update your personal details and information",
+      "roleAdmin": "Administrator",
+      "roleCustomer": "Customer",
+      "avatarUploadHint": "Click avatar to upload",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5MB",
+      "fields": {
+        "username": "Username",
+        "usernameLabel": "Username",
+        "email": "Email",
+        "emailLabel": "Email Address",
+        "emailCannotBeChanged": "Email cannot be changed",
+        "firstName": "First Name",
+        "firstNameLabel": "First Name",
+        "lastName": "Last Name",
+        "lastNameLabel": "Last Name",
+        "mobile": "Mobile",
+        "mobileLabel": "Mobile Number",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Gender",
+        "genderLabel": "Gender",
+        "genderMale": "Male",
+        "genderFemale": "Female",
+        "genderOther": "Other",
+        "role": "Role",
+        "roleHelperText": "Role is managed by administrators",
+        "accountStatus": "Account Status",
+        "statusActive": "Active",
+        "statusInactive": "Inactive"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "Profile updated successfully!",
+        "avatarUpdatedSuccess": "Avatar updated successfully!",
+        "avatarRemovedSuccess": "Avatar removed successfully!",
+        "failedToLoadProfile": "Failed to load profile",
+        "failedToUpdateProfile": "Failed to update profile",
+        "failedToUploadAvatar": "Failed to upload avatar",
+        "failedToRemoveAvatar": "Failed to remove avatar",
+        "avatarInvalidFileType": "Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.",
+        "avatarFileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{fileSize}}MB.",
+        "retry": "Retry"
+      },
+      "buttons": {
+        "supportAndHelp": "Support & Help",
+        "logout": "Logout"
+      },
+      "aria": {
+        "uploadAvatar": "Upload avatar",
+        "removeAvatar": "Remove avatar",
+        "avatarFileInput": "Avatar file input"
+      }
+    }
+  },
+  "privacy": {
+    "pageTitle": "Privacy Policy",
+    "pageSubtitle": "Your privacy is important to us. Learn how we collect, use, and protect your data.",
+    "lastUpdated": "Last Updated: {{date}}",
+    "lastUpdatedDate": "February 10, 2026",
+    "tableOfContents": "Table of Contents",
+    "dataTypes": {
+      "identity": {
+        "title": "Identity Data",
+        "description": "First name, last name, username or similar identifier"
+      },
+      "contact": {
+        "title": "Contact Data",
+        "description": "Email address, telephone numbers, billing address, delivery address"
+      },
+      "financial": {
+        "title": "Financial Data",
+        "description": "Payment card details (processed securely by our payment providers)"
+      },
+      "transaction": {
+        "title": "Transaction Data",
+        "description": "Details about payments and products you have purchased from us"
+      },
+      "technical": {
+        "title": "Technical Data",
+        "description": "IP address, browser type and version, time zone setting, operating system"
+      },
+      "usage": {
+        "title": "Usage Data",
+        "description": "Information about how you use our platform, products and services"
+      },
+      "marketing": {
+        "title": "Marketing Data",
+        "description": "Your preferences in receiving marketing from us and your communication preferences"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Introduction",
+        "content": "We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our platform and tell you about your privacy rights and how the law protects you."
+      },
+      "informationWeCollect": {
+        "title": "Information We Collect",
+        "intro": "We may collect, use, store and transfer different kinds of personal data about you:"
+      },
+      "howWeUse": {
+        "title": "How We Use Your Information",
+        "intro": "We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:",
+        "purposes": {
+          "processOrders": "To process and deliver your orders",
+          "manageAccount": "To manage your account and provide customer support",
+          "sendInfo": "To send you important information regarding your purchases",
+          "improve": "To improve our platform and services",
+          "personalize": "To personalize your experience",
+          "marketing": "To send you marketing communications (with your consent)",
+          "fraud": "To detect and prevent fraud"
+        }
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "paragraph1": "We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way, altered or disclosed. We limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.",
+        "paragraph2": "All payment transactions are encrypted using SSL technology. We do not store complete payment card details on our servers."
+      },
+      "dataRetention": {
+        "title": "Data Retention",
+        "content": "We will only retain your personal data for as long as necessary to fulfill the purposes we collected it for, including for the purposes of satisfying any legal, accounting, or reporting requirements."
+      },
+      "yourRights": {
+        "title": "Your Legal Rights",
+        "intro": "Under certain circumstances, you have rights under data protection laws in relation to your personal data:",
+        "rights": {
+          "access": "Request access to your personal data",
+          "correction": "Request correction of your personal data",
+          "erasure": "Request erasure of your personal data",
+          "object": "Object to processing of your personal data",
+          "restriction": "Request restriction of processing your personal data",
+          "transfer": "Request transfer of your personal data",
+          "withdraw": "Right to withdraw consent"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Our platform uses cookies to distinguish you from other users. This helps us to provide you with a good experience when you browse our platform and also allows us to improve our site. A cookie is a small file of letters and numbers that we store on your browser or the hard drive of your computer."
+      },
+      "thirdPartyLinks": {
+        "title": "Third-Party Links",
+        "content": "Our platform may include links to third-party websites, plug-ins and applications. Clicking on those links or enabling those connections may allow third parties to collect or share data about you. We do not control these third-party websites and are not responsible for their privacy statements."
+      },
+      "childrenPrivacy": {
+        "title": "Children's Privacy",
+        "content": "Our Service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and you are aware that your child has provided us with personal data, please contact us."
+      },
+      "changes": {
+        "title": "Changes to This Privacy Policy",
+        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last Updated\" date at the top of this Privacy Policy."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "If you have any questions about this Privacy Policy or our privacy practices, please contact us through our Contact page."
+      }
+    }
+  },
+  "footer": {
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "faq": "FAQ",
+    "support": "Support",
+    "followUs": "Follow Us",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Subscribe to our newsletter",
+    "emailLabel": "Email address",
+    "enterEmail": "Enter your email",
+    "subscribe": "Subscribe",
+    "subscribeError": "Failed to subscribe. Please try again.",
+    "allRightsReserved": "All rights reserved",
+    "tagline": "Your one-stop shop for all your needs.",
+    "quickLinks": "Quick Links",
+    "customerService": "Customer Service",
+    "helpCenter": "Help Center",
+    "returns": "Returns",
+    "shippingInfo": "Shipping Info"
+  },
+  "newsletter": {
+    "errors": {
+      "subscribeFailed": "Failed to subscribe. Please try again.",
+      "fetchFailed": "Failed to load newsletter subscriptions. Please try again.",
+      "unsubscribeFailed": "Failed to unsubscribe. Please try again."
+    },
+    "unsubscribe": {
+      "title": "Unsubscribe from Newsletter",
+      "description": "Enter your email address to unsubscribe from our newsletter. We're sorry to see you go!",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email",
+      "button": "Unsubscribe",
+      "buttonLoading": "Unsubscribing...",
+      "successMessage": "Successfully unsubscribed! You will no longer receive our newsletter."
+    }
+  },
+  "about": {
+    "title": "About Augment Store",
+    "subtitle": "Your trusted destination for quality products and exceptional service",
+    "established": "Established 2020",
+    "ourStory": "Our Story",
+    "ourStoryContent": "Welcome to Augment Store, your trusted destination for quality products and exceptional service. We are committed to providing our customers with the best shopping experience possible.",
+    "ourMission": "Our Mission",
+    "ourMissionContent": "Our mission is to deliver high-quality products at competitive prices while maintaining the highest standards of customer service. We believe in building lasting relationships with our customers through trust, transparency, and excellence.",
+    "whyChooseUs": "Why Choose Us",
+    "stats": {
+      "happyCustomers": "Happy Customers",
+      "products": "Products",
+      "averageRating": "Average Rating",
+      "satisfactionRate": "Satisfaction Rate"
+    },
+    "reasons": {
+      "wideSelection": "Wide selection of quality products",
+      "wideSelectionDesc": "Discover thousands of products across multiple categories",
+      "competitivePricing": "Competitive pricing",
+      "competitivePricingDesc": "Best prices guaranteed with regular deals and discounts",
+      "fastShipping": "Fast and reliable shipping",
+      "fastShippingDesc": "Quick delivery to your doorstep with real-time tracking",
+      "excellentSupport": "Excellent customer support",
+      "excellentSupportDesc": "24/7 customer support ready to help you anytime",
+      "securePayment": "Secure payment processing",
+      "securePaymentDesc": "Safe and encrypted payment processing for your peace of mind",
+      "easyReturns": "Easy returns and exchanges",
+      "easyReturnsDesc": "Hassle-free returns and exchanges within 30 days"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "getInTouch": "Get in Touch",
+    "description": "Have a question or need assistance? We're here to help! Fill out the form and we'll get back to you as soon as possible.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "sendMessage": "Send Message",
+    "contactInformation": "Contact Information",
+    "phone": "Phone",
+    "address": "Address",
+    "addressValue": "123 Commerce Street\nSan Francisco, CA 94102\nUnited States",
+    "businessHours": "Business Hours",
+    "mondayFriday": "Monday - Friday: 9:00 AM - 6:00 PM PST",
+    "saturday": "Saturday: 10:00 AM - 4:00 PM PST",
+    "sunday": "Sunday: Closed",
+    "successMessage": "Thank you for contacting us! We'll get back to you soon.",
+    "sending": "Sending...",
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "subjectRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "messageMinLength": "Message must be at least 10 characters"
+    }
+  },
+  "sidebar": {
+    "menu": "Menu",
+    "categories": "CATEGORIES",
+    "noCategoriesAvailable": "No categories available",
+    "profileWithName": "Profile ({{name}})"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for doesn't exist or has been moved. Please check the URL or return to the home page.",
+    "goHome": "Go to Home",
+    "browseProducts": "Browse Products"
+  },
+  "terms": {
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last Updated",
+    "lastUpdatedDate": "February 10, 2026",
+    "lastUpdatedLabel": "Last Updated: {{date}}",
+    "subtitle": "Please read these terms carefully before using our service",
+    "sections": {
+      "acceptance": {
+        "title": "Acceptance of Terms",
+        "content": "By accessing and using this e-commerce platform (\"Service\"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service."
+      },
+      "useLicense": {
+        "title": "Use License",
+        "intro": "Permission is granted to temporarily access the materials (information or software) on our platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:",
+        "restrictions": {
+          "modify": "Modify or copy the materials",
+          "commercial": "Use the materials for any commercial purpose or for any public display",
+          "reverseEngineer": "Attempt to reverse engineer any software contained on our platform",
+          "removeCopyright": "Remove any copyright or other proprietary notations from the materials",
+          "transfer": "Transfer the materials to another person or \"mirror\" the materials on any other server"
+        }
+      },
+      "accountTerms": {
+        "title": "Account Terms",
+        "security": "You are responsible for maintaining the security of your account and password. We cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.",
+        "responsibility": "You are responsible for all content posted and activity that occurs under your account."
+      },
+      "productInfo": {
+        "title": "Product Information",
+        "content": "We strive to provide accurate product descriptions and pricing. However, we do not warrant that product descriptions, pricing, or other content is accurate, complete, reliable, current, or error-free. If a product offered by us is not as described, your sole remedy is to return it in unused condition."
+      },
+      "pricing": {
+        "title": "Pricing and Payment",
+        "changes": "All prices are subject to change without notice. We reserve the right to modify or discontinue products without notice. We shall not be liable to you or any third party for any modification, price change, suspension, or discontinuance of any product.",
+        "payment": "Payment must be received by us before your order is dispatched. We accept various payment methods as indicated during checkout."
+      },
+      "shipping": {
+        "title": "Shipping and Delivery",
+        "content": "We will arrange for shipment of ordered products to you. Please check the individual product page for specific delivery options. Title and risk of loss pass to you upon our delivery to the carrier. Shipping and handling charges are non-refundable."
+      },
+      "returns": {
+        "title": "Returns and Refunds",
+        "content": "Please review our Returns Policy for detailed information about returns and refunds. In general, items may be returned within 30 days of receipt in their original condition."
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "content": "In no event shall our company or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our platform."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "content": "Your use of our Service is also governed by our Privacy Policy. Please review our Privacy Policy, which also governs the Service and informs users of our data collection practices."
+      },
+      "modifications": {
+        "title": "Modifications to Terms",
+        "content": "We reserve the right to revise these terms of service at any time without notice. By using this Service you are agreeing to be bound by the then current version of these terms of service."
+      },
+      "governingLaw": {
+        "title": "Governing Law",
+        "content": "These terms and conditions are governed by and construed in accordance with the laws and you irrevocably submit to the exclusive jurisdiction of the courts in that location."
+      },
+      "contact": {
+        "title": "Contact Information",
+        "content": "If you have any questions about these Terms and Conditions, please contact us through our Contact page."
+      }
+    }
+  },
+  "help": {
+    "title": "Help Center",
+    "description": "Find answers to frequently asked questions below. If you need additional assistance, please don't hesitate to contact our customer support team.",
+    "faqsTitle": "Frequently Asked Questions",
+    "searchPlaceholder": "Search for help...",
+    "searchAriaLabel": "Search help articles",
+    "quickHelp": "Quick Help",
+    "noResultsFound": "No results found for \"{{query}}\"",
+    "tryDifferentKeywords": "Try searching with different keywords",
+    "contactUs": "Contact Us",
+    "emailUs": "Email Us",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Track Your Order",
+        "description": "Check the status of your order in real-time"
+      },
+      "returnsRefunds": {
+        "title": "Returns & Refunds",
+        "description": "Learn about our return policy and process"
+      },
+      "contactSupport": {
+        "title": "Contact Support",
+        "description": "Get in touch with our support team"
+      }
+    },
+    "stillNeedHelp": {
+      "title": "Still Need Help?",
+      "description": "If you couldn't find the answer you're looking for, our customer support team is ready to assist you. Contact us via email, phone, or our contact form."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "How do I place an order?",
+        "answer": "Browse our products, add items to your cart, and proceed to checkout. You'll need to create an account or log in to complete your purchase."
+      },
+      "paymentMethods": {
+        "question": "What payment methods do you accept?",
+        "answer": "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and other secure payment methods."
+      },
+      "trackOrder": {
+        "question": "How can I track my order?",
+        "answer": "Once your order ships, you'll receive a tracking number via email. You can also view your order status in the \"My Orders\" section of your account."
+      },
+      "returnPolicy": {
+        "question": "What is your return policy?",
+        "answer": "We offer a 30-day return policy for most items. Products must be unused and in original packaging. See our Returns page for full details."
+      },
+      "shippingTime": {
+        "question": "How long does shipping take?",
+        "answer": "Standard shipping typically takes 5-7 business days. Express shipping options are available at checkout for faster delivery."
+      },
+      "international": {
+        "question": "Do you ship internationally?",
+        "answer": "Yes, we ship to many countries worldwide. Shipping costs and delivery times vary by location. International orders may be subject to customs fees."
+      },
+      "resetPassword": {
+        "question": "How do I reset my password?",
+        "answer": "Click on \"Forgot Password\" on the login page. Enter your email address and we'll send you instructions to reset your password."
+      },
+      "cancelOrder": {
+        "question": "Can I cancel or modify my order?",
+        "answer": "Orders can be cancelled or modified within 1 hour of placement. After that, please contact customer support for assistance."
+      },
+      "paymentSecurity": {
+        "question": "Are my payment details secure?",
+        "answer": "Yes, we use industry-standard SSL encryption to protect your payment information. We never store your full credit card details on our servers."
+      },
+      "contactSupport": {
+        "question": "How do I contact customer support?",
+        "answer": "You can reach us via email at {{supportEmail}}, by phone at {{supportPhone}}, or through our Contact page."
+      }
+    }
+  },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "No product ID provided",
+      "notFound": "Product statistics not found",
+      "viewProduct": "View Product",
+      "performanceMetrics": "Performance Metrics",
+      "summary": "Summary",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "errorLoadStatistics": "Failed to load product statistics",
+      "errorPermissionDenied": "You do not have permission to view product statistics",
+      "errorAuthRequired": "Please log in to view product statistics",
+      "metrics": {
+        "views": "Total Views",
+        "cartAdditions": "Cart Additions",
+        "netAdditions": "Net",
+        "cartRemovals": "Cart Removals",
+        "purchases": "Total Purchases",
+        "conversionRate": "Conversion Rate",
+        "viewsToPurchases": "Views to Purchases",
+        "cartConversionRate": "Cart Conversion Rate",
+        "cartToPurchases": "Cart to Purchases",
+        "abandonmentRate": "Abandonment Rate",
+        "engagementScore": "Engagement Score",
+        "viewsToCart": "Views to Cart"
+      }
+    }
+  },
+  "admin": {
+    "panel": "Admin Panel",
+    "managementConsole": "Management Console",
+    "dashboardNav": "Dashboard",
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Analytics overview and performance metrics",
+      "period": "Period",
+      "refresh": "Refresh",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "lastYear": "Last year",
+      "errorLoadingAnalytics": "Error Loading Analytics",
+      "tryAgain": "Try Again",
+      "pleaseLogin": "Please log in to access the admin dashboard.",
+      "goToLogin": "Go to Login",
+      "accessDenied": "Access denied. You do not have permission to view the admin dashboard.",
+      "goToHome": "Go to Home",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "avgOrder": "Avg Order",
+        "totalOrders": "Total Orders",
+        "completed": "completed",
+        "newCustomers": "New Customers",
+        "totalProducts": "Total Products",
+        "categories": "categories",
+        "completedOrders": "Completed Orders",
+        "completionRate": "completion rate",
+        "cartAbandonmentRate": "Cart Abandonment Rate",
+        "abandonments": "abandonments",
+        "overallConversion": "Overall Conversion",
+        "viewToPurchase": "View to purchase"
+      },
+      "conversionFunnel": {
+        "title": "Conversion Funnel",
+        "overallConversionRate": "Overall conversion rate",
+        "views": "Views",
+        "cartAdditions": "Cart Additions",
+        "purchases": "Purchases",
+        "count": "Count",
+        "rate": "Rate"
+      },
+      "categoryPerformance": {
+        "title": "Revenue by Category",
+        "distribution": "Distribution across {{count}} category",
+        "distribution_other": "Distribution across {{count}} categories",
+        "revenue": "Revenue",
+        "percentage": "Percentage",
+        "unitsSold": "Units Sold",
+        "orders": "Orders",
+        "noCategoryData": "No category data available"
+      },
+      "topProducts": {
+        "title": "Top Products by Revenue",
+        "showingTop": "Showing top {{count}} product",
+        "showingTop_other": "Showing top {{count}} products",
+        "rank": "Rank",
+        "productName": "Product Name",
+        "revenue": "Revenue",
+        "unitsSold": "Units Sold",
+        "price": "Price",
+        "noProductData": "No product data available"
+      }
+    },
+    "orders": "Orders",
+    "ordersPage": {
+      "title": "Orders",
+      "subtitle": "Manage and track all customer orders",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "The admin orders management page is currently under development.",
+      "checkBackSoon": "Check back soon for updates!",
+      "table": {
+        "orderNumber": "Order Number",
+        "date": "Date",
+        "items": "Items",
+        "status": "Status",
+        "total": "Total",
+        "actions": "Actions",
+        "moreItems": "+{{count}} more",
+        "deletedProduct": "(Deleted Product)",
+        "viewOrderDetails": "View details for order {{orderNumber}}"
+      },
+      "emptyState": {
+        "noOrders": "No Orders Yet",
+        "noOrdersDescription": "No customer orders have been placed yet."
+      }
+    },
+    "products": "Products",
+    "categories": "Categories",
+    "brands": "Brands",
+    "users": "Users",
+    "accounts": "Accounts",
+    "accountsPage": {
+      "title": "Accounts",
+      "subtitle": "Manage user accounts and permissions",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "This page is currently under development. Account management features will be available soon.",
+      "accountDetails": "Account Details",
+      "editAccount": "Edit Account",
+      "updateSuccess": "Account updated successfully",
+      "preferredCurrency": "Preferred Currency",
+      "accountId": "Account ID",
+      "table": {
+        "user": "User",
+        "email": "Email",
+        "username": "Username",
+        "role": "Role",
+        "status": "Status",
+        "joined": "Joined"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "MERCHANT",
+        "member": "MEMBER"
+      },
+      "emptyState": {
+        "noAccounts": "No accounts found"
+      },
+      "summary": {
+        "totalAccounts": "Total Accounts:"
+      },
+      "aria": {
+        "viewAccountDetails": "View details for {{name}}",
+        "closeDrawer": "Close account details drawer",
+        "closeEditDrawer": "Close edit account drawer"
+      }
+    },
+    "reports": "Reports",
+    "contactMessages": "Contact Messages",
+    "tickets": "Tickets",
+    "newsletters": "Newsletters",
+    "newslettersPage": {
+      "title": "Newsletter Subscriptions",
+      "subtitle": "Manage all newsletter subscriptions from users",
+      "workInProgress": "Work In Progress",
+      "underDevelopment": "This page is currently under development. Some features may not be fully functional yet.",
+      "refresh": "Refresh",
+      "table": {
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Subscribed Date",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "view": "View Details",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "noNewsletters": "No newsletter subscriptions found.",
+      "loading": "Loading newsletter subscriptions..."
+    },
+    "newsletterDetailPage": {
+      "notFound": "Newsletter subscription not found.",
+      "provideValidId": "Please provide a valid newsletter subscription ID.",
+      "subscriptionInfo": "Subscription Information",
+      "additionalInfo": "Additional Information",
+      "email": "Email Address",
+      "status": "Status",
+      "subscribedOn": "Subscribed On",
+      "subscriptionId": "Subscription ID",
+      "totalEmailsSent": "Total Emails Sent",
+      "lastEmailSent": "Last Email Sent",
+      "never": "Never",
+      "subscriptionSource": "Subscription Source",
+      "website": "Website",
+      "dummyDataNotice": "This is dummy data. Real tracking features will be implemented soon."
+    },
+    "currency": "Currency",
+    "reportsPage": {
+      "title": "Reports",
+      "subtitle": "View and analyze comprehensive business reports",
+      "workInProgress": "Work in Progress",
+      "underDevelopment": "The admin reports page is currently under development.",
+      "checkBackSoon": "Check back soon for updates!",
+      "generalStats": {
+        "title": "General Statistics",
+        "subtitle": "All-time aggregated statistics across all products",
+        "totalProducts": "Total Products Tracked",
+        "totalViews": "Total Views",
+        "totalCartAdditions": "Total Cart Additions",
+        "totalPurchases": "Total Purchases",
+        "views": "Views",
+        "cartAdditions": "Cart Additions",
+        "purchases": "Purchases",
+        "count": "Count",
+        "noData": "No general statistics available"
+      },
+      "healthCheck": {
+        "title": "API Health Status",
+        "subtitle": "Monitor the health and availability of the API",
+        "checking": "Checking API health...",
+        "healthy": "Healthy",
+        "unhealthy": "Unhealthy",
+        "allSystemsOperational": "All systems operational",
+        "systemIssuesDetected": "System issues detected",
+        "status": "Status"
+      }
+    },
+    "contactMessagesPage": {
+      "title": "Contact Messages",
+      "subtitle": "View and manage all contact form submissions",
+      "refresh": "Refresh",
+      "retry": "Retry",
+      "totalMessages": "Total Messages: {{count}} message",
+      "totalMessages_other": "Total Messages: {{count}} messages",
+      "selectedMessages": "{{count}} selected",
+      "selectedMessages_other": "{{count}} selected",
+      "noMessages": "No contact messages yet",
+      "viewDetails": "View Details",
+      "messageDetails": "Message Details",
+      "markAsRead": "Mark as Read",
+      "markAsResolved": "Mark as Resolved",
+      "deleteMessage": "Delete Message",
+      "selectAllContacts": "Select all contacts",
+      "selectContact": "Select contact {{name}}",
+      "toolbar": {
+        "messagesSelected": "{{count}} message selected",
+        "messagesSelected_other": "{{count}} messages selected",
+        "bulkMarkAsRead": "Mark as Read",
+        "bulkMarkAsReadTooltip": "Mark selected as read",
+        "bulkMarkAsResolved": "Mark as Resolved",
+        "bulkMarkAsResolvedTooltip": "Mark selected as resolved",
+        "bulkDelete": "Delete",
+        "bulkDeleteTooltip": "Delete selected messages"
+      },
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "subject": "Subject",
+        "message": "Message",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Actions",
+        "id": "Message ID"
+      },
+      "deleteErrors": {
+        "failedToDelete": "Failed to delete {{count}} contact",
+        "failedToDelete_other": "Failed to delete {{count}} contacts"
+      }
+    },
+    "ticketsPage": {
+      "title": "Support Tickets",
+      "subtitle": "View and manage all support tickets",
+      "refresh": "Refresh",
+      "search": "Search tickets",
+      "searchPlaceholder": "Search tickets...",
+      "status": "Status",
+      "priority": "Priority",
+      "all": "All",
+      "allStatuses": "All Statuses",
+      "allPriorities": "All Priorities",
+      "statusOpen": "Open",
+      "statusInProgress": "In Progress",
+      "statusResolved": "Resolved",
+      "statusClosed": "Closed",
+      "priorityLow": "Low",
+      "priorityMedium": "Medium",
+      "priorityHigh": "High",
+      "priorityUrgent": "Urgent",
+      "totalTickets": "Total Tickets: {{count}} ticket",
+      "totalTickets_other": "Total Tickets: {{count}} tickets",
+      "noTickets": "No support tickets yet",
+      "noTicketsFound": "No tickets found",
+      "tryAdjustingFilters": "Try adjusting your filters",
+      "noTicketsCreated": "No tickets have been created yet",
+      "unassigned": "Unassigned",
+      "viewDetails": "View Details",
+      "ticketDetails": "Ticket Details",
+      "viewFullTicket": "View Full Ticket",
+      "pageInfo": "Page {{current}} of {{total}}",
+      "stats": {
+        "totalTickets": "Total Tickets",
+        "openTickets": "Open",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "urgent": "Urgent",
+        "avgResponseTime": "Avg Response",
+        "fromLastMonth": "from last month",
+        "needsAttention": "Needs attention",
+        "beingWorkedOn": "Being worked on",
+        "thisMonth": "This month",
+        "requiresImmediate": "Requires immediate action",
+        "faster": "faster"
+      },
+      "table": {
+        "id": "Ticket ID",
+        "title": "Title",
+        "description": "Description",
+        "status": "Status",
+        "priority": "Priority",
+        "reporter": "Reporter",
+        "assignee": "Assignee",
+        "actions": "Actions"
+      },
+      "deleteTicket": "Delete Ticket",
+      "deleteTicketConfirm": "Are you sure you want to delete <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Ticket deleted successfully",
+      "deleteError": "Failed to delete ticket. Please try again."
+    },
+    "createTicketPage": {
+      "backToTickets": "Back to Tickets",
+      "title": "Create Support Ticket",
+      "subtitle": "Describe your issue and we'll get back to you as soon as possible",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Brief summary of your issue",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Provide detailed information about your issue...",
+      "priorityLabel": "Priority",
+      "statusLabel": "Status",
+      "priorityLow": "Low",
+      "priorityMedium": "Medium",
+      "priorityHigh": "High",
+      "priorityUrgent": "Urgent",
+      "statusOpen": "Open",
+      "statusInProgress": "In Progress",
+      "statusResolved": "Resolved",
+      "statusClosed": "Closed",
+      "cancel": "Cancel",
+      "createTicket": "Create Ticket",
+      "creating": "Creating...",
+      "successMessage": "Ticket created successfully! Redirecting...",
+      "errorMessage": "Failed to create ticket. Please try again.",
+      "authenticationError": "You must be logged in to create a ticket. Please log in and try again.",
+      "loadingAuthState": "Please wait while we verify your authentication...",
+      "validation": {
+        "titleMinLength": "Title must be at least 5 characters",
+        "titleMaxLength": "Title is too long",
+        "descriptionMinLength": "Description must be at least 20 characters",
+        "descriptionMaxLength": "Description is too long"
+      }
+    },
+    "ticketDetailPage": {
+      "backToTickets": "Back to Tickets",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "lastUpdated": "Last Updated",
+      "comments": "Comments ({{count}})",
+      "noComments": "No comments yet. Be the first to comment!",
+      "user": "User",
+      "addComment": "Add a Comment",
+      "commentPlaceholder": "Write your comment here...",
+      "submitComment": "Submit Comment",
+      "submitting": "Submitting...",
+      "created": "Created {{date}}",
+      "notAvailable": "N/A",
+      "ticketNotFound": "Ticket not found",
+      "loadError": "Failed to load ticket details. Please try again.",
+      "commentError": "Failed to submit comment. Please try again.",
+      "editTicket": "Edit Ticket",
+      "deleteTicket": "Delete Ticket",
+      "ticketActions": "Ticket actions",
+      "ticketInformation": "Ticket Information",
+      "createdLabel": "Created",
+      "lastUpdatedLabel": "Last Updated",
+      "ticketId": "Ticket ID",
+      "clickToCopy": "Click to copy",
+      "reporter": "Reporter",
+      "assignee": "Assignee",
+      "supportAgent": "Support Agent",
+      "copySuccess": "Ticket ID copied to clipboard",
+      "copyError": "Failed to copy to clipboard",
+      "deleteTicketConfirm": "Are you sure you want to delete <strong>{{ticketTitle}}</strong>?",
+      "deleteTicketWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Ticket deleted successfully",
+      "deleteError": "Failed to delete ticket. Please try again.",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "updateSuccess": "Ticket updated successfully!",
+      "updateError": "Failed to update ticket. Please try again.",
+      "updateStateError": "Unable to update ticket. Please refresh the page and try again."
+    },
+    "settings": "Settings",
+    "settingsPage": {
+      "title": "Settings",
+      "subtitle": "Manage application settings and configurations",
+      "appearance": "Appearance",
+      "appearanceDescription": "Customize the look and feel of the admin dashboard",
+      "themeMode": "Theme Mode",
+      "currentlyLight": "Currently using light theme",
+      "currentlyDark": "Currently using dark theme",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language for the admin dashboard",
+      "selectLanguage": "Select Language",
+      "currentLanguage": "Currently using {{language}}",
+      "languageChanged": "Language changed successfully",
+      "languageChangeFailed": "Failed to change language. Please try again.",
+      "notifications": "Notifications",
+      "notificationsDescription": "Configure notification preferences and toast message settings",
+      "toastDuration": "Toast Duration",
+      "selectDuration": "Select Duration",
+      "currentToastDuration": "Currently set to {{duration}} seconds",
+      "toastDurationChanged": "Toast duration changed successfully",
+      "toastDurationChangeFailed": "Failed to change toast duration. Please try again.",
+      "durationSeconds": "{{count}} second",
+      "durationSeconds_other": "{{count}} seconds",
+      "moreSettings": "More Settings Coming Soon",
+      "moreSettingsDescription": "Additional configuration options will be available here in future updates."
+    },
+    "productStatistics": {
+      "title": "Product Statistics",
+      "subtitle": "View detailed analytics and performance metrics for all products",
+      "refresh": "Refresh statistics",
+      "viewAllProducts": "View All Products",
+      "viewStatisticsTable": "View Statistics Table",
+      "noData": "No product statistics available",
+      "noDataOnPage": "No products on this page. Please navigate to a different page.",
+      "bestSelling": {
+        "title": "Best Selling Products",
+        "subtitle": "Top {{count}} products by purchase count",
+        "purchases": "Purchases",
+        "price": "Price",
+        "purchaseCount": "Purchase Count",
+        "noData": "No best selling products data available"
+      },
+      "mostViewed": {
+        "title": "Most Viewed Products",
+        "subtitle": "Top {{count}} products by view count",
+        "views": "Views",
+        "price": "Price",
+        "viewCount": "View Count",
+        "noData": "No most viewed products data available"
+      },
+      "mostAddedToCart": {
+        "title": "Most Added to Cart Products",
+        "subtitle": "Top {{count}} products by cart add count",
+        "cartAdds": "Cart Adds",
+        "price": "Price",
+        "cartAddCount": "Cart Add Count",
+        "noData": "No most added to cart products data available"
+      },
+      "table": {
+        "title": "Detailed Product Analytics",
+        "description": "Comprehensive view of product performance metrics including views, cart interactions, and purchases",
+        "productName": "Product Name",
+        "price": "Price",
+        "views": "Views",
+        "cartAdds": "Cart Adds",
+        "cartRemoves": "Cart Removes",
+        "purchases": "Purchases",
+        "actions": "Actions",
+        "viewProduct": "View product details",
+        "rowsPerPage": "Rows per page"
+      },
+      "productStatisticsView": {
+        "title": "Product Statistics View",
+        "subtitle": "Comprehensive product performance metrics and analytics",
+        "refresh": "Refresh statistics",
+        "searchPlaceholder": "Search products by name...",
+        "productName": "Product Name",
+        "price": "Price",
+        "views": "Views",
+        "cartAdds": "Cart Adds",
+        "cartRemoves": "Cart Removes",
+        "purchases": "Purchases",
+        "conversionRate": "Conversion Rate",
+        "cartConversion": "Cart Conversion",
+        "abandonmentRate": "Abandonment Rate",
+        "actions": "Actions",
+        "viewProduct": "View product details",
+        "viewStatistics": "View detailed statistics",
+        "noData": "No product statistics available",
+        "noResultsFound": "No products found matching your search",
+        "rowsPerPage": "Rows per page"
+      }
+    },
+    "productPerformance": {
+      "title": "Product Performance Analysis",
+      "subtitle": "Performance metrics for the last {{days}} days",
+      "noData": "No product performance data available",
+      "lowPerforming": "Low Performing",
+      "highAbandonment": "High Abandonment",
+      "lowConversion": "Low Conversion",
+      "highEngagement": "High Engagement",
+      "purchases": "Purchases",
+      "views": "Views",
+      "cartAdds": "Cart Adds",
+      "abandonments": "Abandonments",
+      "abandonmentRate": "Abandonment Rate",
+      "conversionRate": "Conversion Rate",
+      "engagementRatio": "Engagement Ratio"
+    },
+    "categoriesPage": {
+      "title": "Categories",
+      "subtitle": "Manage product categories",
+      "refresh": "Refresh categories",
+      "createCategory": "Create Category",
+      "categoryDetails": "Category Details",
+      "errorLoadCategories": "Failed to load categories. Please try again.",
+      "errorUpdateCategory": "Failed to update category. Please try again.",
+      "errorCreateCategory": "Failed to create category. Please try again.",
+      "errorDeleteCategory": "Failed to delete category. Please try again.",
+      "noCategories": "No categories available",
+      "editCategory": "Edit Category",
+      "newCategory": "New Category",
+      "deleteCategory": "Delete Category",
+      "deleteCategoryConfirm": "Are you sure you want to delete <strong>{{categoryName}}</strong>? This action cannot be undone.",
+      "deleteCategoryWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Category deleted successfully",
+      "table": {
+        "image": "Image",
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "categoryName": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "slug": "Slug",
+        "noParent": "None (Top Level)",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "create": "Create Category",
+        "saving": "Saving...",
+        "creating": "Creating...",
+        "saveSuccess": "Category updated successfully!",
+        "createSuccess": "Category created successfully!",
+        "uploadInstructions": "Click camera icon to upload image",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Max 5MB)",
+        "invalidFileType": "Invalid file type. Please select a JPEG, PNG, GIF, or WebP image.",
+        "fileSizeExceeded": "File size exceeds 5MB limit. Selected file is {{size}}MB.",
+        "uploadFailed": "Failed to upload image. Please try again.",
+        "authenticationFailed": "Authentication failed. Please log in again."
+      },
+      "aria": {
+        "viewCategoryDetails": "View category details",
+        "closeCategoryDetails": "Close category details drawer",
+        "uploadCategoryImage": "Upload category image",
+        "removeCategoryImage": "Remove category image",
+        "categoryImageInput": "Category image file input"
+      }
+    },
+    "currencyPage": {
+      "title": "Currency Management",
+      "subtitle": "View and manage supported currencies",
+      "refresh": "Refresh",
+      "addCurrency": "Add Currency",
+      "createCurrency": "Create Currency",
+      "editCurrency": "Edit Currency",
+      "closeDrawer": "Close create currency drawer",
+      "closeEditDrawer": "Close edit currency drawer",
+      "wipBanner": "This page is currently under development. Full currency management features will be available soon.",
+      "noCurrencies": "No currencies available",
+      "deleteCurrency": "Delete Currency",
+      "deleteCurrencyConfirm": "Are you sure you want to delete <strong>{{currencyName}} ({{currencyCode}})</strong>? This action cannot be undone.",
+      "deleteSuccess": "Currency deleted successfully",
+      "errorDeleteCurrency": "Failed to delete currency",
+      "deleting": "Deleting...",
+      "createSuccess": "Currency created successfully",
+      "errorCreateCurrency": "Failed to create currency",
+      "updateSuccess": "Currency updated successfully",
+      "errorUpdateCurrency": "Failed to update currency",
+      "currencyDeletedDuringEdit": "The currency you were editing has been deleted",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID",
+        "actions": "Actions",
+        "createdAt": "Created At",
+        "updatedAt": "Updated At"
+      },
+      "form": {
+        "code": "Currency Code",
+        "codePlaceholder": "e.g., USD",
+        "codeHelper": "Enter the 3-letter currency code",
+        "name": "Currency Name",
+        "namePlaceholder": "e.g., US Dollar",
+        "nameHelper": "Enter the full name of the currency",
+        "symbol": "Currency Symbol",
+        "symbolPlaceholder": "e.g., $",
+        "symbolHelper": "Enter the currency symbol",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating...",
+        "update": "Update",
+        "updating": "Updating..."
+      }
+    },
+    "brandsPage": {
+      "title": "Brands",
+      "subtitle": "Manage product brands",
+      "refresh": "Refresh brands",
+      "addBrand": "Add Brand",
+      "errorLoadBrands": "Failed to load brands. Please try again.",
+      "errorUpdateBrand": "Failed to update brand. Please try again.",
+      "errorCreateBrand": "Failed to create brand. Please try again.",
+      "errorDeleteBrand": "Failed to delete brand. Please try again.",
+      "errorUploadImage": "Failed to upload image. Please try again.",
+      "noBrands": "No brands available",
+      "brandDetails": "Brand Details",
+      "editBrand": "Edit Brand",
+      "createBrand": "Create New Brand",
+      "deleteBrand": "Delete Brand",
+      "deleteBrandConfirm": "Are you sure you want to delete <strong>{{brandName}}</strong>? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Brand deleted successfully",
+      "table": {
+        "image": "Image",
+        "brandName": "Brand Name",
+        "description": "Description",
+        "id": "ID",
+        "actions": "Actions"
+      },
+      "form": {
+        "brandName": "Brand Name",
+        "description": "Description",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Brand updated successfully!",
+        "create": "Create Brand",
+        "creating": "Creating...",
+        "createSuccess": "Brand created successfully!",
+        "newBrandPlaceholder": "New Brand"
+      }
+    },
+    "allProducts": {
+      "title": "All Products",
+      "subtitle": "Manage all products in your store",
+      "refresh": "Refresh",
+      "addProduct": "Add Product",
+      "editProduct": "Edit Product",
+      "createProduct": "Create New Product",
+      "searchPlaceholder": "Search products by name...",
+      "search": "Search",
+      "errorLoadProducts": "Failed to load products. Please try again.",
+      "errorSearchProducts": "Failed to search products. Please try again.",
+      "errorDeleteProduct": "Failed to delete product. Please try again.",
+      "errorUpdateProduct": "Failed to update product. Please try again.",
+      "errorCreateProduct": "Failed to create product. Please try again.",
+      "errorLoadBrandsCategories": "Failed to load brands and categories. Please try again.",
+      "errorPermissionDenied": "You do not have permission to view products.",
+      "errorAuthRequired": "Please log in to view products.",
+      "errorUpdatePermissionDenied": "You do not have permission to update this product.",
+      "errorUpdateAuthRequired": "Please log in to update products.",
+      "errorDeletePermissionDenied": "You do not have permission to delete this product.",
+      "errorDeleteAuthRequired": "Please log in to delete products.",
+      "errorCreatePermissionDenied": "You do not have permission to create products.",
+      "errorCreateAuthRequired": "Please log in to create products.",
+      "errorCreateValidationError": "Invalid product data. Please check your inputs.",
+      "errorProductNotFound": "Product not found.",
+      "deleteProduct": "Delete Product",
+      "deleteProductConfirm": "Are you sure you want to delete",
+      "deleteProductWarning": "This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteSuccess": "Product deleted successfully",
+      "table": {
+        "image": "Image",
+        "productName": "Product Name",
+        "category": "Category",
+        "price": "Price",
+        "stock": "Stock",
+        "rating": "Rating",
+        "status": "Status",
+        "actions": "Actions",
+        "inStock": "In Stock",
+        "outOfStock": "Out of Stock",
+        "viewProduct": "View Product",
+        "editProduct": "Edit Product",
+        "deleteProduct": "Delete Product"
+      },
+      "form": {
+        "productName": "Product Name",
+        "description": "Description",
+        "price": "Price",
+        "stock": "Stock",
+        "category": "Category",
+        "categoryReadOnly": "Category cannot be changed (read-only)",
+        "productId": "Product ID",
+        "rating": "Rating",
+        "reviews": "reviews",
+        "reviewCount": "{{count}} review",
+        "reviewCount_other": "{{count}} reviews",
+        "createdAt": "Created At",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Product saved successfully!",
+        "create": "Create Product",
+        "creating": "Creating...",
+        "createSuccess": "Product created successfully!",
+        "createInfo": "Note: Category, brand, and images will need to be set after creation.",
+        "errorInvalidPrice": "Please enter a valid price (must be a positive number)",
+        "errorInvalidStock": "Please enter a valid stock quantity (must be a non-negative whole number)",
+        "errorInvalidName": "Product name is required",
+        "errorInvalidDescription": "Product description is required",
+        "errorInvalidBrand": "Please select a brand",
+        "errorInvalidCategory": "Please select a category",
+        "brand": "Brand"
+      },
+      "noProducts": "No products found",
+      "noProductsAvailable": "No products available",
+      "searchResults": "Showing {{count}} search results (limited to first 100 matches)",
+      "searchHelperText": "Search results will appear as you type",
+      "productsPerPage": "Products per page:"
+    },
+    "customerSegments": {
+      "title": "Customer Segments",
+      "subtitle": "Distribution of {{count}} customers across segments",
+      "noData": "No customer segment data available",
+      "customers": "Customers",
+      "percentage": "Percentage",
+      "revenue": "Revenue",
+      "avgOrderValue": "Avg Order Value",
+      "avgDaysSinceLastOrder": "Avg Days Since Last Order",
+      "segments": {
+        "newCustomers": "New Customers",
+        "newCustomersDesc": "1 order",
+        "repeatCustomers": "Repeat Customers",
+        "repeatCustomersDesc": "2-5 orders",
+        "loyalCustomers": "Loyal Customers",
+        "loyalCustomersDesc": "6-10 orders",
+        "vipCustomers": "VIP Customers",
+        "vipCustomersDesc": "11+ orders",
+        "atRisk": "At Risk",
+        "atRiskDesc": "No order in 90+ days",
+        "churned": "Churned",
+        "churnedDesc": "No order in 180+ days"
+      }
+    },
+    "newVsReturning": {
+      "title": "New vs Returning Customers",
+      "noData": "No data available",
+      "totalNewCustomers": "Total New Customers",
+      "totalReturningCustomers": "Total Returning Customers",
+      "newCustomerRate": "New Customer Rate",
+      "returningCustomerRate": "Returning Customer Rate",
+      "newCustomers": "New Customers",
+      "returningCustomers": "Returning Customers",
+      "total": "Total",
+      "customers": "Customers",
+      "orders": "Orders",
+      "revenue": "Revenue",
+      "avgOrderValue": "Avg Order Value",
+      "newCustomerRevenue": "New Customer Revenue",
+      "returningCustomerRevenue": "Returning Customer Revenue",
+      "ofTotal": "of total"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Customer Purchase Behavior",
+      "noData": "No customer purchase behavior data available",
+      "analysisPeriod": "Analysis Period",
+      "activeCustomers": "Top Customers Shown",
+      "days": "days",
+      "tabs": {
+        "mostActiveCustomers": "Most Active Customers",
+        "categoryPreferences": "Category Preferences",
+        "paymentMethods": "Payment Methods"
+      },
+      "table": {
+        "customer": "Customer",
+        "orders": "Orders",
+        "totalSpent": "Total Spent",
+        "favoriteCategory": "Favorite Category",
+        "paymentMethod": "Payment Method"
+      },
+      "tooltip": {
+        "customers": "Customers",
+        "orders": "Orders",
+        "avgOrderValue": "Avg Order Value",
+        "percentage": "Percentage"
+      },
+      "chart": {
+        "uniqueCustomers": "Unique Customers"
+      },
+      "emptyStates": {
+        "noCategoryData": "No category preference data available for the selected period",
+        "noPaymentData": "No payment method data available for the selected period"
+      }
+    },
+    "churnRisk": {
+      "title": "Customer Churn Risk",
+      "noData": "No customers at risk of churning",
+      "notAvailable": "N/A",
+      "summary": {
+        "totalAtRisk": "Total At Risk",
+        "highRisk": "High Risk",
+        "mediumRisk": "Medium Risk",
+        "potentialRevenueAtRisk": "Potential Revenue at Risk"
+      },
+      "table": {
+        "customer": "Customer",
+        "lastPurchase": "Last Purchase",
+        "daysInactive": "Days Inactive",
+        "lifetimeOrders": "Lifetime Orders",
+        "lifetimeRevenue": "Lifetime Revenue",
+        "riskLevel": "Risk Level",
+        "avgDaysBetweenOrders": "Avg Days Between Orders"
+      },
+      "riskLevels": {
+        "high": "HIGH",
+        "medium": "MEDIUM"
+      }
+    }
+  },
+  "returns": {
+    "title": "Returns & Refunds",
+    "satisfactionAlert": "We want you to be completely satisfied with your purchase. If you're not happy with your order, we're here to help.",
+    "returnPolicy": {
+      "title": "Return Policy",
+      "intro": "We offer a 30-day return policy for most items. To be eligible for a return, your item must be:",
+      "conditions": {
+        "unused": "Unused and in the same condition that you received it",
+        "originalPackaging": "In the original packaging",
+        "receipt": "Accompanied by the receipt or proof of purchase"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Non-Returnable Items",
+      "intro": "Certain items cannot be returned, including:",
+      "items": {
+        "perishable": "Perishable goods (food, flowers, etc.)",
+        "custom": "Custom or personalized items",
+        "personalCare": "Personal care items (for hygiene reasons)",
+        "hazardous": "Hazardous materials",
+        "giftCards": "Gift cards",
+        "digital": "Downloadable software or digital products"
+      }
+    },
+    "howToReturn": {
+      "title": "How to Return an Item",
+      "steps": {
+        "step1": "Log in to your account and go to \"My Orders\"",
+        "step2": "Select the order containing the item you wish to return",
+        "step3": "Click \"Request Return\" and follow the instructions",
+        "step4": "Pack the item securely in its original packaging",
+        "step5": "Ship the item to the address provided in your return confirmation"
+      }
+    },
+    "refunds": {
+      "title": "Refunds",
+      "inspection": "Once we receive your return, we will inspect the item and notify you of the approval or rejection of your refund.",
+      "processing": "If approved, your refund will be processed and a credit will automatically be applied to your original method of payment within 5-10 business days."
+    },
+    "exchanges": {
+      "title": "Exchanges",
+      "policy": "We only replace items if they are defective or damaged. If you need to exchange an item for the same product, please contact us at {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Shipping Costs",
+      "customerResponsibility": "You will be responsible for paying your own shipping costs for returning your item. Shipping costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from your refund.",
+      "defectiveCoverage": "If the item was defective or damaged upon arrival, we will cover the return shipping costs."
+    },
+    "needHelp": {
+      "title": "Need Help?",
+      "message": "If you have any questions about our return policy, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
+    },
+    "contact": {
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "stepStatus": {
+      "completed": "Completed step",
+      "active": "Active step",
+      "error": "Step with error",
+      "inactive": "Inactive step"
+    }
+  },
+  "shipping": {
+    "title": "Shipping Information",
+    "intro": "We offer various shipping options to meet your needs. All orders are processed within 1-2 business days (excluding weekends and holidays).",
+    "domesticShipping": {
+      "title": "Domestic Shipping (United States)",
+      "freeShippingNote": "* Free standard shipping on orders of $50 or more"
+    },
+    "internationalShipping": {
+      "title": "International Shipping",
+      "customsNote": "* International orders may be subject to customs fees and import duties"
+    },
+    "table": {
+      "shippingMethod": "Shipping Method",
+      "deliveryTime": "Delivery Time",
+      "cost": "Cost",
+      "region": "Region",
+      "startingCost": "Starting Cost"
+    },
+    "fromCost": "From {{cost}}",
+    "methods": {
+      "standard": "Standard Shipping",
+      "express": "Express Shipping",
+      "overnight": "Overnight Shipping"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 business days",
+      "express": "2-3 business days",
+      "overnight": "1 business day",
+      "canada": "7-14 business days",
+      "europe": "10-21 business days",
+      "asia": "10-21 business days",
+      "australia": "10-21 business days",
+      "restOfWorld": "14-28 business days"
+    },
+    "regions": {
+      "canada": "Canada",
+      "europe": "Europe",
+      "asia": "Asia",
+      "australia": "Australia",
+      "restOfWorld": "Rest of World"
+    },
+    "orderTracking": {
+      "title": "Order Tracking",
+      "paragraph1": "Once your order has shipped, you will receive a confirmation email with a tracking number. You can track your package using this number on our website or the carrier's website.",
+      "paragraph2": "You can also view your order status anytime by logging into your account and visiting the \"My Orders\" section."
+    },
+    "restrictions": {
+      "title": "Shipping Restrictions",
+      "paragraph1": "We currently ship to most countries worldwide. However, some items may have shipping restrictions due to size, weight, or local regulations. These restrictions will be noted on the product page.",
+      "paragraph2": "We do not ship to P.O. boxes for certain items. Please provide a physical address for delivery when possible."
+    },
+    "damagedOrLost": {
+      "title": "Damaged or Lost Packages",
+      "paragraph": "If your package arrives damaged or goes missing during transit, please contact us immediately at {{supportEmail}}. We will work with the carrier to resolve the issue and ensure you receive your order."
+    },
+    "questionsAboutShipping": {
+      "title": "Questions About Shipping?",
+      "paragraph": "If you have any questions about shipping or need assistance with your order, please contact our customer support team at {{supportEmail}} or call {{supportPhone}}."
+    }
+  }
+}

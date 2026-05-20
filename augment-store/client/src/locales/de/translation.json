@@ -1,0 +1,1874 @@
+{
+  "common": {
+    "appName": "Augment Store",
+    "welcome": "Willkommen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "clear": "Löschen",
+    "apply": "Anwenden",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "submit": "Absenden",
+    "retry": "Wiederholen",
+    "refresh": "Aktualisieren",
+    "viewAll": "Alle Anzeigen",
+    "learnMore": "Mehr Erfahren",
+    "readMore": "Mehr Lesen",
+    "showMore": "Mehr Anzeigen",
+    "showLess": "Weniger Anzeigen",
+    "darkMode": "Dunkler Modus",
+    "lightMode": "Heller Modus",
+    "clearAll": "Alles Löschen"
+  },
+  "nav": {
+    "home": "Startseite",
+    "shop": "Shop",
+    "categories": "Kategorien",
+    "brands": "Marken",
+    "products": "Produkte",
+    "cart": "Warenkorb",
+    "checkout": "Kasse",
+    "orders": "Bestellungen",
+    "profile": "Profil",
+    "wishlist": "Wunschliste",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "account": "Konto",
+    "settings": "Einstellungen",
+    "menu": "Menü",
+    "support": "Support",
+    "language": "Sprache",
+    "selectLanguage": "Sprache Auswählen",
+    "adminDashboard": "Admin-Dashboard"
+  },
+
+  "tooltip": {
+    "menu": "Menü öffnen",
+    "cart": "Warenkorb öffnen",
+    "wishlist": "Wunschliste anzeigen",
+    "orders": "Bestellungen anzeigen",
+    "support": "Support erhalten",
+    "profile": "Profil anzeigen",
+    "logout": "Abmelden",
+    "products": "Produkte durchsuchen",
+    "login": "Bei Ihrem Konto anmelden",
+    "changeLanguage": "Sprache ändern",
+    "notifications": "Benachrichtigungen",
+    "switchToDarkMode": "Zum Dunkelmodus wechseln",
+    "switchToLightMode": "Zum Hellmodus wechseln"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Noch keine Benachrichtigungen",
+    "emptyDescription": "Sie sehen hier Benachrichtigungen, wenn Sie Updates haben",
+    "viewAll": "Alle Benachrichtigungen anzeigen",
+    "unreadCount": "{{count}} ungelesene Benachrichtigung",
+    "unreadCount_other": "{{count}} ungelesene Benachrichtigungen",
+    "markedAsRead": "Benachrichtigung als gelesen markiert",
+    "markAsReadError": "Fehler beim Markieren der Benachrichtigung als gelesen",
+    "details": "Benachrichtigungsdetails",
+    "read": "Gelesen",
+    "unread": "Ungelesen",
+    "metadata": "Details",
+    "type": "Typ",
+    "objectId": "Referenz-ID",
+    "noSelection": "Keine Benachrichtigung ausgewählt",
+    "deleteNotification": "Benachrichtigung Löschen",
+    "deleteConfirmTitle": "Benachrichtigung Löschen?",
+    "deleteConfirmMessage": "Sind Sie sicher, dass Sie diese Benachrichtigung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Löschen...",
+    "deleteSuccess": "Benachrichtigung erfolgreich gelöscht",
+    "deleteError": "Fehler beim Löschen der Benachrichtigung"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort Bestätigen",
+    "forgotPassword": "Passwort Vergessen?",
+    "resetPassword": "Passwort Zurücksetzen",
+    "rememberMe": "Angemeldet Bleiben",
+    "dontHaveAccount": "Noch kein Konto?",
+    "alreadyHaveAccount": "Bereits ein Konto?",
+    "signUp": "Registrieren",
+    "signIn": "Anmelden",
+    "verifyEmail": "E-Mail Verifizieren",
+    "emailVerification": "E-Mail-Verifizierung",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "fullName": "Vollständiger Name",
+    "loginPage": {
+      "title": "Willkommen Zurück",
+      "subtitle": "Melden Sie sich an, um zu Augment Store fortzufahren",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "forgotPasswordLink": "Passwort Vergessen?",
+      "signInButton": "Anmelden",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "noAccount": "Noch kein Konto?",
+      "signUpLink": "Registrieren",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "loginSuccess": "Anmeldung erfolgreich! Weiterleitung...",
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "registerPage": {
+      "title": "Konto Erstellen",
+      "subtitle": "Treten Sie Augment Store heute bei",
+      "firstNameLabel": "Vorname",
+      "lastNameLabel": "Nachname",
+      "emailLabel": "E-Mail-Adresse",
+      "passwordLabel": "Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "agreeToTerms": "Ich stimme den <termsLink>Allgemeinen Geschäftsbedingungen</termsLink> und der <privacyLink>Datenschutzerklärung</privacyLink> zu",
+      "signUpButton": "Registrieren",
+      "continueAsGuest": "Als Gast Fortfahren",
+      "haveAccount": "Bereits ein Konto?",
+      "signInLink": "Anmelden",
+      "firstNameRequired": "Vorname ist erforderlich",
+      "firstNameMinLength": "Vorname muss mindestens 2 Zeichen lang sein",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "lastNameMinLength": "Nachname muss mindestens 2 Zeichen lang sein",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordComplexity": "Passwort muss Groß-, Kleinbuchstaben und Zahlen enthalten",
+      "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "termsRequired": "Sie müssen den Allgemeinen Geschäftsbedingungen zustimmen",
+      "registerSuccess": "Registrierung erfolgreich! Weiterleitung zur E-Mail-Verifizierung...",
+      "registerFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "passwordRequirementsTitle": "Passwort muss enthalten:",
+      "passwordRequirements8Chars": "Mindestens 8 Zeichen",
+      "passwordRequirementsUppercase": "Einen Großbuchstaben",
+      "passwordRequirementsLowercase": "Einen Kleinbuchstaben",
+      "passwordRequirementsNumber": "Eine Zahl"
+    },
+    "forgotPasswordPage": {
+      "title": "Passwort Vergessen?",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts",
+      "emailLabel": "E-Mail-Adresse",
+      "sendButton": "Anweisungen zum Zurücksetzen Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "successMessage": "Anweisungen zum Zurücksetzen des Passworts wurden an Ihre E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "errorMessage": "Fehler beim Senden der Anweisungen zum Zurücksetzen. Bitte versuchen Sie es erneut."
+    },
+    "resetPasswordPage": {
+      "title": "Passwort Zurücksetzen",
+      "subtitle": "Geben Sie Ihr neues Passwort unten ein",
+      "newPasswordLabel": "Neues Passwort",
+      "confirmPasswordLabel": "Passwort Bestätigen",
+      "resetButton": "Passwort Zurücksetzen",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwordComplexity": "Passwort muss Großbuchstaben, Kleinbuchstaben und Zahlen enthalten",
+      "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "successMessage": "Ihr Passwort wurde erfolgreich zurückgesetzt!",
+      "errorMessage": "Fehler beim Zurücksetzen des Passworts. Bitte versuchen Sie es erneut oder fordern Sie einen neuen Link zum Zurücksetzen an.",
+      "invalidToken": "Ungültiger oder fehlender Token zum Zurücksetzen. Bitte fordern Sie ein neues Zurücksetzen des Passworts an.",
+      "redirecting": "Weiterleitung zur Anmeldung...",
+      "passwordRequirementsTitle": "Passwort muss enthalten:",
+      "passwordRequirements8Chars": "Mindestens 8 Zeichen",
+      "passwordRequirementsUppercase": "Einen Großbuchstaben",
+      "passwordRequirementsLowercase": "Einen Kleinbuchstaben",
+      "passwordRequirementsNumber": "Eine Zahl"
+    },
+    "verifyEmailPage": {
+      "title": "Verifizieren Sie Ihre E-Mail",
+      "subtitle": "Wir haben einen Verifizierungslink an {{email}} gesendet",
+      "subtitleNoEmail": "Überprüfen Sie Ihre E-Mail zur Verifizierung",
+      "waitingTitle": "Überprüfen Sie Ihre E-Mail",
+      "instructions": "Bitte überprüfen Sie Ihre E-Mail und klicken Sie auf den Verifizierungslink, um Ihr Konto zu aktivieren.",
+      "notReceived": "E-Mail nicht erhalten?",
+      "notReceivedHelp": "Überprüfen Sie Ihren Spam-Ordner oder kontaktieren Sie den Support, wenn Sie Hilfe benötigen.",
+      "resendButton": "Verifizierungs-E-Mail Erneut Senden",
+      "backToLogin": "Zurück zur Anmeldung",
+      "verifying": "Ihre E-Mail wird verifiziert...",
+      "successMessage": "Ihre E-Mail wurde erfolgreich verifiziert! Sie können sich jetzt anmelden.",
+      "errorMessage": "Fehler beim Verifizieren der E-Mail. Der Link ist möglicherweise ungültig oder abgelaufen.",
+      "resendSuccess": "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
+      "resendError": "Fehler beim erneuten Senden der Verifizierungs-E-Mail. Bitte versuchen Sie es erneut."
+    }
+  },
+  "product": {
+    "products": "Produkte",
+    "product": "Produkt",
+    "price": "Preis",
+    "description": "Beschreibung",
+    "details": "Details",
+    "specifications": "Spezifikationen",
+    "reviews": "Bewertungen",
+    "rating": "Bewertung",
+    "inStock": "Auf Lager",
+    "outOfStock": "Nicht Auf Lager",
+    "lowStock": "Nur noch {{count}} auf Lager",
+    "addToCart": "In den Warenkorb",
+    "addToWishlist": "Zur Wunschliste Hinzufügen",
+    "removeFromWishlist": "Von Wunschliste Entfernen",
+    "quantity": "Menge",
+    "sku": "SKU",
+    "category": "Kategorie",
+    "brand": "Marke",
+    "tags": "Tags",
+    "relatedProducts": "Ähnliche Produkte",
+    "recommendedProducts": "Empfohlene Produkte",
+    "newArrivals": "Neuankömmlinge",
+    "bestSellers": "Bestseller",
+    "featured": "Empfohlen",
+    "onSale": "Im Angebot",
+    "discount": "Rabatt",
+    "recentlyViewed": "Kürzlich Angesehen"
+  },
+  "home": {
+    "featuredProducts": "Empfohlene Produkte",
+    "noFeaturedProducts": "Derzeit sind keine empfohlenen Produkte verfügbar.",
+    "banners": {
+      "clickToViewDetails": "Klicken Sie, um Details anzuzeigen",
+      "summerSale": {
+        "title": "Sommerschlussverkauf",
+        "subtitle": "Bis zu 50% Rabatt",
+        "cta": "Jetzt Einkaufen"
+      },
+      "newArrivals": {
+        "title": "Neuankömmlinge",
+        "subtitle": "Frische Styles",
+        "cta": "Erkunden"
+      },
+      "megaSale": {
+        "title": "Mega-Sale-Event",
+        "subtitle": "Zeitlich Begrenztes Angebot",
+        "description": "Erhalten Sie tolle Angebote in allen Kategorien. Verpassen Sie es nicht!",
+        "cta": "Alle Angebote Ansehen"
+      },
+      "winterCollection": {
+        "title": "Winterkollektion",
+        "subtitle": "Neue Saison-Neuheiten",
+        "description": "Entdecken Sie die neuesten Trends für die Wintersaison",
+        "cta": "Jetzt Erkunden"
+      },
+      "techDeals": {
+        "title": "Tech-Angebote",
+        "subtitle": "Bis zu 40% Rabatt",
+        "description": "Neueste Gadgets und Elektronik zu unschlagbaren Preisen",
+        "cta": "Tech Einkaufen"
+      },
+      "electronics": {
+        "title": "Elektronik",
+        "subtitle": "20% Rabatt",
+        "cta": "Angebote Ansehen"
+      },
+      "fashionWeek": {
+        "title": "Fashion Week",
+        "subtitle": "Jetzt im Trend",
+        "cta": "Entdecken"
+      }
+    }
+  },
+  "cart": {
+    "cart": "Warenkorb",
+    "shoppingCart": "Einkaufswagen",
+    "emptyCart": "Ihr Warenkorb ist leer",
+    "continueShopping": "Weiter Einkaufen",
+    "proceedToCheckout": "Zur Kasse Gehen",
+    "subtotal": "Zwischensumme",
+    "total": "Gesamt",
+    "tax": "Steuer",
+    "shipping": "Versand",
+    "shippingFree": "KOSTENLOS",
+    "deliveryFee": "Liefergebühr",
+    "discount": "Rabatt",
+    "each": "je",
+    "remove": "Entfernen",
+    "update": "Aktualisieren",
+    "itemsInCart": "{{count}} Artikel im Warenkorb",
+    "itemsInCart_other": "{{count}} Artikel im Warenkorb",
+    "quantity": "Menge",
+    "maxStock": "Maximaler Bestand",
+    "viewFullCart": "Vollständigen Warenkorb Anzeigen",
+    "emptyCartMessage": "Fügen Sie einige Produkte hinzu, um zu beginnen!",
+    "closeCart": "Warenkorb schließen",
+    "removeItem": "Artikel entfernen",
+    "removeItemTitle": "Artikel Entfernen?",
+    "removeItemConfirm": "Sind Sie sicher, dass Sie <strong>{{name}}</strong> aus Ihrem Warenkorb entfernen möchten?",
+    "removing": "Wird entfernt...",
+    "items": "{{count}} Artikel",
+    "saveForLater": "Für Später Speichern",
+    "savedItems": "Gespeicherte Artikel",
+    "moveToCart": "In den Warenkorb",
+    "movedToCart": "Artikel in den Warenkorb verschoben",
+    "savedForLater": "Artikel für später gespeichert",
+    "failedToSaveItem": "Fehler beim Speichern des Artikels",
+    "failedToMoveItem": "Fehler beim Verschieben des Artikels in den Warenkorb",
+    "removedFromSaved": "Artikel aus gespeicherten entfernt",
+    "emptySavedItems": "Keine gespeicherten Artikel",
+    "emptySavedItemsMessage": "Artikel, die Sie für später speichern, werden hier angezeigt"
+  },
+  "wishlist": {
+    "myWishlist": "Meine Wunschliste",
+    "wishlist": "Wunschliste",
+    "emptyWishlist": "Ihre Wunschliste ist leer",
+    "emptyWishlistMessage": "Speichern Sie Ihre Lieblingsartikel auf Ihrer Wunschliste und kaufen Sie sie später!",
+    "browseProducts": "Produkte Durchsuchen",
+    "itemsInWishlist": "{{count}} Artikel in Ihrer Wunschliste",
+    "itemsInWishlist_other": "{{count}} Artikel in Ihrer Wunschliste",
+    "addToWishlist": "Zur Wunschliste Hinzufügen",
+    "removeFromWishlist": "Von der Wunschliste Entfernen",
+    "loginToAddToWishlist": "Melden Sie sich an, um zur Wunschliste hinzuzufügen",
+    "addedToWishlist": "Zur Wunschliste hinzugefügt",
+    "removedFromWishlist": "Von der Wunschliste entfernt",
+    "failedToAddToWishlist": "Fehler beim Hinzufügen zur Wunschliste",
+    "failedToRemoveFromWishlist": "Fehler beim Entfernen von der Wunschliste",
+    "viewWishlist": "Wunschliste Anzeigen",
+    "moveToCart": "In den Warenkorb"
+  },
+  "checkout": {
+    "checkout": "Kasse",
+    "checkoutDescription": "Vervollständigen Sie Ihre Bestellung, indem Sie die folgenden Informationen ausfüllen",
+    "shippingAddress": "Lieferadresse",
+    "billingAddress": "Rechnungsadresse",
+    "billingAddressSubtitle": "Wohin sollen wir die Rechnung senden?",
+    "paymentMethod": "Zahlungsmethode",
+    "orderSummary": "Bestellübersicht",
+    "placeOrder": "Bestellung Aufgeben",
+    "address": "Adresse",
+    "city": "Stadt",
+    "state": "Bundesland",
+    "zipCode": "Postleitzahl",
+    "country": "Land",
+    "phone": "Telefon",
+    "sameAsShipping": "Gleich wie Lieferadresse",
+    "discountCode": "Rabattcode",
+    "enterDiscountCode": "Rabattcode eingeben",
+    "proceedToPayment": "Zur Zahlung Gehen",
+    "placingOrder": "Bestellung Wird Aufgegeben...",
+    "initializingPayment": "Zahlung Wird Initialisiert...",
+    "agreement": "Mit der Bestellung stimmen Sie unseren",
+    "termsAndConditions": "Allgemeinen Geschäftsbedingungen",
+    "and": "und",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "removeItem": "Artikel Entfernen?",
+    "removeItemBefore": "Sind Sie sicher, dass Sie",
+    "removeItemAfter": "aus Ihrem Warenkorb entfernen möchten?",
+    "removing": "Wird Entfernt...",
+    "orderConfirmed": "Bestellung Bestätigt!",
+    "thankYou": "Vielen Dank für Ihren Einkauf",
+    "orderSuccessMessage": "Ihre Bestellung wurde erfolgreich aufgegeben und wird bearbeitet.",
+    "orderId": "Bestellnummer",
+    "totalAmount": "Gesamtbetrag",
+    "viewOrderDetails": "Bestelldetails Anzeigen",
+    "continueShopping": "Weiter Einkaufen",
+    "orderDate": "Bestelldatum",
+    "status": "Status",
+    "contactInformation": "Kontaktinformationen",
+    "confirmationEmailSent": "Eine Bestätigungs-E-Mail wurde gesendet an",
+    "contactForm": {
+      "title": "Kontaktinformationen",
+      "subtitle": "Wir verwenden diese, um Sie über Ihre Bestellung zu kontaktieren",
+      "complete": "Vollständig",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "emailAddress": "E-Mail-Adresse",
+      "phoneNumber": "Telefonnummer",
+      "emailHelper": "Wir senden Ihre Bestellbestätigung hierher",
+      "phoneHelper": "Geben Sie 10-15 Ziffern ein. Format: {{supportPhone}} oder 5551234567",
+      "phonePlaceholder": "{{supportPhone}}",
+      "errors": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "emailInvalid": "Ungültige E-Mail-Adresse",
+        "phoneRequired": "Telefonnummer ist erforderlich",
+        "phoneInvalidChars": "Telefonnummer darf nur Ziffern, Leerzeichen, Bindestriche, Klammern und ein optionales + Präfix enthalten",
+        "phoneInvalidLength": "Telefonnummer muss zwischen 10 und 15 Ziffern lang sein",
+        "phoneInvalidFormat": "Ungültiges Telefonnummernformat",
+        "firstNameRequired": "Vorname ist erforderlich",
+        "firstNameTooLong": "Vorname ist zu lang",
+        "firstNameInvalidChars": "Vorname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
+        "lastNameRequired": "Nachname ist erforderlich",
+        "lastNameTooLong": "Nachname ist zu lang",
+        "lastNameInvalidChars": "Nachname darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten"
+      }
+    },
+    "shippingForm": {
+      "title": "Lieferadresse",
+      "subtitle": "Wohin sollen wir Ihre Bestellung liefern?",
+      "complete": "Vollständig",
+      "streetAddress": "Straße und Hausnummer",
+      "apartmentSuite": "Wohnung, Büro usw. (optional)",
+      "city": "Stadt",
+      "stateProvince": "Bundesland/Provinz",
+      "postalCode": "Postleitzahl",
+      "country": "Land",
+      "errors": {
+        "streetAddressRequired": "Straße und Hausnummer sind erforderlich",
+        "streetAddressTooLong": "Die Adresse ist zu lang",
+        "cityRequired": "Stadt ist erforderlich",
+        "cityTooLong": "Der Stadtname ist zu lang",
+        "cityInvalidChars": "Stadt darf nur Buchstaben, Leerzeichen, Bindestriche und Apostrophe enthalten",
+        "stateProvinceRequired": "Bundesland/Provinz ist erforderlich",
+        "stateProvinceTooLong": "Bundesland/Provinz ist zu lang",
+        "postalCodeRequired": "Postleitzahl ist erforderlich",
+        "postalCodeTooLong": "Postleitzahl ist zu lang",
+        "postalCodeInvalid": "Ungültiges Postleitzahlformat",
+        "countryRequired": "Land ist erforderlich"
+      }
+    }
+  },
+  "order": {
+    "orders": "Bestellungen",
+    "order": "Bestellung",
+    "orderNumber": "Bestellnummer",
+    "orderDate": "Bestelldatum",
+    "orderStatus": "Bestellstatus",
+    "orderTotal": "Bestellsumme",
+    "orderDetails": "Bestelldetails",
+    "trackOrder": "Bestellung Verfolgen",
+    "viewOrder": "Bestellung Anzeigen",
+    "cancelOrder": "Bestellung Stornieren",
+    "backToOrders": "Zurück zu Bestellungen",
+    "placedOn": "Aufgegeben am",
+    "orderItems": "Bestellartikel",
+    "product": "Produkt",
+    "quantity": "Menge",
+    "price": "Preis",
+    "subtotal": "Zwischensumme",
+    "shippingAddress": "Lieferadresse",
+    "billingAddress": "Rechnungsadresse",
+    "noShippingAddress": "Keine Lieferadresse verfügbar",
+    "noBillingAddress": "Keine Rechnungsadresse verfügbar",
+    "deletedProduct": "Gelöschtes Produkt",
+    "productNoLongerAvailable": "Produkt nicht mehr verfügbar",
+    "orderSummary": "Bestellübersicht",
+    "tax": "Steuer",
+    "shipping": "Versand",
+    "free": "KOSTENLOS",
+    "total": "Gesamt",
+    "paymentMethod": "Zahlungsmethode",
+    "lastUpdated": "Zuletzt Aktualisiert",
+    "orderNotFound": "Bestellung nicht gefunden",
+    "provideValidOrderId": "Bitte geben Sie eine gültige Bestellnummer in der URL an.",
+    "status": {
+      "pending": "Ausstehend",
+      "confirmed": "Bestätigt",
+      "processing": "In Bearbeitung",
+      "shipped": "Versandt",
+      "delivered": "Geliefert",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
+    "paymentStatus": {
+      "pending": "Ausstehend",
+      "paid": "Bezahlt",
+      "failed": "Fehlgeschlagen",
+      "refunded": "Erstattet",
+      "notAvailable": "k. A."
+    }
+  },
+  "user": {
+    "profile": "Profil",
+    "account": "Konto",
+    "personalInfo": "Persönliche Informationen",
+    "addresses": "Adressen",
+    "orderHistory": "Bestellverlauf",
+    "wishlist": "Wunschliste",
+    "settings": "Einstellungen",
+    "changePassword": "Passwort Ändern",
+    "updateProfile": "Profil Aktualisieren",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "profilePage": {
+      "title": "Mein Profil",
+      "subtitle": "Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen",
+      "editProfile": "Profil Bearbeiten",
+      "saveChanges": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "uploading": "Hochladen...",
+      "cancel": "Abbrechen",
+      "memberSince": "Mitglied seit {{date}}",
+      "notAvailable": "N/V",
+      "userFallback": "Benutzer",
+      "personalInformation": "Persönliche Informationen",
+      "personalInformationSubtitle": "Aktualisieren Sie Ihre persönlichen Daten und Informationen",
+      "roleAdmin": "Administrator",
+      "roleCustomer": "Kunde",
+      "avatarUploadHint": "Klicken Sie auf den Avatar zum Hochladen",
+      "avatarFileTypeHint": "JPEG, PNG, GIF, WebP • Max 5 MB",
+      "fields": {
+        "username": "Benutzername",
+        "usernameLabel": "Benutzername",
+        "email": "E-Mail",
+        "emailLabel": "E-Mail-Adresse",
+        "emailCannotBeChanged": "E-Mail kann nicht geändert werden",
+        "firstName": "Vorname",
+        "firstNameLabel": "Vorname",
+        "lastName": "Nachname",
+        "lastNameLabel": "Nachname",
+        "mobile": "Mobil",
+        "mobileLabel": "Mobilnummer",
+        "mobilePlaceholder": "+1234567890",
+        "gender": "Geschlecht",
+        "genderLabel": "Geschlecht",
+        "genderMale": "Männlich",
+        "genderFemale": "Weiblich",
+        "genderOther": "Andere",
+        "role": "Rolle",
+        "roleHelperText": "Die Rolle wird von Administratoren verwaltet",
+        "accountStatus": "Kontostatus",
+        "statusActive": "Aktiv",
+        "statusInactive": "Inaktiv"
+      },
+      "messages": {
+        "profileUpdatedSuccess": "Profil erfolgreich aktualisiert!",
+        "avatarUpdatedSuccess": "Avatar erfolgreich aktualisiert!",
+        "avatarRemovedSuccess": "Avatar erfolgreich entfernt!",
+        "failedToLoadProfile": "Profil konnte nicht geladen werden",
+        "failedToUpdateProfile": "Profil konnte nicht aktualisiert werden",
+        "failedToUploadAvatar": "Avatar konnte nicht hochgeladen werden",
+        "failedToRemoveAvatar": "Avatar konnte nicht entfernt werden",
+        "avatarInvalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein JPEG-, PNG-, GIF- oder WebP-Bild.",
+        "avatarFileSizeExceeded": "Die Dateigröße überschreitet das Limit von 5 MB. Die ausgewählte Datei ist {{fileSize}} MB groß.",
+        "retry": "Erneut Versuchen"
+      },
+      "buttons": {
+        "supportAndHelp": "Support & Hilfe",
+        "logout": "Abmelden"
+      },
+      "aria": {
+        "uploadAvatar": "Avatar hochladen",
+        "removeAvatar": "Avatar entfernen",
+        "avatarFileInput": "Avatar-Dateieingabe"
+      }
+    }
+  },
+  "privacy": {
+    "pageTitle": "Datenschutzrichtlinie",
+    "pageSubtitle": "Ihre Privatsphäre ist uns wichtig. Erfahren Sie, wie wir Ihre Daten sammeln, verwenden und schützen.",
+    "lastUpdated": "Zuletzt aktualisiert: {{date}}",
+    "lastUpdatedDate": "10. Februar 2026",
+    "tableOfContents": "Inhaltsverzeichnis",
+    "dataTypes": {
+      "identity": {
+        "title": "Identitätsdaten",
+        "description": "Vorname, Nachname, Benutzername oder ähnliche Kennung"
+      },
+      "contact": {
+        "title": "Kontaktdaten",
+        "description": "E-Mail-Adresse, Telefonnummern, Rechnungsadresse, Lieferadresse"
+      },
+      "financial": {
+        "title": "Finanzdaten",
+        "description": "Zahlungskartendetails (sicher von unseren Zahlungsanbietern verarbeitet)"
+      },
+      "transaction": {
+        "title": "Transaktionsdaten",
+        "description": "Details zu Zahlungen und Produkten, die Sie bei uns gekauft haben"
+      },
+      "technical": {
+        "title": "Technische Daten",
+        "description": "IP-Adresse, Browsertyp und -version, Zeitzoneneinstellung, Betriebssystem"
+      },
+      "usage": {
+        "title": "Nutzungsdaten",
+        "description": "Informationen darüber, wie Sie unsere Plattform, Produkte und Dienstleistungen nutzen"
+      },
+      "marketing": {
+        "title": "Marketingdaten",
+        "description": "Ihre Präferenzen für den Erhalt von Marketing von uns und Ihre Kommunikationspräferenzen"
+      }
+    },
+    "sections": {
+      "introduction": {
+        "title": "Einführung",
+        "content": "Wir respektieren Ihre Privatsphäre und verpflichten uns, Ihre persönlichen Daten zu schützen. Diese Datenschutzrichtlinie informiert Sie darüber, wie wir Ihre persönlichen Daten pflegen, wenn Sie unsere Plattform besuchen, und informiert Sie über Ihre Datenschutzrechte und wie das Gesetz Sie schützt."
+      },
+      "informationWeCollect": {
+        "title": "Informationen, die Wir Sammeln",
+        "intro": "Wir können verschiedene Arten von persönlichen Daten über Sie sammeln, verwenden, speichern und übertragen:"
+      },
+      "howWeUse": {
+        "title": "Wie Wir Ihre Informationen Verwenden",
+        "intro": "Wir werden Ihre persönlichen Daten nur verwenden, wenn das Gesetz es uns erlaubt. Am häufigsten werden wir Ihre persönlichen Daten unter folgenden Umständen verwenden:",
+        "purposes": {
+          "processOrders": "Um Ihre Bestellungen zu bearbeiten und zu liefern",
+          "manageAccount": "Um Ihr Konto zu verwalten und Kundensupport zu bieten",
+          "sendInfo": "Um Ihnen wichtige Informationen zu Ihren Käufen zu senden",
+          "improve": "Um unsere Plattform und Dienstleistungen zu verbessern",
+          "personalize": "Um Ihre Erfahrung zu personalisieren",
+          "marketing": "Um Ihnen Marketingkommunikation zu senden (mit Ihrer Zustimmung)",
+          "fraud": "Um Betrug zu erkennen und zu verhindern"
+        }
+      },
+      "dataSecurity": {
+        "title": "Datensicherheit",
+        "paragraph1": "Wir haben angemessene Sicherheitsmaßnahmen ergriffen, um zu verhindern, dass Ihre persönlichen Daten versehentlich verloren gehen, unbefugt verwendet oder darauf zugegriffen wird, geändert oder offengelegt werden. Wir beschränken den Zugriff auf Ihre persönlichen Daten auf diejenigen Mitarbeiter, Vertreter, Auftragnehmer und andere Dritte, die ein geschäftliches Bedürfnis haben, sie zu kennen.",
+        "paragraph2": "Alle Zahlungstransaktionen werden mit SSL-Technologie verschlüsselt. Wir speichern keine vollständigen Zahlungskartendetails auf unseren Servern."
+      },
+      "dataRetention": {
+        "title": "Datenspeicherung",
+        "content": "Wir werden Ihre persönlichen Daten nur so lange aufbewahren, wie es notwendig ist, um die Zwecke zu erfüllen, für die wir sie gesammelt haben, einschließlich der Zwecke zur Erfüllung gesetzlicher, buchhalterischer oder Berichtspflichten."
+      },
+      "yourRights": {
+        "title": "Ihre Gesetzlichen Rechte",
+        "intro": "Unter bestimmten Umständen haben Sie Rechte gemäß den Datenschutzgesetzen in Bezug auf Ihre persönlichen Daten:",
+        "rights": {
+          "access": "Zugriff auf Ihre persönlichen Daten anfordern",
+          "correction": "Korrektur Ihrer persönlichen Daten anfordern",
+          "erasure": "Löschung Ihrer persönlichen Daten anfordern",
+          "object": "Der Verarbeitung Ihrer persönlichen Daten widersprechen",
+          "restriction": "Einschränkung der Verarbeitung Ihrer persönlichen Daten anfordern",
+          "transfer": "Übertragung Ihrer persönlichen Daten anfordern",
+          "withdraw": "Recht auf Widerruf der Einwilligung"
+        }
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Unsere Plattform verwendet Cookies, um Sie von anderen Benutzern zu unterscheiden. Dies hilft uns, Ihnen eine gute Erfahrung beim Durchsuchen unserer Plattform zu bieten und ermöglicht es uns auch, unsere Website zu verbessern. Ein Cookie ist eine kleine Datei aus Buchstaben und Zahlen, die wir in Ihrem Browser oder auf der Festplatte Ihres Computers speichern."
+      },
+      "thirdPartyLinks": {
+        "title": "Links zu Dritten",
+        "content": "Unsere Plattform kann Links zu Websites, Plug-ins und Anwendungen von Drittanbietern enthalten. Durch Klicken auf diese Links oder Aktivieren dieser Verbindungen können Dritte Daten über Sie sammeln oder teilen. Wir kontrollieren diese Websites von Drittanbietern nicht und sind nicht für deren Datenschutzerklärungen verantwortlich."
+      },
+      "childrenPrivacy": {
+        "title": "Datenschutz für Kinder",
+        "content": "Unser Service richtet sich nicht an Kinder unter 13 Jahren. Wir sammeln wissentlich keine persönlichen Informationen von Kindern unter 13 Jahren. Wenn Sie Elternteil oder Erziehungsberechtigter sind und wissen, dass Ihr Kind uns persönliche Daten zur Verfügung gestellt hat, kontaktieren Sie uns bitte."
+      },
+      "changes": {
+        "title": "Änderungen an Dieser Datenschutzrichtlinie",
+        "content": "Wir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden Sie über alle Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" oben in dieser Datenschutzrichtlinie aktualisieren."
+      },
+      "contact": {
+        "title": "Kontaktieren Sie Uns",
+        "content": "Wenn Sie Fragen zu dieser Datenschutzrichtlinie oder unseren Datenschutzpraktiken haben, kontaktieren Sie uns bitte über unsere Kontaktseite."
+      }
+    }
+  },
+  "footer": {
+    "aboutUs": "Über Uns",
+    "contactUs": "Kontaktieren Sie Uns",
+    "termsOfService": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "faq": "FAQ",
+    "support": "Support",
+    "followUs": "Folgen Sie Uns",
+    "newsletter": "Newsletter",
+    "subscribeNewsletter": "Abonnieren Sie unseren Newsletter",
+    "emailLabel": "E-Mail-Adresse",
+    "enterEmail": "Geben Sie Ihre E-Mail ein",
+    "subscribe": "Abonnieren",
+    "subscribeError": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "allRightsReserved": "Alle Rechte vorbehalten",
+    "tagline": "Ihr One-Stop-Shop für alle Ihre Bedürfnisse.",
+    "quickLinks": "Schnelllinks",
+    "customerService": "Kundenservice",
+    "helpCenter": "Hilfezentrum",
+    "returns": "Rücksendungen",
+    "shippingInfo": "Versandinformationen"
+  },
+  "newsletter": {
+    "errors": {
+      "subscribeFailed": "Abonnement fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "fetchFailed": "Fehler beim Laden der Newsletter-Abonnements. Bitte versuchen Sie es erneut.",
+      "unsubscribeFailed": "Abmeldung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    },
+    "unsubscribe": {
+      "title": "Vom Newsletter abmelden",
+      "description": "Geben Sie Ihre E-Mail-Adresse ein, um sich von unserem Newsletter abzumelden. Schade, dass Sie gehen!",
+      "emailLabel": "E-Mail-Adresse",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "button": "Abmelden",
+      "buttonLoading": "Wird abgemeldet...",
+      "successMessage": "Erfolgreich abgemeldet! Sie erhalten unseren Newsletter nicht mehr."
+    }
+  },
+  "about": {
+    "title": "Über Augment Store",
+    "subtitle": "Ihr vertrauenswürdiges Ziel für Qualitätsprodukte und außergewöhnlichen Service",
+    "established": "Gegründet 2020",
+    "ourStory": "Unsere Geschichte",
+    "ourStoryContent": "Willkommen bei Augment Store, Ihrem vertrauenswürdigen Ziel für Qualitätsprodukte und außergewöhnlichen Service. Wir sind bestrebt, unseren Kunden das bestmögliche Einkaufserlebnis zu bieten.",
+    "ourMission": "Unsere Mission",
+    "ourMissionContent": "Unsere Mission ist es, qualitativ hochwertige Produkte zu wettbewerbsfähigen Preisen zu liefern und dabei die höchsten Standards im Kundenservice aufrechtzuerhalten. Wir glauben daran, dauerhafte Beziehungen zu unseren Kunden durch Vertrauen, Transparenz und Exzellenz aufzubauen.",
+    "whyChooseUs": "Warum uns wählen",
+    "stats": {
+      "happyCustomers": "Zufriedene Kunden",
+      "products": "Produkte",
+      "averageRating": "Durchschnittliche Bewertung",
+      "satisfactionRate": "Zufriedenheitsrate"
+    },
+    "reasons": {
+      "wideSelection": "Große Auswahl an Qualitätsprodukten",
+      "wideSelectionDesc": "Entdecken Sie Tausende von Produkten in mehreren Kategorien",
+      "competitivePricing": "Wettbewerbsfähige Preise",
+      "competitivePricingDesc": "Beste Preise garantiert mit regelmäßigen Angeboten und Rabatten",
+      "fastShipping": "Schneller und zuverlässiger Versand",
+      "fastShippingDesc": "Schnelle Lieferung an Ihre Haustür mit Echtzeit-Tracking",
+      "excellentSupport": "Exzellenter Kundensupport",
+      "excellentSupportDesc": "24/7 Kundensupport bereit, Ihnen jederzeit zu helfen",
+      "securePayment": "Sichere Zahlungsabwicklung",
+      "securePaymentDesc": "Sichere und verschlüsselte Zahlungsabwicklung für Ihre Sicherheit",
+      "easyReturns": "Einfache Rücksendungen und Umtausch",
+      "easyReturnsDesc": "Problemlose Rücksendungen und Umtausch innerhalb von 30 Tagen"
+    }
+  },
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "getInTouch": "Kontakt aufnehmen",
+    "description": "Haben Sie eine Frage oder benötigen Sie Hilfe? Wir sind für Sie da! Füllen Sie das Formular aus und wir werden uns so schnell wie möglich bei Ihnen melden.",
+    "name": "Name",
+    "email": "E-Mail",
+    "subject": "Betreff",
+    "message": "Nachricht",
+    "sendMessage": "Nachricht senden",
+    "contactInformation": "Kontaktinformationen",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "addressValue": "123 Commerce Street\nSan Francisco, CA 94102\nVereinigte Staaten",
+    "businessHours": "Geschäftszeiten",
+    "mondayFriday": "Montag - Freitag: 9:00 - 18:00 Uhr PST",
+    "saturday": "Samstag: 10:00 - 16:00 Uhr PST",
+    "sunday": "Sonntag: Geschlossen",
+    "successMessage": "Vielen Dank für Ihre Kontaktaufnahme! Wir werden uns bald bei Ihnen melden.",
+    "sending": "Wird gesendet...",
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "subjectRequired": "Betreff ist erforderlich",
+      "messageRequired": "Nachricht ist erforderlich",
+      "messageMinLength": "Die Nachricht muss mindestens 10 Zeichen lang sein"
+    }
+  },
+  "sidebar": {
+    "menu": "Menü",
+    "categories": "KATEGORIEN",
+    "noCategoriesAvailable": "Keine Kategorien verfügbar",
+    "profileWithName": "Profil ({{name}})"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben. Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.",
+    "goHome": "Zur Startseite",
+    "browseProducts": "Produkte durchsuchen"
+  },
+  "terms": {
+    "title": "Allgemeine Geschäftsbedingungen",
+    "lastUpdated": "Zuletzt Aktualisiert",
+    "lastUpdatedDate": "10. Februar 2026",
+    "lastUpdatedLabel": "Zuletzt Aktualisiert: {{date}}",
+    "subtitle": "Bitte lesen Sie diese Bedingungen sorgfältig durch, bevor Sie unseren Service nutzen",
+    "sections": {
+      "acceptance": {
+        "title": "Annahme der Bedingungen",
+        "content": "Durch den Zugriff auf und die Nutzung dieser E-Commerce-Plattform (\"Service\") akzeptieren Sie die Bedingungen und Bestimmungen dieser Vereinbarung und verpflichten sich, diese einzuhalten. Wenn Sie mit dem oben Genannten nicht einverstanden sind, nutzen Sie diesen Service bitte nicht."
+      },
+      "useLicense": {
+        "title": "Nutzungslizenz",
+        "intro": "Es wird die Erlaubnis erteilt, vorübergehend auf die Materialien (Informationen oder Software) auf unserer Plattform nur zur persönlichen, nicht-kommerziellen vorübergehenden Ansicht zuzugreifen. Dies ist die Gewährung einer Lizenz, keine Übertragung des Eigentums, und unter dieser Lizenz dürfen Sie nicht:",
+        "restrictions": {
+          "modify": "Die Materialien ändern oder kopieren",
+          "commercial": "Die Materialien für kommerzielle Zwecke oder öffentliche Ausstellungen verwenden",
+          "reverseEngineer": "Versuchen, Software auf unserer Plattform zurückzuentwickeln",
+          "removeCopyright": "Urheberrechts- oder andere Eigentumshinweise von den Materialien entfernen",
+          "transfer": "Die Materialien an eine andere Person übertragen oder die Materialien auf einem anderen Server \"spiegeln\""
+        }
+      },
+      "accountTerms": {
+        "title": "Kontobedingungen",
+        "security": "Sie sind für die Aufrechterhaltung der Sicherheit Ihres Kontos und Passworts verantwortlich. Wir können und werden nicht für Verluste oder Schäden haftbar gemacht werden, die durch Ihre Nichteinhaltung dieser Sicherheitsverpflichtung entstehen.",
+        "responsibility": "Sie sind für alle Inhalte und Aktivitäten verantwortlich, die unter Ihrem Konto stattfinden."
+      },
+      "productInfo": {
+        "title": "Produktinformationen",
+        "content": "Wir bemühen uns, genaue Produktbeschreibungen und Preise bereitzustellen. Wir garantieren jedoch nicht, dass Produktbeschreibungen, Preise oder andere Inhalte genau, vollständig, zuverlässig, aktuell oder fehlerfrei sind. Wenn ein von uns angebotenes Produkt nicht wie beschrieben ist, besteht Ihr einziger Rechtsbehelf darin, es in unbenutztem Zustand zurückzugeben."
+      },
+      "pricing": {
+        "title": "Preise und Zahlung",
+        "changes": "Alle Preise können ohne Vorankündigung geändert werden. Wir behalten uns das Recht vor, Produkte ohne Vorankündigung zu ändern oder einzustellen. Wir haften Ihnen oder Dritten gegenüber nicht für Änderungen, Preisänderungen, Aussetzungen oder Einstellungen von Produkten.",
+        "payment": "Die Zahlung muss bei uns eingegangen sein, bevor Ihre Bestellung versandt wird. Wir akzeptieren verschiedene Zahlungsmethoden, wie beim Bezahlvorgang angegeben."
+      },
+      "shipping": {
+        "title": "Versand und Lieferung",
+        "content": "Wir organisieren den Versand der bestellten Produkte an Sie. Bitte überprüfen Sie die einzelne Produktseite für spezifische Lieferoptionen. Eigentum und Verlustrisiko gehen bei unserer Übergabe an den Spediteur auf Sie über. Versand- und Bearbeitungsgebühren sind nicht erstattungsfähig."
+      },
+      "returns": {
+        "title": "Rücksendungen und Rückerstattungen",
+        "content": "Bitte lesen Sie unsere Rückgaberichtlinie für detaillierte Informationen zu Rücksendungen und Rückerstattungen. Im Allgemeinen können Artikel innerhalb von 30 Tagen nach Erhalt in ihrem Originalzustand zurückgegeben werden."
+      },
+      "liability": {
+        "title": "Haftungsbeschränkung",
+        "content": "In keinem Fall haften unser Unternehmen oder seine Lieferanten für Schäden (einschließlich, aber nicht beschränkt auf Schäden durch Datenverlust oder Gewinnausfall oder aufgrund von Geschäftsunterbrechungen), die sich aus der Nutzung oder der Unmöglichkeit der Nutzung der Materialien auf unserer Plattform ergeben."
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "content": "Ihre Nutzung unseres Services unterliegt auch unserer Datenschutzrichtlinie. Bitte lesen Sie unsere Datenschutzrichtlinie, die auch den Service regelt und Benutzer über unsere Datenerfassungspraktiken informiert."
+      },
+      "modifications": {
+        "title": "Änderungen der Bedingungen",
+        "content": "Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit ohne Vorankündigung zu überarbeiten. Durch die Nutzung dieses Services erklären Sie sich damit einverstanden, an die jeweils aktuelle Version dieser Nutzungsbedingungen gebunden zu sein."
+      },
+      "governingLaw": {
+        "title": "Anwendbares Recht",
+        "content": "Diese Geschäftsbedingungen unterliegen den Gesetzen und werden in Übereinstimmung mit diesen ausgelegt, und Sie unterwerfen sich unwiderruflich der ausschließlichen Gerichtsbarkeit der Gerichte an diesem Ort."
+      },
+      "contact": {
+        "title": "Kontaktinformationen",
+        "content": "Wenn Sie Fragen zu diesen Allgemeinen Geschäftsbedingungen haben, kontaktieren Sie uns bitte über unsere Kontaktseite."
+      }
+    }
+  },
+  "help": {
+    "title": "Hilfezentrum",
+    "description": "Finden Sie unten Antworten auf häufig gestellte Fragen. Wenn Sie zusätzliche Unterstützung benötigen, zögern Sie nicht, unser Kundenservice-Team zu kontaktieren.",
+    "faqsTitle": "Häufig Gestellte Fragen",
+    "searchPlaceholder": "Nach Hilfe suchen...",
+    "searchAriaLabel": "Hilfeartikel durchsuchen",
+    "quickHelp": "Schnelle Hilfe",
+    "noResultsFound": "Keine Ergebnisse gefunden für \"{{query}}\"",
+    "tryDifferentKeywords": "Versuchen Sie es mit anderen Suchbegriffen",
+    "contactUs": "Kontaktieren Sie uns",
+    "emailUs": "Senden Sie uns eine E-Mail",
+    "quickHelpCards": {
+      "trackOrder": {
+        "title": "Bestellung Verfolgen",
+        "description": "Überprüfen Sie den Status Ihrer Bestellung in Echtzeit"
+      },
+      "returnsRefunds": {
+        "title": "Rücksendungen & Rückerstattungen",
+        "description": "Erfahren Sie mehr über unsere Rückgaberichtlinie und den Prozess"
+      },
+      "contactSupport": {
+        "title": "Support Kontaktieren",
+        "description": "Nehmen Sie Kontakt mit unserem Support-Team auf"
+      }
+    },
+    "stillNeedHelp": {
+      "title": "Benötigen Sie Weitere Hilfe?",
+      "description": "Wenn Sie die gesuchte Antwort nicht finden konnten, steht Ihnen unser Kundenservice-Team gerne zur Verfügung. Kontaktieren Sie uns per E-Mail, Telefon oder über unser Kontaktformular."
+    },
+    "faqs": {
+      "placeOrder": {
+        "question": "Wie gebe ich eine Bestellung auf?",
+        "answer": "Durchsuchen Sie unsere Produkte, fügen Sie Artikel zu Ihrem Warenkorb hinzu und gehen Sie zur Kasse. Sie müssen ein Konto erstellen oder sich anmelden, um Ihren Kauf abzuschließen."
+      },
+      "paymentMethods": {
+        "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, MasterCard, American Express), PayPal und andere sichere Zahlungsmethoden."
+      },
+      "trackOrder": {
+        "question": "Wie kann ich meine Bestellung verfolgen?",
+        "answer": "Sobald Ihre Bestellung versandt wurde, erhalten Sie eine Sendungsverfolgungsnummer per E-Mail. Sie können den Status Ihrer Bestellung auch im Bereich \"Meine Bestellungen\" Ihres Kontos einsehen."
+      },
+      "returnPolicy": {
+        "question": "Wie lautet Ihre Rückgaberichtlinie?",
+        "answer": "Wir bieten eine 30-tägige Rückgaberichtlinie für die meisten Artikel. Produkte müssen unbenutzt und in der Originalverpackung sein. Weitere Details finden Sie auf unserer Rückgabeseite."
+      },
+      "shippingTime": {
+        "question": "Wie lange dauert der Versand?",
+        "answer": "Der Standardversand dauert in der Regel 5-7 Werktage. Expressversandoptionen sind an der Kasse für eine schnellere Lieferung verfügbar."
+      },
+      "international": {
+        "question": "Versenden Sie international?",
+        "answer": "Ja, wir versenden in viele Länder weltweit. Versandkosten und Lieferzeiten variieren je nach Standort. Internationale Bestellungen können Zollgebühren unterliegen."
+      },
+      "resetPassword": {
+        "question": "Wie setze ich mein Passwort zurück?",
+        "answer": "Klicken Sie auf der Anmeldeseite auf \"Passwort vergessen\". Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen Anweisungen zum Zurücksetzen Ihres Passworts."
+      },
+      "cancelOrder": {
+        "question": "Kann ich meine Bestellung stornieren oder ändern?",
+        "answer": "Bestellungen können innerhalb von 1 Stunde nach der Aufgabe storniert oder geändert werden. Danach wenden Sie sich bitte an den Kundensupport für Unterstützung."
+      },
+      "paymentSecurity": {
+        "question": "Sind meine Zahlungsdaten sicher?",
+        "answer": "Ja, wir verwenden branchenübliche SSL-Verschlüsselung zum Schutz Ihrer Zahlungsinformationen. Wir speichern niemals Ihre vollständigen Kreditkartendaten auf unseren Servern."
+      },
+      "contactSupport": {
+        "question": "Wie kontaktiere ich den Kundensupport?",
+        "answer": "Sie können uns per E-Mail unter {{supportEmail}}, telefonisch unter {{supportPhone}} oder über unsere Kontaktseite erreichen."
+      }
+    }
+  },
+  "productStatistics": {
+    "detail": {
+      "noProductId": "Keine Produkt-ID angegeben",
+      "notFound": "Produktstatistiken nicht gefunden",
+      "viewProduct": "Produkt anzeigen",
+      "performanceMetrics": "Leistungsmetriken",
+      "summary": "Zusammenfassung",
+      "totalRevenue": "Gesamtumsatz",
+      "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "errorLoadStatistics": "Fehler beim Laden der Produktstatistiken",
+      "errorPermissionDenied": "Sie haben keine Berechtigung, Produktstatistiken anzuzeigen",
+      "errorAuthRequired": "Bitte melden Sie sich an, um Produktstatistiken anzuzeigen",
+      "metrics": {
+        "views": "Gesamtansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "netAdditions": "Netto",
+        "cartRemovals": "Warenkorbentfernungen",
+        "purchases": "Gesamtkäufe",
+        "conversionRate": "Konversionsrate",
+        "viewsToPurchases": "Ansichten zu Käufen",
+        "cartConversionRate": "Warenkorb-Konversionsrate",
+        "cartToPurchases": "Warenkorb zu Käufen",
+        "abandonmentRate": "Abbruchrate",
+        "engagementScore": "Engagement-Score",
+        "viewsToCart": "Ansichten zu Warenkorb"
+      }
+    }
+  },
+  "admin": {
+    "panel": "Admin-Panel",
+    "managementConsole": "Verwaltungskonsole",
+    "dashboardNav": "Dashboard",
+    "dashboard": {
+      "title": "Admin-Dashboard",
+      "subtitle": "Analyseübersicht und Leistungsmetriken",
+      "period": "Zeitraum",
+      "refresh": "Aktualisieren",
+      "last7Days": "Letzte 7 Tage",
+      "last30Days": "Letzte 30 Tage",
+      "last90Days": "Letzte 90 Tage",
+      "lastYear": "Letztes Jahr",
+      "errorLoadingAnalytics": "Fehler beim Laden der Analysen",
+      "tryAgain": "Erneut versuchen",
+      "pleaseLogin": "Bitte melden Sie sich an, um auf das Admin-Dashboard zuzugreifen.",
+      "goToLogin": "Zur Anmeldung",
+      "accessDenied": "Zugriff verweigert. Sie haben keine Berechtigung, das Admin-Dashboard anzuzeigen.",
+      "goToHome": "Zur Startseite",
+      "metrics": {
+        "totalRevenue": "Gesamtumsatz",
+        "avgOrder": "Durchschn. Bestellung",
+        "totalOrders": "Bestellungen gesamt",
+        "completed": "abgeschlossen",
+        "newCustomers": "Neue Kunden",
+        "totalProducts": "Produkte gesamt",
+        "categories": "Kategorien",
+        "completedOrders": "Abgeschlossene Bestellungen",
+        "completionRate": "Abschlussrate",
+        "cartAbandonmentRate": "Warenkorbabbruchrate",
+        "abandonments": "Abbrüche",
+        "overallConversion": "Gesamtkonversion",
+        "viewToPurchase": "Ansicht zu Kauf"
+      },
+      "conversionFunnel": {
+        "title": "Conversion-Funnel",
+        "overallConversionRate": "Gesamtkonversionsrate",
+        "views": "Ansichten",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "rate": "Rate"
+      },
+      "categoryPerformance": {
+        "title": "Umsatz nach Kategorie",
+        "distribution": "Verteilung über {{count}} Kategorie",
+        "distribution_other": "Verteilung über {{count}} Kategorien",
+        "revenue": "Umsatz",
+        "percentage": "Prozentsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "orders": "Bestellungen",
+        "noCategoryData": "Keine Kategoriedaten verfügbar"
+      },
+      "topProducts": {
+        "title": "Top-Produkte nach Umsatz",
+        "showingTop": "Zeige das Top {{count}} Produkt",
+        "showingTop_other": "Zeige die Top {{count}} Produkte",
+        "rank": "Rang",
+        "productName": "Produktname",
+        "revenue": "Umsatz",
+        "unitsSold": "Verkaufte Einheiten",
+        "price": "Preis",
+        "noProductData": "Keine Produktdaten verfügbar"
+      }
+    },
+    "orders": "Bestellungen",
+    "ordersPage": {
+      "title": "Bestellungen",
+      "subtitle": "Alle Kundenbestellungen verwalten und verfolgen",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Die Admin-Bestellungsverwaltungsseite befindet sich derzeit in der Entwicklung.",
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "table": {
+        "orderNumber": "Bestellnummer",
+        "date": "Datum",
+        "items": "Artikel",
+        "status": "Status",
+        "total": "Gesamt",
+        "actions": "Aktionen",
+        "moreItems": "+{{count}} weitere",
+        "deletedProduct": "(Gelöschtes Produkt)",
+        "viewOrderDetails": "Details für Bestellung {{orderNumber}} anzeigen"
+      },
+      "emptyState": {
+        "noOrders": "Noch Keine Bestellungen",
+        "noOrdersDescription": "Es wurden noch keine Kundenbestellungen aufgegeben."
+      }
+    },
+    "products": "Produkte",
+    "categories": "Kategorien",
+    "brands": "Marken",
+    "users": "Benutzer",
+    "accounts": "Konten",
+    "accountsPage": {
+      "title": "Konten",
+      "subtitle": "Benutzerkonten und Berechtigungen verwalten",
+      "workInProgress": "In Bearbeitung",
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Kontoverwaltungsfunktionen werden bald verfügbar sein.",
+      "accountDetails": "Kontodetails",
+      "editAccount": "Konto bearbeiten",
+      "updateSuccess": "Konto erfolgreich aktualisiert",
+      "preferredCurrency": "Bevorzugte Währung",
+      "accountId": "Konto-ID",
+      "table": {
+        "user": "Benutzer",
+        "email": "E-Mail",
+        "username": "Benutzername",
+        "role": "Rolle",
+        "status": "Status",
+        "joined": "Beigetreten"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "roles": {
+        "admin": "ADMIN",
+        "merchant": "HÄNDLER",
+        "member": "MITGLIED"
+      },
+      "emptyState": {
+        "noAccounts": "Keine Konten gefunden"
+      },
+      "summary": {
+        "totalAccounts": "Konten Gesamt:"
+      },
+      "aria": {
+        "viewAccountDetails": "Details anzeigen für {{name}}",
+        "closeDrawer": "Kontodetails-Schublade schließen",
+        "closeEditDrawer": "Konto-Bearbeitungs-Schublade schließen"
+      }
+    },
+    "reports": "Berichte",
+    "contactMessages": "Kontaktnachrichten",
+    "tickets": "Tickets",
+    "newsletters": "Newsletter",
+    "newslettersPage": {
+      "title": "Newsletter-Abonnements",
+      "subtitle": "Alle Newsletter-Abonnements von Benutzern verwalten",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Diese Seite befindet sich derzeit in der Entwicklung. Einige Funktionen sind möglicherweise noch nicht vollständig funktionsfähig.",
+      "refresh": "Aktualisieren",
+      "table": {
+        "email": "E-Mail",
+        "status": "Status",
+        "createdAt": "Abonnementdatum",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv"
+      },
+      "actions": {
+        "view": "Details Anzeigen",
+        "deactivate": "Deaktivieren",
+        "activate": "Aktivieren"
+      },
+      "noNewsletters": "Keine Newsletter-Abonnements gefunden.",
+      "loading": "Lade Newsletter-Abonnements..."
+    },
+    "newsletterDetailPage": {
+      "notFound": "Newsletter-Abonnement nicht gefunden.",
+      "provideValidId": "Bitte geben Sie eine gültige Abonnement-ID an.",
+      "subscriptionInfo": "Abonnementinformationen",
+      "additionalInfo": "Zusätzliche Informationen",
+      "email": "E-Mail-Adresse",
+      "status": "Status",
+      "subscribedOn": "Abonniert am",
+      "subscriptionId": "Abonnement-ID",
+      "totalEmailsSent": "Gesendete E-Mails Gesamt",
+      "lastEmailSent": "Letzte E-Mail Gesendet",
+      "never": "Nie",
+      "subscriptionSource": "Abonnementquelle",
+      "website": "Webseite",
+      "dummyDataNotice": "Dies sind Testdaten. Echte Tracking-Funktionen werden bald implementiert."
+    },
+    "currency": "Währung",
+    "reportsPage": {
+      "title": "Berichte",
+      "subtitle": "Umfassende Geschäftsberichte anzeigen und analysieren",
+      "workInProgress": "In Arbeit",
+      "underDevelopment": "Die Admin-Berichtsseite befindet sich derzeit in der Entwicklung.",
+      "checkBackSoon": "Schauen Sie bald wieder vorbei!",
+      "generalStats": {
+        "title": "Allgemeine Statistiken",
+        "subtitle": "Aggregierte Statistiken über alle Produkte",
+        "totalProducts": "Gesamtzahl verfolgter Produkte",
+        "totalViews": "Gesamtaufrufe",
+        "totalCartAdditions": "Gesamtzahl Warenkorbhinzufügungen",
+        "totalPurchases": "Gesamtkäufe",
+        "views": "Aufrufe",
+        "cartAdditions": "Warenkorbhinzufügungen",
+        "purchases": "Käufe",
+        "count": "Anzahl",
+        "noData": "Keine allgemeinen Statistiken verfügbar"
+      },
+      "healthCheck": {
+        "title": "API-Gesundheitsstatus",
+        "subtitle": "Überwachen Sie die Gesundheit und Verfügbarkeit der API",
+        "checking": "API-Gesundheit wird überprüft...",
+        "healthy": "Gesund",
+        "unhealthy": "Ungesund",
+        "allSystemsOperational": "Alle Systeme betriebsbereit",
+        "systemIssuesDetected": "Systemprobleme erkannt",
+        "status": "Status"
+      }
+    },
+    "contactMessagesPage": {
+      "title": "Kontaktnachrichten",
+      "subtitle": "Alle Kontaktformular-Einsendungen anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "retry": "Erneut versuchen",
+      "totalMessages": "Gesamtnachrichten: {{count}} Nachricht",
+      "totalMessages_other": "Gesamtnachrichten: {{count}} Nachrichten",
+      "selectedMessages": "{{count}} ausgewählt",
+      "selectedMessages_other": "{{count}} ausgewählt",
+      "noMessages": "Noch keine Kontaktnachrichten",
+      "viewDetails": "Details anzeigen",
+      "messageDetails": "Nachrichtendetails",
+      "markAsRead": "Als gelesen markieren",
+      "markAsResolved": "Als gelöst markieren",
+      "deleteMessage": "Nachricht löschen",
+      "selectAllContacts": "Alle Kontakte auswählen",
+      "selectContact": "Kontakt {{name}} auswählen",
+      "toolbar": {
+        "messagesSelected": "{{count}} Nachricht ausgewählt",
+        "messagesSelected_other": "{{count}} Nachrichten ausgewählt",
+        "bulkMarkAsRead": "Als gelesen markieren",
+        "bulkMarkAsReadTooltip": "Ausgewählte als gelesen markieren",
+        "bulkMarkAsResolved": "Als gelöst markieren",
+        "bulkMarkAsResolvedTooltip": "Ausgewählte als gelöst markieren",
+        "bulkDelete": "Löschen",
+        "bulkDeleteTooltip": "Ausgewählte Nachrichten löschen"
+      },
+      "table": {
+        "name": "Name",
+        "email": "E-Mail",
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "status": "Status",
+        "date": "Datum",
+        "actions": "Aktionen",
+        "id": "Nachrichten-ID"
+      },
+      "deleteErrors": {
+        "failedToDelete": "Fehler beim Löschen von {{count}} Kontakt",
+        "failedToDelete_other": "Fehler beim Löschen von {{count}} Kontakten"
+      }
+    },
+    "ticketsPage": {
+      "title": "Support-Tickets",
+      "subtitle": "Alle Support-Tickets anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "search": "Tickets suchen",
+      "searchPlaceholder": "Tickets suchen...",
+      "status": "Status",
+      "priority": "Priorität",
+      "all": "Alle",
+      "allStatuses": "Alle Status",
+      "allPriorities": "Alle Prioritäten",
+      "statusOpen": "Offen",
+      "statusInProgress": "In Bearbeitung",
+      "statusResolved": "Gelöst",
+      "statusClosed": "Geschlossen",
+      "priorityLow": "Niedrig",
+      "priorityMedium": "Mittel",
+      "priorityHigh": "Hoch",
+      "priorityUrgent": "Dringend",
+      "totalTickets": "Gesamttickets: {{count}} Ticket",
+      "totalTickets_other": "Gesamttickets: {{count}} Tickets",
+      "noTickets": "Noch keine Support-Tickets",
+      "noTicketsFound": "Keine Tickets gefunden",
+      "tryAdjustingFilters": "Versuchen Sie, Ihre Filter anzupassen",
+      "noTicketsCreated": "Es wurden noch keine Tickets erstellt",
+      "unassigned": "Nicht zugewiesen",
+      "viewDetails": "Details anzeigen",
+      "ticketDetails": "Ticket-Details",
+      "viewFullTicket": "Vollständiges Ticket anzeigen",
+      "pageInfo": "Seite {{current}} von {{total}}",
+      "stats": {
+        "totalTickets": "Gesamttickets",
+        "openTickets": "Offen",
+        "inProgress": "In Bearbeitung",
+        "resolved": "Gelöst",
+        "urgent": "Dringend",
+        "avgResponseTime": "Durchschn. Antwortzeit",
+        "fromLastMonth": "vom letzten Monat",
+        "needsAttention": "Benötigt Aufmerksamkeit",
+        "beingWorkedOn": "In Bearbeitung",
+        "thisMonth": "Diesen Monat",
+        "requiresImmediate": "Erfordert sofortige Maßnahmen",
+        "faster": "schneller"
+      },
+      "table": {
+        "id": "Ticket-ID",
+        "title": "Titel",
+        "description": "Beschreibung",
+        "status": "Status",
+        "priority": "Priorität",
+        "reporter": "Melder",
+        "assignee": "Zugewiesen",
+        "actions": "Aktionen"
+      },
+      "deleteTicket": "Ticket Löschen",
+      "deleteTicketConfirm": "Sind Sie sicher, dass Sie <strong>{{ticketTitle}}</strong> löschen möchten?",
+      "deleteTicketWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Wird gelöscht...",
+      "deleteSuccess": "Ticket erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut."
+    },
+    "createTicketPage": {
+      "backToTickets": "Zurück zu Tickets",
+      "title": "Support-Ticket Erstellen",
+      "subtitle": "Beschreiben Sie Ihr Problem und wir melden uns so schnell wie möglich bei Ihnen",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Kurze Zusammenfassung Ihres Problems",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Geben Sie detaillierte Informationen zu Ihrem Problem an...",
+      "priorityLabel": "Priorität",
+      "statusLabel": "Status",
+      "priorityLow": "Niedrig",
+      "priorityMedium": "Mittel",
+      "priorityHigh": "Hoch",
+      "priorityUrgent": "Dringend",
+      "statusOpen": "Offen",
+      "statusInProgress": "In Bearbeitung",
+      "statusResolved": "Gelöst",
+      "statusClosed": "Geschlossen",
+      "cancel": "Abbrechen",
+      "createTicket": "Ticket Erstellen",
+      "creating": "Wird erstellt...",
+      "successMessage": "Ticket erfolgreich erstellt! Weiterleitung...",
+      "errorMessage": "Fehler beim Erstellen des Tickets. Bitte versuchen Sie es erneut.",
+      "authenticationError": "Sie müssen angemeldet sein, um ein Ticket zu erstellen. Bitte melden Sie sich an und versuchen Sie es erneut.",
+      "loadingAuthState": "Bitte warten Sie, während wir Ihre Authentifizierung überprüfen...",
+      "validation": {
+        "titleMinLength": "Der Titel muss mindestens 5 Zeichen lang sein",
+        "titleMaxLength": "Der Titel ist zu lang",
+        "descriptionMinLength": "Die Beschreibung muss mindestens 20 Zeichen lang sein",
+        "descriptionMaxLength": "Die Beschreibung ist zu lang"
+      }
+    },
+    "ticketDetailPage": {
+      "backToTickets": "Zurück zu Tickets",
+      "description": "Beschreibung",
+      "status": "Status",
+      "priority": "Priorität",
+      "lastUpdated": "Zuletzt Aktualisiert",
+      "comments": "Kommentare ({{count}})",
+      "noComments": "Noch keine Kommentare. Seien Sie der Erste, der kommentiert!",
+      "user": "Benutzer",
+      "addComment": "Kommentar Hinzufügen",
+      "commentPlaceholder": "Schreiben Sie hier Ihren Kommentar...",
+      "submitComment": "Kommentar Absenden",
+      "submitting": "Wird gesendet...",
+      "created": "Erstellt {{date}}",
+      "notAvailable": "N/V",
+      "ticketNotFound": "Ticket nicht gefunden",
+      "loadError": "Fehler beim Laden der Ticket-Details. Bitte versuchen Sie es erneut.",
+      "commentError": "Fehler beim Absenden des Kommentars. Bitte versuchen Sie es erneut.",
+      "editTicket": "Ticket Bearbeiten",
+      "deleteTicket": "Ticket Löschen",
+      "ticketActions": "Ticket-Aktionen",
+      "ticketInformation": "Ticket-Informationen",
+      "createdLabel": "Erstellt",
+      "lastUpdatedLabel": "Zuletzt Aktualisiert",
+      "ticketId": "Ticket-ID",
+      "clickToCopy": "Klicken zum Kopieren",
+      "reporter": "Melder",
+      "assignee": "Zugewiesen an",
+      "supportAgent": "Support-Mitarbeiter",
+      "copySuccess": "Ticket-ID in die Zwischenablage kopiert",
+      "copyError": "Fehler beim Kopieren in die Zwischenablage",
+      "deleteTicketConfirm": "Sind Sie sicher, dass Sie <strong>{{ticketTitle}}</strong> löschen möchten?",
+      "deleteTicketWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Wird gelöscht...",
+      "deleteSuccess": "Ticket erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen des Tickets. Bitte versuchen Sie es erneut.",
+      "saveChanges": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "updateSuccess": "Ticket erfolgreich aktualisiert!",
+      "updateError": "Fehler beim Aktualisieren des Tickets. Bitte versuchen Sie es erneut.",
+      "updateStateError": "Ticket kann nicht aktualisiert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut."
+    },
+    "settings": "Einstellungen",
+    "settingsPage": {
+      "title": "Einstellungen",
+      "subtitle": "Anwendungseinstellungen und Konfigurationen verwalten",
+      "appearance": "Erscheinungsbild",
+      "appearanceDescription": "Passen Sie das Aussehen des Admin-Dashboards an",
+      "themeMode": "Themenmodus",
+      "currentlyLight": "Verwendet derzeit helles Theme",
+      "currentlyDark": "Verwendet derzeit dunkles Theme",
+      "language": "Sprache",
+      "languageDescription": "Wählen Sie Ihre bevorzugte Sprache für das Admin-Dashboard",
+      "selectLanguage": "Sprache Auswählen",
+      "currentLanguage": "Verwendet derzeit {{language}}",
+      "languageChanged": "Sprache erfolgreich geändert",
+      "languageChangeFailed": "Sprache konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+      "notifications": "Benachrichtigungen",
+      "notificationsDescription": "Benachrichtigungseinstellungen und Toast-Nachrichteneinstellungen konfigurieren",
+      "toastDuration": "Toast-Dauer",
+      "selectDuration": "Dauer Auswählen",
+      "currentToastDuration": "Derzeit auf {{duration}} Sekunden eingestellt",
+      "toastDurationChanged": "Toast-Dauer erfolgreich geändert",
+      "toastDurationChangeFailed": "Toast-Dauer konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+      "durationSeconds": "{{count}} Sekunde",
+      "durationSeconds_other": "{{count}} Sekunden",
+      "moreSettings": "Weitere Einstellungen Demnächst",
+      "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
+    },
+    "productStatistics": {
+      "title": "Produktstatistiken",
+      "subtitle": "Detaillierte Analysen und Leistungsmetriken für alle Produkte anzeigen",
+      "refresh": "Statistiken aktualisieren",
+      "viewAllProducts": "Alle Produkte anzeigen",
+      "viewStatisticsTable": "Statistiktabelle anzeigen",
+      "noData": "Keine Produktstatistiken verfügbar",
+      "noDataOnPage": "Keine Produkte auf dieser Seite. Bitte navigieren Sie zu einer anderen Seite.",
+      "bestSelling": {
+        "title": "Meistverkaufte Produkte",
+        "subtitle": "Top {{count}} Produkte nach Kaufanzahl",
+        "purchases": "Käufe",
+        "price": "Preis",
+        "purchaseCount": "Kaufanzahl",
+        "noData": "Keine Daten zu meistverkauften Produkten verfügbar"
+      },
+      "mostViewed": {
+        "title": "Meistgesehene Produkte",
+        "subtitle": "Top {{count}} Produkte nach Aufrufanzahl",
+        "views": "Aufrufe",
+        "price": "Preis",
+        "viewCount": "Aufrufanzahl",
+        "noData": "Keine Daten zu meistgesehenen Produkten verfügbar"
+      },
+      "mostAddedToCart": {
+        "title": "Am häufigsten in den Warenkorb gelegte Produkte",
+        "subtitle": "Top {{count}} Produkte nach Warenkorbhinzufügungen",
+        "cartAdds": "Warenkorbhinzufügungen",
+        "price": "Preis",
+        "cartAddCount": "Anzahl der Warenkorbhinzufügungen",
+        "noData": "Keine Daten zu am häufigsten in den Warenkorb gelegten Produkten verfügbar"
+      },
+      "table": {
+        "title": "Detaillierte Produktanalyse",
+        "description": "Umfassende Ansicht der Produktleistungsmetriken einschließlich Aufrufe, Warenkorbinteraktionen und Käufe",
+        "productName": "Produktname",
+        "price": "Preis",
+        "views": "Aufrufe",
+        "cartAdds": "Zum Warenkorb hinzugefügt",
+        "cartRemoves": "Aus Warenkorb entfernt",
+        "purchases": "Käufe",
+        "actions": "Aktionen",
+        "viewProduct": "Produktdetails anzeigen",
+        "rowsPerPage": "Zeilen pro Seite"
+      },
+      "productStatisticsView": {
+        "title": "Produktstatistiken - Tabellenansicht",
+        "subtitle": "Umfassende Analyse der Produktleistungsmetriken mit berechneten Konversionsraten",
+        "refresh": "Statistiken aktualisieren",
+        "searchPlaceholder": "Produkte suchen...",
+        "productName": "Produktname",
+        "price": "Preis",
+        "views": "Aufrufe",
+        "cartAdds": "Zum Warenkorb Hinzugefügt",
+        "cartRemoves": "Aus Warenkorb Entfernt",
+        "purchases": "Käufe",
+        "conversionRate": "Konversionsrate",
+        "cartConversion": "Warenkorbkonversion",
+        "abandonmentRate": "Abbruchrate",
+        "actions": "Aktionen",
+        "viewProduct": "Produkt Anzeigen",
+        "viewStatistics": "Detaillierte Statistiken anzeigen",
+        "noData": "Keine Produktstatistiken verfügbar",
+        "noResultsFound": "Keine Produkte gefunden, die Ihrer Suche entsprechen",
+        "rowsPerPage": "Zeilen pro Seite"
+      }
+    },
+    "productPerformance": {
+      "title": "Produktleistungsanalyse",
+      "subtitle": "Leistungsmetriken für die letzten {{days}} Tage",
+      "noData": "Keine Produktleistungsdaten verfügbar",
+      "lowPerforming": "Geringe Leistung",
+      "highAbandonment": "Hohe Abbruchrate",
+      "lowConversion": "Niedrige Konversionsrate",
+      "highEngagement": "Hohes Engagement",
+      "purchases": "Käufe",
+      "views": "Aufrufe",
+      "cartAdds": "Zum Warenkorb hinzugefügt",
+      "abandonments": "Abbrüche",
+      "abandonmentRate": "Abbruchrate",
+      "conversionRate": "Konversionsrate",
+      "engagementRatio": "Engagement-Verhältnis"
+    },
+    "categoriesPage": {
+      "title": "Kategorien",
+      "subtitle": "Produktkategorien verwalten",
+      "refresh": "Kategorien aktualisieren",
+      "createCategory": "Kategorie erstellen",
+      "categoryDetails": "Kategoriedetails",
+      "errorLoadCategories": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "errorUpdateCategory": "Kategorie konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorCreateCategory": "Kategorie konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+      "errorDeleteCategory": "Kategorie konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "noCategories": "Keine Kategorien verfügbar",
+      "editCategory": "Kategorie bearbeiten",
+      "newCategory": "Neue Kategorie",
+      "deleteCategory": "Kategorie löschen",
+      "deleteCategoryConfirm": "Möchten Sie wirklich <strong>{{categoryName}}</strong> löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteCategoryWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Löschen...",
+      "deleteSuccess": "Kategorie erfolgreich gelöscht",
+      "table": {
+        "image": "Bild",
+        "categoryName": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "id": "ID",
+        "actions": "Aktionen"
+      },
+      "form": {
+        "categoryName": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "slug": "Slug",
+        "noParent": "Keine (Oberste Ebene)",
+        "cancel": "Abbrechen",
+        "save": "Änderungen speichern",
+        "create": "Kategorie erstellen",
+        "saving": "Speichern...",
+        "creating": "Erstellen...",
+        "saveSuccess": "Kategorie erfolgreich aktualisiert!",
+        "createSuccess": "Kategorie erfolgreich erstellt!",
+        "uploadInstructions": "Klicken Sie auf das Kamera-Symbol, um ein Bild hochzuladen",
+        "uploadFormats": "(JPEG, PNG, GIF, WebP - Max 5MB)",
+        "invalidFileType": "Ungültiger Dateityp. Bitte wählen Sie ein JPEG-, PNG-, GIF- oder WebP-Bild.",
+        "fileSizeExceeded": "Die Dateigröße überschreitet das Limit von 5MB. Die ausgewählte Datei ist {{size}}MB groß.",
+        "uploadFailed": "Fehler beim Hochladen des Bildes. Bitte versuchen Sie es erneut.",
+        "authenticationFailed": "Authentifizierung fehlgeschlagen. Bitte melden Sie sich erneut an."
+      },
+      "aria": {
+        "viewCategoryDetails": "Kategoriedetails anzeigen",
+        "closeCategoryDetails": "Kategoriedetails-Drawer schließen",
+        "uploadCategoryImage": "Kategoriebild hochladen",
+        "removeCategoryImage": "Kategoriebild entfernen",
+        "categoryImageInput": "Kategoriebild-Dateieingabe"
+      }
+    },
+    "currencyPage": {
+      "title": "Währungsverwaltung",
+      "subtitle": "Unterstützte Währungen anzeigen und verwalten",
+      "refresh": "Aktualisieren",
+      "addCurrency": "Währung hinzufügen",
+      "createCurrency": "Währung erstellen",
+      "editCurrency": "Währung bearbeiten",
+      "closeDrawer": "Währungserstellungs-Drawer schließen",
+      "closeEditDrawer": "Währungsbearbeitungs-Drawer schließen",
+      "wipBanner": "Diese Seite befindet sich derzeit in der Entwicklung. Vollständige Währungsverwaltungsfunktionen werden bald verfügbar sein.",
+      "noCurrencies": "Keine Währungen verfügbar",
+      "deleteCurrency": "Währung löschen",
+      "deleteCurrencyConfirm": "Möchten Sie <strong>{{currencyName}} ({{currencyCode}})</strong> wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteSuccess": "Währung erfolgreich gelöscht",
+      "errorDeleteCurrency": "Fehler beim Löschen der Währung",
+      "deleting": "Wird gelöscht...",
+      "createSuccess": "Währung erfolgreich erstellt",
+      "errorCreateCurrency": "Fehler beim Erstellen der Währung",
+      "updateSuccess": "Währung erfolgreich aktualisiert",
+      "errorUpdateCurrency": "Fehler beim Aktualisieren der Währung",
+      "currencyDeletedDuringEdit": "Die Währung, die Sie bearbeitet haben, wurde gelöscht",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "symbol": "Symbol",
+        "id": "ID",
+        "actions": "Aktionen",
+        "createdAt": "Erstellt am",
+        "updatedAt": "Aktualisiert am"
+      },
+      "form": {
+        "code": "Währungscode",
+        "codePlaceholder": "z.B. USD",
+        "codeHelper": "Geben Sie den 3-stelligen Währungscode ein",
+        "name": "Währungsname",
+        "namePlaceholder": "z.B. US-Dollar",
+        "nameHelper": "Geben Sie den vollständigen Namen der Währung ein",
+        "symbol": "Währungssymbol",
+        "symbolPlaceholder": "z.B. $",
+        "symbolHelper": "Geben Sie das Währungssymbol ein",
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "creating": "Wird erstellt...",
+        "update": "Aktualisieren",
+        "updating": "Wird aktualisiert..."
+      }
+    },
+    "brandsPage": {
+      "title": "Marken",
+      "subtitle": "Produktmarken verwalten",
+      "refresh": "Marken aktualisieren",
+      "addBrand": "Marke hinzufügen",
+      "errorLoadBrands": "Marken konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "errorUpdateBrand": "Marke konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
+      "errorCreateBrand": "Marke konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+      "errorDeleteBrand": "Marke konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+      "errorUploadImage": "Bild konnte nicht hochgeladen werden. Bitte versuchen Sie es erneut.",
+      "noBrands": "Keine Marken verfügbar",
+      "brandDetails": "Markendetails",
+      "editBrand": "Marke bearbeiten",
+      "createBrand": "Neue Marke erstellen",
+      "deleteBrand": "Marke löschen",
+      "deleteBrandConfirm": "Möchten Sie <strong>{{brandName}}</strong> wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Löschen...",
+      "deleteSuccess": "Marke erfolgreich gelöscht",
+      "table": {
+        "image": "Bild",
+        "brandName": "Markenname",
+        "description": "Beschreibung",
+        "id": "ID",
+        "actions": "Aktionen"
+      },
+      "form": {
+        "brandName": "Markenname",
+        "description": "Beschreibung",
+        "cancel": "Abbrechen",
+        "save": "Änderungen speichern",
+        "saving": "Speichern...",
+        "saveSuccess": "Marke erfolgreich aktualisiert!",
+        "create": "Marke erstellen",
+        "creating": "Erstellen...",
+        "createSuccess": "Marke erfolgreich erstellt!",
+        "newBrandPlaceholder": "Neue Marke"
+      }
+    },
+    "allProducts": {
+      "title": "Alle Produkte",
+      "subtitle": "Verwalten Sie alle Produkte in Ihrem Shop",
+      "refresh": "Aktualisieren",
+      "addProduct": "Produkt hinzufügen",
+      "editProduct": "Produkt bearbeiten",
+      "createProduct": "Neues Produkt erstellen",
+      "searchPlaceholder": "Produkte nach Name suchen...",
+      "search": "Suchen",
+      "errorLoadProducts": "Fehler beim Laden der Produkte. Bitte versuchen Sie es erneut.",
+      "errorSearchProducts": "Fehler beim Suchen der Produkte. Bitte versuchen Sie es erneut.",
+      "errorDeleteProduct": "Fehler beim Löschen des Produkts. Bitte versuchen Sie es erneut.",
+      "errorUpdateProduct": "Fehler beim Aktualisieren des Produkts. Bitte versuchen Sie es erneut.",
+      "errorCreateProduct": "Fehler beim Erstellen des Produkts. Bitte versuchen Sie es erneut.",
+      "errorLoadBrandsCategories": "Fehler beim Laden der Marken und Kategorien. Bitte versuchen Sie es erneut.",
+      "errorPermissionDenied": "Sie haben keine Berechtigung, Produkte anzuzeigen.",
+      "errorAuthRequired": "Bitte melden Sie sich an, um Produkte anzuzeigen.",
+      "errorUpdatePermissionDenied": "Sie haben keine Berechtigung, dieses Produkt zu aktualisieren.",
+      "errorUpdateAuthRequired": "Bitte melden Sie sich an, um Produkte zu aktualisieren.",
+      "errorDeletePermissionDenied": "Sie haben keine Berechtigung, dieses Produkt zu löschen.",
+      "errorDeleteAuthRequired": "Bitte melden Sie sich an, um Produkte zu löschen.",
+      "errorCreatePermissionDenied": "Sie haben keine Berechtigung, Produkte zu erstellen.",
+      "errorCreateAuthRequired": "Bitte melden Sie sich an, um Produkte zu erstellen.",
+      "errorCreateValidationError": "Ungültige Produktdaten. Bitte überprüfen Sie Ihre Eingaben.",
+      "errorProductNotFound": "Produkt nicht gefunden.",
+      "deleteProduct": "Produkt löschen",
+      "deleteProductConfirm": "Sind Sie sicher, dass Sie löschen möchten",
+      "deleteProductWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Löschen...",
+      "deleteSuccess": "Produkt erfolgreich gelöscht",
+      "table": {
+        "image": "Bild",
+        "productName": "Produktname",
+        "category": "Kategorie",
+        "price": "Preis",
+        "stock": "Lagerbestand",
+        "rating": "Bewertung",
+        "status": "Status",
+        "actions": "Aktionen",
+        "inStock": "Auf Lager",
+        "outOfStock": "Nicht auf Lager",
+        "viewProduct": "Produkt anzeigen",
+        "editProduct": "Produkt bearbeiten",
+        "deleteProduct": "Produkt löschen"
+      },
+      "form": {
+        "productName": "Produktname",
+        "description": "Beschreibung",
+        "price": "Preis",
+        "stock": "Lagerbestand",
+        "category": "Kategorie",
+        "categoryReadOnly": "Kategorie kann nicht geändert werden (schreibgeschützt)",
+        "productId": "Produkt-ID",
+        "rating": "Bewertung",
+        "reviews": "Bewertungen",
+        "reviewCount": "{{count}} Bewertung",
+        "reviewCount_other": "{{count}} Bewertungen",
+        "createdAt": "Erstellt am",
+        "cancel": "Abbrechen",
+        "save": "Änderungen speichern",
+        "saving": "Speichern...",
+        "saveSuccess": "Produkt erfolgreich gespeichert!",
+        "create": "Produkt erstellen",
+        "creating": "Erstellen...",
+        "createSuccess": "Produkt erfolgreich erstellt!",
+        "createInfo": "Hinweis: Kategorie, Marke und Bilder müssen nach der Erstellung festgelegt werden.",
+        "errorInvalidPrice": "Bitte geben Sie einen gültigen Preis ein (muss eine positive Zahl sein)",
+        "errorInvalidStock": "Bitte geben Sie eine gültige Lagerbestandsmenge ein (muss eine nicht-negative ganze Zahl sein)",
+        "errorInvalidName": "Produktname ist erforderlich",
+        "errorInvalidDescription": "Produktbeschreibung ist erforderlich",
+        "errorInvalidBrand": "Bitte wählen Sie eine Marke aus",
+        "errorInvalidCategory": "Bitte wählen Sie eine Kategorie aus",
+        "brand": "Marke"
+      },
+      "noProducts": "Keine Produkte gefunden",
+      "noProductsAvailable": "Keine Produkte verfügbar",
+      "searchResults": "Zeige {{count}} Suchergebnisse (begrenzt auf die ersten 100 Treffer)",
+      "searchHelperText": "Suchergebnisse werden während der Eingabe angezeigt",
+      "productsPerPage": "Produkte pro Seite:"
+    },
+    "customerSegments": {
+      "title": "Kundensegmente",
+      "subtitle": "Verteilung von {{count}} Kunden auf Segmente",
+      "noData": "Keine Kundensegmentdaten verfügbar",
+      "customers": "Kunden",
+      "percentage": "Prozentsatz",
+      "revenue": "Umsatz",
+      "avgOrderValue": "Durchschnittlicher Bestellwert",
+      "avgDaysSinceLastOrder": "Durchschnittliche Tage Seit Letzter Bestellung",
+      "segments": {
+        "newCustomers": "Neue Kunden",
+        "newCustomersDesc": "1 Bestellung",
+        "repeatCustomers": "Wiederkehrende Kunden",
+        "repeatCustomersDesc": "2-5 Bestellungen",
+        "loyalCustomers": "Treue Kunden",
+        "loyalCustomersDesc": "6-10 Bestellungen",
+        "vipCustomers": "VIP-Kunden",
+        "vipCustomersDesc": "11+ Bestellungen",
+        "atRisk": "Gefährdet",
+        "atRiskDesc": "Keine Bestellung seit 90+ Tagen",
+        "churned": "Verloren",
+        "churnedDesc": "Keine Bestellung seit 180+ Tagen"
+      }
+    },
+    "newVsReturning": {
+      "title": "Neue vs Wiederkehrende Kunden",
+      "noData": "Keine Daten verfügbar",
+      "totalNewCustomers": "Gesamtzahl Neuer Kunden",
+      "totalReturningCustomers": "Gesamtzahl Wiederkehrender Kunden",
+      "newCustomerRate": "Neue Kundenrate",
+      "returningCustomerRate": "Wiederkehrende Kundenrate",
+      "newCustomers": "Neue Kunden",
+      "returningCustomers": "Wiederkehrende Kunden",
+      "total": "Gesamt",
+      "customers": "Kunden",
+      "orders": "Bestellungen",
+      "revenue": "Umsatz",
+      "avgOrderValue": "Durchschnittlicher Bestellwert",
+      "newCustomerRevenue": "Umsatz Neuer Kunden",
+      "returningCustomerRevenue": "Umsatz Wiederkehrender Kunden",
+      "ofTotal": "vom Gesamt"
+    },
+    "customerPurchaseBehavior": {
+      "title": "Kundenkaufverhalten",
+      "noData": "Keine Daten zum Kundenkaufverhalten verfügbar",
+      "analysisPeriod": "Analysezeitraum",
+      "activeCustomers": "Angezeigte Top-Kunden",
+      "days": "Tage",
+      "tabs": {
+        "mostActiveCustomers": "Aktivste Kunden",
+        "categoryPreferences": "Kategoriepräferenzen",
+        "paymentMethods": "Zahlungsmethoden"
+      },
+      "table": {
+        "customer": "Kunde",
+        "orders": "Bestellungen",
+        "totalSpent": "Gesamtausgaben",
+        "favoriteCategory": "Lieblingskategorie",
+        "paymentMethod": "Zahlungsmethode"
+      },
+      "tooltip": {
+        "customers": "Kunden",
+        "orders": "Bestellungen",
+        "avgOrderValue": "Durchschnittlicher Bestellwert",
+        "percentage": "Prozentsatz"
+      },
+      "chart": {
+        "uniqueCustomers": "Eindeutige Kunden"
+      },
+      "emptyStates": {
+        "noCategoryData": "Keine Kategoriepräferenzdaten für den ausgewählten Zeitraum verfügbar",
+        "noPaymentData": "Keine Zahlungsmethodendaten für den ausgewählten Zeitraum verfügbar"
+      }
+    },
+    "churnRisk": {
+      "title": "Kundenabwanderungsrisiko",
+      "noData": "Keine Kunden mit Abwanderungsrisiko",
+      "notAvailable": "k. A.",
+      "summary": {
+        "totalAtRisk": "Gesamt Gefährdet",
+        "highRisk": "Hohes Risiko",
+        "mediumRisk": "Mittleres Risiko",
+        "potentialRevenueAtRisk": "Potenzielle Umsätze in Gefahr"
+      },
+      "table": {
+        "customer": "Kunde",
+        "lastPurchase": "Letzter Kauf",
+        "daysInactive": "Tage Inaktiv",
+        "lifetimeOrders": "Gesamtbestellungen",
+        "lifetimeRevenue": "Gesamtumsatz",
+        "riskLevel": "Risikoniveau",
+        "avgDaysBetweenOrders": "Durchschn. Tage Zwischen Bestellungen"
+      },
+      "riskLevels": {
+        "high": "HOCH",
+        "medium": "MITTEL"
+      }
+    }
+  },
+  "returns": {
+    "title": "Rücksendungen & Rückerstattungen",
+    "satisfactionAlert": "Wir möchten, dass Sie mit Ihrem Kauf vollständig zufrieden sind. Wenn Sie mit Ihrer Bestellung nicht zufrieden sind, sind wir hier, um zu helfen.",
+    "returnPolicy": {
+      "title": "Rückgaberichtlinie",
+      "intro": "Wir bieten eine 30-tägige Rückgaberichtlinie für die meisten Artikel an. Um für eine Rücksendung berechtigt zu sein, muss Ihr Artikel:",
+      "conditions": {
+        "unused": "Unbenutzt und in demselben Zustand sein, in dem Sie ihn erhalten haben",
+        "originalPackaging": "In der Originalverpackung sein",
+        "receipt": "Mit dem Kassenbon oder Kaufnachweis versehen sein"
+      }
+    },
+    "nonReturnableItems": {
+      "title": "Nicht Rücksendbare Artikel",
+      "intro": "Bestimmte Artikel können nicht zurückgegeben werden, einschließlich:",
+      "items": {
+        "perishable": "Verderbliche Waren (Lebensmittel, Blumen usw.)",
+        "custom": "Maßgefertigte oder personalisierte Artikel",
+        "personalCare": "Körperpflegeartikel (aus hygienischen Gründen)",
+        "hazardous": "Gefahrstoffe",
+        "giftCards": "Geschenkkarten",
+        "digital": "Herunterladbare Software oder digitale Produkte"
+      }
+    },
+    "howToReturn": {
+      "title": "So Senden Sie Einen Artikel Zurück",
+      "steps": {
+        "step1": "Melden Sie sich in Ihrem Konto an und gehen Sie zu \"Meine Bestellungen\"",
+        "step2": "Wählen Sie die Bestellung aus, die den Artikel enthält, den Sie zurücksenden möchten",
+        "step3": "Klicken Sie auf \"Rücksendung Anfordern\" und folgen Sie den Anweisungen",
+        "step4": "Verpacken Sie den Artikel sicher in seiner Originalverpackung",
+        "step5": "Senden Sie den Artikel an die in Ihrer Rücksendebestätigung angegebene Adresse"
+      }
+    },
+    "refunds": {
+      "title": "Rückerstattungen",
+      "inspection": "Sobald wir Ihre Rücksendung erhalten haben, werden wir den Artikel prüfen und Sie über die Genehmigung oder Ablehnung Ihrer Rückerstattung informieren.",
+      "processing": "Bei Genehmigung wird Ihre Rückerstattung bearbeitet und eine Gutschrift wird automatisch innerhalb von 5-10 Werktagen auf Ihre ursprüngliche Zahlungsmethode angewendet."
+    },
+    "exchanges": {
+      "title": "Umtausch",
+      "policy": "Wir ersetzen Artikel nur, wenn sie defekt oder beschädigt sind. Wenn Sie einen Artikel gegen dasselbe Produkt umtauschen müssen, kontaktieren Sie uns bitte unter {{supportEmail}}."
+    },
+    "shippingCosts": {
+      "title": "Versandkosten",
+      "customerResponsibility": "Sie sind für die Zahlung Ihrer eigenen Versandkosten für die Rücksendung Ihres Artikels verantwortlich. Versandkosten sind nicht erstattungsfähig. Wenn Sie eine Rückerstattung erhalten, werden die Kosten für den Rückversand von Ihrer Rückerstattung abgezogen.",
+      "defectiveCoverage": "Wenn der Artikel bei Ankunft defekt oder beschädigt war, übernehmen wir die Rücksendekosten."
+    },
+    "needHelp": {
+      "title": "Brauchen Sie Hilfe?",
+      "message": "Wenn Sie Fragen zu unserer Rückgaberichtlinie haben, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
+    },
+    "contact": {
+      "email": "E-Mail",
+      "phone": "Telefon"
+    },
+    "stepStatus": {
+      "completed": "Abgeschlossener Schritt",
+      "active": "Aktiver Schritt",
+      "error": "Schritt mit Fehler",
+      "inactive": "Inaktiver Schritt"
+    }
+  },
+  "shipping": {
+    "title": "Versandinformationen",
+    "intro": "Wir bieten verschiedene Versandoptionen an, um Ihren Bedürfnissen gerecht zu werden. Alle Bestellungen werden innerhalb von 1-2 Werktagen bearbeitet (ausgenommen Wochenenden und Feiertage).",
+    "domesticShipping": {
+      "title": "Inlandsversand (Vereinigte Staaten)",
+      "freeShippingNote": "* Kostenloser Standardversand bei Bestellungen ab 50 $ oder mehr"
+    },
+    "internationalShipping": {
+      "title": "Internationaler Versand",
+      "customsNote": "* Internationale Bestellungen können Zollgebühren und Einfuhrzöllen unterliegen"
+    },
+    "table": {
+      "shippingMethod": "Versandart",
+      "deliveryTime": "Lieferzeit",
+      "cost": "Kosten",
+      "region": "Region",
+      "startingCost": "Startkosten"
+    },
+    "fromCost": "Ab {{cost}}",
+    "methods": {
+      "standard": "Standardversand",
+      "express": "Expressversand",
+      "overnight": "Über-Nacht-Versand"
+    },
+    "deliveryTimes": {
+      "standard": "5-7 Werktage",
+      "express": "2-3 Werktage",
+      "overnight": "1 Werktag",
+      "canada": "7-14 Werktage",
+      "europe": "10-21 Werktage",
+      "asia": "10-21 Werktage",
+      "australia": "10-21 Werktage",
+      "restOfWorld": "14-28 Werktage"
+    },
+    "regions": {
+      "canada": "Kanada",
+      "europe": "Europa",
+      "asia": "Asien",
+      "australia": "Australien",
+      "restOfWorld": "Rest der Welt"
+    },
+    "orderTracking": {
+      "title": "Sendungsverfolgung",
+      "paragraph1": "Sobald Ihre Bestellung versandt wurde, erhalten Sie eine Bestätigungs-E-Mail mit einer Sendungsverfolgungsnummer. Sie können Ihr Paket mit dieser Nummer auf unserer Website oder der Website des Versanddienstleisters verfolgen.",
+      "paragraph2": "Sie können Ihren Bestellstatus auch jederzeit einsehen, indem Sie sich in Ihr Konto einloggen und den Bereich \"Meine Bestellungen\" besuchen."
+    },
+    "restrictions": {
+      "title": "Versandbeschränkungen",
+      "paragraph1": "Wir versenden derzeit in die meisten Länder weltweit. Einige Artikel können jedoch aufgrund von Größe, Gewicht oder lokalen Vorschriften Versandbeschränkungen unterliegen. Diese Beschränkungen werden auf der Produktseite vermerkt.",
+      "paragraph2": "Wir versenden bestimmte Artikel nicht an Postfächer. Bitte geben Sie nach Möglichkeit eine physische Adresse für die Lieferung an."
+    },
+    "damagedOrLost": {
+      "title": "Beschädigte oder Verlorene Pakete",
+      "paragraph": "Wenn Ihr Paket beschädigt ankommt oder während des Transports verloren geht, kontaktieren Sie uns bitte umgehend unter {{supportEmail}}. Wir werden mit dem Versanddienstleister zusammenarbeiten, um das Problem zu lösen und sicherzustellen, dass Sie Ihre Bestellung erhalten."
+    },
+    "questionsAboutShipping": {
+      "title": "Fragen zum Versand?",
+      "paragraph": "Wenn Sie Fragen zum Versand haben oder Hilfe bei Ihrer Bestellung benötigen, wenden Sie sich bitte an unser Kundensupport-Team unter {{supportEmail}} oder rufen Sie {{supportPhone}} an."
+    }
+  }
+}

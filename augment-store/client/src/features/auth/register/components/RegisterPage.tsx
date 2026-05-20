@@ -1,0 +1,525 @@
+import { useState } from 'react'
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  InputAdornment,
+  IconButton,
+  Link,
+  Alert,
+  CircularProgress,
+  Fade,
+  Slide,
+  Grid,
+  Checkbox,
+  FormControlLabel,
+} from '@mui/material'
+import { Visibility, VisibilityOff, Email, Lock, Person } from '@mui/icons-material'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Trans } from 'react-i18next'
+import { authService } from '@services/api/auth/authService'
+import { useAuthStore } from '@store/authStore'
+import type { RegisterRequest } from '@features/auth/types'
+import { useTranslation } from '@hooks/useTranslation'
+import LanguageSwitcher from '@components/LanguageSwitcher'
+import ThemeToggle from '@components/ThemeToggle'
+
+interface RegisterFormData extends RegisterRequest {
+  confirmPassword: string
+  agreeToTerms: boolean
+}
+
+interface RegisterFormErrors {
+  email?: string
+  password?: string
+  confirmPassword?: string
+  firstName?: string
+  lastName?: string
+  agreeToTerms?: string
+}
+
+const RegisterPage = () => {
+  const navigate = useNavigate()
+  const { setLoading, setError } = useAuthStore()
+  const { t } = useTranslation()
+
+  const [formData, setFormData] = useState<RegisterFormData>({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    agreeToTerms: false,
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [errors, setErrors] = useState<RegisterFormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const validateForm = (): boolean => {
+    const newErrors: RegisterFormErrors = {}
+
+    // First name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = t('auth.registerPage.firstNameRequired')
+    } else if (formData.firstName.trim().length < 2) {
+      newErrors.firstName = t('auth.registerPage.firstNameMinLength')
+    }
+
+    // Last name validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = t('auth.registerPage.lastNameRequired')
+    } else if (formData.lastName.trim().length < 2) {
+      newErrors.lastName = t('auth.registerPage.lastNameMinLength')
+    }
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = t('auth.registerPage.emailRequired')
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = t('auth.registerPage.emailInvalid')
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = t('auth.registerPage.passwordRequired')
+    } else if (formData.password.length < 8) {
+      newErrors.password = t('auth.registerPage.passwordTooShort')
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = t('auth.registerPage.passwordComplexity')
+    }
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = t('auth.registerPage.confirmPasswordRequired')
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = t('auth.registerPage.passwordMismatch')
+    }
+
+    // Terms validation
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = t('auth.registerPage.termsRequired')
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleChange =
+    (field: keyof RegisterFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = field === 'agreeToTerms' ? e.target.checked : e.target.value
+      setFormData((prev) => ({ ...prev, [field]: value }))
+      // Clear error for this field when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }))
+      }
+      // Clear API error when user starts typing
+      if (apiError) {
+        setApiError(null)
+      }
+    }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+    setLoading(true)
+    setApiError(null)
+    setSuccessMessage(null)
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { confirmPassword, agreeToTerms, ...registerData } = formData
+      await authService.register(registerData)
+
+      // Show success message
+      setSuccessMessage(t('auth.registerPage.registerSuccess'))
+
+      // Redirect to email verification page with email as query param
+      // Note: Keep form disabled during redirect to prevent duplicate submissions
+      setTimeout(() => {
+        navigate(`/verify-email?email=${encodeURIComponent(registerData.email)}`)
+      }, 1500)
+    } catch (error) {
+      // Enhanced error handling for Django backend responses
+      let errorMessage = t('auth.registerPage.registerFailed')
+
+      const axiosError = error as {
+        response?: {
+          data?: {
+            email?: string[]
+            password?: string[]
+            first_name?: string[]
+            last_name?: string[]
+            detail?: string
+            details?: string[]
+            message?: string
+            non_field_errors?: string[]
+          }
+          status?: number
+        }
+        message?: string
+      }
+
+      if (axiosError.response?.data) {
+        const data = axiosError.response.data
+
+        // Handle field-specific errors from Django
+        if (data.email) {
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
+        } else if (data.password) {
+          errorMessage = Array.isArray(data.password) ? data.password[0] : data.password
+        } else if (data.first_name) {
+          errorMessage = Array.isArray(data.first_name) ? data.first_name[0] : data.first_name
+        } else if (data.last_name) {
+          errorMessage = Array.isArray(data.last_name) ? data.last_name[0] : data.last_name
+        } else if (data.details) {
+          // Handle serializer-level errors (NON_FIELD_ERRORS_KEY = "details" in Django settings)
+          errorMessage = Array.isArray(data.details) ? data.details[0] : data.details
+        } else if (data.non_field_errors) {
+          errorMessage = data.non_field_errors[0]
+        } else if (data.detail) {
+          errorMessage = data.detail
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (axiosError.message) {
+        errorMessage = axiosError.message
+      }
+
+      setApiError(errorMessage)
+      setError(errorMessage)
+      // Only reset submitting state on error to re-enable the form
+      setIsSubmitting(false)
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+        py: 4,
+      }}
+    >
+      <Slide direction="up" in={true} timeout={500}>
+        <Paper
+          elevation={24}
+          sx={{
+            maxWidth: 600,
+            width: '100%',
+            mx: 2,
+            borderRadius: 3,
+            overflow: 'hidden',
+            bgcolor: 'background.paper',
+          }}
+        >
+          {/* Header Section */}
+          <Box
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              p: 4,
+              textAlign: 'center',
+              position: 'relative',
+            }}
+          >
+            {/* Theme Toggle and Language Switcher */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </Box>
+
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              {t('auth.registerPage.title')}
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              {t('auth.registerPage.subtitle')}
+            </Typography>
+          </Box>
+
+          {/* Form Section */}
+          <Box sx={{ p: 4 }}>
+            {/* Success Banner */}
+            {successMessage && (
+              <Fade in={true}>
+                <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage(null)}>
+                  {successMessage}
+                </Alert>
+              </Fade>
+            )}
+
+            {/* Error Banner */}
+            {apiError && (
+              <Fade in={true}>
+                <Alert severity="error" sx={{ mb: 3 }} onClose={() => setApiError(null)}>
+                  {apiError}
+                </Alert>
+              </Fade>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t('auth.registerPage.firstNameLabel')}
+                    value={formData.firstName}
+                    onChange={handleChange('firstName')}
+                    error={!!errors.firstName}
+                    helperText={errors.firstName}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person fontSize="small" color={errors.firstName ? 'error' : 'action'} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t('auth.registerPage.lastNameLabel')}
+                    value={formData.lastName}
+                    onChange={handleChange('lastName')}
+                    error={!!errors.lastName}
+                    helperText={errors.lastName}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person fontSize="small" color={errors.lastName ? 'error' : 'action'} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t('auth.registerPage.emailLabel')}
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange('email')}
+                    error={!!errors.email}
+                    helperText={errors.email}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email fontSize="small" color={errors.email ? 'error' : 'action'} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t('auth.registerPage.passwordLabel')}
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleChange('password')}
+                    error={!!errors.password}
+                    helperText={errors.password}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock fontSize="small" color={errors.password ? 'error' : 'action'} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            size="small"
+                            disabled={isSubmitting}
+                          >
+                            {showPassword ? (
+                              <VisibilityOff fontSize="small" />
+                            ) : (
+                              <Visibility fontSize="small" />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={t('auth.registerPage.confirmPasswordLabel')}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleChange('confirmPassword')}
+                    error={!!errors.confirmPassword}
+                    helperText={errors.confirmPassword}
+                    disabled={isSubmitting}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock
+                            fontSize="small"
+                            color={errors.confirmPassword ? 'error' : 'action'}
+                          />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                            size="small"
+                            disabled={isSubmitting}
+                          >
+                            {showConfirmPassword ? (
+                              <VisibilityOff fontSize="small" />
+                            ) : (
+                              <Visibility fontSize="small" />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.agreeToTerms}
+                        onChange={handleChange('agreeToTerms')}
+                        disabled={isSubmitting}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" color={errors.agreeToTerms ? 'error' : 'inherit'}>
+                        <Trans
+                          i18nKey="auth.registerPage.agreeToTerms"
+                          components={{
+                            termsLink: (
+                              <Link
+                                component={RouterLink}
+                                to="/terms"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ color: 'primary.main' }}
+                              />
+                            ),
+                            privacyLink: (
+                              <Link
+                                component={RouterLink}
+                                to="/privacy"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ color: 'primary.main' }}
+                              />
+                            ),
+                          }}
+                        />
+                      </Typography>
+                    }
+                  />
+                  {errors.agreeToTerms && (
+                    <Typography variant="caption" color="error" sx={{ ml: 4, display: 'block' }}>
+                      {errors.agreeToTerms}
+                    </Typography>
+                  )}
+                </Grid>
+              </Grid>
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={isSubmitting}
+                sx={{
+                  mt: 3,
+                  py: 1.5,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                }}
+              >
+                {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.registerPage.signUpButton')}
+              </Button>
+            </form>
+
+            {/* Password Requirements */}
+            <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+              <Typography variant="caption" color="text.secondary" component="div">
+                {t('auth.registerPage.passwordRequirementsTitle')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • {t('auth.registerPage.passwordRequirements8Chars')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • {t('auth.registerPage.passwordRequirementsUppercase')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • {t('auth.registerPage.passwordRequirementsLowercase')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" component="div">
+                • {t('auth.registerPage.passwordRequirementsNumber')}
+              </Typography>
+            </Box>
+
+            {/* Sign In Link */}
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                {t('auth.registerPage.haveAccount')}{' '}
+                <Link
+                  component={RouterLink}
+                  to="/login"
+                  sx={{
+                    color: 'primary.main',
+                    fontWeight: 'bold',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' },
+                  }}
+                >
+                  {t('auth.registerPage.signInLink')}
+                </Link>
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Slide>
+    </Box>
+  )
+}
+
+export default RegisterPage

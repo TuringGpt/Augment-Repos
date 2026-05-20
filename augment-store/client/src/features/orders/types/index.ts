@@ -1,0 +1,239 @@
+import type { CartItem } from '@features/cart/types'
+import type { Product } from '@features/products/types'
+
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'completed'
+  | 'cancelled'
+
+// Address types matching backend snake_case format
+export interface OrderAddress {
+  id: string
+  first_name: string
+  last_name: string
+  address_line_1: string
+  address_line_2?: string | null
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+  user: string
+}
+
+// Order Item type matching backend format
+// cart_item can be null when the original cart item has been deleted (backend uses on_delete=SET_NULL)
+export interface OrderItem {
+  id: string
+  cart_item: CartItem | null
+  created_at: string
+}
+
+// Payment type matching backend format
+export interface Payment {
+  id: string
+  amount: number
+  payment_method: 'stripe' | 'paypal'
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded'
+  created_at: string
+  updated_at: string
+}
+
+export interface Order {
+  id: string
+  items: OrderItem[]
+  subtotal: number
+  tax: number
+  shipping: number
+  total: number
+  status: OrderStatus
+  shipping_address: OrderAddress | null
+  billing_address: OrderAddress | null
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | null
+  payment?: Payment
+  created_at: string
+  updated_at: string
+  created_by: string
+  is_deleted: boolean
+}
+
+export interface CreateOrderRequest {
+  cart_items: string[]
+  shipping_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  billing_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2?: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  contact_information: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+  }
+  shipping_address_id?: string
+  billing_address_id?: string
+  contact_information_id?: string
+}
+
+export interface OrderListResponse {
+  orders: Order[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export interface OrderListAPIResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: OrderAPI[]
+}
+
+export interface OrderAPI {
+  id: string
+  status: OrderStatus
+  items: OrderItemAPI[]
+  subtotal: number
+  tax: number
+  shipping: number
+  total: number
+  created_at: string
+  updated_at: string
+}
+
+export interface OrderItemAPI {
+  id: string
+  cart_item: string | null // UUID of the cart item (nullable: on_delete=SET_NULL)
+  product: Product | null
+  quantity: number
+  created_at: string
+}
+
+// Admin order detail data structure from backend detail endpoint (snake_case)
+// Matches AdminOrderUpdateSerializer fields from augment-store/server/checkout/serializers.py
+// Used by GET/PATCH /api/v1/checkout/admin/orders/<uuid:pk>/
+// This serializer has limited fields compared to OrderListSerializer
+//
+// ⚠️ WARNING: This is a PARTIAL order object with limited fields.
+// The AdminOrderUpdateSerializer only returns id and status, lacking:
+// - items, subtotal, tax, shipping, total
+// - created_at, updated_at
+// DO NOT use this endpoint for fetching full order details.
+// Use the admin list endpoint or regular order detail endpoint instead.
+export interface AdminOrderUpdateAPI {
+  id: string
+  status: OrderStatus
+}
+
+// Update admin order request
+// Status is required since it's the only updatable field for this endpoint
+// An empty PATCH body would be meaningless, so we require status to ensure intentional updates
+export interface UpdateAdminOrderRequest {
+  status: OrderStatus
+}
+
+export interface CreateOrderResponse {
+  id: string
+  status: OrderStatus
+  created_at: string
+  shipping_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  billing_address: {
+    first_name: string
+    last_name: string
+    address_line_1: string
+    address_line_2: string
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  contact_information: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+  }
+}
+
+// Admin Shipping Address type matching backend ShippingAddressListSerializer (snake_case)
+// Used by GET /api/v1/checkout/admin/shipping-addresses/
+// Backend serializer uses fields = "__all__" so includes all model fields from ShippingAddress model
+export interface AdminShippingAddressAPI {
+  id: string
+  user: string // UUID of the user who owns this address
+  first_name: string
+  last_name: string
+  address_line_1: string
+  address_line_2: string | null
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
+// Frontend admin shipping address type (camelCase)
+export interface AdminShippingAddress {
+  id: string
+  user: string
+  firstName: string
+  lastName: string
+  addressLine1: string
+  addressLine2: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  createdAt: string
+  updatedAt: string
+  isDeleted: boolean
+}
+
+// Paginated admin shipping addresses response from backend (DRF ListAPIView)
+export interface AdminShippingAddressesListResponseAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: AdminShippingAddressAPI[]
+}
+
+// Frontend admin shipping addresses list response
+export interface AdminShippingAddressesListResponse {
+  shippingAddresses: AdminShippingAddress[]
+  count: number
+  next: string | null
+  previous: string | null
+}

@@ -1,0 +1,87 @@
+import { Box, Slider, Typography } from '@mui/material'
+import { SyntheticEvent, useEffect, useState } from 'react'
+
+interface RatingFilterProps {
+  value: [number, number]
+  onChange: (value: [number, number]) => void
+}
+
+const RatingFilter = ({ value, onChange }: RatingFilterProps) => {
+  const [localValue, setLocalValue] = useState<[number, number]>(value)
+
+  // Update local value when prop changes (e.g., reset filters)
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
+
+  const handleChange = (_event: Event, newValue: number | number[]) => {
+    setLocalValue(newValue as [number, number])
+  }
+
+  const handleChangeCommitted = (_event: Event | SyntheticEvent, newValue: number | number[]) => {
+    const newRatingValue = newValue as [number, number]
+
+    // Clamp values to valid range (0-10)
+    const clampedValue: [number, number] = [
+      Math.max(0, Math.min(10, newRatingValue[0])),
+      Math.max(0, Math.min(10, newRatingValue[1])),
+    ]
+
+    // Only trigger onChange if the values are different from current prop values
+    if (clampedValue[0] !== value[0] || clampedValue[1] !== value[1]) {
+      onChange(clampedValue)
+    }
+  }
+
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
+        Rating Range
+      </Typography>
+      <Box sx={{ px: 2, py: 1 }}>
+        <Slider
+          value={localValue}
+          onChange={handleChange}
+          onChangeCommitted={handleChangeCommitted}
+          valueLabelDisplay="auto"
+          min={0}
+          max={10}
+          step={0.5}
+          disableSwap
+          marks={[
+            { value: 0, label: '0' },
+            { value: 2, label: '2' },
+            { value: 4, label: '4' },
+            { value: 6, label: '6' },
+            { value: 8, label: '8' },
+            { value: 10, label: '10' },
+          ]}
+          sx={{
+            '& .MuiSlider-thumb': {
+              width: 20,
+              height: 20,
+              '&:hover, &.Mui-focusVisible': {
+                boxShadow: '0 0 0 8px rgba(25, 118, 210, 0.16)',
+              },
+              '&.Mui-active': {
+                boxShadow: '0 0 0 14px rgba(25, 118, 210, 0.16)',
+              },
+            },
+            '& .MuiSlider-track': {
+              height: 4,
+            },
+            '& .MuiSlider-rail': {
+              height: 4,
+              opacity: 0.3,
+            },
+            '& .MuiSlider-markLabel': {
+              fontSize: '0.75rem',
+            },
+          }}
+        />
+      </Box>
+    </Box>
+  )
+}
+
+export default RatingFilter
