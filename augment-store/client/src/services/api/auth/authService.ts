@@ -104,22 +104,33 @@ export const authService = {
       useAuthStore.getState().logout()
 
       // Clear wishlist, cart, contacts, and account profile to prevent showing previous user's data
-      // Wrapped in try/catch to prevent chunk-load failures from breaking logout
+      // Each store cleanup is isolated to prevent one failure from blocking others
       try {
         const { useWishlistStore } = await import('@store/wishlistStore')
         useWishlistStore.getState().clearWishlist()
+      } catch (error) {
+        console.warn('Failed to clear wishlist during logout:', error)
+      }
 
+      try {
         const { useCartStore } = await import('@store/cartStore')
         useCartStore.getState().clearCart()
+      } catch (error) {
+        console.warn('Failed to clear cart during logout:', error)
+      }
 
+      try {
         const { useContactStore } = await import('@store/contactStore')
         useContactStore.getState().clearContacts()
+      } catch (error) {
+        console.warn('Failed to clear contacts during logout:', error)
+      }
 
+      try {
         const { useAccountStore } = await import('@store/accountStore')
         useAccountStore.getState().clearAccountProfile()
       } catch (error) {
-        // Ignore chunk-load errors - auth state is already cleared
-        console.warn('Failed to clear wishlist/cart/contacts/accountProfile during logout:', error)
+        console.warn('Failed to clear account profile during logout:', error)
       }
     }
   },
