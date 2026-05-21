@@ -1022,6 +1022,10 @@
       "emptyState": {
         "noOrders": "No Orders Yet",
         "noOrdersDescription": "No customer orders have been placed yet."
+      },
+      "pagination": {
+        "goToPage": "Go to page",
+        "pageNumber": "Page {{pageNum}}"
       }
     },
     "products": "Products",

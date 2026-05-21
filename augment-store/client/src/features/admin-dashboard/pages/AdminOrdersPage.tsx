@@ -394,12 +394,12 @@ const AdminOrdersPage = () => {
             disabled={isFetchingAdminOrders}
           />
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel id="page-select-label">Go to page</InputLabel>
+            <InputLabel id="page-select-label">{t('admin.ordersPage.pagination.goToPage')}</InputLabel>
             <Select
               labelId="page-select-label"
               id="page-select"
               value={currentAdminPage}
-              label="Go to page"
+              label={t('admin.ordersPage.pagination.goToPage')}
               onChange={(e) => {
                 const newPage = Number(e.target.value)
                 setAdminPage(newPage)
@@ -409,7 +409,7 @@ const AdminOrdersPage = () => {
             >
               {Array.from({ length: totalAdminPages }, (_, i) => i + 1).map((pageNum) => (
                 <MenuItem key={pageNum} value={pageNum}>
-                  Page {pageNum}
+                  {t('admin.ordersPage.pagination.pageNumber', { pageNum })}
                 </MenuItem>
               ))}
             </Select>
