@@ -17,6 +17,10 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material'
 import {
   ShoppingCart as ShoppingCartIcon,
@@ -381,7 +385,7 @@ const AdminOrdersPage = () => {
 
       {/* Pagination */}
       {totalAdminPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3, mt: 4, flexWrap: 'wrap' }}>
           <Pagination
             count={totalAdminPages}
             page={currentAdminPage}
@@ -389,6 +393,27 @@ const AdminOrdersPage = () => {
             color="primary"
             disabled={isFetchingAdminOrders}
           />
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="page-select-label">Go to page</InputLabel>
+            <Select
+              labelId="page-select-label"
+              id="page-select"
+              value={currentAdminPage}
+              label="Go to page"
+              onChange={(e) => {
+                const newPage = Number(e.target.value)
+                setAdminPage(newPage)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              disabled={isFetchingAdminOrders}
+            >
+              {Array.from({ length: totalAdminPages }, (_, i) => i + 1).map((pageNum) => (
+                <MenuItem key={pageNum} value={pageNum}>
+                  Page {pageNum}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
       )}
     </Container>
