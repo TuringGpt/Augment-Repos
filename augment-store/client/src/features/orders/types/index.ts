@@ -237,3 +237,55 @@ export interface AdminShippingAddressesListResponse {
   next: string | null
   previous: string | null
 }
+
+// Admin Billing Address type matching backend BillingAddressListSerializer (snake_case)
+// Used by GET /api/v1/checkout/admin/billing-addresses/
+// Backend serializer uses fields = "__all__" so includes all model fields from BillingAddress model
+export interface AdminBillingAddressAPI {
+  id: string
+  user: string // UUID of the user who owns this address
+  first_name: string
+  last_name: string
+  address_line_1: string
+  address_line_2: string | null
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  created_at: string
+  updated_at: string
+  is_deleted: boolean
+}
+
+// Frontend admin billing address type (camelCase)
+export interface AdminBillingAddress {
+  id: string
+  user: string
+  firstName: string
+  lastName: string
+  addressLine1: string
+  addressLine2: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  createdAt: string
+  updatedAt: string
+  isDeleted: boolean
+}
+
+// Paginated admin billing addresses response from backend (DRF ListAPIView)
+export interface AdminBillingAddressesListResponseAPI {
+  count: number
+  next: string | null
+  previous: string | null
+  results: AdminBillingAddressAPI[]
+}
+
+// Frontend admin billing addresses list response
+export interface AdminBillingAddressesListResponse {
+  billingAddresses: AdminBillingAddress[]
+  count: number
+  next: string | null
+  previous: string | null
+}

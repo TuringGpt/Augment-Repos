@@ -47,5 +47,9 @@ export type {
   AdminShippingAddressAPI,
   AdminShippingAddressesListResponse,
   AdminShippingAddressesListResponseAPI,
+  AdminBillingAddress,
+  AdminBillingAddressAPI,
+  AdminBillingAddressesListResponse,
+  AdminBillingAddressesListResponseAPI,
 } from '@features/orders/types'
 export { apiClient } from './client'
