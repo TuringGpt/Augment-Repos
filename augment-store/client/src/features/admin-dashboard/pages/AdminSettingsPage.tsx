@@ -305,10 +305,12 @@ const AdminSettingsPage = () => {
           // 1. This is still the latest selected preset (prevents rapid preset changes)
           // 2. Component is still mounted (prevents playback after navigation)
           // 3. Notification sounds are still enabled (prevents playback after toggle off)
+          // Note: Check the store's current state, not the closure-captured value,
+          // to avoid stale closure issues if the user toggles sounds off before the import resolves
           if (
             latestPresetRef.current === value &&
             isMountedRef.current &&
-            notificationSoundsEnabled
+            useUIStore.getState().notificationSoundsEnabled
           ) {
             playNotificationSound(value)
           }
