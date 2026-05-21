@@ -271,14 +271,14 @@ const AdminSettingsPage = () => {
     const isValid = Object.keys(NOTIFICATION_SOUND_PRESETS).includes(value)
     if (!isValid) {
       console.error('Invalid notification sound preset:', value)
-      toast.error('Failed to change notification sound preset. Please try again.')
+      toast.error(t('admin.settingsPage.notificationSoundPresetChangeFailed'))
       return
     }
 
     try {
       setNotificationSoundPreset(value)
       // Show success feedback to user
-      toast.success('Notification sound preset changed')
+      toast.success(t('admin.settingsPage.notificationSoundPresetChanged'))
 
       // Play a preview of the selected sound
       import('@utils/soundUtils').then(({ playNotificationSound }) => {
@@ -287,7 +287,7 @@ const AdminSettingsPage = () => {
     } catch (error) {
       console.error('Failed to change notification sound preset:', error)
       // Show error feedback to user
-      toast.error('Failed to change notification sound preset. Please try again.')
+      toast.error(t('admin.settingsPage.notificationSoundPresetChangeFailed'))
     }
   }
 
@@ -585,22 +585,22 @@ const AdminSettingsPage = () => {
           {notificationSoundsEnabled && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
-                Sound Preset
+                {t('admin.settingsPage.soundPreset')}
               </Typography>
               <FormControl fullWidth>
                 <InputLabel id="notification-sound-preset-label">
-                  Select Sound
+                  {t('admin.settingsPage.selectSound')}
                 </InputLabel>
                 <Select
                   labelId="notification-sound-preset-label"
                   id="notification-sound-preset-select"
                   value={notificationSoundPreset}
-                  label="Select Sound"
+                  label={t('admin.settingsPage.selectSound')}
                   onChange={handleNotificationSoundPresetChange}
                 >
-                  {Object.entries(NOTIFICATION_SOUND_PRESETS).map(([key, config]) => (
+                  {Object.keys(NOTIFICATION_SOUND_PRESETS).map((key) => (
                     <MenuItem key={key} value={key}>
-                      {config.label}
+                      {t(`admin.settingsPage.soundPresets.${key}`)}
                     </MenuItem>
                   ))}
                 </Select>

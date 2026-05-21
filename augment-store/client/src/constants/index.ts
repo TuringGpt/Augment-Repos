@@ -88,13 +88,14 @@ export const DEFAULT_TOAST_POSITION: ToastPosition = 'bottom-right'
 
 // Notification sound preset options
 // Each preset defines a unique sound profile using Web Audio API parameters
+// Note: Labels are now handled via i18n keys (admin.settingsPage.soundPresets.<key>)
 export const NOTIFICATION_SOUND_PRESETS = {
-  'default': { label: 'Default', frequency: 800, duration: 0.2, type: 'sine' as OscillatorType },
-  'chime': { label: 'Chime', frequency: 1200, duration: 0.15, type: 'sine' as OscillatorType },
-  'beep': { label: 'Beep', frequency: 600, duration: 0.1, type: 'square' as OscillatorType },
-  'pop': { label: 'Pop', frequency: 1000, duration: 0.08, type: 'sine' as OscillatorType },
-  'bell': { label: 'Bell', frequency: 1500, duration: 0.25, type: 'triangle' as OscillatorType },
-  'subtle': { label: 'Subtle', frequency: 700, duration: 0.12, type: 'sine' as OscillatorType },
+  'default': { frequency: 800, duration: 0.2, type: 'sine' as OscillatorType },
+  'chime': { frequency: 1200, duration: 0.15, type: 'sine' as OscillatorType },
+  'beep': { frequency: 600, duration: 0.1, type: 'square' as OscillatorType },
+  'pop': { frequency: 1000, duration: 0.08, type: 'sine' as OscillatorType },
+  'bell': { frequency: 1500, duration: 0.25, type: 'triangle' as OscillatorType },
+  'subtle': { frequency: 700, duration: 0.12, type: 'sine' as OscillatorType },
 } as const
 
 export type NotificationSoundPreset = keyof typeof NOTIFICATION_SOUND_PRESETS

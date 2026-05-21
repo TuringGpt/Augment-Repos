@@ -1366,6 +1366,18 @@
       "notificationSoundsEnabledSuccess": "Notification sounds enabled",
       "notificationSoundsDisabledSuccess": "Notification sounds disabled",
       "notificationSoundsToggleFailed": "Failed to toggle notification sounds. Please try again.",
+      "soundPreset": "Sound Preset",
+      "selectSound": "Select Sound",
+      "notificationSoundPresetChanged": "Notification sound preset changed",
+      "notificationSoundPresetChangeFailed": "Failed to change notification sound preset. Please try again.",
+      "soundPresets": {
+        "default": "Default",
+        "chime": "Chime",
+        "beep": "Beep",
+        "pop": "Pop",
+        "bell": "Bell",
+        "subtle": "Subtle"
+      },
       "moreSettings": "More Settings Coming Soon",
       "moreSettingsDescription": "Additional configuration options will be available here in future updates."
     },

@@ -1366,6 +1366,18 @@
       "notificationSoundsEnabledSuccess": "Sons de notification activés",
       "notificationSoundsDisabledSuccess": "Sons de notification désactivés",
       "notificationSoundsToggleFailed": "Échec du basculement des sons de notification. Veuillez réessayer.",
+      "soundPreset": "Préréglage Sonore",
+      "selectSound": "Sélectionner un Son",
+      "notificationSoundPresetChanged": "Préréglage sonore de notification modifié",
+      "notificationSoundPresetChangeFailed": "Échec de la modification du préréglage sonore de notification. Veuillez réessayer.",
+      "soundPresets": {
+        "default": "Par Défaut",
+        "chime": "Carillon",
+        "beep": "Bip",
+        "pop": "Pop",
+        "bell": "Cloche",
+        "subtle": "Subtil"
+      },
       "moreSettings": "Plus de Paramètres Bientôt",
       "moreSettingsDescription": "Des options de configuration supplémentaires seront disponibles ici dans les futures mises à jour."
     },
