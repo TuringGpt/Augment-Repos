@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AdminUser, AdminUserDetail, UpdateAdminUserRequest } from '@features/accounts/types'
+import type { UserProfile } from '@features/user/types'
 import { parseApiError, sanitizeErrorForLogging } from '@utils/errorUtils'
 
 // Request counter to track the latest fetch request
@@ -17,6 +18,10 @@ let currentFetchingUserId: string | null = null
 // Request counter to track the latest update request
 // Prevents stale responses from overwriting newer state when updating users
 let updateRequestCounter = 0
+
+// Request counter to track the latest get account profile request
+// Prevents stale responses from overwriting newer state when fetching account profile
+let getAccountProfileRequestCounter = 0
 
 interface AccountState {
   // Admin users list state
@@ -38,16 +43,24 @@ interface AccountState {
   isUpdating: boolean
   updateError: string | null
 
+  // Account profile state (current logged-in user)
+  accountProfile: UserProfile | null
+  isFetchingProfile: boolean
+  profileError: string | null
+
   // Actions
   setAdminUsers: (users: AdminUser[], count: number, next: string | null, previous: string | null) => void
   fetchAdminUsers: (page?: number) => Promise<void>
   fetchAdminUserById: (id: string) => Promise<void>
   updateAdminUser: (id: string, data: UpdateAdminUserRequest) => Promise<AdminUserDetail | undefined>
+  getAccountProfile: () => Promise<void>
   clearCurrentAdminUser: () => void
+  clearAccountProfile: () => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
   clearError: () => void
   clearUpdateError: () => void
+  clearProfileError: () => void
   clearAdminUsers: () => void
   setPage: (page: number) => void
 }
@@ -67,6 +80,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   fetchByIdError: null,
   isUpdating: false,
   updateError: null,
+  accountProfile: null,
+  isFetchingProfile: false,
+  profileError: null,
 
   // Actions
   setAdminUsers: (users, count, next, previous) =>
@@ -300,6 +316,50 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
+  getAccountProfile: async () => {
+    // Increment counter and capture the current request ID
+    getAccountProfileRequestCounter += 1
+    const requestId = getAccountProfileRequestCounter
+
+    set({ isFetchingProfile: true, profileError: null })
+    try {
+      // Import userService dynamically to avoid circular dependency
+      const { userService } = await import('@services/api/user/userService')
+      const profile = await userService.getProfile()
+
+      // Only update state if this is still the latest request
+      // This prevents older responses from overwriting newer state
+      if (requestId === getAccountProfileRequestCounter) {
+        set({
+          accountProfile: profile,
+          isFetchingProfile: false,
+        })
+      }
+    } catch (error) {
+      // Only update error state if this is still the latest request
+      // This prevents older errors from overwriting newer state
+      if (requestId !== getAccountProfileRequestCounter) {
+        // Request was invalidated - don't touch state as a newer request may be in-flight
+        return
+      }
+
+      // Use parseApiError to extract user-friendly error message from API response
+      // This properly handles Django/DRF error responses including detail, non_field_errors, etc.
+      const errorMessage = parseApiError(error, {
+        defaultMessage: 'Failed to fetch account profile. Please try again.',
+      })
+
+      set({
+        profileError: errorMessage,
+        isFetchingProfile: false,
+      })
+
+      // Log only sanitized error information to avoid leaking sensitive data
+      // (e.g., Authorization headers in Axios config)
+      console.error('Failed to fetch account profile:', sanitizeErrorForLogging(error))
+    }
+  },
+
   setLoading: (isLoading) => set({ isLoading }),
 
   setError: (error) => set({ error }),
@@ -307,6 +367,20 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   clearUpdateError: () => set({ updateError: null }),
+
+  clearProfileError: () => set({ profileError: null }),
+
+  clearAccountProfile: () => {
+    // Increment counter to invalidate any in-flight get account profile requests
+    // This prevents in-flight responses from repopulating the store after clear
+    getAccountProfileRequestCounter += 1
+
+    set({
+      accountProfile: null,
+      isFetchingProfile: false,
+      profileError: null,
+    })
+  },
 
   clearCurrentAdminUser: () => {
     // Increment counters to invalidate any in-flight fetch-by-id and update requests
