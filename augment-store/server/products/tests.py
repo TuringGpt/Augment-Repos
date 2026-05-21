@@ -67,11 +67,14 @@ class ProductBrandTests(BaseAPITestCase):
 
     def test_create_brand_success(self):
         # GIVEN a merchant user is authenticated
+        brand_image = FileFactory(created_by=self.merchant_user)
+
         # WHEN we make a post request to create a brand with valid data
         url = reverse("v1:create_product_brand")
         payload = {
             "name": "New Brand",
             "description": "New Brand Description",
+            "image": str(brand_image.id),
         }
         response = self.merchant_client.post(url, payload)
 
@@ -84,6 +87,17 @@ class ProductBrandTests(BaseAPITestCase):
         # AND the brand should be created by the merchant user
         brand = ProductBrand.objects.get(name="New Brand")
         self.assertEqual(brand.created_by, self.merchant_user)
+        self.assertEqual(brand.image_id, brand_image.id)
+
+    def test_create_brand_with_other_merchants_image_rejected(self):
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:create_product_brand")
+        payload = {"name": "Brand With Image", "image": str(other_merchants_file.id)}
+        response = self.merchant_client.post(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(ProductBrand.objects.filter(name="Brand With Image").exists())
 
     def test_create_brand_unauthenticated(self):
         # GIVEN a user is not authenticated
@@ -164,6 +178,7 @@ class ProductBrandTests(BaseAPITestCase):
 
     def test_update_brand_success(self):
         # GIVEN a brand exists in the database
+        brand_image = FileFactory(created_by=self.merchant_user)
         brand = ProductBrandFactory(
             name="Test Brand",
             description="Test Description",
@@ -174,6 +189,7 @@ class ProductBrandTests(BaseAPITestCase):
         url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
         payload = {
             "description": "Updated Description",
+            "image": str(brand_image.id),
         }
         response = self.merchant_client.patch(url, payload)
 
@@ -183,6 +199,18 @@ class ProductBrandTests(BaseAPITestCase):
         # AND the brand should be updated in the database
         brand.refresh_from_db()
         self.assertEqual(brand.description, "Updated Description")
+        self.assertEqual(brand.image_id, brand_image.id)
+
+    def test_update_brand_with_other_merchants_image_rejected(self):
+        brand = ProductBrandFactory(created_by=self.merchant_user)
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:product_brand_detail", kwargs={"pk": str(brand.id)})
+        response = self.merchant_client.patch(url, {"image": str(other_merchants_file.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        brand.refresh_from_db()
+        self.assertNotEqual(brand.image_id, other_merchants_file.id)
 
     def test_update_brand_cannot_change_created_by(self):
         brand = ProductBrandFactory(created_by=self.merchant_user)
@@ -323,12 +351,15 @@ class ProductCategoryTests(BaseAPITestCase):
 
     def test_create_category_success(self):
         # GIVEN a merchant user is authenticated
+        category_image = FileFactory(created_by=self.merchant_user)
+
         # WHEN we make a post request to create a category with valid data
         url = reverse("v1:create_product_category")
         payload = {
             "name": "New Category",
             "slug": "new-category",
             "description": "New Category Description",
+            "image": str(category_image.id),
         }
         response = self.merchant_client.post(url, payload)
 
@@ -341,6 +372,21 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be created by the merchant user
         category = ProductCategory.objects.get(name="New Category")
         self.assertEqual(category.created_by, self.merchant_user)
+        self.assertEqual(category.image_id, category_image.id)
+
+    def test_create_category_with_other_merchants_image_rejected(self):
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:create_product_category")
+        payload = {
+            "name": "Category With Image",
+            "slug": "category-with-image",
+            "image": str(other_merchants_file.id),
+        }
+        response = self.merchant_client.post(url, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(ProductCategory.objects.filter(name="Category With Image").exists())
 
     def test_create_category_with_parent(self):
         # GIVEN a parent category exists
@@ -443,6 +489,7 @@ class ProductCategoryTests(BaseAPITestCase):
 
     def test_update_category_success(self):
         # GIVEN a category exists in the database
+        category_image = FileFactory(created_by=self.merchant_user)
         category = ProductCategoryFactory(
             name="Test Category",
             slug="test-category",
@@ -454,6 +501,7 @@ class ProductCategoryTests(BaseAPITestCase):
         url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
         payload = {
             "description": "Updated Description",
+            "image": str(category_image.id),
         }
         response = self.merchant_client.patch(url, payload)
 
@@ -463,6 +511,18 @@ class ProductCategoryTests(BaseAPITestCase):
         # AND the category should be updated in the database
         category.refresh_from_db()
         self.assertEqual(category.description, "Updated Description")
+        self.assertEqual(category.image_id, category_image.id)
+
+    def test_update_category_with_other_merchants_image_rejected(self):
+        category = ProductCategoryFactory(created_by=self.merchant_user)
+        other_merchants_file = FileFactory(created_by=self.merchant_user_2)
+
+        url = reverse("v1:product_category_detail", kwargs={"pk": str(category.id)})
+        response = self.merchant_client.patch(url, {"image": str(other_merchants_file.id)})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        category.refresh_from_db()
+        self.assertNotEqual(category.image_id, other_merchants_file.id)
 
     def test_update_category_cannot_change_created_by(self):
         category = ProductCategoryFactory(created_by=self.merchant_user)
