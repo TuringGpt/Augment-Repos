@@ -281,9 +281,14 @@ const AdminSettingsPage = () => {
       toast.success(t('admin.settingsPage.notificationSoundPresetChanged'))
 
       // Play a preview of the selected sound
-      import('@utils/soundUtils').then(({ playNotificationSound }) => {
-        playNotificationSound(value)
-      })
+      import('@utils/soundUtils')
+        .then(({ playNotificationSound }) => {
+          playNotificationSound(value)
+        })
+        .catch((error) => {
+          console.error('Failed to load sound utility:', error)
+          // Preview playback failed, but preset was saved successfully
+        })
     } catch (error) {
       console.error('Failed to change notification sound preset:', error)
       // Show error feedback to user
