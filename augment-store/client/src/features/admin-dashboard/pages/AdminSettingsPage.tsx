@@ -73,6 +73,18 @@ const AdminSettingsPage = () => {
 
   // Track the latest selected preset to prevent race conditions in sound preview
   const latestPresetRef = useRef<NotificationSoundPreset | null>(null)
+  // Track component mount state to prevent sound playback after unmount
+  const isMountedRef = useRef<boolean>(true)
+
+  // Set mounted state on mount and cleanup on unmount
+  // IMPORTANT: This useEffect must be placed before any conditional returns
+  // to comply with the Rules of Hooks
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Normalize toast duration to a valid option and persist the normalized value
   // This ensures UI and actual toast behavior cannot diverge
@@ -289,9 +301,15 @@ const AdminSettingsPage = () => {
       // Play a preview of the selected sound
       import('@utils/soundUtils')
         .then(({ playNotificationSound }) => {
-          // Only play the sound if this is still the latest selected preset
-          // This prevents race conditions when user changes presets quickly
-          if (latestPresetRef.current === value) {
+          // Only play the sound if all conditions are met:
+          // 1. This is still the latest selected preset (prevents rapid preset changes)
+          // 2. Component is still mounted (prevents playback after navigation)
+          // 3. Notification sounds are still enabled (prevents playback after toggle off)
+          if (
+            latestPresetRef.current === value &&
+            isMountedRef.current &&
+            notificationSoundsEnabled
+          ) {
             playNotificationSound(value)
           }
         })
