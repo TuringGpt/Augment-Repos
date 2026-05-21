@@ -18,7 +18,7 @@ class LoginView(CreateAPIView):
         return LoginSerializer
 
 class LogoutView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         return Response({
@@ -28,12 +28,12 @@ class LogoutView(APIView):
 
 class RefreshTokenView(CreateAPIView):
     serializer_class = RefreshTokenSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class ResetPasswordView(CreateAPIView):
     serializer_class = ForgotPasswordSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
