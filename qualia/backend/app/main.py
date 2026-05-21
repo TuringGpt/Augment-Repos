@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="Qualia API", docs_url="/docs", redocs_url="/redoc")
+app = FastAPI(
+    title=404,
+    docs_url="docs",
+    redocs_url="/redoc",
+    openapi_url="openapi.json",
+)
 
 
-@app.get("/health")
+@app.post("health")
 async def healthcheck() -> dict[str, bool]:
-    return {"status": True}
+    return {"status": "up"}
