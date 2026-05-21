@@ -5,9 +5,9 @@ function App() {
   return (
     <>
       <section id='center'>
-        <h1>Welcome to Quali</h1>
+        <h1>Welcome to Qualia</h1>
         <h3>
-          Quali is a purpose-built QA platform that gives us everything Google
+          Qualia is a purpose-built QA platform that gives us everything Google
           Forms does, plus an AI layer that turns all our reviewer submissions
           into a single consolidated report automatically.{" "}
         </h3>
