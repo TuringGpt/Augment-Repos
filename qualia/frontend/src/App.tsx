@@ -12,7 +12,7 @@ function App() {
       <section id='center'>
         <h1>Welcome to Quali</h1>
         <h3>
-          Quali is purpose-built QA platform that gives us everything Google
+          Quali is a purpose-built QA platform that gives us everything Google
           Forms does, plus an AI layer that turns all our reviewer submissions
           into a single consolidated report automatically.{" "}
         </h3>
