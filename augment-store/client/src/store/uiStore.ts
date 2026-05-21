@@ -1,7 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ToastPosition } from '@constants/index'
-import { DEFAULT_TOAST_POSITION, TOAST_POSITION_OPTIONS } from '@constants/index'
+import type { ToastPosition, NotificationSoundPreset } from '@constants/index'
+import {
+  DEFAULT_TOAST_POSITION,
+  TOAST_POSITION_OPTIONS,
+  DEFAULT_NOTIFICATION_SOUND_PRESET,
+  NOTIFICATION_SOUND_PRESETS
+} from '@constants/index'
 
 interface Notification {
   id: string
@@ -66,6 +71,24 @@ const validateNotificationSoundsEnabled = (enabled: unknown): boolean => {
   return false
 }
 
+/**
+ * Validates notification sound preset to ensure it's a valid preset key
+ * Prevents invalid preset values from corrupted/edited localStorage
+ * @param preset - The preset value to validate
+ * @returns A valid NotificationSoundPreset, or DEFAULT_NOTIFICATION_SOUND_PRESET if invalid
+ */
+const validateNotificationSoundPreset = (preset: unknown): NotificationSoundPreset => {
+  // Check if preset is a valid own property key in NOTIFICATION_SOUND_PRESETS
+  if (
+    typeof preset === 'string' &&
+    Object.prototype.hasOwnProperty.call(NOTIFICATION_SOUND_PRESETS, preset)
+  ) {
+    return preset as NotificationSoundPreset
+  }
+
+  return DEFAULT_NOTIFICATION_SOUND_PRESET
+}
+
 interface UIState {
   isSidebarOpen: boolean
   isCartDrawerOpen: boolean
@@ -76,6 +99,7 @@ interface UIState {
   toastDuration: number // Default toast duration in milliseconds
   toastPosition: ToastPosition // Default toast position
   notificationSoundsEnabled: boolean // Enable/disable notification sounds
+  notificationSoundPreset: NotificationSoundPreset // Selected notification sound preset
 
   // Actions
   toggleSidebar: () => void
@@ -94,6 +118,7 @@ interface UIState {
   setToastDuration: (duration: number) => void
   setToastPosition: (position: ToastPosition) => void
   setNotificationSoundsEnabled: (enabled: boolean) => void
+  setNotificationSoundPreset: (preset: NotificationSoundPreset) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -108,6 +133,7 @@ export const useUIStore = create<UIState>()(
       toastDuration: DEFAULT_TOAST_DURATION,
       toastPosition: DEFAULT_TOAST_POSITION,
       notificationSoundsEnabled: false, // Notification sounds disabled by default (opt-in)
+      notificationSoundPreset: DEFAULT_NOTIFICATION_SOUND_PRESET,
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
@@ -150,6 +176,8 @@ export const useUIStore = create<UIState>()(
       setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
 
       setNotificationSoundsEnabled: (enabled) => set({ notificationSoundsEnabled: validateNotificationSoundsEnabled(enabled) }),
+
+      setNotificationSoundPreset: (preset) => set({ notificationSoundPreset: validateNotificationSoundPreset(preset) }),
     }),
     {
       name: 'ui-storage',
@@ -157,9 +185,10 @@ export const useUIStore = create<UIState>()(
         toastDuration: state.toastDuration,
         toastPosition: state.toastPosition,
         notificationSoundsEnabled: state.notificationSoundsEnabled,
+        notificationSoundPreset: state.notificationSoundPreset,
       }),
       onRehydrateStorage: () => (state) => {
-        // Validate and normalize toastDuration, toastPosition, and notificationSoundsEnabled after rehydration from storage
+        // Validate and normalize toastDuration, toastPosition, notificationSoundsEnabled, and notificationSoundPreset after rehydration from storage
         // Use setter methods to ensure subscribers are notified of the validated values
         if (state?.toastDuration !== undefined) {
           state.setToastDuration(state.toastDuration)
@@ -169,6 +198,9 @@ export const useUIStore = create<UIState>()(
         }
         if (state?.notificationSoundsEnabled !== undefined) {
           state.setNotificationSoundsEnabled(state.notificationSoundsEnabled)
+        }
+        if (state?.notificationSoundPreset !== undefined) {
+          state.setNotificationSoundPreset(state.notificationSoundPreset)
         }
       },
     }

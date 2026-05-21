@@ -30,7 +30,13 @@ import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
 import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
-import { TOAST_DURATION_VALUES, TOAST_POSITION_OPTIONS, type ToastPosition } from '@constants/index'
+import {
+  TOAST_DURATION_VALUES,
+  TOAST_POSITION_OPTIONS,
+  NOTIFICATION_SOUND_PRESETS,
+  type ToastPosition,
+  type NotificationSoundPreset
+} from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -53,7 +59,9 @@ const AdminSettingsPage = () => {
     toastPosition,
     setToastPosition,
     notificationSoundsEnabled,
-    setNotificationSoundsEnabled
+    setNotificationSoundsEnabled,
+    notificationSoundPreset,
+    setNotificationSoundPreset
   } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
@@ -253,6 +261,33 @@ const AdminSettingsPage = () => {
       console.error('Failed to toggle notification sounds:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.notificationSoundsToggleFailed'))
+    }
+  }
+
+  const handleNotificationSoundPresetChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as NotificationSoundPreset
+
+    // Validate that the value is a valid notification sound preset option
+    const isValid = Object.keys(NOTIFICATION_SOUND_PRESETS).includes(value)
+    if (!isValid) {
+      console.error('Invalid notification sound preset:', value)
+      toast.error('Failed to change notification sound preset. Please try again.')
+      return
+    }
+
+    try {
+      setNotificationSoundPreset(value)
+      // Show success feedback to user
+      toast.success('Notification sound preset changed')
+
+      // Play a preview of the selected sound
+      import('@utils/soundUtils').then(({ playNotificationSound }) => {
+        playNotificationSound(value)
+      })
+    } catch (error) {
+      console.error('Failed to change notification sound preset:', error)
+      // Show error feedback to user
+      toast.error('Failed to change notification sound preset. Please try again.')
     }
   }
 
@@ -545,6 +580,33 @@ const AdminSettingsPage = () => {
               labelPlacement="start"
             />
           </Box>
+
+          {/* Notification Sound Preset Selection - Only shown when sounds are enabled */}
+          {notificationSoundsEnabled && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+                Sound Preset
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel id="notification-sound-preset-label">
+                  Select Sound
+                </InputLabel>
+                <Select
+                  labelId="notification-sound-preset-label"
+                  id="notification-sound-preset-select"
+                  value={notificationSoundPreset}
+                  label="Select Sound"
+                  onChange={handleNotificationSoundPresetChange}
+                >
+                  {Object.entries(NOTIFICATION_SOUND_PRESETS).map(([key, config]) => (
+                    <MenuItem key={key} value={key}>
+                      {config.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
         </Box>
 
         <Divider sx={{ my: 3 }} />
