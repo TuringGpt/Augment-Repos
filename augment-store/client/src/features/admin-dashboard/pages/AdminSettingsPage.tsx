@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -70,6 +70,9 @@ const AdminSettingsPage = () => {
       ? (i18n.resolvedLanguage as LanguageCode)
       : FALLBACK_LANGUAGE
   const currentLanguageName = LANGUAGES[currentLanguage].nativeName
+
+  // Track the latest selected preset to prevent race conditions in sound preview
+  const latestPresetRef = useRef<NotificationSoundPreset | null>(null)
 
   // Normalize toast duration to a valid option and persist the normalized value
   // This ensures UI and actual toast behavior cannot diverge
@@ -280,10 +283,17 @@ const AdminSettingsPage = () => {
       // Show success feedback to user
       toast.success(t('admin.settingsPage.notificationSoundPresetChanged'))
 
+      // Update the latest preset ref to guard against race conditions
+      latestPresetRef.current = value
+
       // Play a preview of the selected sound
       import('@utils/soundUtils')
         .then(({ playNotificationSound }) => {
-          playNotificationSound(value)
+          // Only play the sound if this is still the latest selected preset
+          // This prevents race conditions when user changes presets quickly
+          if (latestPresetRef.current === value) {
+            playNotificationSound(value)
+          }
         })
         .catch((error) => {
           console.error('Failed to load sound utility:', error)
