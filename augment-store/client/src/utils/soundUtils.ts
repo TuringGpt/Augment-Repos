@@ -15,7 +15,9 @@ import { NOTIFICATION_SOUND_PRESETS } from '@constants/index'
 export const playNotificationSound = (preset: NotificationSoundPreset = 'default'): void => {
   try {
     // Get the sound configuration for the selected preset
-    const soundConfig = NOTIFICATION_SOUND_PRESETS[preset]
+    // Defensive fallback to 'default' preset if the requested preset is undefined
+    // This prevents crashes from corrupted values or future runtime issues
+    const soundConfig = NOTIFICATION_SOUND_PRESETS[preset] ?? NOTIFICATION_SOUND_PRESETS['default']
 
     // Create AudioContext
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
