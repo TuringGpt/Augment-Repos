@@ -50,6 +50,22 @@ const validateToastPosition = (position: unknown): ToastPosition => {
   return DEFAULT_TOAST_POSITION
 }
 
+/**
+ * Validates notification sounds enabled setting to ensure it's a boolean
+ * Prevents non-boolean values from corrupted/edited localStorage
+ * @param enabled - The value to validate
+ * @returns A boolean value, defaults to false if invalid (opt-in behavior)
+ */
+const validateNotificationSoundsEnabled = (enabled: unknown): boolean => {
+  // Check if the value is a valid boolean
+  if (typeof enabled === 'boolean') {
+    return enabled
+  }
+
+  // Default to false for invalid values (opt-in behavior)
+  return false
+}
+
 interface UIState {
   isSidebarOpen: boolean
   isCartDrawerOpen: boolean
@@ -59,6 +75,7 @@ interface UIState {
   isLoading: boolean
   toastDuration: number // Default toast duration in milliseconds
   toastPosition: ToastPosition // Default toast position
+  notificationSoundsEnabled: boolean // Enable/disable notification sounds
 
   // Actions
   toggleSidebar: () => void
@@ -76,6 +93,7 @@ interface UIState {
   setGlobalLoading: (isLoading: boolean) => void
   setToastDuration: (duration: number) => void
   setToastPosition: (position: ToastPosition) => void
+  setNotificationSoundsEnabled: (enabled: boolean) => void
 }
 
 export const useUIStore = create<UIState>()(
@@ -89,6 +107,7 @@ export const useUIStore = create<UIState>()(
       isLoading: false,
       toastDuration: DEFAULT_TOAST_DURATION,
       toastPosition: DEFAULT_TOAST_POSITION,
+      notificationSoundsEnabled: false, // Notification sounds disabled by default (opt-in)
 
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
 
@@ -129,21 +148,27 @@ export const useUIStore = create<UIState>()(
       setToastDuration: (duration) => set({ toastDuration: validateToastDuration(duration) }),
 
       setToastPosition: (position) => set({ toastPosition: validateToastPosition(position) }),
+
+      setNotificationSoundsEnabled: (enabled) => set({ notificationSoundsEnabled: validateNotificationSoundsEnabled(enabled) }),
     }),
     {
       name: 'ui-storage',
       partialize: (state) => ({
         toastDuration: state.toastDuration,
         toastPosition: state.toastPosition,
+        notificationSoundsEnabled: state.notificationSoundsEnabled,
       }),
       onRehydrateStorage: () => (state) => {
-        // Validate and normalize toastDuration and toastPosition after rehydration from storage
+        // Validate and normalize toastDuration, toastPosition, and notificationSoundsEnabled after rehydration from storage
         // Use setter methods to ensure subscribers are notified of the validated values
         if (state?.toastDuration !== undefined) {
           state.setToastDuration(state.toastDuration)
         }
         if (state?.toastPosition !== undefined) {
           state.setToastPosition(state.toastPosition)
+        }
+        if (state?.notificationSoundsEnabled !== undefined) {
+          state.setNotificationSoundsEnabled(state.notificationSoundsEnabled)
         }
       },
     }

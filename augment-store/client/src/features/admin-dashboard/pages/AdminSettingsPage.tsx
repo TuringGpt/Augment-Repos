@@ -47,7 +47,14 @@ const AdminSettingsPage = () => {
   const toast = useToast()
   const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const { mode, toggleMode } = useThemeStore()
-  const { toastDuration, setToastDuration, toastPosition, setToastPosition } = useUIStore()
+  const {
+    toastDuration,
+    setToastDuration,
+    toastPosition,
+    setToastPosition,
+    notificationSoundsEnabled,
+    setNotificationSoundsEnabled
+  } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
   const currentLanguage: LanguageCode =
@@ -229,6 +236,23 @@ const AdminSettingsPage = () => {
       console.error('Failed to change toast position:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.toastPositionChangeFailed'))
+    }
+  }
+
+  const handleNotificationSoundsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const newValue = event.target.checked
+      setNotificationSoundsEnabled(newValue)
+      // Show success feedback to user
+      toast.success(
+        newValue
+          ? t('admin.settingsPage.notificationSoundsEnabledSuccess')
+          : t('admin.settingsPage.notificationSoundsDisabledSuccess')
+      )
+    } catch (error) {
+      console.error('Failed to toggle notification sounds:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.notificationSoundsToggleFailed'))
     }
   }
 
@@ -482,6 +506,44 @@ const AdminSettingsPage = () => {
                 ))}
               </Select>
             </FormControl>
+          </Box>
+
+          {/* Notification Sounds Toggle */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              p: 2,
+              bgcolor: 'background.default',
+              borderRadius: 2,
+              mt: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <NotificationsIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {t('admin.settingsPage.notificationSounds')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {notificationSoundsEnabled
+                    ? t('admin.settingsPage.notificationSoundsEnabled')
+                    : t('admin.settingsPage.notificationSoundsDisabled')}
+                </Typography>
+              </Box>
+            </Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={notificationSoundsEnabled}
+                  onChange={handleNotificationSoundsToggle}
+                  color="primary"
+                />
+              }
+              label={notificationSoundsEnabled ? t('admin.settingsPage.notificationSoundsEnabledLabel') : t('admin.settingsPage.notificationSoundsDisabledLabel')}
+              labelPlacement="start"
+            />
           </Box>
         </Box>
 
