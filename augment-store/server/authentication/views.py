@@ -2,13 +2,25 @@ from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .serializers import ForgotPasswordSerializer, LoginSerializer, RefreshTokenSerializer, RegisterSerializer
+
+
+class AuthAnonThrottle(AnonRateThrottle):
+    scope = "auth_anon"
+    rate = "5/min"
+
+
+class AuthUserThrottle(UserRateThrottle):
+    scope = "auth_user"
+    rate = "100/min"
 
 
 class RegisterView(CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = []
+    throttle_classes = [AuthAnonThrottle, AuthUserThrottle]
 
 
 class LoginView(CreateAPIView):

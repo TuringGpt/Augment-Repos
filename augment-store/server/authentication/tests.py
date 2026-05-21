@@ -8,9 +8,6 @@ from accounts.models import User
 
 class AuthenticationTests(BaseAPITestCase):
 
-    def setUp(self):
-        super().setUp()
-
     def test_register(self):
         # GIVEN a user does not exist
         # WHEN we make a post request to /auth/register/ with valid data
@@ -175,6 +172,31 @@ class AuthenticationTests(BaseAPITestCase):
         
         # AND the response should contain success message
         self.assertEqual(response.data["message"], "Password reset email sent")
+
+    @override_settings(CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "auth-throttle-tests",
+        }
+    })
+    def test_register_is_throttled(self):
+        url = reverse("v1:register")
+        for attempt in range(5):
+            payload = {
+                "email": f"limit{attempt}@example.com",
+                "password": "testpassword",
+                "first_name": "Test",
+                "last_name": "User",
+            }
+            response = self.client.post(url, payload)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(url, {
+            "email": "limit5@example.com",
+            "password": "testpassword",
+            "first_name": "Test",
+            "last_name": "User",
+        })
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
     def test_logout(self):
         # GIVEN a user with email:user@demo.com and passowrd:asdf1234 exist
