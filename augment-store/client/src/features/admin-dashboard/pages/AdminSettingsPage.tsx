@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Container,
@@ -30,7 +30,13 @@ import { useAuthStore } from '@store/authStore'
 import { useThemeStore } from '@store/themeStore'
 import { useUIStore } from '@store/uiStore'
 import { LANGUAGES, LanguageCode, FALLBACK_LANGUAGE } from '@config/i18n'
-import { TOAST_DURATION_VALUES, TOAST_POSITION_OPTIONS, type ToastPosition } from '@constants/index'
+import {
+  TOAST_DURATION_VALUES,
+  TOAST_POSITION_OPTIONS,
+  NOTIFICATION_SOUND_PRESETS,
+  type ToastPosition,
+  type NotificationSoundPreset
+} from '@constants/index'
 
 /**
  * AdminSettingsPage Component
@@ -53,7 +59,9 @@ const AdminSettingsPage = () => {
     toastPosition,
     setToastPosition,
     notificationSoundsEnabled,
-    setNotificationSoundsEnabled
+    setNotificationSoundsEnabled,
+    notificationSoundPreset,
+    setNotificationSoundPreset
   } = useUIStore()
 
   // Get current language name - normalize to a supported LanguageCode
@@ -62,6 +70,21 @@ const AdminSettingsPage = () => {
       ? (i18n.resolvedLanguage as LanguageCode)
       : FALLBACK_LANGUAGE
   const currentLanguageName = LANGUAGES[currentLanguage].nativeName
+
+  // Track the latest selected preset to prevent race conditions in sound preview
+  const latestPresetRef = useRef<NotificationSoundPreset | null>(null)
+  // Track component mount state to prevent sound playback after unmount
+  const isMountedRef = useRef<boolean>(true)
+
+  // Set mounted state on mount and cleanup on unmount
+  // IMPORTANT: This useEffect must be placed before any conditional returns
+  // to comply with the Rules of Hooks
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Normalize toast duration to a valid option and persist the normalized value
   // This ensures UI and actual toast behavior cannot diverge
@@ -253,6 +276,53 @@ const AdminSettingsPage = () => {
       console.error('Failed to toggle notification sounds:', error)
       // Show error feedback to user
       toast.error(t('admin.settingsPage.notificationSoundsToggleFailed'))
+    }
+  }
+
+  const handleNotificationSoundPresetChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as NotificationSoundPreset
+
+    // Validate that the value is a valid notification sound preset option
+    const isValid = Object.keys(NOTIFICATION_SOUND_PRESETS).includes(value)
+    if (!isValid) {
+      console.error('Invalid notification sound preset:', value)
+      toast.error(t('admin.settingsPage.notificationSoundPresetChangeFailed'))
+      return
+    }
+
+    try {
+      setNotificationSoundPreset(value)
+      // Show success feedback to user
+      toast.success(t('admin.settingsPage.notificationSoundPresetChanged'))
+
+      // Update the latest preset ref to guard against race conditions
+      latestPresetRef.current = value
+
+      // Play a preview of the selected sound
+      import('@utils/soundUtils')
+        .then(({ playNotificationSound }) => {
+          // Only play the sound if all conditions are met:
+          // 1. This is still the latest selected preset (prevents rapid preset changes)
+          // 2. Component is still mounted (prevents playback after navigation)
+          // 3. Notification sounds are still enabled (prevents playback after toggle off)
+          // Note: Check the store's current state, not the closure-captured value,
+          // to avoid stale closure issues if the user toggles sounds off before the import resolves
+          if (
+            latestPresetRef.current === value &&
+            isMountedRef.current &&
+            useUIStore.getState().notificationSoundsEnabled
+          ) {
+            playNotificationSound(value)
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to load sound utility:', error)
+          // Preview playback failed, but preset was saved successfully
+        })
+    } catch (error) {
+      console.error('Failed to change notification sound preset:', error)
+      // Show error feedback to user
+      toast.error(t('admin.settingsPage.notificationSoundPresetChangeFailed'))
     }
   }
 
@@ -545,6 +615,33 @@ const AdminSettingsPage = () => {
               labelPlacement="start"
             />
           </Box>
+
+          {/* Notification Sound Preset Selection - Only shown when sounds are enabled */}
+          {notificationSoundsEnabled && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
+                {t('admin.settingsPage.soundPreset')}
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel id="notification-sound-preset-label">
+                  {t('admin.settingsPage.selectSound')}
+                </InputLabel>
+                <Select
+                  labelId="notification-sound-preset-label"
+                  id="notification-sound-preset-select"
+                  value={notificationSoundPreset}
+                  label={t('admin.settingsPage.selectSound')}
+                  onChange={handleNotificationSoundPresetChange}
+                >
+                  {Object.keys(NOTIFICATION_SOUND_PRESETS).map((key) => (
+                    <MenuItem key={key} value={key}>
+                      {t(`admin.settingsPage.soundPresets.${key}`)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
         </Box>
 
         <Divider sx={{ my: 3 }} />

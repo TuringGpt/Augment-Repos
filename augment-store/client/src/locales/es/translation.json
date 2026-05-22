@@ -1370,6 +1370,18 @@
       "notificationSoundsEnabledSuccess": "Sonidos de notificación habilitados",
       "notificationSoundsDisabledSuccess": "Sonidos de notificación deshabilitados",
       "notificationSoundsToggleFailed": "Error al cambiar los sonidos de notificación. Por favor, inténtalo de nuevo.",
+      "soundPreset": "Preajuste de Sonido",
+      "selectSound": "Seleccionar Sonido",
+      "notificationSoundPresetChanged": "Preajuste de sonido de notificación cambiado",
+      "notificationSoundPresetChangeFailed": "Error al cambiar el preajuste de sonido de notificación. Por favor, inténtalo de nuevo.",
+      "soundPresets": {
+        "default": "Predeterminado",
+        "chime": "Campanilla",
+        "beep": "Pitido",
+        "pop": "Pop",
+        "bell": "Campana",
+        "subtle": "Sutil"
+      },
       "moreSettings": "Más Configuraciones Próximamente",
       "moreSettingsDescription": "Opciones de configuración adicionales estarán disponibles aquí en futuras actualizaciones."
     },

@@ -13,7 +13,7 @@ const NotificationBell = () => {
   const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const { unreadCount, fetchUnreadCount } = useNotificationStore()
-  const { notificationSoundsEnabled } = useUIStore()
+  const { notificationSoundsEnabled, notificationSoundPreset } = useUIStore()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -56,12 +56,12 @@ const NotificationBell = () => {
     // 2. User is authenticated
     // 3. Count increased (new notifications arrived)
     if (isAuthenticated && unreadCount > prevUnreadCountRef.current) {
-      playNotificationSoundIfEnabled(notificationSoundsEnabled)
+      playNotificationSoundIfEnabled(notificationSoundsEnabled, notificationSoundPreset)
     }
 
     // Always update the reference for subsequent comparisons
     prevUnreadCountRef.current = unreadCount
-  }, [unreadCount, isAuthenticated, notificationSoundsEnabled])
+  }, [unreadCount, isAuthenticated, notificationSoundsEnabled, notificationSoundPreset])
 
   // Poll for unread count every 30 seconds
   useEffect(() => {

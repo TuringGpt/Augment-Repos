@@ -86,6 +86,21 @@ export const TOAST_POSITION_OPTIONS = {
 export type ToastPosition = keyof typeof TOAST_POSITION_OPTIONS
 export const DEFAULT_TOAST_POSITION: ToastPosition = 'bottom-right'
 
+// Notification sound preset options
+// Each preset defines a unique sound profile using Web Audio API parameters
+// Note: Labels are now handled via i18n keys (admin.settingsPage.soundPresets.<key>)
+export const NOTIFICATION_SOUND_PRESETS = {
+  'default': { frequency: 800, duration: 0.2, type: 'sine' as OscillatorType },
+  'chime': { frequency: 1200, duration: 0.15, type: 'sine' as OscillatorType },
+  'beep': { frequency: 600, duration: 0.1, type: 'square' as OscillatorType },
+  'pop': { frequency: 1000, duration: 0.08, type: 'sine' as OscillatorType },
+  'bell': { frequency: 1500, duration: 0.25, type: 'triangle' as OscillatorType },
+  'subtle': { frequency: 700, duration: 0.12, type: 'sine' as OscillatorType },
+} as const
+
+export type NotificationSoundPreset = keyof typeof NOTIFICATION_SOUND_PRESETS
+export const DEFAULT_NOTIFICATION_SOUND_PRESET: NotificationSoundPreset = 'default'
+
 export const CONTACT_INFO = {
   SUPPORT_EMAIL: 'support@augmentstore.com',
   SUPPORT_PHONE: '+1 (555) 123-4567',

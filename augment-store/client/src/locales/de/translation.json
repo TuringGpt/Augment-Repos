@@ -1370,6 +1370,18 @@
       "notificationSoundsEnabledSuccess": "Benachrichtigungstöne aktiviert",
       "notificationSoundsDisabledSuccess": "Benachrichtigungstöne deaktiviert",
       "notificationSoundsToggleFailed": "Benachrichtigungstöne konnten nicht umgeschaltet werden. Bitte versuchen Sie es erneut.",
+      "soundPreset": "Sound-Voreinstellung",
+      "selectSound": "Sound Auswählen",
+      "notificationSoundPresetChanged": "Benachrichtigungston-Voreinstellung geändert",
+      "notificationSoundPresetChangeFailed": "Benachrichtigungston-Voreinstellung konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+      "soundPresets": {
+        "default": "Standard",
+        "chime": "Glockenspiel",
+        "beep": "Piepton",
+        "pop": "Pop",
+        "bell": "Glocke",
+        "subtle": "Dezent"
+      },
       "moreSettings": "Weitere Einstellungen Demnächst",
       "moreSettingsDescription": "Zusätzliche Konfigurationsoptionen werden hier in zukünftigen Updates verfügbar sein."
     },
