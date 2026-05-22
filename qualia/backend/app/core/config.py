@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 
 def _required_env(name: str) -> str:
     value = os.getenv(name)
-    if value is None or not value.strip():
+    if value is None:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    value = value.strip()
+    if not value:
         raise RuntimeError(f"Missing required environment variable: {name}")
     return value
 
@@ -23,4 +26,5 @@ class Settings:
     debug: bool = field(default_factory=_get_debug_flag)
 
 
-settings = Settings()
+def get_settings() -> Settings:
+    return Settings()
