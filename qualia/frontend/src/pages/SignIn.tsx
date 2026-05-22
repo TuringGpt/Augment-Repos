@@ -52,7 +52,25 @@ function SignIn() {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             const errorData = await response.json();
-            errorMessage = errorData.detail || errorData.message || errorMessage;
+
+            // Handle detail or message fields that might be strings, objects, or arrays
+            const detail = errorData.detail;
+            const message = errorData.message;
+
+            if (typeof detail === 'string' && detail) {
+              errorMessage = detail;
+            } else if (typeof message === 'string' && message) {
+              errorMessage = message;
+            } else if (detail && typeof detail === 'object') {
+              // Handle objects/arrays by converting to JSON string
+              errorMessage = Array.isArray(detail)
+                ? detail.map(err => typeof err === 'string' ? err : JSON.stringify(err)).join(', ')
+                : JSON.stringify(detail);
+            } else if (message && typeof message === 'object') {
+              errorMessage = Array.isArray(message)
+                ? message.map(err => typeof err === 'string' ? err : JSON.stringify(err)).join(', ')
+                : JSON.stringify(message);
+            }
           } else {
             // If not JSON, try to read as text for better error context
             const textError = await response.text();
