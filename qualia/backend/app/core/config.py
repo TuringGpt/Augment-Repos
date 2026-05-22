@@ -13,7 +13,7 @@ def _required_env(name: str) -> str:
 
 
 def _get_debug_flag() -> bool:
-    return os.getenv("DEBUG", "false").lower() in {"1", "true", "yes", "on"}
+    return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
 @dataclass
