@@ -205,24 +205,4 @@ export function dataForTable({ fields, translate, moneyFormatter, dateFormat }) 
   return columns;
 }
 
-function getRandomColor() {
-  const colors = [
-    'magenta',
-    'red',
-    'volcano',
-    'orange',
-    'gold',
-    'lime',
-    'green',
-    'cyan',
-    'blue',
-    'geekblue',
-    'purple',
-  ];
 
-  // Generate a random index between 0 and the length of the colors array
-  const randomIndex = Math.floor(Math.random() * colors.length);
-
-  // Return the color at the randomly generated index
-  return colors[randomIndex];
-}
