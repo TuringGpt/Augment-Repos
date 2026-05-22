@@ -11,8 +11,8 @@ function Home() {
         Forms does, plus an AI layer that turns all our reviewer submissions
         into a single consolidated report automatically.
       </h3>
-      <Link to="/signin">
-        <button>Sign in</button>
+      <Link to="/signin" className="sign-in-button">
+        Sign in
       </Link>
     </section>
   );
