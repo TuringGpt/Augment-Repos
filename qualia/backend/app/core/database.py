@@ -6,8 +6,11 @@ from sqlalchemy.orm import declarative_base
 
 
 Base = declarative_base()
-engine = create_async_engine(os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qualia.db"), echo=True)
-SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=True)
+engine = create_async_engine(
+    os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qualia.db"),
+    echo=os.getenv("SQL_ECHO", "false").lower() in {"1", "true", "yes", "on"},
+)
+SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
