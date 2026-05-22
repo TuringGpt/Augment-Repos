@@ -6,13 +6,10 @@ from sqlalchemy.orm import declarative_base
 
 
 Base = declarative_base()
-engine = create_async_engine(os.getenv("DATABASE_URL", "sqlite:///qualia.db"), echo=True)
+engine = create_async_engine(os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qualia.db"), echo=True)
 SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=True)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    session = SessionLocal
-    try:
+    async with SessionLocal() as session:
         yield session
-    finally:
-        await session.close()
