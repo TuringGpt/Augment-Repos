@@ -1,1 +1,1 @@
-"""Qualia backend package."""
+"""Qualia backend application package."""
