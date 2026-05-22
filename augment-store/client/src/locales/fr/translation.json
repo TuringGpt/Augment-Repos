@@ -1022,6 +1022,10 @@
       "emptyState": {
         "noOrders": "Aucune Commande Pour le Moment",
         "noOrdersDescription": "Aucune commande client n'a encore été passée."
+      },
+      "pagination": {
+        "goToPage": "Aller à la page",
+        "pageNumber": "Page {{pageNum}}"
       }
     },
     "products": "Produits",
