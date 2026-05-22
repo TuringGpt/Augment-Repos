@@ -113,6 +113,12 @@ function SignIn() {
         throw new Error('Missing user role in response');
       }
 
+      // Validate that the role is one of the recognized values
+      const validRoles = ['admin', 'reviewer', 'viewer'];
+      if (!validRoles.includes(data.user.role)) {
+        throw new Error(`Unrecognized user role: ${data.user.role}. Please contact support.`);
+      }
+
       // Type-safe response after validation
       const loginData = data as LoginResponse;
 
@@ -125,8 +131,11 @@ function SignIn() {
         navigate('/admin/dashboard');
       } else if (loginData.user.role === 'reviewer') {
         navigate('/reviewer/dashboard');
-      } else {
+      } else if (loginData.user.role === 'viewer') {
         navigate('/viewer/dashboard');
+      } else {
+        // This should never happen due to validation above, but TypeScript doesn't know that
+        throw new Error(`Unrecognized user role: ${loginData.user.role}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during sign in');
