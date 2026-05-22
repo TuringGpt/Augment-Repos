@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       
       // Cache time: how long inactive data stays in cache (10 minutes)
-      gctime: 10 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       
       // Retry failed requests 3 times
       retry: 3,
@@ -22,14 +22,14 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: import.meta.env.PROD,
       
       // Refetch on reconnect
-      refetchOnReconect: true,
+      refetchOnReconnect: true,
       
       // Don't refetch on mount if data is fresh
       refetchOnMount: false,
     },
     mutations: {
       // Retry failed mutations once
-      Retry: 1,
+      retry: 1,
     },
   },
 });
