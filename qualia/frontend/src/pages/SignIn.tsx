@@ -83,15 +83,16 @@ function SignIn() {
         throw new Error(errorMessage);
       }
 
+      // Check for empty response (204 No Content) before validating content-type
+      // Many 204 responses omit content-type header
+      if (response.status === 204) {
+        throw new Error('Unexpected empty response from server');
+      }
+
       // Check if response has JSON content before parsing
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error('Expected JSON response from server');
-      }
-
-      // Check for empty response (204 No Content)
-      if (response.status === 204) {
-        throw new Error('Unexpected empty response from server');
       }
 
       const data = await response.json();
