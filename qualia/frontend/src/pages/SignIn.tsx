@@ -1,10 +1,25 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './SignIn.css';
 
 interface SignInFormData {
   email: string;
   password: string;
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  username: string;
+  role: 'admin' | 'reviewer' | 'viewer';
+  full_name: string;
+}
+
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  user: UserData;
+  expires_in: number;
 }
 
 function SignIn() {
@@ -16,7 +31,7 @@ function SignIn() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -51,15 +66,35 @@ function SignIn() {
       }
 
       const data = await response.json();
-      
+
+      // Validate response structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from server');
+      }
+
+      if (!data.access_token || !data.refresh_token) {
+        throw new Error('Missing authentication tokens in response');
+      }
+
+      if (!data.user || typeof data.user !== 'object') {
+        throw new Error('Missing user information in response');
+      }
+
+      if (!data.user.role) {
+        throw new Error('Missing user role in response');
+      }
+
+      // Type-safe response after validation
+      const loginData = data as LoginResponse;
+
       // Store the access token (in a real app, use secure storage)
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
-      
+      localStorage.setItem('access_token', loginData.access_token);
+      localStorage.setItem('refresh_token', loginData.refresh_token);
+
       // Navigate based on user role
-      if (data.user.role === 'admin') {
+      if (loginData.user.role === 'admin') {
         navigate('/admin/dashboard');
-      } else if (data.user.role === 'reviewer') {
+      } else if (loginData.user.role === 'reviewer') {
         navigate('/reviewer/dashboard');
       } else {
         navigate('/viewer/dashboard');
