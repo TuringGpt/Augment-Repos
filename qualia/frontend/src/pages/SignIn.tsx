@@ -32,8 +32,22 @@ function SignIn() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
+        let errorMessage = 'Login failed';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } else {
+            // If not JSON, try to read as text for better error context
+            const textError = await response.text();
+            errorMessage = textError || `Login failed with status ${response.status}`;
+          }
+        } catch {
+          // If parsing fails, use a generic error message with status code
+          errorMessage = `Login failed with status ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
