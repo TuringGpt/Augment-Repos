@@ -8,6 +8,8 @@ import time
 
 from app.core.config import get_settings
 
+PBKDF2_ITERATIONS = 100_000
+
 
 def _b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
@@ -20,7 +22,7 @@ def _b64url_decode(data: str) -> bytes:
 
 def hash_password(password: str) -> str:
     salt = os.urandom(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100_000)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS)
     return f"{_b64url_encode(salt)}:{_b64url_encode(digest)}"
 
 
@@ -32,11 +34,14 @@ def verify_password(password: str, password_hash: str) -> bool:
     except (ValueError, binascii.Error):
         return False
 
-    actual_digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100_000)
+    actual_digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS)
     return hmac.compare_digest(actual_digest, expected_digest)
 
 
 def create_access_token(subject: str, expires_in: int = 3600) -> str:
+    if expires_in <= 0:
+        raise ValueError("expires_in must be positive")
+
     now = int(time.time())
     header = {"alg": "HS256", "typ": "JWT"}
     payload = {"sub": subject, "exp": now + expires_in}
