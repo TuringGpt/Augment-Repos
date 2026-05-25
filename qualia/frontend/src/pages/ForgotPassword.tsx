@@ -133,9 +133,9 @@ function ForgotPassword() {
 
         <div className="forgot-password-footer">
           <p>
-            Remeber your password?{' '}
+            Remember your password?{' '}
             <Link to="/signin" className="signin-link">
-              Sign up here
+              Sign in here
             </Link>
           </p>
         </div>
