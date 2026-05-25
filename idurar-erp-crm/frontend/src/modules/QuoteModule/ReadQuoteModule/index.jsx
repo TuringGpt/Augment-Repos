@@ -2,7 +2,7 @@ import NotFound from '@/components/NotFound';
 import { ErpLayout } from '@/layout';
 import ReadItem from '@/modules/ErpPanelModule/ReadItem';
 
-import PageLoader from '@/components/PageLoader';
+import ReadItemSkeleton from '@/components/ReadItemSkeleton';
 import { erp } from '@/redux/erp/actions';
 
 import { selectReadItem } from '@/redux/erp/selectors';
@@ -23,7 +23,7 @@ export default function ReadQuoteModule({ config }) {
   if (isLoading) {
     return (
       <ErpLayout>
-        <PageLoader />
+        <ReadItemSkeleton />
       </ErpLayout>
     );
   } else
