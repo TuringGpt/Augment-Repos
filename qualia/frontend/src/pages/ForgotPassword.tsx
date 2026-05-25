@@ -21,13 +21,16 @@ function ForgotPassword() {
     setIsLoading(true);
 
     try {
+      // Trim and normalize email to prevent whitespace-related failures
+      const trimmedEmail = formData.email.trim();
+
       // TODO: Integrate with actual API endpoint
       await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email: trimmedEmail }),
       });
 
       // Always show success message regardless of response status
