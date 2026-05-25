@@ -932,11 +932,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.10.12":
-  version: 2.10.31
-  resolution: "baseline-browser-mapping@npm:2.10.31"
+  version: 2.10.32
+  resolution: "baseline-browser-mapping@npm:2.10.32"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/ecb6a10b4bb62d8660e3a4c525acdae2b1c7f68e4ec1e03f473b2050781b7131fbd562a200489ae987d11eb8ae85ec95d3ac77d9d84b4afe6548dfdfdceb6734
+  checksum: 10c0/408c93245bdf1e92ab0f891ebf9283ec60dbabfaac81bdc9a20d371565a2a496b0fb8028f7d628c3f66f90ee142670a81575cf1cbd5229f7b4b0d350db911085
   languageName: node
   linkType: hard
 
@@ -985,6 +985,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie@npm:^1.0.1":
+  version: 1.1.1
+  resolution: "cookie@npm:1.1.1"
+  checksum: 10c0/79c4ddc0fcad9c4f045f826f42edf54bcc921a29586a4558b0898277fa89fb47be95bc384c2253f493af7b29500c830da28341274527328f18eba9f58afa112c
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
@@ -1030,9 +1037,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.328":
-  version: 1.5.360
-  resolution: "electron-to-chromium@npm:1.5.360"
-  checksum: 10c0/2f5936e5f3c1483c7fb2f741b109ef7eb4e1761b0fc944bf2898b0835aae235c7b257790edde4679ad780fbcb8be8734caa720a4644526110c77f7216b678233
+  version: 1.5.361
+  resolution: "electron-to-chromium@npm:1.5.361"
+  checksum: 10c0/5e6e9c0c12ab82366eddf575c8b9114d5af710abad3b592141c56cfa0169471f3633dcc793420c303fad68dff21c8fb724b43cde7e66be947983fa3d6d5a7359
   languageName: node
   linkType: hard
 
@@ -1297,6 +1304,7 @@ __metadata:
     globals: "npm:^17.6.0"
     react: "npm:^19.2.6"
     react-dom: "npm:^19.2.6"
+    react-router-dom: "npm:^7.15.1"
     tailwindcss: "npm:^4.3.0"
     typescript: "npm:~6.0.2"
     typescript-eslint: "npm:^8.59.2"
@@ -1710,9 +1718,9 @@ __metadata:
   linkType: hard
 
 "node-releases@npm:^2.0.36":
-  version: 2.0.45
-  resolution: "node-releases@npm:2.0.45"
-  checksum: 10c0/2b19002daed3fa798837e43d3e5056702827f80a8b64a73233c3b737d5477ff840ce40d2d67424c6ee8e6dbf5ddaf24f77b85f41d6217e74b25091badb859970
+  version: 2.0.46
+  resolution: "node-releases@npm:2.0.46"
+  checksum: 10c0/04632591f97f15848adfb12b21fa013a6c19809afcf5db65fe88c95a36271c3f423e21110fd319ad5a9c5029ffe65eb81f3e4857e6af19622bc888d92a04ad22
   languageName: node
   linkType: hard
 
@@ -1830,6 +1838,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-router-dom@npm:^7.15.1":
+  version: 7.15.1
+  resolution: "react-router-dom@npm:7.15.1"
+  dependencies:
+    react-router: "npm:7.15.1"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: 10c0/d8421566cfa75a53ff85e172a9485be6681f917160de15be6582eb9ca382d187688529c84453e3fb845514e8f784638f5099784859be3740235aa030afb38b5b
+  languageName: node
+  linkType: hard
+
+"react-router@npm:7.15.1":
+  version: 7.15.1
+  resolution: "react-router@npm:7.15.1"
+  dependencies:
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10c0/3daff5404c7de1429447e735f1ee7e070d4f11632f589cec70c5171f2357be9cada2162f780bc9061eb153646109ad6e80c2d10a6b27256593f28a66945f4c76
+  languageName: node
+  linkType: hard
+
 "react@npm:^19.2.6":
   version: 19.2.6
   resolution: "react@npm:19.2.6"
@@ -1912,11 +1948,18 @@ __metadata:
   linkType: hard
 
 "semver@npm:^7.3.5, semver@npm:^7.7.3":
-  version: 7.8.0
-  resolution: "semver@npm:7.8.0"
+  version: 7.8.1
+  resolution: "semver@npm:7.8.1"
   bin:
     semver: bin/semver.js
-  checksum: 10c0/8f096ca9b80ffd47b308d03f9ce8c873e27e2983f36023c559cdc92c51e8433fc23ebbfe57ec9623fc155636a6961ee989501099841ae4bb1babc8d2b3f048cd
+  checksum: 10c0/92d6871d6347e1f99d0ba396a70f2545ccf2a032cda3d378fa0699edf7506b5c6d266aed55c8b88e72bd91a30d2351e4f39db479375374430fcdc4b58f4e3c1a
+  languageName: node
+  linkType: hard
+
+"set-cookie-parser@npm:^2.6.0":
+  version: 2.7.2
+  resolution: "set-cookie-parser@npm:2.7.2"
+  checksum: 10c0/4381a9eb7ee951dfe393fe7aacf76b9a3b4e93a684d2162ab35594fa4053cc82a4d7d7582bf397718012c9adcf839b8cd8f57c6c42901ea9effe33c752da4a45
   languageName: node
   linkType: hard
 
