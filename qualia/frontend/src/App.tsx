@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import "./App.css";
 import SignIn from './pages/SignIn';
-import ForgotPassword from './pages/ForgotPasswords';
+import ForgotPassword from './pages/ForgotPassword';
 
 function Home() {
   return (
