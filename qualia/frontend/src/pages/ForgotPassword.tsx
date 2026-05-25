@@ -102,7 +102,7 @@ function ForgotPassword() {
           )}
 
           {success && (
-            <div className="forgot-password-success-message" role="alert">
+            <div className="forgot-password-success-message" role="status">
               {success}
             </div>
           )}
