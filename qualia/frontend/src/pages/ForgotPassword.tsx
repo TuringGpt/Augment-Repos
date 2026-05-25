@@ -24,6 +24,14 @@ function ForgotPassword() {
       // Trim and normalize email to prevent whitespace-related failures
       const trimmedEmail = formData.email.trim();
 
+      // Validate that the trimmed email is not empty
+      // (e.g., whitespace-only input that bypassed HTML5 validation)
+      if (!trimmedEmail) {
+        setError('Please enter a valid email address.');
+        setIsLoading(false);
+        return;
+      }
+
       // TODO: Integrate with actual API endpoint
       await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
         method: 'POST',
