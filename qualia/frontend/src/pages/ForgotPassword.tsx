@@ -31,37 +31,9 @@ function ForgotPassword() {
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to send password reset email';
-        try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-
-            // Handle detail or message fields that might be strings, objects, or arrays
-            const detail = errorData.detail;
-            const message = errorData.message;
-
-            if (typeof detail === 'string') {
-              errorMessage = detail;
-            } else if (Array.isArray(detail)) {
-              errorMessage = detail.map((item: any) => 
-                typeof item === 'string' ? item : item.msg || JSON.stringify(item)
-              ).join(', ');
-            } else if (typeof message === 'string') {
-              errorMessage = message;
-            } else if (detail && typeof detail === 'object') {
-              errorMessage = JSON.stringify(detail);
-            }
-          } else {
-            // If not JSON, try to read as text for better error context
-            const textError = await response.text();
-            errorMessage = textError || `Request failed with status ${response.status}`;
-          }
-        } catch {
-          // If parsing fails, use a generic error message with status code
-          errorMessage = `Request failed with status ${response.status}`;
-        }
-        throw new Error(errorMessage);
+        // Use a generic error message to prevent account enumeration
+        // Do not expose backend error details that could reveal if an email exists
+        throw new Error('Unable to process your request at this time. Please try again later.');
       }
 
       // Success response
@@ -134,7 +106,7 @@ function ForgotPassword() {
         <div className="forgot-password-footer">
           <p>
             Remember your password?{' '}
-            <Link to="/signin" className="signin-link">
+            <Link to="/signin" className="forgot-password-signin-link">
               Sign in here
             </Link>
           </p>
