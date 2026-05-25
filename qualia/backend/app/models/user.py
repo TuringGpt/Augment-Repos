@@ -25,7 +25,11 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[Role] = mapped_column(
-        Enum(Role), default=Role.viewer, server_default=text("'viewer'"), index=True, nullable=False
+        Enum(Role, name="user_role_enum"),
+        default=Role.viewer,
+        server_default=text("'viewer'"),
+        index=True,
+        nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=false(), index=True, nullable=False
