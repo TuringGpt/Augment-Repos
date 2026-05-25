@@ -90,7 +90,7 @@ function ForgotPassword() {
     <div className="forgot-password-container">
       <div className="forgot-password-card">
         <div className="forgot-password-header">
-          <h1>Forgot Pasword?</h1>
+          <h1>Forgot Password?</h1>
           <p>Enter your user and we'll send you instructions to reset your password.</p>
         </div>
 
