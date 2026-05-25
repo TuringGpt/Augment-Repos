@@ -33,7 +33,7 @@ function ForgotPassword() {
       }
 
       // TODO: Integrate with actual API endpoint
-      await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
+      const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,10 +41,19 @@ function ForgotPassword() {
         body: JSON.stringify({ email: trimmedEmail }),
       });
 
-      // Always show success message regardless of response status
-      // to prevent account enumeration attacks
-      // This prevents attackers from determining if an email exists in the system
-      // by observing different UI states (error vs success)
+      // Detect server errors (5xx) that indicate operational failures
+      // These should be surfaced to users as errors, not hidden
+      if (response.status >= 500) {
+        setError('Our service is temporarily unavailable. Please try again later.');
+        setIsLoading(false);
+        return;
+      }
+
+      // For 2xx and 4xx responses, show success message to prevent account enumeration
+      // - 2xx: Request succeeded (email may or may not exist, backend handles it)
+      // - 4xx: Client error (e.g., validation failure, email doesn't exist)
+      // In both cases, we show the same success message to avoid revealing
+      // whether an account exists in the system
       setSuccess(
         'If an account exists with this email address, you will receive password reset instructions shortly.'
       );
