@@ -22,7 +22,7 @@ function ForgotPassword() {
 
     try {
       // TODO: Integrate with actual API endpoint
-      const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
+      await fetch('http://localhost:8000/api/v1/auth/forgot-password/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,21 +30,20 @@ function ForgotPassword() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        // Use a generic error message to prevent account enumeration
-        // Do not expose backend error details that could reveal if an email exists
-        throw new Error('Unable to process your request at this time. Please try again later.');
-      }
-
-      // Success response
+      // Always show success message regardless of response status
+      // to prevent account enumeration attacks
+      // This prevents attackers from determining if an email exists in the system
+      // by observing different UI states (error vs success)
       setSuccess(
         'If an account exists with this email address, you will receive password reset instructions shortly.'
       );
-      
+
       // Clear the form
       setFormData({ email: '' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while processing your request');
+      // Only show error for network failures or other technical errors
+      // that are not related to whether the email exists
+      setError('Unable to process your request at this time. Please try again later.');
     } finally {
       setIsLoading(false);
     }
