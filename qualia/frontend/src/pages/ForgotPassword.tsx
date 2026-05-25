@@ -96,18 +96,18 @@ function ForgotPassword() {
 
         <form onSubmit={handleSubmit} className="forgot-password-form">
           {error && (
-            <div className="error-message" role="alert">
+            <div className="forgot-password-error-message" role="alert">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="success-message" role="alert">
+            <div className="forgot-password-success-message" role="alert">
               {success}
             </div>
           )}
 
-          <div className="form-group">
+          <div className="forgot-password-form-group">
             <label htmlFor="email">Email Address</label>
             <input
               type="email"
