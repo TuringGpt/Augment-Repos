@@ -91,7 +91,7 @@ function ForgotPassword() {
       <div className="forgot-password-card">
         <div className="forgot-password-header">
           <h1>Forgot Password?</h1>
-          <p>Enter your user and we'll send you instructions to reset your password.</p>
+          <p>Enter your email address and we'll send you instructions to reset your password.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="forgot-password-form">
