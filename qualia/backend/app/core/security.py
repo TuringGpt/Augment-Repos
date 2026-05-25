@@ -1,4 +1,5 @@
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -28,7 +29,7 @@ def verify_password(password: str, password_hash: str) -> bool:
         salt_encoded, digest_encoded = password_hash.split(":", maxsplit=1)
         salt = _b64url_decode(salt_encoded)
         expected_digest = _b64url_decode(digest_encoded)
-    except ValueError:
+    except (ValueError, binascii.Error):
         return False
 
     actual_digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100_000)
