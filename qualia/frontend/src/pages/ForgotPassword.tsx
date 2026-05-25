@@ -28,7 +28,6 @@ function ForgotPassword() {
       // (e.g., whitespace-only input that bypassed HTML5 validation)
       if (!trimmedEmail) {
         setError('Please enter a valid email address.');
-        setIsLoading(false);
         return;
       }
 
@@ -45,7 +44,6 @@ function ForgotPassword() {
       // These should be surfaced to users as errors, not hidden
       if (response.status >= 500) {
         setError('Our service is temporarily unavailable. Please try again later.');
-        setIsLoading(false);
         return;
       }
 
