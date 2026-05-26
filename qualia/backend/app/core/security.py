@@ -74,7 +74,7 @@ def verify_token(token: str, expected_token_type: str = "access") -> dict[str, o
 
     try:
         payload = json.loads(_b64url_decode(encoded_payload))
-    except (TypeError, binascii.Error, json.JSONDecodeError):
+    except (TypeError, UnicodeDecodeError, binascii.Error, json.JSONDecodeError):
         raise ValueError("invalid token")
 
     if not isinstance(payload, dict):
