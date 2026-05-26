@@ -218,7 +218,7 @@ function SignIn() {
             </Link>
           </div>
 
-          <Button type='input' disabled={isLoading}>
+          <Button type='submit' disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
