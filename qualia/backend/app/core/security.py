@@ -84,6 +84,7 @@ def verify_token(token: str, expected_token_type: str = "access") -> dict[str, o
         raise ValueError("invalid token exp")
     if exp <= int(time.time()):
         raise ValueError("token expired")
-    if payload.get("token_type") != expected_token_type:
+    token_type = payload.get("token_type", "access")
+    if token_type != expected_token_type:
         raise ValueError("unexpected token type")
     return payload

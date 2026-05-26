@@ -20,6 +20,11 @@ LOGIN_TRACKED_EMAILS_LIMIT = 1024
 LOGIN_ATTEMPTS: dict[str, Deque[float]] = defaultdict(deque)
 
 
+def _normalized_email_or_none(email: str) -> str | None:
+    normalized_email = email.strip().lower()
+    return normalized_email or None
+
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -50,8 +55,10 @@ def _check_login_rate_limit(email: str, now: float) -> None:
 @router.post("/login", status_code=200)
 @router.post("/login/", status_code=200, include_in_schema=False)
 async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
-    normalized_email = payload.email.strip().lower()
-    now = time.time()
+    normalized_email = _normalized_email_or_none(payload.email)
+    if normalized_email is None:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    now = time.monotonic()
     _check_login_rate_limit(normalized_email, now)
     result = await db.execute(select(User).where(func.lower(User.email) == normalized_email).limit(2))
     users = result.scalars().all()
