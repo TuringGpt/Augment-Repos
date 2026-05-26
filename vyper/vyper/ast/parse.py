@@ -1,6 +1,7 @@
 import ast as python_ast
 import copy
 import pickle
+import re
 import tokenize
 from decimal import Decimal
 from functools import cached_property
@@ -19,6 +20,43 @@ PYTHON_AST_SINGLETONS = (
     python_ast.boolop,
     python_ast.expr_context,
 )
+
+# Vyper-specific call keywords for which we try to detect misspellings
+# in `parse_to_ast` when the python parser raises a SyntaxError.
+_CALL_KEYWORDS = ("staticcall", "extcall")
+
+# Tokens shorter than this are skipped when fuzzy-matching against the
+# call keywords, to avoid noisy suggestions like `if` -> `extcall`.
+_MIN_TOKEN_LEN = 4
+
+# Maximum Levenshtein distance between a misspelled token and a known
+# keyword for which we still emit a suggestion. Distance 2 covers common
+# slips (single deletion, insertion, substitution, or two-letter swap)
+# without overreaching for the keyword lengths involved (7 and 10 chars).
+_MAX_TYPO_DISTANCE = 2
+
+_IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def _suggest_call_keyword(message: str) -> Optional[str]:
+    """
+    Scan identifier-like tokens in `message` and return the call keyword
+    they were most likely meant to be, or None if no token is close enough
+    to any keyword. Used to attach a hint to syntax errors that look like
+    typos of `staticcall` / `extcall`.
+    """
+    # Lazy import: vyper.semantics depends on vyper.ast, so a top-level
+    # import here would create a cycle.
+    from vyper.semantics.analysis.levenshtein_utils import levenshtein
+
+    for token in _IDENT_RE.findall(message):
+        if len(token) < _MIN_TOKEN_LEN or token in _CALL_KEYWORDS:
+            continue
+        for keyword in _CALL_KEYWORDS:
+            distance = levenshtein(token, keyword)
+            if 0 < distance <= _MAX_TYPO_DISTANCE:
+                return keyword
+    return None
 
 
 def parse_to_ast(
@@ -91,12 +129,12 @@ def _parse_to_ast(
 
         new_e = SyntaxException(str(e), vyper_source, e.lineno, offset)
 
-        likely_errors = ("staticall", "staticcal")
-        tmp = str(new_e)
-        for s in likely_errors:
-            if s in tmp:
-                new_e._hint = "did you mean `staticcall`?"
-                break
+        # Try to suggest a fix for typos of vyper-specific call keywords.
+        # These aren't python keywords, so a misspelling produces a generic
+        # python SyntaxError with no useful hint of its own.
+        suggestion = _suggest_call_keyword(str(new_e))
+        if suggestion is not None:
+            new_e._hint = f"did you mean `{suggestion}`?"
 
         raise new_e from None
 
