@@ -17,13 +17,15 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login", status_code=200)
+@router.post("/login/", status_code=200, include_in_schema=False)
 async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
-    result = await db.execute(select(User).where(User.email == payload.email))
+    normalized_email = payload.email.strip().lower()
+    result = await db.execute(select(User).where(User.email == normalized_email))
     user = result.scalars().first()
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_active or not user.is_email_verified:
-        raise HTTPException(status_code=403, detail="User account is not active")
+        raise HTTPException(status_code=403, detail="User account is not active or email is not verified")
     return {
         "access_token": create_access_token(user.email),
         "refresh_token": create_access_token(user.email, expires_in=86400, token_type="refresh"),
