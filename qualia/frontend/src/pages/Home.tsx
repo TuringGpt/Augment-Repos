@@ -126,7 +126,7 @@ function Home() {
 
       {/* Footer */}
       <footer className="home-footer">
-        <p>&copy; 2026 Qualia. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Qualia. All rights reserved.</p>
       </footer>
     </div>
   );
