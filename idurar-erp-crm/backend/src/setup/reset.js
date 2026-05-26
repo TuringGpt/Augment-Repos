@@ -2,6 +2,7 @@ require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
 const mongoose = require('mongoose');
+mongoose.set('strictQuery', false);
 mongoose.connect(process.env.DATABASE);
 
 async function deleteData() {
