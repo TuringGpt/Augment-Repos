@@ -66,14 +66,19 @@ def verify_token(token: str, expected_token_type: str = "access") -> dict[str, o
             hashlib.sha256,
         ).digest()
         actual_signature = _b64url_decode(encoded_signature)
+    except (ValueError, TypeError, binascii.Error):
+        raise ValueError("invalid token")
+
+    if not hmac.compare_digest(actual_signature, expected_signature):
+        raise ValueError("invalid token signature")
+
+    try:
         payload = json.loads(_b64url_decode(encoded_payload))
-    except (ValueError, TypeError, binascii.Error, json.JSONDecodeError):
+    except (TypeError, binascii.Error, json.JSONDecodeError):
         raise ValueError("invalid token")
 
     if not isinstance(payload, dict):
         raise ValueError("invalid token payload")
-    if not hmac.compare_digest(actual_signature, expected_signature):
-        raise ValueError("invalid token signature")
     exp = payload.get("exp")
     if not isinstance(exp, int):
         raise ValueError("invalid token exp")

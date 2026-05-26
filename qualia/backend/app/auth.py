@@ -53,7 +53,7 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> di
     normalized_email = payload.email.strip().lower()
     now = time.time()
     _check_login_rate_limit(normalized_email, now)
-    result = await db.execute(select(User).where(func.lower(User.email) == normalized_email))
+    result = await db.execute(select(User).where(func.lower(User.email) == normalized_email).limit(2))
     users = result.scalars().all()
     user = users[0] if len(users) == 1 else None
     password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
