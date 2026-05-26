@@ -25,7 +25,8 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)) -> di
     result = await db.execute(select(User).where(func.lower(User.email) == normalized_email))
     user = result.scalars().first()
     password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
-    if user is None or not verify_password(payload.password, password_hash):
+    password_matches = verify_password(payload.password, password_hash)
+    if user is None or not password_matches:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="User account is not active or email is not verified")
