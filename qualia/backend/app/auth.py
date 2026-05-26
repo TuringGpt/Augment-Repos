@@ -34,7 +34,11 @@ def _check_login_rate_limit(email: str, now: float) -> None:
         for key in expired_keys:
             LOGIN_ATTEMPTS.pop(key, None)
         if email not in LOGIN_ATTEMPTS and len(LOGIN_ATTEMPTS) >= LOGIN_TRACKED_EMAILS_LIMIT:
-            raise HTTPException(status_code=429, detail="Too many login attempts")
+            stalest_key = min(
+                LOGIN_ATTEMPTS,
+                key=lambda key: LOGIN_ATTEMPTS[key][-1] if LOGIN_ATTEMPTS[key] else float("-inf"),
+            )
+            LOGIN_ATTEMPTS.pop(stalest_key, None)
     attempts = LOGIN_ATTEMPTS[email]
     while attempts and now - attempts[0] > LOGIN_WINDOW_SECONDS:
         attempts.popleft()
