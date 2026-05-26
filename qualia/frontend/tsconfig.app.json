@@ -24,7 +24,7 @@
 
     /* Path aliasing*/
     "baseUrl": ".",
-    "path": {
+    "paths": {
       "@/*": ["./src/*"]
     }
   },
