@@ -7,7 +7,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api/v1")
 
 
 @app.get("/health")

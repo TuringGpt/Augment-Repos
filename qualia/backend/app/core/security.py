@@ -38,13 +38,13 @@ def verify_password(password: str, password_hash: str) -> bool:
     return hmac.compare_digest(actual_digest, expected_digest)
 
 
-def create_access_token(subject: str, expires_in: int = 3600) -> str:
+def create_access_token(subject: str, expires_in: int = 3600, token_type: str = "access") -> str:
     if expires_in <= 0:
         raise ValueError("expires_in must be positive")
 
     now = int(time.time())
     header = {"alg": "HS256", "typ": "JWT"}
-    payload = {"sub": subject, "exp": now + expires_in}
+    payload = {"sub": subject, "exp": now + expires_in, "token_type": token_type}
     encoded_header = _b64url_encode(json.dumps(header, separators=(",", ":")).encode("utf-8"))
     encoded_payload = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
     signing_input = f"{encoded_header}.{encoded_payload}".encode("utf-8")
