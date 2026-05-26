@@ -18,9 +18,11 @@
 }
 
 .hero-content {
+  position: relative;
   max-width: 800px;
   text-align: center;
   animation: fadeInUp 0.8s ease-out;
+  z-index: 2;
 }
 
 @keyframes fadeInUp {
