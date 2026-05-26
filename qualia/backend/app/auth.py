@@ -1,12 +1,12 @@
 from fastapi import APIRouter
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str = Field(min_length=8)
 
 
