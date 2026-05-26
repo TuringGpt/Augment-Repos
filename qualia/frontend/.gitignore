@@ -16,6 +16,9 @@ dist-ssr
 package-lock.json
 pnpm-lock.yaml
 
+# Yarn cache and install state
+.yarn/install-state.gz
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
