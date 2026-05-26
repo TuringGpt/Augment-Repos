@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.auth import auth_router
+from app.auth import router as auth_router
 
 app = FastAPI(
     title="Qualia API",
