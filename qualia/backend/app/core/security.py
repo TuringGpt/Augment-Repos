@@ -6,7 +6,7 @@ import json
 import os
 import time
 
-from app.core.config import get_settings
+from app.core.config import get_jwt_secret
 
 PBKDF2_ITERATIONS = 100_000
 
@@ -49,7 +49,7 @@ def create_access_token(subject: str, expires_in: int = 3600, token_type: str = 
     encoded_payload = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
     signing_input = f"{encoded_header}.{encoded_payload}".encode("utf-8")
     signature = hmac.new(
-        get_settings().jwt_secret.encode("utf-8"),
+        get_jwt_secret().encode("utf-8"),
         signing_input,
         hashlib.sha256,
     ).digest()
@@ -61,7 +61,7 @@ def verify_token(token: str, expected_token_type: str = "access") -> dict[str, o
         encoded_header, encoded_payload, encoded_signature = token.split(".", maxsplit=2)
         signing_input = f"{encoded_header}.{encoded_payload}".encode("utf-8")
         expected_signature = hmac.new(
-            get_settings().jwt_secret.encode("utf-8"),
+            get_jwt_secret().encode("utf-8"),
             signing_input,
             hashlib.sha256,
         ).digest()
