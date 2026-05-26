@@ -54,3 +54,26 @@ def create_access_token(subject: str, expires_in: int = 3600, token_type: str = 
         hashlib.sha256,
     ).digest()
     return f"{encoded_header}.{encoded_payload}.{_b64url_encode(signature)}"
+
+
+def verify_token(token: str, expected_token_type: str = "access") -> dict[str, object]:
+    try:
+        encoded_header, encoded_payload, encoded_signature = token.split(".", maxsplit=2)
+        signing_input = f"{encoded_header}.{encoded_payload}".encode("utf-8")
+        expected_signature = hmac.new(
+            get_settings().jwt_secret.encode("utf-8"),
+            signing_input,
+            hashlib.sha256,
+        ).digest()
+        actual_signature = _b64url_decode(encoded_signature)
+        payload = json.loads(_b64url_decode(encoded_payload))
+    except (ValueError, binascii.Error, json.JSONDecodeError):
+        raise ValueError("invalid token")
+
+    if not hmac.compare_digest(actual_signature, expected_signature):
+        raise ValueError("invalid token signature")
+    if int(payload.get("exp", 0)) <= int(time.time()):
+        raise ValueError("token expired")
+    if payload.get("token_type") != expected_token_type:
+        raise ValueError("unexpected token type")
+    return payload
