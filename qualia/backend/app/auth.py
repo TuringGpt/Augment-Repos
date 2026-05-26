@@ -6,8 +6,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 def _is_valid_email(value: str) -> bool:
-    local, sep, domain = value.partition("@")
-    return bool(sep and local and "." in domain and not domain.startswith(".") and not domain.endswith("."))
+    if value != value.strip() or value.count("@") != 1 or ".." in value:
+        return False
+    local, domain = value.split("@", maxsplit=1)
+    if not local or not domain or domain.startswith(".") or domain.endswith("."):
+        return False
+    labels = domain.split(".")
+    return len(labels) >= 2 and all(labels)
 
 
 class RegisterRequest(BaseModel):
