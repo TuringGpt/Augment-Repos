@@ -138,6 +138,28 @@ invalid syntax. Perhaps you forgot a comma? (<unknown>, line 5)
 
 
 @pytest.mark.parametrize(
+    "bad_keyword",
+    [
+        "satticcall",
+        "staitccall",
+        "staticacll",
+        "staitcall",
+    ],
+)
+def test_bad_staticcall_keyword_variants(bad_keyword):
+    bad_code = f"""
+from ethereum.ercs import IERC20Detailed
+
+def foo():
+    staticcall ERC20(msg.sender).transfer(msg.sender, {bad_keyword} IERC20Detailed(msg.sender).decimals())
+    """  # noqa
+    with pytest.raises(SyntaxException) as e:
+        compile_code(bad_code)
+
+    assert e.value.hint == "did you mean `staticcall`?"
+
+
+@pytest.mark.parametrize(
     "bad_literal",
     [
         # Trailing underscores
