@@ -67,12 +67,17 @@ def verify_token(token: str, expected_token_type: str = "access") -> dict[str, o
         ).digest()
         actual_signature = _b64url_decode(encoded_signature)
         payload = json.loads(_b64url_decode(encoded_payload))
-    except (ValueError, binascii.Error, json.JSONDecodeError):
+    except (ValueError, TypeError, binascii.Error, json.JSONDecodeError):
         raise ValueError("invalid token")
 
+    if not isinstance(payload, dict):
+        raise ValueError("invalid token payload")
     if not hmac.compare_digest(actual_signature, expected_signature):
         raise ValueError("invalid token signature")
-    if int(payload.get("exp", 0)) <= int(time.time()):
+    exp = payload.get("exp")
+    if not isinstance(exp, int):
+        raise ValueError("invalid token exp")
+    if exp <= int(time.time()):
         raise ValueError("token expired")
     if payload.get("token_type") != expected_token_type:
         raise ValueError("unexpected token type")
