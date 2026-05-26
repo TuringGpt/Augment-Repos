@@ -2,6 +2,7 @@ require('module-alias/register');
 const mongoose = require('mongoose');
 const { globSync } = require('glob');
 const path = require('path');
+const connectToDatabase = require('./utils/connectToDatabase');
 
 // Make sure we are running node 7.6+
 const [major, minor] = process.versions.node.split('.').map(parseFloat);
@@ -14,7 +15,7 @@ if (major < 20) {
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
-mongoose.connect(process.env.DATABASE);
+connectToDatabase();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
