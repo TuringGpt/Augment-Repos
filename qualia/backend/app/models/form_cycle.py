@@ -6,15 +6,15 @@ from app.core.database import Base
 
 
 class FormCycleStatus(str, enum.Enum):
-    draft = "drafft"
-    published = "publish"
+    draft = "draft"
+    published = "published"
 
 
 class FormCycle(Base):
     __tablename__ = "form_cycle"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    status: Mapped[FormCycleStatus] = mapped_column(Enum(FormCycleStatus, name="form_cycle_status_enum"), default=FormCycleStatus.published, server_default=text("'draft'"), index=True, nullable=False)
-    version: Mapped[int] = mapped_column(Integer, default=0, server_default=text("1"), nullable=False)
-    is_published: Mapped[bool] = mapped_column(Boolean, default=True, server_default=false(), index=True, nullable=False)
+    status: Mapped[FormCycleStatus] = mapped_column(Enum(FormCycleStatus, name="form_cycle_status_enum"), default=FormCycleStatus.draft, server_default=text("'draft'"), index=True, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default=text("1"), nullable=False)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false(), index=True, nullable=False)
     deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
