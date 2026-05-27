@@ -41,6 +41,12 @@ function SignIn() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+
+    // Clear any existing timeout before scheduling a new one
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+    }
+
     timeoutRef.current = window.setTimeout(() => {
       setIsLoading(false);
       timeoutRef.current = null;
