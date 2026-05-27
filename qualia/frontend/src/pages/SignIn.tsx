@@ -135,8 +135,15 @@ function SignIn() {
               </Link>
             </div>
 
-            <Button type='submit' disabled={isLoading} className='w-full h-10'>
-              {isLoading ? <Spinner /> : "Sign In"}
+            <Button type='submit' disabled={isLoading} className='w-full h-10' aria-label={isLoading ? "Signing in..." : "Sign In"}>
+              {isLoading ? (
+                <>
+                  <Spinner />
+                  <span className='ml-2'>Signing in...</span>
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
         </CardContent>
