@@ -108,7 +108,7 @@ function SignIn() {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                placeholder='Confirm your password'
+                placeholder='Enter your password'
                 autoComplete='current-password'
                 disabled={isLoading}
                 className='h-10'
