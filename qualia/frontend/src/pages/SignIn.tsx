@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,23 +18,7 @@ interface SignInFormData {
   password: string;
 }
 
-interface UserData {
-  id: string;
-  email: string;
-  username: string;
-  role: "admin" | "reviewer" | "viewer";
-  full_name: string;
-}
-
-interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  user: UserData;
-  expires_in: number;
-}
-
 function SignIn() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState<SignInFormData>({
     email: "",
     password: "",
