@@ -49,7 +49,6 @@ function SignIn() {
     setTimeout(() => {
       setIsLoading(false);
     }, 500);
-    console.log("Submitted", { formData });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
