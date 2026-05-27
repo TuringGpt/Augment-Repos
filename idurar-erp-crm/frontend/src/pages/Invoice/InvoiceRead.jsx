@@ -1,3 +1,4 @@
+import { BASE_URL } from '@/config/serverApiConfig';
 import useLanguage from '@/locale/useLanguage';
 import ReadInvoiceModule from '@/modules/InvoiceModule/ReadInvoiceModule';
 
@@ -16,6 +17,9 @@ export default function InvoiceRead() {
   const configPage = {
     entity,
     ...Labels,
+    getPublicLink: ({ _id }) => `${BASE_URL}public/download/invoice/invoice-${_id}.pdf`,
+    copyPublicLinkLabel: translate('copy_invoice_url'),
+    copyPublicLinkSuccessMessage: translate('invoice_url_copied_successfully'),
   };
   return <ReadInvoiceModule config={configPage} />;
 }
