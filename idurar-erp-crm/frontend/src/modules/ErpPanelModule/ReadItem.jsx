@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Divider } from 'antd';
 
-import { Button, Row, Col, Descriptions, Statistic, Tag } from 'antd';
+import { Button, Row, Col, Descriptions, Statistic, Tag, message } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 import {
   EditOutlined,
@@ -9,6 +9,7 @@ import {
   CloseCircleOutlined,
   RetweetOutlined,
   MailOutlined,
+  LinkOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,7 +20,7 @@ import { generate as uniqueId } from 'shortid';
 
 import { selectCurrentItem } from '@/redux/erp/selectors';
 
-import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
+import { DOWNLOAD_BASE_URL, PUBLIC_BASE_URL } from '@/config/serverApiConfig';
 import { useMoney, useDate } from '@/settings';
 import useMail from '@/hooks/useMail';
 import { useNavigate } from 'react-router-dom';
@@ -170,6 +171,19 @@ export default function ReadItem({ config, selectedItem }) {
             icon={<MailOutlined />}
           >
             {translate('Send by Email')}
+          </Button>,
+          <Button
+            key={`${uniqueId()}`}
+            onClick={() => {
+              const publicUrl = `${PUBLIC_BASE_URL}download/${entity}/${entity}-${currentErp._id}.pdf`;
+              navigator.clipboard.writeText(publicUrl).then(() => {
+                message.success(translate('Invoice URL copied to clipboard'));
+              });
+            }}
+            icon={<LinkOutlined />}
+            style={{ display: entity === 'invoice' ? 'inline-block' : 'none' }}
+          >
+            {translate('Copy Invoice URL')}
           </Button>,
           <Button
             key={`${uniqueId()}`}
