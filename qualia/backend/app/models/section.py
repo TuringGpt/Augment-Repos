@@ -15,4 +15,6 @@ class Section(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     form_cycle_id: Mapped[uuid.UUID] = mapped_column(Uuid, index=True, nullable=False)
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    display_order: Mapped[int] = mapped_column(Integer, default=1, server_default=text("1"))
+    display_order: Mapped[int] = mapped_column(
+        Integer, default=1, server_default=text("1"), nullable=False
+    )
