@@ -45,6 +45,7 @@ function SignIn() {
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     // TODO: Add submit action
     e.preventDefault();
+    setError("");
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
