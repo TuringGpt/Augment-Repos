@@ -65,7 +65,7 @@ function SignIn() {
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
           <CardTitle className='text-3xl font-bold'>
-            Sign Up to Qualia
+            Sign In to Qualia
           </CardTitle>
           <CardDescription className='text-base'>
             Welcome back! Please enter your credentials.
