@@ -214,6 +214,7 @@
   padding: 100px 20px;
   position: relative;
   z-index: 2;
+  scroll-margin-top: 80px; /* Offset for fixed navbar (64px) + extra spacing (16px) */
 }
 
 .features-header {
