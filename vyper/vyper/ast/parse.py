@@ -208,7 +208,7 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
             ofst += len(line)
         return ret
 
-    def generic_visit(self, node: python_ast.AST) -> python_ast.AST:
+    def generic_visit(self, node: _AstT) -> _AstT:
         """
         Adds location info to all python ast nodes and replaces python ast nodes
         that are singletons with a copy so that the location info will be unique,
@@ -261,7 +261,7 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
         # keep track of the current path thru the AST
         self._parents.append(node)
         try:
-            node = cast(python_ast.AST, super().generic_visit(node))
+            node = cast(_AstT, super().generic_visit(node))
         finally:
             self._parents.pop()
 
