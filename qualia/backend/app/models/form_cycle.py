@@ -13,7 +13,7 @@ class FormCycleStatus(str, enum.Enum):
 
 
 class FormCycle(Base):
-    __tablename__ = "form_cycle"
+    __tablename__ = "form_cycles"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     status: Mapped[FormCycleStatus] = mapped_column(Enum(FormCycleStatus, name="form_cycle_status_enum"), default=FormCycleStatus.draft, server_default=text("'draft'"), index=True, nullable=False)
