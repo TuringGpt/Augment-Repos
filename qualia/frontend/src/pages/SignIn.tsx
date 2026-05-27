@@ -10,8 +10,8 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@/components/ui/cards";
-import { Spinner } from "@/component/ui/spinner";
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 interface SignInFormData {
   email: string;
