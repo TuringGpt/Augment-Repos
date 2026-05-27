@@ -92,7 +92,7 @@ function SignIn() {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                placeholder='Enter your username'
+                placeholder='Enter your email'
                 autoComplete='email'
                 disabled={isLoading}
                 className='h-10'
