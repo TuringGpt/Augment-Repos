@@ -33,8 +33,9 @@ function NavBar({ variant = 'transparent' }: NavBarProps) {
               "flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity",
               variant === 'transparent' ? 'text-white' : 'text-primary'
             )}
+            aria-label="Qualia Home"
           >
-            <span className="text-2xl">✨</span>
+            <span className="text-2xl" aria-hidden="true">✨</span>
             <span className="bg-linear-to-r from-amber-200 to-cyan-700 bg-clip-text text-transparent">
               Qualia
             </span>
