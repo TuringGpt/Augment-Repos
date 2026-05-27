@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,14 +41,25 @@ function SignIn() {
   });
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const timeoutRef = useRef<number | null>(null);
+
+  // Cleanup timeout on unmount to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     // TODO: Add submit action
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       setIsLoading(false);
+      timeoutRef.current = null;
     }, 500);
   };
 
