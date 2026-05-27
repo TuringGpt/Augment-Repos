@@ -34,5 +34,9 @@ class Settings:
     debug: bool = field(default_factory=_get_debug_flag)
 
 
+def get_jwt_secret() -> str:
+    return _required_env("JWT_SECRET")
+
+
 def get_settings() -> Settings:
     return Settings()
