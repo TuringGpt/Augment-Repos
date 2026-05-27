@@ -18,7 +18,9 @@ class FormCycle(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
-    created_by_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
+    created_by_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id"), index=True, nullable=False
+    )
     created_by: Mapped["User"] = relationship("User")
     status: Mapped[FormCycleStatus] = mapped_column(Enum(FormCycleStatus, name="form_cycle_status_enum"), default=FormCycleStatus.draft, server_default=text("'draft'"), index=True, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1, server_default=text("1"), nullable=False)
