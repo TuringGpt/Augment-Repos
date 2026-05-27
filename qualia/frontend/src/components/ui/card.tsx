@@ -97,6 +97,7 @@ export {
   CardHeader,
   CardFooter,
   CardTitle,
+  CardDescription,
   CardAction,
   CardContent,
 }
