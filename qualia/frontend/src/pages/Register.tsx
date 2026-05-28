@@ -40,7 +40,7 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setIsLoading(false);
     }, 500);
   };
