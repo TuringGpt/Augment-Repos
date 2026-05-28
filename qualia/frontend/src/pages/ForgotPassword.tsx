@@ -40,14 +40,11 @@ function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Normalize email by trimming whitespace to prevent validation issues
-      const trimmedEmail = formData.email.trim();
-
       // TODO: Replace with actual API call to backend password reset endpoint
       // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: trimmedEmail }),
+      //   body: JSON.stringify({ email: formData.email }),
       // });
 
       // Simulate API call for now
@@ -83,7 +80,8 @@ function ForgotPassword() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      // Trim email input to normalize whitespace
+      [name]: name === "email" ? value.trim() : value,
     }));
   };
 
