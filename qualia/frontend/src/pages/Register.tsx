@@ -39,6 +39,15 @@ function Register() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate password confirmation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match. Please try again.");
+      return;
+    }
+
+    // Clear any previous errors
+    setError("");
     setIsLoading(true);
     timeoutRef.current = setTimeout(() => {
       setIsLoading(false);
