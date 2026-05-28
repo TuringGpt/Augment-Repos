@@ -20,14 +20,14 @@ class QuestionType(str, enum.Enum):
 
 
 class Question(Base):
-    __tablename__ = "question"
+    __tablename__ = "questions"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     section_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("section.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid, ForeignKey("sections.id", ondelete="CASCADE"), index=True, nullable=False
     )
     form_cycle_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("form_cycle.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid, ForeignKey("form_cycles.id", ondelete="CASCADE"), index=True, nullable=False
     )
     question_text: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
