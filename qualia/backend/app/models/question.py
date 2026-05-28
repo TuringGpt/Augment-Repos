@@ -1,7 +1,7 @@
 import enum
 import uuid
 
-from sqlalchemy import JSON, Enum, Integer, String, Uuid, text
+from sqlalchemy import Boolean, Enum, ForeignKey, Integer, JSON, Text, Uuid, false, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -9,22 +9,40 @@ from app.core.database import Base
 
 class QuestionType(str, enum.Enum):
     short_text = "short_text"
+    long_text = "long_text"
     number = "number"
-    choice = "choice"
+    single_choice = "single_choice"
+    multiple_choice = "multiple_choice"
+    dropdown = "dropdown"
+    rating = "rating"
+    yes_no_na = "yes_no_na"
+    file_upload = "file_upload"
 
 
 class Question(Base):
     __tablename__ = "question"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    section_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, index=True, nullable=True)
-    prompt: Mapped[str] = mapped_column(String(50), nullable=False)
+    section_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("section.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    form_cycle_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("form_cycle.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    question_text: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     question_type: Mapped[QuestionType] = mapped_column(
         Enum(QuestionType, name="question_type_enum"),
         default=QuestionType.number,
         server_default=text("'number'"),
         nullable=False,
     )
+    is_required: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
+    )
     config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
-    conditional_logic: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
-    display_order: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"), nullable=False)
+    conditional_logic: Mapped[dict | None] = mapped_column(JSON, default=dict, nullable=True)
+    display_order: Mapped[int] = mapped_column(
+        Integer, default=0, server_default=text("0"), nullable=False
+    )
+    version: Mapped[int] = mapped_column(Integer, default=1, server_default=text("1"), nullable=False)
