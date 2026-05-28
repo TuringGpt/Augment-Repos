@@ -11,7 +11,7 @@ from app.models.form_cycle import FormCycle
 from app.models.user import Role, User
 
 
-router = APIRouter(prefix="/form-cycles", tags=["form-cycles"])
+router = APIRouter(prefix="/forms", tags=["form-cycles"])
 
 
 class FormCycleCreate(BaseModel):
@@ -40,7 +40,7 @@ async def create_form_cycle(
         raise HTTPException(status_code=401, detail="Invalid token")
     email = subject
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
-    if user is None or user.role != Role.admin:
+    if user is None or user.role != Role.admin or not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="Admin access required")
     cycle = FormCycle(
         title=payload.title,
