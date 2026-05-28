@@ -157,12 +157,18 @@ class IRFunction:
             ret.append("digraph G {{")
         ret.append(f"subgraph {repr(self.name)} {{")
 
+        # qualify node IDs with the function name so multiple functions sharing
+        # block names (e.g. "main") don't collapse into the same graphviz nodes
+        fn_prefix = self.name.value
         for bb in self.get_basic_blocks():
             for out_bb in bb.out_bbs:
-                ret.append(f'    "{bb.label.value}" -> "{out_bb.label.value}"')
+                ret.append(
+                    f'    "{fn_prefix}.{bb.label.value}"'
+                    f' -> "{fn_prefix}.{out_bb.label.value}"'
+                )
 
         for bb in self.get_basic_blocks():
-            ret.append(f'    "{bb.label.value}" [shape=plaintext, ')
+            ret.append(f'    "{fn_prefix}.{bb.label.value}" [shape=plaintext, ')
             ret.append(f'label={_make_label(bb)}, fontname="Courier" fontsize="8"]')
 
         ret.append("}\n")
