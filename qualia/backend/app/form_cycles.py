@@ -27,12 +27,18 @@ async def create_form_cycle(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
     scheme, _, token = authorization.partition(" ")
+    token = token.strip()
     if scheme.lower() != "bearer" or not token:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
+    if payload.submission_deadline.tzinfo is None:
+        raise HTTPException(status_code=422, detail="submission_deadline must include timezone")
     try:
-        email = verify_token(token, expected_token_type="access")["sub"]
+        subject = verify_token(token, expected_token_type="access").get("sub")
     except ValueError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
+    if not isinstance(subject, str) or not subject:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    email = subject
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
     if user is None or user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
