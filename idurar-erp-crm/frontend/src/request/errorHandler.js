@@ -57,9 +57,13 @@ const errorHandler = (error) => {
   // Treat expired/invalid tokens as a single event: dispatch one logout,
   // suppress the generic per-request error toast, and return early so
   // concurrent 401 responses do not stack notifications or redirects.
+  // Gate on HTTP 401 — the backend auth middleware's catch block also sets
+  // `jwtExpired: true` on 500 responses for unrelated internal failures, and
+  // those must still surface through the generic error notification path.
   const isExpiredAuth =
-    (response.data && response.data.jwtExpired) ||
-    response?.data?.error?.name === 'JsonWebTokenError';
+    response.status === 401 &&
+    ((response.data && response.data.jwtExpired) ||
+      response?.data?.error?.name === 'JsonWebTokenError');
 
   if (isExpiredAuth) {
     handleAuthExpiration();
