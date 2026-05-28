@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,14 @@ function ForgotPassword() {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const isMountedRef = useRef(true);
+
+  // Cleanup to prevent state updates on unmounted component
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,6 +50,9 @@ function ForgotPassword() {
       // Simulate API call for now
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+
       // Mock successful response
       // TODO: Handle actual API response when backend endpoint is implemented
       setSuccess(
@@ -49,13 +60,19 @@ function ForgotPassword() {
       );
       setFormData({ email: "" });
     } catch (err) {
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+
       setError(
         err instanceof Error
           ? err.message
           : "Failed to send reset instructions. Please try again."
       );
     } finally {
-      setIsLoading(false);
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
