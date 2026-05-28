@@ -59,14 +59,14 @@ function ForgotPassword() {
         "If an account exists with this email, you will receive password reset instructions shortly."
       );
       setFormData({ email: "" });
-    } catch (err) {
+    } catch {
       // Only update state if component is still mounted
       if (!isMountedRef.current) return;
 
+      // Show generic error message to prevent leaking technical details
+      // or account enumeration information (e.g., "email not found")
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to send reset instructions. Please try again."
+        "Unable to process your request at this time. Please try again later."
       );
     } finally {
       // Only update state if component is still mounted
