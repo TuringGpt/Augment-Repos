@@ -43,8 +43,13 @@ async def create_form_cycle(
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid token")
-    if user.role != Role.admin or not user.is_active or not user.is_email_verified:
+    if user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
+    if not user.is_active or not user.is_email_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Admin account is not active or email is not verified",
+        )
     cycle = FormCycle(
         title=payload.title,
         description=payload.description,
