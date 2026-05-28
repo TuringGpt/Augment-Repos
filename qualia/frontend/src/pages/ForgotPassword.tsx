@@ -139,7 +139,7 @@ function ForgotPassword() {
             >
               {isLoading ? (
                 <>
-                  <Spinner />
+                  <Spinner aria-hidden="true" />
                   <span className='ml-2'>Sending...</span>
                 </>
               ) : (
