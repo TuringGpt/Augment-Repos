@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/component/ui/input";
-import { Label } from "@/components/ui/labels";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardHeader,
   CardTitle,
+  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
@@ -24,11 +25,38 @@ function ForgotPassword() {
   const [success, setSuccess] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      // TODO: Replace with actual API call to backend password reset endpoint
+      // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email: formData.email }),
+      // });
+
+      // Simulate API call for now
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Mock successful response
+      // TODO: Handle actual API response when backend endpoint is implemented
+      setSuccess(
+        "If an account exists with this email, you will receive password reset instructions shortly."
+      );
+      setFormData({ email: "" });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send reset instructions. Please try again."
+      );
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
