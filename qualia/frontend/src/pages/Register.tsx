@@ -146,7 +146,7 @@ function Register() {
           <p className='text-sm text-muted-foreground'>
             Already have an account?{" "}
             <Link
-              to='/sign-in'
+              to='/signin'
               className='text-primary font-medium hover:underline underline-offset-4 transition-colors'
             >
               Sign in here
