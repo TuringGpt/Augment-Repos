@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Labels } from "@/components/ui/labels";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
+  CardContent,
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -37,6 +38,7 @@ function Register() {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
