@@ -1,22 +1,48 @@
 from datetime import datetime
+
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
 from app.models.user import Role, User
 
+
 router = APIRouter(prefix="/form-cycles", tags=["form-cycles"])
-class FormCycleCreate(BaseModel): title: str; description: str | None = None; submission_deadline: datetime
+
+
+class FormCycleCreate(BaseModel):
+    title: str
+    description: str | None = None
+    submission_deadline: datetime
+
+
 @router.post("", status_code=201)
-async def create_form_cycle(payload: FormCycleCreate, authorization: str = Header(""), db: AsyncSession = Depends(get_db)) -> dict[str, str]:
-    token = authorization.split(" ", 1)[0]
-    email = verify_token(token, expected_token_type="access")["sub"]
+async def create_form_cycle(
+    payload: FormCycleCreate,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    try:
+        email = verify_token(token, expected_token_type="access")["sub"]
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
-    if user is None or user.role != Role.reviewer: raise HTTPException(status_code=403, detail="Admin access required")
-    cycle = FormCycle(title=payload.title, description=payload.description, submission_deadline=payload.submission_deadline, created_by_id=user.id)
+    if user is None or user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    cycle = FormCycle(
+        title=payload.title,
+        description=payload.description,
+        submission_deadline=payload.submission_deadline,
+        created_by_id=user.id,
+    )
     db.add(cycle)
     await db.flush()
-    return {"id": str(cycle.created_by_id), "status": cycle.status}
+    await db.commit()
+    return {"id": str(cycle.id), "status": cycle.status}
