@@ -1,6 +1,22 @@
 import { notification } from 'antd';
 import codeMessage from './codeMessage';
 
+// Re-entry guard: once we've started handling an expired session, swallow any
+// further auth errors from concurrent in-flight requests so the user does not
+// get a wall of toasts or land in a redirect loop.
+let isHandlingAuthExpiration = false;
+
+const handleAuthExpiration = () => {
+  if (isHandlingAuthExpiration) return;
+  isHandlingAuthExpiration = true;
+  window.localStorage.removeItem('auth');
+  window.localStorage.removeItem('isLogout');
+  // Flag for AuthRouter to surface a single user-friendly message after the
+  // hard reload (antd toasts do not survive a window.location navigation).
+  window.sessionStorage.setItem('sessionExpired', '1');
+  window.location.href = '/logout';
+};
+
 const errorHandler = (error) => {
   if (!navigator.onLine) {
     notification.config({
@@ -38,22 +54,27 @@ const errorHandler = (error) => {
     };
   }
 
-  if (response && response.data && response.data.jwtExpired) {
-    const result = window.localStorage.getItem('auth');
-    const jsonFile = window.localStorage.getItem('isLogout');
-    const { isLogout } = (jsonFile && JSON.parse(jsonFile)) || false;
-    window.localStorage.removeItem('auth');
-    window.localStorage.removeItem('isLogout');
-    if (result || isLogout) {
-      window.location.href = '/logout';
-    }
+  // Treat expired/invalid tokens as a single event: dispatch one logout,
+  // suppress the generic per-request error toast, and return early so
+  // concurrent 401 responses do not stack notifications or redirects.
+  const isExpiredAuth =
+    (response.data && response.data.jwtExpired) ||
+    response?.data?.error?.name === 'JsonWebTokenError';
+
+  if (isExpiredAuth) {
+    handleAuthExpiration();
+    return {
+      success: false,
+      result: null,
+      message: 'Session expired',
+    };
   }
 
   if (response && response.status) {
     const message = response.data && response.data.message;
 
     const errorText = message || codeMessage[response.status];
-    const { status, error } = response;
+    const { status } = response;
     notification.config({
       duration: 20,
       maxCount: 2,
@@ -63,11 +84,7 @@ const errorHandler = (error) => {
       description: errorText,
     });
 
-    if (response?.data?.error?.name === 'JsonWebTokenError') {
-      window.localStorage.removeItem('auth');
-      window.localStorage.removeItem('isLogout');
-      window.location.href = '/logout';
-    } else return response.data;
+    return response.data;
   } else {
     notification.config({
       duration: 15,
