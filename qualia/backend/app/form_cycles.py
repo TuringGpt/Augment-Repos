@@ -20,7 +20,8 @@ class FormCycleCreate(BaseModel):
     submission_deadline: datetime
 
 
-@router.post("", status_code=201)
+@router.post("/", status_code=201)
+@router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
     payload: FormCycleCreate,
     authorization: str = Header(""),
@@ -40,7 +41,9 @@ async def create_form_cycle(
         raise HTTPException(status_code=401, detail="Invalid token")
     email = subject
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
-    if user is None or user.role != Role.admin or not user.is_active or not user.is_email_verified:
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if user.role != Role.admin or not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="Admin access required")
     cycle = FormCycle(
         title=payload.title,
