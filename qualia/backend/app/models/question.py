@@ -40,8 +40,12 @@ class Question(Base):
     is_required: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default=false(), nullable=False
     )
-    config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
-    conditional_logic: Mapped[dict | None] = mapped_column(JSON, default=dict, nullable=True)
+    config: Mapped[dict] = mapped_column(
+        JSON, default=dict, server_default=text("'{}'"), nullable=False
+    )
+    conditional_logic: Mapped[dict] = mapped_column(
+        JSON, default=dict, server_default=text("'{}'"), nullable=False
+    )
     display_order: Mapped[int] = mapped_column(
         Integer, default=0, server_default=text("0"), nullable=False
     )
