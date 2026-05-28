@@ -40,6 +40,11 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Guard against double-submit
+    if (isLoading) {
+      return;
+    }
+
     // Clear any previous errors
     setError("");
 
@@ -63,6 +68,11 @@ function Register() {
     }
 
     setIsLoading(true);
+
+    // Clear any existing timeout before storing the new one
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+    }
 
     // Simulate API call (replace with actual registration logic)
     timeoutRef.current = setTimeout(() => {
