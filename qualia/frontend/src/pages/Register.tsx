@@ -111,7 +111,7 @@ function Register() {
             <div className='space-y-2'>
               <Label htmlFor='confirmPassword'>Confirm Password</Label>
               <Input
-                type='email'
+                type='password'
                 id='confirmPassword'
                 name='confirmPassword'
                 value={formData.confirmPassword}
