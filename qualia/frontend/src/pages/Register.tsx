@@ -40,17 +40,36 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Clear any previous errors
+    setError("");
+
+    // Validate email format (additional check beyond HTML5 validation)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+
     // Validate password confirmation
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match. Please try again.");
       return;
     }
 
-    // Clear any previous errors
-    setError("");
     setIsLoading(true);
+
+    // Simulate API call (replace with actual registration logic)
     timeoutRef.current = setTimeout(() => {
       setIsLoading(false);
+      // TODO: Implement actual registration API call
+      // On success: navigate to dashboard or show success message
+      // On error: setError("Registration failed. Please try again.");
     }, 500);
   };
 
@@ -60,6 +79,11 @@ function Register() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user starts typing
+    if (error) {
+      setError("");
+    }
   };
 
   return (
