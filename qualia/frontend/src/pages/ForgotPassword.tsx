@@ -28,6 +28,7 @@ function ForgotPassword() {
 
   // Cleanup to prevent state updates on unmounted component
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
