@@ -30,14 +30,26 @@ class SectionCreate(BaseModel):
     display_order: int | None = Field(default=None, ge=1)
 
 
-@router.post("/{form_cycle_id}/sections", status_code=201)
-@router.post("/{form_cycle_id}/sections/", status_code=201, include_in_schema=False)
+class SectionResponse(BaseModel):
+    id: str
+    form_cycle_id: str
+    title: str | None
+    display_order: int
+
+
+@router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
+@router.post(
+    "/{form_cycle_id}/sections/",
+    status_code=201,
+    response_model=SectionResponse,
+    include_in_schema=False,
+)
 async def create_section(
     form_cycle_id: uuid.UUID,
     payload: SectionCreate,
     credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, str | int | None]:
+) -> SectionResponse:
     if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     token = credentials.credentials.strip()
@@ -76,10 +88,16 @@ async def create_section(
             break
         except IntegrityError as exc:
             await db.rollback()
+            db.expunge(section)
             retries_remaining -= 1
             if _is_section_display_order_conflict(exc) and display_order is None and retries_remaining > 0:
                 continue
             if _is_section_display_order_conflict(exc):
                 raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
             raise
-    return {"id": str(section.id), "form_cycle_id": str(form_cycle.id), "title": section.title, "display_order": section.display_order}
+    return SectionResponse(
+        id=str(section.id),
+        form_cycle_id=str(form_cycle.id),
+        title=section.title,
+        display_order=section.display_order,
+    )
