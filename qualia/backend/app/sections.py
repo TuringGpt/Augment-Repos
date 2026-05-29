@@ -14,6 +14,7 @@ from app.models.user import Role, User
 
 
 router = APIRouter(prefix="/forms", tags=["sections"])
+AUTO_ORDER_RETRY_LIMIT = 3
 
 
 class SectionCreate(BaseModel):
@@ -50,17 +51,26 @@ async def create_section(
     if form_cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
     display_order = payload.display_order
-    if display_order is None:
-        current_max_order = (
-            await db.execute(select(func.max(Section.display_order)).where(Section.form_cycle_id == form_cycle.id))
-        ).scalar_one()
-        display_order = (current_max_order or 0) + 1
-    section = Section(form_cycle_id=form_cycle.id, title=payload.title, display_order=display_order)
-    db.add(section)
-    try:
-        await db.flush()
-        await db.commit()
-    except IntegrityError as exc:
-        await db.rollback()
-        raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
+    retries_remaining = AUTO_ORDER_RETRY_LIMIT if display_order is None else 1
+    while retries_remaining > 0:
+        next_display_order = display_order
+        if next_display_order is None:
+            current_max_order = (
+                await db.execute(
+                    select(func.max(Section.display_order)).where(Section.form_cycle_id == form_cycle.id)
+                )
+            ).scalar_one()
+            next_display_order = (current_max_order or 0) + 1
+        section = Section(form_cycle_id=form_cycle.id, title=payload.title, display_order=next_display_order)
+        db.add(section)
+        try:
+            await db.flush()
+            await db.commit()
+            break
+        except IntegrityError as exc:
+            await db.rollback()
+            retries_remaining -= 1
+            if display_order is None and retries_remaining > 0:
+                continue
+            raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
     return {"id": str(section.id), "form_cycle_id": str(form_cycle.id), "title": section.title, "display_order": section.display_order}
