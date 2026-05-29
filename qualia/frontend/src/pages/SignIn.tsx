@@ -138,7 +138,11 @@ function SignIn() {
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        // Clear page-level error when user starts editing
+                        if (error) setError("");
+                      }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
                       disabled={isLoading}
