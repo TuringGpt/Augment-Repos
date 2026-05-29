@@ -78,7 +78,11 @@ function SignIn() {
 
         // TODO: Implement actual sign-in API call
         await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("Sign-in successful for:", validatedData.email);
+
+        // Development-only logging (gated to prevent PII leakage in production)
+        if (import.meta.env.DEV) {
+          console.log("Sign-in successful for:", validatedData.email);
+        }
       } catch (err) {
         if (!isMountedRef.current) return;
         if (err instanceof z.ZodError) {
