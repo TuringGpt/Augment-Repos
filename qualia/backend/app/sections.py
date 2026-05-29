@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
+from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, User
 
@@ -35,6 +36,14 @@ class SectionResponse(BaseModel):
     form_cycle_id: str
     title: str | None
     display_order: int
+
+
+class QuestionCreate(BaseModel):
+    question_text: str = Field(min_length=1)
+    question_type: QuestionType = QuestionType.number
+    description: str | None = None
+    is_required: bool = False
+    display_order: int = Field(default=0, ge=0)
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
@@ -101,3 +110,49 @@ async def create_section(
         title=section.title,
         display_order=section.display_order,
     )
+
+
+@router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201)
+async def create_question(
+    form_cycle_id: uuid.UUID,
+    section_id: uuid.UUID,
+    payload: QuestionCreate,
+    credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    token = credentials.credentials.strip()
+    try:
+        subject = verify_token(token, expected_token_type="access").get("sub")
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
+    if not isinstance(subject, str) or not subject:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    if not user.is_active or not user.is_email_verified:
+        raise HTTPException(status_code=403, detail="Admin account is not active or email is not verified")
+    section = (
+        await db.execute(
+            select(Section).where(Section.id == section_id, Section.form_cycle_id == form_cycle_id)
+        )
+    ).scalar_one_or_none()
+    if section is None:
+        raise HTTPException(status_code=404, detail="Section not found")
+    question = Question(
+        section_id=section.id,
+        form_cycle_id=section.form_cycle_id,
+        question_text=payload.question_text,
+        description=payload.description,
+        question_type=payload.question_type,
+        is_required=payload.is_required,
+        display_order=payload.display_order,
+    )
+    db.add(question)
+    await db.flush()
+    await db.commit()
+    return {"id": str(question.id)}
