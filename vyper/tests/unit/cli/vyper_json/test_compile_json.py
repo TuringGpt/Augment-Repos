@@ -222,6 +222,12 @@ def test_compile_json(input_json, input_bundle, experimental_codegen):
                 "methodIdentifiers": data["method_identifiers"],
             },
         }
+        storage_layout_overrides_map = {
+            "foo": FOO_STORAGE_LAYOUT_OVERRIDES,
+            "bar": BAR_STORAGE_LAYOUT_OVERRIDES,
+        }
+        if contract_name in storage_layout_overrides_map:
+            expected["storageLayout"] = storage_layout_overrides_map[contract_name]
         if experimental_codegen:
             expected["venom"] = {"cfg": data["cfg"], "cfg_runtime": data["cfg_runtime"]}
         assert output_json["contracts"][path][contract_name] == expected
@@ -257,7 +263,17 @@ def test_different_outputs(input_bundle, input_json, experimental_codegen):
 
     foo = contracts["contracts/foo.vy"]["foo"]
     bar = contracts["contracts/bar.vy"]["bar"]
-    expected_keys = ["abi", "devdoc", "evm", "interface", "ir", "layout", "metadata", "userdoc"]
+    expected_keys = [
+        "abi",
+        "devdoc",
+        "evm",
+        "interface",
+        "ir",
+        "layout",
+        "metadata",
+        "storageLayout",
+        "userdoc",
+    ]
     if experimental_codegen:
         expected_keys.append("venom")
         expected_keys.sort()
@@ -321,6 +337,21 @@ def test_unknown_storage_layout_overrides(input_json):
     with pytest.raises(JSONError) as e:
         compile_json(input_json)
     assert e.value.args[0] == f"unknown target for storage layout override: {unknown_contract_path}"
+
+
+def test_storage_layout_output_selection(input_json):
+    # request only storageLayout - overrides should be echoed for contracts
+    # that supplied one, and absent for those that did not
+    input_json["settings"]["outputSelection"] = {"*": ["storageLayout"]}
+    output_json = compile_json(input_json)
+
+    foo = output_json["contracts"]["contracts/foo.vy"]["foo"]
+    bar = output_json["contracts"]["contracts/bar.vy"]["bar"]
+    library = output_json["contracts"]["contracts/library.vy"]["library"]
+
+    assert foo == {"storageLayout": FOO_STORAGE_LAYOUT_OVERRIDES}
+    assert bar == {"storageLayout": BAR_STORAGE_LAYOUT_OVERRIDES}
+    assert library == {}
 
 
 def test_source_ids_increment(input_json):
