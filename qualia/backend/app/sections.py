@@ -15,6 +15,12 @@ from app.models.user import Role, User
 
 router = APIRouter(prefix="/forms", tags=["sections"])
 AUTO_ORDER_RETRY_LIMIT = 3
+SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
+
+
+def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc))
+    return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "section.form_cycle_id, section.display_order" in statement
 
 
 class SectionCreate(BaseModel):
@@ -27,7 +33,7 @@ class SectionCreate(BaseModel):
 async def create_section(
     form_cycle_id: uuid.UUID,
     payload: SectionCreate,
-    authorization: str = Header(""),
+    authorization: str = Header(),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str | int | None]:
     scheme, _, token = authorization.partition(" ")
@@ -70,7 +76,9 @@ async def create_section(
         except IntegrityError as exc:
             await db.rollback()
             retries_remaining -= 1
-            if display_order is None and retries_remaining > 0:
+            if _is_section_display_order_conflict(exc) and display_order is None and retries_remaining > 0:
                 continue
-            raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
+            if _is_section_display_order_conflict(exc):
+                raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
+            raise
     return {"id": str(section.id), "form_cycle_id": str(form_cycle.id), "title": section.title, "display_order": section.display_order}
