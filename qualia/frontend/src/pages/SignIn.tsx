@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
@@ -52,6 +52,15 @@ const formFields = [
 function SignIn() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const isMountedRef = useRef(true);
+
+  // Track mount state to prevent state updates after unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const form = useForm({
     defaultValues: {
@@ -59,6 +68,7 @@ function SignIn() {
       password: "",
     } as SignInFormData,
     onSubmit: async ({ value }) => {
+      if (!isMountedRef.current) return;
       setError("");
       setIsLoading(true);
 
@@ -70,6 +80,7 @@ function SignIn() {
         await new Promise((resolve) => setTimeout(resolve, 500));
         console.log("Sign-in successful for:", validatedData.email);
       } catch (err) {
+        if (!isMountedRef.current) return;
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
@@ -79,7 +90,9 @@ function SignIn() {
           );
         }
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     },
   });
