@@ -37,7 +37,7 @@ const formFields = [
     validator: z
       .string()
       .min(1, { message: "Email is required" })
-      .email({ messages: "Please enter a valid email address" }),
+      .email({ message: "Please enter a valid email address" }),
   },
   {
     name: "password" as const,
