@@ -211,17 +211,38 @@ def get_inputs(input_dict: dict) -> dict[PurePath, Any]:
     return ret
 
 
+def _storage_layout_override_sources(input_dict: dict) -> tuple[dict, bool]:
+    legacy_overrides = input_dict.get("storage_layout_overrides", {})
+    settings_overrides = input_dict["settings"].get("storageLayout", {})
+
+    if legacy_overrides and settings_overrides:
+        raise JSONError(
+            "both 'storage_layout_overrides' and 'settings.storageLayout' cannot be set"
+        )
+
+    return (legacy_overrides, True) if legacy_overrides else (settings_overrides, False)
+
+
 def get_storage_layout_overrides(input_dict: dict) -> dict[PurePath, JSONInput]:
     storage_layout_overrides: dict[PurePath, JSONInput] = {}
+    override_sources, uses_file_wrappers = _storage_layout_override_sources(input_dict)
 
-    for path, value in input_dict.get("storage_layout_overrides", {}).items():
+    for path, value in override_sources.items():
         if path not in input_dict["sources"]:
             raise JSONError(f"unknown target for storage layout override: {path}")
 
-        if not isinstance(value, dict) and len(value.items()) != 1:
+        if not isinstance(value, dict):
             raise JSONError(f"invalid storage layout override: {value}")
-        override_path, override_data = next(iter(value.items()))
-        override_path = _normpath(override_path)
+
+        if uses_file_wrappers:
+            if len(value.items()) != 1:
+                raise JSONError(f"invalid storage layout override: {value}")
+            override_path, override_data = next(iter(value.items()))
+            override_path = _normpath(override_path)
+        else:
+            override_data = value
+            override_path = PurePath(f"{path}.storageLayout")
+
         storage_layout_input = JSONInput(
             contents=json.dumps(override_data),
             data=override_data,
@@ -426,8 +447,19 @@ def compile_from_input_dict(
 
 
 # convert output of compile_input_dict to final output format
-def format_to_output_dict(compiler_data: dict) -> dict:
+def _format_storage_layout_overrides(storage_layout_overrides: dict[PurePath, JSONInput]) -> dict:
+    return {path.as_posix(): override.data for path, override in storage_layout_overrides.items()}
+
+
+def format_to_output_dict(
+    compiler_data: dict, storage_layout_overrides: dict[PurePath, JSONInput] | None = None
+) -> dict:
     output_dict: dict = {"compiler": f"vyper-{vyper.__version__}", "contracts": {}, "sources": {}}
+    if storage_layout_overrides:
+        output_dict["storage_layout_overrides"] = _format_storage_layout_overrides(
+            storage_layout_overrides
+        )
+
     for path, data in compiler_data.items():
         path = path.as_posix()  # Path breaks json serializability
         output_dict["sources"][path] = {"id": data["source_id"]}
@@ -530,7 +562,8 @@ def compile_json(
         except (FileNotFoundError, JSONError) as exc:
             return exc_handler(json_path, exc, "json")
 
-        output_dict = format_to_output_dict(compiler_data)
+        storage_layout_overrides = get_storage_layout_overrides(input_dict)
+        output_dict = format_to_output_dict(compiler_data, storage_layout_overrides)
         if warn_data:
             output_dict["errors"] = []
             for path, msg in ((k, x) for k, v in warn_data.items() for x in v):

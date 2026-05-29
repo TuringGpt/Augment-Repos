@@ -187,8 +187,17 @@ def test_compile_json(input_json, input_bundle, experimental_codegen):
         "contracts/bar.vy",
     ]
 
-    assert sorted(output_json.keys()) == ["compiler", "contracts", "sources"]
+    assert sorted(output_json.keys()) == [
+        "compiler",
+        "contracts",
+        "sources",
+        "storage_layout_overrides",
+    ]
     assert output_json["compiler"] == f"vyper-{vyper.__version__}"
+    assert output_json["storage_layout_overrides"] == {
+        "contracts/foo.vy": FOO_STORAGE_LAYOUT_OVERRIDES,
+        "contracts/bar.vy": BAR_STORAGE_LAYOUT_OVERRIDES,
+    }
 
     for source_id, contract_name in [(0, "foo"), (2, "library"), (3, "bar")]:
         path = f"contracts/{contract_name}.vy"
@@ -250,8 +259,17 @@ def test_different_outputs(input_bundle, input_json, experimental_codegen):
     output_json = compile_json(input_json)
     assert list(output_json["contracts"].keys()) == ["contracts/bar.vy", "contracts/foo.vy"]
 
-    assert sorted(output_json.keys()) == ["compiler", "contracts", "sources"]
+    assert sorted(output_json.keys()) == [
+        "compiler",
+        "contracts",
+        "sources",
+        "storage_layout_overrides",
+    ]
     assert output_json["compiler"] == f"vyper-{vyper.__version__}"
+    assert output_json["storage_layout_overrides"] == {
+        "contracts/foo.vy": FOO_STORAGE_LAYOUT_OVERRIDES,
+        "contracts/bar.vy": BAR_STORAGE_LAYOUT_OVERRIDES,
+    }
 
     contracts = output_json["contracts"]
 
@@ -321,6 +339,39 @@ def test_unknown_storage_layout_overrides(input_json):
     with pytest.raises(JSONError) as e:
         compile_json(input_json)
     assert e.value.args[0] == f"unknown target for storage layout override: {unknown_contract_path}"
+
+
+def test_settings_storage_layout_overrides(input_json):
+    input_json["settings"]["storageLayout"] = {
+        "contracts/foo.vy": FOO_STORAGE_LAYOUT_OVERRIDES,
+        "contracts/bar.vy": BAR_STORAGE_LAYOUT_OVERRIDES,
+    }
+    del input_json["storage_layout_overrides"]
+
+    output_json = compile_json(input_json)
+    assert output_json["storage_layout_overrides"] == input_json["settings"]["storageLayout"]
+    assert (
+        output_json["contracts"]["contracts/foo.vy"]["foo"]["layout"]["storage_layout"]
+        == FOO_STORAGE_LAYOUT_OVERRIDES
+    )
+    assert (
+        output_json["contracts"]["contracts/bar.vy"]["bar"]["layout"]["storage_layout"]
+        == BAR_STORAGE_LAYOUT_OVERRIDES
+    )
+
+
+def test_duplicate_storage_layout_override_locations(input_json):
+    input_json["settings"]["storageLayout"] = {
+        "contracts/foo.vy": FOO_STORAGE_LAYOUT_OVERRIDES,
+    }
+
+    with pytest.raises(JSONError) as e:
+        compile_json(input_json)
+
+    assert (
+        e.value.args[0]
+        == "both 'storage_layout_overrides' and 'settings.storageLayout' cannot be set"
+    )
 
 
 def test_source_ids_increment(input_json):
