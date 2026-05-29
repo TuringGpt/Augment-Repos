@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import { useId } from 'react';
 
 interface LogoProps {
   className?: string;
@@ -9,6 +9,7 @@ export function Logo({ className = '', size = 32 }: LogoProps) {
   const id = useId();
   const orangeGradientId = `orangeGradient-${id}`;
   const accentGradientId = `accentGradient-${id}`;
+  const titleId = `logo-title-${id}`;
 
   return (
     <svg
@@ -18,8 +19,10 @@ export function Logo({ className = '', size = 32 }: LogoProps) {
       width={size}
       height={size}
       className={className}
-      aria-label="Qualia Logo"
+      role="img"
+      aria-labelledby={titleId}
     >
+      <title id={titleId}>Qualia Logo</title>
       <defs>
         <linearGradient id={orangeGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style={{ stopColor: 'oklch(0.705 0.213 47.604)', stopOpacity: 1 }} />
