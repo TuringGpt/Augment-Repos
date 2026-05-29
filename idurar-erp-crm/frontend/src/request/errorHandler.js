@@ -1,6 +1,29 @@
 import { notification } from 'antd';
 import codeMessage from './codeMessage';
 
+const SESSION_EXPIRED_LOGOUT_KEY = 'sessionExpiredLogoutInProgress';
+
+const handleExpiredSession = () => {
+  const isLogoutInProgress = window.localStorage.getItem(SESSION_EXPIRED_LOGOUT_KEY) === 'true';
+
+  window.localStorage.removeItem('auth');
+  window.localStorage.removeItem('isLogout');
+
+  if (!isLogoutInProgress) {
+    window.localStorage.setItem(SESSION_EXPIRED_LOGOUT_KEY, 'true');
+
+    if (window.location.pathname !== '/logout') {
+      window.location.replace('/logout');
+    }
+  }
+
+  return {
+    success: false,
+    result: null,
+    message: 'Your session has expired. Please sign in again to continue.',
+  };
+};
+
 const errorHandler = (error) => {
   if (!navigator.onLine) {
     notification.config({
@@ -38,22 +61,15 @@ const errorHandler = (error) => {
     };
   }
 
-  if (response && response.data && response.data.jwtExpired) {
-    const result = window.localStorage.getItem('auth');
-    const jsonFile = window.localStorage.getItem('isLogout');
-    const { isLogout } = (jsonFile && JSON.parse(jsonFile)) || false;
-    window.localStorage.removeItem('auth');
-    window.localStorage.removeItem('isLogout');
-    if (result || isLogout) {
-      window.location.href = '/logout';
-    }
+  if (response?.data?.jwtExpired || response?.data?.error?.name === 'JsonWebTokenError') {
+    return handleExpiredSession();
   }
 
   if (response && response.status) {
     const message = response.data && response.data.message;
 
     const errorText = message || codeMessage[response.status];
-    const { status, error } = response;
+    const { status } = response;
     notification.config({
       duration: 20,
       maxCount: 2,
@@ -63,11 +79,7 @@ const errorHandler = (error) => {
       description: errorText,
     });
 
-    if (response?.data?.error?.name === 'JsonWebTokenError') {
-      window.localStorage.removeItem('auth');
-      window.localStorage.removeItem('isLogout');
-      window.location.href = '/logout';
-    } else return response.data;
+    return response.data;
   } else {
     notification.config({
       duration: 15,
