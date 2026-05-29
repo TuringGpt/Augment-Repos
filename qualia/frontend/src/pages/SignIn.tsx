@@ -54,7 +54,7 @@ function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
-    defaultValue: {
+    defaultValues: {
       email: "",
       password: "",
     } as SignInFormData,
