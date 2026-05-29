@@ -68,7 +68,7 @@ function SignIn() {
 
         // TODO: Implement actual sign-in API call
         await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("Sign-in successful:", validatedData);
+        console.log("Sign-in successful for:", validatedData.email);
       } catch (err) {
         if (err instanceof z.ZodError) {
           const issues = err.issues;
