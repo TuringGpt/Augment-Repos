@@ -119,7 +119,7 @@ function SignIn() {
                 key={fieldConfig.name}
                 name={fieldConfig.name}
                 validators={{
-                  onchange: ({ value }) => {
+                  onChange: ({ value }) => {
                     const result = fieldConfigs.validator.safeParse(value);
                     return result.success
                       ? undefined
