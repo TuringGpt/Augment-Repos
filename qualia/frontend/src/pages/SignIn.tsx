@@ -172,7 +172,7 @@ function SignIn() {
               {isLoading ? (
                 <>
                   <Spinner />
-                  <span className='ml-2'>Signing up...</span>
+                  <span className='ml-2'>Signing in...</span>
                 </>
               ) : (
                 "Sign In"
