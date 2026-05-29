@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualia Logo Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+        
+        .logo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid oklch(0.646 0.222 41.116);
+            padding-bottom: 10px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .preview-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .preview-item p {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .dark-bg {
+            background: #1a1a1a;
+        }
+        
+        .light-bg {
+            background: #ffffff;
+        }
+        
+        .colored-bg {
+            background: oklch(0.646 0.222 41.116);
+        }
+        
+        .navbar-demo {
+            background: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-demo span {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, 
+                oklch(0.705 0.213 47.604), 
+                oklch(0.646 0.222 41.116),
+                oklch(0.47 0.157 37.304));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .color-swatch {
+            padding: 30px 15px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Qualia Logo & Favicon Preview</h1>
+        
+        <!-- Favicon Preview -->
+        <div class="logo-section">
+            <h2>Favicon (Browser Tab Icon)</h2>
+            <div class="preview-grid">
+                <div class="preview-item light-bg">
+                    <img src="/favicon.svg" alt="Favicon" width="48" height="48">
+                    <p>48x48 (Light Background)</p>
+                </div>
+                <div class="preview-item dark-bg">
+                    <img src="/favicon.svg" alt="Favicon" width="48" height="48">
+                    <p style="color: #ccc;">48x48 (Dark Background)</p>
+                </div>
+                <div class="preview-item light-bg">
+                    <img src="/favicon.svg" alt="Favicon" width="32" height="32">
+                    <p>32x32 (Standard)</p>
+                </div>
+                <div class="preview-item light-bg">
+                    <img src="/favicon.svg" alt="Favicon" width="16" height="16">
+                    <p>16x16 (Small)</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logo Preview -->
+        <div class="logo-section">
+            <h2>Full Logo</h2>
+            <div class="preview-grid">
+                <div class="preview-item light-bg">
+                    <img src="/logo.svg" alt="Qualia Logo" width="120" height="120">
+                    <p>120x120 (Original Size)</p>
+                </div>
+                <div class="preview-item dark-bg">
+                    <img src="/logo.svg" alt="Qualia Logo" width="120" height="120">
+                    <p style="color: #ccc;">120x120 (Dark Background)</p>
+                </div>
+                <div class="preview-item light-bg">
+                    <img src="/logo.svg" alt="Qualia Logo" width="80" height="80">
+                    <p>80x80 (Medium)</p>
+                </div>
+                <div class="preview-item light-bg">
+                    <img src="/logo.svg" alt="Qualia Logo" width="40" height="40">
+                    <p>40x40 (Small)</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navbar Demo -->
+        <div class="logo-section">
+            <h2>Navbar Example</h2>
+            <div class="navbar-demo">
+                <img src="/logo.svg" alt="Qualia Logo" width="32" height="32">
+                <span>Qualia</span>
+            </div>
+        </div>
+        
+        <!-- Color Palette -->
+        <div class="logo-section">
+            <h2>Color Palette Used</h2>
+            <div class="color-palette">
+                <div class="color-swatch" style="background: oklch(0.837 0.128 66.29);">
+                    Chart 1<br>oklch(0.837 0.128 66.29)
+                </div>
+                <div class="color-swatch" style="background: oklch(0.705 0.213 47.604);">
+                    Chart 2 / Primary Light<br>oklch(0.705 0.213 47.604)
+                </div>
+                <div class="color-swatch" style="background: oklch(0.646 0.222 41.116);">
+                    Chart 3 / Primary<br>oklch(0.646 0.222 41.116)
+                </div>
+                <div class="color-swatch" style="background: oklch(0.553 0.195 38.402);">
+                    Chart 4<br>oklch(0.553 0.195 38.402)
+                </div>
+                <div class="color-swatch" style="background: oklch(0.47 0.157 37.304);">
+                    Chart 5 / Primary Dark<br>oklch(0.47 0.157 37.304)
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
