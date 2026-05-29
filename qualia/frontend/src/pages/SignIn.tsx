@@ -41,8 +41,9 @@ const formFields = [
   },
   {
     name: "password" as const,
-    label: "Username",
+    label: "Password",
     type: "password" as const,
+    placeholder: "Enter your password",
     autoComplete: "current-password",
     validator: z.string().min(1, { message: "Password is required" }),
   },
