@@ -100,7 +100,7 @@ function SignIn() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              e.stopPropagations();
+              e.stopPropagation();
               form.handleSubmit();
             }}
             className='space-y-5'
