@@ -29,8 +29,26 @@ def test_run_pass_ambiguous_prefix_lists_matches(capfd):
     assert exc_info.value.code == 2
     _, err = capfd.readouterr()
     assert "ambiguous pass name 'mem'" in err.lower()
-    assert "mem2var" in err
+    assert "mem-merge" in err
     assert "memory-copy-elision" in err
+    assert "mem2-var" not in err
+
+
+def test_run_pass_does_not_swallow_input_file(tmp_path, monkeypatch, capfd):
+    path = tmp_path.joinpath("input.venom")
+    path.write_text("dummy")
+
+    monkeypatch.setattr(
+        venom_main,
+        "parse_venom",
+        lambda source: pytest.fail("--run-pass should list passes instead of reading input"),
+    )
+
+    venom_main._parse_args(["--run-pass", str(path)])
+
+    out, err = capfd.readouterr()
+    assert "Available passes:" in out
+    assert err == ""
 
 
 def test_run_pass_unique_prefix_resolves(tmp_path, monkeypatch, capfd):

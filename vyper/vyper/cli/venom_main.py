@@ -66,14 +66,42 @@ def _pass_has_required_args(pass_cls: type[IRPass]) -> bool:
     return len(required_params) > 0
 
 
+def _pass_has_ordering_constraints(pass_cls: type[IRPass] | type[IRGlobalPass]) -> bool:
+    return any(
+        getattr(pass_cls, attr, ())
+        for attr in (
+            "required_predecessors",
+            "required_successors",
+            "required_immediate_predecessors",
+            "required_immediate_successors",
+        )
+    )
+
+
+def _global_pass_supports_single_run(pass_cls: type[IRGlobalPass]) -> bool:
+    required_params = [
+        param
+        for param in inspect.signature(pass_cls).parameters.values()
+        if param.default is inspect.Parameter.empty
+        and param.kind
+        in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+    ]
+    return len(required_params) == 2 or (
+        len(required_params) == 3 and required_params[2].name == "flags"
+    )
+
+
 def _iter_supported_passes() -> list[_PassSpec]:
     pass_specs: list[_PassSpec] = []
     for pass_cls in vars(venom_passes).values():
         if not inspect.isclass(pass_cls) or not issubclass(pass_cls, (IRPass, IRGlobalPass)):
             continue
 
+        if _pass_has_ordering_constraints(pass_cls):
+            continue
+
         if issubclass(pass_cls, IRGlobalPass):
-            if pass_cls is not venom_passes.FunctionInlinerPass:
+            if not _global_pass_supports_single_run(pass_cls):
                 continue
         elif _pass_has_required_args(pass_cls):
             continue
@@ -114,10 +142,50 @@ def _resolve_run_pass(run_pass: str) -> _PassSpec:
     raise ValueError(f"Unknown pass name '{run_pass}'.\n{_format_available_passes()}")
 
 
+def _looks_like_pass_name(value: str) -> bool:
+    normalized = _normalize_pass_name(value)
+    if not normalized:
+        return False
+
+    return any(
+        name.startswith(normalized)
+        for pass_spec in _iter_supported_passes()
+        for name in _pass_lookup_names(pass_spec)
+    )
+
+
+def _preprocess_run_pass_args(argv: list[str]) -> list[str]:
+    processed = []
+    idx = 0
+    while idx < len(argv):
+        arg = argv[idx]
+        if arg == "--run-pass":
+            next_arg = argv[idx + 1] if idx + 1 < len(argv) else None
+            if (
+                next_arg is not None
+                and not next_arg.startswith("-")
+                and _looks_like_pass_name(next_arg)
+            ):
+                processed.extend([arg, next_arg])
+                idx += 2
+            else:
+                processed.append("--list-passes")
+                idx += 1
+            continue
+
+        processed.append(arg)
+        idx += 1
+
+    return processed
+
+
 def _run_single_pass(ctx, pass_spec: _PassSpec) -> None:
     if issubclass(pass_spec.pass_cls, IRGlobalPass):
         analyses = {fn: IRAnalysesCache(fn) for fn in ctx.functions.values()}
-        pass_spec.pass_cls(analyses, ctx, VenomOptimizationFlags()).run_pass()
+        args = [analyses, ctx]
+        if "flags" in inspect.signature(pass_spec.pass_cls).parameters:
+            args.append(VenomOptimizationFlags())
+        pass_spec.pass_cls(*args).run_pass()
         return
 
     for fn in ctx.functions.values():
@@ -145,15 +213,16 @@ def _parse_args(argv: list[str]):
     )
     parser.add_argument(
         "--run-pass",
-        nargs="?",
-        const="",
         metavar="PASS",
         help="Run a single Venom pass. Unique prefixes are accepted; omit PASS to list passes.",
     )
+    parser.add_argument("--list-passes", action="store_true", help=argparse.SUPPRESS)
 
-    args = parser.parse_args(argv)
+    args = parser.parse_args(_preprocess_run_pass_args(argv))
 
-    if args.run_pass is not None and args.run_pass.lower() in {"", "help", "list"}:
+    if args.list_passes or (
+        args.run_pass is not None and args.run_pass.lower() in {"", "help", "list"}
+    ):
         print(_format_available_passes())
         return
 
