@@ -64,6 +64,21 @@ def test_invalid_root_path():
         compile_files([], [], paths=["path/that/does/not/exist"])
 
 
+def test_batch_compile_warning_category_counts(chdir_tmp_path, make_file):
+    code = """
+x: public(uint256[2**64])
+    """
+    make_file("foo.vy", code)
+    make_file("bar.vy", code)
+
+    warning_counts = {}
+    compile_files(
+        ["foo.vy", "bar.vy"], ["bytecode"], warnings_control="none", warning_counts=warning_counts
+    )
+
+    assert warning_counts == {"VyperWarning": 2}
+
+
 CONTRACT_CODE = """
 {import_stmt}
 

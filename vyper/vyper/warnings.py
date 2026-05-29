@@ -1,8 +1,15 @@
 import contextlib
+import contextvars
 import warnings
+from collections import Counter
+from collections.abc import Iterator, MutableMapping
 from typing import Optional
 
 from vyper.exceptions import _BaseVyperException
+
+_warning_category_counts: contextvars.ContextVar[MutableMapping[str, int] | None] = (
+    contextvars.ContextVar("warning_category_counts", default=None)
+)
 
 
 class VyperWarning(_BaseVyperException, Warning):
@@ -13,7 +20,27 @@ class VyperWarning(_BaseVyperException, Warning):
 def vyper_warn(warning: VyperWarning | str, node=None):
     if isinstance(warning, str):
         warning = VyperWarning(warning, node)
+
+    category_counts = _warning_category_counts.get()
+    if category_counts is not None:
+        category = type(warning).__name__
+        category_counts[category] = category_counts.get(category, 0) + 1
+
     warnings.warn(warning, stacklevel=2)
+
+
+@contextlib.contextmanager
+def warning_category_counter(
+    counter: Optional[MutableMapping[str, int]] = None,
+) -> Iterator[MutableMapping[str, int]]:
+    if counter is None:
+        counter = Counter()
+
+    token = _warning_category_counts.set(counter)
+    try:
+        yield counter
+    finally:
+        _warning_category_counts.reset(token)
 
 
 @contextlib.contextmanager
