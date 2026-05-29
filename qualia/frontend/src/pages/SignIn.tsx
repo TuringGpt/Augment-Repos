@@ -75,7 +75,7 @@ function SignIn() {
           setError(issues[0]?.message || "Validation failed");
         } else {
           setError(
-            "Sign-up failed. Please check your credentials and try again.",
+            "Sign-in failed. Please check your credentials and try again.",
           );
         }
       } finally {
