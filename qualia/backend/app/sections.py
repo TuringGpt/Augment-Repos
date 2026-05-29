@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -44,6 +44,14 @@ class QuestionCreate(BaseModel):
     description: str | None = None
     is_required: bool = False
     display_order: int = Field(default=0, ge=0)
+
+    @field_validator("question_text")
+    @classmethod
+    def validate_question_text(cls, value: str) -> str:
+        stripped_value = value.strip()
+        if not stripped_value:
+            raise ValueError("question_text must not be blank")
+        return stripped_value
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
@@ -113,6 +121,11 @@ async def create_section(
 
 
 @router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201)
+@router.post(
+    "/{form_cycle_id}/sections/{section_id}/questions/",
+    status_code=201,
+    include_in_schema=False,
+)
 async def create_question(
     form_cycle_id: uuid.UUID,
     section_id: uuid.UUID,
