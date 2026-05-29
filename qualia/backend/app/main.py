@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.auth import router as auth_router
+from app.form_cycles import router as form_cycle_router
 
 app = FastAPI(
     title="Qualia API",
@@ -8,6 +9,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(form_cycle_router, prefix="/api/v1")
 
 
 @app.get("/health")
