@@ -1,6 +1,7 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,7 @@ from app.models.user import Role, User
 router = APIRouter(prefix="/forms", tags=["sections"])
 AUTO_ORDER_RETRY_LIMIT = 3
 SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
@@ -33,13 +35,12 @@ class SectionCreate(BaseModel):
 async def create_section(
     form_cycle_id: uuid.UUID,
     payload: SectionCreate,
-    authorization: str = Header(),
+    credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str | int | None]:
-    scheme, _, token = authorization.partition(" ")
-    token = token.strip()
-    if scheme.lower() != "bearer" or not token:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
+    token = credentials.credentials.strip()
     try:
         subject = verify_token(token, expected_token_type="access").get("sub")
     except ValueError as exc:
