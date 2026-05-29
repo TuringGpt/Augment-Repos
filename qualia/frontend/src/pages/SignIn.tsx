@@ -98,10 +98,10 @@ function SignIn() {
 
         <CardContent>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              form.handleSubmit();
+              await form.handleSubmit();
             }}
             className='space-y-5'
           >
