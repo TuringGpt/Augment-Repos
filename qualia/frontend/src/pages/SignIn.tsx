@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useform } from "@tanstack/react-form";
-import { zod } from "zod";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,7 +120,7 @@ function SignIn() {
                 name={fieldConfig.name}
                 validators={{
                   onChange: ({ value }) => {
-                    const result = fieldConfigs.validator.safeParse(value);
+                    const result = fieldConfig.validator.safeParse(value);
                     return result.success
                       ? undefined
                       : result.error.issues[0]?.message;
