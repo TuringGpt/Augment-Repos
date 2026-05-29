@@ -2,8 +2,9 @@ import uuid
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.core.database import get_db
 from app.core.security import verify_token
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/forms", tags=["sections"])
 
 class SectionCreate(BaseModel):
     title: str | None = Field(default=None, max_length=255)
-    display_order: int = Field(default=1, ge=1)
+    display_order: int | None = Field(default=None, ge=1)
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201)
@@ -48,8 +49,18 @@ async def create_section(
     form_cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if form_cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    section = Section(form_cycle_id=form_cycle.id, title=payload.title, display_order=payload.display_order)
+    display_order = payload.display_order
+    if display_order is None:
+        current_max_order = (
+            await db.execute(select(func.max(Section.display_order)).where(Section.form_cycle_id == form_cycle.id))
+        ).scalar_one()
+        display_order = (current_max_order or 0) + 1
+    section = Section(form_cycle_id=form_cycle.id, title=payload.title, display_order=display_order)
     db.add(section)
-    await db.flush()
-    await db.commit()
+    try:
+        await db.flush()
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
     return {"id": str(section.id), "form_cycle_id": str(form_cycle.id), "title": section.title, "display_order": section.display_order}
