@@ -18,6 +18,7 @@ from app.models.user import Role, User
 router = APIRouter(prefix="/forms", tags=["sections"])
 AUTO_ORDER_RETRY_LIMIT = 3
 SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
+QUESTION_DISPLAY_ORDER_CONSTRAINT = "uq_question_section_display_order"
 QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT = "questions_section_id_fkey"
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -25,6 +26,11 @@ bearer_scheme = HTTPBearer(auto_error=False)
 def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
     statement = str(getattr(exc, "orig", exc))
     return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "section.form_cycle_id, section.display_order" in statement
+
+
+def _is_question_display_order_conflict(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc))
+    return QUESTION_DISPLAY_ORDER_CONSTRAINT in statement or "questions.section_id, questions.display_order" in statement
 
 
 def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
@@ -36,9 +42,7 @@ def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
         return True
     sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
     statement = str(original_error)
-    return sqlstate == "23503" and (
-        QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT in statement or "section_id" in statement.lower()
-    )
+    return sqlstate == "23503" and QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT in statement
 
 
 class SectionCreate(BaseModel):
@@ -176,28 +180,38 @@ async def create_question(
     ).scalar_one_or_none()
     if section is None:
         raise HTTPException(status_code=404, detail="Section not found")
-    next_display_order = payload.display_order
-    if next_display_order is None:
-        current_max_order = (
-            await db.execute(select(func.max(Question.display_order)).where(Question.section_id == section.id))
-        ).scalar_one()
-        next_display_order = (current_max_order or 0) + 1
-    question = Question(
-        section_id=section.id,
-        form_cycle_id=section.form_cycle_id,
-        question_text=payload.question_text,
-        description=payload.description,
-        question_type=payload.question_type,
-        is_required=payload.is_required,
-        display_order=next_display_order,
-    )
-    db.add(question)
-    try:
-        await db.flush()
-        await db.commit()
-    except IntegrityError as exc:
-        await db.rollback()
-        if _is_section_foreign_key_conflict(exc):
-            raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
-        raise
-    return QuestionResponse(id=str(question.id))
+    display_order = payload.display_order
+    retries_remaining = AUTO_ORDER_RETRY_LIMIT if display_order is None else 1
+    while retries_remaining > 0:
+        next_display_order = display_order
+        if next_display_order is None:
+            current_max_order = (
+                await db.execute(select(func.max(Question.display_order)).where(Question.section_id == section.id))
+            ).scalar_one()
+            next_display_order = (current_max_order or 0) + 1
+        question = Question(
+            section_id=section.id,
+            form_cycle_id=section.form_cycle_id,
+            question_text=payload.question_text,
+            description=payload.description,
+            question_type=payload.question_type,
+            is_required=payload.is_required,
+            display_order=next_display_order,
+        )
+        db.add(question)
+        try:
+            await db.flush()
+            await db.commit()
+            return QuestionResponse(id=str(question.id))
+        except IntegrityError as exc:
+            await db.rollback()
+            db.expunge(question)
+            retries_remaining -= 1
+            if _is_question_display_order_conflict(exc) and display_order is None and retries_remaining > 0:
+                continue
+            if _is_question_display_order_conflict(exc):
+                raise HTTPException(status_code=409, detail="Question display order already exists for this section") from exc
+            if _is_section_foreign_key_conflict(exc):
+                raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+            raise
+    raise HTTPException(status_code=409, detail="Question display order already exists for this section")
