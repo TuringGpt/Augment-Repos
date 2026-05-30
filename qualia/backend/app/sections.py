@@ -43,6 +43,10 @@ class SectionResponse(BaseModel):
     display_order: int
 
 
+class QuestionResponse(BaseModel):
+    id: str
+
+
 class QuestionCreate(BaseModel):
     question_text: str = Field(min_length=1)
     question_type: QuestionType = QuestionType.number
@@ -125,10 +129,11 @@ async def create_section(
     )
 
 
-@router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201)
+@router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201, response_model=QuestionResponse)
 @router.post(
     "/{form_cycle_id}/sections/{section_id}/questions/",
     status_code=201,
+    response_model=QuestionResponse,
     include_in_schema=False,
 )
 async def create_question(
@@ -176,5 +181,7 @@ async def create_question(
         await db.commit()
     except IntegrityError as exc:
         await db.rollback()
-        raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
-    return {"id": str(question.id)}
+        if _is_section_foreign_key_conflict(exc):
+            raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+        raise
+    return QuestionResponse(id=str(question.id))
