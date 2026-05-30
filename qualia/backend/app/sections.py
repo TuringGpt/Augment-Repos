@@ -26,6 +26,11 @@ def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
     return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "section.form_cycle_id, section.display_order" in statement
 
 
+def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc))
+    return "section_id" in statement and "foreign key" in statement.lower()
+
+
 class SectionCreate(BaseModel):
     title: str | None = Field(default=None, max_length=255)
     display_order: int | None = Field(default=None, ge=1)
