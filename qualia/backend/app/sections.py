@@ -42,7 +42,7 @@ def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
         return True
     sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
     statement = str(original_error)
-    return sqlstate == "23503" and QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT in statement
+    return sqlstate == "23503" and "Key (section_id)=" in statement and 'table "section"' in statement
 
 
 class SectionCreate(BaseModel):
