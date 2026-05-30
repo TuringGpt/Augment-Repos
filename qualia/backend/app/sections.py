@@ -18,6 +18,7 @@ from app.models.user import Role, User
 router = APIRouter(prefix="/forms", tags=["sections"])
 AUTO_ORDER_RETRY_LIMIT = 3
 SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
+QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT = "questions_section_id_fkey"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -27,8 +28,17 @@ def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
 
 
 def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
-    statement = str(getattr(exc, "orig", exc))
-    return "section_id" in statement and "foreign key" in statement.lower()
+    original_error = getattr(exc, "orig", exc)
+    constraint_name = getattr(getattr(original_error, "diag", None), "constraint_name", None) or getattr(
+        original_error, "constraint_name", None
+    )
+    if constraint_name == QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT:
+        return True
+    sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
+    statement = str(original_error)
+    return sqlstate == "23503" and (
+        QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT in statement or "section_id" in statement.lower()
+    )
 
 
 class SectionCreate(BaseModel):
@@ -52,7 +62,7 @@ class QuestionCreate(BaseModel):
     question_type: QuestionType = QuestionType.number
     description: str | None = None
     is_required: bool = False
-    display_order: int = Field(default=0, ge=0)
+    display_order: int | None = Field(default=None, ge=0)
 
     @field_validator("question_text")
     @classmethod
@@ -142,7 +152,7 @@ async def create_question(
     payload: QuestionCreate,
     credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, str]:
+) -> QuestionResponse:
     if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     token = credentials.credentials.strip()
@@ -166,6 +176,12 @@ async def create_question(
     ).scalar_one_or_none()
     if section is None:
         raise HTTPException(status_code=404, detail="Section not found")
+    next_display_order = payload.display_order
+    if next_display_order is None:
+        current_max_order = (
+            await db.execute(select(func.max(Question.display_order)).where(Question.section_id == section.id))
+        ).scalar_one()
+        next_display_order = (current_max_order or 0) + 1
     question = Question(
         section_id=section.id,
         form_cycle_id=section.form_cycle_id,
@@ -173,7 +189,7 @@ async def create_question(
         description=payload.description,
         question_type=payload.question_type,
         is_required=payload.is_required,
-        display_order=payload.display_order,
+        display_order=next_display_order,
     )
     db.add(question)
     try:
