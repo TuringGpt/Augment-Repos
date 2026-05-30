@@ -166,6 +166,10 @@ async def create_question(
         display_order=payload.display_order,
     )
     db.add(question)
-    await db.flush()
-    await db.commit()
+    try:
+        await db.flush()
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
     return {"id": str(question.id)}
