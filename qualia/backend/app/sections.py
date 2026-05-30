@@ -20,6 +20,7 @@ AUTO_ORDER_RETRY_LIMIT = 3
 SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
 QUESTION_DISPLAY_ORDER_CONSTRAINT = "uq_question_section_display_order"
 QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT = "questions_section_id_fkey"
+QUESTION_FORM_CYCLE_FOREIGN_KEY_CONSTRAINT = "questions_form_cycle_id_fkey"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -43,6 +44,18 @@ def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
     sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
     statement = str(original_error)
     return sqlstate == "23503" and "Key (section_id)=" in statement and 'table "section"' in statement
+
+
+def _is_form_cycle_foreign_key_conflict(exc: IntegrityError) -> bool:
+    original_error = getattr(exc, "orig", exc)
+    constraint_name = getattr(getattr(original_error, "diag", None), "constraint_name", None) or getattr(
+        original_error, "constraint_name", None
+    )
+    if constraint_name == QUESTION_FORM_CYCLE_FOREIGN_KEY_CONSTRAINT:
+        return True
+    sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
+    statement = str(original_error)
+    return sqlstate == "23503" and "Key (form_cycle_id)=" in statement and 'table "form_cycles"' in statement
 
 
 class SectionCreate(BaseModel):
@@ -213,5 +226,7 @@ async def create_question(
                 raise HTTPException(status_code=409, detail="Question display order already exists for this section") from exc
             if _is_section_foreign_key_conflict(exc):
                 raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+            if _is_form_cycle_foreign_key_conflict(exc):
+                raise HTTPException(status_code=409, detail="Form cycle is no longer available for question creation") from exc
             raise
     raise HTTPException(status_code=409, detail="Question display order already exists for this section")
