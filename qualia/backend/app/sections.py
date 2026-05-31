@@ -220,13 +220,15 @@ async def create_question(
         try:
             await db.flush()
             await db.commit()
-            return QuestionResponse(id=str(question.id))
+            break
         except IntegrityError as exc:
             await db.rollback()
             db.expunge(question)
             retries_remaining -= 1
-            if _is_question_display_order_conflict(exc) and display_order is None and retries_remaining > 0:
-                continue
+            if _is_question_display_order_conflict(exc) and display_order is None:
+                if retries_remaining > 0:
+                    continue
+                break
             if _is_question_display_order_conflict(exc):
                 raise HTTPException(status_code=409, detail="Question display order already exists for this section") from exc
             if _is_sqlite_foreign_key_conflict(exc):
@@ -245,4 +247,6 @@ async def create_question(
             if _is_form_cycle_foreign_key_conflict(exc):
                 raise HTTPException(status_code=409, detail="Form cycle is no longer available for question creation") from exc
             raise
-    raise HTTPException(status_code=409, detail="Question display order already exists for this section")
+    if retries_remaining == 0:
+        raise HTTPException(status_code=409, detail="Question display order already exists for this section")
+    return QuestionResponse(id=str(question.id))
