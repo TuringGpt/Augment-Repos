@@ -21,6 +21,7 @@ SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
 QUESTION_DISPLAY_ORDER_CONSTRAINT = "uq_question_section_display_order"
 QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT = "questions_section_id_fkey"
 QUESTION_FORM_CYCLE_FOREIGN_KEY_CONSTRAINT = "questions_form_cycle_id_fkey"
+SQLITE_FOREIGN_KEY_FAILURE = "FOREIGN KEY constraint failed"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -32,6 +33,10 @@ def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
 def _is_question_display_order_conflict(exc: IntegrityError) -> bool:
     statement = str(getattr(exc, "orig", exc))
     return QUESTION_DISPLAY_ORDER_CONSTRAINT in statement or "questions.section_id, questions.display_order" in statement
+
+
+def _is_sqlite_foreign_key_conflict(exc: IntegrityError) -> bool:
+    return SQLITE_FOREIGN_KEY_FAILURE in str(getattr(exc, "orig", exc))
 
 
 def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
@@ -224,6 +229,17 @@ async def create_question(
                 continue
             if _is_question_display_order_conflict(exc):
                 raise HTTPException(status_code=409, detail="Question display order already exists for this section") from exc
+            if _is_sqlite_foreign_key_conflict(exc):
+                section_exists = (
+                    await db.execute(select(Section.id).where(Section.id == section.id))
+                ).scalar_one_or_none()
+                if section_exists is None:
+                    raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+                form_cycle_exists = (
+                    await db.execute(select(FormCycle.id).where(FormCycle.id == section.form_cycle_id))
+                ).scalar_one_or_none()
+                if form_cycle_exists is None:
+                    raise HTTPException(status_code=409, detail="Form cycle is no longer available for question creation") from exc
             if _is_section_foreign_key_conflict(exc):
                 raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
             if _is_form_cycle_foreign_key_conflict(exc):
