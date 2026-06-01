@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
+from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, User
 
@@ -17,12 +18,49 @@ from app.models.user import Role, User
 router = APIRouter(prefix="/forms", tags=["sections"])
 AUTO_ORDER_RETRY_LIMIT = 3
 SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
+QUESTION_DISPLAY_ORDER_CONSTRAINT = "uq_question_section_display_order"
+QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT = "questions_section_id_fkey"
+QUESTION_FORM_CYCLE_FOREIGN_KEY_CONSTRAINT = "questions_form_cycle_id_fkey"
+SQLITE_FOREIGN_KEY_FAILURE = "FOREIGN KEY constraint failed"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
     statement = str(getattr(exc, "orig", exc))
     return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "section.form_cycle_id, section.display_order" in statement
+
+
+def _is_question_display_order_conflict(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc))
+    return QUESTION_DISPLAY_ORDER_CONSTRAINT in statement or "questions.section_id, questions.display_order" in statement
+
+
+def _is_sqlite_foreign_key_conflict(exc: IntegrityError) -> bool:
+    return SQLITE_FOREIGN_KEY_FAILURE in str(getattr(exc, "orig", exc))
+
+
+def _is_section_foreign_key_conflict(exc: IntegrityError) -> bool:
+    original_error = getattr(exc, "orig", exc)
+    constraint_name = getattr(getattr(original_error, "diag", None), "constraint_name", None) or getattr(
+        original_error, "constraint_name", None
+    )
+    if constraint_name == QUESTION_SECTION_FOREIGN_KEY_CONSTRAINT:
+        return True
+    sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
+    statement = str(original_error)
+    return sqlstate == "23503" and "Key (section_id)=" in statement and 'table "section"' in statement
+
+
+def _is_form_cycle_foreign_key_conflict(exc: IntegrityError) -> bool:
+    original_error = getattr(exc, "orig", exc)
+    constraint_name = getattr(getattr(original_error, "diag", None), "constraint_name", None) or getattr(
+        original_error, "constraint_name", None
+    )
+    if constraint_name == QUESTION_FORM_CYCLE_FOREIGN_KEY_CONSTRAINT:
+        return True
+    sqlstate = getattr(original_error, "sqlstate", None) or getattr(original_error, "pgcode", None)
+    statement = str(original_error)
+    return sqlstate == "23503" and "Key (form_cycle_id)=" in statement and 'table "form_cycles"' in statement
 
 
 class SectionCreate(BaseModel):
@@ -35,6 +73,26 @@ class SectionResponse(BaseModel):
     form_cycle_id: str
     title: str | None
     display_order: int
+
+
+class QuestionResponse(BaseModel):
+    id: str
+
+
+class QuestionCreate(BaseModel):
+    question_text: str = Field(min_length=1)
+    question_type: QuestionType = QuestionType.number
+    description: str | None = None
+    is_required: bool = False
+    display_order: int | None = Field(default=None, ge=0)
+
+    @field_validator("question_text")
+    @classmethod
+    def validate_question_text(cls, value: str) -> str:
+        stripped_value = value.strip()
+        if not stripped_value:
+            raise ValueError("question_text must not be blank")
+        return stripped_value
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
@@ -101,3 +159,94 @@ async def create_section(
         title=section.title,
         display_order=section.display_order,
     )
+
+
+@router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201, response_model=QuestionResponse)
+@router.post(
+    "/{form_cycle_id}/sections/{section_id}/questions/",
+    status_code=201,
+    response_model=QuestionResponse,
+    include_in_schema=False,
+)
+async def create_question(
+    form_cycle_id: uuid.UUID,
+    section_id: uuid.UUID,
+    payload: QuestionCreate,
+    credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> QuestionResponse:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    token = credentials.credentials.strip()
+    try:
+        subject = verify_token(token, expected_token_type="access").get("sub")
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
+    if not isinstance(subject, str) or not subject:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    if not user.is_active or not user.is_email_verified:
+        raise HTTPException(status_code=403, detail="Admin account is not active or email is not verified")
+    section = (
+        await db.execute(
+            select(Section).where(Section.id == section_id, Section.form_cycle_id == form_cycle_id)
+        )
+    ).scalar_one_or_none()
+    if section is None:
+        raise HTTPException(status_code=404, detail="Section not found")
+    display_order = payload.display_order
+    retries_remaining = AUTO_ORDER_RETRY_LIMIT if display_order is None else 1
+    while retries_remaining > 0:
+        next_display_order = display_order
+        if next_display_order is None:
+            current_max_order = (
+                await db.execute(select(func.max(Question.display_order)).where(Question.section_id == section.id))
+            ).scalar_one()
+            next_display_order = (current_max_order or 0) + 1
+        question = Question(
+            section_id=section.id,
+            form_cycle_id=section.form_cycle_id,
+            question_text=payload.question_text,
+            description=payload.description,
+            question_type=payload.question_type,
+            is_required=payload.is_required,
+            display_order=next_display_order,
+        )
+        db.add(question)
+        try:
+            await db.flush()
+            await db.commit()
+            break
+        except IntegrityError as exc:
+            await db.rollback()
+            db.expunge(question)
+            retries_remaining -= 1
+            if _is_question_display_order_conflict(exc) and display_order is None:
+                if retries_remaining > 0:
+                    continue
+                break
+            if _is_question_display_order_conflict(exc):
+                raise HTTPException(status_code=409, detail="Question display order already exists for this section") from exc
+            if _is_sqlite_foreign_key_conflict(exc):
+                section_exists = (
+                    await db.execute(select(Section.id).where(Section.id == section.id))
+                ).scalar_one_or_none()
+                if section_exists is None:
+                    raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+                form_cycle_exists = (
+                    await db.execute(select(FormCycle.id).where(FormCycle.id == section.form_cycle_id))
+                ).scalar_one_or_none()
+                if form_cycle_exists is None:
+                    raise HTTPException(status_code=409, detail="Form cycle is no longer available for question creation") from exc
+            if _is_section_foreign_key_conflict(exc):
+                raise HTTPException(status_code=409, detail="Section is no longer available for question creation") from exc
+            if _is_form_cycle_foreign_key_conflict(exc):
+                raise HTTPException(status_code=409, detail="Form cycle is no longer available for question creation") from exc
+            raise
+    if retries_remaining == 0:
+        raise HTTPException(status_code=409, detail="Question display order already exists for this section")
+    return QuestionResponse(id=str(question.id))
