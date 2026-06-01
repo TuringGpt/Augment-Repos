@@ -1,7 +1,7 @@
-import axios from 'axios';
+import { axiosInstance } from '@/request/request';
 import { BASE_URL } from '@/config/serverApiConfig';
 export default async function checkImage(path) {
-  const result = await axios
+  const result = await axiosInstance
     .get(path, {
       headers: {
         'Access-Control-Allow-Origin': BASE_URL,
