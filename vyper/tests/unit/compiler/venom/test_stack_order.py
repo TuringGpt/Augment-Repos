@@ -2,6 +2,8 @@ import pytest
 
 from tests.venom_utils import PrePostChecker, parse_from_basic_block
 from vyper.venom.analysis.analysis import IRAnalysesCache
+from vyper.venom.analysis.stack_order import StackOrderAnalysis
+from vyper.venom.basicblock import IRInstruction, IRLabel, IRVariable
 from vyper.venom.passes import AssignElimination, DFTPass, SimplifyCFGPass, SingleUseExpansion
 from vyper.venom.venom_to_assembly import VenomCompiler
 
@@ -11,6 +13,22 @@ _check_pre_post = PrePostChecker([SingleUseExpansion, DFTPass, AssignElimination
 
 def _check_no_change(pre):
     _check_pre_post(pre, pre, hevm=False)
+
+
+def test_stack_order_invoke_ignores_target_label():
+    arg0 = IRVariable("%arg0")
+    arg1 = IRVariable("%arg1")
+    ret = IRVariable("%ret")
+    inst = IRInstruction("invoke", [IRLabel("callee"), arg0, arg1], [ret])
+
+    analysis = object.__new__(StackOrderAnalysis)
+    analysis.stack = [arg0, arg1]
+    analysis.needed = []
+
+    analysis._handle_inst(inst)
+
+    assert analysis.stack == [arg0, arg1]
+    assert analysis.needed == []
 
 
 def test_stack_order_basic():
