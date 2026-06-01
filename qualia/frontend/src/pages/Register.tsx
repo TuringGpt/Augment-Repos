@@ -63,6 +63,7 @@ function Register() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const isMountedRef = useRef(true);
+  const isSubmittingRef = useRef(false);
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
@@ -79,9 +80,12 @@ function Register() {
       confirmPassword: "",
     } as RegisterFormData,
     onSubmit: async ({ value }) => {
-      // Guard against double-submit
-      if (isLoading) return;
+      // Guard against double-submit using synchronous ref check
+      if (isSubmittingRef.current) return;
       if (!isMountedRef.current) return;
+
+      // Set synchronous flag immediately to prevent race conditions
+      isSubmittingRef.current = true;
       setError("");
       setIsLoading(true);
 
@@ -107,6 +111,8 @@ function Register() {
           );
         }
       } finally {
+        // Reset synchronous flag immediately
+        isSubmittingRef.current = false;
         if (isMountedRef.current) {
           setIsLoading(false);
         }
