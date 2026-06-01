@@ -15,7 +15,7 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const auth = storePersist.get('auth');
-    if (auth) {
+    if (auth && auth.current && auth.current.token) {
       config.headers['Authorization'] = `Bearer ${auth.current.token}`;
     }
     return config;
