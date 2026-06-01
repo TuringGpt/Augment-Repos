@@ -101,7 +101,7 @@ function Home() {
           {/* Action Buttons */}
           <div className="flex gap-4 justify-center flex-wrap animate-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button asChild size="lg" className="h-11 px-8">
-              <Link to="/signin">
+              <Link to="/register">
                 Get Started
                 <svg className="w-4 h-4 ml-2" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
