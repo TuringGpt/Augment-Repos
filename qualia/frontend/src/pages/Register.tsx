@@ -61,9 +61,9 @@ const formFields = [
     name: "confirmPassword" as const,
     label: "Confirm Password",
     type: "password" as const,
-    placeholder: "Confirm your Email",
+    placeholder: "Confirm your password",
     autoComplete: "new-password",
-    validator: z.string().min(1, { message: "Please confirm your Email" }),
+    validator: z.string().min(1, { message: "Please confirm your password" }),
   },
 ] as const;
 
