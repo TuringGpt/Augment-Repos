@@ -4,6 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -98,16 +99,23 @@ async def assign_reviewer(
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     await _get_authorized_admin(token, db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
     reviewer = _validate_reviewer(
         (await db.execute(select(User).where(User.id == payload.reviewer_id))).scalar_one_or_none()
     )
-    if cycle is None:
-        raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
     existing_submission = (
         await db.execute(select(Submission).where(Submission.form_cycle_id == cycle.id))
     ).scalar_one_or_none()
     if existing_submission is not None:
         raise HTTPException(status_code=409, detail="Reviewer already assigned for this form cycle")
     db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Reviewer already assigned for this form cycle",
+        ) from exc
     return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
