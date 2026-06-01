@@ -27,9 +27,9 @@ const registerSchema = z
       .min(8, { message: "Password must be at least 8 characters long" }),
     confirmPassword: z.string().min(1, { message: "Please confirm your password" }),
   })
-  .refines((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match. Please try again.",
-    paths: ["confirmPassword"],
+    path: ["confirmPassword"],
   });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
