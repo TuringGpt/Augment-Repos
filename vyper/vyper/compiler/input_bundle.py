@@ -175,6 +175,29 @@ class InputBundle:
         finally:
             self.search_paths = original_paths
 
+    # enumerate dotted module paths reachable from `search_paths` for files
+    # whose suffix is in `suffixes`. used to power typo suggestions when an
+    # import fails. subclasses override `_enumerate_files` to provide the
+    # actual file listing for their storage backend.
+    def available_modules(
+        self, suffixes: list[str], search_paths: Optional[list[PathLike]] = None
+    ) -> set[str]:
+        if search_paths is None:
+            search_paths = self.search_paths
+
+        results: set[str] = set()
+        for sp in search_paths:
+            for rel_path in self._enumerate_files(sp, suffixes):
+                # rel_path is a PurePath relative to the search path,
+                # already stripped of its suffix.
+                results.add(rel_path.as_posix().replace("/", "."))
+        return results
+
+    # yield PurePaths (suffix stripped) for files under `search_path` whose
+    # suffix matches one in `suffixes`. default: nothing. subclasses override.
+    def _enumerate_files(self, search_path: PathLike, suffixes: list[str]) -> Iterator[PurePath]:
+        return iter(())
+
 
 # regular input. takes a search path(s), and `load_file()` will search all
 # search paths for the file and read it from the filesystem
@@ -198,6 +221,20 @@ class FilesystemInputBundle(InputBundle):
         source_id = super()._generate_source_id(resolved_path)
 
         return FileInput(source_id, original_path, resolved_path, code)
+
+    def _enumerate_files(self, search_path: PathLike, suffixes: list[str]) -> Iterator[PurePath]:
+        base = Path(search_path)
+        if not base.is_dir():
+            return
+        for suffix in suffixes:
+            for p in base.rglob(f"*{suffix}"):
+                if not p.is_file():
+                    continue
+                try:
+                    rel = p.relative_to(base)
+                except ValueError:
+                    continue
+                yield rel.with_suffix("")
 
 
 # wrap os.path.normpath, but return the same type as the input -
@@ -252,6 +289,23 @@ class JSONInputBundle(InputBundle):
         # the codebase.
         raise JSONError(f"Unexpected type in file: '{resolved_path}'")  # pragma: nocover
 
+    def _enumerate_files(self, search_path: PathLike, suffixes: list[str]) -> Iterator[PurePath]:
+        base = _normpath(search_path)
+        base_str = base.as_posix().rstrip("/")
+        suffix_set = set(suffixes)
+        for path in self.input_json.keys():
+            if path.suffix not in suffix_set:
+                continue
+            path_str = path.as_posix()
+            # check that `path` lives under `base`. handle the bare "." base.
+            if base_str in ("", "."):
+                rel_str = path_str
+            elif path_str.startswith(base_str + "/"):
+                rel_str = path_str[len(base_str) + 1 :]
+            else:
+                continue
+            yield PurePath(rel_str).with_suffix("")
+
 
 # input bundle for vyper archives. similar to JSONInputBundle, but takes
 # a zipfile as input.
@@ -280,3 +334,22 @@ class ZipInputBundle(InputBundle):
         source_id = super()._generate_source_id(resolved_path)
 
         return FileInput(source_id, original_path, resolved_path, value)
+
+    def _enumerate_files(self, search_path: PathLike, suffixes: list[str]) -> Iterator[PurePath]:
+        base = _normpath(search_path)
+        base_str = base.as_posix().rstrip("/")
+        suffix_set = set(suffixes)
+        for name in self.archive.namelist():
+            # skip directory entries
+            if name.endswith("/"):
+                continue
+            path = PurePath(name)
+            if path.suffix not in suffix_set:
+                continue
+            if base_str in ("", "."):
+                rel_str = name
+            elif name.startswith(base_str + "/"):
+                rel_str = name[len(base_str) + 1 :]
+            else:
+                continue
+            yield PurePath(rel_str).with_suffix("")
