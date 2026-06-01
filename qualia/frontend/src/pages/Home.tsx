@@ -4,8 +4,14 @@ import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+interface Feature {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
 function Home() {
-  const feature: Feature = [
+  const features: Feature[] = [
     {
       title: 'Dynamic Forms',
       description: 'Create flexible QA forms with custom fields, validation rules, and conditional logic',
@@ -53,7 +59,7 @@ function Home() {
     },
     {
       title: 'Easy Export',
-      descriptions: 'Export reports in multiple formats including PDF, CSV, and JSON for further analysis',
+      description: 'Export reports in multiple formats including PDF, CSV, and JSON for further analysis',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
