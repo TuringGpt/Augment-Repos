@@ -80,7 +80,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                   : ""
               }
             >
-              <Link to='/sign-up' className='text-white!'>
+              <Link to='/register' className='text-white!'>
                 Get Started
               </Link>
             </Button>
