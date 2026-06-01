@@ -34,7 +34,7 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Input field configuration map
+// Input field configuration map for standard fields
 const formFields = [
   {
     name: "email" as const,
@@ -56,14 +56,6 @@ const formFields = [
     validator: z
       .string()
       .min(8, { message: "Password must be at least 8 characters long" }),
-  },
-  {
-    name: "confirmPassword" as const,
-    label: "Confirm Password",
-    type: "password" as const,
-    placeholder: "Confirm your password",
-    autoComplete: "new-password",
-    validator: z.string().min(1, { message: "Please confirm your password" }),
   },
 ] as const;
 
@@ -195,6 +187,54 @@ function Register() {
                 )}
               </form.Field>
             ))}
+
+            {/* Confirm Password field with cross-field validation */}
+            <form.Field
+              name="confirmPassword"
+              validators={{
+                onChange: ({ value, fieldApi }) => {
+                  // First check if the field is empty
+                  if (!value || value.length === 0) {
+                    return "Please confirm your password";
+                  }
+                  // Then check if it matches the password field
+                  const passwordValue = fieldApi.form.getFieldValue("password");
+                  if (passwordValue && value !== passwordValue) {
+                    return "Passwords do not match. Please try again.";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div className='space-y-2'>
+                  <Label htmlFor="confirmPassword">
+                    Confirm Password
+                  </Label>
+                  <Input
+                    type="password"
+                    id="confirmPassword"
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      // Clear page-level error when user starts editing
+                      if (error) setError("");
+                    }}
+                    placeholder="Confirm your password"
+                    autoComplete="new-password"
+                    disabled={isLoading}
+                    className='h-10'
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className='text-sm text-destructive'>
+                      {field.state.meta.errors[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
 
             <Button
               type='submit'
