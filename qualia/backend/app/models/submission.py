@@ -2,7 +2,7 @@ import uuid
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -10,6 +10,7 @@ from app.core.database import Base
 
 class Submission(Base):
     __tablename__ = "submissions"
+    __table_args__ = (UniqueConstraint("form_cycle_id", name="uq_submissions_form_cycle_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     form_cycle_id: Mapped[uuid.UUID] = mapped_column(
