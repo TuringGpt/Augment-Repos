@@ -39,9 +39,12 @@ const quoteSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
-      description: String,
+      description: {
+        type: String,
+      },
       quantity: {
         type: Number,
+        default: 1,
         required: true,
       },
       price: {
@@ -84,10 +87,12 @@ const quoteSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  notes: String,
+  notes: {
+    type: String,
+  },
   status: {
     type: String,
-    enum: ['draft', 'pending', 'sent', 'accepted', 'declined', 'cancelled', 'on hold'],
+    enum: ['draft', 'pending', 'sent', 'negotiation', 'accepted', 'declined', 'cancelled', 'on hold'],
     default: 'draft',
   },
   approved: {
@@ -98,7 +103,13 @@ const quoteSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  pdf: String,
+  invoice: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Invoice',
+  },
+  pdf: {
+    type: String,
+  },
   files: [
     {
       id: String,

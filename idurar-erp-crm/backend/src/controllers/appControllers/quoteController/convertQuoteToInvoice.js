@@ -41,6 +41,14 @@ const convertQuoteToInvoice = async (req, res) => {
     });
   }
 
+  if (quote.converted) {
+    return res.status(400).json({
+      success: false,
+      result: null,
+      message: 'Quote has already been converted to an invoice',
+    });
+  }
+
   const { items, subTotal, taxTotal, total } = calculateQuoteTotals(
     quote.items || [],
     quote.taxRate || 0
