@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -22,7 +23,7 @@ class FormCycleCreate(BaseModel):
 
 
 class ReviewerAssignment(BaseModel):
-    reviewer_id: str
+    reviewer_id: uuid.UUID
 
 
 @router.post("/", status_code=201)
@@ -69,17 +70,27 @@ async def create_form_cycle(
 
 @router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
 async def assign_reviewer(
-    form_cycle_id: str, payload: ReviewerAssignment, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+    form_cycle_id: uuid.UUID,
+    payload: ReviewerAssignment,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
     scheme, _, token = authorization.partition(" ")
-    email = verify_token(token.strip(), expected_token_type="access").get("sub") if scheme.lower() == "bearer" and token else None
+    token = token.strip()
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    try:
+        subject = verify_token(token, expected_token_type="access").get("sub")
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
+    email = subject if isinstance(subject, str) and subject else None
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
     if user is None or user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
-    cycle = (await db.execute(select(FormCycle).where(FormCycle.title == form_cycle_id))).scalar_one_or_none()
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     reviewer = (await db.execute(select(User).where(User.id == payload.reviewer_id))).scalar_one_or_none()
     if cycle is None or reviewer is None:
         raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
-    db.add(Submission(form_cycle_id=reviewer.id, reviewer_id=cycle.id))
+    db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
     await db.commit()
-    return {"form_cycle_id": str(cycle.id), "reviewer_id": str(cycle.id)}
+    return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
