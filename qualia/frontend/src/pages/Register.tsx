@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,94 +15,116 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
-interface RegisterFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+// Zod schema for registration form validation
+const registerSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, { message: "Email is required" })
+      .email({ message: "Please enter a valid email address" }),
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters long" }),
+    confirmPassword: z.string().min(1, { message: "Please confirm your password" }),
+  })
+  .refines((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match. Please try again.",
+    paths: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+// Input field configuration map
+const formFields = [
+  {
+    name: "email" as const,
+    label: "Email",
+    type: "email" as const,
+    placeholder: "Enter your email",
+    autoComplete: "username",
+    validator: z
+      .string()
+      .min(1, { message: "Email is required" })
+      .email({ message: "Please enter a valid email address" }),
+  },
+  {
+    name: "password" as const,
+    label: "Password",
+    type: "password" as const,
+    placeholder: "Create a password (min. 8 characters)",
+    autoComplete: "new-password",
+    validator: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters long" }),
+  },
+  {
+    name: "confirmPassword" as const,
+    label: "Confirm Password",
+    type: "password" as const,
+    placeholder: "Confirm your Email",
+    autoComplete: "new-password",
+    validator: z.string().min(1, { message: "Please confirm your Email" }),
+  },
+] as const;
 
 function Register() {
-  const [formData, setFormData] = useState<RegisterFormData>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const timeoutRef = useRef<number | null>(null);
+  const isMountedRef = useRef(true);
 
+  // Track mount state to prevent state updates after unmount
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
-      }
+      isMountedRef.current = false;
     };
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Guard against double-submit
-    if (isLoading) {
-      return;
-    }
-
-    // Clear any previous errors
-    setError("");
-
-    // Validate email format (additional check beyond HTML5 validation)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
-
-    // Validate password confirmation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match. Please try again.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Clear any existing timeout before storing the new one
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Simulate API call (replace with actual registration logic)
-    timeoutRef.current = setTimeout(() => {
-      setIsLoading(false);
-      // TODO: Implement actual registration API call
-      // On success: navigate to dashboard or show success message
-      // On error: setError("Registration failed. Please try again.");
-    }, 500);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (error) {
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    } as RegisterFormData,
+    onSubmit: async ({ value }) => {
+      if (!isMountedRef.current) return;
       setError("");
-    }
-  };
+      setIsLoading(true);
+
+      try {
+        // Validate with Zod
+        const validatedData = registerSchema.parse(value);
+
+        // TODO: Implement actual registration API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Development-only logging (gated to prevent PII leakage in production)
+        if (import.meta.env.DEV) {
+          console.log("Registration successful for:", validatedData.email);
+        }
+      } catch (err) {
+        if (!isMountedRef.current) return;
+        if (err instanceof z.ZodError) {
+          const issues = err.issues;
+          setError(issues[0]?.message || "Validation failed");
+        } else {
+          setError(
+            "Registration failed. Please try again.",
+          );
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
+      }
+    },
+  });
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
-          <CardTitle className='text-3xl font-bold'>
+          <CardTitle className='text-2xl font-bold'>
             Create Your Account
           </CardTitle>
           <CardDescription className='text-base'>
@@ -109,7 +133,14 @@ function Register() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className='space-y-5'>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              await form.handleSubmit();
+            }}
+            className='space-y-5'
+          >
             {error && (
               <div
                 className='rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-in fade-in slide-in-from-top-2 duration-300'
@@ -119,53 +150,49 @@ function Register() {
               </div>
             )}
 
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                type='email'
-                id='email'
-                name='email'
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                placeholder='Enter your email'
-                autoComplete='username'
-                disabled={isLoading}
-                className='h-10'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='password'>Password</Label>
-              <Input
-                type='password'
-                id='password'
-                name='password'
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                placeholder='Create a password (min. 8 characters)'
-                autoComplete='new-password'
-                disabled={isLoading}
-                className='h-10'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='confirmPassword'>Confirm Password</Label>
-              <Input
-                type='password'
-                id='confirmPassword'
-                name='confirmPassword'
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                required
-                placeholder='Confirm your password'
-                autoComplete='new-password'
-                disabled={isLoading}
-                className='h-10'
-              />
-            </div>
+            {formFields.map((fieldConfig) => (
+              <form.Field
+                key={fieldConfig.name}
+                name={fieldConfig.name}
+                validators={{
+                  onChange: ({ value }) => {
+                    const result = fieldConfig.validator.safeParse(value);
+                    return result.success
+                      ? undefined
+                      : result.error.issues[0]?.message;
+                  },
+                }}
+              >
+                {(field) => (
+                  <div className='space-y-2'>
+                    <Label htmlFor={fieldConfig.name}>
+                      {fieldConfig.label}
+                    </Label>
+                    <Input
+                      type={fieldConfig.type}
+                      id={fieldConfig.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        // Clear page-level error when user starts editing
+                        if (error) setError("");
+                      }}
+                      placeholder={fieldConfig.placeholder}
+                      autoComplete={fieldConfig.autoComplete}
+                      disabled={isLoading}
+                      className='h-10'
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className='text-sm text-destructive'>
+                        {field.state.meta.errors[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </form.Field>
+            ))}
 
             <Button
               type='submit'
