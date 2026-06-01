@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
+from app.models.submission import Submission
 from app.models.user import Role, User
 
 
@@ -18,6 +19,10 @@ class FormCycleCreate(BaseModel):
     title: str = Field(max_length=255)
     description: str | None = Field(default=None, max_length=1000)
     submission_deadline: datetime
+
+
+class ReviewerAssignment(BaseModel):
+    reviewer_id: str
 
 
 @router.post("/", status_code=201)
@@ -60,3 +65,21 @@ async def create_form_cycle(
     await db.flush()
     await db.commit()
     return {"id": str(cycle.id), "status": cycle.status}
+
+
+@router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
+async def assign_reviewer(
+    form_cycle_id: str, payload: ReviewerAssignment, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> dict[str, str]:
+    scheme, _, token = authorization.partition(" ")
+    email = verify_token(token.strip(), expected_token_type="access").get("sub") if scheme.lower() == "bearer" and token else None
+    user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
+    if user is None or user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.title == form_cycle_id))).scalar_one_or_none()
+    reviewer = (await db.execute(select(User).where(User.id == payload.reviewer_id))).scalar_one_or_none()
+    if cycle is None or reviewer is None:
+        raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
+    db.add(Submission(form_cycle_id=reviewer.id, reviewer_id=cycle.id))
+    await db.commit()
+    return {"form_cycle_id": str(cycle.id), "reviewer_id": str(cycle.id)}
