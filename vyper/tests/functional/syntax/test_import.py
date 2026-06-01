@@ -33,6 +33,36 @@ def foo():
     assert "lib0.vy:" in str(e.value)
 
 
+def test_import_not_found_suggests_similar_module(make_input_bundle):
+    top = """
+import subdir.lb0 as lib0
+    """
+
+    input_bundle = make_input_bundle({"top.vy": top, "subdir/lib0.vy": CODE_LIB1})
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "subdir.lb0"
+    assert e.value.hint == "Did you mean 'subdir.lib0'?"
+
+
+def test_import_not_found_suggests_similar_package(make_input_bundle):
+    top = """
+import subidr.lib0 as lib0
+    """
+
+    input_bundle = make_input_bundle({"top.vy": top, "subdir/lib0.vy": CODE_LIB1})
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "subidr.lib0"
+    assert e.value.hint == "Did you mean 'subdir.lib0'?"
+
+
 def test_implicitly_relative_import_crashes_2(make_input_bundle):
     lib0 = """
 from subdir1 import lib1 as lib1

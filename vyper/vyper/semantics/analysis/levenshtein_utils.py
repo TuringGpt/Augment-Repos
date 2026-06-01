@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional
+from collections.abc import Iterable
+from typing import Callable, Optional
 
 
 def levenshtein_norm(source: str, target: str) -> float:
@@ -78,7 +79,7 @@ def get_levenshtein_error_suggestions(*args, **kwargs) -> Callable:
 
 
 def _get_levenshtein_error_suggestions(
-    key: str, namespace: dict[str, Any], threshold: float
+    key: str, namespace: Iterable[str], threshold: float
 ) -> Optional[str]:
     """
     Generate an error message snippet for the suggested closest values in the provided namespace
@@ -92,7 +93,7 @@ def _get_levenshtein_error_suggestions(
     to ensure the matches are relevant.
 
     :param key: A string of the identifier being accessed
-    :param namespace: A dictionary of the possible identifiers
+    :param namespace: An iterable of the possible identifiers
     :param threshold: A floating value between 0.0 and 1.0
 
     :return: The error message snippet if the Levenshtein value is below the threshold,
@@ -102,7 +103,9 @@ def _get_levenshtein_error_suggestions(
     if key is None or key == "":
         return None
 
-    distances = sorted([(i, levenshtein_norm(key, i)) for i in namespace], key=lambda k: k[1])
+    distances = sorted(
+        [(i, levenshtein_norm(key, i)) for i in dict.fromkeys(namespace)], key=lambda k: k[1]
+    )
     if len(distances) > 0 and distances[0][1] <= threshold:
         if len(distances) > 1 and distances[1][1] <= threshold:
             return f"Did you mean '{distances[0][0]}', or maybe '{distances[1][0]}'?"

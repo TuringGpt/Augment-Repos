@@ -1,5 +1,6 @@
 import contextlib
 import dataclasses as dc
+import importlib.resources
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePath
@@ -25,6 +26,7 @@ from vyper.exceptions import (
     tag_exceptions,
 )
 from vyper.semantics.analysis.base import ImportInfo
+from vyper.semantics.analysis.levenshtein_utils import get_levenshtein_error_suggestions
 from vyper.utils import OrderedSet, safe_relpath, sha256sum
 
 """
@@ -243,7 +245,9 @@ class ImportAnalyzer:
         except FileNotFoundError:
             pass
 
-        hint = None
+        hint = get_levenshtein_error_suggestions(
+            module_str, self._import_suggestion_candidates(level, path), 0.4
+        )
         if module_str.startswith("vyper.interfaces"):
             hint = "try renaming `vyper.interfaces` to `ethereum.ercs`"
 
@@ -251,16 +255,20 @@ class ImportAnalyzer:
         search_paths = self.input_bundle.search_paths.copy()  # noqa: F841
         raise ModuleNotFound(module_str, hint=hint) from err
 
-    def _load_file(self, path: PathLike, level: int) -> CompilerInput:
-        ast = self.graph.current_module
-
-        search_paths: list[PathLike]  # help mypy
+    def _import_search_paths(self, level: int) -> list[PathLike]:
         if level != 0:  # relative import
-            search_paths = [Path(ast.resolved_path).parent]
-        else:
-            search_paths = self.absolute_search_paths
+            return [Path(self.graph.current_module.resolved_path).parent]
+        return self.absolute_search_paths
 
-        with self.input_bundle.temporary_search_paths(search_paths):
+    def _import_suggestion_candidates(self, level: int, path: PurePath) -> tuple[str, ...]:
+        search_paths = self._import_search_paths(level)
+        candidates = set(_import_suggestion_candidates(self.input_bundle, search_paths, path))
+        if level == 0:
+            candidates.update(_builtin_import_suggestion_candidates_for_imports())
+        return tuple(sorted(candidates))
+
+    def _load_file(self, path: PathLike, level: int) -> CompilerInput:
+        with self.input_bundle.temporary_search_paths(self._import_search_paths(level)):
             return self.input_bundle.load_file(path)
 
     def _ast_from_file(self, file: FileInput) -> vy_ast.Module:
@@ -315,6 +323,8 @@ BUILTIN_MODULE_RULES = {
     "ethereum.ercs": ("ethereum.ercs", vyper.builtins.interfaces.__package__, ".vyi"),
     "math": ("", vyper.builtins.stdlib.__package__, ".vy"),
 }
+
+IMPORTABLE_SUFFIXES = (".vy", ".vyi", ".json")
 
 
 # TODO: could move this to analysis/common.py or something
@@ -372,6 +382,10 @@ def _load_builtin_import(level: int, module_str: str) -> tuple[CompilerInput, vy
         if components[-1].startswith("ERC"):
             module_prefix = components[-1]
             hint = f"try renaming `{module_prefix}` to `I{module_prefix}`"
+        else:
+            hint = get_levenshtein_error_suggestions(
+                components[-1], _builtin_import_suggestion_candidates(module_prefix), 0.4
+            )
         raise ModuleNotFound(module_str, hint=hint) from e
 
     builtin_ast = _parse_ast(file)
@@ -388,3 +402,82 @@ def resolve_imports(module_ast: vy_ast.Module, input_bundle: InputBundle):
     analyzer.resolve_imports()
 
     return analyzer
+
+
+def _module_from_path(path: PurePath) -> str:
+    return ".".join(path.with_suffix("").parts)
+
+
+def _iter_filesystem_import_suggestions(search_path: PathLike, path: PurePath) -> Iterator[str]:
+    search_path = Path(search_path)
+    import_path = path.with_suffix(".vy")
+    parent = search_path / import_path.parent
+
+    if parent.is_dir():
+        for child in parent.iterdir():
+            if child.is_file() and child.suffix in IMPORTABLE_SUFFIXES:
+                yield _module_from_path(path.parent / child.name)
+        return
+
+    current_dir = search_path
+    parts = list(path.parts)
+    for i, part in enumerate(parts[:-1]):
+        next_dir = current_dir / part
+        if next_dir.is_dir():
+            current_dir = next_dir
+            continue
+
+        if not current_dir.is_dir():
+            return
+
+        for sibling in current_dir.iterdir():
+            if not sibling.is_dir():
+                continue
+            candidate_parts = parts.copy()
+            candidate_parts[i] = sibling.name
+            candidate = PurePath(*candidate_parts)
+            if any(
+                (search_path / candidate.with_suffix(suffix)).is_file()
+                for suffix in IMPORTABLE_SUFFIXES
+            ):
+                yield _module_from_path(candidate)
+        return
+
+
+def _iter_virtual_import_suggestions(input_bundle: InputBundle, path: PurePath) -> Iterator[str]:
+    paths = []
+    if hasattr(input_bundle, "input_json"):
+        paths.extend(input_bundle.input_json)
+    if hasattr(input_bundle, "archive"):
+        paths.extend(PurePath(i) for i in input_bundle.archive.namelist())
+
+    for candidate in paths:
+        if candidate.suffix in IMPORTABLE_SUFFIXES:
+            yield _module_from_path(candidate)
+
+
+def _import_suggestion_candidates(
+    input_bundle: InputBundle, search_paths: list[PathLike], path: PurePath
+) -> Iterator[str]:
+    candidates = set()
+    for search_path in search_paths:
+        candidates.update(_iter_filesystem_import_suggestions(search_path, path))
+
+    candidates.update(_iter_virtual_import_suggestions(input_bundle, path))
+    yield from sorted(candidates)
+
+
+def _builtin_import_suggestion_candidates(module_prefix: str) -> Iterator[str]:
+    _, target_package, suffix = BUILTIN_MODULE_RULES[module_prefix]
+    for resource in importlib.resources.files(target_package).iterdir():
+        if resource.name.endswith(suffix):
+            yield resource.name.removesuffix(suffix)
+
+
+def _builtin_import_suggestion_candidates_for_imports() -> Iterator[str]:
+    for module_prefix in BUILTIN_MODULE_RULES:
+        yield module_prefix
+        if module_prefix == "math":
+            continue
+        for name in _builtin_import_suggestion_candidates(module_prefix):
+            yield f"{module_prefix}.{name}"
