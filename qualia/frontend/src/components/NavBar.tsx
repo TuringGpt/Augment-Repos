@@ -8,7 +8,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import Logos from "@/components/Logo";
+import Logo from "@/components/Logo";
 
 interface NavBarProps {
   variant?: "transparent" | "default";
@@ -39,7 +39,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
             aria-label='Qualia Home'
           >
             <div className='flex justify-center animate-in slide-in-from-bottom-4 duration-700'>
-              <Logo size={"35"} />
+              <Logo size={35} />
             </div>
             <span className='text-primary'>Qualia</span>
           </Link>
