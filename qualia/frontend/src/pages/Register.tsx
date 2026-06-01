@@ -87,6 +87,8 @@ function Register() {
       confirmPassword: "",
     } as RegisterFormData,
     onSubmit: async ({ value }) => {
+      // Guard against double-submit
+      if (isLoading) return;
       if (!isMountedRef.current) return;
       setError("");
       setIsLoading(true);
