@@ -127,6 +127,9 @@ function Register() {
           password: validatedData.password,
         });
       } catch (err) {
+        // Only update state if component is still mounted
+        if (!isMountedRef.current) return;
+
         // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
