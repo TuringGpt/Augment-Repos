@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
       if (status === 401) {
         // Unauthorized - clear token and redirect to login
         localStorage.removeItem('access_token');
-        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('refresh_token');
         // You might want to redirect to login page here
         // window.location.href = '/signin';
       }
