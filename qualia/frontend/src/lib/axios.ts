@@ -2,9 +2,10 @@ import axios from 'axios';
 
 /**
  * Base API URL from environment variables
- * Defaults to localhost:8000 for development
+ * Should include the API version prefix (e.g., http://localhost:8000/api/v1)
+ * Defaults to localhost:8000/api/v1 for development
  */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 /**
  * Configured axios instance for API calls

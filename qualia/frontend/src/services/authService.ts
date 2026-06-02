@@ -23,6 +23,6 @@ export interface RegisterResponse {
  * @throws Error if registration fails
  */
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
-  const response = await apiClient.post<RegisterResponse>('/api/v1/auth/signup', data);
+  const response = await apiClient.post<RegisterResponse>('/auth/signup', data);
   return response.data;
 };
