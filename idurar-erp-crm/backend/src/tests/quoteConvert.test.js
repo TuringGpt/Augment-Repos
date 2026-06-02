@@ -269,7 +269,7 @@ describe('GET /api/quote/convert/:id', () => {
     expect(zeroLine.total).toBe(0);
   });
 
-  it('marks invoice paymentStatus as "paid" when total minus discount equals zero', async () => {
+  it('marks invoice paymentStatus as "paid" when total minus discount equals zero (zero-total path)', async () => {
     const { admin, token } = await createAdminWithToken();
     const client = await createClient(admin._id);
     const Quote = mongoose.model('Quote');
@@ -282,6 +282,32 @@ describe('GET /api/quote/convert/:id', () => {
       subTotal: 0,
       taxTotal: 0,
       total: 0,
+    });
+
+    const quote = await Quote.create(quoteData);
+
+    const res = await request(app)
+      .get(`/api/quote/convert/${quote._id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.result.paymentStatus).toBe('paid');
+  });
+
+  it('marks invoice paymentStatus as "paid" when discount equals total (discount-driven paid path)', async () => {
+    const { admin, token } = await createAdminWithToken();
+    const client = await createClient(admin._id);
+    const Quote = mongoose.model('Quote');
+
+    // Items: 1×100 + 10% tax → subTotal=100, taxTotal=10, total=110
+    // discount=110 → calculate.sub(110, 110) = 0 ≤ 0 → paid
+    const quoteData = buildQuoteData(client._id, admin._id, {
+      taxRate: 10,
+      discount: 110,
+      items: [{ itemName: 'Widget', quantity: 1, price: 100, total: 100 }],
+      subTotal: 100,
+      taxTotal: 10,
+      total: 110,
     });
 
     const quote = await Quote.create(quoteData);
