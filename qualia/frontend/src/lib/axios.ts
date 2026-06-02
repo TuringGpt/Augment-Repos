@@ -69,7 +69,7 @@ function safeGetLocalStorage(key: string): string | null {
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
       return null;
     }
-    return localStorage.getItem(key);
+    return window.localStorage.getItem(key);
   } catch {
     // localStorage access can throw when disabled/blocked
     return null;
@@ -83,7 +83,7 @@ function safeGetLocalStorage(key: string): string | null {
 function safeRemoveLocalStorage(key: string): void {
   try {
     if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-      localStorage.removeItem(key);
+      window.localStorage.removeItem(key);
     }
   } catch {
     // Silently fail if localStorage is blocked
