@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const { calculate } = require('@/helpers');
+const { increaseBySettingKey } = require('@/middlewares/settings');
 
 const calculateQuoteTotals = (items, taxRate) => {
   let subTotal = 0;
@@ -66,11 +67,14 @@ const convertQuoteToInvoice = async (req, res) => {
     quote.taxRate || 0
   );
 
+  const invoiceNumberSetting = await increaseBySettingKey({ settingKey: 'last_invoice_number' });
+  const invoiceNumber = invoiceNumberSetting?.settingValue ?? quote.number;
+
   let result;
   try {
     const invoice = await new Invoice({
       createdBy: req.admin?._id || quote.createdBy,
-      number: quote.number,
+      number: invoiceNumber,
       year: quote.year,
       content: quote.content,
       date: quote.date,

@@ -6,6 +6,7 @@
  * Covers:
  *  - Correct subTotal / taxTotal / total propagated to the generated Invoice
  *  - Quote status set to "accepted" and converted flag set to true
+ *  - Converted invoice uses the next invoice number setting
  *  - Invoice paymentStatus derived correctly
  *  - Edge case: one line item has zero quantity
  *  - Already-converted quote returns 400
@@ -191,6 +192,32 @@ describe('GET /api/quote/convert/:id', () => {
     const updatedQuote = await Quote.findById(quote._id);
     expect(updatedQuote.converted).toBe(true);
     expect(updatedQuote.status).toBe('accepted');
+  });
+
+  it('assigns converted invoices from the invoice number sequence', async () => {
+    const { admin, token } = await createAdminWithToken();
+    const client = await createClient(admin._id);
+    const Quote = mongoose.model('Quote');
+    const Setting = mongoose.model('Setting');
+
+    await Setting.create({
+      settingCategory: 'finance_settings',
+      settingKey: 'last_invoice_number',
+      settingValue: 41,
+      valueType: 'number',
+    });
+
+    const quote = await Quote.create(buildQuoteData(client._id, admin._id, { number: 1001 }));
+
+    const res = await request(app)
+      .get(`/api/quote/convert/${quote._id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.result.number).toBe(42);
+
+    const setting = await Setting.findOne({ settingKey: 'last_invoice_number' });
+    expect(setting.settingValue).toBe(42);
   });
 
   it('links the invoice back to the quote via converted.quote field', async () => {
