@@ -236,12 +236,19 @@ function Register() {
               validators={{
                 onChangeListenTo: ["password"],
                 onChange: ({ value, fieldApi }) => {
-                  // First check if the field is empty
+                  const passwordValue = fieldApi.form.getFieldValue("password");
+                  const fieldMeta = fieldApi.state.meta;
+
+                  // Only show "required" error if field has been touched/blurred or has a value
                   if (!value || value.length === 0) {
+                    // Don't show error if user hasn't interacted with the field yet
+                    if (!fieldMeta.isTouched && !value) {
+                      return undefined;
+                    }
                     return "Please confirm your password";
                   }
-                  // Then check if it matches the password field
-                  const passwordValue = fieldApi.form.getFieldValue("password");
+
+                  // Check if passwords match
                   if (passwordValue && value !== passwordValue) {
                     return "Passwords do not match. Please try again.";
                   }
