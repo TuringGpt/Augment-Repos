@@ -7,20 +7,19 @@ from vyper.utils import (
     evm_mod,
     evm_not,
     evm_pow,
-    signed_to_unsigned,
-    unsigned_to_signed,
+    wrap256,
 )
 from vyper.venom.basicblock import IRLiteral
 
 
 def _unsigned_to_signed(value: int) -> int:
     assert isinstance(value, int)
-    return unsigned_to_signed(value, 256)
+    return wrap256(value, signed=True)
 
 
 def _signed_to_unsigned(value: int) -> int:
     assert isinstance(value, int)
-    return signed_to_unsigned(value, 256)
+    return wrap256(value)
 
 
 def _wrap_signed_binop(operation):
@@ -39,8 +38,7 @@ def _wrap_binop(operation):
         first = _signed_to_unsigned(ops[1].value)
         second = _signed_to_unsigned(ops[0].value)
         ret = operation(first, second)
-        # TODO: use wrap256 here
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -52,7 +50,7 @@ def _wrap_ternop(operation):
         second = _signed_to_unsigned(ops[-2].value)
         third = _signed_to_unsigned(ops[-3].value)
         ret = operation(first, second, third)
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -62,8 +60,7 @@ def _wrap_unop(operation):
         assert len(ops) == 1
         value = _signed_to_unsigned(ops[0].value)
         ret = operation(value)
-        # TODO: use wrap256 here
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -115,8 +112,7 @@ def _evm_shl(shift_len: int, value: int) -> int:
     if shift_len >= 256:
         return 0
     assert shift_len >= 0
-    # TODO: refactor to use wrap256
-    return (value << shift_len) & SizeLimits.MAX_UINT256
+    return wrap256(value << shift_len)
 
 
 def _evm_sar(shift_len: int, value: int) -> int:
