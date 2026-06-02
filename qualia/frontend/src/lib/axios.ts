@@ -146,6 +146,31 @@ apiClient.interceptors.request.use(
 );
 
 /**
+ * Helper function to check if an Authorization header was sent with the request.
+ * Handles both AxiosHeaders instances and plain objects, and performs case-insensitive lookup
+ * to account for Axios header normalization.
+ *
+ * @param headers - The headers object from axiosError.config.headers
+ * @returns true if an Authorization header is present, false otherwise
+ */
+function hasAuthorizationHeader(headers: unknown): boolean {
+  if (!headers || typeof headers !== 'object') {
+    return false;
+  }
+
+  // Try AxiosHeaders.get() method first (case-insensitive by default)
+  if (typeof (headers as { get?: (key: string) => string | undefined }).get === 'function') {
+    const value = (headers as { get: (key: string) => string | undefined }).get('Authorization');
+    return !!value;
+  }
+
+  // For plain objects, check both 'Authorization' and 'authorization'
+  // Axios may normalize header keys to lowercase in some configurations
+  const headersObj = headers as Record<string, unknown>;
+  return !!(headersObj['Authorization'] || headersObj['authorization']);
+}
+
+/**
  * Helper function to safely extract a string message from error data
  * Handles cases where detail/message might be objects, arrays, or other non-string types
  */
@@ -234,8 +259,7 @@ apiClient.interceptors.response.use(
         // Unauthorized - only clear tokens if the request actually sent an Authorization header
         // This prevents clearing tokens on failed login/signup attempts (which return 401 for invalid credentials)
         // but still clears them when an authenticated request fails due to expired/invalid token
-        const sentAuthHeader = axiosError.config?.headers?.['Authorization'] || axiosError.config?.headers?.get?.('Authorization');
-        if (sentAuthHeader) {
+        if (hasAuthorizationHeader(axiosError.config?.headers)) {
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
           // You might want to redirect to login page here
