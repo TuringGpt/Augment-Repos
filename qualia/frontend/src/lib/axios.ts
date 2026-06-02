@@ -46,6 +46,53 @@ apiClient.interceptors.request.use(
 );
 
 /**
+ * Helper function to safely extract a string message from error data
+ * Handles cases where detail/message might be objects, arrays, or other non-string types
+ */
+function extractErrorMessage(data: unknown): string {
+  if (!data || typeof data !== 'object') {
+    return 'An error occurred';
+  }
+
+  const errorData = data as Record<string, unknown>;
+
+  // Try to get detail or message field
+  const rawDetail = errorData.detail;
+  const rawMessage = errorData.message;
+
+  // If detail exists and is a string, use it
+  if (typeof rawDetail === 'string') {
+    return rawDetail;
+  }
+
+  // If message exists and is a string, use it
+  if (typeof rawMessage === 'string') {
+    return rawMessage;
+  }
+
+  // If detail or message is an object/array, stringify it
+  if (rawDetail !== undefined && rawDetail !== null) {
+    try {
+      return typeof rawDetail === 'object' ? JSON.stringify(rawDetail) : String(rawDetail);
+    } catch {
+      // Fallback if JSON.stringify fails
+      return 'An error occurred';
+    }
+  }
+
+  if (rawMessage !== undefined && rawMessage !== null) {
+    try {
+      return typeof rawMessage === 'object' ? JSON.stringify(rawMessage) : String(rawMessage);
+    } catch {
+      // Fallback if JSON.stringify fails
+      return 'An error occurred';
+    }
+  }
+
+  return 'An error occurred';
+}
+
+/**
  * Response interceptor for global error handling
  */
 apiClient.interceptors.response.use(
@@ -66,11 +113,12 @@ apiClient.interceptors.response.use(
         // You might want to redirect to login page here
         // window.location.href = '/signin';
       }
-      
+
       // Return a more user-friendly error message
+      // Use helper function to ensure message is always a string
       return Promise.reject({
         status,
-        message: data?.detail || data?.message || 'An error occurred',
+        message: extractErrorMessage(data),
         data,
       });
     } else if (error.request) {
