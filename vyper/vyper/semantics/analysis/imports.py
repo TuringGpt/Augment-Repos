@@ -408,6 +408,13 @@ def _module_from_path(path: PurePath) -> str:
     return ".".join(path.with_suffix("").parts)
 
 
+def _suggestion_module_from_path(path: PurePath) -> str:
+    parts = list(path.parts)
+    while parts and parts[0] == "..":
+        parts.pop(0)
+    return _module_from_path(PurePath(*parts))
+
+
 def _iter_filesystem_import_suggestions(search_path: PathLike, path: PurePath) -> Iterator[str]:
     search_path = Path(search_path)
     import_path = path.with_suffix(".vy")
@@ -416,7 +423,7 @@ def _iter_filesystem_import_suggestions(search_path: PathLike, path: PurePath) -
     if parent.is_dir():
         for child in parent.iterdir():
             if child.is_file() and child.suffix in IMPORTABLE_SUFFIXES:
-                yield _module_from_path(path.parent / child.name)
+                yield _suggestion_module_from_path(path.parent / child.name)
         return
 
     current_dir = search_path
@@ -440,7 +447,7 @@ def _iter_filesystem_import_suggestions(search_path: PathLike, path: PurePath) -
                 (search_path / candidate.with_suffix(suffix)).is_file()
                 for suffix in IMPORTABLE_SUFFIXES
             ):
-                yield _module_from_path(candidate)
+                yield _suggestion_module_from_path(candidate)
         return
 
 
@@ -460,8 +467,9 @@ def _import_suggestion_candidates(
     input_bundle: InputBundle, search_paths: list[PathLike], path: PurePath
 ) -> Iterator[str]:
     candidates = set()
-    for search_path in search_paths:
-        candidates.update(_iter_filesystem_import_suggestions(search_path, path))
+    if isinstance(input_bundle, FilesystemInputBundle):
+        for search_path in search_paths:
+            candidates.update(_iter_filesystem_import_suggestions(search_path, path))
 
     candidates.update(_iter_virtual_import_suggestions(input_bundle, path))
     yield from sorted(candidates)
