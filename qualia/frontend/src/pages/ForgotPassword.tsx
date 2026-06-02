@@ -138,12 +138,7 @@ function ForgotPassword() {
               name="email"
               validators={{
                 onChange: ({ value }) => {
-                  const result = z
-                    .string()
-                    .trim() // Normalize by trimming whitespace before validation
-                    .min(1, { message: "Email is required" })
-                    .email({ message: "Please enter a valid email address" })
-                    .safeParse(value);
+                  const result = forgotPasswordSchema.shape.email.safeParse(value);
                   return result.success
                     ? undefined
                     : result.error.issues[0]?.message;
