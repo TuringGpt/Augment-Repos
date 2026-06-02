@@ -57,7 +57,9 @@ async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
     if not isinstance(subject, str) or not subject:
         raise HTTPException(status_code=401, detail="Invalid token")
     user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
-    if user is None or user.role != Role.reviewer or not user.is_active:
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if user.role != Role.reviewer or not user.is_active:
         raise HTTPException(status_code=403, detail="Reviewer access required")
     return user
 
@@ -160,6 +162,8 @@ async def submit_form_cycle(
     answered_ids = set((await db.execute(select(SubmissionAnswer.question_id).where(SubmissionAnswer.submission_id == submission.id))).scalars())
     if required_ids - answered_ids:
         raise HTTPException(status_code=400, detail="Required questions are missing answers")
+    if submission.status == SubmissionStatus.submitted:
+        return {"submission_id": str(submission.id), "status": submission.status}
     submission.status = SubmissionStatus.submitted
     submission.submitted_at = datetime.now(UTC)
     await db.commit()

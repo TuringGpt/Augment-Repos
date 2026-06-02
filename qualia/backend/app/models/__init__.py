@@ -4,3 +4,4 @@ from app.models.submission import Submission, SubmissionStatus
 from app.models.form_assignment import FormAssignment
 from app.models.question import Question, QuestionType
 from app.models.user import Role, User
+from app.models.submission_answer import SubmissionAnswer
