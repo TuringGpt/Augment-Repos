@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
@@ -63,47 +63,23 @@ const formFields = [
 function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const isMountedRef = useRef(true);
-  const isSubmittingRef = useRef(false);
 
-  // Track mount state to prevent state updates after unmount
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  // Use the TanStack Query mutation hook
-  const { mutate: registerUser, isPending } = useRegister({
+  // Use the TanStack Query mutation hook with mutateAsync for proper async handling
+  const { mutateAsync: registerUser, isPending } = useRegister({
     onSuccess: (data) => {
-      if (!isMountedRef.current) return;
-
       // Development-only logging (gated to prevent PII leakage in production)
       if (import.meta.env.DEV) {
         console.log("Registration successful for:", data);
       }
 
-      // Show success message
-      setSuccessMessage("Registration successful! Redirecting to sign in...");
-      setError("");
-
-      // Redirect to sign in page after a short delay
-      setTimeout(() => {
-        if (isMountedRef.current) {
-          navigate("/signin");
-        }
-      }, 2000);
+      // Redirect to sign in page immediately
+      navigate("/signin");
     },
     onError: (err) => {
-      if (!isMountedRef.current) return;
-
       const apiError = err as { message?: string; status?: number };
       setError(
         apiError.message || "Registration failed. Please try again.",
       );
-      setSuccessMessage("");
     }
   });
 
@@ -114,32 +90,25 @@ function Register() {
       confirmPassword: "",
     } as RegisterFormData,
     onSubmit: async ({ value }) => {
-      // Guard against double-submit using synchronous ref check
-      if (isSubmittingRef.current) return;
-      if (!isMountedRef.current) return;
+      // Guard against double-submit - isPending is managed by TanStack Query
+      if (isPending) return;
 
-      // Set synchronous flag immediately to prevent race conditions
-      isSubmittingRef.current = true;
       setError("");
 
       try {
         // Validate with Zod
         const validatedData = registerSchema.parse(value);
 
-        // Call the register mutation
-        registerUser({
+        // Await the register mutation
+        await registerUser({
           email: validatedData.email,
           password: validatedData.password,
         });
       } catch (err) {
-        if (!isMountedRef.current) return;
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
         }
-      } finally {
-        // Reset synchronous flag immediately
-        isSubmittingRef.current = false;
       }
     },
   });
@@ -171,15 +140,6 @@ function Register() {
                 role='alert'
               >
                 {error}
-              </div>
-            )}
-
-            {successMessage && (
-              <div
-                className='rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 animate-in fade-in slide-in-from-top-2 duration-300'
-                role='alert'
-              >
-                {successMessage}
               </div>
             )}
 
