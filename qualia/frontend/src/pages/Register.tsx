@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
@@ -69,6 +69,16 @@ function Register() {
   // isPending is async (waits for React re-render), so we need a ref for immediate checking
   const isSubmittingRef = useRef<boolean>(false);
 
+  // Track mount state to prevent state updates after unmount
+  const isMountedRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Use the TanStack Query mutation hook with mutateAsync for proper async handling
   const { mutateAsync: registerUser, isPending } = useRegister({
     onSuccess: (data) => {
@@ -81,9 +91,12 @@ function Register() {
       navigate("/signin");
     },
     onError: (err: ApiError) => {
-      setError(
-        err.message || "Registration failed. Please try again.",
-      );
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(
+          err.message || "Registration failed. Please try again.",
+        );
+      }
     }
   });
 
