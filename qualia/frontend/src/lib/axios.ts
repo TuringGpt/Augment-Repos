@@ -23,7 +23,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  * @example
  * ```typescript
  * try {
- *   await apiClient.post('/api/v1/auth/login', data);
+ *   await apiClient.post('/auth/login', data);
  * } catch (error) {
  *   const apiError = error as ApiError;
  *   console.log(apiError.message); // User-friendly message
