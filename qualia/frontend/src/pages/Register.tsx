@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useRegister } from "@/hooks/useRegister";
+import type { ApiError } from "@/lib/axios";
 
 // Zod schema for registration form validation
 const registerSchema = z
@@ -60,18 +62,45 @@ const formFields = [
 ] as const;
 
 function Register() {
+  const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const isMountedRef = useRef(true);
-  const isSubmittingRef = useRef(false);
+
+  // Synchronous ref to prevent double-submit race condition
+  // isPending is async (waits for React re-render), so we need a ref for immediate checking
+  const isSubmittingRef = useRef<boolean>(false);
 
   // Track mount state to prevent state updates after unmount
+  const isMountedRef = useRef<boolean>(true);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
   }, []);
+
+  // Use the TanStack Query mutation hook with mutateAsync for proper async handling
+  const { mutateAsync: registerUser, isPending } = useRegister({
+    onSuccess: (data) => {
+      // Development-only logging (gated to prevent PII leakage in production)
+      if (import.meta.env.DEV) {
+        console.log("Registration successful for:", data);
+      }
+
+      // Only redirect if component is still mounted (prevents redirect after user navigated away)
+      if (isMountedRef.current) {
+        navigate("/signin");
+      }
+    },
+    onError: (err: ApiError) => {
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(
+          err.message || "Registration failed. Please try again.",
+        );
+      }
+    }
+  });
 
   const form = useForm({
     defaultValues: {
@@ -81,41 +110,52 @@ function Register() {
     } as RegisterFormData,
     onSubmit: async ({ value }) => {
       // Guard against double-submit using synchronous ref check
+      // This prevents race condition where two rapid clicks both see isPending=false
       if (isSubmittingRef.current) return;
-      if (!isMountedRef.current) return;
+      if (isPending) return;
 
-      // Set synchronous flag immediately to prevent race conditions
+      // Set synchronous flag immediately to block concurrent submissions
       isSubmittingRef.current = true;
+
       setError("");
-      setIsLoading(true);
 
       try {
         // Validate with Zod
         const validatedData = registerSchema.parse(value);
 
-        // TODO: Implement actual registration API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Development-only logging (gated to prevent PII leakage in production)
-        if (import.meta.env.DEV) {
-          console.log("Registration successful for:", validatedData.email);
-        }
+        // Await the register mutation
+        await registerUser({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
       } catch (err) {
+        // Only update state if component is still mounted
         if (!isMountedRef.current) return;
+
+        // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
-        } else {
-          setError(
-            "Registration failed. Please try again.",
-          );
         }
+        // Handle API errors from registerUser
+        else if (err && typeof err === 'object' && 'message' in err) {
+          const apiError = err as ApiError;
+          // Ensure message is a string to prevent React crashes if message is an object
+          const errorMessage = typeof apiError.message === 'string'
+            ? apiError.message
+            : "Registration failed. Please try again.";
+          setError(errorMessage);
+        }
+        // Handle any other unexpected errors
+        else {
+          setError("An unexpected error occurred. Please try again.");
+        }
+
+        // Don't re-throw: error state is already set for user feedback,
+        // and re-throwing would cause an unhandled promise rejection in form.handleSubmit()
       } finally {
-        // Reset synchronous flag immediately
+        // Reset synchronous flag when submission completes (success or error)
         isSubmittingRef.current = false;
-        if (isMountedRef.current) {
-          setIsLoading(false);
-        }
       }
     },
   });
@@ -178,19 +218,10 @@ function Register() {
                         field.handleChange(e.target.value);
                         // Clear page-level error when user starts editing
                         if (error) setError("");
-
-                        // If this is the password field and confirmPassword has a value,
-                        // trigger re-validation of confirmPassword to check for match
-                        if (fieldConfig.name === "password") {
-                          const confirmPasswordValue = field.form.getFieldValue("confirmPassword");
-                          if (confirmPasswordValue) {
-                            field.form.validateField("confirmPassword", "change");
-                          }
-                        }
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
-                      disabled={isLoading}
+                      disabled={isPending}
                       className='h-10'
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -207,13 +238,21 @@ function Register() {
             <form.Field
               name="confirmPassword"
               validators={{
+                onChangeListenTo: ["password"],
                 onChange: ({ value, fieldApi }) => {
-                  // First check if the field is empty
+                  const passwordValue = fieldApi.form.getFieldValue("password");
+                  const fieldMeta = fieldApi.state.meta;
+
+                  // Only show "required" error if field has been touched/blurred or has a value
                   if (!value || value.length === 0) {
+                    // Don't show error if user hasn't interacted with the field yet
+                    if (!fieldMeta.isTouched && !value) {
+                      return undefined;
+                    }
                     return "Please confirm your password";
                   }
-                  // Then check if it matches the password field
-                  const passwordValue = fieldApi.form.getFieldValue("password");
+
+                  // Check if passwords match
                   if (passwordValue && value !== passwordValue) {
                     return "Passwords do not match. Please try again.";
                   }
@@ -239,7 +278,7 @@ function Register() {
                     }}
                     placeholder="Confirm your password"
                     autoComplete="new-password"
-                    disabled={isLoading}
+                    disabled={isPending}
                     className='h-10'
                   />
                   {field.state.meta.errors.length > 0 && (
@@ -253,11 +292,11 @@ function Register() {
 
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={isPending}
               className='w-full h-10'
-              aria-label={isLoading ? "Creating account..." : "Create Account"}
+              aria-label={isPending ? "Creating account..." : "Create Account"}
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Spinner />
                   <span className='ml-2'>Creating account...</span>
