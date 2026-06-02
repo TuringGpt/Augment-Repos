@@ -171,15 +171,6 @@ function Register() {
                         field.handleChange(e.target.value);
                         // Clear page-level error when user starts editing
                         if (error) setError("");
-
-                        // If this is the password field and confirmPassword has a value,
-                        // trigger re-validation of confirmPassword to check for match
-                        if (fieldConfig.name === "password") {
-                          const confirmPasswordValue = field.form.getFieldValue("confirmPassword");
-                          if (confirmPasswordValue) {
-                            field.form.validateField("confirmPassword", "change");
-                          }
-                        }
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
@@ -200,6 +191,7 @@ function Register() {
             <form.Field
               name="confirmPassword"
               validators={{
+                onChangeListenTo: ["password"],
                 onChange: ({ value, fieldApi }) => {
                   // First check if the field is empty
                   if (!value || value.length === 0) {
