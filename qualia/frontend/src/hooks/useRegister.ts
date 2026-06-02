@@ -6,6 +6,9 @@ import type { ApiError } from '@/lib/axios';
 /**
  * TanStack Query mutation hook for user registration
  *
+ * Explicitly disables retry to prevent duplicate account creation
+ * on transient network failures (registration is non-idempotent).
+ *
  * @example
  * ```tsx
  * const { mutate, isPending, isError, error, data } = useRegister({
@@ -30,5 +33,8 @@ export const useRegister = (options?: {
     mutationFn: (data: RegisterRequest) => register(data),
     onSuccess: options?.onSuccess,
     onError: options?.onError,
+    // Disable retry to prevent duplicate account creation on transient failures
+    // Registration is non-idempotent, so retrying could create multiple accounts
+    retry: false,
   });
 };
