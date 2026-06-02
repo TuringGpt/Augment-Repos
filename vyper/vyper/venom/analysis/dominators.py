@@ -75,7 +75,11 @@ class DominatorTreeAnalysis(IRAnalysis):
         self.dominators = {bb: OrderedSet(basic_blocks) for bb in basic_blocks}
         self.dominators[self.entry_block] = OrderedSet([self.entry_block])
         changed = True
-        count = len(basic_blocks) ** 2  # TODO: find a proper bound for this
+        # Dominators is a monotone forward dataflow problem (sets only shrink).
+        # Iterating in DFS post-order propagates information by at most one CFG
+        # edge per pass, so convergence takes at most n passes (longest shortest
+        # path from entry is <= n-1) plus one final pass to confirm no change.
+        count = len(basic_blocks) + 1
         while changed:
             count -= 1
             if count < 0:
