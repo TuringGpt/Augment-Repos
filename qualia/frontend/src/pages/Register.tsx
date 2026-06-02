@@ -87,8 +87,10 @@ function Register() {
         console.log("Registration successful for:", data);
       }
 
-      // Redirect to sign in page immediately
-      navigate("/signin");
+      // Only redirect if component is still mounted (prevents redirect after user navigated away)
+      if (isMountedRef.current) {
+        navigate("/signin");
+      }
     },
     onError: (err: ApiError) => {
       // Only update state if component is still mounted
