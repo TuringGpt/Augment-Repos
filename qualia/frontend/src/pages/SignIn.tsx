@@ -105,7 +105,7 @@ function SignIn() {
     <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
-          <CardTitle className='text-3xl font-bold'>
+          <CardTitle className='text-2xl font-bold'>
             Sign In to Qualia
           </CardTitle>
           <CardDescription className='text-base'>
