@@ -73,6 +73,8 @@ IDURAR is Open "Fair-Code" Source ERP / CRM (Invoice / Inventory / Accounting / 
 
 9.[Run the Frontend Server](INSTALLATION-INSTRUCTIONS.md#Step-9-Run-the-Frontend-Server)
 
+Tip: once both dependency installs are done, you can start the backend and frontend together from the project root with `npm run dev`.
+
 ## Contributing
 
 1.[How to contribute](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#how-to-contribute)

@@ -90,6 +90,17 @@ npm run dev
 
 This command will start the frontend server, and you'll be able to access the website on localhost:3000 in your web browser.
 
+#### Optional: Run Both Servers with One Command
+
+After installing the backend and frontend dependencies, you can start both development servers from the project root with a single command:
+
+```bash
+cd ..
+npm run dev
+```
+
+This command starts both the backend and frontend development servers together.
+
 :exclamation: :warning:` If you encounter an OpenSSL error while running the frontend server, follow these additional steps:`
 
 Reason behind error: This is caused by the node.js V17 compatible issues with OpenSSL, see [this](https://github.com/nodejs/node/issues/40547) and [this](https://github.com/webpack/webpack/issues/14532) issue on GitHub.
