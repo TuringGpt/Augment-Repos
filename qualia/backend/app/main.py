@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+
+import app.models  # noqa: F401
 from app.auth import router as auth_router
 from app.form_cycles import router as form_cycle_router
 from app.sections import router as section_router

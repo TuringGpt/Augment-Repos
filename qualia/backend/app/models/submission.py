@@ -3,7 +3,7 @@ import uuid
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Uuid, func, text
+from sqlalchemy import DateTime, Enum, ForeignKey, UniqueConstraint, Uuid, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -17,6 +17,7 @@ class SubmissionStatus(str, enum.Enum):
 
 class Submission(Base):
     __tablename__ = "submissions"
+    __table_args__ = (UniqueConstraint("form_cycle_id", name="uq_submissions_form_cycle_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     form_cycle_id: Mapped[uuid.UUID] = mapped_column(
@@ -24,6 +25,9 @@ class Submission(Base):
     )
     reviewer_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("users.id"), index=True, nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     status: Mapped[SubmissionStatus] = mapped_column(
         Enum(SubmissionStatus, name="submission_status_enum"),
