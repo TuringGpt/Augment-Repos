@@ -17,9 +17,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  * @property {number} [status] - HTTP status code (e.g., 400, 401, 500). Only present for response errors.
  * @property {string} message - Human-readable error message extracted from the response or generated.
  * @property {unknown} [data] - Raw response data from the server. Only present for response errors.
- * @property {unknown} [originalError] - The original error instance (AxiosError or other), preserved for
- *                                       advanced use cases that need access to error.response, error.config,
- *                                       stack traces, etc. May be undefined for non-Axios errors.
+ * @property {unknown} originalError - The original error instance (AxiosError or other), preserved for
+ *                                      advanced use cases that need access to error.response, error.config,
+ *                                      stack traces, etc. Required to ensure consistent error discrimination.
  *
  * @example
  * ```typescript
@@ -31,7 +31,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  *   console.log(apiError.status);  // HTTP status code (if available)
  *
  *   // Access original error if needed for advanced cases
- *   if (apiError.originalError && 'response' in apiError.originalError) {
+ *   if ('response' in apiError.originalError) {
  *     console.log(apiError.originalError.response.headers);
  *   }
  * }
@@ -41,7 +41,7 @@ export interface ApiError {
   status?: number;
   message: string;
   data?: unknown;
-  originalError?: unknown;
+  originalError: unknown;
 }
 
 /**
