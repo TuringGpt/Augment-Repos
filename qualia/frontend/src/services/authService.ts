@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/axios';
+import { apiClient, type ApiError } from '@/lib/axios';
 
 /**
  * Authentication API service
@@ -20,7 +20,7 @@ export interface RegisterResponse {
  * Register a new user
  * @param data - User registration data (email and password)
  * @returns Promise with registration response
- * @throws Error if registration fails
+ * @throws {ApiError} if registration fails (with status, message, data, and originalError)
  */
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
   const response = await apiClient.post<RegisterResponse>('/auth/signup', data);
