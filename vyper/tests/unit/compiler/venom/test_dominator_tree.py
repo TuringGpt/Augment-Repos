@@ -61,6 +61,27 @@ def test_deminator_frontier_calculation():
     assert len(df[bb7]) == 0, df[bb7]
 
 
+def test_dominator_calculation():
+    fn = _make_test_ctx()
+    bb1, bb2, bb3, bb4, bb5, bb6, bb7 = [fn.get_basic_block(str(i)) for i in range(1, 8)]
+
+    ac = IRAnalysesCache(fn)
+    dom = ac.request_analysis(DominatorTreeAnalysis)
+
+    assert dom.immediate_dominator(bb1) == bb1
+    assert dom.immediate_dominator(bb2) == bb1
+    assert dom.immediate_dominator(bb3) == bb2
+    assert dom.immediate_dominator(bb4) == bb2
+    assert dom.immediate_dominator(bb5) == bb3
+    assert dom.immediate_dominator(bb6) == bb2
+    assert dom.immediate_dominator(bb7) == bb6
+
+    assert dom.dominators[bb7] == OrderedSet({bb7, bb6, bb2, bb1})
+    assert dom.dominators[bb6] == OrderedSet({bb6, bb2, bb1})
+    assert dom.dominates(bb2, bb7)
+    assert not dom.dominates(bb3, bb6)
+
+
 def test_phi_placement():
     fn = _make_test_ctx()
     bb1, bb2, bb3, bb4, bb5, bb6, bb7 = [fn.get_basic_block(str(i)) for i in range(1, 8)]
