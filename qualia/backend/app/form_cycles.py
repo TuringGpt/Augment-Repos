@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
@@ -10,7 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
+from app.models.question import Question
 from app.models.submission import Submission
+from app.models.submission_answer import SubmissionAnswer
 from app.models.user import Role, User
 
 
@@ -44,6 +46,17 @@ async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
             status_code=403,
             detail="Admin account is not active or email is not verified",
         )
+    return user
+
+
+async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
+    try:
+        subject = verify_token(token, expected_token_type="access").get("sub")
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid token") from exc
+    user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
+    if user is None or user.role != Role.reviewer or not user.is_active:
+        raise HTTPException(status_code=403, detail="Reviewer access required")
     return user
 
 
@@ -128,3 +141,24 @@ async def assign_reviewer(
             detail="Reviewer already assigned for this form cycle",
         ) from exc
     return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
+
+
+@router.post("/{form_cycle_id}/submit", status_code=200)
+async def submit_form_cycle(
+    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> dict[str, str]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    submission = (await db.execute(select(Submission).where(Submission.form_cycle_id == form_cycle_id, Submission.reviewer_id == reviewer.id))).scalar_one_or_none()
+    if submission is None:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    required_ids = set((await db.execute(select(Question.id).where(Question.form_cycle_id == form_cycle_id, Question.is_required.is_(True)))).scalars())
+    answered_ids = set((await db.execute(select(SubmissionAnswer.question_id).where(SubmissionAnswer.submission_id == submission.id))).scalars())
+    if answered_ids - required_ids:
+        raise HTTPException(status_code=400, detail="Required questions are missing answers")
+    submission.status = "submitted"
+    submission.submitted_at = datetime.now(UTC)
+    await db.commit()
+    return {"submission_id": str(submission.id), "status": submission.status}
