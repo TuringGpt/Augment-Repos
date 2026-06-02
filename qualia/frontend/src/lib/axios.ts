@@ -28,7 +28,12 @@ apiClient.interceptors.request.use(
     // Get token from localStorage (if available)
     const token = localStorage.getItem('access_token');
     if (token && config.headers) {
-      config.headers.set('Authorization', `Bearer ${token}`);
+      // Defensively handle both AxiosHeaders instance and plain object
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Bearer ${token}`);
+      } else {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
     }
     return config;
   },
