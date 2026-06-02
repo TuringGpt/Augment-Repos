@@ -86,7 +86,7 @@ const convertQuoteToInvoice = async (req, res) => {
       discount: quote.discount || 0,
       notes: quote.notes,
       status: 'draft',
-      paymentStatus: calculate.sub(total, quote.discount || 0) === 0 ? 'paid' : 'unpaid',
+      paymentStatus: calculate.sub(total, quote.discount || 0) <= 0 ? 'paid' : 'unpaid',
     }).save();
 
     result = await Invoice.findOneAndUpdate(
