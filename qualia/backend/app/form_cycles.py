@@ -60,6 +60,13 @@ def _validate_reviewer(reviewer: User | None) -> User:
     return reviewer
 
 
+def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
+    message = str(exc.orig).lower()
+    return "uq_submissions_form_cycle_id" in message or (
+        "unique constraint failed" in message and "submissions.form_cycle_id" in message
+    )
+
+
 @router.post("/", status_code=201)
 @router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
@@ -114,6 +121,8 @@ async def assign_reviewer(
         await db.commit()
     except IntegrityError as exc:
         await db.rollback()
+        if not _is_submission_assignment_conflict(exc):
+            raise
         raise HTTPException(
             status_code=409,
             detail="Reviewer already assigned for this form cycle",
