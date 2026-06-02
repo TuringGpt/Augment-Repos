@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -84,6 +84,22 @@ def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
     )
 
 
+def _has_effective_answer(answer: SubmissionAnswer) -> bool:
+    if answer.text_answer is not None and answer.text_answer.strip():
+        return True
+    if answer.number_answer is not None:
+        return True
+    if answer.rating_answer is not None:
+        return True
+    if answer.boolean_answer is not None:
+        return True
+    if any(choice.strip() for choice in answer.choice_answers):
+        return True
+    if any(file_id.strip() for file_id in answer.file_ids):
+        return True
+    return False
+
+
 @router.post("/", status_code=201)
 @router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
@@ -159,12 +175,27 @@ async def submit_form_cycle(
     if submission is None:
         raise HTTPException(status_code=404, detail="Submission not found")
     required_ids = set((await db.execute(select(Question.id).where(Question.form_cycle_id == form_cycle_id, Question.is_required.is_(True)))).scalars())
-    answered_ids = set((await db.execute(select(SubmissionAnswer.question_id).where(SubmissionAnswer.submission_id == submission.id))).scalars())
+    answers = (
+        await db.execute(select(SubmissionAnswer).where(SubmissionAnswer.submission_id == submission.id))
+    ).scalars()
+    answered_ids = {answer.question_id for answer in answers if _has_effective_answer(answer)}
     if required_ids - answered_ids:
         raise HTTPException(status_code=400, detail="Required questions are missing answers")
     if submission.status == SubmissionStatus.submitted:
         return {"submission_id": str(submission.id), "status": submission.status}
-    submission.status = SubmissionStatus.submitted
-    submission.submitted_at = datetime.now(UTC)
+    update_result = await db.execute(
+        update(Submission)
+        .where(
+            Submission.id == submission.id,
+            Submission.status != SubmissionStatus.submitted,
+        )
+        .values(
+            status=SubmissionStatus.submitted,
+            submitted_at=datetime.now(UTC),
+        )
+    )
     await db.commit()
-    return {"submission_id": str(submission.id), "status": submission.status}
+    if update_result.rowcount == 0:
+        await db.refresh(submission)
+        return {"submission_id": str(submission.id), "status": submission.status}
+    return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted}
