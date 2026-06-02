@@ -127,10 +127,23 @@ function Register() {
           password: validatedData.password,
         });
       } catch (err) {
+        // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
         }
+        // Handle API errors from registerUser
+        else if (err && typeof err === 'object' && 'message' in err) {
+          const apiError = err as ApiError;
+          setError(apiError.message || "Registration failed. Please try again.");
+        }
+        // Handle any other unexpected errors
+        else {
+          setError("An unexpected error occurred. Please try again.");
+        }
+
+        // Re-throw to ensure TanStack Form's submission state reflects the error
+        throw err;
       } finally {
         // Reset synchronous flag when submission completes (success or error)
         isSubmittingRef.current = false;
