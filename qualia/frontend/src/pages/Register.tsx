@@ -140,7 +140,11 @@ function Register() {
         // Handle API errors from registerUser
         else if (err && typeof err === 'object' && 'message' in err) {
           const apiError = err as ApiError;
-          setError(apiError.message || "Registration failed. Please try again.");
+          // Ensure message is a string to prevent React crashes if message is an object
+          const errorMessage = typeof apiError.message === 'string'
+            ? apiError.message
+            : "Registration failed. Please try again.";
+          setError(errorMessage);
         }
         // Handle any other unexpected errors
         else {
