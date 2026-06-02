@@ -1,4 +1,5 @@
-import { Register } from '@/services/authService';
+import { useMutation } from '@tanstack/react-query';
+import { register } from '@/services/authService';
 import type { RegisterRequest, RegisterResponse } from '@/services/authService';
 
 /**

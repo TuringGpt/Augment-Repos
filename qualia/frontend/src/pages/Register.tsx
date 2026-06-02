@@ -14,6 +14,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useRegister } from "@/hooks/useRegister";
 
 // Zod schema for registration form validation
 const registerSchema = z
