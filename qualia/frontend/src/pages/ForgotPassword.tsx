@@ -51,14 +51,14 @@ function ForgotPassword() {
       setIsLoading(true);
 
       try {
-        // Validate with Zod
-        forgotPasswordSchema.parse(value);
+        // Validate with Zod and use the parsed (trimmed) result
+        const validatedData = forgotPasswordSchema.parse(value);
 
         // TODO: Replace with actual API call to backend password reset endpoint
         // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ email: value.email }),
+        //   body: JSON.stringify({ email: validatedData.email }),
         // });
 
         // Simulate API call for now
