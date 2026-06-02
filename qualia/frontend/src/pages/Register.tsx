@@ -286,7 +286,7 @@ function Register() {
 
             <Button
               type='submit'
-              disabled={ispending}
+              disabled={isPending}
               className='w-full h-10'
               aria-label={isPending ? "Creating account..." : "Create Account"}
             >
