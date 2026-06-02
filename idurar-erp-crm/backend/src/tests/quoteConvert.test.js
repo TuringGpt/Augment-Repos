@@ -320,16 +320,16 @@ describe('GET /api/quote/convert/:id', () => {
     expect(res.body.result.paymentStatus).toBe('paid');
   });
 
-  it('marks invoice paymentStatus as "paid" when discount equals total (discount-driven paid path)', async () => {
+  it('marks invoice paymentStatus as "paid" when discount exceeds total', async () => {
     const { admin, token } = await createAdminWithToken();
     const client = await createClient(admin._id);
     const Quote = mongoose.model('Quote');
 
     // Items: 1×100 + 10% tax → subTotal=100, taxTotal=10, total=110
-    // discount=110 → calculate.sub(110, 110) = 0 ≤ 0 → paid
+    // discount=120 → calculate.sub(110, 120) = -10 ≤ 0 → paid
     const quoteData = buildQuoteData(client._id, admin._id, {
       taxRate: 10,
-      discount: 110,
+      discount: 120,
       items: [{ itemName: 'Widget', quantity: 1, price: 100, total: 100 }],
       subTotal: 100,
       taxTotal: 10,
