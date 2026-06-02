@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
 from app.models.question import Question
-from app.models.submission import Submission
+from app.models.submission import Submission, SubmissionStatus
 from app.models.submission_answer import SubmissionAnswer
 from app.models.user import Role, User
 
@@ -54,6 +54,8 @@ async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
         subject = verify_token(token, expected_token_type="access").get("sub")
     except ValueError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
+    if not isinstance(subject, str) or not subject:
+        raise HTTPException(status_code=401, detail="Invalid token")
     user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
     if user is None or user.role != Role.reviewer or not user.is_active:
         raise HTTPException(status_code=403, detail="Reviewer access required")
@@ -156,9 +158,9 @@ async def submit_form_cycle(
         raise HTTPException(status_code=404, detail="Submission not found")
     required_ids = set((await db.execute(select(Question.id).where(Question.form_cycle_id == form_cycle_id, Question.is_required.is_(True)))).scalars())
     answered_ids = set((await db.execute(select(SubmissionAnswer.question_id).where(SubmissionAnswer.submission_id == submission.id))).scalars())
-    if answered_ids - required_ids:
+    if required_ids - answered_ids:
         raise HTTPException(status_code=400, detail="Required questions are missing answers")
-    submission.status = "submitted"
+    submission.status = SubmissionStatus.submitted
     submission.submitted_at = datetime.now(UTC)
     await db.commit()
     return {"submission_id": str(submission.id), "status": submission.status}
