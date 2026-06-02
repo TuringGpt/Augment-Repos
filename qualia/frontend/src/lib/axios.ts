@@ -222,11 +222,16 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
 
       if (status === 401) {
-        // Unauthorized - clear token and redirect to login
-        safeRemoveLocalStorage('access_token');
-        safeRemoveLocalStorage('refresh_token');
-        // You might want to redirect to login page here
-        // window.location.href = '/signin';
+        // Unauthorized - only clear tokens if the request actually sent an Authorization header
+        // This prevents clearing tokens on failed login/signup attempts (which return 401 for invalid credentials)
+        // but still clears them when an authenticated request fails due to expired/invalid token
+        const sentAuthHeader = error.config?.headers?.['Authorization'] || error.config?.headers?.get?.('Authorization');
+        if (sentAuthHeader) {
+          safeRemoveLocalStorage('access_token');
+          safeRemoveLocalStorage('refresh_token');
+          // You might want to redirect to login page here
+          // window.location.href = '/signin';
+        }
       }
 
       // Populate standardized error with response data
