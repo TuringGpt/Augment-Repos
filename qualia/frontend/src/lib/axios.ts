@@ -87,6 +87,12 @@ apiClient.interceptors.request.use(
  * Handles cases where detail/message might be objects, arrays, or other non-string types
  */
 function extractErrorMessage(data: unknown): string {
+  // Handle plain string responses from the backend
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  // If data is not truthy or not an object, return generic message
   if (!data || typeof data !== 'object') {
     return 'An error occurred';
   }
