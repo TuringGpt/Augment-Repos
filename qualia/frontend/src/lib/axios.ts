@@ -59,12 +59,43 @@ export const apiClient = axios.create({
 });
 
 /**
+ * Safely retrieves a value from localStorage.
+ * Returns null if localStorage is unavailable (SSR, tests, or blocked by browser).
+ */
+function safeGetLocalStorage(key: string): string | null {
+  try {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return null;
+    }
+    return localStorage.getItem(key);
+  } catch {
+    // localStorage access can throw when disabled/blocked
+    return null;
+  }
+}
+
+/**
+ * Safely removes a value from localStorage.
+ * Silently fails if localStorage is unavailable.
+ */
+function safeRemoveLocalStorage(key: string): void {
+  try {
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // Silently fail if localStorage is blocked
+  }
+}
+
+/**
  * Request interceptor to add authentication token
  */
 apiClient.interceptors.request.use(
   (config) => {
     // Get token from localStorage (if available)
-    const token = localStorage.getItem('access_token');
+    const token = safeGetLocalStorage('access_token');
     if (token) {
       // Ensure headers object exists
       config.headers = config.headers || {};
@@ -161,8 +192,8 @@ apiClient.interceptors.response.use(
 
       if (status === 401) {
         // Unauthorized - clear token and redirect to login
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        safeRemoveLocalStorage('access_token');
+        safeRemoveLocalStorage('refresh_token');
         // You might want to redirect to login page here
         // window.location.href = '/signin';
       }
