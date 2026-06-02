@@ -208,24 +208,33 @@ apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error: AxiosError) => {
+  (error: unknown) => {
+    // Short-circuit if error is already normalized to ApiError by request interceptor
+    // This prevents double-wrapping and preserves the original error structure
+    if (error && typeof error === 'object' && 'message' in error && 'originalError' in error) {
+      return Promise.reject(error);
+    }
+
+    // At this point, we know it's a fresh AxiosError from the network layer
+    const axiosError = error as AxiosError;
+
     // Create standardized error object that preserves original AxiosError
     const apiError: ApiError = {
-      originalError: error,
+      originalError: axiosError,
       message: 'An unexpected error occurred',
     };
 
     // Handle specific error cases
-    if (error.response) {
+    if (axiosError.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      const { status, data } = error.response;
+      const { status, data } = axiosError.response;
 
       if (status === 401) {
         // Unauthorized - only clear tokens if the request actually sent an Authorization header
         // This prevents clearing tokens on failed login/signup attempts (which return 401 for invalid credentials)
         // but still clears them when an authenticated request fails due to expired/invalid token
-        const sentAuthHeader = error.config?.headers?.['Authorization'] || error.config?.headers?.get?.('Authorization');
+        const sentAuthHeader = axiosError.config?.headers?.['Authorization'] || axiosError.config?.headers?.get?.('Authorization');
         if (sentAuthHeader) {
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
@@ -238,12 +247,12 @@ apiClient.interceptors.response.use(
       apiError.status = status;
       apiError.message = extractErrorMessage(data);
       apiError.data = data;
-    } else if (error.request) {
+    } else if (axiosError.request) {
       // The request was made but no response was received
       apiError.message = 'No response from server. Please check your connection.';
     } else {
       // Something happened in setting up the request that triggered an Error
-      apiError.message = error.message || 'An unexpected error occurred';
+      apiError.message = axiosError.message || 'An unexpected error occurred';
     }
 
     return Promise.reject(apiError);
