@@ -1,10 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import { register } from '@/services/authService';
 import type { RegisterRequest, RegisterResponse } from '@/services/authService';
+import type { ApiError } from '@/lib/axios';
 
 /**
  * TanStack Query mutation hook for user registration
- * 
+ *
  * @example
  * ```tsx
  * const { mutate, isPending, isError, error, data } = useRegister({
@@ -16,14 +17,14 @@ import type { RegisterRequest, RegisterResponse } from '@/services/authService';
  *     console.error('Registration failed:', error.message);
  *   }
  * });
- * 
+ *
  * // Call the mutation
  * mutate({ email: 'user@example.com', password: 'password123' });
  * ```
  */
 export const useRegister = (options?: {
   onSuccess?: (data: RegisterResponse) => void;
-  onError?: (error: { message: string; status?: number; data?: unknown }) => void;
+  onError?: (error: ApiError) => void;
 }) => {
   return useMutation({
     mutationFn: (data: RegisterRequest) => register(data),

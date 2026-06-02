@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 /**
  * Base API URL from environment variables
@@ -6,6 +6,42 @@ import axios from 'axios';
  * Defaults to localhost:8000/api/v1 for development
  */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+/**
+ * Standardized API error interface.
+ * This is the error contract returned by the axios interceptor for all API errors.
+ *
+ * The interceptor transforms raw AxiosError instances into this standardized format
+ * for consistent error handling across the application.
+ *
+ * @property {number} [status] - HTTP status code (e.g., 400, 401, 500). Only present for response errors.
+ * @property {string} message - Human-readable error message extracted from the response or generated.
+ * @property {unknown} [data] - Raw response data from the server. Only present for response errors.
+ * @property {AxiosError} originalError - The original AxiosError instance, preserved for advanced use cases
+ *                                        that need access to error.response, error.config, stack traces, etc.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await apiClient.post('/api/v1/auth/login', data);
+ * } catch (error) {
+ *   const apiError = error as ApiError;
+ *   console.log(apiError.message); // User-friendly message
+ *   console.log(apiError.status);  // HTTP status code
+ *
+ *   // Access original AxiosError if needed for advanced cases
+ *   if (apiError.originalError.response) {
+ *     console.log(apiError.originalError.response.headers);
+ *   }
+ * }
+ * ```
+ */
+export interface ApiError {
+  status?: number;
+  message: string;
+  data?: unknown;
+  originalError: AxiosError;
+}
 
 /**
  * Configured axios instance for API calls
@@ -94,13 +130,22 @@ function extractErrorMessage(data: unknown): string {
 }
 
 /**
- * Response interceptor for global error handling
+ * Response interceptor for global error handling.
+ *
+ * Transforms all AxiosError instances into a standardized ApiError format
+ * while preserving the original error for advanced use cases.
  */
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  (error: AxiosError) => {
+    // Create standardized error object that preserves original AxiosError
+    const apiError: ApiError = {
+      originalError: error,
+      message: 'An unexpected error occurred',
+    };
+
     // Handle specific error cases
     if (error.response) {
       // The request was made and the server responded with a status code
@@ -115,23 +160,18 @@ apiClient.interceptors.response.use(
         // window.location.href = '/signin';
       }
 
-      // Return a more user-friendly error message
-      // Use helper function to ensure message is always a string
-      return Promise.reject({
-        status,
-        message: extractErrorMessage(data),
-        data,
-      });
+      // Populate standardized error with response data
+      apiError.status = status;
+      apiError.message = extractErrorMessage(data);
+      apiError.data = data;
     } else if (error.request) {
       // The request was made but no response was received
-      return Promise.reject({
-        message: 'No response from server. Please check your connection.',
-      });
+      apiError.message = 'No response from server. Please check your connection.';
     } else {
       // Something happened in setting up the request that triggered an Error
-      return Promise.reject({
-        message: error.message || 'An unexpected error occurred',
-      });
+      apiError.message = error.message || 'An unexpected error occurred';
     }
+
+    return Promise.reject(apiError);
   }
 );

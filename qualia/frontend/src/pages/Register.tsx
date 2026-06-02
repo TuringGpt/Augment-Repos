@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useRegister } from "@/hooks/useRegister";
+import type { ApiError } from "@/lib/axios";
 
 // Zod schema for registration form validation
 const registerSchema = z
@@ -75,10 +76,9 @@ function Register() {
       // Redirect to sign in page immediately
       navigate("/signin");
     },
-    onError: (err) => {
-      const apiError = err as { message?: string; status?: number };
+    onError: (err: ApiError) => {
       setError(
-        apiError.message || "Registration failed. Please try again.",
+        err.message || "Registration failed. Please try again.",
       );
     }
   });
