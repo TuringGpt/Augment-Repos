@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -60,8 +60,9 @@ const formFields = [
 ] as const;
 
 function Register() {
+  const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const isMountedRef = useRef(true);
   const isSubmittingRef = useRef(false);
 
@@ -72,6 +73,38 @@ function Register() {
       isMountedRef.current = false;
     };
   }, []);
+
+  // Use the TanStack Query mutation hook
+  const { mutate: registerUser, isPending } = useRegister({
+    onSuccess: (data) => {
+      if (!isMountedRef.current) return;
+
+      // Development-only logging (gated to prevent PII leakage in production)
+      if (import.meta.env.DEV) {
+        console.log("Registration successful for:", data);
+      }
+
+      // Show success message
+      setSuccessMessage("Registration successful! Redirecting to sign in...");
+      setError("");
+
+      // Redirect to sign in page after a short delay
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate("/signin");
+        }
+      }, 2000);
+    },
+    onError: (err) => {
+      if (!isMountedRef.current) return;
+
+      const apiError = err as { message?: string; status?: number };
+      setError(
+        apiError.message || "Registration failed. Please try again.",
+      );
+      setSuccessMessage("");
+    }
+  });
 
   const form = useForm({
     defaultValues: {
@@ -87,35 +120,25 @@ function Register() {
       // Set synchronous flag immediately to prevent race conditions
       isSubmittingRef.current = true;
       setError("");
-      setIsLoading(true);
 
       try {
         // Validate with Zod
         const validatedData = registerSchema.parse(value);
 
-        // TODO: Implement actual registration API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Development-only logging (gated to prevent PII leakage in production)
-        if (import.meta.env.DEV) {
-          console.log("Registration successful for:", validatedData.email);
-        }
+        // Call the register mutation
+        registerUser({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
       } catch (err) {
         if (!isMountedRef.current) return;
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
-        } else {
-          setError(
-            "Registration failed. Please try again.",
-          );
         }
       } finally {
         // Reset synchronous flag immediately
         isSubmittingRef.current = false;
-        if (isMountedRef.current) {
-          setIsLoading(false);
-        }
       }
     },
   });
@@ -147,6 +170,15 @@ function Register() {
                 role='alert'
               >
                 {error}
+              </div>
+            )}
+
+            {successMessage && (
+              <div
+                className='rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 animate-in fade-in slide-in-from-top-2 duration-300'
+                role='alert'
+              >
+                {successMessage}
               </div>
             )}
 
@@ -190,7 +222,7 @@ function Register() {
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
-                      disabled={isLoading}
+                      disabled={isPending}
                       className='h-10'
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -239,7 +271,7 @@ function Register() {
                     }}
                     placeholder="Confirm your password"
                     autoComplete="new-password"
-                    disabled={isLoading}
+                    disabled={isPending}
                     className='h-10'
                   />
                   {field.state.meta.errors.length > 0 && (
@@ -253,11 +285,11 @@ function Register() {
 
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={ispending}
               className='w-full h-10'
-              aria-label={isLoading ? "Creating account..." : "Create Account"}
+              aria-label={isPending ? "Creating account..." : "Create Account"}
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Spinner />
                   <span className='ml-2'>Creating account...</span>
