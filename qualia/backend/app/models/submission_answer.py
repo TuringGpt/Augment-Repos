@@ -1,0 +1,41 @@
+import uuid
+
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, Text, UniqueConstraint, Uuid, func, text
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.database import Base
+
+
+class SubmissionAnswer(Base):
+    __tablename__ = "submission_answers"
+    __table_args__ = (UniqueConstraint("submission_id", "question_id", name="uq_submission_answer_submission_question"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    submission_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("submissions.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    question_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("questions.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    text_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    number_answer: Mapped[float | None] = mapped_column(Float, nullable=True)
+    choice_answers: Mapped[list[str]] = mapped_column(
+        MutableList.as_mutable(JSON), default=list, server_default=text("'[]'"), nullable=False
+    )
+    rating_answer: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    boolean_answer: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    file_ids: Mapped[list[str]] = mapped_column(
+        MutableList.as_mutable(JSON), default=list, server_default=text("'[]'"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
