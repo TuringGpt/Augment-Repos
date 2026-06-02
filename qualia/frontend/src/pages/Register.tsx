@@ -145,8 +145,8 @@ function Register() {
           setError("An unexpected error occurred. Please try again.");
         }
 
-        // Re-throw to ensure TanStack Form's submission state reflects the error
-        throw err;
+        // Don't re-throw: error state is already set for user feedback,
+        // and re-throwing would cause an unhandled promise rejection in form.handleSubmit()
       } finally {
         // Reset synchronous flag when submission completes (success or error)
         isSubmittingRef.current = false;
