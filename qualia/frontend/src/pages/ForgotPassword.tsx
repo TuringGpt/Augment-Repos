@@ -19,6 +19,7 @@ import { Spinner } from "@/components/ui/spinner";
 const forgotPasswordSchema = z.object({
   email: z
     .string()
+    .trim() // Normalize by trimming whitespace before validation
     .min(1, { message: "Email is required" })
     .email({ message: "Please enter a valid email address" }),
 });
@@ -139,6 +140,7 @@ function ForgotPassword() {
                 onChange: ({ value }) => {
                   const result = z
                     .string()
+                    .trim() // Normalize by trimming whitespace before validation
                     .min(1, { message: "Email is required" })
                     .email({ message: "Please enter a valid email address" })
                     .safeParse(value);
