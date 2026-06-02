@@ -1,6 +1,8 @@
 import uuid
 
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, JSON, Text, UniqueConstraint, Uuid, text
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, Text, UniqueConstraint, Uuid, func, text
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,4 +29,13 @@ class SubmissionAnswer(Base):
     boolean_answer: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     file_ids: Mapped[list[str]] = mapped_column(
         MutableList.as_mutable(JSON), default=list, server_default=text("'[]'"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
