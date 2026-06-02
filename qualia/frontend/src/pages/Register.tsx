@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
@@ -65,6 +65,10 @@ function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
 
+  // Synchronous ref to prevent double-submit race condition
+  // isPending is async (waits for React re-render), so we need a ref for immediate checking
+  const isSubmittingRef = useRef<boolean>(false);
+
   // Use the TanStack Query mutation hook with mutateAsync for proper async handling
   const { mutateAsync: registerUser, isPending } = useRegister({
     onSuccess: (data) => {
@@ -90,8 +94,13 @@ function Register() {
       confirmPassword: "",
     } as RegisterFormData,
     onSubmit: async ({ value }) => {
-      // Guard against double-submit - isPending is managed by TanStack Query
+      // Guard against double-submit using synchronous ref check
+      // This prevents race condition where two rapid clicks both see isPending=false
+      if (isSubmittingRef.current) return;
       if (isPending) return;
+
+      // Set synchronous flag immediately to block concurrent submissions
+      isSubmittingRef.current = true;
 
       setError("");
 
@@ -109,6 +118,9 @@ function Register() {
           const issues = err.issues;
           setError(issues[0]?.message || "Validation failed");
         }
+      } finally {
+        // Reset synchronous flag when submission completes (success or error)
+        isSubmittingRef.current = false;
       }
     },
   });
