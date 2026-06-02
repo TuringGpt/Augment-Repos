@@ -9,6 +9,7 @@
  *  - Invoice paymentStatus derived correctly
  *  - Edge case: one line item has zero quantity
  *  - Already-converted quote returns 400
+ *  - Concurrent conversion only creates one invoice
  *  - Non-existent quote returns 404
  *  - Missing auth token returns 401
  */
@@ -226,6 +227,31 @@ describe('GET /api/quote/convert/:id', () => {
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toMatch(/already been converted/i);
+  });
+
+  it('only creates one invoice when two requests convert the same quote concurrently', async () => {
+    const { admin, token } = await createAdminWithToken();
+    const client = await createClient(admin._id);
+    const Quote = mongoose.model('Quote');
+    const Invoice = mongoose.model('Invoice');
+
+    const quote = await Quote.create(buildQuoteData(client._id, admin._id));
+
+    const responses = await Promise.all([
+      request(app).get(`/api/quote/convert/${quote._id}`).set('Authorization', `Bearer ${token}`),
+      request(app).get(`/api/quote/convert/${quote._id}`).set('Authorization', `Bearer ${token}`),
+    ]);
+
+    const statuses = responses.map((res) => res.status).sort();
+    expect(statuses).toEqual([200, 400]);
+    expect(responses.find((res) => res.status === 400).body.message).toMatch(/already been converted/i);
+
+    const invoices = await Invoice.find({ 'converted.quote': quote._id });
+    expect(invoices).toHaveLength(1);
+
+    const updatedQuote = await Quote.findById(quote._id);
+    expect(updatedQuote.converted).toBe(true);
+    expect(updatedQuote.status).toBe('accepted');
   });
 
   it('edge case: one line item with zero quantity results in zero total for that line', async () => {
