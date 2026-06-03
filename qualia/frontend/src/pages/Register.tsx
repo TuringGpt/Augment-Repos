@@ -160,14 +160,14 @@ function Register() {
           password: validatedData.password,
         });
       } catch (err) {
-        // Only update state if component is still mounted
-        if (!isMountedRef.current) return;
-
         // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           const errorMessage = issues[0]?.message || "Validation failed";
-          setError(errorMessage);
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
           // Show validation error toast
           toast.error("Validation Error", {
             description: errorMessage,
@@ -180,12 +180,18 @@ function Register() {
           const errorMessage = typeof apiError.message === 'string'
             ? apiError.message
             : "Registration failed. Please try again.";
-          setError(errorMessage);
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
         }
         // Handle any other unexpected errors
         else {
           const errorMessage = "An unexpected error occurred. Please try again.";
-          setError(errorMessage);
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
           toast.error("Unexpected Error", {
             description: errorMessage,
           });
