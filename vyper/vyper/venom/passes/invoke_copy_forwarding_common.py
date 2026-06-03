@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Iterator
+from collections.abc import Callable, Iterable, Iterator
 
 import vyper.evm.address_space as addr_space
 from vyper.venom.analysis import (
@@ -31,6 +31,29 @@ class InvokeCopyForwardingBase(IRPass):
     updater: InstUpdater
     readonly_memory_args: ReadonlyMemoryArgsGlobalAnalysis
     copy_forwarding: CopyForwardingPolicy
+
+    def _run_mcopy_forwarding(
+        self,
+        forward_copy: Callable[[IRInstruction], bool],
+        *,
+        to_fixpoint: bool = False,
+    ) -> None:
+        self._prepare()
+        changed = False
+
+        while True:
+            iter_changed = False
+            for bb in self.function.get_basic_blocks():
+                for inst in list(bb.instructions):
+                    if inst.opcode != "mcopy":
+                        continue
+                    iter_changed |= forward_copy(inst)
+
+            changed |= iter_changed
+            if not to_fixpoint or not iter_changed:
+                break
+
+        self._finish(changed)
 
     def _prepare(self) -> None:
         self.dfg = self.analyses_cache.request_analysis(DFGAnalysis)
@@ -81,6 +104,31 @@ class InvokeCopyForwardingBase(IRPass):
     def _matches_alloca_size(self, inst: IRInstruction, expected_size: int) -> bool:
         size = inst.operands[0]
         return isinstance(size, IRLiteral) and size.value == expected_size
+
+    def _copy_operand_alloca_root(
+        self, copy_inst: IRInstruction, operand_idx: int, expected_size: int | None = None
+    ) -> tuple[IRVariable, IRInstruction] | None:
+        op = copy_inst.operands[operand_idx]
+        if not isinstance(op, IRVariable):
+            return None
+
+        root = self._assign_root_var(op)
+        root_inst = self.dfg.get_producing_instruction(root)
+        if not self._is_alloca_like(root_inst):
+            return None
+        assert root_inst is not None  # ensured above
+
+        if expected_size is not None and not self._matches_alloca_size(root_inst, expected_size):
+            return None
+
+        return root, root_inst
+
+    def _same_block_uses_after(
+        self, copy_inst: IRInstruction, uses: Iterable[IRInstruction]
+    ) -> bool:
+        return all(
+            use.parent is copy_inst.parent and self._is_after(copy_inst, use) for use in uses
+        )
 
     def _is_readonly_invoke_operand(self, invoke_inst: IRInstruction, operand_idx: int) -> bool:
         if operand_idx == 0:
