@@ -204,7 +204,7 @@ async def submit_form_cycle(
     if required_ids - answered_ids:
         raise HTTPException(status_code=400, detail="Required questions are missing answers")
     if submission.status == SubmissionStatus.submitted:
-        return {"submission_id": str(submission.id), "status": submission.status}
+        return {"submission_id": str(submission.id), "status": submission.status.value}
     update_result = await db.execute(
         update(Submission)
         .where(
@@ -219,5 +219,5 @@ async def submit_form_cycle(
     await db.commit()
     if update_result.rowcount == 0:
         await db.refresh(submission)
-        return {"submission_id": str(submission.id), "status": submission.status}
-    return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted}
+        return {"submission_id": str(submission.id), "status": submission.status.value}
+    return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
