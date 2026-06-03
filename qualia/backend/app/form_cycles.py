@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import verify_token
-from app.models.form_cycle import FormCycle
+from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
 from app.models.submission_answer import SubmissionAnswer
@@ -111,6 +111,13 @@ def _has_effective_answer(answer: SubmissionAnswer) -> bool:
     return False
 
 
+def _validate_submission_window(cycle: FormCycle) -> None:
+    if cycle.status != FormCycleStatus.active or not cycle.is_published:
+        raise HTTPException(status_code=400, detail="Form cycle is not accepting submissions")
+    if cycle.submission_deadline < datetime.now(UTC):
+        raise HTTPException(status_code=400, detail="Submission deadline has passed")
+
+
 @router.post("/", status_code=201)
 @router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
@@ -182,6 +189,10 @@ async def submit_form_cycle(
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     reviewer = await _get_authorized_reviewer(token.strip(), db)
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    _validate_submission_window(cycle)
     submission = (await db.execute(select(Submission).where(Submission.form_cycle_id == form_cycle_id, Submission.reviewer_id == reviewer.id))).scalar_one_or_none()
     if submission is None:
         raise HTTPException(status_code=404, detail="Submission not found")
