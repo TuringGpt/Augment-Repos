@@ -328,7 +328,7 @@ code {
   @apply border-destructive/30! dark:border-destructive/50!;
 }
 
-.cn-toast[data-type="waring"] {
+.cn-toast[data-type="warning"] {
   @apply border-yellow-500/30! dark:border-yellow-500/50!;
 }
 

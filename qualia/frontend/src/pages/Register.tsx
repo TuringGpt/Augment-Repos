@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { EyeOn, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -259,7 +259,6 @@ function Register() {
                             onClick={() => setShowPassword(!showPassword)}
                             className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
                             aria-label={showPassword ? "Hide password" : "Show password"}
-                            tabIndex={-1}
                           >
                             {showPassword ? (
                               <EyeOff className='h-4 w-4' />
@@ -333,7 +332,6 @@ function Register() {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
                       aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                      tabIndex={-1}
                     >
                       {showConfirmPassword ? (
                         <EyeOff className='h-4 w-4' />
