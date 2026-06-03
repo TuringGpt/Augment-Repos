@@ -216,6 +216,15 @@ function Register() {
             }}
             className='space-y-5'
           >
+            {error && (
+              <div
+                className='rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-in fade-in slide-in-from-top-2 duration-300'
+                role='alert'
+              >
+                {error}
+              </div>
+            )}
+
             {formFields.map((fieldConfig) => (
               <form.Field
                 key={fieldConfig.name}
