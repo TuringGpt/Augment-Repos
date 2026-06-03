@@ -16,7 +16,7 @@ class DominatorTreeAnalysis(IRAnalysis):
 
     fn: IRFunction
     entry_block: IRBasicBlock
-    dominators: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
+    _dominators: dict[IRBasicBlock, OrderedSet[IRBasicBlock]] | None
     immediate_dominators: dict[IRBasicBlock, IRBasicBlock]
     dominated: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
     dominator_frontiers: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
@@ -28,7 +28,7 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         self.fn = self.function
         self.entry_block = self.fn.entry
-        self.dominators = {}
+        self._dominators = None
         self.immediate_dominators = {}
         self.dominated = {}
         self.dominator_frontiers = {}
@@ -39,8 +39,14 @@ class DominatorTreeAnalysis(IRAnalysis):
         self.cfg_post_order = {bb: idx for idx, bb in enumerate(self.cfg_post_walk)}
 
         self._compute_idoms()
-        self._compute_dominators()
         self._compute_df()
+
+    @property
+    def dominators(self) -> dict[IRBasicBlock, OrderedSet[IRBasicBlock]]:
+        if self._dominators is None:
+            self._compute_dominators()
+        assert self._dominators is not None
+        return self._dominators
 
     def get_all_dominated_blocks(self, bb: IRBasicBlock) -> OrderedSet[IRBasicBlock]:
         result: OrderedSet[IRBasicBlock] = OrderedSet()
@@ -59,7 +65,15 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         Check if `dom` dominates `sub`.
         """
-        return dom in self.dominators[sub]
+        runner = sub
+        while True:
+            if runner == dom:
+                return True
+            if runner == self.entry_block:
+                return False
+            runner = self.immediate_dominators[runner]
+            if runner is None:
+                return False
 
     def immediate_dominator(self, bb):
         """
@@ -71,20 +85,22 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         Compute dominators
         """
-        self.dominators = {}
+        dominators = {}
 
         for bb in self.cfg_post_walk:
-            dominators: OrderedSet[IRBasicBlock] = OrderedSet()
+            bb_dominators: OrderedSet[IRBasicBlock] = OrderedSet()
             runner = bb
             while True:
-                dominators.add(runner)
+                bb_dominators.add(runner)
                 if runner == self.entry_block:
                     break
                 runner = self.immediate_dominators[runner]
                 if runner is None:
                     raise CompilerPanic("Dominators computation failed to converge")
 
-            self.dominators[bb] = dominators
+            dominators[bb] = bb_dominators
+
+        self._dominators = dominators
 
     def _compute_idoms(self):
         """
@@ -106,17 +122,17 @@ class DominatorTreeAnalysis(IRAnalysis):
                 if bb == self.entry_block:
                     continue
 
-                processed_preds = [
-                    pred
-                    for pred in self.cfg.cfg_in(bb)
-                    if self.immediate_dominators.get(pred) is not None
-                ]
-                if len(processed_preds) == 0:
-                    continue
+                new_idom = None
+                for pred in self.cfg.cfg_in(bb):
+                    if self.immediate_dominators.get(pred) is None:
+                        continue
+                    if new_idom is None:
+                        new_idom = pred
+                    else:
+                        new_idom = self._intersect(pred, new_idom)
 
-                new_idom = processed_preds[0]
-                for pred in processed_preds[1:]:
-                    new_idom = self._intersect(pred, new_idom)
+                if new_idom is None:
+                    continue
 
                 if self.immediate_dominators[bb] != new_idom:
                     self.immediate_dominators[bb] = new_idom

@@ -76,10 +76,13 @@ def test_dominator_calculation():
     assert dom.immediate_dominator(bb6) == bb2
     assert dom.immediate_dominator(bb7) == bb6
 
-    assert dom.dominators[bb7] == OrderedSet({bb7, bb6, bb2, bb1})
-    assert dom.dominators[bb6] == OrderedSet({bb6, bb2, bb1})
+    assert dom._dominators is None
     assert dom.dominates(bb2, bb7)
     assert not dom.dominates(bb3, bb6)
+    assert dom._dominators is None
+
+    assert dom.dominators[bb7] == OrderedSet({bb7, bb6, bb2, bb1})
+    assert dom.dominators[bb6] == OrderedSet({bb6, bb2, bb1})
 
 
 def test_phi_placement():
