@@ -49,7 +49,7 @@ function Dashboard() {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="ml-64 p-8">
         {/* Welcome Banner */}
         <WelcomeBanner userName="John" />
 
