@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,20 +15,24 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
-interface ForgotPasswordFormData {
-  email: string;
-}
+// Zod schema for forgot password form validation
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .trim() // Normalize by trimming whitespace before validation
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please enter a valid email address" }),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 function ForgotPassword() {
-  const [formData, setFormData] = useState<ForgotPasswordFormData>({
-    email: "",
-  });
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const isMountedRef = useRef(true);
 
-  // Cleanup to prevent state updates on unmounted component
+  // Track mount state to prevent state updates after unmount
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -34,66 +40,61 @@ function ForgotPassword() {
     };
   }, []);
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsLoading(true);
-
-    // Trim email at submit-time to normalize whitespace without mutating user input during typing
-    const trimmedEmail = formData.email.trim();
-
-    // Validate that the trimmed email is not empty (e.g., whitespace-only input)
-    if (!trimmedEmail) {
-      setError("Please enter a valid email address.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // TODO: Replace with actual API call to backend password reset endpoint
-      // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: trimmedEmail }),
-      // });
-
-      // Simulate API call for now
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Only update state if component is still mounted
+  const form = useForm({
+    defaultValues: {
+      email: "",
+    } as ForgotPasswordFormData,
+    onSubmit: async ({ value }) => {
       if (!isMountedRef.current) return;
+      setError("");
+      setSuccess("");
+      setIsLoading(true);
 
-      // Mock successful response
-      // TODO: Handle actual API response when backend endpoint is implemented
-      setSuccess(
-        "If an account exists with this email, you will receive password reset instructions shortly."
-      );
-      setFormData({ email: "" });
-    } catch {
-      // Only update state if component is still mounted
-      if (!isMountedRef.current) return;
+      try {
+        // Validate with Zod and use the parsed (trimmed) result
+        const validatedData = forgotPasswordSchema.parse(value);
 
-      // Show generic error message to prevent leaking technical details
-      // or account enumeration information (e.g., "email not found")
-      setError(
-        "Unable to process your request at this time. Please try again later."
-      );
-    } finally {
-      // Only update state if component is still mounted
-      if (isMountedRef.current) {
-        setIsLoading(false);
+        // TODO: Replace with actual API call to backend password reset endpoint
+        // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ email: validatedData.email }),
+        // });
+
+        // Simulate API call for now
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Only update state if component is still mounted
+        if (!isMountedRef.current) return;
+
+        // Mock successful response
+        // TODO: Handle actual API response when backend endpoint is implemented
+        setSuccess(
+          "If an account exists with this email, you will receive password reset instructions shortly."
+        );
+        form.reset();
+      } catch (err) {
+        // Only update state if component is still mounted
+        if (!isMountedRef.current) return;
+
+        if (err instanceof z.ZodError) {
+          const issues = err.issues;
+          setError(issues[0]?.message || "Validation failed");
+        } else {
+          // Show generic error message to prevent leaking technical details
+          // or account enumeration information (e.g., "email not found")
+          setError(
+            "Unable to process your request at this time. Please try again later."
+          );
+        }
+      } finally {
+        // Only update state if component is still mounted
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+    },
+  });
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
@@ -107,7 +108,14 @@ function ForgotPassword() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className='space-y-5'>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              await form.handleSubmit();
+            }}
+            className='space-y-5'
+          >
             {error && (
               <div
                 className='rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-in fade-in slide-in-from-top-2 duration-300'
@@ -126,21 +134,45 @@ function ForgotPassword() {
               </div>
             )}
 
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email Address</Label>
-              <Input
-                type='email'
-                id='email'
-                name='email'
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                placeholder='Enter your email'
-                autoComplete='email'
-                disabled={isLoading}
-                className='h-10'
-              />
-            </div>
+            <form.Field
+              name="email"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = forgotPasswordSchema.shape.email.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues[0]?.message;
+                },
+              }}
+            >
+              {(field) => (
+                <div className='space-y-2'>
+                  <Label htmlFor='email'>Email Address</Label>
+                  <Input
+                    type='email'
+                    id='email'
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      // Clear page-level error and success when user starts editing
+                      if (error) setError("");
+                      if (success) setSuccess("");
+                    }}
+                    placeholder='Enter your email'
+                    autoComplete='email'
+                    disabled={isLoading}
+                    className='h-10'
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className='text-sm text-destructive'>
+                      {field.state.meta.errors[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
 
             <Button
               type='submit'
