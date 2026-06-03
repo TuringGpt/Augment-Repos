@@ -628,39 +628,19 @@ Auto-save submission (called every 30 seconds)
 }
 ```
 
-#### POST `/api/v1/submissions/{submission_id}/submit/`
+#### POST `/api/v1/forms/{form_cycle_id}/submit`
 Final submission
 
-**Request Body**:
-```json
-{
-  "answers": [
-    {
-      "question_id": "uuid",
-      "text_answer": "Complete answer with all details..."
-    },
-    {
-      "question_id": "uuid2",
-      "rating_answer": 4
-    },
-    {
-      "question_id": "uuid3",
-      "choice_answers": ["Option A", "Option B"]
-    }
-  ]
-}
+**Headers**:
+```http
+Authorization: Bearer <reviewer_access_token>
 ```
 
 **Response** (200 OK):
 ```json
 {
-  "message": "Submission completed successfully",
-  "submission": {
-    "id": "uuid",
-    "status": "submitted",
-    "submitted_at": "2026-05-20T09:30:00Z",
-    "is_late": false
-  }
+  "submission_id": "uuid",
+  "status": "submitted"
 }
 ```
 

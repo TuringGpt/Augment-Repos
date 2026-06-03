@@ -192,10 +192,18 @@ async def submit_form_cycle(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    _validate_submission_window(cycle)
-    submission = (await db.execute(select(Submission).where(Submission.form_cycle_id == form_cycle_id, Submission.reviewer_id == reviewer.id))).scalar_one_or_none()
+    submission = (
+        await db.execute(
+            select(Submission).where(
+                Submission.form_cycle_id == form_cycle_id, Submission.reviewer_id == reviewer.id
+            )
+        )
+    ).scalar_one_or_none()
     if submission is None:
         raise HTTPException(status_code=404, detail="Submission not found")
+    if submission.status == SubmissionStatus.submitted:
+        return {"submission_id": str(submission.id), "status": submission.status.value}
+    _validate_submission_window(cycle)
     required_ids = set((await db.execute(select(Question.id).where(Question.form_cycle_id == form_cycle_id, Question.is_required.is_(True)))).scalars())
     answers = (
         await db.execute(select(SubmissionAnswer).where(SubmissionAnswer.submission_id == submission.id))
@@ -203,8 +211,6 @@ async def submit_form_cycle(
     answered_ids = {answer.question_id for answer in answers if _has_effective_answer(answer)}
     if required_ids - answered_ids:
         raise HTTPException(status_code=400, detail="Required questions are missing answers")
-    if submission.status == SubmissionStatus.submitted:
-        return {"submission_id": str(submission.id), "status": submission.status.value}
     update_result = await db.execute(
         update(Submission)
         .where(
