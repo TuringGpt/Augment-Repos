@@ -59,8 +59,13 @@ async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
     user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid token")
-    if user.role != Role.reviewer or not user.is_active:
+    if user.role != Role.reviewer:
         raise HTTPException(status_code=403, detail="Reviewer access required")
+    if not user.is_active or not user.is_email_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Reviewer account is not active or email is not verified",
+        )
     return user
 
 
@@ -84,6 +89,12 @@ def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
     )
 
 
+def _has_non_empty_string(items: object) -> bool:
+    if not isinstance(items, list):
+        return False
+    return any(isinstance(item, str) and item.strip() for item in items)
+
+
 def _has_effective_answer(answer: SubmissionAnswer) -> bool:
     if answer.text_answer is not None and answer.text_answer.strip():
         return True
@@ -93,9 +104,9 @@ def _has_effective_answer(answer: SubmissionAnswer) -> bool:
         return True
     if answer.boolean_answer is not None:
         return True
-    if any(choice.strip() for choice in answer.choice_answers):
+    if _has_non_empty_string(answer.choice_answers):
         return True
-    if any(file_id.strip() for file_id in answer.file_ids):
+    if _has_non_empty_string(answer.file_ids):
         return True
     return False
 
