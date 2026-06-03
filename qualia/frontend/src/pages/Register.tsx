@@ -76,10 +76,18 @@ function Register() {
   // Track mount state to prevent state updates after unmount
   const isMountedRef = useRef<boolean>(true);
 
+  // Track redirect timeout to allow cleanup on unmount
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      // Clear any pending redirect timeout on unmount
+      if (redirectTimeoutRef.current !== null) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -96,13 +104,13 @@ function Register() {
         description: "Redirecting to sign in page...",
       });
 
-      // Only redirect if component is still mounted (prevents redirect after user navigated away)
-      if (isMountedRef.current) {
-        // Delay redirect slightly to allow toast to be seen
-        setTimeout(() => {
+      // Delay redirect slightly to allow toast to be seen
+      // Guard inside timeout to prevent redirect if component unmounts during delay
+      redirectTimeoutRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
           navigate("/signin");
-        }, 1500);
-      }
+        }
+      }, 1500);
     },
     onError: (err: ApiError) => {
       // Show error toast notification
