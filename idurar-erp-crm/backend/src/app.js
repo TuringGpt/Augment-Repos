@@ -14,9 +14,14 @@ const adminAuth = require('./controllers/coreControllers/adminAuth');
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
+const correlationId = require('./middlewares/correlationId');
+
 const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
+
+// Tag every request with a correlation ID and bind it to the logger context
+app.use(correlationId);
 
 app.use(
   cors({

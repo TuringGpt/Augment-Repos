@@ -6,25 +6,31 @@
   catchErrors(), catch any errors they throw, and pass it along to our express middleware with next()
 */
 
+const logger = require('@/utils/logger');
+
 exports.catchErrors = (fn) => {
   return function (req, res, next) {
     return fn(req, res, next).catch((error) => {
       if (error.name == 'ValidationError') {
+        logger.warn(`Validation error in ${fn.name}: ${error.message}`);
         return res.status(400).json({
           success: false,
           result: null,
           message: 'Required fields are not supplied',
           controller: fn.name,
           error: error,
+          correlationId: req.correlationId,
         });
       } else {
         // Server Error
+        logger.error(`Server error in ${fn.name}: ${error.message}`, error);
         return res.status(500).json({
           success: false,
           result: null,
           message: error.message,
           controller: fn.name,
           error: error,
+          correlationId: req.correlationId,
         });
       }
     });
@@ -37,9 +43,11 @@ exports.catchErrors = (fn) => {
   If we hit a route that is not found, we mark it as 404 and pass it along to the next error handler to display
 */
 exports.notFound = (req, res, next) => {
+  logger.warn(`Route not found: ${req.method} ${req.originalUrl}`);
   return res.status(404).json({
     success: false,
     message: "Api url doesn't exist ",
+    correlationId: req.correlationId,
   });
 };
 
@@ -56,10 +64,13 @@ exports.developmentErrors = (error, req, res, next) => {
     stackHighlighted: error.stack.replace(/[a-z_-\d]+.js:\d+:\d+/gi, '<mark>$&</mark>'),
   };
 
+  logger.error(`Unhandled error: ${error.message}`, error);
+
   return res.status(500).json({
     success: false,
     message: error.message,
     error: error,
+    correlationId: req.correlationId,
   });
 };
 
@@ -69,9 +80,11 @@ exports.developmentErrors = (error, req, res, next) => {
   No stacktraces are leaked to admin
 */
 exports.productionErrors = (error, req, res, next) => {
+  logger.error(`Unhandled error: ${error.message}`, error);
   return res.status(500).json({
     success: false,
     message: error.message,
     error: error,
+    correlationId: req.correlationId,
   });
 };
