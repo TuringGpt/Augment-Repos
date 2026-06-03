@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import Logo from '@/components/Logo';
 import {
   HomeIcon,
@@ -87,16 +88,17 @@ function Sidebar({ className }: SidebarProps) {
 
       {/* Logout Button */}
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => {
             // TODO: Implement logout functionality
             console.log('Logout clicked');
           }}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
+          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         >
           <LogOutIcon className="w-5 h-5" />
           <span>Logout</span>
-        </button>
+        </Button>
       </div>
     </aside>
   );

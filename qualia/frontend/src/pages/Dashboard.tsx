@@ -2,6 +2,7 @@ import React from 'react';
 import Sidebar from '@/components/Sidebar';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FileTextIcon, CheckCircleIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
 
 interface StatsCard {
@@ -126,30 +127,36 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Create New Form
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Start building a new QA form
-                  </p>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    View Analytics
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Check your performance metrics
-                  </p>
-                </button>
-                <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Export Reports
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Download your QA reports
-                  </p>
-                </button>
+                <Button variant="outline" className="w-full h-auto text-left p-3 justify-start">
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      Create New Form
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Start building a new QA form
+                    </p>
+                  </div>
+                </Button>
+                <Button variant="outline" className="w-full h-auto text-left p-3 justify-start">
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      View Analytics
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Check your performance metrics
+                    </p>
+                  </div>
+                </Button>
+                <Button variant="outline" className="w-full h-auto text-left p-3 justify-start">
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      Export Reports
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Download your QA reports
+                    </p>
+                  </div>
+                </Button>
               </div>
             </CardContent>
           </Card>
