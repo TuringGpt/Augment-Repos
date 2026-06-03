@@ -353,7 +353,7 @@ function Register() {
                       type="button"
                       onClick={() => setShowConfirmPassword(prev => !prev)}
                       className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
-                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                     >
                       {showConfirmPassword ? (
                         <EyeOff className='h-4 w-4' />
