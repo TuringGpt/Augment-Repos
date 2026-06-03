@@ -5,6 +5,7 @@ import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import { ThemeProvider } from './components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
   return (
