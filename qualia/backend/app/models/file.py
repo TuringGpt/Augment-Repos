@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Uuid, func, true
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Uuid, func, text, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -28,6 +28,7 @@ class File(Base):
             values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
         default=StorageType.local,
+        server_default=text("'disk'"),
         nullable=False,
     )
     is_public: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true(), nullable=False)
