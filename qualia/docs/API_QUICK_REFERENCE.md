@@ -159,17 +159,8 @@ Content-Type: application/json
 
 ### Submit Form
 ```http
-POST /submissions/{submission_id}/submit/
-Content-Type: application/json
-
-{
-  "answers": [
-    {
-      "question_id": "uuid",
-      "text_answer": "Complete answer"
-    }
-  ]
-}
+POST /forms/{form_cycle_id}/submit
+Authorization: Bearer <reviewer_access_token>
 ```
 
 ### Get Submission History

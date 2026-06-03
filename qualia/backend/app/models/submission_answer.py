@@ -11,7 +11,13 @@ from app.core.database import Base
 
 class SubmissionAnswer(Base):
     __tablename__ = "submission_answers"
-    __table_args__ = (UniqueConstraint("submission_id", "question_id", name="uq_submission_answer_submission_question"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "submission_id",
+            "question_id",
+            name="uq_submission_answer_submission_question",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     submission_id: Mapped[uuid.UUID] = mapped_column(
