@@ -104,6 +104,11 @@ function Register() {
         description: "Redirecting to sign in page...",
       });
 
+      // Clear any existing redirect timeout to ensure only one redirect is pending
+      if (redirectTimeoutRef.current !== null) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+
       // Delay redirect slightly to allow toast to be seen
       // Guard inside timeout to prevent redirect if component unmounts during delay
       redirectTimeoutRef.current = setTimeout(() => {
