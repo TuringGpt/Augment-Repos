@@ -6,6 +6,8 @@ import pytest
 import vyper
 from vyper.cli.vyper_json import compile_json
 
+SHIFT_DEPRECATION_WARNING = "`shift()` is deprecated! Please use the << or >> operator instead."
+
 deprecated = [
     """
 struct Foo:
@@ -51,6 +53,30 @@ def bar():
     for w in ws:
         msg = w.message.message
         assert "selfdestruct" in msg and "deprecated" in msg
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        """
+@external
+def foo() -> uint256:
+    return shift(2, 1)
+        """,
+        """
+@external
+def foo() -> uint256:
+    return shift(8, -1)
+        """,
+    ],
+    ids=["shift_left", "shift_right"],
+)
+def test_deprecated_shift_warning(code):
+    with warnings.catch_warnings(record=True) as ws:
+        vyper.compile_code(code)
+
+    assert len(ws) == 1, [str(w.message) for w in ws]
+    assert str(ws[0].message) == SHIFT_DEPRECATION_WARNING
 
 
 def test_deprecated_optimize_boolean_flag():
