@@ -647,15 +647,7 @@ Authorization: Bearer <reviewer_access_token>
 **Error Response** (400 Bad Request):
 ```json
 {
-  "error": "Validation failed",
-  "details": {
-    "missing_required": [
-      {
-        "question_id": "uuid",
-        "question_text": "Describe any UI inconsistencies"
-      }
-    ]
-  }
+  "detail": "Required questions are missing answers"
 }
 ```
 
