@@ -1,3 +1,4 @@
+import React from 'react';
 import Sidebar from '@/components/Sidebar';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
