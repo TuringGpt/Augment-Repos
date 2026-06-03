@@ -272,7 +272,7 @@ function Register() {
                         {isPasswordField && (
                           <button
                             type="button"
-                            onClick={() => setShowPassword(!showPassword)}
+                            onClick={() => setShowPassword(prev => !prev)}
                             className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
                             aria-label={showPassword ? "Hide password" : "Show password"}
                           >
@@ -345,7 +345,7 @@ function Register() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() => setShowConfirmPassword(prev => !prev)}
                       className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
                       aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                     >
