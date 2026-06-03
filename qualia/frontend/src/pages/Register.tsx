@@ -113,8 +113,10 @@ function Register() {
       }, 1500);
     },
     onError: (err: ApiError) => {
-      // Show error toast notification
-      const errorMessage = err.message || "Registration failed. Please try again.";
+      // Show error toast notification with string normalization
+      const errorMessage = typeof err.message === 'string'
+        ? err.message
+        : "Registration failed. Please try again.";
       toast.error("Registration failed", {
         description: errorMessage,
       });
