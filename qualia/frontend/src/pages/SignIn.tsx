@@ -221,7 +221,7 @@ function SignIn() {
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
-                      disable={isPending}
+                      disabled={isPending}
                       className='h-10'
                     />
                     {field.state.meta.errors.length > 0 && (
