@@ -56,12 +56,17 @@ function SignIn() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
   const isMountedRef = useRef(true);
+  const navigationTimerRef = useRef<number | null>(null);
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      // Clean up any pending navigation timer
+      if (navigationTimerRef.current !== null) {
+        clearTimeout(navigationTimerRef.current);
+      }
     };
   }, []);
 
@@ -80,7 +85,7 @@ function SignIn() {
 
       // Redirect to dashboard after successful login
       // Small delay to allow toast to be visible
-      setTimeout(() => {
+      navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
           navigate("/dashboard");
         }
