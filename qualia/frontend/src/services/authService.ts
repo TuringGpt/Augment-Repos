@@ -47,7 +47,7 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 
   // Store tokens in localStorage
   if (response.data.access_token) {
-    localStorage.setItem('access_token', response.data.accessToken);
+    localStorage.setItem('access_token', response.data.access_token);
   }
   if (response.data.refresh_token) {
     localStorage.setItem('refresh_token', response.data.refresh_token);
