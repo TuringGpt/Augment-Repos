@@ -37,6 +37,7 @@ async def upload_attachment(
     request: Request,
     authorization: str = Header(""),
     content_type: str = Header(""),
+    content_length: int | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
     scheme, _, token = authorization.partition(" ")
@@ -51,9 +52,7 @@ async def upload_attachment(
         raise HTTPException(status_code=403, detail="Upload does not belong to reviewer")
     if record.storage_type != StorageType.local:
         raise HTTPException(status_code=409, detail="Configured storage backend does not support direct uploads")
-
-    payload = await request.body()
-    if len(payload) != record.file_size:
+    if content_length is not None and content_length != record.file_size:
         raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
 
     if (
@@ -63,7 +62,27 @@ async def upload_attachment(
 
     destination = _validated_destination(record.storage_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_bytes(payload)
+    try:
+        with destination.open("xb") as output_file:
+            received_size = 0
+            try:
+                async for chunk in request.stream():
+                    if not chunk:
+                        continue
+                    received_size += len(chunk)
+                    if received_size > record.file_size:
+                        raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
+                    output_file.write(chunk)
+            except Exception:
+                destination.unlink(missing_ok=True)
+                raise
+    except FileExistsError as exc:
+        raise HTTPException(status_code=409, detail="File has already been uploaded") from exc
+
+    if received_size != record.file_size:
+        destination.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
+
     return {
         "file_id": str(record.id),
         "file_name": record.file_name,
