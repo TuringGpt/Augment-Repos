@@ -27,7 +27,7 @@ import type { ApiError } from '@/lib/axios';
  */
 export const useLogin = (options?: {
   onSuccess?: (data: LoginResponse) => void;
-  onError?: (error: ApiError) => void;
+  onError?: (error: ApiError | Error) => void;
 }) => {
   return useMutation({
     mutationFn: (data: LoginRequest) => login(data),

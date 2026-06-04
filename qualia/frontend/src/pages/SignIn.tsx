@@ -91,11 +91,21 @@ function SignIn() {
         }
       }, 500);
     },
-    onError: (err: ApiError) => {
-      // Show error toast notification with string normalization
-      const errorMessage = typeof err.message === 'string'
-        ? err.message
-        : "Sign-in failed. Please check your credentials and try again.";
+    onError: (err: ApiError | Error) => {
+      // Handle both ApiError (from API call) and plain Error (from token storage failure)
+      let errorMessage: string;
+
+      if (err instanceof Error) {
+        // Plain Error (e.g., token storage failure)
+        errorMessage = err.message;
+      } else if (typeof err.message === 'string') {
+        // ApiError with string message
+        errorMessage = err.message;
+      } else {
+        // Fallback for unexpected error shapes
+        errorMessage = "Sign-in failed. Please check your credentials and try again.";
+      }
+
       toast.error("Login failed", {
         description: errorMessage,
       });
@@ -121,12 +131,15 @@ function SignIn() {
         const validatedData = signInSchema.parse(value);
 
         // Call the login mutation
+        // Note: All errors from loginUser (ApiError, Error, etc.) are handled
+        // by the mutation's onError callback to avoid duplicate error handling
         await loginUser({
           email: validatedData.email,
           password: validatedData.password,
         });
       } catch (err) {
-        // Handle validation errors from Zod
+        // Only handle Zod validation errors here
+        // All other errors from loginUser are already handled by the mutation's onError callback
         if (err instanceof z.ZodError) {
           const issues = err.issues;
           const errorMessage = issues[0]?.message || "Validation failed";
@@ -139,29 +152,8 @@ function SignIn() {
             description: errorMessage,
           });
         }
-        // Handle API errors from loginUser (these are already handled in onError callback)
-        else if (err && typeof err === 'object' && 'message' in err && 'originalError' in err) {
-          // Error already displayed via onError callback, just update state
-          const apiError = err as ApiError;
-          const errorMessage = typeof apiError.message === 'string'
-            ? apiError.message
-            : "Sign-in failed. Please check your credentials and try again.";
-          // Only update state if component is still mounted
-          if (isMountedRef.current) {
-            setError(errorMessage);
-          }
-        }
-        // Handle any other unexpected errors
-        else {
-          const errorMessage = "An unexpected error occurred. Please try again.";
-          // Only update state if component is still mounted
-          if (isMountedRef.current) {
-            setError(errorMessage);
-          }
-          toast.error("Unexpected Error", {
-            description: errorMessage,
-          });
-        }
+        // If it's not a ZodError, it came from the mutation and was already handled by onError
+        // We don't need to do anything here to avoid duplicate toasts
       }
     },
   });
