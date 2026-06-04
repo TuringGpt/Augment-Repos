@@ -8,8 +8,8 @@ export default function useMail({ entity }) {
   const { isLoading } = useSelector(selectMailItem);
   const dispatch = useDispatch();
 
-  const send = (id) => {
-    const jsonData = { id };
+  const send = (id, options = {}) => {
+    const jsonData = { id, ...options };
     dispatch(erp.mail({ entity, jsonData }));
   };
 

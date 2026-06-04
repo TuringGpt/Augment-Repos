@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Divider } from 'antd';
+import { Divider, Input, Modal, Typography } from 'antd';
 
 import { Button, Row, Col, Descriptions, Statistic, Tag } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
@@ -23,6 +23,7 @@ import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
 import { useMoney, useDate } from '@/settings';
 import useMail from '@/hooks/useMail';
 import { useNavigate } from 'react-router-dom';
+import { request } from '@/request';
 
 const Item = ({ item, currentErp }) => {
   const { moneyFormatter } = useMoney();
@@ -98,6 +99,57 @@ export default function ReadItem({ config, selectedItem }) {
   const [itemslist, setItemsList] = useState([]);
   const [currentErp, setCurrentErp] = useState(selectedItem ?? resetErp);
   const [client, setClient] = useState({});
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [subjectLoading, setSubjectLoading] = useState(false);
+
+  const getFallbackQuoteSubject = () => {
+    return `Quote # ${currentErp.number}/${currentErp.year || ''} from Idurar`;
+  };
+
+  const suggestQuoteEmailSubject = async () => {
+    const fallbackSubject = getFallbackQuoteSubject();
+    setEmailSubject(fallbackSubject);
+    setEmailModalOpen(true);
+    setSubjectLoading(true);
+
+    const response = await request.post({
+      entity: 'quote/suggest-email-subject',
+      jsonData: {
+        quoteNumber: currentErp.number,
+        quoteYear: currentErp.year,
+        clientName: client.name,
+        total: currentErp.total,
+        currency: currentErp.currency,
+        items: itemslist.map(({ itemName, description, quantity }) => ({
+          itemName,
+          description,
+          quantity,
+        })),
+      },
+    });
+
+    if (response?.success && response?.result?.subject) {
+      setEmailSubject(response.result.subject);
+    }
+
+    setSubjectLoading(false);
+  };
+
+  const handleSendByEmail = () => {
+    if (entity !== 'quote') {
+      send(currentErp._id);
+      return;
+    }
+
+    suggestQuoteEmailSubject();
+  };
+
+  const confirmQuoteEmail = () => {
+    const subject = emailSubject.trim() || getFallbackQuoteSubject();
+    send(currentErp._id, { subject });
+    setEmailModalOpen(false);
+  };
 
   useEffect(() => {
     if (currentResult) {
@@ -165,7 +217,7 @@ export default function ReadItem({ config, selectedItem }) {
             key={`${uniqueId()}`}
             loading={mailInProgress}
             onClick={() => {
-              send(currentErp._id);
+              handleSendByEmail();
             }}
             icon={<MailOutlined />}
           >
@@ -317,6 +369,26 @@ export default function ReadItem({ config, selectedItem }) {
           </Col>
         </Row>
       </div>
+      <Modal
+        title={translate('Send Quote by Email')}
+        open={emailModalOpen}
+        onOk={confirmQuoteEmail}
+        onCancel={() => setEmailModalOpen(false)}
+        okText={translate('Send')}
+        confirmLoading={mailInProgress}
+      >
+        <Typography.Paragraph type="secondary">
+          {subjectLoading
+            ? translate('Generating a suggested subject with OpenAI...')
+            : translate('Review or edit the suggested subject before sending.')}
+        </Typography.Paragraph>
+        <Input
+          value={emailSubject}
+          onChange={(event) => setEmailSubject(event.target.value)}
+          placeholder={translate('Email subject')}
+          disabled={subjectLoading}
+        />
+      </Modal>
     </>
   );
 }
