@@ -15,6 +15,7 @@ class StorageType(str, enum.Enum):
 
 class File(Base):
     __tablename__ = "files"
+
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     uploaded_by: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("users.id"), index=True, nullable=False
@@ -33,7 +34,9 @@ class File(Base):
         server_default=text("'local'"),
         nullable=False,
     )
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false(), nullable=False)
+    is_public: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false(), nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True, nullable=False
     )

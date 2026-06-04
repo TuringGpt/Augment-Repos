@@ -1,5 +1,7 @@
+import re
 import uuid
 from datetime import UTC, datetime
+from pathlib import PurePosixPath
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
@@ -7,8 +9,10 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.models.file import File, StorageType
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -17,6 +21,8 @@ from app.models.user import Role, User
 
 
 router = APIRouter(prefix="/forms", tags=["form-cycles"])
+DEFAULT_UPLOAD_CONTENT_TYPE = "application/octet-stream"
+MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024
 
 
 class FormCycleCreate(BaseModel):
@@ -27,6 +33,12 @@ class FormCycleCreate(BaseModel):
 
 class ReviewerAssignment(BaseModel):
     reviewer_id: uuid.UUID
+
+
+class AttachmentUploadInitRequest(BaseModel):
+    file_name: str = Field(min_length=1, max_length=255)
+    file_size: int = Field(gt=0, le=MAX_ATTACHMENT_SIZE_BYTES)
+    mime_type: str | None = Field(default=None, max_length=255)
 
 
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
@@ -95,6 +107,13 @@ def _has_non_empty_string(items: object) -> bool:
     return any(isinstance(item, str) and item.strip() for item in items)
 
 
+def _normalized_mime_type(mime_type: str | None) -> str | None:
+    if mime_type is None:
+        return None
+    normalized = mime_type.strip()
+    return normalized or None
+
+
 def _has_effective_answer(answer: SubmissionAnswer) -> bool:
     if answer.text_answer is not None and answer.text_answer.strip():
         return True
@@ -116,6 +135,26 @@ def _validate_submission_window(cycle: FormCycle) -> None:
         raise HTTPException(status_code=400, detail="Form cycle is not accepting submissions")
     if cycle.submission_deadline < datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Submission deadline has passed")
+
+
+def _sanitize_file_name(file_name: str) -> str:
+    leaf_name = PurePosixPath(file_name.replace("\\", "/")).name.strip()
+    if not leaf_name or leaf_name in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "-", leaf_name).strip(".-")
+    if not sanitized:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    return sanitized[:255]
+
+
+def _attachment_storage_type() -> StorageType:
+    backend = get_settings().storage_backend.strip().lower()
+    if backend == StorageType.local.value:
+        return StorageType.local
+    raise HTTPException(
+        status_code=409,
+        detail="Configured storage backend does not support direct attachment uploads",
+    )
 
 
 @router.post("/", status_code=201)
@@ -227,3 +266,60 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
+async def init_attachment_upload(
+    form_cycle_id: uuid.UUID,
+    payload: AttachmentUploadInitRequest,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    _validate_submission_window(cycle)
+    submission = (
+        await db.execute(
+            select(Submission).where(
+                Submission.form_cycle_id == form_cycle_id,
+                Submission.reviewer_id == reviewer.id,
+            )
+        )
+    ).scalar_one_or_none()
+    if submission is None:
+        raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+    if submission.status == SubmissionStatus.submitted:
+        raise HTTPException(status_code=400, detail="Submission has already been submitted")
+    storage_type = _attachment_storage_type()
+    file_id = uuid.uuid4()
+    safe_file_name = _sanitize_file_name(payload.file_name)
+    mime_type = _normalized_mime_type(payload.mime_type) or DEFAULT_UPLOAD_CONTENT_TYPE
+    file = File(
+        id=file_id,
+        uploaded_by=reviewer.id,
+        file_name=safe_file_name,
+        file_size=payload.file_size,
+        mime_type=mime_type,
+        storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{file_id}/{safe_file_name}",
+        storage_type=storage_type,
+    )
+    db.add(file)
+    try:
+        await db.flush()
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
+    return {
+        "file_id": str(file.id),
+        "upload": {
+            "method": "POST",
+            "url": f"/api/v1/uploads/{file.id}",
+            "headers": {"content-type": mime_type},
+        },
+    }
