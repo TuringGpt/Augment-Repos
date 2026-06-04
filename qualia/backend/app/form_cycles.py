@@ -287,7 +287,7 @@ async def init_attachment_upload(
     file = File(
         id=file_id,
         uploaded_by=reviewer.id,
-        file_name=payload.file_name,
+        file_name=safe_file_name,
         file_size=payload.file_size,
         mime_type=mime_type,
         storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{file_id}/{safe_file_name}",
@@ -299,7 +299,7 @@ async def init_attachment_upload(
         "file_id": str(file.id),
         "upload": {
             "method": "POST",
-            "url": f"/uploads/{file.id}",
+            "url": f"/api/v1/uploads/{file.id}",
             "headers": {"content-type": mime_type or DEFAULT_UPLOAD_CONTENT_TYPE},
         },
     }
