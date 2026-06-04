@@ -32,13 +32,17 @@ class Settings:
     database_url: str = field(default_factory=lambda: _required_env("DATABASE_URL"), repr=False)
     jwt_secret: str = field(default_factory=lambda: _required_env("JWT_SECRET"), repr=False)
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
-    storage_bucket: str = field(default_factory=lambda: _required_env("STORAGE_BUCKET"), repr=False)
+    storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
     local_upload_root: Path = field(
         default_factory=lambda: Path(
             _optional_env("LOCAL_UPLOAD_ROOT", str(Path(gettempdir()) / "qualia-uploads"))
         )
     )
     debug: bool = field(default_factory=_get_debug_flag)
+
+    def __post_init__(self) -> None:
+        if self.storage_backend == "s3" and not self.storage_bucket:
+            raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
 
 
 def get_jwt_secret() -> str:

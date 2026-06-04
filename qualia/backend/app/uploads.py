@@ -66,9 +66,9 @@ async def upload_attachment(
 
     destination = _validated_destination(record.storage_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    received_size = 0
     try:
         with destination.open("xb") as output_file:
-            received_size = 0
             try:
                 async for chunk in request.stream():
                     if not chunk:
@@ -78,10 +78,12 @@ async def upload_attachment(
                         raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
                     output_file.write(chunk)
             except Exception:
-                destination.unlink(missing_ok=True)
                 raise
     except FileExistsError as exc:
         raise HTTPException(status_code=409, detail="File has already been uploaded") from exc
+    except Exception:
+        destination.unlink(missing_ok=True)
+        raise
 
     if received_size != record.file_size:
         destination.unlink(missing_ok=True)
