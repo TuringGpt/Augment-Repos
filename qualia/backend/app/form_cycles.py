@@ -21,6 +21,7 @@ from app.models.user import Role, User
 
 router = APIRouter(prefix="/forms", tags=["form-cycles"])
 DEFAULT_UPLOAD_CONTENT_TYPE = "application/octet-stream"
+MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024
 
 
 class FormCycleCreate(BaseModel):
@@ -35,7 +36,7 @@ class ReviewerAssignment(BaseModel):
 
 class AttachmentUploadInitRequest(BaseModel):
     file_name: str = Field(min_length=1, max_length=255)
-    file_size: int = Field(gt=0)
+    file_size: int = Field(gt=0, le=MAX_ATTACHMENT_SIZE_BYTES)
     mime_type: str | None = Field(default=None, max_length=255)
 
 
