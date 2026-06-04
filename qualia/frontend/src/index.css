@@ -314,3 +314,24 @@ code {
     animation: float-centered 25s ease-in-out infinite;
   }
 }
+
+/* Sonner Toast Styles */
+.cn-toast {
+  @apply bg-popover! text-popover-foreground! border-border! shadow-lg!;
+}
+
+.cn-toast[data-type="success"] {
+  @apply border-green-500/30! dark:border-green-500/50!;
+}
+
+.cn-toast[data-type="error"] {
+  @apply border-destructive/30! dark:border-destructive/50!;
+}
+
+.cn-toast[data-type="warning"] {
+  @apply border-yellow-500/30! dark:border-yellow-500/50!;
+}
+
+.cn-toast[data-type="info"] {
+  @apply border-blue-500/30! dark:border-blue-500/50!;
+}

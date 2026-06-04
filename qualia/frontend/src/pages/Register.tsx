@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +66,8 @@ const formFields = [
 function Register() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
   // Synchronous ref to prevent double-submit race condition
   // isPending is async (waits for React re-render), so we need a ref for immediate checking
@@ -72,10 +76,18 @@ function Register() {
   // Track mount state to prevent state updates after unmount
   const isMountedRef = useRef<boolean>(true);
 
+  // Track redirect timeout to allow cleanup on unmount
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      // Clear any pending redirect timeout on unmount
+      if (redirectTimeoutRef.current !== null) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -87,17 +99,36 @@ function Register() {
         console.log("Registration successful for:", data);
       }
 
-      // Only redirect if component is still mounted (prevents redirect after user navigated away)
-      if (isMountedRef.current) {
-        navigate("/signin");
+      // Show success toast notification
+      toast.success("Account created successfully!", {
+        description: "Redirecting to sign in page...",
+      });
+
+      // Clear any existing redirect timeout to ensure only one redirect is pending
+      if (redirectTimeoutRef.current !== null) {
+        clearTimeout(redirectTimeoutRef.current);
       }
+
+      // Delay redirect slightly to allow toast to be seen
+      // Guard inside timeout to prevent redirect if component unmounts during delay
+      redirectTimeoutRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate("/signin");
+        }
+      }, 1500);
     },
     onError: (err: ApiError) => {
+      // Show error toast notification with string normalization
+      const errorMessage = typeof err.message === 'string'
+        ? err.message
+        : "Registration failed. Please try again.";
+      toast.error("Registration failed", {
+        description: errorMessage,
+      });
+
       // Only update state if component is still mounted
       if (isMountedRef.current) {
-        setError(
-          err.message || "Registration failed. Please try again.",
-        );
+        setError(errorMessage);
       }
     }
   });
@@ -129,26 +160,41 @@ function Register() {
           password: validatedData.password,
         });
       } catch (err) {
-        // Only update state if component is still mounted
-        if (!isMountedRef.current) return;
-
         // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
-          setError(issues[0]?.message || "Validation failed");
+          const errorMessage = issues[0]?.message || "Validation failed";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+          // Show validation error toast
+          toast.error("Validation Error", {
+            description: errorMessage,
+          });
         }
-        // Handle API errors from registerUser
+        // Handle API errors from registerUser (these are already handled in onError callback)
         else if (err && typeof err === 'object' && 'message' in err) {
+          // Error already displayed via onError callback, just update state
           const apiError = err as ApiError;
-          // Ensure message is a string to prevent React crashes if message is an object
           const errorMessage = typeof apiError.message === 'string'
             ? apiError.message
             : "Registration failed. Please try again.";
-          setError(errorMessage);
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
         }
         // Handle any other unexpected errors
         else {
-          setError("An unexpected error occurred. Please try again.");
+          const errorMessage = "An unexpected error occurred. Please try again.";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+          toast.error("Unexpected Error", {
+            description: errorMessage,
+          });
         }
 
         // Don't re-throw: error state is already set for user feedback,
@@ -203,34 +249,55 @@ function Register() {
                   },
                 }}
               >
-                {(field) => (
-                  <div className='space-y-2'>
-                    <Label htmlFor={fieldConfig.name}>
-                      {fieldConfig.label}
-                    </Label>
-                    <Input
-                      type={fieldConfig.type}
-                      id={fieldConfig.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value);
-                        // Clear page-level error when user starts editing
-                        if (error) setError("");
-                      }}
-                      placeholder={fieldConfig.placeholder}
-                      autoComplete={fieldConfig.autoComplete}
-                      disabled={isPending}
-                      className='h-10'
-                    />
-                    {field.state.meta.errors.length > 0 && (
-                      <p className='text-sm text-destructive'>
-                        {field.state.meta.errors[0]}
-                      </p>
-                    )}
-                  </div>
-                )}
+                {(field) => {
+                  const isPasswordField = fieldConfig.type === "password";
+                  const inputType = isPasswordField && showPassword ? "text" : fieldConfig.type;
+
+                  return (
+                    <div className='space-y-2'>
+                      <Label htmlFor={fieldConfig.name}>
+                        {fieldConfig.label}
+                      </Label>
+                      <div className='relative'>
+                        <Input
+                          type={inputType}
+                          id={fieldConfig.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            // Clear page-level error when user starts editing
+                            if (error) setError("");
+                          }}
+                          placeholder={fieldConfig.placeholder}
+                          autoComplete={fieldConfig.autoComplete}
+                          disabled={isPending}
+                          className={isPasswordField ? 'h-10 pr-10' : 'h-10'}
+                        />
+                        {isPasswordField && (
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(prev => !prev)}
+                            className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                          >
+                            {showPassword ? (
+                              <EyeOff className='h-4 w-4' />
+                            ) : (
+                              <Eye className='h-4 w-4' />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      {field.state.meta.errors.length > 0 && (
+                        <p className='text-sm text-destructive'>
+                          {field.state.meta.errors[0]}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
               </form.Field>
             ))}
 
@@ -265,22 +332,36 @@ function Register() {
                   <Label htmlFor="confirmPassword">
                     Confirm Password
                   </Label>
-                  <Input
-                    type="password"
-                    id="confirmPassword"
-                    name={field.name}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
-                      // Clear page-level error when user starts editing
-                      if (error) setError("");
-                    }}
-                    placeholder="Confirm your password"
-                    autoComplete="new-password"
-                    disabled={isPending}
-                    className='h-10'
-                  />
+                  <div className='relative'>
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        // Clear page-level error when user starts editing
+                        if (error) setError("");
+                      }}
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      disabled={isPending}
+                      className='h-10 pr-10'
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(prev => !prev)}
+                      className='absolute right-0 top-0 h-10 px-3 text-muted-foreground hover:text-foreground transition-colors'
+                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className='h-4 w-4' />
+                      ) : (
+                        <Eye className='h-4 w-4' />
+                      )}
+                    </button>
+                  </div>
                   {field.state.meta.errors.length > 0 && (
                     <p className='text-sm text-destructive'>
                       {field.state.meta.errors[0]}
