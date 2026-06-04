@@ -12,7 +12,10 @@ from app.models.file import File, StorageType
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
-UPLOAD_ROOT = get_settings().local_upload_root
+
+
+def _upload_root() -> Path:
+    return get_settings().local_upload_root
 
 
 def _normalized_mime_type(mime_type: str | None) -> str | None:
@@ -23,7 +26,7 @@ def _normalized_mime_type(mime_type: str | None) -> str | None:
 
 
 def _validated_destination(storage_path: str) -> Path:
-    root = UPLOAD_ROOT.resolve()
+    root = _upload_root().resolve()
     destination = (root / storage_path).resolve()
     try:
         destination.relative_to(root)
