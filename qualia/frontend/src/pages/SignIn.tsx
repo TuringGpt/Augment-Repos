@@ -117,7 +117,7 @@ function SignIn() {
         // Call the login mutation
         await loginUser({
           email: validatedData.email,
-          password: validatedData.pasword,
+          password: validatedData.password,
         });
       } catch (err) {
         // Handle validation errors from Zod
