@@ -84,6 +84,10 @@ function SignIn() {
 
       // Redirect to dashboard after successful login
       // Small delay to allow toast to be visible
+      // Clear any existing timeout before scheduling a new one
+      if (navigationTimerRef.current !== null) {
+        clearTimeout(navigationTimerRef.current);
+      }
       navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
           navigate("/dashboard");
