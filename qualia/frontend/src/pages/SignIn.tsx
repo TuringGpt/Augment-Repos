@@ -139,7 +139,7 @@ function SignIn() {
           const apiError = err as ApiError;
           const errorMessage = typeof apiError.message === 'string'
             ? apiError.message
-            : "Sign-up failed. Please check your credentials and try again.";
+            : "Sign-in failed. Please check your credentials and try again.";
           // Only update state if component is still mounted
           if (isMountedRef.current) {
             setError(errorMessage);
