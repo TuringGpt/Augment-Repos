@@ -100,7 +100,7 @@ export function safeSetLocalStorage(key: string, value: string): boolean {
  * Safely removes a value from localStorage.
  * Silently fails if localStorage is unavailable.
  */
-function safeRemoveLocalStorage(key: string): void {
+export function safeRemoveLocalStorage(key: string): void {
   try {
     if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
       window.localStorage.removeItem(key);

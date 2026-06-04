@@ -1,4 +1,4 @@
-import { apiClient, safeSetLocalStorage } from '@/lib/axios';
+import { apiClient, safeSetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
 
 /**
  * Authentication API service
@@ -74,10 +74,10 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
     // Clean up any partially stored tokens to prevent inconsistent auth state
     // If one token was stored but the other failed, we need to remove the successful one
     if (accessTokenStored) {
-      localStorage.removeItem('access_token');
+      safeRemoveLocalStorage('access_token');
     }
     if (refreshTokenStored) {
-      localStorage.removeItem('refresh_token');
+      safeRemoveLocalStorage('refresh_token');
     }
 
     // Debug logging in development
