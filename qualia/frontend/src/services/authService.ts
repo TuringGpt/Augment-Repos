@@ -71,6 +71,15 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   // Verify that both tokens were successfully stored
   // This prevents a "successful" login flow when localStorage is blocked (e.g., private mode)
   if (!accessTokenStored || !refreshTokenStored) {
+    // Clean up any partially stored tokens to prevent inconsistent auth state
+    // If one token was stored but the other failed, we need to remove the successful one
+    if (accessTokenStored) {
+      localStorage.removeItem('access_token');
+    }
+    if (refreshTokenStored) {
+      localStorage.removeItem('refresh_token');
+    }
+
     // Debug logging in development
     if (import.meta.env.DEV) {
       console.error('Token storage failed:', { accessTokenStored, refreshTokenStored });
