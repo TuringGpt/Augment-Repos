@@ -29,6 +29,10 @@ def _default_local_upload_root() -> Path:
     return Path.home() / ".qualia" / "uploads"
 
 
+def _supported_storage_backends() -> set[str]:
+    return {"local", "s3"}
+
+
 def _prepare_local_upload_root(path: Path) -> Path:
     resolved = path.expanduser().resolve()
     resolved.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -54,6 +58,10 @@ class Settings:
 
     def __post_init__(self) -> None:
         self.storage_backend = self.storage_backend.strip().lower()
+        if self.storage_backend not in _supported_storage_backends():
+            raise RuntimeError(
+                "Unsupported STORAGE_BACKEND. Expected one of: local, s3"
+            )
         self.local_upload_root = self.local_upload_root.expanduser().resolve()
         if self.storage_backend == "local":
             self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
