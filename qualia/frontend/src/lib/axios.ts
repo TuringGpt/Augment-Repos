@@ -77,6 +77,22 @@ function safeGetLocalStorage(key: string): string | null {
 }
 
 /**
+ * Safely sets a value in localStorage.
+ * Silently fails if localStorage is unavailable (SSR, tests, or blocked by browser).
+ */
+export function safeSetLocalStorage(key: string, value: string): void {
+  try {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // localStorage access can throw when disabled/blocked
+    // Silently fail to prevent breaking the application flow
+  }
+}
+
+/**
  * Safely removes a value from localStorage.
  * Silently fails if localStorage is unavailable.
  */

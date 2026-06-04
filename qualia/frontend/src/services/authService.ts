@@ -1,4 +1,4 @@
-import { apiClient, type ApiError } from '@/lib/axios';
+import { apiClient, type ApiError, safeSetLocalStorage } from '@/lib/axios';
 
 /**
  * Authentication API service
@@ -47,10 +47,10 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 
   // Store tokens in localStorage
   if (response.data.access_token) {
-    localStorage.setItem('access_token', response.data.access_token);
+    safeSetLocalStorage('access_token', response.data.access_token);
   }
   if (response.data.refresh_token) {
-    localStorage.setItem('refresh_token', response.data.refresh_token);
+    safeSetLocalStorage('refresh_token', response.data.refresh_token);
   }
 
   return response.data;
