@@ -1,14 +1,18 @@
 import uuid
+from asyncio import to_thread
 from pathlib import Path
 
+import anyio
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.form_cycles import _get_authorized_reviewer
+from app.form_cycles import _get_authorized_reviewer, _validate_submission_window
 from app.models.file import File, StorageType
+from app.models.form_cycle import FormCycle
+from app.models.submission import Submission, SubmissionStatus
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
@@ -35,6 +39,16 @@ def _validated_destination(storage_path: str) -> Path:
     return destination
 
 
+def _form_cycle_id_from_storage_path(storage_path: str) -> uuid.UUID:
+    parts = Path(storage_path).parts
+    if len(parts) < 5 or parts[0] != "pending":
+        raise HTTPException(status_code=400, detail="File upload is not attached to an active submission")
+    try:
+        return uuid.UUID(parts[1])
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="File upload is not attached to an active submission") from exc
+
+
 @router.post("/{file_id}", status_code=201)
 async def upload_attachment(
     file_id: uuid.UUID,
@@ -54,6 +68,24 @@ async def upload_attachment(
         raise HTTPException(status_code=404, detail="File not found")
     if record.uploaded_by != reviewer.id:
         raise HTTPException(status_code=403, detail="Upload does not belong to reviewer")
+    cycle = (
+        await db.execute(select(FormCycle).where(FormCycle.id == _form_cycle_id_from_storage_path(record.storage_path)))
+    ).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    _validate_submission_window(cycle)
+    submission = (
+        await db.execute(
+            select(Submission).where(
+                Submission.form_cycle_id == cycle.id,
+                Submission.reviewer_id == reviewer.id,
+            )
+        )
+    ).scalar_one_or_none()
+    if submission is None:
+        raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+    if submission.status == SubmissionStatus.submitted:
+        raise HTTPException(status_code=400, detail="Submission has already been submitted")
     if record.storage_type != StorageType.local:
         raise HTTPException(status_code=409, detail="Configured storage backend does not support direct uploads")
     if content_length is not None and content_length != record.file_size:
@@ -65,10 +97,10 @@ async def upload_attachment(
         raise HTTPException(status_code=400, detail="Uploaded file type does not match initialized metadata")
 
     destination = _validated_destination(record.storage_path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    await to_thread(destination.parent.mkdir, parents=True, exist_ok=True)
     received_size = 0
     try:
-        with destination.open("xb") as output_file:
+        async with await anyio.open_file(destination, "xb") as output_file:
             try:
                 async for chunk in request.stream():
                     if not chunk:
@@ -76,7 +108,7 @@ async def upload_attachment(
                     received_size += len(chunk)
                     if received_size > record.file_size:
                         raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
-                    output_file.write(chunk)
+                    await output_file.write(chunk)
             except Exception:
                 raise
     except FileExistsError as exc:
