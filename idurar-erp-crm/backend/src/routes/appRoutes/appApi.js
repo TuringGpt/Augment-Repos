@@ -20,6 +20,10 @@ const routerApp = (entity, controller) => {
     router.route(`/${entity}/mail`).post(catchErrors(controller['mail']));
   }
 
+  if (entity === 'invoice') {
+    router.route(`/${entity}/paymentLink/:id`).get(catchErrors(controller['paymentLink']));
+  }
+
   if (entity === 'quote') {
     router.route(`/${entity}/convert/:id`).get(catchErrors(controller['convert']));
   }
