@@ -30,4 +30,8 @@ routesList.forEach(({ entity, controllerName }) => {
   routerApp(entity, controller);
 });
 
+router
+  .route('/quote/suggestEmailSubject')
+  .post(catchErrors(appControllers['quoteController']['suggestEmailSubject']));
+
 module.exports = router;

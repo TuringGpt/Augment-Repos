@@ -165,7 +165,11 @@ export default function ReadItem({ config, selectedItem }) {
             key={`${uniqueId()}`}
             loading={mailInProgress}
             onClick={() => {
-              send(currentErp._id);
+              if (config.sendByEmail) {
+                config.sendByEmail(currentErp);
+              } else {
+                send(currentErp._id);
+              }
             }}
             icon={<MailOutlined />}
           >
