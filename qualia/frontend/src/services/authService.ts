@@ -46,16 +46,24 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
     console.log('Login response received:', { hasAccessToken: !!response.data.access_token, hasRefreshToken: !!response.data.refresh_token });
   }
 
-  // Store tokens in localStorage and verify storage succeeded
-  let accessTokenStored = false;
-  let refreshTokenStored = false;
+  // Verify tokens are present in API response
+  if (!response.data.access_token || !response.data.refresh_token) {
+    // Debug logging in development
+    if (import.meta.env.DEV) {
+      console.error('Invalid API response - missing tokens:', {
+        hasAccessToken: !!response.data.access_token,
+        hasRefreshToken: !!response.data.refresh_token
+      });
+    }
 
-  if (response.data.access_token) {
-    accessTokenStored = safeSetLocalStorage('access_token', response.data.access_token);
+    throw new Error(
+      'Login failed: Invalid response from server. Please try again or contact support if the problem persists.'
+    );
   }
-  if (response.data.refresh_token) {
-    refreshTokenStored = safeSetLocalStorage('refresh_token', response.data.refresh_token);
-  }
+
+  // Store tokens in localStorage and verify storage succeeded
+  const accessTokenStored = safeSetLocalStorage('access_token', response.data.access_token);
+  const refreshTokenStored = safeSetLocalStorage('refresh_token', response.data.refresh_token);
 
   // Verify that both tokens were successfully stored
   // This prevents a "successful" login flow when localStorage is blocked (e.g., private mode)
