@@ -5,13 +5,14 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.form_cycles import _get_authorized_reviewer
 from app.models.file import File, StorageType
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
-UPLOAD_ROOT = Path(__file__).resolve().parents[1] / ".uploads"
+UPLOAD_ROOT = get_settings().local_upload_root
 
 
 def _normalized_mime_type(mime_type: str | None) -> str | None:

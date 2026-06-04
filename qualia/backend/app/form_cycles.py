@@ -282,6 +282,8 @@ async def init_attachment_upload(
     ).scalar_one_or_none()
     if submission is None:
         raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+    if submission.status == SubmissionStatus.submitted:
+        raise HTTPException(status_code=400, detail="Submission has already been submitted")
     file_id = uuid.uuid4()
     safe_file_name = _sanitize_file_name(payload.file_name)
     mime_type = _normalized_mime_type(payload.mime_type)
