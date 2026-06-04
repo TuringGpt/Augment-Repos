@@ -36,7 +36,7 @@ export interface RegisterResponse {
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
-    console.log('Login request:', { email: data.email, endpoint: '/auth/login' });
+    console.log('Login request:', { endpoint: '/auth/login' });
   }
 
   const response = await apiClient.post<LoginResponse>('/auth/login', data);
