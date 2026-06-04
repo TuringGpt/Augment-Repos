@@ -1,5 +1,7 @@
+import re
 import uuid
 from datetime import UTC, datetime
+from pathlib import PurePosixPath
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
@@ -18,6 +20,7 @@ from app.models.user import Role, User
 
 
 router = APIRouter(prefix="/forms", tags=["form-cycles"])
+DEFAULT_UPLOAD_CONTENT_TYPE = "application/octet-stream"
 
 
 class FormCycleCreate(BaseModel):
@@ -123,6 +126,16 @@ def _validate_submission_window(cycle: FormCycle) -> None:
         raise HTTPException(status_code=400, detail="Form cycle is not accepting submissions")
     if cycle.submission_deadline < datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Submission deadline has passed")
+
+
+def _sanitize_file_name(file_name: str) -> str:
+    leaf_name = PurePosixPath(file_name.replace("\\", "/")).name.strip()
+    if not leaf_name or leaf_name in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "-", leaf_name).strip(".-")
+    if not sanitized:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    return sanitized[:255]
 
 
 @router.post("/", status_code=201)
@@ -247,8 +260,38 @@ async def init_attachment_upload(
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     reviewer = await _get_authorized_reviewer(token.strip(), db)
-    file = File(uploaded_by=reviewer.id, file_name=payload.file_name, file_size=payload.file_size, mime_type=payload.mime_type, storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{payload.file_name}")
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    _validate_submission_window(cycle)
+    submission = (
+        await db.execute(
+            select(Submission).where(
+                Submission.form_cycle_id == form_cycle_id,
+                Submission.reviewer_id == reviewer.id,
+            )
+        )
+    ).scalar_one_or_none()
+    if submission is None:
+        raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+    file_id = uuid.uuid4()
+    safe_file_name = _sanitize_file_name(payload.file_name)
+    file = File(
+        id=file_id,
+        uploaded_by=reviewer.id,
+        file_name=payload.file_name,
+        file_size=payload.file_size,
+        mime_type=payload.mime_type,
+        storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{file_id}/{safe_file_name}",
+    )
     db.add(file)
     await db.flush()
     await db.commit()
-    return {"file_id": str(file.id), "upload": {"method": "POST", "url": f"/uploads/{file.id}", "headers": {"content-type": payload.mime_type or "application/octect-stream"}}}
+    return {
+        "file_id": str(file.id),
+        "upload": {
+            "method": "POST",
+            "url": f"/uploads/{file.id}",
+            "headers": {"content-type": payload.mime_type or DEFAULT_UPLOAD_CONTENT_TYPE},
+        },
+    }
