@@ -140,7 +140,7 @@ function SignIn() {
           });
         }
         // Handle API errors from loginUser (these are already handled in onError callback)
-        else if (err && typeof err === 'object' && 'message' in err) {
+        else if (err && typeof err === 'object' && 'message' in err && 'originalError' in err) {
           // Error already displayed via onError callback, just update state
           const apiError = err as ApiError;
           const errorMessage = typeof apiError.message === 'string'
