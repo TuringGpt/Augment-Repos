@@ -247,7 +247,7 @@ function SignIn() {
               type='submit'
               disabled={isPending}
               className='w-full h-10'
-              aria-label={isPending ? "Signing up..." : "Sign In"}
+              aria-label={isPending ? "Signing in..." : "Sign In"}
             >
               {isPending ? (
                 <>
