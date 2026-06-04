@@ -72,10 +72,10 @@ function SignIn() {
 
   // Use the TanStack Query mutation hook for login
   const { mutateAsync: loginUser, isPending } = useLogin({
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Development-only logging (gated to prevent PII leakage in production)
       if (import.meta.env.DEV) {
-        console.log("Login successful, tokens stored");
+        console.log("Login successful");
       }
 
       // Show success toast notification
