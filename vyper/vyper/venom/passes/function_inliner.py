@@ -27,6 +27,7 @@ class FunctionInlinerPass(IRGlobalPass):
     inline_count: int
     fcg: FCGGlobalAnalysis
     flags: VenomOptimizationFlags
+    _code_size_cost_cache: dict[IRFunction, int]
 
     def __init__(
         self,
@@ -40,6 +41,7 @@ class FunctionInlinerPass(IRGlobalPass):
     def run_pass(self):
         entry = self.ctx.entry_function
         self.inline_count = 0
+        self._code_size_cost_cache = {}
 
         function_count = len(self.ctx.functions)
         self.fcg = self.analyses_caches[entry].force_analysis(FCGGlobalAnalysis)
@@ -53,9 +55,12 @@ class FunctionInlinerPass(IRGlobalPass):
             # print(f"Inlining function {candidate.name} with cost {candidate.code_size_cost}")
 
             calls = self.fcg.get_call_sites(candidate)
+            caller_functions = {call_site.parent.parent for call_site in calls}
             self._inline_function(candidate, calls)
             self.ctx.remove_function(candidate)
             self.walk.remove(candidate)
+            self._invalidate_code_size_costs(caller_functions)
+            self._code_size_cost_cache.pop(candidate, None)
 
             self.analyses_caches[entry].invalidate_analysis(ReadonlyMemoryArgsGlobalAnalysis)
             # TODO: check if recomputing this is a perf issue or we should rather
@@ -73,10 +78,21 @@ class FunctionInlinerPass(IRGlobalPass):
                 return func
 
             # Use the inline threshold from flags
-            if func.code_size_cost <= self.flags.inline_threshold:
+            if self._get_code_size_cost(func) <= self.flags.inline_threshold:
                 return func
 
         return None
+
+    def _get_code_size_cost(self, func: IRFunction) -> int:
+        cost = self._code_size_cost_cache.get(func)
+        if cost is None:
+            cost = func.code_size_cost
+            self._code_size_cost_cache[func] = cost
+        return cost
+
+    def _invalidate_code_size_costs(self, functions: set[IRFunction]) -> None:
+        for func in functions:
+            self._code_size_cost_cache.pop(func, None)
 
     def _inline_function(self, func: IRFunction, call_sites: List[IRInstruction]) -> None:
         """
