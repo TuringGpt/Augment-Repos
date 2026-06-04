@@ -105,6 +105,13 @@ def _has_non_empty_string(items: object) -> bool:
     return any(isinstance(item, str) and item.strip() for item in items)
 
 
+def _normalized_mime_type(mime_type: str | None) -> str | None:
+    if mime_type is None:
+        return None
+    normalized = mime_type.strip()
+    return normalized or None
+
+
 def _has_effective_answer(answer: SubmissionAnswer) -> bool:
     if answer.text_answer is not None and answer.text_answer.strip():
         return True
@@ -276,12 +283,13 @@ async def init_attachment_upload(
         raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
     file_id = uuid.uuid4()
     safe_file_name = _sanitize_file_name(payload.file_name)
+    mime_type = _normalized_mime_type(payload.mime_type)
     file = File(
         id=file_id,
         uploaded_by=reviewer.id,
         file_name=payload.file_name,
         file_size=payload.file_size,
-        mime_type=payload.mime_type,
+        mime_type=mime_type,
         storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{file_id}/{safe_file_name}",
     )
     db.add(file)
@@ -292,6 +300,6 @@ async def init_attachment_upload(
         "upload": {
             "method": "POST",
             "url": f"/uploads/{file.id}",
-            "headers": {"content-type": payload.mime_type or DEFAULT_UPLOAD_CONTENT_TYPE},
+            "headers": {"content-type": mime_type or DEFAULT_UPLOAD_CONTENT_TYPE},
         },
     }

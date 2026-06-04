@@ -8,11 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
 
-class StorageType(str, enum.Enum): s3 = "s3"; local = "disk"
+class StorageType(str, enum.Enum): s3 = "s3"; local = "local"
 
 
 class File(Base):
-    __tablename__ = "file"
+    __tablename__ = "files"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     uploaded_by: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id"), nullable=False)
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -22,7 +22,7 @@ class File(Base):
     storage_type: Mapped[StorageType] = mapped_column(
         Enum(StorageType, name="file_storage_type_enum"),
         default=StorageType.local,
-        server_default=text("'disk'"),
+        server_default=text("'local'"),
         nullable=False,
     )
     is_public: Mapped[bool] = mapped_column(
