@@ -41,6 +41,7 @@ class Settings:
     debug: bool = field(default_factory=_get_debug_flag)
 
     def __post_init__(self) -> None:
+        self.storage_backend = self.storage_backend.strip().lower()
         if self.storage_backend == "s3" and not self.storage_bucket:
             raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
 
