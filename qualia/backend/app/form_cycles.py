@@ -309,8 +309,12 @@ async def init_attachment_upload(
         storage_type=storage_type,
     )
     db.add(file)
-    await db.flush()
-    await db.commit()
+    try:
+        await db.flush()
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        raise
     return {
         "file_id": str(file.id),
         "upload": {

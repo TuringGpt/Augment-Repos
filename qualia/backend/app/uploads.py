@@ -49,6 +49,13 @@ def _form_cycle_id_from_storage_path(storage_path: str) -> uuid.UUID:
         raise HTTPException(status_code=400, detail="File upload is not attached to an active submission") from exc
 
 
+async def _cleanup_partial_upload(destination: Path) -> None:
+    try:
+        await to_thread(destination.unlink, missing_ok=True)
+    except OSError:
+        return
+
+
 @router.post("/{file_id}", status_code=201)
 async def upload_attachment(
     file_id: uuid.UUID,
@@ -114,11 +121,11 @@ async def upload_attachment(
     except FileExistsError as exc:
         raise HTTPException(status_code=409, detail="File has already been uploaded") from exc
     except Exception:
-        destination.unlink(missing_ok=True)
+        await _cleanup_partial_upload(destination)
         raise
 
     if received_size != record.file_size:
-        destination.unlink(missing_ok=True)
+        await _cleanup_partial_upload(destination)
         raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
 
     return {
