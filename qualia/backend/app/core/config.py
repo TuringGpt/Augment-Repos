@@ -54,7 +54,9 @@ class Settings:
 
     def __post_init__(self) -> None:
         self.storage_backend = self.storage_backend.strip().lower()
-        self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
+        self.local_upload_root = self.local_upload_root.expanduser().resolve()
+        if self.storage_backend == "local":
+            self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:
             raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
 
