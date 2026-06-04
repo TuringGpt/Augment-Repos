@@ -1,4 +1,4 @@
-import { apiClient, type ApiError, safeSetLocalStorage } from '@/lib/axios';
+import { apiClient, safeSetLocalStorage } from '@/lib/axios';
 
 /**
  * Authentication API service

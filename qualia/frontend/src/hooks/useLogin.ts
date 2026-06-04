@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { login } from '@/services/authService';
 import type { LoginRequest, LoginResponse } from '@/services/authService';
-import type { ApiError } from '@/lib/axios';
 
 /**
  * TanStack Query mutation hook for user login
@@ -17,7 +16,10 @@ import type { ApiError } from '@/lib/axios';
  *     navigate('/dashboard');
  *   },
  *   onError: (error) => {
- *     console.error('Login failed:', error.message);
+ *     // error is typed as unknown - use type guards to safely access properties
+ *     if (error && typeof error === 'object' && 'message' in error) {
+ *       console.error('Login failed:', error.message);
+ *     }
  *   }
  * });
  *
@@ -27,7 +29,7 @@ import type { ApiError } from '@/lib/axios';
  */
 export const useLogin = (options?: {
   onSuccess?: (data: LoginResponse) => void;
-  onError?: (error: ApiError | Error) => void;
+  onError?: (error: unknown) => void;
 }) => {
   return useMutation({
     mutationFn: (data: LoginRequest) => login(data),

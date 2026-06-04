@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useLogin } from "@/hooks/useLogin";
-import type { ApiError } from "@/lib/axios";
 
 // Zod schema for sign-in form validation
 const signInSchema = z.object({
@@ -91,18 +90,24 @@ function SignIn() {
         }
       }, 500);
     },
-    onError: (err: ApiError | Error) => {
-      // Handle both ApiError (from API call) and plain Error (from token storage failure)
+    onError: (err: unknown) => {
+      // React Query mutation errors are typed as unknown
+      // Use type guards to safely extract error messages
       let errorMessage: string;
 
+      // Check if it's an Error instance (plain Error from token storage failure)
       if (err instanceof Error) {
-        // Plain Error (e.g., token storage failure)
         errorMessage = err.message;
-      } else if (typeof err.message === 'string') {
-        // ApiError with string message
-        errorMessage = err.message;
-      } else {
-        // Fallback for unexpected error shapes
+      }
+      // Check if it's an object with a message property (ApiError from API call)
+      else if (err && typeof err === 'object' && 'message' in err) {
+        const message = (err as { message: unknown }).message;
+        errorMessage = typeof message === 'string'
+          ? message
+          : "Sign-in failed. Please check your credentials and try again.";
+      }
+      // Fallback for unexpected error shapes
+      else {
         errorMessage = "Sign-in failed. Please check your credentials and try again.";
       }
 
