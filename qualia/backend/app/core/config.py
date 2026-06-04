@@ -1,7 +1,6 @@
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from tempfile import gettempdir
 
 
 def _required_env(name: str) -> str:
@@ -26,6 +25,17 @@ def _database_url() -> str:
     return _optional_env("DATABASE_URL", "sqlite+aiosqlite:///qualia.db")
 
 
+def _default_local_upload_root() -> Path:
+    return Path.home() / ".qualia" / "uploads"
+
+
+def _prepare_local_upload_root(path: Path) -> Path:
+    resolved = path.expanduser().resolve()
+    resolved.mkdir(mode=0o700, parents=True, exist_ok=True)
+    resolved.chmod(0o700)
+    return resolved
+
+
 def _get_debug_flag() -> bool:
     return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
 
@@ -38,14 +48,13 @@ class Settings:
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
     storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
     local_upload_root: Path = field(
-        default_factory=lambda: Path(
-            _optional_env("LOCAL_UPLOAD_ROOT", str(Path(gettempdir()) / "qualia-uploads"))
-        )
+        default_factory=lambda: Path(_optional_env("LOCAL_UPLOAD_ROOT", str(_default_local_upload_root())))
     )
     debug: bool = field(default_factory=_get_debug_flag)
 
     def __post_init__(self) -> None:
         self.storage_backend = self.storage_backend.strip().lower()
+        self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:
             raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
 
