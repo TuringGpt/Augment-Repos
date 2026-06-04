@@ -9,9 +9,10 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
-from app.models.file import File
+from app.models.file import File, StorageType
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -144,6 +145,16 @@ def _sanitize_file_name(file_name: str) -> str:
     if not sanitized:
         raise HTTPException(status_code=400, detail="Invalid file name")
     return sanitized[:255]
+
+
+def _attachment_storage_type() -> StorageType:
+    backend = get_settings().storage_backend.strip().lower()
+    if backend == StorageType.local.value:
+        return StorageType.local
+    raise HTTPException(
+        status_code=409,
+        detail="Configured storage backend does not support direct attachment uploads",
+    )
 
 
 @router.post("/", status_code=201)
@@ -284,6 +295,7 @@ async def init_attachment_upload(
         raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
     if submission.status == SubmissionStatus.submitted:
         raise HTTPException(status_code=400, detail="Submission has already been submitted")
+    storage_type = _attachment_storage_type()
     file_id = uuid.uuid4()
     safe_file_name = _sanitize_file_name(payload.file_name)
     mime_type = _normalized_mime_type(payload.mime_type)
@@ -294,6 +306,7 @@ async def init_attachment_upload(
         file_size=payload.file_size,
         mime_type=mime_type,
         storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{file_id}/{safe_file_name}",
+        storage_type=storage_type,
     )
     db.add(file)
     await db.flush()
