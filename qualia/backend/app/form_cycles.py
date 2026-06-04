@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.models.file import File
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -27,6 +28,12 @@ class FormCycleCreate(BaseModel):
 
 class ReviewerAssignment(BaseModel):
     reviewer_id: uuid.UUID
+
+
+class AttachmentUploadInitRequest(BaseModel):
+    file_name: str = Field(min_length=1, max_length=255)
+    file_size: int = Field(gt=0)
+    mime_type: str | None = Field(default=None, max_length=255)
 
 
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
@@ -227,3 +234,21 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
+async def init_attachment_upload(
+    form_cycle_id: uuid.UUID,
+    payload: AttachmentUploadInitRequest,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    file = File(uploaded_by=reviewer.id, file_name=payload.file_name, file_size=payload.file_size, mime_type=payload.mime_type, storage_path=f"pending/{form_cycle_id}/{reviewer.id}/{payload.file_name}")
+    db.add(file)
+    await db.flush()
+    await db.commit()
+    return {"file_id": str(file.id), "upload": {"method": "POST", "url": f"/uploads/{file.id}", "headers": {"content-type": payload.mime_type or "application/octect-stream"}}}
