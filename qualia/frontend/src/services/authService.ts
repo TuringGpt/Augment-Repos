@@ -30,8 +30,11 @@ export interface RegisterResponse {
  * Login a user
  * @param data - User login credentials (email and password)
  * @returns Promise with login response containing access and refresh tokens
- * @throws {ApiError} if login fails (with status, message, data, and originalError)
- * @throws {Error} if tokens cannot be stored in localStorage (e.g., private mode, storage blocked)
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, authentication errors, and server errors.
+ * @throws {Error} When tokens are missing in the API response or cannot be stored in localStorage
+ *                 (e.g., private browsing mode, storage quota exceeded, or storage blocked by browser settings).
  */
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   // Debug logging in development
@@ -90,7 +93,9 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
  * Register a new user
  * @param data - User registration data (email and password)
  * @returns Promise with registration response
- * @throws {ApiError} if registration fails (with status, message, data, and originalError)
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, and server errors.
  */
 export const register = async (data: RegisterRequest): Promise<RegisterResponse> => {
   const response = await apiClient.post<RegisterResponse>('/auth/signup', data);
