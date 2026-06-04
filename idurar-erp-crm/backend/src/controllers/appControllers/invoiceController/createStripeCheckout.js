@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const currency = require('currency.js');
+
+const { calculate } = require('@/helpers');
 
 const Model = mongoose.model('Invoice');
 
@@ -7,14 +10,32 @@ const getFrontendBaseUrl = () => {
   return baseUrl.replace(/\/$/, '');
 };
 
-const getFixedAmount = () => {
-  const amount = Number.parseInt(process.env.STRIPE_FIXED_INVOICE_AMOUNT || '5000', 10);
+const getInvoiceBalance = (invoice) => {
+  const outstandingAmount = calculate.sub(
+    calculate.sub(invoice.total || 0, invoice.discount || 0),
+    invoice.credit || 0
+  );
 
-  if (!Number.isInteger(amount) || amount <= 0) {
-    throw new Error('STRIPE_FIXED_INVOICE_AMOUNT must be a positive integer in cents');
+  if (outstandingAmount <= 0) {
+    throw new Error('Invoice is already fully paid');
   }
 
-  return amount;
+  return {
+    outstandingAmount,
+    stripeAmount: currency(outstandingAmount).intValue,
+  };
+};
+
+const getInvoiceCurrency = (invoice) => {
+  const invoiceCurrency = String(invoice.currency || '')
+    .trim()
+    .toLowerCase();
+
+  if (!invoiceCurrency || invoiceCurrency === 'na') {
+    throw new Error('Invoice currency is not configured');
+  }
+
+  return invoiceCurrency;
 };
 
 const createStripeCheckout = async (req, res) => {
@@ -36,8 +57,8 @@ const createStripeCheckout = async (req, res) => {
   }
 
   const frontendBaseUrl = getFrontendBaseUrl();
-  const fixedAmount = getFixedAmount();
-  const currency = (process.env.STRIPE_FIXED_INVOICE_CURRENCY || 'usd').toLowerCase();
+  const { outstandingAmount, stripeAmount } = getInvoiceBalance(invoice);
+  const currencyCode = getInvoiceCurrency(invoice);
   const invoiceLabel = `Invoice #${invoice.number}/${invoice.year}`;
 
   const formData = new URLSearchParams();
@@ -48,10 +69,11 @@ const createStripeCheckout = async (req, res) => {
   formData.append('client_reference_id', invoice._id.toString());
   formData.append('metadata[invoiceId]', invoice._id.toString());
   formData.append('metadata[invoiceNumber]', `${invoice.number}/${invoice.year}`);
-  formData.append('line_items[0][price_data][currency]', currency);
+  formData.append('metadata[invoiceBalance]', String(outstandingAmount));
+  formData.append('line_items[0][price_data][currency]', currencyCode);
   formData.append('line_items[0][price_data][product_data][name]', invoiceLabel);
-  formData.append('line_items[0][price_data][product_data][description]', 'Fixed amount invoice payment');
-  formData.append('line_items[0][price_data][unit_amount]', String(fixedAmount));
+  formData.append('line_items[0][price_data][product_data][description]', 'Outstanding invoice balance payment');
+  formData.append('line_items[0][price_data][unit_amount]', String(stripeAmount));
   formData.append('line_items[0][quantity]', '1');
 
   const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
