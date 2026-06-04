@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useLogin } from "@/hooks/useLogin";
+import type { ApiError } from "@/lib/axios";
 
 // Zod schema for sign-in form validation
 const signInSchema = z.object({
@@ -50,8 +52,8 @@ const formFields = [
 ] as const;
 
 function SignIn() {
+  const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
   const isMountedRef = useRef(true);
 
   // Track mount state to prevent state updates after unmount
@@ -62,6 +64,43 @@ function SignIn() {
     };
   }, []);
 
+  // Use the TanStack Query mutation hook for login
+  const { mutateAsync: loginUser, isPending } = useLogin({
+    onSuccess: (data) => {
+      // Development-only logging (gated to prevent PII leakage in production)
+      if (import.meta.env.DEV) {
+        console.log("Login successful, tokens stored");
+      }
+
+      // Show success toast notification
+      toast.success("Login successful!", {
+        description: "Redirecting to dashboard...",
+      });
+
+      // Redirect to dashboard after successful login
+      // Small delay to allow toast to be visible
+      setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate("/dashboard");
+        }
+      }, 500);
+    },
+    onError: (err: ApiError) => {
+      // Show error toast notification with string normalization
+      const errorMessage = typeof err.message === 'string'
+        ? err.message
+        : "Sign-in failed. Please check your credentials and try again.";
+      toast.error("Login failed", {
+        description: errorMessage,
+      });
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(errorMessage);
+      }
+    }
+  });
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -70,32 +109,52 @@ function SignIn() {
     onSubmit: async ({ value }) => {
       if (!isMountedRef.current) return;
       setError("");
-      setIsLoading(true);
 
       try {
         // Validate with Zod
         const validatedData = signInSchema.parse(value);
 
-        // TODO: Implement actual sign-in API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Development-only logging (gated to prevent PII leakage in production)
-        if (import.meta.env.DEV) {
-          console.log("Sign-in successful for:", validatedData.email);
-        }
+        // Call the login mutation
+        await loginUser({
+          email: validatedData.email,
+          password: validatedData.pasword,
+        });
       } catch (err) {
-        if (!isMountedRef.current) return;
+        // Handle validation errors from Zod
         if (err instanceof z.ZodError) {
           const issues = err.issues;
-          setError(issues[0]?.message || "Validation failed");
-        } else {
-          setError(
-            "Sign-in failed. Please check your credentials and try again.",
-          );
+          const errorMessage = issues[0]?.message || "Validation failed";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+          // Show validation error toast
+          toast.error("Validation Error", {
+            description: errorMessage,
+          });
         }
-      } finally {
-        if (isMountedRef.current) {
-          setIsLoading(false);
+        // Handle API errors from loginUser (these are already handled in onError callback)
+        else if (err && typeof err === 'object' && 'message' in err) {
+          // Error already displayed via onError callback, just update state
+          const apiError = err as ApiError;
+          const errorMessage = typeof apiError.message === 'string'
+            ? apiError.message
+            : "Sign-up failed. Please check your credentials and try again.";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+        }
+        // Handle any other unexpected errors
+        else {
+          const errorMessage = "An unexpected error occurred. Please try again.";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+          toast.error("Unexpected Error", {
+            description: errorMessage,
+          });
         }
       }
     },
@@ -162,7 +221,7 @@ function SignIn() {
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
-                      disabled={isLoading}
+                      disable={isPending}
                       className='h-10'
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -186,11 +245,11 @@ function SignIn() {
 
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={isPending}
               className='w-full h-10'
-              aria-label={isLoading ? "Signing in..." : "Sign In"}
+              aria-label={isPending ? "Signing up..." : "Sign In"}
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Spinner />
                   <span className='ml-2'>Signing in...</span>
