@@ -298,7 +298,7 @@ async def init_attachment_upload(
     storage_type = _attachment_storage_type()
     file_id = uuid.uuid4()
     safe_file_name = _sanitize_file_name(payload.file_name)
-    mime_type = _normalized_mime_type(payload.mime_type)
+    mime_type = _normalized_mime_type(payload.mime_type) or DEFAULT_UPLOAD_CONTENT_TYPE
     file = File(
         id=file_id,
         uploaded_by=reviewer.id,
@@ -316,6 +316,6 @@ async def init_attachment_upload(
         "upload": {
             "method": "POST",
             "url": f"/api/v1/uploads/{file.id}",
-            "headers": {"content-type": mime_type or DEFAULT_UPLOAD_CONTENT_TYPE},
+            "headers": {"content-type": mime_type},
         },
     }
