@@ -6,32 +6,62 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.file import File
+from app.form_cycles import _get_authorized_reviewer
+from app.models.file import File, StorageType
 
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 UPLOAD_ROOT = Path(__file__).resolve().parents[1] / ".uploads"
 
 
+def _normalized_mime_type(mime_type: str | None) -> str | None:
+    if mime_type is None:
+        return None
+    normalized = mime_type.split(";", 1)[0].strip().lower()
+    return normalized or None
+
+
+def _validated_destination(storage_path: str) -> Path:
+    root = UPLOAD_ROOT.resolve()
+    destination = (root / storage_path).resolve()
+    try:
+        destination.relative_to(root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid storage path") from exc
+    return destination
+
+
 @router.post("/{file_id}", status_code=201)
 async def upload_attachment(
     file_id: uuid.UUID,
     request: Request,
+    authorization: str = Header(""),
     content_type: str = Header(""),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, object]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+
     record = (await db.execute(select(File).where(File.id == file_id))).scalar_one_or_none()
     if record is None:
         raise HTTPException(status_code=404, detail="File not found")
+    if record.uploaded_by != reviewer.id:
+        raise HTTPException(status_code=403, detail="Upload does not belong to reviewer")
+    if record.storage_type != StorageType.local:
+        raise HTTPException(status_code=409, detail="Configured storage backend does not support direct uploads")
 
     payload = await request.body()
     if len(payload) != record.file_size:
         raise HTTPException(status_code=400, detail="Uploaded file size does not match initialized metadata")
 
-    if record.mime_type and content_type != record.mime_type:
+    if (
+        normalized_record_mime_type := _normalized_mime_type(record.mime_type)
+    ) and _normalized_mime_type(content_type) != normalized_record_mime_type:
         raise HTTPException(status_code=400, detail="Uploaded file type does not match initialized metadata")
 
-    destination = UPLOAD_ROOT / record.storage_path
+    destination = _validated_destination(record.storage_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(payload)
     return {
