@@ -22,6 +22,10 @@ def _optional_env(name: str, default: str) -> str:
     return value or default
 
 
+def _database_url() -> str:
+    return _optional_env("DATABASE_URL", "sqlite+aiosqlite:///qualia.db")
+
+
 def _get_debug_flag() -> bool:
     return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
 
@@ -29,7 +33,7 @@ def _get_debug_flag() -> bool:
 @dataclass
 class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
-    database_url: str = field(default_factory=lambda: _required_env("DATABASE_URL"), repr=False)
+    database_url: str = field(default_factory=_database_url, repr=False)
     jwt_secret: str = field(default_factory=lambda: _required_env("JWT_SECRET"), repr=False)
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
     storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
