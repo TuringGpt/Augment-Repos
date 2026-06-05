@@ -111,9 +111,10 @@ export const useAuthStore = create<AuthState>()(
           const hasRefreshToken = !!safeGetLocalStorage('refresh_token');
 
           // If tokens are missing but user data exists, clear the user data
+          // Use the store's checkAuth method to properly trigger state updates and persistence
           if (!hasAccessToken || !hasRefreshToken) {
-            state.user = null;
-            state.isAuthenticated = false;
+            // Use the store's API to trigger proper state updates and subscriber notifications
+            useAuthStore.getState().clearAuth();
           }
         }
       },
