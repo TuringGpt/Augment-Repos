@@ -13,6 +13,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.file import File, StorageType
+from app.models.form_assignment import FormAssignment
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -39,6 +40,13 @@ class AttachmentUploadInitRequest(BaseModel):
     file_name: str = Field(min_length=1, max_length=255)
     file_size: int = Field(gt=0, le=MAX_ATTACHMENT_SIZE_BYTES)
     mime_type: str | None = Field(default=None, max_length=255)
+
+
+class ReviewerAssignedForm(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    submission_deadline: datetime
 
 
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
@@ -266,6 +274,20 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.get("/assigned", response_model=list[ReviewerAssignedForm], status_code=200)
+async def list_assigned_forms(
+    authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> list[ReviewerAssignedForm]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    rows = (await db.execute(select(FormCycle).join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id).where(FormAssignment.assigned_to == reviewer.id))).scalars().all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="Assigned forms not found")
+    return [ReviewerAssignedForm(id=str(cycle.id), title=cycle.title, description=cycle.title, submission_deadline=cycle.created_at) for cycle in rows]
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
