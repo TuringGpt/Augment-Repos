@@ -33,7 +33,8 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       // Sidebar state - default to open on desktop, closed on mobile
-      isSidebarOpen: window.innerWidth >= 768,
+      // Safe guard for SSR/test environments where window is undefined
+      isSidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : false,
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
       setSidebarOpen: (isOpen: boolean) => set({ isSidebarOpen: isOpen }),
 
