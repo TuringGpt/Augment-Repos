@@ -3,7 +3,7 @@ import NavBar from '@/components/NavBar';
 
 interface MainLayoutProps {
   children: ReactNode;
-  nav-variant?: 'transparent' | 'default';
+  navVariant?: 'transparent' | 'default';
 }
 
 /**
