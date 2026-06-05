@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
+import { safeGetLocalStorage } from '@/lib/axios';
 
 interface ProtectedRouteProps {
   children: ReactNode;

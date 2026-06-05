@@ -35,7 +35,7 @@ export function PublicRoute({
 
   if (isAuthenticated && redirectIfAuthenticated) {
     // Redirect authenticated users to dashboard
-    return <Navigate to={ROUTES.DASHBOARD} replaced />;
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
 
   return <>{children}</>;
