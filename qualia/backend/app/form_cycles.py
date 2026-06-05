@@ -13,7 +13,6 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.file import File, StorageType
-from app.models.form_assignment import FormAssignment
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -284,10 +283,22 @@ async def list_assigned_forms(
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     reviewer = await _get_authorized_reviewer(token.strip(), db)
-    rows = (await db.execute(select(FormCycle).join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id).where(FormAssignment.assigned_to == reviewer.id))).scalars().all()
-    if not rows:
-        raise HTTPException(status_code=404, detail="Assigned forms not found")
-    return [ReviewerAssignedForm(id=str(cycle.id), title=cycle.title, description=cycle.title, submission_deadline=cycle.created_at) for cycle in rows]
+    rows = (
+        await db.execute(
+            select(FormCycle)
+            .join(Submission, Submission.form_cycle_id == FormCycle.id)
+            .where(Submission.reviewer_id == reviewer.id)
+        )
+    ).scalars().all()
+    return [
+        ReviewerAssignedForm(
+            id=str(cycle.id),
+            title=cycle.title,
+            description=cycle.description,
+            submission_deadline=cycle.submission_deadline,
+        )
+        for cycle in rows
+    ]
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
