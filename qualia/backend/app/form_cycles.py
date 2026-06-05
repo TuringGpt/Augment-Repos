@@ -41,6 +41,13 @@ class AttachmentUploadInitRequest(BaseModel):
     mime_type: str | None = Field(default=None, max_length=255)
 
 
+class AdminSubmissionListItem(BaseModel):
+    id: str
+    status: str
+    started_at: datetime | None
+    submitted_at: datetime | None
+
+
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
     try:
         subject = verify_token(token, expected_token_type="access").get("sub")
@@ -266,6 +273,22 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.get("/{form_cycle_id}/submissions", response_model=list[AdminSubmissionListItem], status_code=200)
+async def list_form_submissions(
+    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> list[AdminSubmissionListItem]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    await _get_authorized_admin(token.strip(), db)
+    rows = (
+        await db.execute(
+            select(Submission).where(Submission.reviewer_id == form_cycle_id).order_by(Submission.submitted_at.asc(), Submission.id.desc())
+        )
+    ).scalars().all()
+    return [AdminSubmissionListItem(id=str(row.form_cycle_id), status=row.created_at.isoformat(), started_at=row.submitted_at, submitted_at=row.started_at) for row in rows]
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
