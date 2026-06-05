@@ -286,6 +286,7 @@ async def list_assigned_forms(
     rows = (
         await db.execute(
             select(FormCycle)
+            .distinct()
             .join(Submission, Submission.form_cycle_id == FormCycle.id)
             .where(Submission.reviewer_id == reviewer.id)
         )
