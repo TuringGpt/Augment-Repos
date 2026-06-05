@@ -5,6 +5,7 @@ const Model = mongoose.model('Invoice');
 const { calculate } = require('@/helpers');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
+const handleDuplicateInvoiceNumber = require('./handleDuplicateInvoiceNumber');
 
 const create = async (req, res) => {
   let body = req.body;
@@ -48,7 +49,12 @@ const create = async (req, res) => {
   body['createdBy'] = req.admin._id;
 
   // Creating a new document in the collection
-  const result = await new Model(body).save();
+  let result;
+  try {
+    result = await new Model(body).save();
+  } catch (error) {
+    return handleDuplicateInvoiceNumber(error, res);
+  }
   const fileId = 'invoice-' + result._id + '.pdf';
   const updateResult = await Model.findOneAndUpdate(
     { _id: result._id },
