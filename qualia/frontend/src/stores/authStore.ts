@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       // Initial state
-      isAuthenticated: !!safeGetLocalStorage('access_token'),
+      isAuthenticated: !!safeGetLocalStorage('access_token') && !!safeGetLocalStorage('refresh_token'),
       user: null,
 
       // Set authentication (called after successful login)
@@ -80,8 +80,9 @@ export const useAuthStore = create<AuthState>()(
 
       // Check authentication status (useful for refreshing state)
       checkAuth: () => {
-        const token = safeGetLocalStorage('access_token');
-        if (token) {
+        const accessToken = safeGetLocalStorage('access_token');
+        const refreshToken = safeGetLocalStorage('refresh_token');
+        if (accessToken && refreshToken) {
           set({ isAuthenticated: true });
         } else {
           set({ isAuthenticated: false, user: null });
