@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import type { Location } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useLogin } from "@/hooks/useLogin";
+import { ROUTES } from "@/config/routes";
 
 // Zod schema for sign-in form validation
 const signInSchema = z.object({
@@ -54,14 +54,9 @@ const formFields = [
 
 function SignIn() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState<string>("");
   const isMountedRef = useRef(true);
   const navigationTimerRef = useRef<number | null>(null);
-
-  // Extract the intended destination from location state, if it exists
-  // This allows redirecting back to the originally requested page after login
-  const from = (location.state as { from?: Location })?.from?.pathname || "/dashboard";
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
@@ -85,10 +80,10 @@ function SignIn() {
 
       // Show success toast notification
       toast.success("Login successful!", {
-        description: "Redirecting...",
+        description: "Redirecting to dashboard...",
       });
 
-      // Redirect to the originally requested page (or dashboard as fallback) after successful login
+      // Redirect to dashboard after successful login
       // Small delay to allow toast to be visible
       // Clear any existing timeout before scheduling a new one
       if (navigationTimerRef.current !== null) {
@@ -96,7 +91,7 @@ function SignIn() {
       }
       navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
-          navigate(from, { replace: true });
+          navigate(ROUTES.DASHBOARD);
         }
       }, 500);
     },

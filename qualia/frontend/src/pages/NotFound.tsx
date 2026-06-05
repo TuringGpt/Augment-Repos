@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Logo from '@/components/Logo';
+import { ROUTES } from '@/config/routes';
 
 function NotFound() {
   return (
@@ -64,7 +65,7 @@ function NotFound() {
             </Button>
             
             <Button asChild variant="outline" size="lg" className="w-full">
-              <Link to="/dashboard">
+              <Link to={ROUTES.DASHBOARD}>
                 Go to Dashboard
               </Link>
             </Button>
