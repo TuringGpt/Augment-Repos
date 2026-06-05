@@ -7,6 +7,7 @@ import { PublicRoute } from '@/components/routes/PublicRoute';
 import { MainLayout } from '@/components/layouts/MainLayout';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { Spinner } from '@/components/ui/spinner';
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import('@/pages/Home'));
