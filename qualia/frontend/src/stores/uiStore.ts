@@ -1,15 +1,51 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+/**
+ * Custom storage implementation for Zustand persist middleware
+ * that safely handles SSR/test/non-browser contexts
+ */
+const safeStorage = createJSONStorage(() => ({
+  getItem: (name: string): string | null => {
+    // Safe guard for SSR/test environments where localStorage is unavailable
+    try {
+      if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+        return null;
+      }
+      return window.localStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        window.localStorage.setItem(name, value);
+      }
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+  },
+  removeItem: (name: string): void => {
+    try {
+      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+        window.localStorage.removeItem(name);
+      }
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+  },
+}));
 
 /**
  * UI store using Zustand
- * 
+ *
  * Manages UI-related state including:
  * - Sidebar visibility (mobile)
  * - Theme preferences (if needed beyond next-themes)
  * - Modal states
  * - Loading states
- * 
+ *
  * This store is persisted to localStorage to maintain UI preferences.
  */
 
@@ -49,6 +85,7 @@ export const useUIStore = create<UIState>()(
     }),
     {
       name: 'ui-storage', // localStorage key
+      storage: safeStorage, // Use safe storage to prevent crashes in SSR/test/non-browser contexts
       partialize: (state) => ({
         // Only persist sidebar preference
         isSidebarOpen: state.isSidebarOpen,

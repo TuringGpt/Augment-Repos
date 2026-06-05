@@ -1,15 +1,31 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { safeGetLocalStorage, safeSetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
 
 /**
+ * Custom storage implementation for Zustand persist middleware
+ * that safely handles SSR/test/non-browser contexts
+ */
+const safeStorage = createJSONStorage(() => ({
+  getItem: (name: string): string | null => {
+    return safeGetLocalStorage(name);
+  },
+  setItem: (name: string, value: string): void => {
+    safeSetLocalStorage(name, value);
+  },
+  removeItem: (name: string): void => {
+    safeRemoveLocalStorage(name);
+  },
+}));
+
+/**
  * Authentication store using Zustand
- * 
+ *
  * Manages authentication state including:
  * - User authentication status
  * - User information
  * - Login/logout actions
- * 
+ *
  * This store is persisted to localStorage to maintain auth state across sessions.
  */
 
@@ -78,6 +94,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage', // localStorage key
+      storage: safeStorage, // Use safe storage to prevent crashes in SSR/test/non-browser contexts
       partialize: (state) => ({
         // Only persist user data, not isAuthenticated (derived from tokens)
         user: state.user,
