@@ -290,6 +290,7 @@ async def list_assigned_forms(
             .join(Submission, Submission.form_cycle_id == FormCycle.id)
             .where(
                 Submission.reviewer_id == reviewer.id,
+                Submission.status != SubmissionStatus.submitted,
                 FormCycle.status == FormCycleStatus.active,
                 FormCycle.is_published.is_(True),
                 FormCycle.submission_deadline >= datetime.now(UTC),
