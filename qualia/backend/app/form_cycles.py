@@ -41,6 +41,13 @@ class AttachmentUploadInitRequest(BaseModel):
     mime_type: str | None = Field(default=None, max_length=255)
 
 
+class ReviewerAssignedForm(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    submission_deadline: datetime
+
+
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
     try:
         subject = verify_token(token, expected_token_type="access").get("sub")
@@ -266,6 +273,44 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.get("/assigned", response_model=list[ReviewerAssignedForm], status_code=200)
+async def list_assigned_forms(
+    authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> list[ReviewerAssignedForm]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    rows = (
+        await db.execute(
+            select(FormCycle)
+            .distinct()
+            .join(Submission, Submission.form_cycle_id == FormCycle.id)
+            .where(
+                Submission.reviewer_id == reviewer.id,
+                Submission.status != SubmissionStatus.submitted,
+                FormCycle.status == FormCycleStatus.active,
+                FormCycle.is_published.is_(True),
+                FormCycle.submission_deadline >= datetime.now(UTC),
+            )
+            .order_by(
+                FormCycle.submission_deadline.asc(),
+                FormCycle.created_at.asc(),
+                FormCycle.id.asc(),
+            )
+        )
+    ).scalars().all()
+    return [
+        ReviewerAssignedForm(
+            id=str(cycle.id),
+            title=cycle.title,
+            description=cycle.description,
+            submission_deadline=cycle.submission_deadline,
+        )
+        for cycle in rows
+    ]
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
