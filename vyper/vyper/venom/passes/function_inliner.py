@@ -55,8 +55,7 @@ class FunctionInlinerPass(IRGlobalPass):
             # print(f"Inlining function {candidate.name} with cost {candidate.code_size_cost}")
 
             calls = self.fcg.get_call_sites(candidate)
-            caller_functions = {call_site.parent.parent for call_site in calls}
-            self._inline_function(candidate, calls)
+            caller_functions = self._inline_function(candidate, calls)
             self.ctx.remove_function(candidate)
             self.walk.remove(candidate)
             self._invalidate_code_size_costs(caller_functions)
@@ -94,15 +93,18 @@ class FunctionInlinerPass(IRGlobalPass):
         for func in functions:
             self._code_size_cost_cache.pop(func, None)
 
-    def _inline_function(self, func: IRFunction, call_sites: List[IRInstruction]) -> None:
+    def _inline_function(self, func: IRFunction, call_sites: List[IRInstruction]) -> set[IRFunction]:
         """
         Inline function into call sites.
         """
+        caller_functions: set[IRFunction] = set()
         for call_site in call_sites:
-            self._inline_call_site(func, call_site)
             fn = call_site.parent.parent
+            caller_functions.add(fn)
+            self._inline_call_site(func, call_site)
             self.analyses_caches[fn].invalidate_analysis(DFGAnalysis)
             self.analyses_caches[fn].invalidate_analysis(CFGAnalysis)
+        return caller_functions
 
     def _inline_call_site(self, func: IRFunction, call_site: IRInstruction) -> None:
         """
