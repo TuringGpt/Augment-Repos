@@ -14,6 +14,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { ROUTES } from "@/config/routes";
 
 // Zod schema for forgot password form validation
 const forgotPasswordSchema = z.object({
@@ -52,7 +53,9 @@ function ForgotPassword() {
 
       try {
         // Validate with Zod and use the parsed (trimmed) result
-        const validatedData = forgotPasswordSchema.parse(value);
+        forgotPasswordSchema.parse(value);
+        // TODO: Use validatedData when implementing actual API call
+        // const validatedData = forgotPasswordSchema.parse(value);
 
         // TODO: Replace with actual API call to backend password reset endpoint
         // Example: const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/forgot-password`, {
@@ -97,7 +100,7 @@ function ForgotPassword() {
   });
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
+    <>
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
           <CardTitle className='text-2xl font-bold'>Forgot Password?</CardTitle>
@@ -196,7 +199,7 @@ function ForgotPassword() {
           <p className='text-sm text-muted-foreground'>
             Remember your password?{" "}
             <Link
-              to='/signin'
+              to={ROUTES.SIGN_IN}
               className='text-primary font-medium hover:underline underline-offset-4 transition-colors'
             >
               Sign in here
@@ -204,7 +207,7 @@ function ForgotPassword() {
           </p>
         </CardFooter>
       </Card>
-    </div>
+    </>
   );
 }
 

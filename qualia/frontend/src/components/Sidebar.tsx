@@ -27,28 +27,28 @@ function Sidebar({ className }: SidebarProps) {
   const navItems: NavItem[] = [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: ROUTES.DASHBOARD,
       icon: <HomeIcon className="w-5 h-5" />,
     },
     {
       name: 'Forms',
-      href: '/dashboard/forms',
+      href: ROUTES.DASHBOARD_FORMS,
       icon: <FileTextIcon className="w-5 h-5" />,
     },
     {
       name: 'Analytics',
-      href: '/dashboard/analytics',
+      href: ROUTES.DASHBOARD_ANALYTICS,
       icon: <BarChartIcon className="w-5 h-5" />,
     },
     {
       name: 'Settings',
-      href: '/dashboard/settings',
+      href: ROUTES.DASHBOARD_SETTINGS,
       icon: <SettingsIcon className="w-5 h-5" />,
     },
   ];
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
+    if (href === ROUTES.DASHBOARD) {
       return location.pathname === href;
     }
     return location.pathname.startsWith(href);
