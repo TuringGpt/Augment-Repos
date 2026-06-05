@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { safeGetLocalStorage, safeSetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeSetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
 
 /**
  * Custom storage implementation for Zustand persist middleware
