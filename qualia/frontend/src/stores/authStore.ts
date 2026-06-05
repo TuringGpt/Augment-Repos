@@ -39,9 +39,17 @@ export const useAuthStore = create<AuthState>()(
 
       // Set authentication (called after successful login)
       setAuth: (accessToken: string, refreshToken: string, user: User) => {
-        safeSetLocalStorage('access_token', accessToken);
-        safeSetLocalStorage('refresh_token', refreshToken);
-        set({ isAuthenticated: true, user });
+        const accessTokenStored = safeSetLocalStorage('access_token', accessToken);
+        const refreshTokenStored = safeSetLocalStorage('refresh_token', refreshToken);
+
+        // Only set isAuthenticated to true if both tokens were successfully stored
+        if (accessTokenStored && refreshTokenStored) {
+          set({ isAuthenticated: true, user });
+        } else {
+          // If storage fails, clear any partial state and remain unauthenticated
+          console.error('Failed to store authentication tokens. LocalStorage may be unavailable or blocked.');
+          set({ isAuthenticated: false, user: null });
+        }
       },
 
       // Clear authentication (logout)
