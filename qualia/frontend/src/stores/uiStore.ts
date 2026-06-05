@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeGetLocalStorage, safeSetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
 
 /**
  * Custom storage implementation for Zustand persist middleware
@@ -7,33 +8,18 @@ import { persist, createJSONStorage } from 'zustand/middleware';
  */
 const safeStorage = createJSONStorage(() => ({
   getItem: (name: string): string | null => {
-    // Safe guard for SSR/test environments where localStorage is unavailable
-    try {
-      if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-        return null;
-      }
-      return window.localStorage.getItem(name);
-    } catch {
-      return null;
-    }
+    return safeGetLocalStorage(name);
   },
   setItem: (name: string, value: string): void => {
-    try {
-      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-        window.localStorage.setItem(name, value);
-      }
-    } catch {
-      // Silently fail if localStorage is unavailable
+    const success = safeSetLocalStorage(name, value);
+    if (!success) {
+      // Throw an error to signal to Zustand that persistence failed
+      // This allows the persist middleware to handle the failure appropriately
+      throw new Error(`Failed to persist to localStorage: ${name}`);
     }
   },
   removeItem: (name: string): void => {
-    try {
-      if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-        window.localStorage.removeItem(name);
-      }
-    } catch {
-      // Silently fail if localStorage is unavailable
-    }
+    safeRemoveLocalStorage(name);
   },
 }));
 

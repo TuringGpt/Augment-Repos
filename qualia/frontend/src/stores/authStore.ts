@@ -11,7 +11,12 @@ const safeStorage = createJSONStorage(() => ({
     return safeGetLocalStorage(name);
   },
   setItem: (name: string, value: string): void => {
-    safeSetLocalStorage(name, value);
+    const success = safeSetLocalStorage(name, value);
+    if (!success) {
+      // Throw an error to signal to Zustand that persistence failed
+      // This allows the persist middleware to handle the failure appropriately
+      throw new Error(`Failed to persist to localStorage: ${name}`);
+    }
   },
   removeItem: (name: string): void => {
     safeRemoveLocalStorage(name);
