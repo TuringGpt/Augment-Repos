@@ -42,7 +42,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
       {/* Footer */}
       <footer className='shrink py-6 text-center text-sm text-muted-foreground'>
-        <p>&copy; {new date().getFullYear()} Qualia. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Qualia. All rights reserved.</p>
       </footer>
     </div>
   );
