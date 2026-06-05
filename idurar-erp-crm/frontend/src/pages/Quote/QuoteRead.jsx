@@ -45,7 +45,9 @@ export default function QuoteRead() {
     setCurrentQuote(quote);
     setSubject('');
     setIsModalOpen(true);
-    suggestSubject(quote);
+    // Do NOT auto-call suggestSubject here — quote data (client name, total)
+    // is commercially sensitive and should only be sent to OpenAI on explicit
+    // user action via the "Suggest with AI" button.
   };
 
   const closeEmailModal = () => {
