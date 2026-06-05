@@ -18,6 +18,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useRegister } from "@/hooks/useRegister";
 import type { ApiError } from "@/lib/axios";
+import { ROUTES } from "@/config/routes";
 
 // Zod schema for registration form validation
 const registerSchema = z
@@ -113,7 +114,7 @@ function Register() {
       // Guard inside timeout to prevent redirect if component unmounts during delay
       redirectTimeoutRef.current = setTimeout(() => {
         if (isMountedRef.current) {
-          navigate("/signin");
+          navigate(ROUTES.SIGN_IN);
         }
       }, 1500);
     },
@@ -207,7 +208,7 @@ function Register() {
   });
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
+    <>
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
           <CardTitle className='text-2xl font-bold'>
@@ -393,7 +394,7 @@ function Register() {
           <p className='text-sm text-muted-foreground'>
             Already have an account?{" "}
             <Link
-              to='/signin'
+              to={ROUTES.SIGN_IN}
               className='text-primary font-medium hover:underline underline-offset-4 transition-colors'
             >
               Sign in here
@@ -401,7 +402,7 @@ function Register() {
           </p>
         </CardFooter>
       </Card>
-    </div>
+    </>
   );
 }
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import Sidebar from '@/components/Sidebar';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,14 +45,9 @@ function Dashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Content */}
-      <main className="ml-64 p-8">
-        {/* Welcome Banner */}
-        <WelcomeBanner userName="John" />
+    <>
+      {/* Welcome Banner */}
+      <WelcomeBanner userName="John" />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -161,8 +155,7 @@ function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+    </>
   );
 }
 

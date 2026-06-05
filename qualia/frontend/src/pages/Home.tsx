@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import NavBar from '@/components/NavBar';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ROUTES } from '@/config/routes';
 
 interface Feature {
   title: string;
@@ -70,8 +70,6 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-secondary">
-      <NavBar />
-
       {/* Hero Section */}
       <section className="mx-auto px-5 py-20 md:py-32 animate-in fade-in duration-700 bg-background">
         <div className="max-w-4xl mx-auto text-center space-y-8 flex flex-col items-center gap-6">
@@ -101,7 +99,7 @@ function Home() {
           {/* Action Buttons */}
           <div className="flex gap-4 justify-center flex-wrap animate-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button asChild size="lg" className="h-11 px-8">
-              <Link to="/register">
+              <Link to={ROUTES.REGISTER}>
                 Get Started
                 <svg className="w-4 h-4 ml-2" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

@@ -63,7 +63,7 @@ export const apiClient = axios.create({
  * Safely retrieves a value from localStorage.
  * Returns null if localStorage is unavailable (SSR, tests, or blocked by browser).
  */
-function safeGetLocalStorage(key: string): string | null {
+export function safeGetLocalStorage(key: string): string | null {
   try {
     // Check if we're in a browser environment
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {

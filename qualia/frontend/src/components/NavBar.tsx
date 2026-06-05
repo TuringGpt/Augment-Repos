@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { ROUTES } from "@/config/routes";
 
 interface NavBarProps {
   variant?: "transparent" | "default";
@@ -31,7 +32,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
         <div className='flex items-center justify-between h-16'>
           {/* Logo */}
           <Link
-            to='/'
+            to={ROUTES.HOME}
             className={cn(
               "flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity",
               variant === "transparent" ? "text-white" : "text-primary",
@@ -61,7 +62,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
                     <Link
-                      to='/signin'
+                      to={ROUTES.SIGN_IN}
                       className={cn(navigationMenuTriggerStyle(), linkClasses)}
                     >
                       Sign In
@@ -80,7 +81,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                   : ""
               }
             >
-              <Link to='/register' className='text-white!'>
+              <Link to={ROUTES.REGISTER} className='text-white!'>
                 Get Started
               </Link>
             </Button>

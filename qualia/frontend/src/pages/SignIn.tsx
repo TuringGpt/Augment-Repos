@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useLogin } from "@/hooks/useLogin";
+import { ROUTES } from "@/config/routes";
 
 // Zod schema for sign-in form validation
 const signInSchema = z.object({
@@ -90,7 +91,7 @@ function SignIn() {
       }
       navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
-          navigate("/dashboard");
+          navigate(ROUTES.DASHBOARD);
         }
       }, 500);
     },
@@ -168,7 +169,7 @@ function SignIn() {
   });
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
+    <>
       <Card className='w-full max-w-sm animate-in slide-in-from-bottom-4 duration-500'>
         <CardHeader className='text-center space-y-2'>
           <CardTitle className='text-2xl font-bold'>
@@ -280,7 +281,7 @@ function SignIn() {
           </p>
         </CardFooter>
       </Card>
-    </div>
+    </>
   );
 }
 
