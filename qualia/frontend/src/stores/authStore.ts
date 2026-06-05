@@ -64,6 +64,9 @@ export const useAuthStore = create<AuthState>()(
         } else {
           // If storage fails, clear any partial state and remain unauthenticated
           console.error('Failed to store authentication tokens. LocalStorage may be unavailable or blocked.');
+          // Clean up any tokens that may have been partially stored to prevent desync
+          safeRemoveLocalStorage('access_token');
+          safeRemoveLocalStorage('refresh_token');
           set({ isAuthenticated: false, user: null });
         }
       },
