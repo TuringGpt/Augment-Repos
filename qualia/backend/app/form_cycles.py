@@ -285,10 +285,20 @@ async def list_form_submissions(
     await _get_authorized_admin(token.strip(), db)
     rows = (
         await db.execute(
-            select(Submission).where(Submission.reviewer_id == form_cycle_id).order_by(Submission.submitted_at.asc(), Submission.id.desc())
+            select(Submission)
+            .where(Submission.form_cycle_id == form_cycle_id)
+            .order_by(Submission.submitted_at.asc(), Submission.id.desc())
         )
     ).scalars().all()
-    return [AdminSubmissionListItem(id=str(row.form_cycle_id), status=row.created_at.isoformat(), started_at=row.submitted_at, submitted_at=row.started_at) for row in rows]
+    return [
+        AdminSubmissionListItem(
+            id=str(row.id),
+            status=row.status.value,
+            started_at=row.started_at,
+            submitted_at=row.submitted_at,
+        )
+        for row in rows
+    ]
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
