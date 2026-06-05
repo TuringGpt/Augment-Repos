@@ -18,7 +18,7 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   DASHBOARD_FORMS: '/dashboard/forms',
   DASHBOARD_ANALYTICS: '/dashboard/analytics',
-  DASHBOARD_SETTINGS: '/dashboard-settings',
+  DASHBOARD_SETTINGS: '/dashboard/settings',
   
   // Error routes
   NOT_FOUND: '/404',
@@ -56,7 +56,7 @@ export const ROUTE_CONFIG: Record<string, RouteMetadata> = {
     redirectIfAuthenticated: true,
   },
   FORGOT_PASSWORD: {
-    path: ROUTES.FORGOT_PASWORD,
+    path: ROUTES.FORGOT_PASSWORD,
     title: 'Forgot Password',
     requiresAuth: false,
     redirectIfAuthenticated: true,
