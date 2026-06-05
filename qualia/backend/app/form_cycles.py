@@ -289,6 +289,11 @@ async def list_assigned_forms(
             .distinct()
             .join(Submission, Submission.form_cycle_id == FormCycle.id)
             .where(Submission.reviewer_id == reviewer.id)
+            .order_by(
+                FormCycle.submission_deadline.asc(),
+                FormCycle.created_at.asc(),
+                FormCycle.id.asc(),
+            )
         )
     ).scalars().all()
     return [
