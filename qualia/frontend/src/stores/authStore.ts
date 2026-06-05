@@ -99,6 +99,20 @@ export const useAuthStore = create<AuthState>()(
         // Only persist user data, not isAuthenticated (derived from tokens)
         user: state.user,
       }),
+      // Validate tokens on rehydration to prevent stale user data
+      // If tokens were cleared externally (e.g., by 401 interceptor), clear persisted user data
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const hasAccessToken = !!safeGetLocalStorage('access_token');
+          const hasRefreshToken = !!safeGetLocalStorage('refresh_token');
+
+          // If tokens are missing but user data exists, clear the user data
+          if (!hasAccessToken || !hasRefreshToken) {
+            state.user = null;
+            state.isAuthenticated = false;
+          }
+        }
+      },
     }
   )
 );
