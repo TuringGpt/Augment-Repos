@@ -1,0 +1,41 @@
+import { useMutation } from '@tanstack/react-query';
+import { login } from '@/services/authService';
+import type { LoginRequest, LoginResponse } from '@/services/authService';
+
+/**
+ * TanStack Query mutation hook for user login
+ *
+ * Explicitly disables retry to prevent account lockout from
+ * excessive failed login attempts.
+ *
+ * @example
+ * ```tsx
+ * const { mutate, isPending, isError, error, data } = useLogin({
+ *   onSuccess: (data) => {
+ *     console.log('Login successful, tokens stored');
+ *     navigate('/dashboard');
+ *   },
+ *   onError: (error) => {
+ *     // error is typed as unknown - use type guards to safely access properties
+ *     if (error && typeof error === 'object' && 'message' in error) {
+ *       console.error('Login failed:', error.message);
+ *     }
+ *   }
+ * });
+ *
+ * // Call the mutation
+ * mutate({ email: 'user@example.com', password: 'password123' });
+ * ```
+ */
+export const useLogin = (options?: {
+  onSuccess?: (data: LoginResponse) => void;
+  onError?: (error: unknown) => void;
+}) => {
+  return useMutation({
+    mutationFn: (data: LoginRequest) => login(data),
+    onSuccess: options?.onSuccess,
+    onError: options?.onError,
+    // Disable retry to prevent account lockout from excessive failed attempts
+    retry: false,
+  });
+};

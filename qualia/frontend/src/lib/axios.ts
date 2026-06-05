@@ -77,10 +77,30 @@ function safeGetLocalStorage(key: string): string | null {
 }
 
 /**
+ * Safely sets a value in localStorage.
+ * Returns true if the operation succeeded, false otherwise.
+ * @returns boolean indicating whether the value was successfully stored
+ */
+export function safeSetLocalStorage(key: string, value: string): boolean {
+  try {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+      window.localStorage.setItem(key, value);
+      // Verify the value was actually stored by reading it back
+      return window.localStorage.getItem(key) === value;
+    }
+    return false;
+  } catch {
+    // localStorage access can throw when disabled/blocked
+    return false;
+  }
+}
+
+/**
  * Safely removes a value from localStorage.
  * Silently fails if localStorage is unavailable.
  */
-function safeRemoveLocalStorage(key: string): void {
+export function safeRemoveLocalStorage(key: string): void {
   try {
     if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
       window.localStorage.removeItem(key);

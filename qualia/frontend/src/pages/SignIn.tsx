@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useLogin } from "@/hooks/useLogin";
 
 // Zod schema for sign-in form validation
 const signInSchema = z.object({
@@ -50,17 +52,79 @@ const formFields = [
 ] as const;
 
 function SignIn() {
+  const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
   const isMountedRef = useRef(true);
+  const navigationTimerRef = useRef<number | null>(null);
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      // Clean up any pending navigation timer
+      if (navigationTimerRef.current !== null) {
+        clearTimeout(navigationTimerRef.current);
+      }
     };
   }, []);
+
+  // Use the TanStack Query mutation hook for login
+  const { mutateAsync: loginUser, isPending } = useLogin({
+    onSuccess: () => {
+      // Development-only logging (gated to prevent PII leakage in production)
+      if (import.meta.env.DEV) {
+        console.log("Login successful");
+      }
+
+      // Show success toast notification
+      toast.success("Login successful!", {
+        description: "Redirecting to dashboard...",
+      });
+
+      // Redirect to dashboard after successful login
+      // Small delay to allow toast to be visible
+      // Clear any existing timeout before scheduling a new one
+      if (navigationTimerRef.current !== null) {
+        clearTimeout(navigationTimerRef.current);
+      }
+      navigationTimerRef.current = window.setTimeout(() => {
+        if (isMountedRef.current) {
+          navigate("/dashboard");
+        }
+      }, 500);
+    },
+    onError: (err: unknown) => {
+      // React Query mutation errors are typed as unknown
+      // Use type guards to safely extract error messages
+      let errorMessage: string;
+
+      // Check if it's an Error instance (plain Error from token storage failure)
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      // Check if it's an object with a message property (ApiError from API call)
+      else if (err && typeof err === 'object' && 'message' in err) {
+        const message = (err as { message: unknown }).message;
+        errorMessage = typeof message === 'string'
+          ? message
+          : "Sign-in failed. Please check your credentials and try again.";
+      }
+      // Fallback for unexpected error shapes
+      else {
+        errorMessage = "Sign-in failed. Please check your credentials and try again.";
+      }
+
+      toast.error("Login failed", {
+        description: errorMessage,
+      });
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setError(errorMessage);
+      }
+    }
+  });
 
   const form = useForm({
     defaultValues: {
@@ -70,33 +134,35 @@ function SignIn() {
     onSubmit: async ({ value }) => {
       if (!isMountedRef.current) return;
       setError("");
-      setIsLoading(true);
 
       try {
         // Validate with Zod
         const validatedData = signInSchema.parse(value);
 
-        // TODO: Implement actual sign-in API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Development-only logging (gated to prevent PII leakage in production)
-        if (import.meta.env.DEV) {
-          console.log("Sign-in successful for:", validatedData.email);
-        }
+        // Call the login mutation
+        // Note: All errors from loginUser (ApiError, Error, etc.) are handled
+        // by the mutation's onError callback to avoid duplicate error handling
+        await loginUser({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
       } catch (err) {
-        if (!isMountedRef.current) return;
+        // Only handle Zod validation errors here
+        // All other errors from loginUser are already handled by the mutation's onError callback
         if (err instanceof z.ZodError) {
           const issues = err.issues;
-          setError(issues[0]?.message || "Validation failed");
-        } else {
-          setError(
-            "Sign-in failed. Please check your credentials and try again.",
-          );
+          const errorMessage = issues[0]?.message || "Validation failed";
+          // Only update state if component is still mounted
+          if (isMountedRef.current) {
+            setError(errorMessage);
+          }
+          // Show validation error toast
+          toast.error("Validation Error", {
+            description: errorMessage,
+          });
         }
-      } finally {
-        if (isMountedRef.current) {
-          setIsLoading(false);
-        }
+        // If it's not a ZodError, it came from the mutation and was already handled by onError
+        // We don't need to do anything here to avoid duplicate toasts
       }
     },
   });
@@ -162,7 +228,7 @@ function SignIn() {
                       }}
                       placeholder={fieldConfig.placeholder}
                       autoComplete={fieldConfig.autoComplete}
-                      disabled={isLoading}
+                      disabled={isPending}
                       className='h-10'
                     />
                     {field.state.meta.errors.length > 0 && (
@@ -186,11 +252,11 @@ function SignIn() {
 
             <Button
               type='submit'
-              disabled={isLoading}
+              disabled={isPending}
               className='w-full h-10'
-              aria-label={isLoading ? "Signing in..." : "Sign In"}
+              aria-label={isPending ? "Signing in..." : "Sign In"}
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Spinner />
                   <span className='ml-2'>Signing in...</span>
