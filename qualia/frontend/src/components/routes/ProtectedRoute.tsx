@@ -25,10 +25,13 @@ interface ProtectedRouteProps {
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
-  
-  // Check if user is authenticated by verifying token exists
+
+  // Check if user is authenticated by verifying both tokens exist
+  // Both access_token and refresh_token are required for consistent auth state
+  // This matches the authentication definition in authStore
   const accessToken = safeGetLocalStorage('access_token');
-  const isAuthenticated = !!accessToken;
+  const refreshToken = safeGetLocalStorage('refresh_token');
+  const isAuthenticated = !!accessToken && !!refreshToken;
 
   if (!isAuthenticated) {
     // Redirect to sign-in page while preserving the attempted location
