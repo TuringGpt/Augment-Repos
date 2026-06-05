@@ -111,10 +111,16 @@ export const useAuthStore = create<AuthState>()(
           const hasRefreshToken = !!safeGetLocalStorage('refresh_token');
 
           // If tokens are missing but user data exists, clear the user data
-          // Use the store's checkAuth method to properly trigger state updates and persistence
+          // Directly clear state to avoid TDZ issues and ensure changes stick during hydration
           if (!hasAccessToken || !hasRefreshToken) {
-            // Use the store's API to trigger proper state updates and subscriber notifications
-            useAuthStore.getState().clearAuth();
+            // Clear auth tokens from localStorage
+            safeRemoveLocalStorage('access_token');
+            safeRemoveLocalStorage('refresh_token');
+            // Clear persisted user data
+            safeRemoveLocalStorage('auth-storage');
+            // Reset state to unauthenticated
+            state.isAuthenticated = false;
+            state.user = null;
           }
         }
       },
