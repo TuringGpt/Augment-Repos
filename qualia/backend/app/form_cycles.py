@@ -41,6 +41,13 @@ class AttachmentUploadInitRequest(BaseModel):
     mime_type: str | None = Field(default=None, max_length=255)
 
 
+class AdminSubmissionListItem(BaseModel):
+    id: str
+    status: str
+    started_at: datetime | None
+    submitted_at: datetime | None
+
+
 class ReviewerAssignedForm(BaseModel):
     id: str
     title: str
@@ -273,6 +280,35 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.get("/{form_cycle_id}/submissions", response_model=list[AdminSubmissionListItem], status_code=200)
+async def list_form_submissions(
+    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> list[AdminSubmissionListItem]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    await _get_authorized_admin(token.strip(), db)
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    rows = (
+        await db.execute(
+            select(Submission)
+            .where(Submission.form_cycle_id == form_cycle_id)
+            .order_by(Submission.submitted_at.asc(), Submission.id.desc())
+        )
+    ).scalars().all()
+    return [
+        AdminSubmissionListItem(
+            id=str(row.id),
+            status=row.status.value,
+            started_at=row.started_at,
+            submitted_at=row.submitted_at,
+        )
+        for row in rows
+    ]
 
 
 @router.get("/assigned", response_model=list[ReviewerAssignedForm], status_code=200)
