@@ -62,7 +62,11 @@ export const useAuthStore = create<AuthState>()(
       // Check authentication status (useful for refreshing state)
       checkAuth: () => {
         const token = safeGetLocalStorage('access_token');
-        set({ isAuthenticated: !!token });
+        if (token) {
+          set({ isAuthenticated: true });
+        } else {
+          set({ isAuthenticated: false, user: null });
+        }
       },
 
       // Update user information
