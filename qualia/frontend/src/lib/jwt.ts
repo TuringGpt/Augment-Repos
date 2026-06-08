@@ -14,9 +14,15 @@ export interface JWTPayload {
 
 /**
  * Decode a JWT token without verification
- * This is safe for extracting user information from tokens we trust
- * (tokens we received from our own backend)
- * 
+ *
+ * ⚠️ SECURITY WARNING: This function does NOT verify the token signature.
+ * It is ONLY safe for UI display purposes (e.g., showing usernames, email).
+ * DO NOT use this for authorization or security decisions, as localStorage
+ * tokens can be tampered with on the client side.
+ *
+ * All authorization must be handled server-side using the token sent in
+ * HTTP headers, where the backend verifies the signature.
+ *
  * @param token - JWT token string
  * @returns Decoded payload or null if invalid
  */
