@@ -96,7 +96,7 @@ export function getUserDisplayName(): string {
     // Extract username from email (part before @)
     const username = email.split('@')[0];
     // Capitalize first letter
-    return username.charAt(0).toUpperCase() + username.slice();
+    return username.charAt(0).toUpperCase() + username.slice(1);
   }
   
   return 'User';
