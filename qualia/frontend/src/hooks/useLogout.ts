@@ -30,7 +30,7 @@ export const useLogout = (options?: {
   return useMutation({
     mutationFn: () => logout(),
     onSuccess: options?.onSuccess,
-    onError,
+    onError: options?.onError,
     // No retry needed for logout - it's a local operation
     retry: false,
   });
