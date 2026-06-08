@@ -31,9 +31,14 @@ export function decodeJWT(token: string): JWTPayload | null {
     
     // Decode the payload (second part)
     const payload = parts[1];
-    
+
     // Base64url decode
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+
+    // Add padding if needed (base64 strings must be multiple of 4)
+    const padLength = (4 - (base64.length % 4)) % 4;
+    base64 += '='.repeat(padLength);
+
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
