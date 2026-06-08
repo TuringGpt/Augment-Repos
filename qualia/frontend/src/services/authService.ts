@@ -110,3 +110,25 @@ export const register = async (data: RegisterRequest): Promise<RegisterResponse>
   const response = await apiClient.post<RegisterResponse>('/auth/signup', data);
   return response.data;
 };
+
+/**
+ * Logout a user
+ * Clears authentication tokens from localStorage
+ * This is a client-side logout that removes stored credentials
+ *
+ * @returns Promise that resolves when logout is complete
+ */
+export const logout = async (): Promise<void> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('Logging out user');
+  }
+
+  // Clear tokens from localStorage
+  safeRemoveLocalStorage('access_token');
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('Tokens cleared from localStorage');
+  }
+};
