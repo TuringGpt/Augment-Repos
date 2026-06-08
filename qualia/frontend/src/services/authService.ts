@@ -124,8 +124,9 @@ export const logout = async (): Promise<void> => {
     console.log('Logging out user');
   }
 
-  // Clear tokens from localStorage
+  // Clear both tokens from localStorage to prevent unexpected re-authentication
   safeRemoveLocalStorage('access_token');
+  safeRemoveLocalStorage('refresh_token');
 
   // Debug logging in development
   if (import.meta.env.DEV) {
