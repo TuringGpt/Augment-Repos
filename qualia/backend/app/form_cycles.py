@@ -286,7 +286,7 @@ async def submit_form_cycle(
 async def list_form_submissions(
     form_cycle_id: uuid.UUID,
     status: SubmissionStatus | None = None,
-    sort: str = "submitted_at_desc",
+    sort: str = "submitted_at_asc",
     authorization: str = Header(""),
     db: AsyncSession = Depends(get_db),
 ) -> list[AdminSubmissionListItem]:
@@ -308,7 +308,7 @@ async def list_form_submissions(
     }
     rows = (
         await db.execute(
-            query.order_by(*sort_columns.get(sort, (Submission.submitted_at.desc(), Submission.id.desc())))
+            query.order_by(*sort_columns.get(sort, (Submission.submitted_at.asc(), Submission.id.asc())))
         )
     ).scalars().all()
     return [
