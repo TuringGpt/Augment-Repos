@@ -18,7 +18,7 @@ class AIReport(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     submission_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid, ForeignKey("submissions.id"), index=True, nullable=True
+        Uuid, ForeignKey("submissions.id", ondelete="SET NULL"), index=True, nullable=True
     )
     status: Mapped[AIReportStatus] = mapped_column(
         Enum(
