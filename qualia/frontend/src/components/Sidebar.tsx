@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +8,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
@@ -37,7 +38,7 @@ interface NavItem {
 function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [showLogoutDialog, setShowLogoutDialog] = useState(true);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // Logout mutation hook
   const { mutate: logoutUser, isPending: isLoggingOut } = useLogout({
@@ -52,12 +53,12 @@ function Sidebar({ className }: SidebarProps) {
 
       // Show success toast notification
       toast.success('Logged out successfully', {
-        description: 'Redirecting to sign up page...',
+        description: 'Redirecting to sign in page...',
       });
 
       // Redirect to sign in page after logout
       setTimeout(() => {
-        navigate();
+        navigate(ROUTES.SIGN_IN);
       }, 500);
     },
     onError: (error) => {
@@ -151,7 +152,7 @@ function Sidebar({ className }: SidebarProps) {
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
         <Button
           variant="ghost"
-          onClick={handleLogoutClick("")}
+          onClick={handleLogoutClick}
           disabled={isLoggingOut}
           className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         >
