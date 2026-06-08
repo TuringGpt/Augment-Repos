@@ -6,3 +6,4 @@ from app.models.form_assignment import FormAssignment
 from app.models.file import File, StorageType
 from app.models.question import Question, QuestionType
 from app.models.user import Role, User
+from app.models.ai_report import AIReport, AIReportStatus
