@@ -55,8 +55,9 @@ export function decodeJWT(token: string): JWTPayload | null {
     );
     
     return JSON.parse(jsonPayload) as JWTPayload;
-  } catch (error) {
-    console.error('Failed to decode JWT:', error);
+  } catch {
+    // Silently return null - decode failures are expected (malformed/missing tokens)
+    // and should not spam console during component re-renders
     return null;
   }
 }
@@ -74,8 +75,8 @@ export function getUserFromToken(): JWTPayload | null {
     }
 
     return decodeJWT(token);
-  } catch (error) {
-    console.error('Failed to get user from token:', error);
+  } catch {
+    // Silently return null - failures are expected and handled gracefully
     return null;
   }
 }
