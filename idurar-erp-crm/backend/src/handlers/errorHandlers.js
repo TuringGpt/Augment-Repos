@@ -6,6 +6,8 @@
   catchErrors(), catch any errors they throw, and pass it along to our express middleware with next()
 */
 
+const { logger } = require('@/utils/logger');
+
 exports.catchErrors = (fn) => {
   return function (req, res, next) {
     return fn(req, res, next).catch((error) => {
@@ -19,6 +21,7 @@ exports.catchErrors = (fn) => {
         });
       } else {
         // Server Error
+        logger.error(`Error in controller ${fn.name}: ${error.message}`);
         return res.status(500).json({
           success: false,
           result: null,
@@ -56,6 +59,8 @@ exports.developmentErrors = (error, req, res, next) => {
     stackHighlighted: error.stack.replace(/[a-z_-\d]+.js:\d+:\d+/gi, '<mark>$&</mark>'),
   };
 
+  logger.error(`Unhandled error: ${error.message}\n${error.stack}`);
+
   return res.status(500).json({
     success: false,
     message: error.message,
@@ -69,6 +74,7 @@ exports.developmentErrors = (error, req, res, next) => {
   No stacktraces are leaked to admin
 */
 exports.productionErrors = (error, req, res, next) => {
+  logger.error(`Unhandled error: ${error.message}`);
   return res.status(500).json({
     success: false,
     message: error.message,
