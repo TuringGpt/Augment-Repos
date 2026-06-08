@@ -14,7 +14,7 @@ class AIReportStatus(str, enum.Enum):
 
 
 class AIReport(Base):
-    __tablename__ = "ai_report"
+    __tablename__ = "ai_reports"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     submission_id: Mapped[uuid.UUID | None] = mapped_column(
