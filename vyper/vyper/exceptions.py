@@ -141,7 +141,7 @@ class _BaseVyperException(Exception):
             node_msg = self._format_contract_details(node_msg, self.resolved_path, node.lineno)
 
         col_offset_str = "" if node.col_offset is None else str(node.col_offset)
-        node_msg = f"{node_msg}line {node.lineno}:{col_offset_str} \n{source_annotation}\n"
+        node_msg = f"{node_msg}line {node.lineno}:{col_offset_str}\n{source_annotation}\n"
 
         if isinstance(value, tuple):
             # if annotation includes a message, apply it at the start and further indent
