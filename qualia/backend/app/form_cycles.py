@@ -1,3 +1,4 @@
+import enum
 import re
 import uuid
 from datetime import UTC, datetime
@@ -46,6 +47,13 @@ class AdminSubmissionListItem(BaseModel):
     status: str
     started_at: datetime | None
     submitted_at: datetime | None
+
+
+class SubmissionSort(str, enum.Enum):
+    started_at_asc = "started_at_asc"
+    started_at_desc = "started_at_desc"
+    submitted_at_asc = "submitted_at_asc"
+    submitted_at_desc = "submitted_at_desc"
 
 
 class ReviewerAssignedForm(BaseModel):
@@ -286,7 +294,7 @@ async def submit_form_cycle(
 async def list_form_submissions(
     form_cycle_id: uuid.UUID,
     status: SubmissionStatus | None = None,
-    sort: str = "submitted_at_asc",
+    sort: SubmissionSort = SubmissionSort.submitted_at_asc,
     authorization: str = Header(""),
     db: AsyncSession = Depends(get_db),
 ) -> list[AdminSubmissionListItem]:
@@ -301,16 +309,12 @@ async def list_form_submissions(
     if status is not None:
         query = query.where(Submission.status == status)
     sort_columns = {
-        "started_at_asc": (Submission.started_at.asc(), Submission.id.asc()),
-        "started_at_desc": (Submission.started_at.desc(), Submission.id.desc()),
-        "submitted_at_asc": (Submission.submitted_at.asc(), Submission.id.asc()),
-        "submitted_at_desc": (Submission.submitted_at.desc(), Submission.id.desc()),
+        SubmissionSort.started_at_asc: (Submission.started_at.asc(), Submission.id.desc()),
+        SubmissionSort.started_at_desc: (Submission.started_at.desc(), Submission.id.desc()),
+        SubmissionSort.submitted_at_asc: (Submission.submitted_at.asc(), Submission.id.desc()),
+        SubmissionSort.submitted_at_desc: (Submission.submitted_at.desc(), Submission.id.desc()),
     }
-    rows = (
-        await db.execute(
-            query.order_by(*sort_columns.get(sort, (Submission.submitted_at.asc(), Submission.id.asc())))
-        )
-    ).scalars().all()
+    rows = (await db.execute(query.order_by(*sort_columns[sort]))).scalars().all()
     return [
         AdminSubmissionListItem(
             id=str(row.id),
