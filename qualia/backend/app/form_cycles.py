@@ -309,10 +309,10 @@ async def list_form_submissions(
     if status is not None:
         query = query.where(Submission.status == status)
     sort_columns = {
-        SubmissionSort.started_at_asc: (Submission.started_at.asc(), Submission.id.desc()),
-        SubmissionSort.started_at_desc: (Submission.started_at.desc(), Submission.id.desc()),
-        SubmissionSort.submitted_at_asc: (Submission.submitted_at.asc(), Submission.id.desc()),
-        SubmissionSort.submitted_at_desc: (Submission.submitted_at.desc(), Submission.id.desc()),
+        SubmissionSort.started_at_asc: (Submission.started_at.asc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.started_at_desc: (Submission.started_at.desc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.submitted_at_asc: (Submission.submitted_at.asc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.submitted_at_desc: (Submission.submitted_at.desc().nulls_last(), Submission.id.desc()),
     }
     rows = (await db.execute(query.order_by(*sort_columns[sort]))).scalars().all()
     return [
