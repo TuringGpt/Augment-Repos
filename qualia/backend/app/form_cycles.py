@@ -298,19 +298,18 @@ async def list_form_submissions(
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
     query = select(Submission).where(Submission.form_cycle_id == form_cycle_id)
-    if status is None:
-        query = query.where(Submission.status == SubmissionStatus.submitted)
-    elif status == SubmissionStatus.submitted:
-        query = query.where(Submission.status == SubmissionStatus.started)
-    else:
+    if status is not None:
         query = query.where(Submission.status == status)
     sort_columns = {
         "started_at_asc": (Submission.started_at.asc(), Submission.id.asc()),
-        "started_at_desc": (Submission.started_at.asc(), Submission.id.desc()),
+        "started_at_desc": (Submission.started_at.desc(), Submission.id.desc()),
         "submitted_at_asc": (Submission.submitted_at.asc(), Submission.id.asc()),
+        "submitted_at_desc": (Submission.submitted_at.desc(), Submission.id.desc()),
     }
     rows = (
-        await db.execute(query.order_by(*sort_columns.get(sort, (Submission.submitted_at.asc(), Submission.id.desc()))))
+        await db.execute(
+            query.order_by(*sort_columns.get(sort, (Submission.submitted_at.desc(), Submission.id.desc())))
+        )
     ).scalars().all()
     return [
         AdminSubmissionListItem(
