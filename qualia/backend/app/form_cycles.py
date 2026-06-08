@@ -1,3 +1,4 @@
+import enum
 import re
 import uuid
 from datetime import UTC, datetime
@@ -46,6 +47,13 @@ class AdminSubmissionListItem(BaseModel):
     status: str
     started_at: datetime | None
     submitted_at: datetime | None
+
+
+class SubmissionSort(str, enum.Enum):
+    started_at_asc = "started_at_asc"
+    started_at_desc = "started_at_desc"
+    submitted_at_asc = "submitted_at_asc"
+    submitted_at_desc = "submitted_at_desc"
 
 
 class ReviewerAssignedForm(BaseModel):
@@ -284,7 +292,11 @@ async def submit_form_cycle(
 
 @router.get("/{form_cycle_id}/submissions", response_model=list[AdminSubmissionListItem], status_code=200)
 async def list_form_submissions(
-    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+    form_cycle_id: uuid.UUID,
+    status: SubmissionStatus | None = None,
+    sort: SubmissionSort = SubmissionSort.submitted_at_asc,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
 ) -> list[AdminSubmissionListItem]:
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
@@ -293,13 +305,16 @@ async def list_form_submissions(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    rows = (
-        await db.execute(
-            select(Submission)
-            .where(Submission.form_cycle_id == form_cycle_id)
-            .order_by(Submission.submitted_at.asc(), Submission.id.desc())
-        )
-    ).scalars().all()
+    query = select(Submission).where(Submission.form_cycle_id == form_cycle_id)
+    if status is not None:
+        query = query.where(Submission.status == status)
+    sort_columns = {
+        SubmissionSort.started_at_asc: (Submission.started_at.asc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.started_at_desc: (Submission.started_at.desc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.submitted_at_asc: (Submission.submitted_at.asc().nulls_last(), Submission.id.desc()),
+        SubmissionSort.submitted_at_desc: (Submission.submitted_at.desc().nulls_last(), Submission.id.desc()),
+    }
+    rows = (await db.execute(query.order_by(*sort_columns[sort]))).scalars().all()
     return [
         AdminSubmissionListItem(
             id=str(row.id),
