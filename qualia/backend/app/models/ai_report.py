@@ -1,7 +1,9 @@
 import enum
 import uuid
+
 from sqlalchemy import Enum, ForeignKey, String, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.core.database import Base
 
 
@@ -13,8 +15,9 @@ class AIReportStatus(str, enum.Enum):
 
 class AIReport(Base):
     __tablename__ = "ai_report"
+
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    submission_id: Mapped[uuid.UUID] = mapped_column(
+    submission_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("submissions.id"), index=True, nullable=True
     )
     status: Mapped[AIReportStatus] = mapped_column(
@@ -27,4 +30,4 @@ class AIReport(Base):
         server_default=text("'pending'"),
         nullable=False,
     )
-    provider: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    provider: Mapped[str] = mapped_column(String(255), nullable=False)
