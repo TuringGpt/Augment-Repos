@@ -3,6 +3,7 @@ import WelcomeBanner from '@/components/WelcomeBanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileTextIcon, CheckCircleIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
+import { getUserDisplayName } from '@/lib/jwt';
 
 interface StatsCard {
   title: string;
