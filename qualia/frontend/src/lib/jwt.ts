@@ -3,6 +3,8 @@
  * Provides JWT token decoding without external dependencies
  */
 
+import { safeGetLocalStorage } from './axios';
+
 export interface JWTPayload {
   sub?: string;  // Subject (typically user ID or email)
   email?: string;
@@ -61,16 +63,16 @@ export function decodeJWT(token: string): JWTPayload | null {
 
 /**
  * Get user information from access token stored in localStorage
- * 
+ *
  * @returns User payload or null if no valid token
  */
 export function getUserFromToken(): JWTPayload | null {
   try {
-    const token = localStorage.getItem('access_token');
+    const token = safeGetLocalStorage('access_token');
     if (!token) {
       return null;
     }
-    
+
     return decodeJWT(token);
   } catch (error) {
     console.error('Failed to get user from token:', error);
