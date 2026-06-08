@@ -117,6 +117,8 @@ class _BaseVyperException(Exception):
                 f"{node.full_source_code} ",
                 node.lineno,
                 node.col_offset,
+                end_lineno=getattr(node, "end_lineno", None),
+                end_col_offset=getattr(node, "end_col_offset", None),
                 context_lines=VYPER_ERROR_CONTEXT_LINES,
                 line_numbers=VYPER_ERROR_LINE_NUMBERS,
             )
@@ -194,10 +196,21 @@ class VyperException(_BaseVyperException):
 class SyntaxException(VyperException):
     """Invalid syntax."""
 
-    def __init__(self, message, source_code, lineno, col_offset, hint=None):
+    def __init__(
+        self,
+        message,
+        source_code,
+        lineno,
+        col_offset,
+        end_lineno=None,
+        end_col_offset=None,
+        hint=None,
+    ):
         item = types.SimpleNamespace()  # TODO: Create an actual object for this
         item.lineno = lineno
         item.col_offset = col_offset
+        item.end_lineno = end_lineno
+        item.end_col_offset = end_col_offset
         item.full_source_code = source_code
         super().__init__(message, item, hint=hint)
 

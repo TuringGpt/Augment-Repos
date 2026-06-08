@@ -606,6 +606,8 @@ def annotate_source_code(
     col_offset: int = None,
     context_lines: int = 0,
     line_numbers: bool = False,
+    end_lineno: int = None,
+    end_col_offset: int = None,
 ) -> str:
     """
     Annotate the location specified by ``lineno`` and ``col_offset`` in the
@@ -619,6 +621,8 @@ def annotate_source_code(
         below the source location.
     :param line_numbers: If true, line numbers are included in the location
         representation.
+    :param end_lineno: The 1-indexed end line number of the source location.
+    :param end_col_offset: The 0-indexed end column offset of the source location.
 
     :return: A string containing the annotated source code location.
     """
@@ -631,45 +635,53 @@ def annotate_source_code(
 
     line_offset = lineno - 1
     start_offset = max(0, line_offset - context_lines)
-    end_offset = min(len(source_lines), line_offset + context_lines + 1)
+    source_end_offset = line_offset if end_lineno is None else end_lineno - 1
+    end_offset = min(len(source_lines), max(line_offset, source_end_offset) + context_lines + 1)
 
-    line_repr = source_lines[line_offset]
-    if "\n" not in line_repr[-2:]:  # Handle certain edge cases
-        line_repr += "\n"
-    if col_offset is None:
-        mark_repr = ""
-    else:
-        mark_repr = "-" * col_offset + "^" + "\n"
+    if col_offset is not None:
+        end_lineno = lineno if end_lineno is None else end_lineno
+        end_col_offset = col_offset + 1 if end_col_offset is None else end_col_offset
 
-    before_lines = "".join(source_lines[start_offset:line_offset])
-    after_lines = "".join(source_lines[line_offset + 1 : end_offset])
-    location_repr = "".join((before_lines, line_repr, mark_repr, after_lines))
+    line_number_width = len(str(end_offset))
+    location_lines = []
 
     if line_numbers:
-        # Create line numbers
-        lineno_reprs = [f"{i} " for i in range(start_offset + 1, end_offset + 1)]
+        location_lines.append(f"{'':>{line_number_width}} |")
 
-        # Highlight line identified by `lineno`
-        local_line_off = line_offset - start_offset
-        lineno_reprs[local_line_off] = "---> " + lineno_reprs[local_line_off]
+    for current_offset in range(start_offset, end_offset):
+        current_lineno = current_offset + 1
+        line_repr = source_lines[current_offset]
+        if "\n" not in line_repr[-2:]:  # Handle certain edge cases
+            line_repr += "\n"
+        line_repr = line_repr.rstrip()
 
-        # Calculate width of widest line no
-        max_len = max(len(i) for i in lineno_reprs)
+        if line_numbers:
+            location_lines.append(f"{current_lineno:>{line_number_width}} | {line_repr}")
+        else:
+            location_lines.append(line_repr)
 
-        # Justify all line nos according to this width
-        justified_reprs = [i.rjust(max_len) for i in lineno_reprs]
-        if col_offset is not None:
-            justified_reprs.insert(local_line_off + 1, "-" * max_len)
+        if col_offset is None:
+            continue
+        if current_lineno < lineno or current_lineno > end_lineno:
+            continue
 
-        location_repr = indent(location_repr, indent_chars=justified_reprs)
+        start_col = col_offset if current_lineno == lineno else 0
+        if current_lineno == end_lineno:
+            end_col = end_col_offset
+        else:
+            end_col = len(line_repr)
+        marker_width = max(1, end_col - start_col)
+        marker_repr = f"{' ' * start_col}{'^' * marker_width}"
+
+        if line_numbers:
+            marker_repr = f"{'':>{line_number_width}} | {marker_repr}"
+        location_lines.append(marker_repr.rstrip())
+
+    location_repr = "\n".join(location_lines)
 
     # Ensure no trailing whitespace and trailing blank lines are only included
     # if they are part of the source code
-    if col_offset is None:
-        # Number of lines doesn't include column marker line
-        num_lines = end_offset - start_offset
-    else:
-        num_lines = end_offset - start_offset + 1
+    num_lines = len(location_lines)
 
     cleanup_lines = [line.rstrip() for line in location_repr.splitlines()]
     cleanup_lines += [""] * (num_lines - len(cleanup_lines))

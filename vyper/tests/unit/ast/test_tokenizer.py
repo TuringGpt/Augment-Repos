@@ -27,10 +27,11 @@ def f():
  'd' has not been declared.
 
   function "f", line 7:12 
-       6 def f():
-  ---> 7     log A(b=d)
-  -------------------^
-       8
+    |
+  6 | def f():
+  7 |     log A(b=d)
+    |             ^
+  8 |
     """  # noqa: W291
     assert expected.strip() == str(e.value).strip()
 

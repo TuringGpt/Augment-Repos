@@ -89,7 +89,17 @@ def _parse_to_ast(
             if e.lineno is not None:  # help mypy
                 offset += pre_parser.adjustments.get((e.lineno, offset), 0)
 
-        new_e = SyntaxException(str(e), vyper_source, e.lineno, offset)
+        end_offset = e.end_offset
+        if end_offset is not None:
+            # SyntaxError end_offset is also 1-based.
+            end_offset -= 1
+
+            if e.end_lineno is not None:  # help mypy
+                end_offset += pre_parser.adjustments.get((e.end_lineno, end_offset), 0)
+
+        new_e = SyntaxException(
+            str(e), vyper_source, e.lineno, offset, e.end_lineno, end_offset
+        )
 
         likely_errors = ("staticall", "staticcal")
         tmp = str(new_e)
