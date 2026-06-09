@@ -178,6 +178,7 @@ function Forms() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
                 <TableHead>Last Updated</TableHead>
