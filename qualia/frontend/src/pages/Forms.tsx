@@ -106,7 +106,7 @@ function Forms() {
   );
 
   const handleDeleteForm = (id: string) => {
-    setForms(forms.filter((form) => form.id !== id));
+    setForms((prevForms) => prevForms.filter((form) => form.id !== id));
     toast.success("Form deleted successfully!");
   };
 
@@ -120,7 +120,7 @@ function Forms() {
       updatedAt: new Date().toISOString().split("T")[0],
     };
 
-    setForms([duplicatedForm, ...forms]);
+    setForms((prevForms) => [duplicatedForm, ...prevForms]);
     toast.success("Form duplicated successfully!");
   };
 
