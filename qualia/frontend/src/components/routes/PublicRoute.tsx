@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage } from '@/lib/storage';
 
 interface PublicRouteProps {
   children: ReactNode;
@@ -25,13 +25,16 @@ interface PublicRouteProps {
  * } />
  * ```
  */
-export function PublicRoute({ 
-  children, 
-  redirectIfAuthenticated = false 
+export function PublicRoute({
+  children,
+  redirectIfAuthenticated = false
 }: PublicRouteProps) {
-  // Check if user is authenticated by verifying token exists
+  // Check if user is authenticated by verifying both tokens exist
+  // Both access_token and refresh_token are required for consistent auth state
+  // This matches the authentication definition in authStore
   const accessToken = safeGetLocalStorage('access_token');
-  const isAuthenticated = !!accessToken;
+  const refreshToken = safeGetLocalStorage('refresh_token');
+  const isAuthenticated = !!accessToken && !!refreshToken;
 
   if (isAuthenticated && redirectIfAuthenticated) {
     // Redirect authenticated users to dashboard
