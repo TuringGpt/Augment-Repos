@@ -35,7 +35,7 @@ export function ThemeSelector() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => setTheme("light")}
+          onSelect={() => setTheme("light")}
           className="gap-2"
         >
           <SunIcon className="size-4" />
@@ -43,7 +43,7 @@ export function ThemeSelector() {
           {theme === "light" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("dark")}
+          onSelect={() => setTheme("dark")}
           className="gap-2"
         >
           <MoonIcon className="size-4" />
@@ -51,7 +51,7 @@ export function ThemeSelector() {
           {theme === "dark" && <span className="ml-auto text-xs">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setTheme("system")}
+          onSelect={() => setTheme("system")}
           className="gap-2"
         >
           <MonitorIcon className="size-4" />
