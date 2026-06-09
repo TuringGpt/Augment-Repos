@@ -182,7 +182,9 @@ function Forms() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
                 <TableHead>Last Updated</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-[70px]">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
