@@ -6,6 +6,7 @@ import Logo from '@/components/Logo';
 import { ROUTES } from '@/config/routes';
 import {
   HomeIcon,
+  FileTextIcon,
   // TODO: Uncomment these imports when the corresponding nav items are re-enabled
   // BarChartIcon,
   // SettingsIcon,
