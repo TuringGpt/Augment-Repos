@@ -229,7 +229,7 @@ function Forms() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDeleteForm(form.id)}
-                            className="text-destructive"
+                            variant="destructive"
                           >
                             <TrashIcon className="mr-2 h-4 w-4" />
                             Delete
