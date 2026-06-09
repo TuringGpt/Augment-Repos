@@ -131,7 +131,7 @@ function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-1 p-4">
+      <nav className="flex flex-col gap-1 p-4 pb-32">
         {navItems.map((item) => (
           <Link
             key={item.name}
