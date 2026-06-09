@@ -7,7 +7,6 @@ import { ROUTES } from '@/config/routes';
 import {
   HomeIcon,
   // TODO: Uncomment these imports when the corresponding nav items are re-enabled
-  // FileTextIcon,
   // BarChartIcon,
   // SettingsIcon,
   LogOutIcon,
@@ -32,12 +31,12 @@ function Sidebar({ className }: SidebarProps) {
       href: ROUTES.DASHBOARD,
       icon: <HomeIcon className="w-5 h-5" />,
     },
+    {
+      name: 'Forms',
+      href: ROUTES.DASHBOARD_FORMS,
+      icon: <FileTextIcon className="w-5 h-5" />,
+    },
     // TODO: Uncomment these items when the corresponding routes are implemented in AppRoutes
-    // {
-    //   name: 'Forms',
-    //   href: ROUTES.DASHBOARD_FORMS,
-    //   icon: <FileTextIcon className="w-5 h-5" />,
-    // },
     // {
     //   name: 'Analytics',
     //   href: ROUTES.DASHBOARD_ANALYTICS,
