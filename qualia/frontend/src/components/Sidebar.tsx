@@ -1,10 +1,22 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import Logo from '@/components/Logo';
 import { ROUTES } from '@/config/routes';
 import { ThemeSelector } from '@/components/theme-selector';
+import { useLogout } from '@/hooks/useLogout';
+import { toast } from 'sonner';
 import {
   HomeIcon,
   // TODO: Uncomment these imports when the corresponding nav items are re-enabled
@@ -26,6 +38,45 @@ interface NavItem {
 
 function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  // Logout mutation hook
+  const { mutate: logoutUser, isPending: isLoggingOut } = useLogout({
+    onSuccess: () => {
+      // Development-only logging
+      if (import.meta.env.DEV) {
+        console.log('Logout successful');
+      }
+
+      // Close the dialog
+      setShowLogoutDialog(false);
+
+      // Show success toast notification
+      toast.success('Logged out successfully', {
+        description: 'Redirecting to sign in page...',
+      });
+
+      // Redirect to sign in page after logout
+      setTimeout(() => {
+        navigate(ROUTES.SIGN_IN);
+      }, 500);
+    },
+    onError: (error) => {
+      // Development-only logging
+      if (import.meta.env.DEV) {
+        console.error('Logout failed:', error);
+      }
+
+      // Close the dialog
+      setShowLogoutDialog(false);
+
+      // Show error toast
+      toast.error('Logout failed', {
+        description: 'Please try again',
+      });
+    },
+  });
 
   const navItems: NavItem[] = [
     {
@@ -56,6 +107,14 @@ function Sidebar({ className }: SidebarProps) {
       return location.pathname === href;
     }
     return location.pathname.startsWith(href);
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const handleConfirmLogout = () => {
+    logoutUser();
   };
 
   return (
@@ -98,16 +157,32 @@ function Sidebar({ className }: SidebarProps) {
         </div>
         <Button
           variant="ghost"
-          onClick={() => {
-            // TODO: Implement logout functionality
-            console.log('Logout clicked');
-          }}
+          onClick={handleLogoutClick}
+          disabled={isLoggingOut}
           className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         >
           <LogOutIcon className="w-5 h-5" />
-          <span>Logout</span>
+          <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
         </Button>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be redirected to the sign-in page and will need to log in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoggingOut}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmLogout} disabled={isLoggingOut}>
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

@@ -3,6 +3,7 @@ import WelcomeBanner from '@/components/WelcomeBanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileTextIcon, CheckCircleIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
+import { getUserDisplayName } from '@/lib/jwt';
 
 interface StatsCard {
   title: string;
@@ -13,6 +14,9 @@ interface StatsCard {
 }
 
 function Dashboard() {
+  // Get user's display name from JWT token
+  const userName = getUserDisplayName();
+
   // Mock data - replace with actual data from API
   const stats: StatsCard[] = [
     {
@@ -47,7 +51,7 @@ function Dashboard() {
   return (
     <>
       {/* Welcome Banner */}
-      <WelcomeBanner userName="John" />
+      <WelcomeBanner userName={userName} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
