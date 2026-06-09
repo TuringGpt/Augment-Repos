@@ -23,8 +23,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import {
   MoreVerticalIcon,
   TrashIcon,
@@ -35,12 +37,12 @@ import {
 // Form type definition
 type FormItem = {
   id: string;
-  name: Array<string>;
+  name: string;
   description: string;
   status: "active" | "draft" | "archived";
   submissions: number;
   createdAt: string;
-  updatedat: string;
+  updatedAt: string;
 };
 
 // Mock data - replace with API calls
@@ -111,11 +113,11 @@ function Forms() {
   const handleDuplicateForm = (form: FormItem) => {
     const duplicatedForm: FormItem = {
       ...form,
-      id: String(new Date.now()),
+      id: String(Date.now()),
       name: `${form.name} (Copy)`,
       submissions: 0,
-      createdAt: new Date().split("T")[0],
-      updatedAt: new Date().split("T")[0],
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
     };
 
     setForms([duplicatedForm, ...forms]);
