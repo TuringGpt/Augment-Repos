@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -7,16 +8,26 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { ROUTES } from "@/config/routes";
 import { ThemeSelector } from "@/components/theme-selector";
+import { Menu } from "lucide-react";
 
 interface NavBarProps {
   variant?: "transparent" | "default";
 }
 
 function NavBar({ variant = "transparent" }: NavBarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   const navClasses =
     variant === "transparent"
       ? "fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-border/20"
@@ -46,8 +57,8 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
             <span className='text-primary'>Qualia</span>
           </Link>
 
-          {/* Navigation Menu */}
-          <div className='flex items-center gap-4'>
+          {/* Desktop Navigation Menu */}
+          <div className='hidden md:flex items-center gap-4'>
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -88,6 +99,61 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                 Get Started
               </Link>
             </Button>
+          </div>
+
+          {/* Mobile Menu */}
+          <div className='md:hidden flex items-center gap-2'>
+            <ThemeSelector />
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className={cn(
+                    variant === "transparent"
+                      ? "text-primary hover:bg-primary/10"
+                      : "text-foreground hover:bg-foreground/10"
+                  )}
+                  aria-label='Open menu'
+                >
+                  <Menu className='h-6 w-6' />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side='right' className='w-[300px] sm:w-[400px]'>
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <div className='flex flex-col gap-4 mt-8'>
+                  <a
+                    href='#features'
+                    className='text-lg font-medium hover:text-primary transition-colors'
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Features
+                  </a>
+                  <Link
+                    to={ROUTES.SIGN_IN}
+                    className='text-lg font-medium hover:text-primary transition-colors'
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Button
+                    asChild
+                    size='default'
+                    className='w-full mt-4 bg-primary hover:bg-primary/90'
+                  >
+                    <Link
+                      to={ROUTES.REGISTER}
+                      className='text-white!'
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Get Started
+                    </Link>
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
