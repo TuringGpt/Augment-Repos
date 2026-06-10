@@ -62,13 +62,33 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
       // Navigate to home page first, then scroll after component loads
       navigate(ROUTES.HOME);
 
-      // Wait for the lazy-loaded home page to render, then scroll
-      setTimeout(() => {
+      // Poll for the element to exist before scrolling (handles lazy-loaded routes)
+      const scrollToFeatures = () => {
         const element = document.getElementById('features');
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          // Retry up to 20 times (2 seconds total) with 100ms intervals
+          let attempts = 0;
+          const maxAttempts = 20;
+          const interval = setInterval(() => {
+            attempts++;
+            const element = document.getElementById('features');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              clearInterval(interval);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(interval);
+              console.warn('Features element not found after navigation');
+            }
+          }, 100);
         }
-      }, 100);
+      };
+
+      // Use requestAnimationFrame to ensure navigation has been processed
+      requestAnimationFrame(() => {
+        requestAnimationFrame(scrollToFeatures);
+      });
     }
 
     // Close mobile menu if open
