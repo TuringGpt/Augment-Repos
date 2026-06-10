@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -29,6 +29,7 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const scrollIntervalRef = useRef<number | null>(null);
 
   // Close mobile menu when window is resized above mobile breakpoint
   useEffect(() => {
@@ -44,6 +45,15 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  // Cleanup scroll interval on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollIntervalRef.current !== null) {
+        clearInterval(scrollIntervalRef.current);
+      }
+    };
+  }, []);
 
   /**
    * Handle navigation to home page with hash anchor
@@ -73,6 +83,12 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
       // Navigate to home page with hash anchor
       navigate(`${ROUTES.HOME}#features`);
 
+      // Clear any existing scroll interval to prevent multiple concurrent intervals
+      if (scrollIntervalRef.current !== null) {
+        clearInterval(scrollIntervalRef.current);
+        scrollIntervalRef.current = null;
+      }
+
       // Poll for the element to exist before scrolling (handles lazy-loaded routes)
       const scrollToFeatures = () => {
         const element = document.getElementById('features');
@@ -82,14 +98,20 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
           // Retry up to 20 times (2 seconds total) with 100ms intervals
           let attempts = 0;
           const maxAttempts = 20;
-          const interval = setInterval(() => {
+          scrollIntervalRef.current = setInterval(() => {
             attempts++;
             const element = document.getElementById('features');
             if (element) {
               element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              clearInterval(interval);
+              if (scrollIntervalRef.current !== null) {
+                clearInterval(scrollIntervalRef.current);
+                scrollIntervalRef.current = null;
+              }
             } else if (attempts >= maxAttempts) {
-              clearInterval(interval);
+              if (scrollIntervalRef.current !== null) {
+                clearInterval(scrollIntervalRef.current);
+                scrollIntervalRef.current = null;
+              }
               console.warn('Features element not found after navigation');
             }
           }, 100);
