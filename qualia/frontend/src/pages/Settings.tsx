@@ -3,9 +3,10 @@ import { useTheme } from 'next-themes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { getUserFromToken } from '@/lib/jwt';
 import { toast } from 'sonner';
-import { UserIcon, BellIcon, ShieldIcon } from 'lucide-react';
+import { UserIcon, BellIcon, ShieldIcon, PaletteIcon } from 'lucide-react';
 
 /**
  * Settings Page Component
@@ -17,8 +18,8 @@ import { UserIcon, BellIcon, ShieldIcon } from 'lucide-react';
  * - Account security
  */
 function Settings() {
-  const { theme } = useTheme();
-  const user = getUserFromToken;
+  const { theme, setTheme } = useTheme();
+  const user = getUserFromToken();
   
   // Local state for form fields
   const [email] = useState(user?.email || '');
@@ -44,7 +45,7 @@ function Settings() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your account settings and prefereces
+          Manage your account settings and preferences
         </p>
       </div>
 
@@ -119,7 +120,7 @@ function Settings() {
               </Button>
               <Button
                 variant={theme === 'system' ? 'default' : 'outline'}
-                onClick={setTheme()}
+                onClick={() => setTheme('system')}
                 className="flex-1"
               >
                 System
@@ -164,7 +165,7 @@ function Settings() {
             <p className="text-sm text-muted-foreground">
               Change your password to keep your account secure
             </p>
-            <Button onClick={handleChangePassword()} variant="outline">
+            <Button onClick={handleChangePassword} variant="outline">
               Change Password
             </Button>
           </div>
