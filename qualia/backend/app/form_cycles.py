@@ -25,6 +25,7 @@ from app.models.user import Role, User
 router = APIRouter(prefix="/forms", tags=["form-cycles"])
 DEFAULT_UPLOAD_CONTENT_TYPE = "application/octet-stream"
 MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024
+SUBMISSION_ANSWER_CONSTRAINT = "uq_submission_answer_submission_question"
 
 
 class FormCycleCreate(BaseModel):
@@ -145,6 +146,56 @@ def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
             )
         )
     )
+
+
+def _is_submission_answer_conflict(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc)).lower()
+    return SUBMISSION_ANSWER_CONSTRAINT in statement or (
+        "unique constraint failed" in statement
+        and "submission_answers.submission_id, submission_answers.question_id" in statement
+    )
+
+
+async def _get_or_create_submission_answer(
+    submission_id: uuid.UUID,
+    question_id: uuid.UUID,
+    db: AsyncSession,
+) -> SubmissionAnswer:
+    submission_answer = (
+        await db.execute(
+            select(SubmissionAnswer).where(
+                SubmissionAnswer.submission_id == submission_id,
+                SubmissionAnswer.question_id == question_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if submission_answer is not None:
+        return submission_answer
+
+    nested = await db.begin_nested()
+    try:
+        submission_answer = SubmissionAnswer(
+            submission_id=submission_id,
+            question_id=question_id,
+        )
+        db.add(submission_answer)
+        await db.flush()
+        await nested.commit()
+        return submission_answer
+    except IntegrityError as exc:
+        await nested.rollback()
+        if not _is_submission_answer_conflict(exc):
+            raise
+
+    submission_answer = (
+        await db.execute(
+            select(SubmissionAnswer).where(
+                SubmissionAnswer.submission_id == submission_id,
+                SubmissionAnswer.question_id == question_id,
+            )
+        )
+    ).scalar_one()
+    return submission_answer
 
 
 def _has_non_empty_string(items: object) -> bool:
@@ -420,11 +471,11 @@ async def autosave_submission_draft(
         for draft_answer in payload.answers:
             submission_answer = existing_answers.get(draft_answer.question_id)
             if submission_answer is None:
-                submission_answer = SubmissionAnswer(
-                    submission_id=submission.id,
-                    question_id=draft_answer.question_id,
+                submission_answer = await _get_or_create_submission_answer(
+                    submission.id,
+                    draft_answer.question_id,
+                    db,
                 )
-                db.add(submission_answer)
                 existing_answers[draft_answer.question_id] = submission_answer
             validated_file_ids = await _validated_attachment_ids(
                 draft_answer.file_ids,
