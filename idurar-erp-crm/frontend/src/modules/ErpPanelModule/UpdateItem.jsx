@@ -71,6 +71,8 @@ export default function UpdateItem({ config, UpdateForm }) {
         if (item) {
           if (item.quantity && item.price) {
             let total = calculate.multiply(item['quantity'], item['price']);
+            // apply per-line discount (%) when present
+            total = calculate.multiply(total, (100 - (item['discount'] || 0)) / 100);
             //sub total
             subTotal = calculate.add(subTotal, total);
           }
@@ -92,9 +94,15 @@ export default function UpdateItem({ config, UpdateForm }) {
       if (fieldsValue.items) {
         let newList = [];
         fieldsValue.items.map((item) => {
-          const { quantity, price, itemName, description } = item;
-          const total = item.quantity * item.price;
-          newList.push({ total, quantity, price, itemName, description });
+          const { quantity, price, itemName, description, discount } = item;
+          const lineTotal = calculate.multiply(quantity, price);
+          const total = calculate.multiply(lineTotal, (100 - (discount || 0)) / 100);
+          const newItem = { total, quantity, price, itemName, description };
+          // only carry the per-line discount when it is actually set (e.g. quotes)
+          if (discount !== undefined && discount !== null) {
+            newItem.discount = discount;
+          }
+          newList.push(newItem);
         });
         dataToUpdate.items = newList;
       }

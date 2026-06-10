@@ -5,10 +5,11 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { useMoney, useDate } from '@/settings';
 import calculate from '@/utils/calculate';
 
-export default function ItemRow({ field, remove, current = null }) {
+export default function ItemRow({ field, remove, current = null, hasDiscount = false }) {
   const [totalState, setTotal] = useState(undefined);
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
+  const [discount, setDiscount] = useState(0);
 
   const money = useMoney();
   const updateQt = (value) => {
@@ -16,6 +17,9 @@ export default function ItemRow({ field, remove, current = null }) {
   };
   const updatePrice = (value) => {
     setPrice(value);
+  };
+  const updateDiscount = (value) => {
+    setDiscount(value || 0);
   };
 
   useEffect(() => {
@@ -33,6 +37,7 @@ export default function ItemRow({ field, remove, current = null }) {
         if (item) {
           setQuantity(item.quantity);
           setPrice(item.price);
+          setDiscount(item.discount || 0);
         }
       } else {
         const item = items[field.fieldKey];
@@ -40,16 +45,18 @@ export default function ItemRow({ field, remove, current = null }) {
         if (item) {
           setQuantity(item.quantity);
           setPrice(item.price);
+          setDiscount(item.discount || 0);
         }
       }
     }
   }, [current]);
 
   useEffect(() => {
-    const currentTotal = calculate.multiply(price, quantity);
+    const baseTotal = calculate.multiply(price, quantity);
+    const currentTotal = calculate.multiply(baseTotal, (100 - (discount || 0)) / 100);
 
     setTotal(currentTotal);
-  }, [price, quantity]);
+  }, [price, quantity, discount]);
 
   return (
     <Row gutter={[12, 12]} style={{ position: 'relative' }}>
@@ -70,7 +77,7 @@ export default function ItemRow({ field, remove, current = null }) {
           <Input placeholder="Item Name" />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={7}>
+      <Col className="gutter-row" span={hasDiscount ? 6 : 7}>
         <Form.Item name={[field.name, 'description']}>
           <Input placeholder="description Name" />
         </Form.Item>
@@ -80,7 +87,14 @@ export default function ItemRow({ field, remove, current = null }) {
           <InputNumber style={{ width: '100%' }} min={0} onChange={updateQt} />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={4}>
+      {hasDiscount && (
+        <Col className="gutter-row" span={3}>
+          <Form.Item name={[field.name, 'discount']} initialValue={0}>
+            <InputNumber style={{ width: '100%' }} min={0} max={100} onChange={updateDiscount} />
+          </Form.Item>
+        </Col>
+      )}
+      <Col className="gutter-row" span={hasDiscount ? 3 : 4}>
         <Form.Item name={[field.name, 'price']} rules={[{ required: true }]}>
           <InputNumber
             className="moneyInput"
@@ -92,7 +106,7 @@ export default function ItemRow({ field, remove, current = null }) {
           />
         </Form.Item>
       </Col>
-      <Col className="gutter-row" span={5}>
+      <Col className="gutter-row" span={hasDiscount ? 4 : 5}>
         <Form.Item name={[field.name, 'total']}>
           <Form.Item>
             <InputNumber
