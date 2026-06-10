@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,8 @@ interface NavBarProps {
 
 function NavBar({ variant = "transparent" }: NavBarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Close mobile menu when window is resized above mobile breakpoint
   useEffect(() => {
@@ -42,6 +44,36 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  /**
+   * Handle navigation to home page with hash anchor
+   * Ensures reliable scrolling to anchor elements even when the Home page is lazy-loaded
+   */
+  const handleFeaturesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+
+    // If already on home page, scroll to anchor immediately
+    if (location.pathname === ROUTES.HOME) {
+      const element = document.getElementById('features');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      // Navigate to home page first, then scroll after component loads
+      navigate(ROUTES.HOME);
+
+      // Wait for the lazy-loaded home page to render, then scroll
+      setTimeout(() => {
+        const element = document.getElementById('features');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+
+    // Close mobile menu if open
+    setIsOpen(false);
+  };
 
   const navClasses =
     variant === "transparent"
@@ -78,12 +110,13 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link
-                      to="/#features"
+                    <a
+                      href="#features"
+                      onClick={handleFeaturesClick}
                       className={cn(navigationMenuTriggerStyle(), linkClasses)}
                     >
                       Features
-                    </Link>
+                    </a>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
@@ -139,13 +172,13 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <div className='flex flex-col gap-4 mt-8'>
-                  <Link
-                    to="/#features"
+                  <a
+                    href="#features"
+                    onClick={handleFeaturesClick}
                     className='text-lg font-medium hover:text-primary transition-colors'
-                    onClick={() => setIsOpen(false)}
                   >
                     Features
-                  </Link>
+                  </a>
                   <Link
                     to={ROUTES.SIGN_IN}
                     className='text-lg font-medium hover:text-primary transition-colors'
