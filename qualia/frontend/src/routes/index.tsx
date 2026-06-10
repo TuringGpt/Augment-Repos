@@ -15,6 +15,7 @@ const SignIn = lazy(() => import('@/pages/SignIn'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Forms = lazy(() => import('@/pages/Forms'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 /**
@@ -109,8 +110,6 @@ export function AppRoutes() {
         }
       />
 
-      {/* TODO: Add these dashboard sub-routes when pages are created */}
-      {/* 
       <Route
         path={ROUTES.DASHBOARD_FORMS}
         element={
@@ -121,7 +120,6 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      */}
 
       {/* 404 Not Found - Redirect to dedicated 404 page */}
       <Route
