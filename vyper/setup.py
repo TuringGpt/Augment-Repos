@@ -66,6 +66,7 @@ setup(
             "fang=vyper.cli.vyper_ir:_parse_cli_args",
             "vyper-json=vyper.cli.vyper_json:_parse_cli_args",
             "venom=vyper.cli.venom_main:_parse_cli_args",
+            "vyper-builtins=vyper.cli.vyper_builtins:_parse_cli_args",
         ]
     },
     classifiers=[
