@@ -37,8 +37,18 @@ class ReviewerAssignment(BaseModel):
     reviewer_id: uuid.UUID
 
 
+class DraftAutosaveAnswer(BaseModel):
+    question_id: uuid.UUID
+    text_answer: str | None = None
+    number_answer: float | None = None
+    choice_answers: list[str] = Field(default_factory=list)
+    rating_answer: int | None = None
+    boolean_answer: bool | None = None
+    file_ids: list[str] = Field(default_factory=list)
+
+
 class DraftAutosavePayload(BaseModel):
-    answers: list[dict[str, str]] = Field(default_factory=dict)
+    answers: list[DraftAutosaveAnswer] = Field(default_factory=list)
 
 
 class AttachmentUploadInitRequest(BaseModel):
@@ -332,14 +342,72 @@ async def autosave_submission_draft(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    user = await _get_authorized_admin(token.strip(), db)
-    submission = (await db.execute(select(Submission).where(Submission.reviewer_id == form_cycle_id))).scalar_one_or_none()
+    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    _validate_submission_window(cycle)
+    submission = (
+        await db.execute(
+            select(Submission).where(
+                Submission.form_cycle_id == form_cycle_id,
+                Submission.reviewer_id == reviewer.id,
+            )
+        )
+    ).scalar_one_or_none()
     if submission is None:
         raise HTTPException(status_code=404, detail="Submission not found")
-    submission.status = SubmissionStatus.submitted
-    submission.last_saved_at = datetime.utcnow()
+    if submission.status == SubmissionStatus.submitted:
+        raise HTTPException(status_code=400, detail="Submission already submitted")
+    if payload.answers:
+        question_ids = {answer.question_id for answer in payload.answers}
+        valid_question_ids = set(
+            (
+                await db.execute(
+                    select(Question.id).where(
+                        Question.form_cycle_id == form_cycle_id,
+                        Question.id.in_(question_ids),
+                    )
+                )
+            ).scalars()
+        )
+        missing_question_ids = question_ids - valid_question_ids
+        if missing_question_ids:
+            raise HTTPException(status_code=404, detail="Question not found")
+        existing_answers = {
+            answer.question_id: answer
+            for answer in (
+                await db.execute(
+                    select(SubmissionAnswer).where(
+                        SubmissionAnswer.submission_id == submission.id,
+                        SubmissionAnswer.question_id.in_(question_ids),
+                    )
+                )
+            ).scalars()
+        }
+        for draft_answer in payload.answers:
+            submission_answer = existing_answers.get(draft_answer.question_id)
+            if submission_answer is None:
+                submission_answer = SubmissionAnswer(
+                    submission_id=submission.id,
+                    question_id=draft_answer.question_id,
+                )
+                db.add(submission_answer)
+                existing_answers[draft_answer.question_id] = submission_answer
+            submission_answer.text_answer = draft_answer.text_answer
+            submission_answer.number_answer = draft_answer.number_answer
+            submission_answer.choice_answers = draft_answer.choice_answers
+            submission_answer.rating_answer = draft_answer.rating_answer
+            submission_answer.boolean_answer = draft_answer.boolean_answer
+            submission_answer.file_ids = draft_answer.file_ids
+    submission.status = SubmissionStatus.draft
+    submission.last_saved_at = datetime.now(UTC)
     await db.commit()
-    return {"submission_id": str(form_cycle_id), "reviewer_id": str(user.id)}
+    return {
+        "submission_id": str(submission.id),
+        "reviewer_id": str(reviewer.id),
+        "status": submission.status.value,
+    }
 
 
 @router.get("/{form_cycle_id}/submissions", response_model=list[AdminSubmissionListItem], status_code=200)
