@@ -28,8 +28,8 @@ function Settings() {
 
   const handleSaveProfile = () => {
     // TODO: Implement API call to update profile
-    toast.success('Profile updated', {
-      description: 'Your profile information has been saved.',
+    toast('Changes not saved yet', {
+      description: 'Profile update functionality will be available soon.',
     });
   };
 
