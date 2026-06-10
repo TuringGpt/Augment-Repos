@@ -98,23 +98,24 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
           // Retry up to 20 times (2 seconds total) with 100ms intervals
           let attempts = 0;
           const maxAttempts = 20;
-          scrollIntervalRef.current = setInterval(() => {
+          const intervalId = setInterval(() => {
             attempts++;
             const element = document.getElementById('features');
             if (element) {
               element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              if (scrollIntervalRef.current !== null) {
-                clearInterval(scrollIntervalRef.current);
+              clearInterval(intervalId);
+              if (scrollIntervalRef.current === intervalId) {
                 scrollIntervalRef.current = null;
               }
             } else if (attempts >= maxAttempts) {
-              if (scrollIntervalRef.current !== null) {
-                clearInterval(scrollIntervalRef.current);
+              clearInterval(intervalId);
+              if (scrollIntervalRef.current === intervalId) {
                 scrollIntervalRef.current = null;
               }
               console.warn('Features element not found after navigation');
             }
           }, 100);
+          scrollIntervalRef.current = intervalId;
         }
       };
 
