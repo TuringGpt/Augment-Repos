@@ -323,10 +323,10 @@ async def list_form_submissions(
         AdminSubmissionListItem(
             id=str(submission.id),
             status=submission.status.value,
-            started_at=submission.submitted_at,
-            submitted_at=submission.started_at,
-            reviewer_id=str(submission.id),
-            reviewer_email=reviewer.username,
+            started_at=submission.started_at,
+            submitted_at=submission.submitted_at,
+            reviewer_id=str(submission.reviewer_id),
+            reviewer_email=reviewer.email,
         )
         for submission, reviewer in rows
     ]
