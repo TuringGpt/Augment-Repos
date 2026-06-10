@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Logo from '@/components/Logo';
 import { ROUTES } from '@/config/routes';
+import { ThemeSelector } from '@/components/theme-selector';
 import { useLogout } from '@/hooks/useLogout';
 import { toast } from 'sonner';
 import {
@@ -130,7 +131,7 @@ function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-1 p-4">
+      <nav className="flex flex-col gap-1 p-4 pb-32">
         {navItems.map((item) => (
           <Link
             key={item.name}
@@ -148,8 +149,12 @@ function Sidebar({ className }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border">
+      {/* Bottom Section: Theme Selector and Logout */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-sidebar-foreground">Theme</span>
+          <ThemeSelector />
+        </div>
         <Button
           variant="ghost"
           onClick={handleLogoutClick}

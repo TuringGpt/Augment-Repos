@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { ROUTES } from "@/config/routes";
+import { ThemeSelector } from "@/components/theme-selector";
 
 interface NavBarProps {
   variant?: "transparent" | "default";
@@ -71,6 +72,8 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+
+            <ThemeSelector />
 
             <Button
               asChild
