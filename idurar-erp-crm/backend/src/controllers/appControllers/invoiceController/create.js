@@ -47,8 +47,29 @@ const create = async (req, res) => {
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;
 
-  // Creating a new document in the collection
-  const result = await new Model(body).save();
+  // Creating a new document in the collection.
+  // The invoice number is reserved atomically via the `last_invoice_number` setting
+  // ($inc), and a unique (number, year) index plus a bounded retry loop guarantee the
+  // number stays unique even when many requests are created at the same time.
+  const maxRetries = 5;
+  let result;
+  for (let attempt = 0; ; attempt++) {
+    const setting = await increaseBySettingKey({ settingKey: 'last_invoice_number' });
+    if (setting) {
+      body['number'] = setting.settingValue;
+    }
+    try {
+      result = await new Model(body).save();
+      break;
+    } catch (err) {
+      // 11000 is a duplicate key error: the (number, year) pair is already taken,
+      // so reserve the next number and retry until we succeed or run out of attempts.
+      if (err?.code !== 11000 || attempt >= maxRetries) {
+        throw err;
+      }
+    }
+  }
+
   const fileId = 'invoice-' + result._id + '.pdf';
   const updateResult = await Model.findOneAndUpdate(
     { _id: result._id },
@@ -57,11 +78,6 @@ const create = async (req, res) => {
       new: true,
     }
   ).exec();
-  // Returning successfull response
-
-  increaseBySettingKey({
-    settingKey: 'last_invoice_number',
-  });
 
   // Returning successfull response
   return res.status(200).json({

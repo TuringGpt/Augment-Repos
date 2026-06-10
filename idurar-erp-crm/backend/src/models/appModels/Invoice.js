@@ -175,5 +175,13 @@ const invoiceSchema = new mongoose.Schema({
   },
 });
 
+// Guarantee invoice numbers are unique per year (ignoring soft-deleted documents).
+// Combined with the atomic number reservation in the controller, this prevents
+// duplicate numbers when many create requests arrive at the same time.
+invoiceSchema.index(
+  { number: 1, year: 1 },
+  { unique: true, partialFilterExpression: { removed: false } }
+);
+
 invoiceSchema.plugin(require('mongoose-autopopulate'));
 module.exports = mongoose.model('Invoice', invoiceSchema);
