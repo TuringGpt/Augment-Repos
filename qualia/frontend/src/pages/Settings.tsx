@@ -69,6 +69,7 @@ function Settings() {
               id="email"
               type="email"
               value={email}
+              readOnly
               className="bg-muted"
             />
             <p className="text-xs text-muted-foreground">
