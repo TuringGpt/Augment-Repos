@@ -19,6 +19,8 @@ import calculate from '@/utils/calculate';
 import { useSelector } from 'react-redux';
 import SelectAsync from '@/components/SelectAsync';
 
+const itemColumns = { item: 5, description: 6, quantity: 3, price: 4, discount: 3, total: 3 };
+
 export default function QuoteForm({ subTotal = 0, current = null }) {
   const { last_quote_number } = useSelector(selectFinanceSettings);
 
@@ -176,19 +178,24 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
       </Row>
       <Divider dashed />
       <Row gutter={[12, 12]} style={{ position: 'relative' }}>
-        <Col className="gutter-row" span={5}>
+        <Col className="gutter-row" span={itemColumns.item}>
           <p>{translate('Item')}</p>
         </Col>
-        <Col className="gutter-row" span={7}>
+        <Col className="gutter-row" span={itemColumns.description}>
           <p>{translate('Description')}</p>
         </Col>
-        <Col className="gutter-row" span={3}>
+        <Col className="gutter-row" span={itemColumns.quantity}>
           <p>{translate('Quantity')}</p>{' '}
         </Col>
-        <Col className="gutter-row" span={4}>
+        <Col className="gutter-row" span={itemColumns.price}>
           <p>{translate('Price')}</p>
         </Col>
-        <Col className="gutter-row" span={5}>
+        <Col className="gutter-row" span={itemColumns.discount}>
+          <p>
+            {translate('discount')} (%)
+          </p>
+        </Col>
+        <Col className="gutter-row" span={itemColumns.total}>
           <p>{translate('Total')}</p>
         </Col>
       </Row>
@@ -196,7 +203,13 @@ function LoadQuoteForm({ subTotal = 0, current = null }) {
         {(fields, { add, remove }) => (
           <>
             {fields.map((field) => (
-              <ItemRow key={field.key} remove={remove} field={field} current={current}></ItemRow>
+              <ItemRow
+                key={field.key}
+                remove={remove}
+                field={field}
+                current={current}
+                showDiscount
+              ></ItemRow>
             ))}
             <Form.Item>
               <Button

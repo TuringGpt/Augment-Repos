@@ -6,6 +6,13 @@ const { calculate } = require('@/helpers');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
 
+const calculateLineTotal = (item = {}) => {
+  const total = calculate.multiply(item.quantity || 0, item.price || 0);
+  const discountAmount = calculate.multiply(total, calculate.divide(item.discount || 0, 100));
+
+  return calculate.sub(total, discountAmount);
+};
+
 const create = async (req, res) => {
   let body = req.body;
 
@@ -19,6 +26,8 @@ const create = async (req, res) => {
     });
   }
 
+  body = value;
+
   const { items = [], taxRate = 0, discount = 0 } = value;
 
   // default
@@ -27,12 +36,16 @@ const create = async (req, res) => {
   let total = 0;
 
   //Calculate the items array with subTotal, total, taxTotal
-  items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
+  const itemsList = items.map((item) => {
+    let total = calculateLineTotal(item);
     //sub total
     subTotal = calculate.add(subTotal, total);
     //item total
-    item['total'] = total;
+    return {
+      ...item,
+      discount: item.discount || 0,
+      total,
+    };
   });
   taxTotal = calculate.multiply(subTotal, taxRate / 100);
   total = calculate.add(subTotal, taxTotal);
@@ -40,7 +53,7 @@ const create = async (req, res) => {
   body['subTotal'] = subTotal;
   body['taxTotal'] = taxTotal;
   body['total'] = total;
-  body['items'] = items;
+  body['items'] = itemsList;
 
   let paymentStatus = calculate.sub(total, discount) === 0 ? 'paid' : 'unpaid';
 

@@ -7,6 +7,13 @@ const custom = require('@/controllers/pdfController');
 const { calculate } = require('@/helpers');
 const schema = require('./schemaValidate');
 
+const calculateLineTotal = (item = {}) => {
+  const total = calculate.multiply(item.quantity || 0, item.price || 0);
+  const discountAmount = calculate.multiply(total, calculate.divide(item.discount || 0, 100));
+
+  return calculate.sub(total, discountAmount);
+};
+
 const update = async (req, res) => {
   let body = req.body;
 
@@ -20,6 +27,8 @@ const update = async (req, res) => {
     });
   }
 
+  body = value;
+
   const previousInvoice = await Model.findOne({
     _id: req.params.id,
     removed: false,
@@ -27,7 +36,7 @@ const update = async (req, res) => {
 
   const { credit } = previousInvoice;
 
-  const { items = [], taxRate = 0, discount = 0 } = req.body;
+  const { items = [], taxRate = 0, discount = 0 } = value;
 
   if (items.length === 0) {
     return res.status(400).json({
@@ -43,12 +52,16 @@ const update = async (req, res) => {
   let total = 0;
 
   //Calculate the items array with subTotal, total, taxTotal
-  items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
+  const itemsList = items.map((item) => {
+    let total = calculateLineTotal(item);
     //sub total
     subTotal = calculate.add(subTotal, total);
     //item total
-    item['total'] = total;
+    return {
+      ...item,
+      discount: item.discount || 0,
+      total,
+    };
   });
   taxTotal = calculate.multiply(subTotal, taxRate / 100);
   total = calculate.add(subTotal, taxTotal);
@@ -56,7 +69,7 @@ const update = async (req, res) => {
   body['subTotal'] = subTotal;
   body['taxTotal'] = taxTotal;
   body['total'] = total;
-  body['items'] = items;
+  body['items'] = itemsList;
   body['pdf'] = 'invoice-' + req.params.id + '.pdf';
   if (body.hasOwnProperty('currency')) {
     delete body.currency;

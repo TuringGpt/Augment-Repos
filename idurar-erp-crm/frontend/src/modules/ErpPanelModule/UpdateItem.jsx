@@ -19,6 +19,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { settingsAction } from '@/redux/settings/actions';
 // import { StatusTag } from '@/components/Tag';
 
+const calculateLineTotal = (item = {}) => {
+  const total = calculate.multiply(item.quantity || 0, item.price || 0);
+  const discountAmount = calculate.multiply(total, calculate.divide(item.discount || 0, 100));
+
+  return calculate.sub(total, discountAmount);
+};
+
 function SaveForm({ form, translate }) {
   const handelClick = () => {
     form.submit();
@@ -69,8 +76,8 @@ export default function UpdateItem({ config, UpdateForm }) {
     if (items) {
       items.map((item) => {
         if (item) {
-          if (item.quantity && item.price) {
-            let total = calculate.multiply(item['quantity'], item['price']);
+          if (item.quantity !== undefined && item.price !== undefined) {
+            let total = calculateLineTotal(item);
             //sub total
             subTotal = calculate.add(subTotal, total);
           }
@@ -90,12 +97,11 @@ export default function UpdateItem({ config, UpdateForm }) {
         );
       }
       if (fieldsValue.items) {
-        let newList = [];
-        fieldsValue.items.map((item) => {
-          const { quantity, price, itemName, description } = item;
-          const total = item.quantity * item.price;
-          newList.push({ total, quantity, price, itemName, description });
-        });
+        let newList = fieldsValue.items.map((item) => ({
+          ...item,
+          discount: item.discount ?? 0,
+          total: calculateLineTotal(item),
+        }));
         dataToUpdate.items = newList;
       }
     }
