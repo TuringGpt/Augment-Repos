@@ -60,7 +60,7 @@ function Settings() {
             <CardTitle>Profile Information</CardTitle>
           </div>
           <CardDescription>
-            Update your personal information and email address
+            Update your personal information
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
