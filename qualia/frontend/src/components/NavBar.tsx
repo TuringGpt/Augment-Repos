@@ -51,6 +51,12 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
    * Updates URL hash to support deep-linking, bookmarking, and browser navigation
    */
   const handleFeaturesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Only override default behavior for regular left-clicks
+    // Allow Cmd/Ctrl-click, middle-click, and other modified clicks to work normally
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+
     e.preventDefault();
 
     // Close mobile menu if open
