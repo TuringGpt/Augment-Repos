@@ -20,10 +20,11 @@ import { UserIcon, BellIcon, ShieldIcon, PaletteIcon } from 'lucide-react';
 function Settings() {
   const { theme, setTheme } = useTheme();
   const user = getUserFromToken();
-  
+
+  // Derive email directly from user to avoid stale state if token changes
+  const email = user?.email || user?.sub || '';
+
   // Local state for form fields
-  // Fall back to user.sub if email is not present in the token
-  const [email] = useState(user?.email || user?.sub || '');
   const [name, setName] = useState(user?.name || '');
 
   const handleSaveProfile = () => {
