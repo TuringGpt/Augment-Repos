@@ -96,7 +96,7 @@ function Sidebar({ className }: SidebarProps) {
     // },
     {
       name: 'Settings',
-      href: ROUTES.DASHBOARD_SETINGS,
+      href: ROUTES.DASHBOARD_SETTINGS,
       icon: <SettingsIcon className="w-5 h-5" />,
     },
   ];
