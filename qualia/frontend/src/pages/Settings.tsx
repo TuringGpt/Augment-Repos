@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,11 @@ function Settings() {
 
   // Local state for form fields
   const [name, setName] = useState(user?.name || '');
+
+  // Sync name state when user changes (e.g., token refresh)
+  useEffect(() => {
+    setName(user?.name || '');
+  }, [user?.name]);
 
   const handleSaveProfile = () => {
     // TODO: Implement API call to update profile
