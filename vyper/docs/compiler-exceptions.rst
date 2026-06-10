@@ -13,10 +13,10 @@ of the error within the code:
 .. code-block:: python
 
     vyper.exceptions.VariableDeclarationException: line 79:17 Persistent variable undeclared: highstBid
-         78     # If bid is less than highest bid, bid fails
-    ---> 79     if (value <= self.highstBid):
-    -------------------------^
-         80         return False
+    78 |     # If bid is less than highest bid, bid fails
+    79 |     if (value <= self.highstBid):
+       |                  ^
+    80 |         return False
 
 .. py:exception:: ArgumentException
 
@@ -125,10 +125,10 @@ of the error within the code:
     .. code-block:: python
 
         vyper.exceptions.SyntaxException: line 14:5 No description given for tag '@param'
-             13     @dev the feet are sticky like rice
-        ---> 14     @param
-        -------------^
-             15     @return always True
+        13 |     @dev the feet are sticky like rice
+        14 |     @param
+           |          ^
+        15 |     @return always True
 
 .. py:exception:: NonPayableViolation
 
@@ -155,10 +155,10 @@ of the error within the code:
     .. code-block:: python
 
         vyper.exceptions.StructureException: line 181:0 Invalid top-level statement
-             180
-        ---> 181 '''
-        ---------^
-             182
+        180 |
+        181 | '''
+            | ^
+        182 |
 
 .. py:exception:: SyntaxException
 
@@ -167,10 +167,10 @@ of the error within the code:
     .. code-block:: python
 
         vyper.exceptions.SyntaxException: line 4:20 invalid syntax
-                3 struct Bid:
-        ---> 4   blindedBid bytes32
-        ---------------------------^
-                5   deposit: uint256
+        3 | struct Bid:
+        4 |   blindedBid bytes32
+          |                     ^
+        5 |   deposit: uint256
 
 .. py:exception:: TypeMismatch
 
@@ -201,10 +201,10 @@ of the error within the code:
     .. code-block:: bash
 
         vyper.exceptions.VariableDeclarationException: line 79:17 Persistent variable undeclared: highstBid
-             78     # If bid is less than highest bid, bid fails
-        ---> 79     if (value <= self.highstBid):
-        -------------------------^
-             80         return False
+        78 |     # If bid is less than highest bid, bid fails
+        79 |     if (value <= self.highstBid):
+           |                  ^
+        80 |         return False
 
 .. py:exception:: VersionException
 
