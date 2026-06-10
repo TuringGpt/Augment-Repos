@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.file import File, StorageType
+from app.models.form_assignment import FormAssignment
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -61,6 +62,7 @@ class ReviewerAssignedForm(BaseModel):
     title: str
     description: str | None
     submission_deadline: datetime
+    submission_status: str | None
 
 
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
@@ -336,12 +338,14 @@ async def list_assigned_forms(
     reviewer = await _get_authorized_reviewer(token.strip(), db)
     rows = (
         await db.execute(
-            select(FormCycle)
-            .distinct()
-            .join(Submission, Submission.form_cycle_id == FormCycle.id)
+            select(FormCycle, Submission.status)
+            .join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id)
+            .outerjoin(
+                Submission,
+                (Submission.form_cycle_id == FormCycle.id) & (Submission.reviewer_id == reviewer.id),
+            )
             .where(
-                Submission.reviewer_id == reviewer.id,
-                Submission.status != SubmissionStatus.submitted,
+                FormAssignment.assigned_to == reviewer.id,
                 FormCycle.status == FormCycleStatus.active,
                 FormCycle.is_published.is_(True),
                 FormCycle.submission_deadline >= datetime.now(UTC),
@@ -352,15 +356,16 @@ async def list_assigned_forms(
                 FormCycle.id.asc(),
             )
         )
-    ).scalars().all()
+    ).all()
     return [
         ReviewerAssignedForm(
             id=str(cycle.id),
             title=cycle.title,
             description=cycle.description,
             submission_deadline=cycle.submission_deadline,
+            submission_status=status.value if status else SubmissionStatus.draft.value,
         )
-        for cycle in rows
+        for cycle, status in rows
     ]
 
 
