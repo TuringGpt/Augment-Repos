@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -244,7 +244,9 @@ async def assign_reviewer(
     existing_submission = (
         await db.execute(select(Submission).where(Submission.form_cycle_id == cycle.id))
     ).scalar_one_or_none()
-    if existing_assignment is not None or existing_submission is not None:
+    if existing_assignment is not None:
+        raise HTTPException(status_code=409, detail="Reviewer already assigned for this form cycle")
+    if existing_submission is not None and existing_submission.reviewer_id != reviewer.id:
         raise HTTPException(status_code=409, detail="Reviewer already assigned for this form cycle")
     db.add(
         FormAssignment(
@@ -253,7 +255,8 @@ async def assign_reviewer(
             assigned_by=admin.id,
         )
     )
-    db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
+    if existing_submission is None:
+        db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
     try:
         await db.commit()
     except IntegrityError as exc:
@@ -369,6 +372,10 @@ async def list_assigned_forms(
             )
             .where(
                 FormAssignment.assigned_to == reviewer.id,
+                or_(
+                    Submission.status.is_(None),
+                    Submission.status != SubmissionStatus.submitted,
+                ),
                 FormCycle.status == FormCycleStatus.active,
                 FormCycle.is_published.is_(True),
                 FormCycle.submission_deadline >= datetime.now(UTC),
