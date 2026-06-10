@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -27,6 +27,18 @@ interface NavBarProps {
 
 function NavBar({ variant = "transparent" }: NavBarProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Close mobile menu when window is resized above mobile breakpoint
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
 
   const navClasses =
     variant === "transparent"
