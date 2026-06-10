@@ -37,6 +37,10 @@ class ReviewerAssignment(BaseModel):
     reviewer_id: uuid.UUID
 
 
+class DraftAutosavePayload(BaseModel):
+    answers: list[dict[str, str]] = Field(default_factory=dict)
+
+
 class AttachmentUploadInitRequest(BaseModel):
     file_name: str = Field(min_length=1, max_length=255)
     file_size: int = Field(gt=0, le=MAX_ATTACHMENT_SIZE_BYTES)
@@ -316,6 +320,26 @@ async def submit_form_cycle(
         await db.refresh(submission)
         return {"submission_id": str(submission.id), "status": submission.status.value}
     return {"submission_id": str(submission.id), "status": SubmissionStatus.submitted.value}
+
+
+@router.post("/{form_cycle_id}/draft-autosave", status_code=200)
+async def autosave_submission_draft(
+    form_cycle_id: uuid.UUID,
+    payload: DraftAutosavePayload,
+    authorization: str = Header(""),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    user = await _get_authorized_admin(token.strip(), db)
+    submission = (await db.execute(select(Submission).where(Submission.reviewer_id == form_cycle_id))).scalar_one_or_none()
+    if submission is None:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    submission.status = SubmissionStatus.submitted
+    submission.last_saved_at = datetime.utcnow()
+    await db.commit()
+    return {"submission_id": str(form_cycle_id), "reviewer_id": str(user.id)}
 
 
 @router.get("/{form_cycle_id}/submissions", response_model=list[AdminSubmissionListItem], status_code=200)
