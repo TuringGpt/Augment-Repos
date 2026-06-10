@@ -160,6 +160,38 @@ def _normalized_mime_type(mime_type: str | None) -> str | None:
     return normalized or None
 
 
+def _file_belongs_to_submission(file: File, form_cycle_id: uuid.UUID, reviewer_id: uuid.UUID) -> bool:
+    expected_prefix = f"pending/{form_cycle_id}/{reviewer_id}/"
+    return file.uploaded_by == reviewer_id and file.storage_path.startswith(expected_prefix)
+
+
+async def _validated_attachment_ids(
+    file_ids: list[str],
+    form_cycle_id: uuid.UUID,
+    reviewer_id: uuid.UUID,
+    db: AsyncSession,
+) -> list[str]:
+    if not file_ids:
+        return []
+    try:
+        parsed_file_ids = [uuid.UUID(file_id) for file_id in file_ids]
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="File not found") from exc
+    records = (
+        await db.execute(select(File).where(File.id.in_(set(parsed_file_ids))))
+    ).scalars()
+    files_by_id = {file.id: file for file in records}
+    validated_file_ids: list[str] = []
+    for raw_file_id, parsed_file_id in zip(file_ids, parsed_file_ids, strict=False):
+        file = files_by_id.get(parsed_file_id)
+        if file is None:
+            raise HTTPException(status_code=404, detail="File not found")
+        if not _file_belongs_to_submission(file, form_cycle_id, reviewer_id):
+            raise HTTPException(status_code=403, detail="File does not belong to reviewer submission")
+        validated_file_ids.append(raw_file_id)
+    return validated_file_ids
+
+
 def _has_effective_answer(answer: SubmissionAnswer) -> bool:
     if answer.text_answer is not None and answer.text_answer.strip():
         return True
@@ -394,12 +426,18 @@ async def autosave_submission_draft(
                 )
                 db.add(submission_answer)
                 existing_answers[draft_answer.question_id] = submission_answer
+            validated_file_ids = await _validated_attachment_ids(
+                draft_answer.file_ids,
+                form_cycle_id,
+                reviewer.id,
+                db,
+            )
             submission_answer.text_answer = draft_answer.text_answer
             submission_answer.number_answer = draft_answer.number_answer
             submission_answer.choice_answers = draft_answer.choice_answers
             submission_answer.rating_answer = draft_answer.rating_answer
             submission_answer.boolean_answer = draft_answer.boolean_answer
-            submission_answer.file_ids = draft_answer.file_ids
+            submission_answer.file_ids = validated_file_ids
     submission.status = SubmissionStatus.draft
     submission.last_saved_at = datetime.now(UTC)
     await db.commit()
