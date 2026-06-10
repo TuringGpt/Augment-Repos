@@ -175,5 +175,7 @@ const invoiceSchema = new mongoose.Schema({
   },
 });
 
+invoiceSchema.index({ number: 1, year: 1 }, { unique: true });
+
 invoiceSchema.plugin(require('mongoose-autopopulate'));
 module.exports = mongoose.model('Invoice', invoiceSchema);

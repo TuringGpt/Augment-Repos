@@ -3,8 +3,12 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
-const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
+const {
+  MAX_INVOICE_NUMBER_RETRIES,
+  isDuplicateInvoiceNumberError,
+  reserveNextInvoiceNumber,
+} = require('./reserveInvoiceNumber');
 
 const create = async (req, res) => {
   let body = req.body;
@@ -48,7 +52,20 @@ const create = async (req, res) => {
   body['createdBy'] = req.admin._id;
 
   // Creating a new document in the collection
-  const result = await new Model(body).save();
+  let result;
+  for (let attempt = 1; attempt <= MAX_INVOICE_NUMBER_RETRIES; attempt += 1) {
+    body['number'] = await reserveNextInvoiceNumber();
+
+    try {
+      result = await new Model(body).save();
+      break;
+    } catch (error) {
+      if (!isDuplicateInvoiceNumberError(error) || attempt === MAX_INVOICE_NUMBER_RETRIES) {
+        throw error;
+      }
+    }
+  }
+
   const fileId = 'invoice-' + result._id + '.pdf';
   const updateResult = await Model.findOneAndUpdate(
     { _id: result._id },
@@ -58,10 +75,6 @@ const create = async (req, res) => {
     }
   ).exec();
   // Returning successfull response
-
-  increaseBySettingKey({
-    settingKey: 'last_invoice_number',
-  });
 
   // Returning successfull response
   return res.status(200).json({
