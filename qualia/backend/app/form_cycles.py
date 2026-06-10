@@ -47,6 +47,8 @@ class AdminSubmissionListItem(BaseModel):
     status: str
     started_at: datetime | None
     submitted_at: datetime | None
+    reviewer_id: str
+    reviewer_email: str | None
 
 
 class SubmissionSort(str, enum.Enum):
@@ -305,7 +307,9 @@ async def list_form_submissions(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    query = select(Submission).where(Submission.form_cycle_id == form_cycle_id)
+    query = select(Submission, User).join(User, User.id == Submission.reviewer_id).where(
+        Submission.form_cycle_id == form_cycle_id
+    )
     if status is not None:
         query = query.where(Submission.status == status)
     sort_columns = {
@@ -314,15 +318,17 @@ async def list_form_submissions(
         SubmissionSort.submitted_at_asc: (Submission.submitted_at.asc().nulls_last(), Submission.id.desc()),
         SubmissionSort.submitted_at_desc: (Submission.submitted_at.desc().nulls_last(), Submission.id.desc()),
     }
-    rows = (await db.execute(query.order_by(*sort_columns[sort]))).scalars().all()
+    rows = (await db.execute(query.order_by(*sort_columns[sort]))).all()
     return [
         AdminSubmissionListItem(
-            id=str(row.id),
-            status=row.status.value,
-            started_at=row.started_at,
-            submitted_at=row.submitted_at,
+            id=str(submission.id),
+            status=submission.status.value,
+            started_at=submission.submitted_at,
+            submitted_at=submission.started_at,
+            reviewer_id=str(submission.id),
+            reviewer_email=reviewer.username,
         )
-        for row in rows
+        for submission, reviewer in rows
     ]
 
 
