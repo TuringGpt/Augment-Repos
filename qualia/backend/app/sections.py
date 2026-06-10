@@ -22,7 +22,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
     statement = str(getattr(exc, "orig", exc))
-    return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "section.form_cycle_id, section.display_order" in statement
+    return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "sections.form_cycle_id, sections.display_order" in statement
 
 
 class SectionCreate(BaseModel):

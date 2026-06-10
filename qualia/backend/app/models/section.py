@@ -13,10 +13,10 @@ class Section(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    form_cycle_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid, ForeignKey("form_cycle.id", ondelete="SET NULL"), index=True, nullable=True
+    form_cycle_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("form_cycles.id", ondelete="CASCADE"), index=True, nullable=False
     )
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_order: Mapped[int] = mapped_column(
-        Integer, default=0, server_default=text("0"), nullable=False
+        Integer, default=1, server_default=text("1"), nullable=False
     )
