@@ -72,52 +72,50 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
     // Close mobile menu if open
     setIsOpen(false);
 
-    // If already on home page, update hash and scroll to anchor immediately
-    if (location.pathname === ROUTES.HOME) {
-      window.location.hash = 'features';
+    // Clear any existing scroll interval to prevent multiple concurrent intervals
+    if (scrollIntervalRef.current !== null) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+
+    // Helper function to poll for the element and scroll when found
+    const scrollToFeatures = () => {
       const element = document.getElementById('features');
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // Retry up to 20 times (2 seconds total) with 100ms intervals
+        let attempts = 0;
+        const maxAttempts = 20;
+        const intervalId = setInterval(() => {
+          attempts++;
+          const element = document.getElementById('features');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            clearInterval(intervalId);
+            if (scrollIntervalRef.current === intervalId) {
+              scrollIntervalRef.current = null;
+            }
+          } else if (attempts >= maxAttempts) {
+            clearInterval(intervalId);
+            if (scrollIntervalRef.current === intervalId) {
+              scrollIntervalRef.current = null;
+            }
+            console.warn('Features element not found after navigation');
+          }
+        }, 100);
+        scrollIntervalRef.current = intervalId;
       }
+    };
+
+    // If already on home page, update hash and use retry/polling to scroll
+    if (location.pathname === ROUTES.HOME) {
+      window.location.hash = 'features';
+      // Use same retry mechanism in case element is lazy-loaded/suspended
+      scrollToFeatures();
     } else {
       // Navigate to home page with hash anchor
       navigate(`${ROUTES.HOME}#features`);
-
-      // Clear any existing scroll interval to prevent multiple concurrent intervals
-      if (scrollIntervalRef.current !== null) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-
-      // Poll for the element to exist before scrolling (handles lazy-loaded routes)
-      const scrollToFeatures = () => {
-        const element = document.getElementById('features');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          // Retry up to 20 times (2 seconds total) with 100ms intervals
-          let attempts = 0;
-          const maxAttempts = 20;
-          const intervalId = setInterval(() => {
-            attempts++;
-            const element = document.getElementById('features');
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              clearInterval(intervalId);
-              if (scrollIntervalRef.current === intervalId) {
-                scrollIntervalRef.current = null;
-              }
-            } else if (attempts >= maxAttempts) {
-              clearInterval(intervalId);
-              if (scrollIntervalRef.current === intervalId) {
-                scrollIntervalRef.current = null;
-              }
-              console.warn('Features element not found after navigation');
-            }
-          }, 100);
-          scrollIntervalRef.current = intervalId;
-        }
-      };
 
       // Use requestAnimationFrame to ensure navigation has been processed
       requestAnimationFrame(() => {
