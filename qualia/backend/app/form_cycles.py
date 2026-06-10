@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.file import File, StorageType
+from app.models.form_assignment import FormAssignment
 from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question
 from app.models.submission import Submission, SubmissionStatus
@@ -61,6 +62,7 @@ class ReviewerAssignedForm(BaseModel):
     title: str
     description: str | None
     submission_deadline: datetime
+    submission_status: str | None
 
 
 async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
@@ -118,8 +120,16 @@ def _validate_reviewer(reviewer: User | None) -> User:
 
 def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
     message = str(exc.orig).lower()
-    return "uq_submissions_form_cycle_id" in message or (
-        "unique constraint failed" in message and "submissions.form_cycle_id" in message
+    return (
+        "uq_submissions_form_cycle_id" in message
+        or "uq_form_assignment_form_cycle_assigned_to" in message
+        or (
+            "unique constraint failed" in message
+            and (
+                "submissions.form_cycle_id" in message
+                or "form_assignments.form_cycle_id, form_assignments.assigned_to" in message
+            )
+        )
     )
 
 
@@ -216,19 +226,37 @@ async def assign_reviewer(
     token = token.strip()
     if scheme.lower() != "bearer" or not token:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    await _get_authorized_admin(token, db)
+    admin = await _get_authorized_admin(token, db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
     reviewer = _validate_reviewer(
         (await db.execute(select(User).where(User.id == payload.reviewer_id))).scalar_one_or_none()
     )
+    existing_assignment = (
+        await db.execute(
+            select(FormAssignment).where(
+                FormAssignment.form_cycle_id == cycle.id,
+                FormAssignment.assigned_to == reviewer.id,
+            )
+        )
+    ).scalar_one_or_none()
     existing_submission = (
         await db.execute(select(Submission).where(Submission.form_cycle_id == cycle.id))
     ).scalar_one_or_none()
-    if existing_submission is not None:
+    if existing_assignment is not None:
         raise HTTPException(status_code=409, detail="Reviewer already assigned for this form cycle")
-    db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
+    if existing_submission is not None and existing_submission.reviewer_id != reviewer.id:
+        raise HTTPException(status_code=409, detail="Reviewer already assigned for this form cycle")
+    db.add(
+        FormAssignment(
+            form_cycle_id=cycle.id,
+            assigned_to=reviewer.id,
+            assigned_by=admin.id,
+        )
+    )
+    if existing_submission is None:
+        db.add(Submission(form_cycle_id=cycle.id, reviewer_id=reviewer.id))
     try:
         await db.commit()
     except IntegrityError as exc:
@@ -336,11 +364,14 @@ async def list_assigned_forms(
     reviewer = await _get_authorized_reviewer(token.strip(), db)
     rows = (
         await db.execute(
-            select(FormCycle)
-            .distinct()
-            .join(Submission, Submission.form_cycle_id == FormCycle.id)
+            select(FormCycle, Submission.status)
+            .join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id)
+            .join(
+                Submission,
+                (Submission.form_cycle_id == FormCycle.id) & (Submission.reviewer_id == reviewer.id),
+            )
             .where(
-                Submission.reviewer_id == reviewer.id,
+                FormAssignment.assigned_to == reviewer.id,
                 Submission.status != SubmissionStatus.submitted,
                 FormCycle.status == FormCycleStatus.active,
                 FormCycle.is_published.is_(True),
@@ -352,15 +383,16 @@ async def list_assigned_forms(
                 FormCycle.id.asc(),
             )
         )
-    ).scalars().all()
+    ).all()
     return [
         ReviewerAssignedForm(
             id=str(cycle.id),
             title=cycle.title,
             description=cycle.description,
             submission_deadline=cycle.submission_deadline,
+            submission_status=status.value if status else None,
         )
-        for cycle in rows
+        for cycle, status in rows
     ]
 
 
