@@ -48,19 +48,24 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
   /**
    * Handle navigation to home page with hash anchor
    * Ensures reliable scrolling to anchor elements even when the Home page is lazy-loaded
+   * Updates URL hash to support deep-linking, bookmarking, and browser navigation
    */
   const handleFeaturesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    // If already on home page, scroll to anchor immediately
+    // Close mobile menu if open
+    setIsOpen(false);
+
+    // If already on home page, update hash and scroll to anchor immediately
     if (location.pathname === ROUTES.HOME) {
+      window.location.hash = 'features';
       const element = document.getElementById('features');
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else {
-      // Navigate to home page first, then scroll after component loads
-      navigate(ROUTES.HOME);
+      // Navigate to home page with hash anchor
+      navigate(`${ROUTES.HOME}#features`);
 
       // Poll for the element to exist before scrolling (handles lazy-loaded routes)
       const scrollToFeatures = () => {
@@ -90,9 +95,6 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
         requestAnimationFrame(scrollToFeatures);
       });
     }
-
-    // Close mobile menu if open
-    setIsOpen(false);
   };
 
   const navClasses =
