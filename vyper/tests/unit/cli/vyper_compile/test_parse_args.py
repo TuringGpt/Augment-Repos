@@ -4,6 +4,7 @@ import warnings
 import pytest
 
 import vyper
+from vyper.builtins.functions import BUILTIN_FUNCTIONS
 from vyper.cli.vyper_compile import _parse_args
 from vyper.warnings import VyperWarning
 
@@ -69,3 +70,10 @@ def test_version(capsys):
     assert exc_info.value.code == 0
     captured = capsys.readouterr()
     assert vyper.__long_version__ in captured.out
+
+
+def test_builtin_functions_subcommand(capsys):
+    _parse_args(["builtins"])
+
+    captured = capsys.readouterr()
+    assert captured.out.splitlines() == sorted(BUILTIN_FUNCTIONS)

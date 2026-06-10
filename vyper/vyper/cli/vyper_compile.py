@@ -73,9 +73,25 @@ combined_json_outputs = [
     "settings_dict",
 ]
 
+BUILTINS_SUBCOMMANDS = ("builtins", "builtin-functions")
+
 
 def _parse_cli_args():
     return _parse_args(sys.argv[1:])
+
+
+def _parse_builtin_args(argv):
+    parser = argparse.ArgumentParser(
+        prog="vyper builtins",
+        description="List all Vyper builtin functions",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.parse_args(argv)
+
+    from vyper.builtins.functions import BUILTIN_FUNCTIONS
+
+    for builtin_name in sorted(BUILTIN_FUNCTIONS):
+        print(builtin_name)
 
 
 def _cli_helper(f, output_formats, compiled):
@@ -107,6 +123,10 @@ def _cli_helper(f, output_formats, compiled):
 
 
 def _parse_args(argv):
+    if argv and argv[0] in BUILTINS_SUBCOMMANDS:
+        _parse_builtin_args(argv[1:])
+        return
+
     if "--standard-json" in argv:
         argv.remove("--standard-json")
         vyper_json._parse_args(argv)
@@ -114,6 +134,7 @@ def _parse_args(argv):
 
     parser = argparse.ArgumentParser(
         description="Pythonic Smart Contract Language for the EVM",
+        epilog="Subcommands:\n  builtins            List all Vyper builtin functions",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("input_files", help="Vyper sourcecode to compile", nargs="+")
