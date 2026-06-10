@@ -22,7 +22,8 @@ function Settings() {
   const user = getUserFromToken();
   
   // Local state for form fields
-  const [email] = useState(user?.email || '');
+  // Fall back to user.sub if email is not present in the token
+  const [email] = useState(user?.email || user?.sub || '');
   const [name, setName] = useState(user?.name || '');
 
   const handleSaveProfile = () => {
