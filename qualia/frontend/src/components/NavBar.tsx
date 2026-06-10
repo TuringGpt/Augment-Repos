@@ -63,12 +63,12 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <a
-                      href='#features'
+                    <Link
+                      to="/#features"
                       className={cn(navigationMenuTriggerStyle(), linkClasses)}
                     >
                       Features
-                    </a>
+                    </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
@@ -124,13 +124,13 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <div className='flex flex-col gap-4 mt-8'>
-                  <a
-                    href='#features'
+                  <Link
+                    to="/#features"
                     className='text-lg font-medium hover:text-primary transition-colors'
                     onClick={() => setIsOpen(false)}
                   >
                     Features
-                  </a>
+                  </Link>
                   <Link
                     to={ROUTES.SIGN_IN}
                     className='text-lg font-medium hover:text-primary transition-colors'
