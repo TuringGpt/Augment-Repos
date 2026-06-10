@@ -113,9 +113,11 @@ export function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD_SETTINGS}
         element={
-          <DashboardLayout>
-            <LazyRoute />
-          </DashboardLayout>
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LazyRoute component={Settings} />
+            </DashboardLayout>
+          </ProtectedRoute>
         }
       />
 
