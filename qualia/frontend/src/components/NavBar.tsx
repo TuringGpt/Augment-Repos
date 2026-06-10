@@ -30,6 +30,9 @@ function NavBar({ variant = "transparent" }: NavBarProps) {
 
   // Close mobile menu when window is resized above mobile breakpoint
   useEffect(() => {
+    // Guard against SSR/non-browser environments
+    if (typeof window === "undefined") return;
+
     const handleResize = () => {
       if (window.innerWidth >= 768 && isOpen) {
         setIsOpen(false);
