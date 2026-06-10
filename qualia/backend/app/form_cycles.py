@@ -6,7 +6,7 @@ from pathlib import PurePosixPath
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, select, update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -366,16 +366,13 @@ async def list_assigned_forms(
         await db.execute(
             select(FormCycle, Submission.status)
             .join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id)
-            .outerjoin(
+            .join(
                 Submission,
                 (Submission.form_cycle_id == FormCycle.id) & (Submission.reviewer_id == reviewer.id),
             )
             .where(
                 FormAssignment.assigned_to == reviewer.id,
-                or_(
-                    Submission.status.is_(None),
-                    Submission.status != SubmissionStatus.submitted,
-                ),
+                Submission.status != SubmissionStatus.submitted,
                 FormCycle.status == FormCycleStatus.active,
                 FormCycle.is_published.is_(True),
                 FormCycle.submission_deadline >= datetime.now(UTC),
