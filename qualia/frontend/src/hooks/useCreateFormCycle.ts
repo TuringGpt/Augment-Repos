@@ -35,7 +35,7 @@ export const useCreateFormCycle = (options?: {
   onSuccess?: (data: CreateFormCycleResponse) => void;
   onError?: (error: ApiError) => void;
 }) => {
-  return useMutation({
+  return useMutation<CreateFormCycleResponse, ApiError, CreateFormCycleRequest>({
     mutationFn: (data: CreateFormCycleRequest) => createFormCycle(data),
     onSuccess: options?.onSuccess,
     onError: options?.onError,
