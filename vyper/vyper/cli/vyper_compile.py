@@ -14,12 +14,7 @@ import vyper.evm.opcodes as evm
 from vyper.cli import vyper_json
 from vyper.cli.compile_archive import NotZipInput, compile_from_zip
 from vyper.compiler.input_bundle import FileInput, FilesystemInputBundle
-from vyper.compiler.settings import (
-    VYPER_TRACEBACK_LIMIT,
-    OptimizationLevel,
-    Settings,
-    VenomOptimizationFlags,
-)
+from vyper.compiler.settings import VYPER_TRACEBACK_LIMIT, OptimizationLevel, Settings
 from vyper.typing import ContractPath, OutputFormats
 from vyper.utils import uniq
 from vyper.warnings import warnings_filter
@@ -269,34 +264,25 @@ def _parse_args(argv):
             opt_level = "Os"
         optimize = OptimizationLevel.from_string(opt_level)
 
-    settings = Settings(optimize=optimize)
-
-    # Apply individual flag overrides - ensure venom_flags exists before mutation
-    if settings.venom_flags is None:
-        settings.venom_flags = VenomOptimizationFlags(level=settings.optimize)
-    flags = settings.venom_flags
-    flags.disable_inlining |= args.disable_inlining
-    flags.disable_cse |= args.disable_cse
-    flags.disable_sccp |= args.disable_sccp
-    flags.disable_load_elimination |= args.disable_load_elimination
-    flags.disable_dead_store_elimination |= args.disable_dead_store_elimination
+    venom_kwargs = {
+        "disable_inlining": args.disable_inlining,
+        "disable_cse": args.disable_cse,
+        "disable_sccp": args.disable_sccp,
+        "disable_load_elimination": args.disable_load_elimination,
+        "disable_dead_store_elimination": args.disable_dead_store_elimination,
+    }
     if args.inline_threshold is not None:
-        flags.inline_threshold = args.inline_threshold
+        venom_kwargs["inline_threshold"] = args.inline_threshold
 
-    if args.evm_version:
-        settings.evm_version = args.evm_version
-
-    if args.experimental_codegen:
-        settings.experimental_codegen = args.experimental_codegen
-
-    if args.debug:
-        settings.debug = args.debug
-
-    if args.enable_decimals:
-        settings.enable_decimals = args.enable_decimals
-
-    if args.disable_static_exceptions:
-        settings.disable_static_exceptions = args.disable_static_exceptions
+    settings = Settings.from_compilation_options(
+        optimize=optimize,
+        evm_version=args.evm_version or None,
+        experimental_codegen=args.experimental_codegen or None,
+        debug=args.debug or None,
+        enable_decimals=args.enable_decimals or None,
+        disable_static_exceptions=args.disable_static_exceptions or None,
+        venom_kwargs=venom_kwargs,
+    )
 
     if args.verbose:
         print(f"cli specified: `{settings}`", file=sys.stderr)

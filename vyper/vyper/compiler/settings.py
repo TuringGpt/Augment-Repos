@@ -3,7 +3,7 @@ import dataclasses
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 VYPER_COLOR_OUTPUT = os.environ.get("VYPER_COLOR_OUTPUT", "0") == "1"
 VYPER_ERROR_CONTEXT_LINES = int(os.environ.get("VYPER_ERROR_CONTEXT_LINES", "1"))
@@ -140,6 +140,32 @@ class Settings:
     nonreentrancy_by_default: Optional[bool] = None
     disable_static_exceptions: Optional[bool] = None
     venom_flags: Optional[VenomOptimizationFlags] = None
+
+    @classmethod
+    def from_compilation_options(
+        cls,
+        *,
+        optimize: Optional[OptimizationLevel] = None,
+        evm_version: Optional[str] = None,
+        experimental_codegen: Optional[bool] = None,
+        debug: Optional[bool] = None,
+        enable_decimals: Optional[bool] = None,
+        nonreentrancy_by_default: Optional[bool] = None,
+        disable_static_exceptions: Optional[bool] = None,
+        venom_kwargs: Optional[dict[str, Any]] = None,
+    ) -> "Settings":
+        venom_kwargs = venom_kwargs or {}
+
+        return cls(
+            optimize=optimize,
+            evm_version=evm_version,
+            experimental_codegen=experimental_codegen,
+            debug=debug,
+            enable_decimals=enable_decimals,
+            nonreentrancy_by_default=nonreentrancy_by_default,
+            disable_static_exceptions=disable_static_exceptions,
+            venom_flags=VenomOptimizationFlags(level=optimize, **venom_kwargs),
+        )
 
     def __post_init__(self):
         # sanity check inputs
