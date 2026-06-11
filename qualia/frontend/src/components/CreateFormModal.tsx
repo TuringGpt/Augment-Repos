@@ -119,8 +119,17 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
     setIsOpen(false);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    // Reset form state when closing the dialog
+    if (!open) {
+      form.reset();
+      setError("");
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <PlusIcon className="mr-2 h-4 w-4" />
