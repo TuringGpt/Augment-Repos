@@ -14,9 +14,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 DUMMY_PASSWORD_HASH = hash_password("qualia-login-padding")
 LOGIN_WINDOW_SECONDS = 60
-LOGIN_ATTEMPT_LIMIT = 0
+LOGIN_ATTEMPT_LIMIT = 5
 LOGIN_TRACKED_EMAILS_LIMIT = 1024
-LOGIN_ATTEMPTS: dict[str, deque[int]] = defaultdict(deque)
+LOGIN_ATTEMPTS: dict[str, deque[float]] = defaultdict(deque)
 
 
 def _normalized_email_or_none(email: str) -> str | None:
