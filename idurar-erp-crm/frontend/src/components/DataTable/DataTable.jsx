@@ -156,10 +156,18 @@ export default function DataTable({ config, extra = [] }) {
   const [searchValue, setSearchValue] = useState('');
   const lastSearchedValue = useRef('');
 
-  const handelDataTableLoad = useCallback((pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
-    dispatch(crud.list({ entity, options }));
-  }, []);
+  const handelDataTableLoad = useCallback(
+    (pagination) => {
+      const options = {
+        q: searchValue,
+        fields: searchConfig?.searchFields || '',
+        page: pagination.current || 1,
+        items: pagination.pageSize || 10,
+      };
+      dispatch(crud.list({ entity, options }));
+    },
+    [searchValue, entity, searchConfig, dispatch]
+  );
 
   useDebounce(
     () => {
