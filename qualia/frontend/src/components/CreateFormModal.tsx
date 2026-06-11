@@ -101,6 +101,15 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
           toast.error("Validation Error", {
             description: errorMessage,
           });
+        } else {
+          // Handle unexpected errors (e.g., onFormCreated throwing)
+          const errorMessage =
+            err instanceof Error ? err.message : "An unexpected error occurred";
+          console.error("Form creation error:", err);
+          setError(errorMessage);
+          toast.error("Error", {
+            description: errorMessage,
+          });
         }
       }
     },
