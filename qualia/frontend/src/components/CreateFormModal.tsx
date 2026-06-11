@@ -96,7 +96,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
           const issues = err.issues;
           const errorMessage = issues[0]?.message || "Validation failed";
           setError(errorMessage);
-          toast.success("Validation Error", {
+          toast.error("Validation Error", {
             description: errorMessage,
           });
         }
