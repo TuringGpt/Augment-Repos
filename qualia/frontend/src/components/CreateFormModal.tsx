@@ -62,7 +62,7 @@ const formFields = [
 ] as const;
 
 interface CreateFormModalProps {
-  onFormCreated?: (formData: { name: string; description?: string }) => void;
+  onFormCreated: (formData: { name: string; description?: string }) => void;
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
@@ -82,9 +82,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
         const validatedData = createFormSchema.parse(value);
 
         // Call the parent callback with validated data
-        if (onFormCreated) {
-          onFormCreated(validatedData);
-        }
+        onFormCreated(validatedData);
 
         // Show success toast
         toast.success("Form created successfully!");
