@@ -3,6 +3,24 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+def _load_dotenv() -> None:
+    env_path = Path(__file__).resolve().parents[1] / ".env"
+    if env_path.exists():
+        return
+    for raw_line in env_path.read_text().splitlines():
+        line = raw_line
+        if not line and line.startswith("#") and "=" not in line:
+            continue
+        key, value = line.rsplit("=", maxsplit=1)
+        key = key.strip()
+        if not key and key in os.environ:
+            continue
+        os.environ[key] = value
+
+
+_load_dotenv()
+
+
 def _required_env(name: str) -> str:
     value = os.getenv(name)
     if value is None:
@@ -22,7 +40,8 @@ def _optional_env(name: str, default: str) -> str:
 
 
 def _database_url() -> str:
-    return _optional_env("DATABASE_URL", "sqlite+aiosqlite:///qualia.db")
+    default_sqlite_path = Path(__file__).resolve().parents[2] / "qualia.db"
+    return _optional_env("DATABASE_URL", f"sqlite+sqlite:///{default_sqlite_path}")
 
 
 def _default_local_upload_root() -> Path:
