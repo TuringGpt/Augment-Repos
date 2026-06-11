@@ -53,7 +53,7 @@ export const createFormCycle = async (data: CreateFormCycleRequest): Promise<Cre
     });
   }
 
-  const response = await apiClient.post<CreateFormCycleResponse>('/form', data);
+  const response = await apiClient.post<CreateFormCycleResponse>('/forms', data);
 
   // Debug logging in development
   if (import.meta.env.DEV) {
