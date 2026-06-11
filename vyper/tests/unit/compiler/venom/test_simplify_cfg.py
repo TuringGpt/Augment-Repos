@@ -1,6 +1,7 @@
 import pytest
 
-from tests.venom_utils import PrePostChecker
+from tests.venom_utils import PrePostChecker, parse_from_basic_block
+from vyper.venom.analysis import CFGAnalysis, IRAnalysesCache
 from vyper.venom.passes import SimplifyCFGPass
 
 pytestmark = pytest.mark.hevm
@@ -36,6 +37,38 @@ def test_phi_reduction_after_block_pruning():
     """
 
     _check_pre_post(pre, post)
+
+
+def test_only_fix_phis_for_blocks_with_removed_predecessors(monkeypatch):
+    pre = """
+    _global:
+        jmp @live
+    live:
+        %1 = source
+        jmp @join
+    dead:
+        %2 = source
+        jmp @join
+    join:
+        %3 = phi @live, %1, @dead, %2
+        sink %3
+    """
+
+    ctx = parse_from_basic_block(pre)
+    fn = next(iter(ctx.functions.values()))
+    analyses_cache = IRAnalysesCache(fn)
+    pass_ = SimplifyCFGPass(analyses_cache, fn)
+    pass_.cfg = analyses_cache.request_analysis(CFGAnalysis)
+
+    fixed_blocks = []
+
+    def record_fixed_block(bb):
+        fixed_blocks.append(bb.label.value)
+
+    monkeypatch.setattr(pass_, "fix_phi_instructions", record_fixed_block)
+
+    assert pass_.remove_unreachable_blocks() == 1
+    assert fixed_blocks == ["join"]
 
 
 def test_block_merging():
