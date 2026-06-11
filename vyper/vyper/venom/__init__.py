@@ -1,6 +1,9 @@
 # maybe rename this `main.py` or `venom.py`
 # (can have an `__init__.py` which exposes the API).
 
+from collections.abc import Callable
+from functools import partial
+from time import perf_counter
 from typing import Any, Dict, List
 
 from vyper.compiler.settings import OptimizationLevel, VenomOptimizationFlags
@@ -82,12 +85,31 @@ PASS_FLAG_MAP = {
 
 
 PassRunConfig = tuple[type[IRPass], dict[str, Any]]
+PassTimingCallback = Callable[[str, float], None]
 
 
-def _run_passes(fn: IRFunction, pass_pipeline: list[PassRunConfig], ac: IRAnalysesCache) -> None:
+def _run_timed_pass(
+    pass_name: str, run_pass: Callable[[], None], pass_timing_callback: PassTimingCallback | None
+) -> None:
+    if pass_timing_callback is None:
+        run_pass()
+        return
+
+    start = perf_counter()
+    run_pass()
+    pass_timing_callback(pass_name, perf_counter() - start)
+
+
+def _run_passes(
+    fn: IRFunction,
+    pass_pipeline: list[PassRunConfig],
+    ac: IRAnalysesCache,
+    pass_timing_callback: PassTimingCallback | None = None,
+) -> None:
     for pass_cls, kwargs in pass_pipeline:
         pass_instance = pass_cls(ac, fn)
-        pass_instance.run_pass(**kwargs)
+        pass_name = f"{fn.name.value}:{pass_cls.__name__}"
+        _run_timed_pass(pass_name, partial(pass_instance.run_pass, **kwargs), pass_timing_callback)
 
 
 def _normalize_pass_config(pass_config: PassConfig) -> PassRunConfig:
@@ -115,25 +137,41 @@ def _build_fn_pass_pipeline(flags: VenomOptimizationFlags) -> list[PassRunConfig
 
 
 def _run_global_passes(
-    ctx: IRContext, flags: VenomOptimizationFlags, ir_analyses: dict[IRFunction, IRAnalysesCache]
+    ctx: IRContext,
+    flags: VenomOptimizationFlags,
+    ir_analyses: dict[IRFunction, IRAnalysesCache],
+    pass_timing_callback: PassTimingCallback | None = None,
 ) -> None:
     ctx.global_analyses_cache = IRGlobalAnalysesCache(ctx, ir_analyses)
     ctx.global_analyses_cache.force_analysis(ReadonlyMemoryArgsGlobalAnalysis)
     # Clean unreachable blocks before passes that require dominator analysis
     for fn in ctx.get_functions():
-        SimplifyCFGPass(ir_analyses[fn], fn).run_pass()
+        pass_instance = SimplifyCFGPass(ir_analyses[fn], fn)
+        pass_name = f"{fn.name.value}:SimplifyCFGPass"
+        _run_timed_pass(pass_name, pass_instance.run_pass, pass_timing_callback)
     # Intentionally run invoke-copy forwarding twice in the full pipeline:
     # 1) here (pre-inlining) to shrink obvious frontend-emitted staging copies
     # 2) again in O2/O3/Os per-function pipelines to catch shapes created later.
     # Keep this note in sync with optimization_levels/* where the second run is listed.
     for fn in ctx.get_functions():
-        InternalReturnCopyForwardingPass(ir_analyses[fn], fn).run_pass()
-        ReadonlyInvokeArgCopyForwardingPass(ir_analyses[fn], fn).run_pass()
+        pass_instance = InternalReturnCopyForwardingPass(ir_analyses[fn], fn)
+        pass_name = f"{fn.name.value}:InternalReturnCopyForwardingPass"
+        _run_timed_pass(pass_name, pass_instance.run_pass, pass_timing_callback)
+
+        pass_instance = ReadonlyInvokeArgCopyForwardingPass(ir_analyses[fn], fn)
+        pass_name = f"{fn.name.value}:ReadonlyInvokeArgCopyForwardingPass"
+        _run_timed_pass(pass_name, pass_instance.run_pass, pass_timing_callback)
     if not flags.disable_inlining:
-        FunctionInlinerPass(ir_analyses, ctx, flags).run_pass()
+        pass_instance = FunctionInlinerPass(ir_analyses, ctx, flags)
+        _run_timed_pass("global:FunctionInlinerPass", pass_instance.run_pass, pass_timing_callback)
 
 
-def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_checks=False) -> None:
+def run_passes_on(
+    ctx: IRContext,
+    flags: VenomOptimizationFlags,
+    disable_mem_checks=False,
+    pass_timing_callback: PassTimingCallback | None = None,
+) -> None:
     ir_analyses: dict[IRFunction, IRAnalysesCache] = {}
     # Validate calling convention invariants before running passes
     if not disable_mem_checks:
@@ -142,7 +180,7 @@ def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_che
     for fn in ctx.functions.values():
         ir_analyses[fn] = IRAnalysesCache(fn)
 
-    _run_global_passes(ctx, flags, ir_analyses)
+    _run_global_passes(ctx, flags, ir_analyses, pass_timing_callback)
 
     ctx.global_analyses_cache = None
     ir_analyses = {}
@@ -161,7 +199,7 @@ def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_che
     ctx.global_analyses_cache.force_analysis(ReadonlyMemoryArgsGlobalAnalysis)
 
     pass_pipeline = _build_fn_pass_pipeline(flags)
-    _run_fn_passes(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses)
+    _run_fn_passes(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, pass_timing_callback)
     ctx.global_analyses_cache = None
 
 
@@ -171,10 +209,13 @@ def _run_fn_passes(
     fn: IRFunction,
     pass_pipeline: list[PassRunConfig],
     ir_analyses: dict[IRFunction, IRAnalysesCache],
+    pass_timing_callback: PassTimingCallback | None = None,
 ):
     visited: set[IRFunction] = set()
     assert ctx.entry_function is not None
-    _run_fn_passes_r(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, visited)
+    _run_fn_passes_r(
+        ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, visited, pass_timing_callback
+    )
 
 
 def _run_fn_passes_r(
@@ -184,11 +225,14 @@ def _run_fn_passes_r(
     pass_pipeline: list[PassRunConfig],
     ir_analyses: dict[IRFunction, IRAnalysesCache],
     visited: set,
+    pass_timing_callback: PassTimingCallback | None = None,
 ):
     if fn in visited:
         return
     visited.add(fn)
     for next_fn in fcg.get_callees(fn):
-        _run_fn_passes_r(ctx, fcg, next_fn, pass_pipeline, ir_analyses, visited)
+        _run_fn_passes_r(
+            ctx, fcg, next_fn, pass_pipeline, ir_analyses, visited, pass_timing_callback
+        )
 
-    _run_passes(fn, pass_pipeline, ir_analyses[fn])
+    _run_passes(fn, pass_pipeline, ir_analyses[fn], pass_timing_callback)
