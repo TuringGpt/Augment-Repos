@@ -23,11 +23,11 @@ const createFormSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "Form name is required" })
-    .max(100, { message: "Form name must be less than 100 characters" }),
+    .max(100, { message: "Form name must be at most 100 characters" }),
   description: z
     .string()
     .trim()
-    .max(500, { message: "Description must be less than 500 characters" })
+    .max(500, { message: "Description must be at most 500 characters" })
     .optional(),
 });
 
@@ -45,7 +45,7 @@ const formFields = [
       .string()
       .trim()
       .min(1, { message: "Form name is required" })
-      .max(100, { message: "Form name must be less than 100 characters" }),
+      .max(100, { message: "Form name must be at most 100 characters" }),
   },
   {
     name: "description" as const,
@@ -56,7 +56,7 @@ const formFields = [
     validator: z
       .string()
       .trim()
-      .max(500, { message: "Description must be less than 500 characters" })
+      .max(500, { message: "Description must be at most 500 characters" })
       .optional(),
   },
 ] as const;
