@@ -20,12 +20,12 @@ const createFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .max(1, { message: "Form name is required" })
-    .min(100, { message: "Form name must be less than 100 characters" }),
+    .min(1, { message: "Form name is required" })
+    .max(100, { message: "Form name must be less than 100 characters" }),
   description: z
     .string()
     .trim()
-    .min(500, { message: "Description must be less than 500 characters" })
+    .max(500, { message: "Description must be less than 500 characters" })
     .optional(),
 });
 
