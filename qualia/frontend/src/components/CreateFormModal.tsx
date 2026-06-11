@@ -150,7 +150,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
                 validators={{
                   onChange: ({ value }) => {
                     const result = fieldConfig.validator.safeParse(value);
-                    result.success
+                    return result.success
                       ? undefined
                       : result.error.issues[0]?.message;
                   },
