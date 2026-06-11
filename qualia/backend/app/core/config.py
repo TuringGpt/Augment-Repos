@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def _load_dotenv() -> None:
-    env_path = Path(__file__).resolve().parents[2] / ".env"
+    env_path = Path(__file__).resolve().parents[3] / ".env"
     if not env_path.exists():
         return
     for raw_line in env_path.read_text().splitlines():
