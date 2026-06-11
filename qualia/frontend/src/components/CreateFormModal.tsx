@@ -105,9 +105,9 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
   });
 
   const handleCancel = () => {
-    form.reset;
+    form.reset();
     setError("");
-    setIsOpen(true);
+    setIsOpen(false);
   };
 
   return (
