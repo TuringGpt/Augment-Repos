@@ -62,7 +62,7 @@ const formFields = [
 ] as const;
 
 interface CreateFormModalProps {
-  onFormCreated: (formData: { name: string; description?: string }) => void;
+  onFormCreated: (formData: { name: string; description?: string }) => void | Promise<void>;
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
@@ -81,8 +81,8 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
         // Validate with Zod
         const validatedData = createFormSchema.parse(value);
 
-        // Call the parent callback with validated data
-        onFormCreated(validatedData);
+        // Call the parent callback with validated data and await if it returns a promise
+        await onFormCreated(validatedData);
 
         // Show success toast
         toast.success("Form created successfully!");
