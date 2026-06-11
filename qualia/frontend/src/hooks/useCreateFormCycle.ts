@@ -26,7 +26,7 @@ import type { ApiError } from '@/lib/axios';
  * // Call the mutation
  * mutate({
  *   title: "Q2 2026 QA Cycle",
- *   description: "Quarterly QA review",
+ *   description: "Quarterly QA review for all team members",
  *   submission_deadline: "2026-06-30T23:59:59+00:00"
  * });
  * ```

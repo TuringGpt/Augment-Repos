@@ -12,7 +12,7 @@ import { apiClient } from '@/lib/axios';
  */
 export interface CreateFormCycleRequest {
   title: string;
-  description: Array<number>;
+  description?: string | null;
   submission_deadline: string; // ISO 8601 format with timezone (e.g., "2026-06-30T23:59:59+00:00")
 }
 
@@ -36,7 +36,7 @@ export interface CreateFormCycleResponse {
  * ```typescript
  * const formCycle = await createFormCycle({
  *   title: "Q2 2026 QA Cycle",
- *   description: "Quarterly QA review",
+ *   description: "Quarterly QA review for all team members",
  *   submission_deadline: "2026-06-30T23:59:59+00:00"
  * });
  * console.log(formCycle.id); // "550e8400-e29b-41d4-a716-446655440000"
