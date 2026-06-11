@@ -101,7 +101,7 @@ export default function DataTable({ config, extra = [] }) {
 
   const handleRecordPayment = (record) => {
     dispatch(erp.currentItem({ data: record }));
-    navigate(`/invoice/pay/${record._id}`);
+    navigate(`/${entity}/pay/${record._id}`);
   };
 
   dataTableColumns = [

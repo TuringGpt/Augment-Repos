@@ -1,6 +1,6 @@
 import useLanguage from '@/locale/useLanguage';
 import { useMoney, useDate } from '@/settings';
-import InvoiceDataTableModule from '@/modules/InvoiceModule/InvoiceDataTableModule';
+import QuoteDataTableModule from '@/modules/QuoteModule/QuoteDataTableModule';
 import {
   numberColumn,
   clientNameColumn,
@@ -10,10 +10,10 @@ import {
   statusColumn,
 } from '@/modules/shared/columns/invoiceQuoteColumns';
 
-export default function Invoice() {
+export default function Quote() {
   const translate = useLanguage();
   const { dateFormat } = useDate();
-  const entity = 'invoice';
+  const entity = 'quote';
   const { moneyFormatter } = useMoney();
 
   const searchConfig = {
@@ -30,28 +30,14 @@ export default function Invoice() {
     dateColumn(columnParams),
     expiredDateColumn(columnParams),
     totalColumn(columnParams),
-    {
-      title: translate('paid'),
-      dataIndex: 'credit',
-      onCell: () => ({
-        style: { textAlign: 'right', whiteSpace: 'nowrap', direction: 'ltr' },
-      }),
-      render: (total, record) => moneyFormatter({ amount: total, currency_code: record.currency }),
-    },
     statusColumn(columnParams),
-    {
-      title: translate('Payment'),
-      dataIndex: 'paymentStatus',
-    },
   ];
 
   const Labels = {
-    PANEL_TITLE: translate('invoice'),
-    DATATABLE_TITLE: translate('invoice_list'),
-    ADD_NEW_ENTITY: translate('add_new_invoice'),
-    ENTITY_NAME: translate('invoice'),
-
-    RECORD_ENTITY: translate('record_payment'),
+    PANEL_TITLE: translate('quote'),
+    DATATABLE_TITLE: translate('quote_list'),
+    ADD_NEW_ENTITY: translate('add_new_quote'),
+    ENTITY_NAME: translate('quote'),
   };
 
   const configPage = {
@@ -65,5 +51,5 @@ export default function Invoice() {
     deleteModalLabels,
   };
 
-  return <InvoiceDataTableModule config={config} />;
+  return <QuoteDataTableModule config={config} />;
 }
