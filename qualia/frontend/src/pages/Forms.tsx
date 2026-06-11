@@ -125,14 +125,15 @@ function Forms() {
   };
 
   const handleCreateForm = (formData: { name: string; description?: string }) => {
+    const now = new Date().toISOString().split("T")[0];
     const newForm: FormItem = {
       id: String(Date.now()),
       name: formData.name,
       description: formData.description || "",
       status: "draft",
       submissions: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
+      createdAt: now,
+      updatedAt: now,
     };
 
     setForms((prevForms) => [newForm, ...prevForms]);
