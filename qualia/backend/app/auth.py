@@ -1,5 +1,4 @@
 from collections import defaultdict, deque
-from collections.abc import Deque
 import time
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -17,7 +16,7 @@ DUMMY_PASSWORD_HASH = hash_password("qualia-login-padding")
 LOGIN_WINDOW_SECONDS = 60
 LOGIN_ATTEMPT_LIMIT = 5
 LOGIN_TRACKED_EMAILS_LIMIT = 1024
-LOGIN_ATTEMPTS: dict[str, Deque[float]] = defaultdict(deque)
+LOGIN_ATTEMPTS: defaultdict[str, deque[float]] = defaultdict(deque)
 
 
 def _normalized_email_or_none(email: str) -> str | None:

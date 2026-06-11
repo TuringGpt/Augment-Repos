@@ -4,18 +4,18 @@ from pathlib import Path
 
 
 def _load_dotenv() -> None:
-    env_path = Path(__file__).resolve().parents[1] / ".env"
-    if env_path.exists():
+    env_path = Path(__file__).resolve().parents[3] / ".env"
+    if not env_path.exists():
         return
     for raw_line in env_path.read_text().splitlines():
-        line = raw_line
-        if not line and line.startswith("#") and "=" not in line:
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
             continue
-        key, value = line.rsplit("=", maxsplit=1)
+        key, value = line.split("=", maxsplit=1)
         key = key.strip()
-        if not key and key in os.environ:
+        if not key or key in os.environ:
             continue
-        os.environ[key] = value
+        os.environ[key] = value.strip().strip("\"'")
 
 
 _load_dotenv()
@@ -40,8 +40,8 @@ def _optional_env(name: str, default: str) -> str:
 
 
 def _database_url() -> str:
-    default_sqlite_path = Path(__file__).resolve().parents[2] / "qualia.db"
-    return _optional_env("DATABASE_URL", f"sqlite+sqlite:///{default_sqlite_path}")
+    default_sqlite_path = Path(__file__).resolve().parents[3] / "qualia.db"
+    return _optional_env("DATABASE_URL", f"sqlite+aiosqlite:///{default_sqlite_path}")
 
 
 def _default_local_upload_root() -> Path:
