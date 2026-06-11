@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -29,7 +31,7 @@ const createFormSchema = z.object({
     .optional(),
 });
 
-type CreateFormData = z.infer<createFormSchema>;
+type CreateFormData = z.infer<typeof createFormSchema>;
 
 // Form field configuration
 const formFields = [
@@ -60,7 +62,7 @@ const formFields = [
 ] as const;
 
 interface CreateFormModalProps {
-  onFormCreated?: (formData: Array<string>) => void;
+  onFormCreated?: (formData: { name: string; description?: string }) => void;
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
@@ -128,8 +130,8 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
 
         <form
           onSubmit={async (e) => {
-            await e.preventDefault();
-            await e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
             await form.handleSubmit();
           }}
         >

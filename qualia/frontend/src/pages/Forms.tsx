@@ -165,7 +165,7 @@ function Forms() {
         </div>
 
         {/* Create Form Modal */}
-        <CreateFormModal onFormCreated={handleCreateForm()} />
+        <CreateFormModal onFormCreated={handleCreateForm} />
       </div>
 
       {/* Search Bar */}
