@@ -2,6 +2,7 @@ import asyncio
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
+from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import _database_url
@@ -41,8 +42,17 @@ async def seed_database() -> str:
     engine = create_async_engine(database_url)
     session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
+    @event.listens_for(engine.sync_engine, "connect")
+    def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:
+        cursor = dbapi_connection.cursor()
+        try:
+            cursor.execute("PRAGMA foreign_keys=ON")
+        finally:
+            cursor.close()
+
     try:
         async with engine.begin() as conn:
+            await conn.execute(text("DROP TABLE IF EXISTS section"))
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
 
