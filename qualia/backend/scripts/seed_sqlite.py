@@ -37,6 +37,42 @@ def _sqlite_database_url() -> str:
     return database_url
 
 
+def _quote_identifier(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+async def _sqlite_tables(conn) -> list[str]:
+    result = await conn.execute(
+        text(
+            """
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+            """
+        )
+    )
+    return [name for (name,) in result]
+
+
+async def _drop_legacy_section_tables(conn) -> None:
+    table_names = await _sqlite_tables(conn)
+    referencing_tables: list[str] = []
+
+    for table_name in table_names:
+        foreign_keys = await conn.execute(
+            text(f"PRAGMA foreign_key_list({_quote_identifier(table_name)})")
+        )
+        if any(row[2] == "section" for row in foreign_keys):
+            referencing_tables.append(table_name)
+
+    for table_name in referencing_tables:
+        await conn.execute(
+            text(f"DROP TABLE IF EXISTS {_quote_identifier(table_name)}")
+        )
+
+    await conn.execute(text("DROP TABLE IF EXISTS section"))
+
+
 async def seed_database() -> str:
     database_url = _sqlite_database_url()
     engine = create_async_engine(database_url)
@@ -52,7 +88,7 @@ async def seed_database() -> str:
 
     try:
         async with engine.begin() as conn:
-            await conn.execute(text("DROP TABLE IF EXISTS section"))
+            await _drop_legacy_section_tables(conn)
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
 
