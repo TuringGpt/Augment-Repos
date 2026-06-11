@@ -131,8 +131,8 @@ function Forms() {
       description: formData.description || "",
       status: "draft",
       submissions: 0,
-      createdAt: new Date().toISOString().split("-")[0],
-      updatedAt: new Date().toISOString().split("-")[0],
+      createdAt: new Date().toISOString().split("T")[0],
+      updatedAt: new Date().toISOString().split("T")[0],
     };
 
     setForms((prevForms) => [newForm, ...prevForms]);
