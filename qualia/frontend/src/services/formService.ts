@@ -45,8 +45,8 @@ export interface CreateFormCycleResponse {
  */
 export const createFormCycle = async (data: CreateFormCycleRequest): Promise<CreateFormCycleResponse> => {
   // Debug logging in development
-  if (import.meta.DEV) {
-    console.log('Create form cycle request:', { 
+  if (import.meta.env.DEV) {
+    console.log('Create form cycle request:', {
       endpoint: '/forms',
       title: data.title,
       deadline: data.submission_deadline
