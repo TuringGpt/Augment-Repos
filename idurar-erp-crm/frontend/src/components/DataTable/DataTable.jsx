@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   EyeOutlined,
@@ -15,11 +15,10 @@ import { PageHeader } from '@ant-design/pro-layout';
 import { useSelector, useDispatch } from 'react-redux';
 import { crud } from '@/redux/crud/actions';
 import { selectListItems } from '@/redux/crud/selectors';
+import useDebounce from '@/hooks/useDebounce';
 import useLanguage from '@/locale/useLanguage';
 import { dataForTable } from '@/utils/dataStructure';
 import { useMoney, useDate } from '@/settings';
-
-import { generate as uniqueId } from 'shortid';
 
 import { useCrudContext } from '@/context/crud';
 
@@ -151,16 +150,45 @@ export default function DataTable({ config, extra = [] }) {
   const { pagination, items: dataSource } = listResult;
 
   const dispatch = useDispatch();
+  const [searchValue, setSearchValue] = useState('');
+  const isFirstSearchRender = useRef(true);
+  const lastRequestedSearch = useRef(null);
 
   const handelDataTableLoad = useCallback((pagination) => {
     const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
     dispatch(crud.list({ entity, options }));
-  }, []);
+  }, [dispatch, entity]);
+
+  const [, cancelSearch] = useDebounce(
+    () => {
+      if (isFirstSearchRender.current) {
+        isFirstSearchRender.current = false;
+        return;
+      }
+
+      const trimmedSearchValue = searchValue.trim();
+
+      if (trimmedSearchValue === lastRequestedSearch.current) {
+        return;
+      }
+
+      lastRequestedSearch.current = trimmedSearchValue;
+
+      if (!trimmedSearchValue) {
+        dispatch(crud.list({ entity }));
+        return;
+      }
+
+      const options = { q: trimmedSearchValue, fields: searchConfig?.searchFields || '' };
+
+      dispatch(crud.list({ entity, options }));
+    },
+    300,
+    [searchValue]
+  );
 
   const filterTable = (e) => {
-    const value = e.target.value;
-    const options = { q: value, fields: searchConfig?.searchFields || '' };
-    dispatch(crud.list({ entity, options }));
+    setSearchValue(e.target.value);
   };
 
   const dispatcher = () => {
@@ -171,6 +199,7 @@ export default function DataTable({ config, extra = [] }) {
     const controller = new AbortController();
     dispatcher();
     return () => {
+      cancelSearch();
       controller.abort();
     };
   }, []);
@@ -185,15 +214,16 @@ export default function DataTable({ config, extra = [] }) {
         extra={[
           <Input
             key={`searchFilterDataTable}`}
+            value={searchValue}
             onChange={filterTable}
             placeholder={translate('search')}
             allowClear
           />,
-          <Button onClick={handelDataTableLoad} key={`${uniqueId()}`} icon={<RedoOutlined />}>
+          <Button onClick={handelDataTableLoad} key="refresh-button" icon={<RedoOutlined />}>
             {translate('Refresh')}
           </Button>,
 
-          <AddNewItem key={`${uniqueId()}`} config={config} />,
+          <AddNewItem key="add-new-item" config={config} />,
         ]}
         style={{
           padding: '20px 0px',

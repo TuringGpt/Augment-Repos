@@ -11,7 +11,7 @@ import { crud } from '@/redux/crud/actions';
 import { useCrudContext } from '@/context/crud';
 import { selectSearchedItems } from '@/redux/crud/selectors';
 
-function SearchItemComponent({ config, onRerender }) {
+export default function SearchItem({ config }) {
   let { entity, searchConfig } = config;
 
   const { displayLabels, searchFields, outputValue = '_id' } = searchConfig;
@@ -29,13 +29,34 @@ function SearchItemComponent({ config, onRerender }) {
   const [searching, setSearching] = useState(false);
 
   const [valToSearch, setValToSearch] = useState('');
-  const [debouncedValue, setDebouncedValue] = useState('');
+  const lastRequestedSearch = useRef(null);
 
   const [, cancel] = useDebounce(
     () => {
-      setDebouncedValue(valToSearch);
+      const trimmedSearchValue = valToSearch.trim();
+
+      if (!trimmedSearchValue) {
+        lastRequestedSearch.current = null;
+        setSearching(false);
+        setOptions([]);
+        return;
+      }
+
+      if (trimmedSearchValue === lastRequestedSearch.current) {
+        setSearching(false);
+        return;
+      }
+
+      lastRequestedSearch.current = trimmedSearchValue;
+
+      const options = {
+        q: trimmedSearchValue,
+        fields: searchFields,
+      };
+
+      dispatch(crud.search({ entity, options }));
     },
-    500,
+    300,
     [valToSearch]
   );
 
@@ -44,26 +65,29 @@ function SearchItemComponent({ config, onRerender }) {
   };
 
   useEffect(() => {
-    if (debouncedValue != '') {
-      const options = {
-        q: debouncedValue,
-        fields: searchFields,
-      };
-      dispatch(crud.search({ entity, options }));
-    }
     return () => {
       cancel();
     };
-  }, [debouncedValue]);
+  }, []);
 
   const onSearch = (searchText) => {
-    if (searchText && searchText != '') {
-      isSearching.current = true;
-      setSearching(true);
+    const trimmedSearchText = searchText.trim();
+
+    if (!trimmedSearchText) {
+      lastRequestedSearch.current = null;
+      isSearching.current = false;
+      setSearching(false);
       setOptions([]);
       setCurrentValue(undefined);
-      setValToSearch(searchText);
+      setValToSearch('');
+      return;
     }
+
+    isSearching.current = true;
+    setSearching(true);
+    setOptions([]);
+    setCurrentValue(undefined);
+    setValToSearch(trimmedSearchText);
   };
 
   const onSelect = (data) => {
@@ -76,14 +100,21 @@ function SearchItemComponent({ config, onRerender }) {
     panel.open();
     collapsedBox.open();
     readBox.open();
-    onRerender();
+
+    lastRequestedSearch.current = null;
+    isSearching.current = false;
+    setSearching(false);
+    setOptions([]);
+    setCurrentValue(undefined);
+    setValToSearch('');
   };
   useEffect(() => {
     if (isSearching.current) {
+      setSearching(false);
+
       if (isSuccess) {
-        setOptions(result);
+        setOptions(result || []);
       } else {
-        setSearching(false);
         setCurrentValue(undefined);
         setOptions([]);
       }
@@ -111,16 +142,4 @@ function SearchItemComponent({ config, onRerender }) {
       ))}
     </Select>
   );
-}
-
-export default function SearchItem({ config }) {
-  const [state, setState] = useState([0]);
-
-  const onRerender = () => {
-    setState([state + 1]);
-  };
-
-  return state.map((comp) => (
-    <SearchItemComponent key={comp} config={config} onRerender={onRerender} />
-  ));
 }
