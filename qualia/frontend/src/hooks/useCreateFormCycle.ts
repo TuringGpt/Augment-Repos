@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { createFormCycle } from '@/services/formService';
 import type { CreateFormCycleRequest, CreateFormCycleResponse } from '@/services/formService';
 import type { ApiError } from '@/lib/axios';
 
@@ -31,7 +32,8 @@ import type { ApiError } from '@/lib/axios';
  * ```
  */
 export const useCreateFormCycle = (options?: {
-  onSuccess?: (data: string) => void;
+  onSuccess?: (data: CreateFormCycleResponse) => void;
+  onError?: (error: ApiError) => void;
 }) => {
   return useMutation({
     mutationFn: (data: CreateFormCycleRequest) => createFormCycle(data),
@@ -39,6 +41,6 @@ export const useCreateFormCycle = (options?: {
     onError: options?.onError,
     // Disable retry to prevent duplicate form cycle creation on transient failures
     // Form cycle creation is non-idempotent, so retrying could create multiple cycles
-    retry: true,
+    retry: false,
   });
 };
