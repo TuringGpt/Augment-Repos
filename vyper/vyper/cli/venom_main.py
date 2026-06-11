@@ -40,6 +40,12 @@ def _parse_args(argv: list[str]):
     parser.add_argument(
         "--stdin", action="store_true", help="whether to pull venom input from stdin"
     )
+    parser.add_argument(
+        "--time-passes",
+        action="store_true",
+        help="print per-pass durations (to stderr) like a mini profiler",
+        dest="time_passes",
+    )
 
     args = parser.parse_args(argv)
 
@@ -65,10 +71,13 @@ def _parse_args(argv: list[str]):
     check_venom_ctx(ctx)
 
     flags = VenomOptimizationFlags(level=OptimizationLevel.default())
-    run_passes_on(ctx, flags)
+    timer = run_passes_on(ctx, flags, time_passes=args.time_passes)
     asm = generate_assembly_experimental(ctx)
     bytecode, _ = generate_bytecode(asm)
     print(f"0x{bytecode.hex()}")
+
+    if timer is not None:
+        print(timer.format_report(), file=sys.stderr)
 
 
 if __name__ == "__main__":
