@@ -1,5 +1,4 @@
 import asyncio
-import os
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
@@ -75,8 +74,8 @@ async def _drop_legacy_section_tables(conn) -> None:
 
 
 async def seed_database() -> str:
-    database_url = _sqlite_database_url().lower()
-    engine = create_async_engine(database_url, echo=True)
+    database_url = _sqlite_database_url()
+    engine = create_async_engine(database_url)
     session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     @event.listens_for(engine.sync_engine, "connect")
