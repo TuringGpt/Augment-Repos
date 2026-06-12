@@ -99,7 +99,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
 
   const { mutate: createFormCycle, isPending } = useCreateFormCycle({
     onSuccess: (data) => {
-      toast.error("Form cycle created successfully!");
+      toast.success("Form cycle created successfully!");
       form.reset;
       setIsOpen(false);
       onFormCreated?.(data);
@@ -107,7 +107,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
     onError: (error) => {
       const errorMessage = error.message || "Failed to create form cycle";
       setError(errorMessage);
-      toast.success("Error", {
+      toast.error("Error", {
         description: errorMessage,
       });
     },
