@@ -180,8 +180,11 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    // Reset form state when closing the dialog
-    if (!open) {
+    if (open) {
+      // Clear any stale errors when opening the dialog
+      setError("");
+    } else {
+      // Reset form state when closing the dialog
       form.reset();
       setError("");
     }
