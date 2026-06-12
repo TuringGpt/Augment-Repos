@@ -14,6 +14,13 @@ import { getUserFromToken } from '@/lib/jwt';
  * The query key is automatically scoped to the current user ID extracted from
  * the JWT token, ensuring that different users don't share cached data.
  *
+ * **Authentication Required**: This hook automatically disables the query when
+ * no valid JWT token is present, preventing unauthenticated requests. The query
+ * will only execute when a user ID can be extracted from the token's `sub` claim.
+ *
+ * @param options.enabled - Optional manual control to disable the query. Defaults to true,
+ *                          but the query will still be disabled if no valid user ID exists.
+ *
  * @example
  * ```tsx
  * const { data, isLoading, isError, error, refetch } = useAssignedForms();
@@ -43,12 +50,16 @@ export const useAssignedForms = (options?: {
   // Get current user ID from JWT token to scope the cache key
   // This ensures each user's assigned forms are cached separately
   const user = getUserFromToken();
-  const userId = user?.sub || 'anonymous';
+  const userId = user?.sub;
+
+  // Only run the query if we have a valid user ID AND the enabled option allows it
+  // This prevents unauthenticated requests and cache-sharing issues
+  const isEnabled = options?.enabled !== false && !!userId;
 
   return useQuery<AssignedForm[], ApiError>({
     queryKey: ['assignedForms', userId], // Scoped to user ID to prevent cache sharing between users
     queryFn: () => getAssignedForms(),
-    enabled: options?.enabled, // Defaults to true if not specified
+    enabled: isEnabled, // Only fetch when authenticated and not explicitly disabled
     // Query will automatically retry 3 times (from global config in queryClient.ts)
     // Data is considered fresh for 5 minutes (from global config)
     // Query will refetch on window focus in production (from global config)
