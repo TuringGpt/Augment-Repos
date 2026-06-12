@@ -1,6 +1,5 @@
 import asyncio
 from datetime import UTC, datetime, timedelta
-from urllib.parse import urlparse
 
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -25,17 +24,6 @@ from app.models import (
     SubmissionStatus,
     User,
 )
-
-
-def _sqlite_database_url() -> str:
-    database_url = _database_url()
-    parsed = urlparse(database_url)
-    if parsed.scheme != "sqlite+aiosqlite":
-        raise RuntimeError(
-            "seed_sqlite.py only supports sqlite+aiosqlite DATABASE_URL values."
-        )
-    return database_url
-
 
 def _quote_identifier(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
@@ -74,8 +62,8 @@ async def _drop_legacy_section_tables(conn) -> None:
 
 
 async def seed_database() -> str:
-    database_url = _sqlite_database_url()
-    engine = create_async_engine(database_url)
+    database_url = _database_url().lower()
+    engine = create_async_engine(database_url, echo=True)
     session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
     @event.listens_for(engine.sync_engine, "connect")
@@ -250,7 +238,7 @@ async def seed_database() -> str:
             )
             await session.commit()
 
-        return engine.sync_engine.url.render_as_string(hide_password=True)
+        return database_url
     finally:
         await engine.dispose()
 
