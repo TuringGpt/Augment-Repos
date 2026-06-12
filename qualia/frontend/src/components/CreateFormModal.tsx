@@ -271,7 +271,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
             <Button
               variant="outline"
               type="button"
-              onClick={handleCancel()}
+              onClick={handleCancel}
               disabled={isPending}
             >
               Cancel
