@@ -1,4 +1,4 @@
-from typing import ClassVar, TypeAlias, Union
+from typing import Any, ClassVar, TypeAlias, Union
 
 from vyper.venom.analysis import IRAnalysesCache
 from vyper.venom.basicblock import IRLabel
@@ -7,6 +7,16 @@ from vyper.venom.function import IRFunction
 from vyper.venom.passes.machinery.inst_updater import InstUpdater
 
 PassRef: TypeAlias = Union[str, type["IRPass"]]
+PassMetrics: TypeAlias = dict[str, Any]
+
+
+def _build_metrics_dict(pass_name: str, scope: str, target: str | None, metrics: PassMetrics) -> PassMetrics:
+    return {
+        "pass": pass_name,
+        "scope": scope,
+        "target": target,
+        "metrics": dict(metrics),
+    }
 
 
 class IRPass:
@@ -31,6 +41,17 @@ class IRPass:
     def __init__(self, analyses_cache: IRAnalysesCache, function: IRFunction):
         self.function = function
         self.analyses_cache = analyses_cache
+
+    def _metrics(self) -> PassMetrics:
+        return {}
+
+    def get_metrics(self) -> PassMetrics:
+        return _build_metrics_dict(
+            pass_name=self.__class__.__name__,
+            scope="function",
+            target=self.function.name.value,
+            metrics=self._metrics(),
+        )
 
     def _replace_all_labels(self, label_map: dict[IRLabel, IRLabel]) -> None:
         for bb in self.function.get_basic_blocks():
@@ -58,6 +79,17 @@ class IRGlobalPass:
     def __init__(self, analyses_caches: dict[IRFunction, IRAnalysesCache], ctx: IRContext):
         self.analyses_caches = analyses_caches
         self.ctx = ctx
+
+    def _metrics(self) -> PassMetrics:
+        return {}
+
+    def get_metrics(self) -> PassMetrics:
+        return _build_metrics_dict(
+            pass_name=self.__class__.__name__,
+            scope="global",
+            target=None,
+            metrics=self._metrics(),
+        )
 
     def run_pass(self, *args, **kwargs):
         raise NotImplementedError(f"Not implemented! {self.__class__}.run_pass()")

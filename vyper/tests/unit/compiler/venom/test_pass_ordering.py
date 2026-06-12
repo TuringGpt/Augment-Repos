@@ -1,10 +1,12 @@
 import pytest
 
 import vyper.venom as venom
+from tests.venom_utils import parse_from_basic_block
 from vyper.compiler.settings import OptimizationLevel, VenomOptimizationFlags
 from vyper.exceptions import CompilerPanic
+from vyper.venom.analysis import IRAnalysesCache
 from vyper.venom.optimization_levels.pass_order import validate_pass_order
-from vyper.venom.passes.base_pass import IRPass
+from vyper.venom.passes.base_pass import IRGlobalPass, IRPass
 from vyper.venom.passes.cfg_normalization import CFGNormalization
 from vyper.venom.passes.dft import DFTPass
 from vyper.venom.passes.literals_codesize import ReduceLiteralsCodesize
@@ -97,6 +99,44 @@ def test_validation_happens_after_disable_flag_filtering(monkeypatch):
         venom._build_fn_pass_pipeline(
             VenomOptimizationFlags(level=OptimizationLevel.O2, disable_cse=True)
         )
+
+
+def test_pass_metrics_have_uniform_shape():
+    class DummyPass(IRPass):
+        def _metrics(self):
+            return {"rewrites": 2}
+
+    class DummyGlobalPass(IRGlobalPass):
+        def _metrics(self):
+            return {"functions": len(self.ctx.functions)}
+
+    ctx = parse_from_basic_block(
+        """
+        main:
+            stop
+        """,
+        funcname="main",
+    )
+    fn = next(iter(ctx.functions.values()))
+    analyses_cache = IRAnalysesCache(fn)
+
+    function_metrics = DummyPass(analyses_cache, fn).get_metrics()
+    global_metrics = DummyGlobalPass({fn: analyses_cache}, ctx).get_metrics()
+
+    assert set(function_metrics) == {"pass", "scope", "target", "metrics"}
+    assert set(global_metrics) == set(function_metrics)
+    assert function_metrics == {
+        "pass": "DummyPass",
+        "scope": "function",
+        "target": "main",
+        "metrics": {"rewrites": 2},
+    }
+    assert global_metrics == {
+        "pass": "DummyGlobalPass",
+        "scope": "global",
+        "target": None,
+        "metrics": {"functions": 1},
+    }
 
 
 def test_tail_merge_requires_immediate_simplify_cfg():
