@@ -4,7 +4,7 @@ import { logout } from '@/services/authService';
 /**
  * TanStack Query mutation hook for user logout
  *
- * Clears authentication tokens from localStorage and invalidates all
+ * Clears authentication tokens from localStorage and clears all
  * TanStack Query caches to prevent data leakage between user sessions.
  *
  * @example
