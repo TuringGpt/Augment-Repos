@@ -52,7 +52,12 @@ export const useAssignedForms = (options?: {
   // Get current user ID from JWT token to scope the cache key
   // This ensures each user's assigned forms are cached separately
   const user = getUserFromToken();
-  const userId = user?.sub;
+
+  // Defensively validate that userId is a non-empty string
+  // This prevents issues if localStorage is corrupted/tampered and sub claim is non-string
+  const userId = typeof user?.sub === 'string' && user.sub.trim() !== ''
+    ? user.sub
+    : undefined;
 
   // Only run the query if we have a valid user ID AND the enabled option allows it
   // This prevents unauthenticated requests and cache-sharing issues
