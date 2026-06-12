@@ -423,7 +423,7 @@ async def autosave_submission_draft(
     payload: DraftAutosavePayload,
     authorization: str = Header(""),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, str | None]:
+) -> dict[str, str]:
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
