@@ -498,7 +498,7 @@ Reorder questions (drag-and-drop support)
 }
 ```
 
-#### POST `/api/v1/forms/{form_id}/publish/`
+#### POST `/api/v1/forms/{form_cycle_id}/publish`
 Publish form and make it available to reviewers
 
 **Response** (200 OK):

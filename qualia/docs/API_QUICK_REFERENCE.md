@@ -111,7 +111,7 @@ Content-Type: application/json
 
 ### Publish Form
 ```http
-POST /forms/{form_id}/publish/
+POST /api/v1/forms/{form_cycle_id}/publish
 ```
 
 Response:
