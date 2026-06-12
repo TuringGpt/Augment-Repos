@@ -55,9 +55,16 @@ const create = async (req, res) => {
   let result;
   for (let attempt = 0; ; attempt++) {
     const setting = await increaseBySettingKey({ settingKey: 'last_invoice_number' });
-    if (setting) {
-      body['number'] = setting.settingValue;
+    if (!setting) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: 'Could not reserve invoice number. Please ensure "last_invoice_number" setting exists.',
+      });
     }
+
+    body['number'] = setting.settingValue;
+
     try {
       result = await new Model(body).save();
       break;
