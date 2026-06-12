@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import {
   Card,
   CardHeader,
@@ -33,6 +32,7 @@ import {
   CopyIcon,
   SearchIcon,
 } from "lucide-react";
+import { CreateFormModal } from "@/components/CreateFormModal";
 
 // Form type definition
 type FormItem = {
@@ -124,6 +124,21 @@ function Forms() {
     toast.success("Form duplicated successfully!");
   };
 
+  const handleCreateForm = (formData: { name: string; description?: string }) => {
+    const now = new Date().toISOString().split("T")[0];
+    const newForm: FormItem = {
+      id: String(Date.now()),
+      name: formData.name,
+      description: formData.description || "",
+      status: "draft",
+      submissions: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setForms((prevForms) => [newForm, ...prevForms]);
+  };
+
   const getStatusBadge = (status: FormItem["status"]) => {
     const variants: Record<FormItem["status"], { variant: "default" | "secondary" | "outline"; label: string }> = {
       active: { variant: "default", label: "Active" },
@@ -142,11 +157,16 @@ function Forms() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Forms Management</h1>
-        <p className="text-muted-foreground">
-          Create and manage your forms
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Forms Management</h1>
+          <p className="text-muted-foreground">
+            Create and manage your forms
+          </p>
+        </div>
+
+        {/* Create Form Modal */}
+        <CreateFormModal onFormCreated={handleCreateForm} />
       </div>
 
       {/* Search Bar */}
