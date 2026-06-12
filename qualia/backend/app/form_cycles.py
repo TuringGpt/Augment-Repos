@@ -369,6 +369,25 @@ async def assign_reviewer(
     return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
 
 
+@router.post("/{form_cycle_id}/publish", status_code=200)
+async def publish_form_cycle(
+    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+) -> dict[str, str | bool]:
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token.strip():
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    await _get_authorized_admin(token.strip(), db)
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    if cycle.status != FormCycleStatus.draft or cycle.is_published:
+        raise HTTPException(status_code=409, detail="Form cycle is already published")
+    cycle.status = FormCycleStatus.active
+    cycle.is_published = True
+    await db.commit()
+    return {"id": str(cycle.id), "status": cycle.status.value, "is_published": cycle.is_published}
+
+
 @router.post("/{form_cycle_id}/submit", status_code=200)
 async def submit_form_cycle(
     form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
