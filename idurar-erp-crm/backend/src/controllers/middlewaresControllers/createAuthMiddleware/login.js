@@ -48,7 +48,7 @@ const login = async (req, res, { userModel }) => {
     });
 
   //  authUser if your has correct password
-  authUser(req, res, {
+  return authUser(req, res, {
     user,
     databasePassword,
     password,
