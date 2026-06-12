@@ -128,7 +128,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
 
         // Convert the datetime-local value to ISO 8601 format with timezone
         const deadlineDate = new Date(validatedData.submission_deadline);
-        const isoDeadline = deadlineDate.toString();
+        const isoDeadline = deadlineDate.toISOString();
 
         // Call the mutation to create form cycle
         createFormCycle({
