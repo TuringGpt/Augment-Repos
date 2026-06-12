@@ -56,7 +56,7 @@ export const useAssignedForms = (options?: {
   // Defensively validate that userId is a non-empty string
   // This prevents issues if localStorage is corrupted/tampered and sub claim is non-string
   const userId = typeof user?.sub === 'string' && user.sub.trim() !== ''
-    ? user.sub
+    ? user.sub.trim()
     : undefined;
 
   // Only run the query if we have a valid user ID AND the enabled option allows it
