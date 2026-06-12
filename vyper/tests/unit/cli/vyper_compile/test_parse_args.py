@@ -8,6 +8,10 @@ from vyper.builtins.functions import BUILTIN_FUNCTIONS
 from vyper.cli.vyper_compile import _parse_args
 from vyper.warnings import VyperWarning
 
+USER_FACING_BUILTIN_FUNCTIONS = sorted(
+    builtin_name for builtin_name in BUILTIN_FUNCTIONS if not builtin_name.startswith("_")
+)
+
 
 @pytest.fixture
 def chdir_path(tmp_path):
@@ -72,8 +76,29 @@ def test_version(capsys):
     assert vyper.__long_version__ in captured.out
 
 
-def test_builtin_functions_subcommand(capsys):
-    _parse_args(["builtins"])
+@pytest.mark.parametrize("subcommand", ("builtins", "builtin-functions"))
+def test_builtin_functions_subcommand(capsys, subcommand):
+    _parse_args([subcommand])
 
     captured = capsys.readouterr()
-    assert captured.out.splitlines() == sorted(BUILTIN_FUNCTIONS)
+    assert captured.out.splitlines() == USER_FACING_BUILTIN_FUNCTIONS
+
+
+def test_builtin_functions_subcommand_help(capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        _parse_args(["builtin-functions", "--help"])
+
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "usage: vyper builtin-functions" in captured.out
+
+
+def test_builtin_functions_subcommand_can_be_escaped(make_file):
+    code = """
+@external
+def foo() -> bool:
+    return True
+"""
+    path = make_file("builtins", code)
+
+    _parse_args(["--", str(path)])

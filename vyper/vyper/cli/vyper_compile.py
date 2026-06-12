@@ -80,17 +80,17 @@ def _parse_cli_args():
     return _parse_args(sys.argv[1:])
 
 
-def _parse_builtin_args(argv):
+def _parse_builtin_args(argv, subcommand):
     parser = argparse.ArgumentParser(
-        prog="vyper builtins",
-        description="List all Vyper builtin functions",
+        prog=f"vyper {subcommand}",
+        description="List user-facing Vyper builtin functions",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.parse_args(argv)
 
     from vyper.builtins.functions import BUILTIN_FUNCTIONS
 
-    for builtin_name in sorted(BUILTIN_FUNCTIONS):
+    for builtin_name in sorted(name for name in BUILTIN_FUNCTIONS if not name.startswith("_")):
         print(builtin_name)
 
 
@@ -124,7 +124,7 @@ def _cli_helper(f, output_formats, compiled):
 
 def _parse_args(argv):
     if argv and argv[0] in BUILTINS_SUBCOMMANDS:
-        _parse_builtin_args(argv[1:])
+        _parse_builtin_args(argv[1:], argv[0])
         return
 
     if "--standard-json" in argv:
@@ -134,7 +134,11 @@ def _parse_args(argv):
 
     parser = argparse.ArgumentParser(
         description="Pythonic Smart Contract Language for the EVM",
-        epilog="Subcommands:\n  builtins            List all Vyper builtin functions",
+        epilog=(
+            "Subcommands:\n"
+            "  builtins, builtin-functions    List user-facing Vyper builtin functions\n\n"
+            "Use `--` before a filename that matches a subcommand, e.g. `vyper -- builtins`."
+        ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("input_files", help="Vyper sourcecode to compile", nargs="+")
