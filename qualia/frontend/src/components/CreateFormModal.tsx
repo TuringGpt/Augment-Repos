@@ -90,7 +90,7 @@ const formFields = [
 ] as const;
 
 interface CreateFormModalProps {
-  onFormCreated?: (formData: { id: string; status: string }) => void;
+  onFormCreated?: (formData: { id: string; status: string }) => void | Promise<void>;
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
@@ -98,11 +98,24 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
   const [error, setError] = useState<string>("");
 
   const { mutate: createFormCycle, isPending } = useCreateFormCycle({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Form cycle created successfully!");
       form.reset();
       setIsOpen(false);
-      onFormCreated?.(data);
+
+      // Handle async callbacks to prevent unhandled promise rejections
+      try {
+        await onFormCreated?.(data);
+      } catch (error) {
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "An error occurred in the callback";
+        console.error("Error in onFormCreated callback:", error);
+        setError(errorMessage);
+        toast.error("Error", {
+          description: errorMessage,
+        });
+      }
     },
     onError: (error) => {
       const errorMessage = error.message || "Failed to create form cycle";
