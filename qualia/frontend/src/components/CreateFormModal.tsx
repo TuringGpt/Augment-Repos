@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusIcon } from "lucide-react";
+import { useCreateFormCycle } from "@/hooks/useCreateFormCycle";
 
 // Zod schema for create form validation
 const createFormSchema = z.object({
@@ -29,6 +30,16 @@ const createFormSchema = z.object({
     .trim()
     .max(500, { message: "Description must be at most 500 characters" })
     .optional(),
+  submission_deadline: z
+    .string()
+    .min(1, { message: "Submission deadline is required" })
+    .refine(
+      (val) => {
+        const date = new Date(val);
+        return !isNaN(date.getTime()) && date > Date();
+      },
+      { message: "Submission deadline must be a future date" }
+    ),
 });
 
 type CreateFormData = z.infer<typeof createFormSchema>;
@@ -59,20 +70,54 @@ const formFields = [
       .max(500, { message: "Description must be at most 500 characters" })
       .optional(),
   },
+  {
+    name: "submission_deadline" as const,
+    label: "Submission Deadline",
+    type: "datetime-local" as const,
+    placeholder: "",
+    required: true,
+    validator: z
+      .string()
+      .min(1, { message: "Submission deadline is required" })
+      .refine(
+        (val) => {
+          const date = new Date(val);
+          return !isNaN(date.getTime()) && date > new Date();
+        },
+        { message: "Submission deadline must be a future date" }
+      ),
+  },
 ] as const;
 
 interface CreateFormModalProps {
-  onFormCreated: (formData: { name: string; description?: string }) => void | Promise<void>;
+  onFormCreated?: (formData: { id: string; status: string }) => void;
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string>("");
 
+  const { mutate: createFormCycle, isPending } = useCreateFormCycle({
+    onsuccess: (data) => {
+      toast.error("Form cycle created successfully!");
+      form.reset;
+      setIsOpen(false);
+      onFormCreated?.(data);
+    },
+    onError: (error) => {
+      const errorMessage = error.message || "Failed to create form cycle";
+      setError(errorMessage);
+      toast.success("Error", {
+        description: errorMessage,
+      });
+    },
+  });
+
   const form = useForm({
     defaultValues: {
       name: "",
       description: "",
+      submission_deadline: "",
     } as CreateFormData,
     onSubmit: async ({ value }) => {
       setError("");
@@ -81,15 +126,16 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
         // Validate with Zod
         const validatedData = createFormSchema.parse(value);
 
-        // Call the parent callback with validated data and await if it returns a promise
-        await onFormCreated(validatedData);
+        // Convert the datetime-local value to ISO 8601 format with timezone
+        const deadlineDate = new Date(validatedData.submission_deadline);
+        const isoDeadline = deadlineDate.toString();
 
-        // Show success toast
-        toast.success("Form created successfully!");
-
-        // Reset form and close dialog
-        form.reset();
-        setIsOpen(false);
+        // Call the mutation to create form cycle
+        createFormCycle({
+          title: validatedData.name,
+          description: validatedData.description || null,
+          submission_deadline: isoDeadline,
+        });
       } catch (err) {
         // Handle Zod validation errors
         if (err instanceof ZodError) {
@@ -100,7 +146,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
             description: errorMessage,
           });
         } else {
-          // Handle unexpected errors (e.g., onFormCreated throwing)
+          // Handle unexpected errors
           const errorMessage =
             err instanceof Error ? err.message : "An unexpected error occurred";
           console.error("Form creation error:", err);
@@ -222,10 +268,17 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={handleCancel}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleCancel()}
+              disabled={isPending}
+            >
               Cancel
             </Button>
-            <Button type="submit">Create Form</Button>
+            <Button type="submit" disabled>
+              {isPending ? "Creating..." : "Create Form"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
