@@ -173,12 +173,21 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
   });
 
   const handleCancel = () => {
+    // Prevent canceling while a request is pending
+    if (isPending) {
+      return;
+    }
     form.reset();
     setError("");
     setIsOpen(false);
   };
 
   const handleOpenChange = (open: boolean) => {
+    // Prevent closing the dialog while a request is pending
+    if (!open && isPending) {
+      return;
+    }
+
     setIsOpen(open);
     if (open) {
       // Clear any stale errors when opening the dialog
