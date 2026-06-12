@@ -36,7 +36,7 @@ const createFormSchema = z.object({
     .refine(
       (val) => {
         const date = new Date(val);
-        return !isNaN(date.getTime()) && date > Date();
+        return !isNaN(date.getTime()) && date > new Date();
       },
       { message: "Submission deadline must be a future date" }
     ),
