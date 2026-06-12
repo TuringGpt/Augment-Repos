@@ -380,12 +380,34 @@ async def publish_form_cycle(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    if cycle.status != FormCycleStatus.draft or cycle.is_published:
-        raise HTTPException(status_code=409, detail="Form cycle is already published")
-    cycle.status = FormCycleStatus.active
-    cycle.is_published = True
+    publish_result = await db.execute(
+        update(FormCycle)
+        .where(
+            FormCycle.id == form_cycle_id,
+            FormCycle.status == FormCycleStatus.draft,
+            FormCycle.is_published.is_(False),
+        )
+        .values(
+            status=FormCycleStatus.active,
+            is_published=True,
+        )
+        .returning(FormCycle.id, FormCycle.status, FormCycle.is_published)
+    )
+    published_cycle = publish_result.one_or_none()
+    if published_cycle is None:
+        if cycle.is_published:
+            detail = "Form cycle is already published"
+        elif cycle.status != FormCycleStatus.draft:
+            detail = f"Form cycle cannot be published from status '{cycle.status.value}'"
+        else:
+            detail = "Form cycle was published by another request"
+        raise HTTPException(status_code=409, detail=detail)
     await db.commit()
-    return {"id": str(cycle.id), "status": cycle.status.value, "is_published": cycle.is_published}
+    return {
+        "id": str(published_cycle.id),
+        "status": published_cycle.status.value,
+        "is_published": published_cycle.is_published,
+    }
 
 
 @router.post("/{form_cycle_id}/submit", status_code=200)

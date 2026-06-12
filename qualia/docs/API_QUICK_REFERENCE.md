@@ -114,6 +114,15 @@ Content-Type: application/json
 POST /forms/{form_id}/publish/
 ```
 
+Response:
+```json
+{
+  "id": "uuid",
+  "status": "active",
+  "is_published": true
+}
+```
+
 ### Assign to Reviewers
 ```http
 POST /forms/{form_id}/assign/
