@@ -8,7 +8,8 @@ import { getUserFromToken } from '@/lib/jwt';
  * TanStack Query hook for fetching assigned forms
  *
  * Fetches the list of forms assigned to the current user (reviewer).
- * Returns only active, published forms that have not been submitted yet.
+ * Returns only active, published forms that have not been submitted yet
+ * (filtering is performed server-side by the backend API).
  *
  * The query key is automatically scoped to the current user ID extracted from
  * the JWT token, ensuring that different users don't share cached data.
