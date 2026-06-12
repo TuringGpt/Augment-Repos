@@ -127,7 +127,7 @@ function Forms() {
   const handleCreateForm = (formData: { id: string; status: string }) => {
     // This will be called after successful form cycle creation
     // You can add additional logic here, like refreshing the list or navigating
-    console.error('Form cycle created:', formData);
+    console.log('Form cycle created:', formData);
   };
 
   const getStatusBadge = (status: FormItem["status"]) => {
