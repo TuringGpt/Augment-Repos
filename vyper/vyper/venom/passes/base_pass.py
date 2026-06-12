@@ -1,4 +1,4 @@
-from typing import ClassVar, TypeAlias, Union
+from typing import Any, ClassVar, TypeAlias, Union
 
 from vyper.venom.analysis import IRAnalysesCache
 from vyper.venom.basicblock import IRLabel
@@ -9,7 +9,33 @@ from vyper.venom.passes.machinery.inst_updater import InstUpdater
 PassRef: TypeAlias = Union[str, type["IRPass"]]
 
 
-class IRPass:
+class PassMetricsMixin:
+    """
+    Uniform metrics reporting shared by all Venom IR passes.
+
+    Every pass exposes a ``metrics`` dictionary so debugging information is
+    reported in the same shape regardless of the pass.
+    """
+
+    metrics: dict[str, Any]
+
+    def _init_metrics(self) -> None:
+        self.metrics = {}
+
+    def _record_metric(self, name: str, value: Any = 1) -> None:
+        # Numeric metrics accumulate; everything else overwrites.
+        current = self.metrics.get(name)
+        if isinstance(value, (int, float)) and isinstance(current, (int, float)):
+            self.metrics[name] = current + value
+        else:
+            self.metrics[name] = value
+
+    def get_metrics(self) -> dict[str, Any]:
+        # The "pass" key keys the report so reports stay self-describing when merged.
+        return {"pass": self.__class__.__name__, **self.metrics}
+
+
+class IRPass(PassMetricsMixin):
     """
     Base class for all Venom IR passes.
     """
@@ -31,6 +57,7 @@ class IRPass:
     def __init__(self, analyses_cache: IRAnalysesCache, function: IRFunction):
         self.function = function
         self.analyses_cache = analyses_cache
+        self._init_metrics()
 
     def _replace_all_labels(self, label_map: dict[IRLabel, IRLabel]) -> None:
         for bb in self.function.get_basic_blocks():
@@ -47,7 +74,7 @@ class IRPass:
         raise NotImplementedError(f"Not implemented! {self.__class__}.run_pass()")
 
 
-class IRGlobalPass:
+class IRGlobalPass(PassMetricsMixin):
     """
     Base class for all Venom IR passes.
     """
@@ -58,6 +85,7 @@ class IRGlobalPass:
     def __init__(self, analyses_caches: dict[IRFunction, IRAnalysesCache], ctx: IRContext):
         self.analyses_caches = analyses_caches
         self.ctx = ctx
+        self._init_metrics()
 
     def run_pass(self, *args, **kwargs):
         raise NotImplementedError(f"Not implemented! {self.__class__}.run_pass()")
