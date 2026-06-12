@@ -1,22 +1,23 @@
-import { lazy, Suspense } from 'react';
-import type { ComponentType } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { ROUTES } from '@/config/routes';
-import { ProtectedRoute } from '@/components/routes/ProtectedRoute';
-import { PublicRoute } from '@/components/routes/PublicRoute';
-import { MainLayout } from '@/components/layouts/MainLayout';
-import { AuthLayout } from '@/components/layouts/AuthLayout';
-import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { Spinner } from '@/components/ui/spinner';
+import { lazy, Suspense } from "react";
+import type { ComponentType } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ROUTES } from "@/config/routes";
+import { ProtectedRoute } from "@/components/routes/ProtectedRoute";
+import { PublicRoute } from "@/components/routes/PublicRoute";
+import { MainLayout } from "@/components/layouts/MainLayout";
+import { AuthLayout } from "@/components/layouts/AuthLayout";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { Spinner } from "@/components/ui/spinner";
 
 // Lazy load page components for code splitting
-const Home = lazy(() => import('@/pages/Home'));
-const SignIn = lazy(() => import('@/pages/SignIn'));
-const Register = lazy(() => import('@/pages/Register'));
-const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
-const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Home = lazy(() => import("@/pages/Home"));
+const SignIn = lazy(() => import("@/pages/SignIn"));
+const Register = lazy(() => import("@/pages/Register"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Settings = lazy(() => import("@/pages/Settings"));
 const Forms = lazy(() => import('@/pages/Forms'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**
  * Loading fallback component
@@ -24,8 +25,8 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
  */
 function LoadingFallback() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Spinner className="size-8" />
+    <div className='flex items-center justify-center min-h-screen'>
+      <Spinner className='size-8' />
     </div>
   );
 }
@@ -43,7 +44,7 @@ function LazyRoute({ component: Component }: { component: ComponentType }) {
 
 /**
  * AppRoutes component
- * 
+ *
  * Centralized routing configuration with:
  * - Code splitting via lazy loading
  * - Protected routes for authenticated pages
@@ -58,7 +59,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.HOME}
         element={
-          <MainLayout navVariant="transparent">
+          <MainLayout navVariant='transparent'>
             <LazyRoute component={Home} />
           </MainLayout>
         }
@@ -111,6 +112,17 @@ export function AppRoutes() {
       />
 
       <Route
+        path={ROUTES.DASHBOARD_SETTINGS}
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LazyRoute component={Settings} />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path={ROUTES.DASHBOARD_FORMS}
         element={
           <ProtectedRoute>
@@ -128,10 +140,7 @@ export function AppRoutes() {
       />
 
       {/* Catch all unknown routes */}
-      <Route
-        path="*"
-        element={<Navigate to={ROUTES.NOT_FOUND} replace />}
-      />
+      <Route path='*' element={<Navigate to={ROUTES.NOT_FOUND} replace />} />
     </Routes>
   );
 }

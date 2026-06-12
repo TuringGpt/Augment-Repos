@@ -19,10 +19,10 @@ import { useLogout } from '@/hooks/useLogout';
 import { toast } from 'sonner';
 import {
   HomeIcon,
+  SettingsIcon,
   FileTextIcon,
   // TODO: Uncomment these imports when the corresponding nav items are re-enabled
   // BarChartIcon,
-  // SettingsIcon,
   LogOutIcon,
 } from 'lucide-react';
 
@@ -95,11 +95,11 @@ function Sidebar({ className }: SidebarProps) {
     //   href: ROUTES.DASHBOARD_ANALYTICS,
     //   icon: <BarChartIcon className="w-5 h-5" />,
     // },
-    // {
-    //   name: 'Settings',
-    //   href: ROUTES.DASHBOARD_SETTINGS,
-    //   icon: <SettingsIcon className="w-5 h-5" />,
-    // },
+    {
+      name: 'Settings',
+      href: ROUTES.DASHBOARD_SETTINGS,
+      icon: <SettingsIcon className="w-5 h-5" />,
+    },
   ];
 
   const isActive = (href: string) => {
