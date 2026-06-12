@@ -98,7 +98,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
   const [error, setError] = useState<string>("");
 
   const { mutate: createFormCycle, isPending } = useCreateFormCycle({
-    onsuccess: (data) => {
+    onSuccess: (data) => {
       toast.error("Form cycle created successfully!");
       form.reset;
       setIsOpen(false);
