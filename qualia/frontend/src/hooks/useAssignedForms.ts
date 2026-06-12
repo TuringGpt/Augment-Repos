@@ -65,7 +65,7 @@ export const useAssignedForms = (options?: {
 
   return useQuery<AssignedForm[], ApiError>({
     queryKey: ['assignedForms', userId], // Scoped to user ID to prevent cache sharing between users
-    queryFn: () => getAssignedForms(),
+    queryFn: ({ signal }) => getAssignedForms(signal),
     enabled: isEnabled, // Only fetch when authenticated and not explicitly disabled
     // Query will automatically retry 3 times (from global config in queryClient.ts)
     // Data is considered fresh for 5 minutes (from global config)

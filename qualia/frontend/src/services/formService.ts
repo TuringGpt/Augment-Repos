@@ -79,6 +79,7 @@ export interface AssignedForm {
 
 /**
  * Get forms assigned to the current user (reviewer)
+ * @param signal - Optional AbortSignal to cancel the request (provided by TanStack Query)
  * @returns Promise with array of assigned forms
  * @throws When the API request fails, throws an error object produced by apiClient interceptors
  *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
@@ -92,7 +93,7 @@ export interface AssignedForm {
  * console.log(assignedForms[0].submission_status); // "draft" or "in_progress" or null
  * ```
  */
-export const getAssignedForms = async (): Promise<AssignedForm[]> => {
+export const getAssignedForms = async (signal?: AbortSignal): Promise<AssignedForm[]> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log('Get assigned forms request:', {
@@ -100,7 +101,9 @@ export const getAssignedForms = async (): Promise<AssignedForm[]> => {
     });
   }
 
-  const response = await apiClient.get<AssignedForm[]>('/forms/assigned');
+  const response = await apiClient.get<AssignedForm[]>('/forms/assigned', {
+    signal,
+  });
 
   // Debug logging in development
   if (import.meta.env.DEV) {
