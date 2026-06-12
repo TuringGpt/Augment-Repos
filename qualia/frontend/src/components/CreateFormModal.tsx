@@ -276,7 +276,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled>
+            <Button type="submit" disabled={isPending}>
               {isPending ? "Creating..." : "Create Form"}
             </Button>
           </DialogFooter>
