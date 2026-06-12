@@ -15,8 +15,10 @@ import { getUserFromToken } from '@/lib/jwt';
  * the JWT token, ensuring that different users don't share cached data.
  *
  * **Authentication Required**: This hook automatically disables the query when
- * no valid JWT token is present, preventing unauthenticated requests. The query
+ * no JWT token is present or when the token cannot be decoded. The query
  * will only execute when a user ID can be extracted from the token's `sub` claim.
+ * Note: This does not validate token expiration - expired tokens will still trigger
+ * the query, and the backend is responsible for rejecting expired tokens.
  *
  * @param options.enabled - Optional manual control to disable the query. Defaults to true,
  *                          but the query will still be disabled if no valid user ID exists.
