@@ -250,7 +250,7 @@ async def seed_database() -> str:
             )
             await session.commit()
 
-        return engine.sync_engine.url.render_as_string(hide_password=True)
+        return database_url
     finally:
         await engine.dispose()
 
