@@ -395,10 +395,15 @@ async def publish_form_cycle(
     )
     published_cycle = publish_result.one_or_none()
     if published_cycle is None:
-        if cycle.is_published:
+        current_cycle = (
+            await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))
+        ).scalar_one_or_none()
+        if current_cycle is None:
+            raise HTTPException(status_code=404, detail="Form cycle not found")
+        if current_cycle.is_published:
             detail = "Form cycle is already published"
-        elif cycle.status != FormCycleStatus.draft:
-            detail = f"Form cycle cannot be published from status '{cycle.status.value}'"
+        elif current_cycle.status != FormCycleStatus.draft:
+            detail = f"Form cycle cannot be published from status '{current_cycle.status.value}'"
         else:
             detail = "Form cycle was published by another request"
         raise HTTPException(status_code=409, detail=detail)
