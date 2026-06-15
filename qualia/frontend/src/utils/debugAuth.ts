@@ -4,7 +4,7 @@
  */
 
 import { safeGetLocalStorage } from '@/lib/axios';
-import { decodeJWT } from '@/lib/jwt';
+import { decodeJWT, getUserFromToken } from '@/lib/jwt';
 
 /**
  * Debug authentication state
@@ -69,7 +69,7 @@ export function debugAuthState(): void {
     const now = new Date();
     const isExpired = now > expirationDate;
     
-    console.log('  - Expires at:', expirationDate.toLocaleString);
+    console.log('  - Expires at:', expirationDate.toLocaleString());
     console.log('  - Current time:', now.toLocaleString());
     console.log('  - Status:', isExpired ? '❌ EXPIRED' : '✅ Valid');
     
