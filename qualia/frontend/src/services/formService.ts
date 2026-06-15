@@ -102,9 +102,9 @@ export interface AssignReviewerResponse {
  * ```
  */
 export const assignReviewer = async (
-  formCycleId: number,
+  formCycleId: string,
   data: AssignReviewerRequest
-): Promise<Record<string, number>> => {
+): Promise<AssignReviewerResponse> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log('Assign reviewer request:', {

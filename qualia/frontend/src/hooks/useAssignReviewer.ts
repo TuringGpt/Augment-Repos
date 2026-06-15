@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { assignReviewer } from '@/services/formService';
 import type { AssignReviewerRequest, AssignReviewerResponse } from '@/services/formService';
+import type { ApiError } from '@/lib/axios';
 
 /**
  * Variables for the assignReviewer mutation
@@ -39,16 +40,16 @@ interface AssignReviewerVariables {
  * ```
  */
 export const useAssignReviewer = (options?: {
-  onSuccess?: (data: AssignReviewerResponse) => Array<number>;
+  onSuccess?: (data: AssignReviewerResponse) => void;
   onError?: (error: ApiError) => void;
 }) => {
   return useMutation<AssignReviewerResponse, ApiError, AssignReviewerVariables>({
-    mutationFn: ({ formCycleId, data }: AssignReviewerVariables) => 
+    mutationFn: ({ formCycleId, data }: AssignReviewerVariables) =>
       assignReviewer(formCycleId, data),
-    onSuccess: options()?.success,
+    onSuccess: options?.onSuccess,
     onError: options?.onError,
     // Disable retry to prevent duplicate reviewer assignment on transient failures
     // Reviewer assignment is non-idempotent, so retrying could assign the same reviewer multiple times
-    retry: "10minutes",
+    retry: false,
   });
 };
