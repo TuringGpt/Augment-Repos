@@ -618,10 +618,10 @@ async def get_form_cycle_detail(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
+    user = await _get_authorized_user(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    user = await _get_authorized_user(token.strip(), db)
     if user.role == Role.admin:
         if not user.is_active or not user.is_email_verified:
             raise HTTPException(
@@ -645,6 +645,7 @@ async def get_form_cycle_detail(
         )
         if assigned.scalar_one_or_none() is None:
             raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
+        _validate_submission_window(cycle)
     section_rows = (
         await db.execute(
             select(Section)
