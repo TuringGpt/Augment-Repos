@@ -113,7 +113,7 @@ class FormDetailResponse(BaseModel):
     total_questions: int
 
 
-async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
+async def _get_authorized_user(token: str, db: AsyncSession) -> User:
     try:
         subject = verify_token(token, expected_token_type="access").get("sub")
     except ValueError as exc:
@@ -123,6 +123,11 @@ async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
     user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid token")
+    return user
+
+
+async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
+    user = await _get_authorized_user(token, db)
     if user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
     if not user.is_active or not user.is_email_verified:
@@ -134,15 +139,7 @@ async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
 
 
 async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
-    try:
-        subject = verify_token(token, expected_token_type="access").get("sub")
-    except ValueError as exc:
-        raise HTTPException(status_code=401, detail="Invalid token") from exc
-    if not isinstance(subject, str) or not subject:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
-    if user is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    user = await _get_authorized_user(token, db)
     if user.role != Role.reviewer:
         raise HTTPException(status_code=403, detail="Reviewer access required")
     if not user.is_active or not user.is_email_verified:
@@ -624,21 +621,79 @@ async def get_form_cycle_detail(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    try:
-        await _get_authorized_admin(token.strip(), db)
-    except HTTPException:
-        reviewer = await _get_authorized_reviewer(token.strip(), db)
+    user = await _get_authorized_user(token.strip(), db)
+    if user.role == Role.admin:
+        if not user.is_active or not user.is_email_verified:
+            raise HTTPException(
+                status_code=403,
+                detail="Admin account is not active or email is not verified",
+            )
+    else:
+        if user.role != Role.reviewer:
+            raise HTTPException(status_code=403, detail="Reviewer access required")
+        if not user.is_active or not user.is_email_verified:
+            raise HTTPException(
+                status_code=403,
+                detail="Reviewer account is not active or email is not verified",
+            )
+        _validate_submission_window(cycle)
         assigned = await db.execute(
-            select(FormAssignment.id).where(FormAssignment.form_cycle_id == form_cycle_id, FormAssignment.assigned_to == reviewer.id)
+            select(FormAssignment.id).where(
+                FormAssignment.form_cycle_id == form_cycle_id,
+                FormAssignment.assigned_to == user.id,
+            )
         )
         if assigned.scalar_one_or_none() is None:
             raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
-    section_rows = (await db.execute(select(Section).where(Section.form_cycle_id == form_cycle_id).order_by(Section.display_order.asc(), Section.id.asc()))).scalars()
-    sections = {section.id: FormDetailSection(id=str(section.id), title=section.title, display_order=section.display_order, questions=[]) for section in section_rows}
-    for question in (await db.execute(select(Question).where(Question.form_cycle_id == form_cycle_id).order_by(Question.display_order.asc(), Question.id.asc()))).scalars():
+    section_rows = (
+        await db.execute(
+            select(Section)
+            .where(Section.form_cycle_id == form_cycle_id)
+            .order_by(Section.display_order.asc(), Section.id.asc())
+        )
+    ).scalars()
+    sections = {
+        section.id: FormDetailSection(
+            id=str(section.id),
+            title=section.title,
+            display_order=section.display_order,
+            questions=[],
+        )
+        for section in section_rows
+    }
+    total_questions = 0
+    for question in (
+        await db.execute(
+            select(Question)
+            .where(Question.form_cycle_id == form_cycle_id)
+            .order_by(Question.display_order.asc(), Question.id.asc())
+        )
+    ).scalars():
         if question.section_id in sections:
-            sections[question.section_id].questions.append(FormDetailQuestion(id=str(question.id), question_type=question.question_type.value, question_text=question.question_text, description=question.description, is_required=question.is_required, display_order=question.display_order, config=question.config, conditional_logic={}))
-    return FormDetailResponse(id=str(cycle.id), title=cycle.title, description=cycle.description, status=FormCycleStatus.active.value, is_published=not cycle.is_published, submission_deadline=cycle.submission_deadline, sections=list(sections.values()), created_at=cycle.created_at, total_questions=len(sections))
+            sections[question.section_id].questions.append(
+                FormDetailQuestion(
+                    id=str(question.id),
+                    question_type=question.question_type.value,
+                    question_text=question.question_text,
+                    description=question.description,
+                    is_required=question.is_required,
+                    display_order=question.display_order,
+                    config=question.config,
+                    conditional_logic=question.conditional_logic,
+                )
+            )
+            total_questions += 1
+    return FormDetailResponse(
+        id=str(cycle.id),
+        title=cycle.title,
+        description=cycle.description,
+        status=cycle.status.value,
+        is_published=cycle.is_published,
+        submission_deadline=cycle.submission_deadline,
+        sections=list(sections.values()),
+        created_at=cycle.created_at,
+        total_questions=total_questions,
+    )
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
