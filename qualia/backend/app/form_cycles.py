@@ -491,13 +491,15 @@ async def autosave_submission_draft(
             submission_answer.rating_answer = draft_answer.rating_answer
             submission_answer.boolean_answer = draft_answer.boolean_answer
             submission_answer.file_ids = validated_file_ids
+    saved_at = datetime.now(UTC)
     submission.status = SubmissionStatus.draft
-    submission.last_saved_at = datetime.now(UTC)
+    submission.last_saved_at = saved_at
     await db.commit()
     return {
         "submission_id": str(submission.id),
         "reviewer_id": str(reviewer.id),
         "status": submission.status.value,
+        "last_saved_at": saved_at.isoformat(),
     }
 
 
