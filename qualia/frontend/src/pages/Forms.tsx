@@ -112,17 +112,17 @@ function Forms() {
         return match[1];
       }
 
-      // Fallback: try parsing as Date and format manually (still avoiding toISOString)
+      // Fallback: try parsing as Date and format manually using UTC to avoid timezone conversion
       const date = new Date(isoDateString);
       if (isNaN(date.getTime())) {
         console.warn(`Invalid date string: ${isoDateString}`);
         return fallback;
       }
 
-      // Format manually to avoid timezone conversion
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      // Format manually using UTC methods to avoid timezone conversion
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     } catch (error) {
       console.warn(`Error formatting date: ${isoDateString}`, error);
