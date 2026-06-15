@@ -10,40 +10,48 @@ import { decodeJWT, getUserFromToken } from '@/lib/jwt';
  * Debug authentication state
  * Logs detailed information about the current user's authentication
  * This helps troubleshoot 403 Forbidden errors
- * Only runs in development mode to prevent exposing sensitive information in production
+ *
+ * ⚠️ SECURITY NOTE: This function is ONLY enabled in development mode
+ * It logs sensitive information including JWT claims and should NEVER run in production
+ * The development check prevents any logging in production builds
  */
 export function debugAuthState(): void {
-  // Only run in development to avoid exposing sensitive info in production
+  // CRITICAL: Only run in development to avoid exposing sensitive info in production
+  // This guard prevents any token/payload logging in production builds
   if (!import.meta.env.DEV) {
     return;
   }
 
   console.group('🔍 Authentication Debug Info');
-  
+  console.warn('⚠️ [DEV ONLY] This debug output contains sensitive JWT claims and should only be used in development');
+
   // Check if tokens exist
   const accessToken = safeGetLocalStorage('access_token');
   const refreshToken = safeGetLocalStorage('refresh_token');
-  
+
   console.log('📦 Tokens in localStorage:');
   console.log('  - access_token:', accessToken ? '✅ Present' : '❌ Missing');
   console.log('  - refresh_token:', refreshToken ? '✅ Present' : '❌ Missing');
-  
+
   if (!accessToken) {
     console.warn('⚠️  No access token found. User is not authenticated.');
     console.groupEnd();
     return;
   }
-  
+
   // Decode and display token payload
   const payload = decodeJWT(accessToken);
-  
+
   if (!payload) {
     console.error('❌ Failed to decode access token. Token might be malformed.');
-    console.log('Token (first 50 chars):', accessToken.substring(0, 50) + '...');
+    // Only log first 15 chars of token for debugging (minimal exposure)
+    console.log('Token prefix:', accessToken.substring(0, 15) + '...');
     console.groupEnd();
     return;
   }
-  
+
+  // Log payload with potentially sensitive information
+  // Only runs in development - see guard at function start
   console.log('\n📝 Decoded Token Payload:');
   console.log(JSON.stringify(payload, null, 2));
   
