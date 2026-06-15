@@ -13,6 +13,7 @@ class ConstantFolder(VyperNodeVisitorBase):
     def __init__(self, module_ast):
         self._constants = {}
         self._module_ast = module_ast
+        self._visitor_fn_cache = {}
 
     def run(self):
         self._get_constants()
@@ -58,22 +59,45 @@ class ConstantFolder(VyperNodeVisitorBase):
         if node.has_folded_value:
             return node.get_folded_value()
 
-        for c in node.get_children():
-            try:
-                self.visit(c)
-            except UnfoldableNode:
-                # ignore bubbled up exceptions
-                pass
+        stack = [(node, False)]
+        while stack:
+            current, ready_to_fold = stack.pop()
+            if current.has_folded_value:
+                continue
 
+            if ready_to_fold:
+                self._try_fold_node(current)
+                continue
+
+            stack.append((current, True))
+            for child in current.get_children(reverse=True):
+                if not child.has_folded_value:
+                    stack.append((child, False))
+
+        if node.has_folded_value:
+            return node.get_folded_value()
+
+        return node
+
+    def _get_visitor_fn(self, node):
+        node_type = node.__class__
+        if node_type not in self._visitor_fn_cache:
+            visitor_fn = None
+            for class_ in node_type.mro():
+                visitor_fn = getattr(self, f"visit_{class_.__name__}", None)
+                if visitor_fn is not None:
+                    break
+            self._visitor_fn_cache[node_type] = visitor_fn
+
+        return self._visitor_fn_cache[node_type]
+
+    def _try_fold_node(self, node):
         try:
-            for class_ in node.__class__.mro():
-                ast_type = class_.__name__
-
-                visitor_fn = getattr(self, f"visit_{ast_type}", None)
-                if visitor_fn:
-                    folded_value = visitor_fn(node)
-                    node._set_folded_value(folded_value)
-                    return folded_value
+            visitor_fn = self._get_visitor_fn(node)
+            if visitor_fn is not None:
+                folded_value = visitor_fn(node)
+                node._set_folded_value(folded_value)
+                return folded_value
         except UnfoldableNode:
             # ignore bubbled up exceptions
             pass
