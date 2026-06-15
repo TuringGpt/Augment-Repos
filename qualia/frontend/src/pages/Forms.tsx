@@ -86,6 +86,42 @@ function Forms() {
     }
   };
 
+  /**
+   * Safely format ISO 8601 date string to YYYY-MM-DD without timezone conversion
+   * Avoids UTC conversion that can shift dates by ±1 day around midnight
+   * @param isoDateString - ISO 8601 date string (e.g., "2026-06-30T23:59:59+00:00")
+   * @returns Formatted date string (YYYY-MM-DD) or fallback value on error
+   */
+  const formatDateSafe = (isoDateString: string | null | undefined, fallback = "N/A"): string => {
+    if (!isoDateString) return fallback;
+
+    try {
+      // Extract just the date part (YYYY-MM-DD) from ISO string
+      // This avoids timezone conversion issues with toISOString()
+      // Example: "2026-06-30T23:59:59+00:00" -> "2026-06-30"
+      const match = isoDateString.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (match) {
+        return match[1];
+      }
+
+      // Fallback: try parsing as Date and format manually (still avoiding toISOString)
+      const date = new Date(isoDateString);
+      if (isNaN(date.getTime())) {
+        console.warn(`Invalid date string: ${isoDateString}`);
+        return fallback;
+      }
+
+      // Format manually to avoid timezone conversion
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.warn(`Error formatting date: ${isoDateString}`, error);
+      return fallback;
+    }
+  };
+
   // Map API response to FormItem type for display
   const forms: FormItem[] = assignedForms?.map((form) => ({
     id: form.id,
@@ -93,8 +129,10 @@ function Forms() {
     description: form.description || "",
     status: mapSubmissionStatusToFormStatus(form.submission_status),
     submissions: 0, // API doesn't provide submissions count yet
-    createdAt: new Date(form.submission_deadline).toISOString().split("T")[0],
-    updatedAt: new Date(form.submission_deadline).toISOString().split("T")[0],
+    // API only provides submission_deadline, not created_at/updated_at
+    // Using deadline as a placeholder until backend provides these fields
+    createdAt: formatDateSafe(form.submission_deadline),
+    updatedAt: formatDateSafe(form.submission_deadline),
   })) || [];
 
   // Filter forms based on search
