@@ -74,7 +74,8 @@ function Forms() {
       // Run debug utility to help diagnose the issue
       debugAuthState();
     }
-  }, [isUnauthenticated, isError, error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnauthenticated, isError]); // Intentionally omit 'error' to prevent noisy re-runs when error object identity changes
 
   // Map submission_status from API to display status
   const mapSubmissionStatusToFormStatus = (submission_status: string | null): FormItem["status"] => {
