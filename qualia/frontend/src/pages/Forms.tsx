@@ -52,11 +52,15 @@ function Forms() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch assigned forms from API
-  const { data: assignedForms, isLoading, isError, error, refetch } = useAssignedForms();
+  const { data: assignedForms, isLoading, isError, error, refetch, isUnauthenticated } = useAssignedForms();
 
   // Debug authentication on mount and when error occurs
   useEffect(() => {
-    if (isError && import.meta.env.DEV) {
+    if (isUnauthenticated && import.meta.env.DEV) {
+      console.log('⚠️ Forms query disabled: No valid user ID found in token');
+      // Run debug utility to help diagnose authentication issues
+      debugAuthState();
+    } else if (isError && import.meta.env.DEV) {
       // Sanitize error to avoid exposing sensitive headers in console
       // Only log status and message, not the full error object which may contain auth headers
       const sanitizedError = {
@@ -67,7 +71,7 @@ function Forms() {
       // Run debug utility to help diagnose the issue
       debugAuthState();
     }
-  }, [isError, error]);
+  }, [isUnauthenticated, isError, error]);
 
   // Map submission_status from API to display status
   const mapSubmissionStatusToFormStatus = (submission_status: string | null): FormItem["status"] => {
@@ -229,7 +233,25 @@ function Forms() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isUnauthenticated ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-destructive">
+                      <p className="font-medium mb-2">Authentication Required</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        You must be logged in to view assigned forms. Please sign in to continue.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.location.href = "/signin"}
+                      >
+                        Sign In
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex items-center justify-center gap-2">
