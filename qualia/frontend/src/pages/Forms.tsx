@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ROUTES } from "@/config/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,6 +51,7 @@ type FormItem = {
 };
 
 function Forms() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch assigned forms from API
@@ -245,7 +248,7 @@ function Forms() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.location.href = "/signin"}
+                        onClick={() => navigate(ROUTES.SIGN_IN)}
                       >
                         Sign In
                       </Button>
