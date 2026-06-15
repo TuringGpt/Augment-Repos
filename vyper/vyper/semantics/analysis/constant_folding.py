@@ -13,6 +13,10 @@ class ConstantFolder(VyperNodeVisitorBase):
     def __init__(self, module_ast):
         self._constants = {}
         self._module_ast = module_ast
+        # cache mapping node class -> bound visitor function (or None), so we
+        # don't walk the MRO and call getattr for every node. this is a hot
+        # path for large or deeply nested expressions.
+        self._visitor_cache: dict = {}
 
     def run(self):
         self._get_constants()
@@ -54,6 +58,26 @@ class ConstantFolder(VyperNodeVisitorBase):
                 # declarations, but we just can't fold them at this stage.
                 break
 
+    def _get_visitor(self, node):
+        # resolve the visitor function for a node by walking its MRO, caching
+        # the result per node class. nodes without a matching visitor cache
+        # `None`.
+        cls = node.__class__
+        try:
+            return self._visitor_cache[cls]
+        except KeyError:
+            pass
+
+        visitor_fn = None
+        for class_ in cls.mro():
+            fn = getattr(self, f"visit_{class_.__name__}", None)
+            if fn is not None:
+                visitor_fn = fn
+                break
+
+        self._visitor_cache[cls] = visitor_fn
+        return visitor_fn
+
     def visit(self, node):
         if node.has_folded_value:
             return node.get_folded_value()
@@ -65,18 +89,15 @@ class ConstantFolder(VyperNodeVisitorBase):
                 # ignore bubbled up exceptions
                 pass
 
-        try:
-            for class_ in node.__class__.mro():
-                ast_type = class_.__name__
-
-                visitor_fn = getattr(self, f"visit_{ast_type}", None)
-                if visitor_fn:
-                    folded_value = visitor_fn(node)
-                    node._set_folded_value(folded_value)
-                    return folded_value
-        except UnfoldableNode:
-            # ignore bubbled up exceptions
-            pass
+        visitor_fn = self._get_visitor(node)
+        if visitor_fn is not None:
+            try:
+                folded_value = visitor_fn(node)
+                node._set_folded_value(folded_value)
+                return folded_value
+            except UnfoldableNode:
+                # ignore bubbled up exceptions
+                pass
 
         return node
 

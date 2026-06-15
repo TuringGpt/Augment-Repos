@@ -424,11 +424,23 @@ class VyperNode:
         # sanity check this is only called once
         assert "folded_value" not in self._metadata
 
+        # the stored folded value must have fresh metadata and must not be
+        # shared with another node in the AST -- otherwise writing its
+        # `_original_node` (below) or later writing to its metadata would
+        # corrupt that shared node. when `node` is already a fresh, unattached
+        # node (no `_original_node`, no cached folded value, and not `self`),
+        # it satisfies this on its own and can be stored directly. this is the
+        # common case in constant folding: visitors build their result via
+        # `from_node`, so skipping the copy here saves one node reconstruction
+        # per folded subexpression -- a significant win for deeply nested
+        # literal expressions.
+        if node is self or node._original_node is not None or node.has_folded_value:
+            cls = node.__class__
+            # make a fresh copy so that the node metadata is fresh.
+            node = cls(**{i: getattr(node, i) for i in node.get_fields() if hasattr(node, i)})
+
         # set the "original node" so that exceptions can point to the original
         # node and not the folded node
-        cls = node.__class__
-        # make a fresh copy so that the node metadata is fresh.
-        node = cls(**{i: getattr(node, i) for i in node.get_fields() if hasattr(node, i)})
         node._original_node = self
 
         self._metadata["folded_value"] = node
