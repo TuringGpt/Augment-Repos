@@ -10,8 +10,14 @@ import { decodeJWT, getUserFromToken } from '@/lib/jwt';
  * Debug authentication state
  * Logs detailed information about the current user's authentication
  * This helps troubleshoot 403 Forbidden errors
+ * Only runs in development mode to prevent exposing sensitive information in production
  */
 export function debugAuthState(): void {
+  // Only run in development to avoid exposing sensitive info in production
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
   console.group('🔍 Authentication Debug Info');
   
   // Check if tokens exist

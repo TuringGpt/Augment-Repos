@@ -56,8 +56,14 @@ function Forms() {
 
   // Debug authentication on mount and when error occurs
   useEffect(() => {
-    if (isError) {
-      console.log('❌ Error fetching forms:', error);
+    if (isError && import.meta.env.DEV) {
+      // Sanitize error to avoid exposing sensitive headers in console
+      // Only log status and message, not the full error object which may contain auth headers
+      const sanitizedError = {
+        message: error?.message || 'Unknown error',
+        status: error?.status,
+      };
+      console.log('❌ Error fetching forms:', sanitizedError);
       // Run debug utility to help diagnose the issue
       debugAuthState();
     }
