@@ -63,12 +63,29 @@ function Forms() {
     }
   }, [isError, error]);
 
+  // Map submission_status from API to display status
+  const mapSubmissionStatusToFormStatus = (submission_status: string | null): FormItem["status"] => {
+    // Map API submission_status values to UI display status
+    switch (submission_status) {
+      case "in_progress":
+        return "active";
+      case "draft":
+        return "draft";
+      case "submitted":
+      case "completed":
+        return "archived";
+      default:
+        // Default to "draft" for null or any unknown status
+        return "draft";
+    }
+  };
+
   // Map API response to FormItem type for display
   const forms: FormItem[] = assignedForms?.map((form) => ({
     id: form.id,
     name: form.title,
     description: form.description || "",
-    status: (form.submission_status || "draft") as "active" | "draft" | "archived",
+    status: mapSubmissionStatusToFormStatus(form.submission_status),
     submissions: 0, // API doesn't provide submissions count yet
     createdAt: new Date(form.submission_deadline).toISOString().split("T")[0],
     updatedAt: new Date(form.submission_deadline).toISOString().split("T")[0],
