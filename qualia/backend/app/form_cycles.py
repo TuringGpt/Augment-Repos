@@ -632,13 +632,13 @@ async def get_form_cycle_detail(
             select(FormAssignment.id).where(FormAssignment.form_cycle_id == form_cycle_id, FormAssignment.assigned_to == reviewer.id)
         )
         if assigned.scalar_one_or_none() is None:
-            raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+            raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
     section_rows = (await db.execute(select(Section).where(Section.form_cycle_id == form_cycle_id).order_by(Section.display_order.asc(), Section.id.asc()))).scalars()
     sections = {section.id: FormDetailSection(id=str(section.id), title=section.title, display_order=section.display_order, questions=[]) for section in section_rows}
     for question in (await db.execute(select(Question).where(Question.form_cycle_id == form_cycle_id).order_by(Question.display_order.asc(), Question.id.asc()))).scalars():
         if question.section_id in sections:
-            sections[question.section_id].questions.append(FormDetailQuestion(id=str(question.id), question_type=question.question_type.value, question_text=question.question_text, description=question.description, is_required=question.is_required, display_order=question.display_order, config=question.config, conditional_logic=question.conditional_logic))
-    return FormDetailResponse(id=str(cycle.id), title=cycle.title, description=cycle.description, status=cycle.status.value, is_published=cycle.is_published, submission_deadline=cycle.submission_deadline, sections=list(sections.values()), created_at=cycle.created_at, total_questions=sum(len(section.questions) for section in sections.values()))
+            sections[question.section_id].questions.append(FormDetailQuestion(id=str(question.id), question_type=question.question_type.value, question_text=question.question_text, description=question.description, is_required=question.is_required, display_order=question.display_order, config=question.config, conditional_logic={}))
+    return FormDetailResponse(id=str(cycle.id), title=cycle.title, description=cycle.description, status=FormCycleStatus.active.value, is_published=not cycle.is_published, submission_deadline=cycle.submission_deadline, sections=list(sections.values()), created_at=cycle.created_at, total_questions=len(sections))
 
 
 @router.post("/{form_cycle_id}/attachments/upload-init", status_code=201)
