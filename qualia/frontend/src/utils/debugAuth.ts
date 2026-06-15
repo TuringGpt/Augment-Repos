@@ -128,5 +128,5 @@ export function isReviewer(): boolean {
  */
 export function getCurrentUserRole(): string | null {
   const user = getUserFromToken();
-  return (user?.role as string) || null;
+  return typeof user?.role === 'string' ? user.role : null;
 }
