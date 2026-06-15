@@ -134,8 +134,9 @@ function Forms() {
     status: mapSubmissionStatusToFormStatus(form.submission_status),
     submissions: 0, // API doesn't provide submissions count yet
     // API only provides submission_deadline, not created_at/updated_at
-    // Using deadline as a placeholder until backend provides these fields
-    createdAt: formatDateSafe(form.submission_deadline),
+    // Using "N/A" for createdAt since backend doesn't provide it
+    // updatedAt is populated with deadline to display in the "Deadline" column
+    createdAt: "N/A",
     updatedAt: formatDateSafe(form.submission_deadline),
   })) || [];
 
@@ -226,7 +227,7 @@ function Forms() {
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
-                <TableHead>Last Updated</TableHead>
+                <TableHead>Deadline</TableHead>
                 <TableHead className="w-17.5">
                   <span className="sr-only">Actions</span>
                 </TableHead>
