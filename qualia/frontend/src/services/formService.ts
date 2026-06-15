@@ -65,3 +65,68 @@ export const createFormCycle = async (data: CreateFormCycleRequest): Promise<Cre
 
   return response.data;
 };
+
+/**
+ * Request payload for assigning a reviewer to a form cycle
+ */
+export interface AssignReviewerRequest {
+  reviewer_id: string;
+}
+
+/**
+ * Response from assigning a reviewer to a form cycle
+ */
+export interface AssignReviewerResponse {
+  message: string;
+  form_cycle_id: string;
+  reviewer_id: string;
+}
+
+/**
+ * Assign a reviewer to a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @param data - Reviewer assignment data (reviewer_id)
+ * @returns Promise with reviewer assignment response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const result = await assignReviewer("550e8400-e29b-41d4-a716-446655440000", {
+ *   reviewer_id: "660e8400-e29b-41d4-a716-446655440001"
+ * });
+ * console.log(result.message); // "Reviewer assigned successfully"
+ * console.log(result.form_cycle_id); // "550e8400-e29b-41d4-a716-446655440000"
+ * console.log(result.reviewer_id); // "660e8400-e29b-41d4-a716-446655440001"
+ * ```
+ */
+export const assignReviewer = async (
+  formCycleId: number,
+  data: AssignReviewerRequest
+): Promise<Record<string, number>> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('Assign reviewer request:', {
+      endpoint: `/forms/${formCycleId}/assign-reviewer`,
+      formCycleId: formCycleId,
+      reviewerId: data.reviewer_id
+    });
+  }
+
+  const response = await apiClient.post<AssignReviewerResponse>(
+    `/forms/${formCycleId}/assign-reviewer`,
+    data
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log('Assign reviewer response:', {
+      message: response.data.message,
+      formCycleId: response.data.form_cycle_id,
+      reviewerId: response.data.reviewer_id
+    });
+  }
+
+  return response.data;
+};
