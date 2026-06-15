@@ -7,8 +7,9 @@ const fs = require('fs');
 
 const currency = require('currency.js');
 
-// moment.js is a handy library for displaying dates. We need this in our templates to display things like "Posted 5 minutes ago"
-exports.moment = require('moment');
+// dayjs is a handy library for displaying dates. We need this in our templates to display things like "Posted 5 minutes ago"
+const dayjs = require('dayjs');
+exports.moment = dayjs;
 
 // Making a static map is really long - this is a handy helper function to make one
 
@@ -37,9 +38,9 @@ exports.timeRange = (start, end, format, interval) => {
   interval = interval > 0 ? interval : 60;
 
   const range = [];
-  while (moment(start).isBefore(moment(end))) {
-    range.push(moment(start).format(format));
-    start = moment(start).add(interval, 'minutes');
+  while (dayjs(start).isBefore(dayjs(end))) {
+    range.push(dayjs(start).format(format));
+    start = dayjs(start).add(interval, 'minutes').toDate();
   }
   return range;
 };
