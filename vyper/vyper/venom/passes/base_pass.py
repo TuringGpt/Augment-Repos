@@ -14,29 +14,31 @@ class PassMetricsMixin:
     """
     Uniform metrics reporting shared by all Venom IR passes.
 
-    Every pass exposes a ``metrics`` dictionary so debugging information is
-    reported in the same shape regardless of the pass.
+    Every pass reports debugging information in the same shape via
+    ``get_metrics()``. The backing store is the private ``_metrics`` dict, which
+    should only be mutated through ``_record_metric`` so the accumulate-numerics
+    / overwrite-everything-else semantics are not bypassed.
     """
 
-    metrics: dict[str, Any]
+    _metrics: dict[str, Any]
 
     def _init_metrics(self) -> None:
-        self.metrics = {}
+        self._metrics = {}
 
     def _record_metric(self, name: str, value: Any = 1) -> None:
         # Numeric metrics accumulate; everything else overwrites. bool is a
         # subclass of int, so exclude it to keep boolean flags from silently
         # accumulating into integers when recorded more than once.
-        current = self.metrics.get(name)
+        current = self._metrics.get(name)
         if self._is_number(value) and self._is_number(current):
-            self.metrics[name] = current + value
+            self._metrics[name] = current + value
             return
         # Overwriting an existing non-accumulable value discards earlier
         # diagnostic data, so surface it to the pass author rather than losing
         # it silently.
-        if name in self.metrics and current != value:
+        if name in self._metrics and current != value:
             warnings.warn(f"metric {name!r} overwritten: {current!r} -> {value!r}", stacklevel=2)
-        self.metrics[name] = value
+        self._metrics[name] = value
 
     @staticmethod
     def _is_number(value: Any) -> bool:
@@ -45,8 +47,9 @@ class PassMetricsMixin:
     def get_metrics(self) -> dict[str, Any]:
         # Nest the recorded metrics under "metrics" so a pass-defined metric can
         # never clobber the self-describing "pass" field, and so callers can
-        # aggregate reports keyed by pass name without entries overwriting.
-        return {"pass": self.__class__.__name__, "metrics": dict(self.metrics)}
+        # aggregate reports keyed by pass name without entries overwriting. A
+        # copy is returned so external callers cannot mutate the backing store.
+        return {"pass": self.__class__.__name__, "metrics": dict(self._metrics)}
 
 
 class IRPass(PassMetricsMixin):
