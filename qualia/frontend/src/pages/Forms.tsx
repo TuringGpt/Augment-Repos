@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { CreateFormModal } from "@/components/CreateFormModal";
 import { useAssignedForms } from "@/hooks/useAssignedForms";
+import { debugAuthState } from "@/utils/debugAuth";
 
 // Form type definition
 type FormItem = {
@@ -51,7 +52,7 @@ function Forms() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch assigned forms from API
-  const { data: assignedForms, isLoading, isError, error } = useAssignedForms();
+  const { data: assignedForms, isLoading, isError, error, refetch } = useAssignedForms();
 
   // Debug authentication on mount and when error occurs
   useEffect(() => {
