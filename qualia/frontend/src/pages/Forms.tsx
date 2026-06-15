@@ -154,9 +154,9 @@ function Forms() {
     refetch();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- formData required by CreateFormModal interface
   const handleCreateForm = (formData: { id: string; status: string }) => {
     // Refetch the assigned forms list after successful form cycle creation
-    console.log('Form cycle created:', formData);
     refetch();
   };
 
