@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +31,10 @@ import {
   TrashIcon,
   CopyIcon,
   SearchIcon,
+  LoaderIcon,
 } from "lucide-react";
 import { CreateFormModal } from "@/components/CreateFormModal";
+import { useAssignedForms } from "@/hooks/useAssignedForms";
 
 // Form type definition
 type FormItem = {
@@ -45,58 +47,31 @@ type FormItem = {
   updatedAt: string;
 };
 
-// Mock data - replace with API calls
-const mockForms: FormItem[] = [
-  {
-    id: "1",
-    name: "Customer Feedback Survey",
-    description: "Collect customer satisfaction and feedback",
-    status: "active",
-    submissions: 234,
-    createdAt: "2026-05-15",
-    updatedAt: "2026-06-05",
-  },
-  {
-    id: "2",
-    name: "Employee Onboarding Form",
-    description: "New employee information and documentation",
-    status: "active",
-    submissions: 45,
-    createdAt: "2026-04-20",
-    updatedAt: "2026-06-01",
-  },
-  {
-    id: "3",
-    name: "Product Registration",
-    description: "Register purchased products for warranty",
-    status: "draft",
-    submissions: 0,
-    createdAt: "2026-06-08",
-    updatedAt: "2026-06-08",
-  },
-  {
-    id: "4",
-    name: "Support Ticket Request",
-    description: "Customer support and issue tracking",
-    status: "active",
-    submissions: 567,
-    createdAt: "2026-03-10",
-    updatedAt: "2026-06-07",
-  },
-  {
-    id: "5",
-    name: "Event Registration",
-    description: "Register for company events and webinars",
-    status: "archived",
-    submissions: 189,
-    createdAt: "2026-02-01",
-    updatedAt: "2026-05-30",
-  },
-];
-
 function Forms() {
-  const [forms, setForms] = useState<FormItem[]>(mockForms);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch assigned forms from API
+  const { data: assignedForms, isLoading, isError, error } = useAssignedForms();
+
+  // Debug authentication on mount and when error occurs
+  useEffect(() => {
+    if (isError) {
+      console.log('❌ Error fetching forms:', error);
+      // Run debug utility to help diagnose the issue
+      debugAuthState();
+    }
+  }, [isError, error]);
+
+  // Map API response to FormItem type for display
+  const forms: FormItem[] = assignedForms?.map((form) => ({
+    id: form.id,
+    name: form.title,
+    description: form.description || "",
+    status: (form.submission_status || "draft") as "active" | "draft" | "archived",
+    submissions: 0, // API doesn't provide submissions count yet
+    createdAt: new Date(form.submission_deadline).toISOString().split("T")[0],
+    updatedAt: new Date(form.submission_deadline).toISOString().split("T")[0],
+  })) || [];
 
   // Filter forms based on search
   const filteredForms = forms.filter(
@@ -106,28 +81,21 @@ function Forms() {
   );
 
   const handleDeleteForm = (id: string) => {
-    setForms((prevForms) => prevForms.filter((form) => form.id !== id));
+    // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
+    refetch();
   };
 
   const handleDuplicateForm = (form: FormItem) => {
-    const duplicatedForm: FormItem = {
-      ...form,
-      id: String(Date.now()),
-      name: `${form.name} (Copy)`,
-      submissions: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-    };
-
-    setForms((prevForms) => [duplicatedForm, ...prevForms]);
+    // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
+    refetch();
   };
 
   const handleCreateForm = (formData: { id: string; status: string }) => {
-    // This will be called after successful form cycle creation
-    // You can add additional logic here, like refreshing the list or navigating
+    // Refetch the assigned forms list after successful form cycle creation
     console.log('Form cycle created:', formData);
+    refetch();
   };
 
   const getStatusBadge = (status: FormItem["status"]) => {
@@ -193,13 +161,40 @@ function Forms() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
                 <TableHead>Last Updated</TableHead>
-                <TableHead className="w-[70px]">
+                <TableHead className="w-17.5">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredForms.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex items-center justify-center gap-2">
+                      <LoaderIcon className="h-5 w-5 animate-spin text-primary" />
+                      <p className="text-muted-foreground">Loading forms...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-destructive">
+                      <p className="font-medium mb-2">Error loading forms</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {error?.message || "An unexpected error occurred"}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetch()}
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredForms.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <p className="text-muted-foreground">
