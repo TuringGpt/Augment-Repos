@@ -115,7 +115,9 @@ function Forms() {
       // Fallback: try parsing as Date and format manually using UTC to avoid timezone conversion
       const date = new Date(isoDateString);
       if (isNaN(date.getTime())) {
-        console.warn(`Invalid date string: ${isoDateString}`);
+        if (import.meta.env.DEV) {
+          console.warn(`Invalid date string: ${isoDateString}`);
+        }
         return fallback;
       }
 
@@ -125,7 +127,9 @@ function Forms() {
       const day = String(date.getUTCDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     } catch (error) {
-      console.warn(`Error formatting date: ${isoDateString}`, error);
+      if (import.meta.env.DEV) {
+        console.warn(`Error formatting date: ${isoDateString}`, error);
+      }
       return fallback;
     }
   };
