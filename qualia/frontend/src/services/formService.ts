@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/axios';
+import { apiClient } from "@/lib/axios";
 
 /**
  * Form Cycle API service
@@ -31,7 +31,7 @@ export interface CreateFormCycleResponse {
  * @throws When the API request fails, throws an error object produced by apiClient interceptors
  *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
  *         This includes network errors, validation errors, permission errors, and server errors.
- * 
+ *
  * @example
  * ```typescript
  * const formCycle = await createFormCycle({
@@ -43,23 +43,28 @@ export interface CreateFormCycleResponse {
  * console.log(formCycle.status); // "draft"
  * ```
  */
-export const createFormCycle = async (data: CreateFormCycleRequest): Promise<CreateFormCycleResponse> => {
+export const createFormCycle = async (
+  data: CreateFormCycleRequest,
+): Promise<CreateFormCycleResponse> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
-    console.log('Create form cycle request:', {
-      endpoint: '/forms',
+    console.log("Create form cycle request:", {
+      endpoint: "/forms",
       title: data.title,
-      deadline: data.submission_deadline
+      deadline: data.submission_deadline,
     });
   }
 
-  const response = await apiClient.post<CreateFormCycleResponse>('/forms', data);
+  const response = await apiClient.post<CreateFormCycleResponse>(
+    "/forms",
+    data,
+  );
 
   // Debug logging in development
   if (import.meta.env.DEV) {
-    console.log('Create form cycle response:', { 
+    console.log("Create form cycle response:", {
       id: response.data.id,
-      status: response.data.status
+      status: response.data.status,
     });
   }
 
@@ -83,6 +88,18 @@ export interface AssignReviewerResponse {
 }
 
 /**
+ * Assigned form item from the API
+ */
+export interface AssignedForm {
+  id: string;
+  title: string;
+  description: string | null;
+  submission_deadline: string; // ISO 8601 format with timezone
+  submission_status: string | null;
+}
+
+
+/**
  * Assign a reviewer to a form cycle
  * @param formCycleId - The ID of the form cycle
  * @param data - Reviewer assignment data (reviewer_id)
@@ -103,28 +120,66 @@ export interface AssignReviewerResponse {
  */
 export const assignReviewer = async (
   formCycleId: string,
-  data: AssignReviewerRequest
+  data: AssignReviewerRequest,
 ): Promise<AssignReviewerResponse> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
-    console.log('Assign reviewer request:', {
+    console.log("Assign reviewer request:", {
       endpoint: `/forms/${formCycleId}/assign-reviewer`,
       formCycleId: formCycleId,
-      reviewerId: data.reviewer_id
+      reviewerId: data.reviewer_id,
     });
   }
 
   const response = await apiClient.post<AssignReviewerResponse>(
     `/forms/${formCycleId}/assign-reviewer`,
-    data
+    data,
   );
 
   // Debug logging in development
   if (import.meta.env.DEV) {
-    console.log('Assign reviewer response:', {
+    console.log("Assign reviewer response:", {
       message: response.data.message,
       formCycleId: response.data.form_cycle_id,
-      reviewerId: response.data.reviewer_id
+      reviewerId: response.data.reviewer_id,
+    });
+  }
+};
+
+/**
+ * Get forms assigned to the current user (reviewer)
+ * @param signal - Optional AbortSignal to cancel the request (provided by TanStack Query)
+ * @returns Promise with array of assigned forms
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, authentication errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const assignedForms = await getAssignedForms();
+ * console.log(assignedForms.length); // Number of assigned forms
+ * console.log(assignedForms[0].title); // "Q2 2026 QA Cycle"
+ * console.log(assignedForms[0].submission_status); // "draft" or "in_progress" or null
+ * ```
+ */
+export const getAssignedForms = async (
+  signal?: AbortSignal,
+): Promise<AssignedForm[]> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get assigned forms request:", {
+      endpoint: "/forms/assigned",
+    });
+  }
+
+  const response = await apiClient.get<AssignedForm[]>("/forms/assigned", {
+    signal,
+  });
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get assigned forms response:", {
+      count: response.data.length,
     });
   }
 
