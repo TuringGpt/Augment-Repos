@@ -45,7 +45,7 @@ type FormItem = {
   name: string;
   description: string;
   status: "active" | "draft" | "archived";
-  submissions: number;
+  submissions: number | null; // null when count is unavailable from API
   createdAt: string;
   updatedAt: string;
 };
@@ -136,7 +136,7 @@ function Forms() {
     name: form.title,
     description: form.description || "",
     status: mapSubmissionStatusToFormStatus(form.submission_status),
-    submissions: 0, // API doesn't provide submissions count yet
+    submissions: null, // API doesn't provide submissions count yet - null indicates unavailable
     // API only provides submission_deadline, not created_at/updated_at
     // Using "N/A" for createdAt since backend doesn't provide it
     // updatedAt is populated with deadline to display in the "Deadline" column
@@ -302,7 +302,7 @@ function Forms() {
                     </TableCell>
                     <TableCell>{getStatusBadge(form.status)}</TableCell>
                     <TableCell className="text-right">
-                      {form.submissions}
+                      {form.submissions !== null ? form.submissions : "N/A"}
                     </TableCell>
                     <TableCell>{form.updatedAt}</TableCell>
                     <TableCell>
