@@ -31,8 +31,10 @@ class PassMetricsMixin:
             self.metrics[name] = value
 
     def get_metrics(self) -> dict[str, Any]:
-        # The "pass" key keys the report so reports stay self-describing when merged.
-        return {"pass": self.__class__.__name__, **self.metrics}
+        # Nest the recorded metrics under "metrics" so a pass-defined metric can
+        # never clobber the self-describing "pass" field, and so callers can
+        # aggregate reports keyed by pass name without entries overwriting.
+        return {"pass": self.__class__.__name__, "metrics": dict(self.metrics)}
 
 
 class IRPass(PassMetricsMixin):
