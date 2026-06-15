@@ -88,18 +88,6 @@ export interface AssignReviewerResponse {
 }
 
 /**
- * Assigned form item from the API
- */
-export interface AssignedForm {
-  id: string;
-  title: string;
-  description: string | null;
-  submission_deadline: string; // ISO 8601 format with timezone
-  submission_status: string | null;
-}
-
-
-/**
  * Assign a reviewer to a form cycle
  * @param formCycleId - The ID of the form cycle
  * @param data - Reviewer assignment data (reviewer_id)
@@ -144,7 +132,20 @@ export const assignReviewer = async (
       reviewerId: response.data.reviewer_id,
     });
   }
+
+  return response.data
 };
+
+/**
+ * Assigned form item from the API
+ */
+export interface AssignedForm {
+  id: string;
+  title: string;
+  description: string | null;
+  submission_deadline: string; // ISO 8601 format with timezone
+  submission_status: string | null;
+}
 
 /**
  * Get forms assigned to the current user (reviewer)
