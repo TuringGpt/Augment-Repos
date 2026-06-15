@@ -223,7 +223,7 @@ function Forms() {
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
                 <TableHead>Last Updated</TableHead>
-                <TableHead className="w-24">
+                <TableHead className="w-17.5">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
