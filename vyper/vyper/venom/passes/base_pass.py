@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, ClassVar, TypeAlias, Union
 
 from vyper.venom.analysis import IRAnalysesCache
@@ -29,8 +30,13 @@ class PassMetricsMixin:
         current = self.metrics.get(name)
         if self._is_number(value) and self._is_number(current):
             self.metrics[name] = current + value
-        else:
-            self.metrics[name] = value
+            return
+        # Overwriting an existing non-accumulable value discards earlier
+        # diagnostic data, so surface it to the pass author rather than losing
+        # it silently.
+        if name in self.metrics and current != value:
+            warnings.warn(f"metric {name!r} overwritten: {current!r} -> {value!r}", stacklevel=2)
+        self.metrics[name] = value
 
     @staticmethod
     def _is_number(value: Any) -> bool:
