@@ -646,7 +646,6 @@ async def get_form_cycle_detail(
         )
         if assigned.scalar_one_or_none() is None:
             raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
-        _validate_submission_window(cycle)
     section_rows = (
         await db.execute(
             select(Section)
