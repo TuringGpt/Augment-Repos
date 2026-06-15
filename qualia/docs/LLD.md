@@ -498,15 +498,15 @@ Reorder questions (drag-and-drop support)
 }
 ```
 
-#### POST `/api/v1/forms/{form_id}/publish/`
+#### POST `/api/v1/forms/{form_cycle_id}/publish`
 Publish form and make it available to reviewers
 
 **Response** (200 OK):
 ```json
 {
-  "message": "Form published successfully",
-  "is_published": true,
-  "published_at": "2026-05-20T10:30:00Z"
+  "id": "uuid",
+  "status": "active",
+  "is_published": true
 }
 ```
 

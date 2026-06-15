@@ -9,6 +9,7 @@ http://localhost:8000/api/v1/
 
 ## Authentication
 All endpoints except `/auth/*` require JWT authentication.
+Unless stated otherwise, the paths below are relative to the `/api/v1` base URL shown above.
 
 **Header**:
 ```
@@ -111,7 +112,16 @@ Content-Type: application/json
 
 ### Publish Form
 ```http
-POST /forms/{form_id}/publish/
+POST /forms/{form_cycle_id}/publish
+```
+
+Response:
+```json
+{
+  "id": "uuid",
+  "status": "active",
+  "is_published": true
+}
 ```
 
 ### Assign to Reviewers
