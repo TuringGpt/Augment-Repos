@@ -1,34 +1,17 @@
 import operator
 from typing import Callable
 
-from vyper.utils import (
-    SizeLimits,
-    evm_div,
-    evm_mod,
-    evm_not,
-    evm_pow,
-    signed_to_unsigned,
-    unsigned_to_signed,
-)
+from vyper.evm.ints import signed_to_unsigned_256, unsigned_to_signed_256, wrap256
+from vyper.utils import SizeLimits, evm_div, evm_mod, evm_not, evm_pow
 from vyper.venom.basicblock import IRLiteral
-
-
-def _unsigned_to_signed(value: int) -> int:
-    assert isinstance(value, int)
-    return unsigned_to_signed(value, 256)
-
-
-def _signed_to_unsigned(value: int) -> int:
-    assert isinstance(value, int)
-    return signed_to_unsigned(value, 256)
 
 
 def _wrap_signed_binop(operation):
     def wrapper(ops: list[IRLiteral]) -> int:
         assert len(ops) == 2
-        first = _unsigned_to_signed(ops[1].value)
-        second = _unsigned_to_signed(ops[0].value)
-        return _signed_to_unsigned(operation(first, second))
+        first = unsigned_to_signed_256(ops[1].value)
+        second = unsigned_to_signed_256(ops[0].value)
+        return signed_to_unsigned_256(operation(first, second))
 
     return wrapper
 
@@ -36,11 +19,10 @@ def _wrap_signed_binop(operation):
 def _wrap_binop(operation):
     def wrapper(ops: list[IRLiteral]) -> int:
         assert len(ops) == 2
-        first = _signed_to_unsigned(ops[1].value)
-        second = _signed_to_unsigned(ops[0].value)
+        first = signed_to_unsigned_256(ops[1].value)
+        second = signed_to_unsigned_256(ops[0].value)
         ret = operation(first, second)
-        # TODO: use wrap256 here
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -48,11 +30,11 @@ def _wrap_binop(operation):
 def _wrap_ternop(operation):
     def wrapper(ops: list[IRLiteral]) -> int:
         assert len(ops) == 3
-        first = _signed_to_unsigned(ops[-1].value)
-        second = _signed_to_unsigned(ops[-2].value)
-        third = _signed_to_unsigned(ops[-3].value)
+        first = signed_to_unsigned_256(ops[-1].value)
+        second = signed_to_unsigned_256(ops[-2].value)
+        third = signed_to_unsigned_256(ops[-3].value)
         ret = operation(first, second, third)
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -60,10 +42,9 @@ def _wrap_ternop(operation):
 def _wrap_unop(operation):
     def wrapper(ops: list[IRLiteral]) -> int:
         assert len(ops) == 1
-        value = _signed_to_unsigned(ops[0].value)
+        value = signed_to_unsigned_256(ops[0].value)
         ret = operation(value)
-        # TODO: use wrap256 here
-        return ret & SizeLimits.MAX_UINT256
+        return wrap256(ret)
 
     return wrapper
 
@@ -115,8 +96,7 @@ def _evm_shl(shift_len: int, value: int) -> int:
     if shift_len >= 256:
         return 0
     assert shift_len >= 0
-    # TODO: refactor to use wrap256
-    return (value << shift_len) & SizeLimits.MAX_UINT256
+    return wrap256(value << shift_len)
 
 
 def _evm_sar(shift_len: int, value: int) -> int:
@@ -147,9 +127,9 @@ def _wrap_sar(operation):
     def wrapper(ops: list[IRLiteral]) -> int:
         assert len(ops) == 2
         # ops[1] is shift_len (unsigned), ops[0] is value (signed)
-        shift_len = _signed_to_unsigned(ops[1].value)  # normalize to unsigned
-        value = _unsigned_to_signed(_signed_to_unsigned(ops[0].value))  # normalize to signed
-        return _signed_to_unsigned(operation(shift_len, value))
+        shift_len = signed_to_unsigned_256(ops[1].value)
+        value = unsigned_to_signed_256(signed_to_unsigned_256(ops[0].value))
+        return signed_to_unsigned_256(operation(shift_len, value))
 
     return wrapper
 
