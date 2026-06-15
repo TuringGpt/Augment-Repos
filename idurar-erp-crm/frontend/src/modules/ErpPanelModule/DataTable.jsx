@@ -154,16 +154,24 @@ export default function DataTable({ config, extra = [] }) {
 
   const handelDataTableLoad = (pagination) => {
     const options = {
-      equal: filterValue,
       filter: searchConfig?.entity,
       page: pagination.current || 1,
       items: pagination.pageSize || 10,
     };
+    if (filterValue !== undefined) {
+      options.equal = filterValue;
+    }
     dispatch(erp.list({ entity, options }));
   };
 
   const dispatcher = () => {
-    dispatch(erp.list({ entity }));
+    const options = {
+      filter: searchConfig?.entity,
+    };
+    if (filterValue !== undefined) {
+      options.equal = filterValue;
+    }
+    dispatch(erp.list({ entity, options }));
   };
 
   useEffect(() => {

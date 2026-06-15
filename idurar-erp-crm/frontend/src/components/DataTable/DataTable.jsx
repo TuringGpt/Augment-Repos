@@ -158,6 +158,7 @@ export default function DataTable({ config, extra = [] }) {
 
   const handelDataTableLoad = useCallback(
     (pagination) => {
+      lastSearchedValue.current = searchValue;
       const options = {
         q: searchValue,
         fields: searchConfig?.searchFields || '',
