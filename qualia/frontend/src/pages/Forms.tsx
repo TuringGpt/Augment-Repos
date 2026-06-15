@@ -124,19 +124,10 @@ function Forms() {
     toast.success("Form duplicated successfully!");
   };
 
-  const handleCreateForm = (formData: { name: string; description?: string }) => {
-    const now = new Date().toISOString().split("T")[0];
-    const newForm: FormItem = {
-      id: String(Date.now()),
-      name: formData.name,
-      description: formData.description || "",
-      status: "draft",
-      submissions: 0,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setForms((prevForms) => [newForm, ...prevForms]);
+  const handleCreateForm = (formData: { id: string; status: string }) => {
+    // This will be called after successful form cycle creation
+    // You can add additional logic here, like refreshing the list or navigating
+    console.log('Form cycle created:', formData);
   };
 
   const getStatusBadge = (status: FormItem["status"]) => {
