@@ -4,7 +4,7 @@
  */
 
 import { safeGetLocalStorage } from '@/lib/axios';
-import { decodeJWT, getUserFromToken } from '@/lib/jwt';
+import { decodeJWT } from '@/lib/jwt';
 
 /**
  * Debug authentication state
@@ -54,27 +54,17 @@ export function debugAuthState(): void {
   // Only runs in development - see guard at function start
   console.log('\n📝 Decoded Token Payload:');
   console.log(JSON.stringify(payload, null, 2));
-  
-  // Check for role
-  console.log('\n🔑 Role Information:');
-  if (payload.role) {
-    console.log(`  - Role: "${payload.role}"`);
-    if (payload.role !== 'reviewer') {
-      console.warn(`  ⚠️  Expected role "reviewer" but got "${payload.role}"`);
-      console.warn('  This might cause 403 Forbidden on /forms/assigned endpoint');
-    } else {
-      console.log('  ✅ Role is "reviewer" (correct for /forms/assigned)');
-    }
-  } else {
-    console.error('  ❌ No "role" field in token!');
-    console.warn('  This will likely cause 403 Forbidden errors');
-  }
-  
-  // Check user ID
+
+  // Check user identification
   console.log('\n👤 User Identification:');
-  console.log('  - sub (user ID):', payload.sub || '❌ Missing');
-  console.log('  - email:', payload.email || '❌ Missing');
-  console.log('  - name:', payload.name || '❌ Missing');
+  console.log('  - sub (user email):', payload.sub || '❌ Missing');
+
+  // Check token type
+  console.log('\n🔑 Token Type:');
+  console.log('  - token_type:', payload.token_type || '❌ Missing');
+  if (payload.token_type && payload.token_type !== 'access') {
+    console.warn(`  ⚠️  Expected "access" but got "${payload.token_type}"`);
+  }
   
   // Check token expiration
   console.log('\n⏰ Token Expiration:');
@@ -98,35 +88,27 @@ export function debugAuthState(): void {
     console.warn('  ⚠️  No expiration time (exp) in token');
   }
   
-  // Check issued at
-  if (payload.iat) {
-    const issuedDate = new Date(payload.iat * 1000);
-    console.log('  - Issued at:', issuedDate.toLocaleString());
-  }
-  
-  console.log('\n💡 Troubleshooting Tips:');
-  console.log('  1. If role is not "reviewer", you need to:');
-  console.log('     - Register/login as a reviewer user, OR');
-  console.log('     - Update your user role in the database');
-  console.log('  2. If token is expired, try logging out and logging in again');
-  console.log('  3. If role field is missing, the backend might not be including it in the token');
+  console.log('\n💡 Troubleshooting Tips for 403 Forbidden Errors:');
+  console.log('  1. The JWT token does NOT contain role information');
+  console.log('     - Role-based authorization is enforced via database lookup on the backend');
+  console.log('     - The backend verifies user roles by querying the database with the sub (email) from the token');
+  console.log('  2. If you get 403 on /forms/assigned:');
+  console.log('     - Your user account in the database must have the "reviewer" role');
+  console.log('     - Check the database directly or contact an admin to verify your role');
+  console.log('  3. If token is expired, log out and log in again');
+  console.log('  4. If sub (email) is missing or incorrect, the backend cannot identify you');
   
   console.groupEnd();
 }
 
 /**
- * Quick check for reviewer role
- * Returns true if current user has reviewer role
+ * NOTE: Role information is NOT available in JWT tokens.
+ * The Qualia backend JWT only contains: sub (email), exp (expiration), and token_type.
+ * Role-based authorization is enforced server-side via database lookup.
+ *
+ * If you need to check user roles, you must:
+ * 1. Make an API call to a backend endpoint that returns the current user's role
+ * 2. Store the role information separately (e.g., in React state or context)
+ *
+ * Do NOT attempt to read role information from the JWT token as it does not exist there.
  */
-export function isReviewer(): boolean {
-  const user = getUserFromToken();
-  return user?.role === 'reviewer';
-}
-
-/**
- * Get current user role
- */
-export function getCurrentUserRole(): string | null {
-  const user = getUserFromToken();
-  return typeof user?.role === 'string' ? user.role : null;
-}
