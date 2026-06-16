@@ -188,11 +188,22 @@ export const getAssignedForms = async (
 };
 
 /**
+ * Submission status values
+ */
+export const SubmissionStatus = {
+  STARTED: "started",
+  SUBMITTED: "submitted",
+  DRAFT: "draft",
+} as const;
+
+export type SubmissionStatus = typeof SubmissionStatus[keyof typeof SubmissionStatus];
+
+/**
  * Form submission item from the API (admin view)
  */
 export interface FormSubmission {
   id: string;
-  status: string;
+  status: SubmissionStatus;
   started_at: string | null; // ISO 8601 format with timezone
   submitted_at: string | null; // ISO 8601 format with timezone
   reviewer_id: string;
@@ -210,17 +221,6 @@ export const SubmissionSort = {
 } as const;
 
 export type SubmissionSort = typeof SubmissionSort[keyof typeof SubmissionSort];
-
-/**
- * Submission status values
- */
-export const SubmissionStatus = {
-  STARTED: "started",
-  SUBMITTED: "submitted",
-  DRAFT: "draft",
-} as const;
-
-export type SubmissionStatus = typeof SubmissionStatus[keyof typeof SubmissionStatus];
 
 /**
  * Get submissions for a specific form cycle (admin only)
