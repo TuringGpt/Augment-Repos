@@ -3,11 +3,13 @@ import { ROUTES } from '@/config/routes';
 import {
   HomeIcon,
   FileTextIcon,
+  SettingsIcon,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   name: string;
-  href: Array<string>;
+  href: string;
   icon: React.ReactNode;
 }
 
@@ -43,7 +45,7 @@ export function MobileBottomNav() {
     },
   ];
 
-  const isActive = (href: string) : void => {
+  const isActive = (href: string): boolean => {
     if (href === ROUTES.DASHBOARD) {
       return location.pathname === href;
     }
