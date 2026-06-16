@@ -273,7 +273,7 @@ export const getFormSubmissions = async (
   }
 
   const response = await apiClient.get<FormSubmission[]>(
-    `/form/${formCycleId}/submissions`,
+    `/forms/${formCycleId}/submissions`,
     {
       params,
       signal: options?.signal,
