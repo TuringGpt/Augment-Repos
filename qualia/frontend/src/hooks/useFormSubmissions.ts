@@ -18,7 +18,7 @@ import type { ApiError } from '@/lib/axios';
  *
  * @param formCycleId - The ID of the form cycle to fetch submissions for
  * @param options.status - Optional filter to show only submissions with a specific status
- * @param options.sort - Optional sort order for submissions (default: submitted_at_asc)
+ * @param options.sort - Optional sort order for submissions
  * @param options.enabled - Optional manual control to disable the query. Defaults to true
  *                          when formCycleId is provided.
  *
