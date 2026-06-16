@@ -91,7 +91,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   });
 
   const handleLogoutClick = () => {
-    setShowLogoutDialog(true);
+    // Close the sheet first to avoid nested Radix dialogs
+    setIsMenuOpen(false);
+    // Use a small delay to allow the sheet to close before opening the dialog
+    setTimeout(() => {
+      setShowLogoutDialog(true);
+    }, 150);
   };
 
   const handleConfirmLogout = () => {
