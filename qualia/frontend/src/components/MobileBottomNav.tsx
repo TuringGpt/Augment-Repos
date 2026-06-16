@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import {
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils';
 interface NavItem {
   name: string;
   href: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 /**
