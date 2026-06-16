@@ -109,6 +109,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const handleLogoutClick = () => {
     // Close the sheet first to avoid nested Radix dialogs
     setIsMenuOpen(false);
+
+    // Clear any previously scheduled timeout to prevent stale timers
+    if (dialogOpenTimeoutRef.current !== null) {
+      clearTimeout(dialogOpenTimeoutRef.current);
+    }
+
     // Use a small delay to allow the sheet to close before opening the dialog
     dialogOpenTimeoutRef.current = setTimeout(() => {
       setShowLogoutDialog(true);
