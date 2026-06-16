@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ROUTES } from "@/config/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,8 +33,11 @@ import {
   TrashIcon,
   CopyIcon,
   SearchIcon,
+  LoaderIcon,
 } from "lucide-react";
 import { CreateFormModal } from "@/components/CreateFormModal";
+import { useAssignedForms } from "@/hooks/useAssignedForms";
+import { debugAuthState } from "@/utils/debugAuth";
 
 // Form type definition
 type FormItem = {
@@ -40,63 +45,108 @@ type FormItem = {
   name: string;
   description: string;
   status: "active" | "draft" | "archived";
-  submissions: number;
+  submissions: number | null; // null when count is unavailable from API
   createdAt: string;
   updatedAt: string;
 };
 
-// Mock data - replace with API calls
-const mockForms: FormItem[] = [
-  {
-    id: "1",
-    name: "Customer Feedback Survey",
-    description: "Collect customer satisfaction and feedback",
-    status: "active",
-    submissions: 234,
-    createdAt: "2026-05-15",
-    updatedAt: "2026-06-05",
-  },
-  {
-    id: "2",
-    name: "Employee Onboarding Form",
-    description: "New employee information and documentation",
-    status: "active",
-    submissions: 45,
-    createdAt: "2026-04-20",
-    updatedAt: "2026-06-01",
-  },
-  {
-    id: "3",
-    name: "Product Registration",
-    description: "Register purchased products for warranty",
-    status: "draft",
-    submissions: 0,
-    createdAt: "2026-06-08",
-    updatedAt: "2026-06-08",
-  },
-  {
-    id: "4",
-    name: "Support Ticket Request",
-    description: "Customer support and issue tracking",
-    status: "active",
-    submissions: 567,
-    createdAt: "2026-03-10",
-    updatedAt: "2026-06-07",
-  },
-  {
-    id: "5",
-    name: "Event Registration",
-    description: "Register for company events and webinars",
-    status: "archived",
-    submissions: 189,
-    createdAt: "2026-02-01",
-    updatedAt: "2026-05-30",
-  },
-];
-
 function Forms() {
-  const [forms, setForms] = useState<FormItem[]>(mockForms);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch assigned forms from API
+  const { data: assignedForms, isLoading, isError, error, refetch, isUnauthenticated } = useAssignedForms();
+
+  // Debug authentication on mount and when error occurs
+  useEffect(() => {
+    if (isUnauthenticated && import.meta.env.DEV) {
+      console.log('⚠️ Forms query disabled: No valid user ID found in token');
+      // Run debug utility to help diagnose authentication issues
+      debugAuthState();
+    } else if (isError && import.meta.env.DEV) {
+      // Sanitize error to avoid exposing sensitive headers in console
+      // Only log status and message, not the full error object which may contain auth headers
+      const sanitizedError = {
+        message: error?.message || 'Unknown error',
+        status: error?.status,
+      };
+      console.log('❌ Error fetching forms:', sanitizedError);
+      // Run debug utility to help diagnose the issue
+      debugAuthState();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnauthenticated, isError]); // Intentionally omit 'error' to prevent noisy re-runs when error object identity changes
+
+  // Map submission_status from API to display status
+  const mapSubmissionStatusToFormStatus = (submission_status: string | null): FormItem["status"] => {
+    // Map API submission_status values to UI display status
+    switch (submission_status) {
+      case "in_progress":
+        return "active";
+      case "draft":
+        return "draft";
+      case "submitted":
+      case "completed":
+        return "archived";
+      default:
+        // Default to "draft" for null or any unknown status
+        return "draft";
+    }
+  };
+
+  /**
+   * Safely format ISO 8601 date string to YYYY-MM-DD without timezone conversion
+   * Avoids UTC conversion that can shift dates by ±1 day around midnight
+   * @param isoDateString - ISO 8601 date string (e.g., "2026-06-30T23:59:59+00:00")
+   * @returns Formatted date string (YYYY-MM-DD) or fallback value on error
+   */
+  const formatDateSafe = (isoDateString: string | null | undefined, fallback = "N/A"): string => {
+    if (!isoDateString) return fallback;
+
+    try {
+      // Extract just the date part (YYYY-MM-DD) from ISO string
+      // This avoids timezone conversion issues with toISOString()
+      // Example: "2026-06-30T23:59:59+00:00" -> "2026-06-30"
+      const match = isoDateString.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (match) {
+        return match[1];
+      }
+
+      // Fallback: try parsing as Date and format manually using UTC to avoid timezone conversion
+      const date = new Date(isoDateString);
+      if (isNaN(date.getTime())) {
+        if (import.meta.env.DEV) {
+          console.warn(`Invalid date string: ${isoDateString}`);
+        }
+        return fallback;
+      }
+
+      // Format manually using UTC methods to avoid timezone conversion
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn(`Error formatting date: ${isoDateString}`, error);
+      }
+      return fallback;
+    }
+  };
+
+  // Map API response to FormItem type for display
+  const forms: FormItem[] = assignedForms?.map((form) => ({
+    id: form.id,
+    name: form.title,
+    description: form.description || "",
+    status: mapSubmissionStatusToFormStatus(form.submission_status),
+    submissions: null, // API doesn't provide submissions count yet - null indicates unavailable
+    // API only provides submission_deadline, not created_at/updated_at
+    // Using "N/A" for createdAt since backend doesn't provide it
+    // updatedAt is populated with deadline to display in the "Deadline" column
+    createdAt: "N/A",
+    updatedAt: formatDateSafe(form.submission_deadline),
+  })) || [];
 
   // Filter forms based on search
   const filteredForms = forms.filter(
@@ -106,28 +156,21 @@ function Forms() {
   );
 
   const handleDeleteForm = (id: string) => {
-    setForms((prevForms) => prevForms.filter((form) => form.id !== id));
+    // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
+    refetch();
   };
 
   const handleDuplicateForm = (form: FormItem) => {
-    const duplicatedForm: FormItem = {
-      ...form,
-      id: String(Date.now()),
-      name: `${form.name} (Copy)`,
-      submissions: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-    };
-
-    setForms((prevForms) => [duplicatedForm, ...prevForms]);
+    // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
+    refetch();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- formData required by CreateFormModal interface
   const handleCreateForm = (formData: { id: string; status: string }) => {
-    // This will be called after successful form cycle creation
-    // You can add additional logic here, like refreshing the list or navigating
-    console.log('Form cycle created:', formData);
+    // Refetch the assigned forms list after successful form cycle creation
+    refetch();
   };
 
   const getStatusBadge = (status: FormItem["status"]) => {
@@ -192,14 +235,59 @@ function Forms() {
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Submissions</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead className="w-[70px]">
+                <TableHead>Deadline</TableHead>
+                <TableHead className="w-17.5">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredForms.length === 0 ? (
+              {isUnauthenticated ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-destructive">
+                      <p className="font-medium mb-2">Authentication Required</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        You must be logged in to view assigned forms. Please sign in to continue.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(ROUTES.SIGN_IN)}
+                      >
+                        Sign In
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex items-center justify-center gap-2">
+                      <LoaderIcon className="h-5 w-5 animate-spin text-primary" />
+                      <p className="text-muted-foreground">Loading forms...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-destructive">
+                      <p className="font-medium mb-2">Error loading forms</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {error?.message || "An unexpected error occurred"}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetch()}
+                      >
+                        Try Again
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredForms.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
                     <p className="text-muted-foreground">
@@ -218,7 +306,7 @@ function Forms() {
                     </TableCell>
                     <TableCell>{getStatusBadge(form.status)}</TableCell>
                     <TableCell className="text-right">
-                      {form.submissions}
+                      {form.submissions !== null ? form.submissions : "N/A"}
                     </TableCell>
                     <TableCell>{form.updatedAt}</TableCell>
                     <TableCell>

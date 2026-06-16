@@ -23,11 +23,16 @@ import { getUserFromToken } from '@/lib/jwt';
  * @param options.enabled - Optional manual control to disable the query. Defaults to true,
  *                          but the query will still be disabled if no valid user ID exists.
  *
+ * @returns Query result with additional `isUnauthenticated` flag
+ *          - `isUnauthenticated`: true when query is disabled due to missing/invalid user ID
+ *          - All standard TanStack Query properties (data, isLoading, isError, error, refetch, etc.)
+ *
  * @example
  * ```tsx
- * const { data, isLoading, isError, error, refetch } = useAssignedForms();
+ * const { data, isLoading, isError, error, refetch, isUnauthenticated } = useAssignedForms();
  *
- * // Access the data
+ * // Handle unauthenticated state explicitly
+ * if (isUnauthenticated) return <SignInPrompt />;
  * if (isLoading) return <Spinner />;
  * if (isError) return <ErrorMessage message={error.message} />;
  *
@@ -63,7 +68,7 @@ export const useAssignedForms = (options?: {
   // This prevents unauthenticated requests and cache-sharing issues
   const isEnabled = options?.enabled !== false && !!userId;
 
-  return useQuery<AssignedForm[], ApiError>({
+  const queryResult = useQuery<AssignedForm[], ApiError>({
     queryKey: ['assignedForms', userId], // Scoped to user ID to prevent cache sharing between users
     queryFn: ({ signal }) => getAssignedForms(signal),
     enabled: isEnabled, // Only fetch when authenticated and not explicitly disabled
@@ -71,4 +76,15 @@ export const useAssignedForms = (options?: {
     // Data is considered fresh for 5 minutes (from global config)
     // Query will refetch on window focus in production (from global config)
   });
+
+  return {
+    ...queryResult,
+    // Expose whether the query is disabled due to missing authentication
+    // This allows UI components to distinguish between:
+    // - Loading state (query enabled, data being fetched)
+    // - Error state (query ran but failed)
+    // - Unauthenticated state (query disabled, no valid user ID)
+    // - Empty state (query succeeded but returned empty array)
+    isUnauthenticated: !userId,
+  };
 };
