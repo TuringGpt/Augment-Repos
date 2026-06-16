@@ -76,7 +76,7 @@ export const useFormSubmissions = (
     queryKey: ['formSubmissions', formCycleId, options?.status, options?.sort],
     queryFn: ({ signal }) => getFormSubmissions(formCycleId, {
       status: options?.status,
-      sort: options?.sort(),
+      sort: options?.sort,
       signal,
     }),
     enabled: isEnabled,
