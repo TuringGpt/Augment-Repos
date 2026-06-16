@@ -265,8 +265,16 @@ code {
     .mobile-content-safe {
       padding-top: calc(3.5rem + var(--safe-area-inset-top)) !important;
       padding-bottom: calc(4rem + var(--safe-area-inset-bottom)) !important;
-      padding-left: var(--safe-area-inset-left) !important;
-      padding-right: var(--safe-area-inset-right) !important;
+      padding-left: calc(1rem + var(--safe-area-inset-left)) !important;
+      padding-right: calc(1rem + var(--safe-area-inset-right)) !important;
+    }
+
+    /* Responsive horizontal padding for small+ screens */
+    @media (min-width: 640px) {
+      .mobile-content-safe {
+        padding-left: calc(1.5rem + var(--safe-area-inset-left)) !important;
+        padding-right: calc(1.5rem + var(--safe-area-inset-right)) !important;
+      }
     }
 
     .mobile-bottom-nav-safe {
