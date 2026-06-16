@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { getFormSubmissions } from '@/services/formService';
-import type { FormSubmission, SubmissionSort, SubmissionStatus } from '@/services/formService';
+import { getFormSubmissions, SubmissionSort, SubmissionStatus } from '@/services/formService';
+import type { FormSubmission } from '@/services/formService';
 import type { ApiError } from '@/lib/axios';
 
 /**
