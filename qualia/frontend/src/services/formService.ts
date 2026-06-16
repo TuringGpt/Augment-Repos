@@ -186,3 +186,106 @@ export const getAssignedForms = async (
 
   return response.data;
 };
+
+/**
+ * Form submission item from the API (admin view)
+ */
+export interface FormSubmission {
+  id: string;
+  status: string;
+  started_at: string | null; // ISO 8601 format with timezone
+  submitted_at: string | null; // ISO 8601 format with timezone
+  reviewer_id: string;
+  reviewer_email: string | null;
+}
+
+/**
+ * Submission sort options for the API
+ */
+export const SubmissionSort = {
+  STARTED_AT_ASC: "started_at_asc",
+  STARTED_AT_DESC: "started_at_desc",
+  SUBMITTED_AT_ASC: "submitted_at_asc",
+  SUBMITTED_AT_DESC: "submitted_at_desc",
+} as const;
+
+export type SubmissionSort = typeof SubmissionSort[keyof typeof SubmissionSort];
+
+/**
+ * Submission status values
+ */
+export const SubmissionStatus = {
+  STARTED: "started",
+  SUBMITTED: "submitted",
+  DRAFT: "draft",
+} as const;
+
+export type SubmissionStatus = typeof SubmissionStatus[keyof typeof SubmissionStatus];
+
+/**
+ * Get submissions for a specific form cycle (admin only)
+ * @param formCycleId - The ID of the form cycle
+ * @param options - Optional query parameters (status, sort, signal)
+ * @returns Promise with array of form submissions
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, authentication errors, authorization errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const submissions = await getFormSubmissions("550e8400-e29b-41d4-a716-446655440000");
+ * console.log(submissions.length); // Number of submissions
+ * console.log(submissions[0].status); // "submitted" or "started" or "draft"
+ * console.log(submissions[0].reviewer_email); // "reviewer@example.com"
+ *
+ * // With filters
+ * const submittedOnly = await getFormSubmissions(
+ *   "550e8400-e29b-41d4-a716-446655440000",
+ *   { status: SubmissionStatus.SUBMITTED, sort: SubmissionSort.SUBMITTED_AT_DESC }
+ * );
+ * ```
+ */
+export const getFormSubmissions = async (
+  formCycleId: string,
+  options?: {
+    status?: SubmissionStatus;
+    sort?: SubmissionSort;
+    signal?: AbortSignal;
+  },
+): Promise<FormSubmission[]> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get form submissions request:", {
+      endpoint: `/forms/${formCycleId}/submissions`,
+      formCycleId: formCycleId,
+      status: options?.status,
+      sort: options?.sort,
+    });
+  }
+
+  // Build query parameters
+  const params: Record<string, string> = {};
+  if (options?.status) {
+    params.status = options.status;
+  }
+  if (options?.sort) {
+    params.sort = options.sort;
+  }
+
+  const response = await apiClient.get<FormSubmission[]>(
+    `/form/${formCycleId}/submissions`,
+    {
+      params,
+      signal: options?.signal,
+    },
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get form submissions response:", {
+      count: response.data.length,
+    });
+  }
+
+  return response.data;
+};
