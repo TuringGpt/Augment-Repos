@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
@@ -51,6 +51,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
+  // Refs to track timeout IDs for cleanup
+  const redirectTimeoutRef = useRef<number | null>(null);
+  const dialogOpenTimeoutRef = useRef<number | null>(null);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current !== null) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+      if (dialogOpenTimeoutRef.current !== null) {
+        clearTimeout(dialogOpenTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Logout mutation hook
   const { mutate: logoutUser, isPending: isLoggingOut } = useLogout({
     onSuccess: () => {
@@ -69,9 +85,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       });
 
       // Redirect to sign in page after logout
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         navigate(ROUTES.SIGN_IN);
-      }, 500);
+      }, 500) as unknown as number;
     },
     onError: (error) => {
       // Development-only logging
@@ -94,9 +110,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     // Close the sheet first to avoid nested Radix dialogs
     setIsMenuOpen(false);
     // Use a small delay to allow the sheet to close before opening the dialog
-    setTimeout(() => {
+    dialogOpenTimeoutRef.current = setTimeout(() => {
       setShowLogoutDialog(true);
-    }, 150);
+    }, 150) as unknown as number;
   };
 
   const handleConfirmLogout = () => {
