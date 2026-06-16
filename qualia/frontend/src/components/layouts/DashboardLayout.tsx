@@ -125,8 +125,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar />
 
       {/* Mobile Top Header - Simple branding */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-sidebar border-b border-sidebar-border">
-        <div className="flex items-center justify-between h-full px-4">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-sidebar border-b border-sidebar-border mobile-header-safe">
+        <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2">
             <Logo size={24} />
             <span className="text-lg font-bold text-sidebar-foreground">Qualia</span>
@@ -172,7 +172,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:px-8 pt-14 lg:pt-0 pb-16 lg:pb-0">
+      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8 mobile-content-safe">
         {children}
       </main>
 

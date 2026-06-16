@@ -54,7 +54,7 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-sidebar-border mobile-bottom-nav-safe">
       <div className="flex items-center justify-around h-16 px-2">
         {navItems.map((item) => (
           <Link
