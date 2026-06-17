@@ -66,4 +66,6 @@ globalThis.IntersectionObserver = class IntersectionObserver {
 // Cleanup after each test
 afterEach(() => {
   cleanup()
+  // Clear localStorage to prevent theme persistence across tests
+  localStorage.clear()
 })
