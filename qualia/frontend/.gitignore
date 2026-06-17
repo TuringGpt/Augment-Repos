@@ -12,9 +12,14 @@ dist
 dist-ssr
 *.local
 
-# Lock files (yarn project - only yarn.lock should be committed)
+# Test coverage
+coverage
+.vitest
+
+# Lock files (yarn project - only should be committed)
 package-lock.json
 pnpm-lock.yaml
+yarn.lock
 
 # Yarn cache and install state
 .yarn/install-state.gz
