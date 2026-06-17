@@ -131,8 +131,8 @@ export const getRouteMetadata = (path: string): RouteMetadata | undefined => {
 /**
  * Helper function to generate form cycle details route
  * @param formCycleId - The ID of the form cycle
- * @returns The route path with the ID substituted
+ * @returns The route path with the ID substituted and URL-encoded
  */
 export const getFormCycleDetailsRoute = (formCycleId: string): string => {
-  return ROUTES.DASHBOARD_FORM_DETAILS.replace(':id', formCycleId);
+  return ROUTES.DASHBOARD_FORM_DETAILS.replace(':id', encodeURIComponent(formCycleId));
 };
