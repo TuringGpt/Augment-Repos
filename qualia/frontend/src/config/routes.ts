@@ -108,8 +108,11 @@ const matchRoute = (pattern: string, pathname: string): boolean => {
   }
 
   // Convert route pattern to regex pattern
-  // Replace :param with a regex that matches any non-slash characters
-  const regexPattern = pattern.replace(/:[^/]+/g, '[^/]+');
+  // First, escape regex metacharacters in the static parts
+  // Then replace :param with a regex that matches any non-slash characters
+  const regexPattern = pattern
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape regex metacharacters
+    .replace(/:[^/]+/g, '[^/]+'); // Replace :param patterns
   const regex = new RegExp(`^${regexPattern}$`);
 
   return regex.test(pathname);
