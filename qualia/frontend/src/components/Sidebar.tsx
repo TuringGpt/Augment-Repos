@@ -118,53 +118,56 @@ function Sidebar({ className }: SidebarProps) {
   };
 
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border transition-transform',
-        className
-      )}
-    >
-      {/* Logo Section */}
-      <div className="flex items-center gap-2 px-6 py-5 border-b border-sidebar-border">
-        <Logo size={32} />
-        <span className="text-xl font-bold text-sidebar-foreground">Qualia</span>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex flex-col gap-1 p-4 pb-32">
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            to={item.href}
-            className={cn(
-              'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-              isActive(item.href)
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-            )}
-          >
-            {item.icon}
-            <span>{item.name}</span>
-          </Link>
-        ))}
-      </nav>
-
-      {/* Bottom Section: Theme Selector and Logout */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-sidebar-foreground">Theme</span>
-          <ThemeSelector />
+    <>
+      {/* Desktop Sidebar - hidden on mobile */}
+      <aside
+        className={cn(
+          'hidden lg:fixed lg:left-0 lg:top-0 lg:z-40 lg:h-screen lg:w-64 lg:flex lg:flex-col bg-sidebar border-r border-sidebar-border',
+          className
+        )}
+      >
+        {/* Logo Section */}
+        <div className="flex items-center gap-2 px-6 py-5 border-b border-sidebar-border">
+          <Logo size={32} />
+          <span className="text-xl font-bold text-sidebar-foreground">Qualia</span>
         </div>
-        <Button
-          variant="ghost"
-          onClick={handleLogoutClick}
-          disabled={isLoggingOut}
-          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-        >
-          <LogOutIcon className="w-5 h-5" />
-          <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
-        </Button>
-      </div>
+
+        {/* Navigation */}
+        <nav className="flex flex-col gap-1 p-4 pb-32">
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                isActive(item.href)
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+              )}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Bottom Section: Theme Selector and Logout */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-sidebar-border space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-sidebar-foreground">Theme</span>
+            <ThemeSelector />
+          </div>
+          <Button
+            variant="ghost"
+            onClick={handleLogoutClick}
+            disabled={isLoggingOut}
+            className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          >
+            <LogOutIcon className="w-5 h-5" />
+            <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+          </Button>
+        </div>
+      </aside>
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
@@ -183,7 +186,7 @@ function Sidebar({ className }: SidebarProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </aside>
+    </>
   );
 }
 

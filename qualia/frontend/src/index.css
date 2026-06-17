@@ -6,6 +6,12 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Safe Area Insets - for mobile notches and rounded corners */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -245,6 +251,39 @@ code {
     cursor: pointer;}
   html {
     @apply font-mono;}}
+
+@layer utilities {
+  /* Mobile-only safe area utilities */
+  @media (max-width: 1023px) {
+    .mobile-header-safe {
+      height: calc(3.5rem + var(--safe-area-inset-top));
+      padding-top: var(--safe-area-inset-top);
+      padding-left: var(--safe-area-inset-left);
+      padding-right: var(--safe-area-inset-right);
+    }
+
+    .mobile-content-safe {
+      padding-top: calc(3.5rem + var(--safe-area-inset-top)) !important;
+      padding-bottom: calc(4rem + var(--safe-area-inset-bottom)) !important;
+      padding-left: calc(1rem + var(--safe-area-inset-left)) !important;
+      padding-right: calc(1rem + var(--safe-area-inset-right)) !important;
+    }
+
+    /* Responsive horizontal padding for small+ screens */
+    @media (min-width: 640px) {
+      .mobile-content-safe {
+        padding-left: calc(1.5rem + var(--safe-area-inset-left)) !important;
+        padding-right: calc(1.5rem + var(--safe-area-inset-right)) !important;
+      }
+    }
+
+    .mobile-bottom-nav-safe {
+      padding-bottom: var(--safe-area-inset-bottom);
+      padding-left: var(--safe-area-inset-left);
+      padding-right: var(--safe-area-inset-right);
+    }
+  }
+}
 
 @layer utilities {
   @keyframes fade-up {
