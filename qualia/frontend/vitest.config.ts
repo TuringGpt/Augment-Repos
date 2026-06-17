@@ -29,6 +29,10 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData',
         'dist/',
+        // Test files (restore Vitest defaults that get overridden by custom exclude)
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/__tests__/**',
       ],
     },
   },

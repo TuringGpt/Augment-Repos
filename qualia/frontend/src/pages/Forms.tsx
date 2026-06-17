@@ -155,19 +155,20 @@ function Forms() {
       form.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDeleteForm = (_id: string) => {
+  const handleDeleteForm = (id: string) => {
     // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
     refetch();
   };
 
-  const handleDuplicateForm = (_form: FormItem) => {
+  const handleDuplicateForm = (form: FormItem) => {
     // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
     refetch();
   };
 
-  const handleCreateForm = (_formData: { id: string; status: string }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- formData required by CreateFormModal interface
+  const handleCreateForm = (formData: { id: string; status: string }) => {
     // Refetch the assigned forms list after successful form cycle creation
     refetch();
   };
