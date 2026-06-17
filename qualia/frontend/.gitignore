@@ -16,7 +16,7 @@ dist-ssr
 coverage
 .vitest
 
-# Lock files (yarn project - only should be committed)
+# Lock files
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
