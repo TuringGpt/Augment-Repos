@@ -57,21 +57,21 @@ IDURAR is Open "Fair-Code" Source ERP / CRM (Invoice / Inventory / Accounting / 
 
 1.[Clone the repository](INSTALLATION-INSTRUCTIONS.md#step-1-clone-the-repository)
 
-2.[Create Your MongoDB Account and Database Cluster](INSTALLATION-INSTRUCTIONS.md#Step-2-Create-Your-MongoDB-Account-and-Database-Cluster)
+2.[Create your MongoDB database](INSTALLATION-INSTRUCTIONS.md#step-2-create-your-mongodb-database)
 
-3.[Edit the Environment File](INSTALLATION-INSTRUCTIONS.md#Step-3-Edit-the-Environment-File)
+3.[Environment Setup](INSTALLATION-INSTRUCTIONS.md#environment-setup)
 
-4.[Update MongoDB URI](INSTALLATION-INSTRUCTIONS.md#Step-4-Update-MongoDB-URI)
+4.[Update MongoDB URI](INSTALLATION-INSTRUCTIONS.md#step-4-update-the-mongodb-uri)
 
-5.[Install Backend Dependencies](INSTALLATION-INSTRUCTIONS.md#Step-5-Install-Backend-Dependencies)
+5.[Install backend dependencies](INSTALLATION-INSTRUCTIONS.md#step-5-install-backend-dependencies)
 
-6.[Run Setup Script](INSTALLATION-INSTRUCTIONS.md#Step-6-Run-Setup-Script)
+6.[Run setup script](INSTALLATION-INSTRUCTIONS.md#step-6-run-setup-script)
 
-7.[Run the Backend Server](INSTALLATION-INSTRUCTIONS.md#Step-7-Run-the-Backend-Server)
+7.[Run the backend server](INSTALLATION-INSTRUCTIONS.md#step-7-run-the-backend-server)
 
-8.[Install Frontend Dependencies](INSTALLATION-INSTRUCTIONS.md#Step-8-Install-Frontend-Dependencies)
+8.[Install frontend dependencies](INSTALLATION-INSTRUCTIONS.md#step-8-install-frontend-dependencies)
 
-9.[Run the Frontend Server](INSTALLATION-INSTRUCTIONS.md#Step-9-Run-the-Frontend-Server)
+9.[Run the frontend server](INSTALLATION-INSTRUCTIONS.md#step-9-run-the-frontend-server)
 
 ## Contributing
 
