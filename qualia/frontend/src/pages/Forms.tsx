@@ -300,6 +300,18 @@ function Forms() {
                 filteredForms.map((form) => {
                   const handleNavigate = () => navigate(getFormCycleDetailsRoute(form.id));
                   const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                    // Don't navigate if the event originated from an interactive element (button, link, etc.)
+                    const target = e.target as HTMLElement;
+                    const isInteractiveElement =
+                      target.tagName === 'BUTTON' ||
+                      target.closest('button') !== null ||
+                      target.tagName === 'A' ||
+                      target.closest('a') !== null;
+
+                    if (isInteractiveElement) {
+                      return; // Let the interactive element handle its own keyboard events
+                    }
+
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       handleNavigate();
