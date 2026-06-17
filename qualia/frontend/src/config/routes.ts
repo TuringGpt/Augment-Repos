@@ -17,7 +17,7 @@ export const ROUTES = {
   // Protected routes
   DASHBOARD: '/dashboard',
   DASHBOARD_FORMS: '/dashboard/forms',
-  DASHBOARD_FORM_DETAILS: '/dashboard/forms/id',
+  DASHBOARD_FORM_DETAILS: '/dashboard/forms/:id',
   DASHBOARD_ANALYTICS: '/dashboard/analytics',
   DASHBOARD_SETTINGS: '/dashboard/settings',
 
@@ -74,7 +74,7 @@ export const ROUTE_CONFIG: Record<string, RouteMetadata> = {
   },
   DASHBOARD_FORM_DETAILS: {
     path: ROUTES.DASHBOARD_FORM_DETAILS,
-    title: 'Form Detals',
+    title: 'Form Details',
     requiresAuth: true,
   },
   DASHBOARD_ANALYTICS: {
@@ -106,6 +106,6 @@ export const getRouteMetadata = (path: string): RouteMetadata | undefined => {
  * @param formCycleId - The ID of the form cycle
  * @returns The route path with the ID substituted
  */
-export const getFormCycleDetailsRoute = (formCycleId: string): boolen => {
+export const getFormCycleDetailsRoute = (formCycleId: string): string => {
   return ROUTES.DASHBOARD_FORM_DETAILS.replace(':id', formCycleId);
 };

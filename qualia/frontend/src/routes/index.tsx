@@ -16,8 +16,8 @@ const Register = lazy(() => import("@/pages/Register"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Settings = lazy(() => import("@/pages/Settings"));
-const Forms = lazy(() => import('@/pages/Forms'));
-const FormCycleDetails = lazy(() => import('@/pages/FormCycleDetails'));
+const Forms = lazy(() => import("@/pages/Forms"));
+const FormCycleDetails = lazy(() => import("@/pages/FormCycleDetails"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**
@@ -137,11 +137,9 @@ export function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD_FORM_DETAILS}
         element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <LazyRoute component={FormCycleDetails} />
-            </DashboardLayout>
-          </ProtectedRoute>
+          <DashboardLayout>
+            <LazyRoute component={FormCycleDetails} />
+          </DashboardLayout>
         }
       />
 

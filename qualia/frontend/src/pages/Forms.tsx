@@ -302,7 +302,7 @@ function Forms() {
                   <TableRow
                     key={form.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(getFormCycleDetailsRoute(form))}
+                    onClick={() => navigate(getFormCycleDetailsRoute(form.id))}
                   >
                     <TableCell className="font-medium">{form.name}</TableCell>
                     <TableCell className="max-w-md truncate">
