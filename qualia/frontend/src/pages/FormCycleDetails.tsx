@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ROUTES } from "@/config/routes";
 
 // Dummy data types
 interface FormCycleDetails {
@@ -142,7 +143,7 @@ function FormCycleDetails() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+      <Button variant="ghost" onClick={() => navigate(ROUTES.DASHBOARD_FORMS)} className="mb-4">
         <ArrowLeftIcon className="w-4 h-4 mr-2" />
         Back to Forms
       </Button>
