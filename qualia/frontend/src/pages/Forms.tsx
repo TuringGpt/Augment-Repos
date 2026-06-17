@@ -305,6 +305,7 @@ function Forms() {
                     >
                     <TableCell className="font-medium">
                       <button
+                        type="button"
                         onClick={() => navigate(getFormCycleDetailsRoute(form.id))}
                         className="text-left w-full hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
                         aria-label={`View details for ${form.name}`}
