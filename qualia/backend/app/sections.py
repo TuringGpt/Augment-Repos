@@ -2,7 +2,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -43,9 +43,21 @@ class QuestionCreate(BaseModel):
     question_type: QuestionType
     is_required: bool = True
     config: dict = Field(default_factory=dict)
-    conditional_logic: dict = Field(default_factory=dict)
+    conditional_logic: dict | None = None
     display_order: int | None = None
     version: int = 1
+
+    @validator("question_text")
+    def validate_question_text(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("question_text must not be blank")
+        return normalized
+
+    @validator("conditional_logic", pre=True, always=True)
+    def normalize_conditional_logic(cls, value: dict | None) -> dict:
+        return value or {}
+
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
 @router.post(
@@ -114,6 +126,11 @@ async def create_section(
 
 
 @router.post("/{form_id}/sections/{section_id}/questions", status_code=201)
+@router.post(
+    "/{form_id}/sections/{section_id}/questions/",
+    status_code=201,
+    include_in_schema=False,
+)
 async def create_question(
     form_id: uuid.UUID,
     section_id: uuid.UUID,
@@ -138,15 +155,21 @@ async def create_question(
     section = (await db.execute(select(Section).where(Section.id == section_id))).scalar_one_or_none()
     if section is None or section.form_cycle_id != form_id:
         raise HTTPException(status_code=404, detail="Section not found")
+    display_order = payload.display_order
+    if display_order is None:
+        current_max_order = (
+            await db.execute(select(func.max(Question.display_order)).where(Question.section_id == section.id))
+        ).scalar_one()
+        display_order = (current_max_order or 0) + 1
     question = Question(
         section_id=section.id,
         form_cycle_id=form_id,
-        question_text=payload.question_text.strip(),
+        question_text=payload.question_text,
         question_type=payload.question_type,
         is_required=payload.is_required,
         config=payload.config,
         conditional_logic=payload.conditional_logic,
-        display_order=payload.display_order or 0,
+        display_order=display_order,
         version=payload.version,
     )
     db.add(question)
