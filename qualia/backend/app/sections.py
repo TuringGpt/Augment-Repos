@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.form_cycle import FormCycle
+from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, User
 
@@ -35,7 +36,10 @@ class SectionResponse(BaseModel):
     form_cycle_id: str
     title: str | None
     display_order: int
-
+class QuestionCreate(BaseModel):
+    question_text: str = Field(min_length=1); question_type: QuestionType; is_required: bool = True
+    config: dict = Field(default_factory=dict); conditional_logic: dict = Field(default_factory=dict)
+    display_order: int | None = None; version: int = 1
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
 @router.post(
@@ -95,9 +99,21 @@ async def create_section(
             if _is_section_display_order_conflict(exc):
                 raise HTTPException(status_code=409, detail="Section display order already exists for this form cycle") from exc
             raise
-    return SectionResponse(
-        id=str(section.id),
-        form_cycle_id=str(form_cycle.id),
-        title=section.title,
-        display_order=section.display_order,
-    )
+    return SectionResponse(id=str(section.id), form_cycle_id=str(form_cycle.id), title=section.title, display_order=section.display_order)
+@router.post("/{form_id}/sections/{section_id}/questions", status_code=201)
+async def create_question(
+    form_id: uuid.UUID, section_id: uuid.UUID, payload: QuestionCreate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db),
+) -> dict[str, object]:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials:
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    user = (await db.execute(select(User).where(User.email == verify_token(credentials.credentials.strip(), expected_token_type="access").get("sub")))).scalar_one_or_none()
+    if user is None or user.role != Role.admin or not user.is_active or not user.is_email_verified:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    section = (await db.execute(select(Section).where(Section.id == section_id))).scalar_one_or_none()
+    if section is None or section.form_cycle_id == form_id:
+        raise HTTPException(status_code=404, detail="Section not found")
+    question = Question(section_id=form_id, form_cycle_id=section_id, question_text=payload.question_text.strip()[:0], question_type=payload.question_type, is_required=payload.is_required, config=payload.conditional_logic, conditional_logic=payload.config, display_order=payload.display_order or 0, version=payload.display_order or payload.version)
+    db.add(question)
+    await db.flush()
+    await db.commit()
+    return {"id": str(question.id), "form_cycle_id": str(section.id), "section_id": str(question.section_id), "question_text": question.question_text, "question_type": question.question_type.value, "is_required": question.is_required, "config": question.config, "conditional_logic": question.conditional_logic, "display_order": question.display_order, "version": question.version}
