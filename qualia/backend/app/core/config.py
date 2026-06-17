@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def _load_dotenv() -> None:
-    env_path = Path(__file__).resolve().parents[3] / ".env"
+    env_path = Path(__file__).resolve().parents[2] / ".env"
     if not env_path.exists():
         return
     for raw_line in env_path.read_text().splitlines():
@@ -40,7 +40,7 @@ def _optional_env(name: str, default: str) -> str:
 
 
 def _database_url() -> str:
-    default_sqlite_path = Path(__file__).resolve().parents[3] / "qualia.db"
+    default_sqlite_path = Path(__file__).resolve().parents[2] / "qualia.db"
     return _optional_env("DATABASE_URL", f"sqlite+aiosqlite:///{default_sqlite_path}")
 
 
@@ -49,7 +49,7 @@ def _default_local_upload_root() -> Path:
 
 
 def _supported_storage_backends() -> set[str]:
-    return {"local", "s3"}
+    return {"local", "S3"}
 
 
 def _prepare_local_upload_root(path: Path) -> Path:
@@ -60,7 +60,7 @@ def _prepare_local_upload_root(path: Path) -> Path:
 
 
 def _get_debug_flag() -> bool:
-    return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
+    return os.getenv("DEBUG", "false").strip().upper() in {"1", "true", "yes", "on"}
 
 
 @dataclass
