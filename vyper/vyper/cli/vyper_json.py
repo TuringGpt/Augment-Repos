@@ -378,7 +378,20 @@ def get_settings(input_dict: dict) -> Settings:
 
 def compile_from_input_dict(
     input_dict: dict, exc_handler: Callable = exc_handler_raises
-) -> tuple[dict, dict]:
+) -> tuple[dict, dict, list]:
+    """Compile contracts from an input dict.
+
+    Returns a 3-tuple ``(results, warnings, errors)`` where:
+
+    * ``results`` maps ``PurePath`` to compiled output for each successful contract.
+    * ``warnings`` maps ``PurePath`` to the list of warnings emitted during its compilation.
+    * ``errors`` is a flat list of error dicts (in ``exc_handler_to_dict`` format) for every
+      contract that failed to compile.  When ``exc_handler_raises`` is used the first failure
+      re-raises immediately, so ``errors`` is always empty in that case.
+
+    Compilation continues to the next contract after a failure so that all per-file errors are
+    collected in a single pass rather than stopping on the first failure.
+    """
     if input_dict["language"] != "Vyper":
         raise JSONError(f"Invalid language '{input_dict['language']}' - Only Vyper is supported.")
 
@@ -396,7 +409,7 @@ def compile_from_input_dict(
 
     input_bundle = JSONInputBundle(sources, search_paths=search_paths)
 
-    res, warnings_dict = {}, {}
+    res, warnings_dict, errors = {}, {}, []
     warnings.simplefilter("always")
     for contract_path in compilation_targets:
         storage_layout_override = storage_layout_overrides.get(contract_path)
@@ -417,12 +430,17 @@ def compile_from_input_dict(
                 assert isinstance(data, dict)
                 data["source_id"] = file.source_id
             except Exception as exc:
-                return exc_handler(contract_path, exc, "compiler"), {}
+                # exc_handler_raises re-raises immediately; we only reach the lines below
+                # when the handler returns (e.g. exc_handler_to_dict).  Accumulate the
+                # per-file error and continue so the remaining contracts are still compiled.
+                err_result = exc_handler(contract_path, exc, "compiler")
+                errors.extend(err_result.get("errors", []))
+                continue
             res[contract_path] = data
             if caught_warnings:
                 warnings_dict[contract_path] = caught_warnings
 
-    return res, warnings_dict
+    return res, warnings_dict, errors
 
 
 # convert output of compile_input_dict to final output format
@@ -521,28 +539,33 @@ def compile_json(
             input_dict = input_json
 
         try:
-            compiler_data, warn_data = compile_from_input_dict(input_dict, exc_handler)
-            if "errors" in compiler_data:
-                return compiler_data
+            compiler_data, warn_data, errors = compile_from_input_dict(input_dict, exc_handler)
         except KeyError as exc:
             new_exc = JSONError(f"Input JSON missing required field: {str(exc)}")
             return exc_handler(json_path, new_exc, "json")
         except (FileNotFoundError, JSONError) as exc:
             return exc_handler(json_path, exc, "json")
 
+        # format_to_output_dict handles an empty compiler_data dict gracefully (empty
+        # "contracts" / "sources"), so partial results from successful contracts are always
+        # included even when some contracts failed.
         output_dict = format_to_output_dict(compiler_data)
-        if warn_data:
-            output_dict["errors"] = []
-            for path, msg in ((k, x) for k, v in warn_data.items() for x in v):
-                output_dict["errors"].append(
-                    {
-                        "type": msg.category.__name__,
-                        "component": "compiler",
-                        "severity": "warning",
-                        "message": msg.message,
-                        "sourceLocation": {"file": path},
-                    }
-                )
+
+        # Combine per-file compiler errors (severity "error") with any compilation warnings
+        # (severity "warning") into a single "errors" array.  Errors are placed first.
+        all_errors: list = list(errors)
+        for path, msg in ((k, x) for k, v in warn_data.items() for x in v):
+            all_errors.append(
+                {
+                    "type": msg.category.__name__,
+                    "component": "compiler",
+                    "severity": "warning",
+                    "message": msg.message,
+                    "sourceLocation": {"file": path},
+                }
+            )
+        if all_errors:
+            output_dict["errors"] = all_errors
         return output_dict
 
     except Exception as exc:
