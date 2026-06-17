@@ -22,23 +22,24 @@ const createTestQueryClient = () =>
 
 interface AllTheProvidersProps {
   children: React.ReactNode
+  queryClient?: QueryClient
 }
 
 /**
  * Wrapper component that includes all providers needed for testing
  */
-const AllTheProviders = ({ children }: AllTheProvidersProps) => {
-  const queryClient = createTestQueryClient()
-  
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          {children}
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
+function createAllTheProviders(queryClient: QueryClient) {
+  return function AllTheProviders({ children }: AllTheProvidersProps) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+            {children}
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    )
+  }
 }
 
 /**
@@ -46,8 +47,16 @@ const AllTheProviders = ({ children }: AllTheProvidersProps) => {
  */
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { wrapper: AllTheProviders, ...options })
+  options?: Omit<RenderOptions, 'wrapper'> & { queryClient?: QueryClient },
+) => {
+  const queryClient = options?.queryClient ?? createTestQueryClient()
+  const { queryClient: _, ...renderOptions } = options ?? {}
+
+  return render(ui, {
+    wrapper: createAllTheProviders(queryClient),
+    ...renderOptions
+  })
+}
 
 // Re-export everything from React Testing Library
 export * from '@testing-library/react'
