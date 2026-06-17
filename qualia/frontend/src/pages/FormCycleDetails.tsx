@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, CalendarIcon, UsersIcon, ClockIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, UsersIcon, ClockIcon, FileTextIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
@@ -15,7 +16,7 @@ import {
 interface FormCycleDetails {
   id: string;
   title: string;
-  description: text;
+  description: string;
   status: "draft" | "active" | "completed" | "archived";
   submission_deadline: string;
   created_at: string;
@@ -26,6 +27,7 @@ interface FormCycleDetails {
 
 interface Submission {
   id: string;
+  reviewer_name: string;
   reviewer_email: string;
   status: "not_started" | "in_progress" | "submitted";
   started_at: string | null;
@@ -123,7 +125,7 @@ const getSubmissionStatusBadge = (status: Submission["status"]) => {
 };
 
 function FormCycleDetails() {
-  const { id } = useParams<{ id: number }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   if (!id) {
