@@ -137,9 +137,11 @@ export function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD_FORM_DETAILS}
         element={
-          <DashboardLayout>
-            <LazyRoute component={FormCycleDetails} />
-          </DashboardLayout>
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LazyRoute component={FormCycleDetails} />
+            </DashboardLayout>
+          </ProtectedRoute>
         }
       />
 
