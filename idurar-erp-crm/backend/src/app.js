@@ -18,6 +18,10 @@ const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
 
+// Trust the first proxy hop so express-rate-limit keys on the real client IP
+// (X-Forwarded-For) when the app is deployed behind a reverse proxy.
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: true,
