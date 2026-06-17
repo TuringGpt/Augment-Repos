@@ -49,7 +49,7 @@ def _default_local_upload_root() -> Path:
 
 
 def _supported_storage_backends() -> set[str]:
-    return {"local", "S3"}
+    return {"local", "s3"}
 
 
 def _prepare_local_upload_root(path: Path) -> Path:
@@ -60,7 +60,7 @@ def _prepare_local_upload_root(path: Path) -> Path:
 
 
 def _get_debug_flag() -> bool:
-    return os.getenv("DEBUG", "false").strip().upper() in {"1", "true", "yes", "on"}
+    return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
 @dataclass
