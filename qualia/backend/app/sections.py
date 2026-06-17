@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Mapping
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -58,7 +59,9 @@ class QuestionCreate(BaseModel):
     def normalize_conditional_logic(cls, value: dict | None) -> dict:
         if value is None:
             return {}
-        return value
+        if not isinstance(value, Mapping):
+            raise ValueError("conditional_logic must be an object")
+        return dict(value)
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
@@ -175,8 +178,12 @@ async def create_question(
         version=payload.version,
     )
     db.add(question)
-    await db.flush()
-    await db.commit()
+    try:
+        await db.flush()
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Question could not be created due to a data conflict") from exc
     return {
         "id": str(question.id),
         "form_cycle_id": str(question.form_cycle_id),
