@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ROUTES } from "@/config/routes";
+import { ROUTES, getFormCycleDetailsRoute } from "@/config/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -299,7 +299,11 @@ function Forms() {
                 </TableRow>
               ) : (
                 filteredForms.map((form) => (
-                  <TableRow key={form.id}>
+                  <TableRow
+                    key={form.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => navigate(getFormCycleDetailsRoute(form))}
+                  >
                     <TableCell className="font-medium">{form.name}</TableCell>
                     <TableCell className="max-w-md truncate">
                       {form.description}
@@ -309,7 +313,7 @@ function Forms() {
                       {form.submissions !== null ? form.submissions : "N/A"}
                     </TableCell>
                     <TableCell>{form.updatedAt}</TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon-sm" aria-label="Form actions menu">

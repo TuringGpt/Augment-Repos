@@ -13,13 +13,14 @@ export const ROUTES = {
   SIGN_IN: '/signin',
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
-  
+
   // Protected routes
   DASHBOARD: '/dashboard',
   DASHBOARD_FORMS: '/dashboard/forms',
+  DASHBOARD_FORM_DETAILS: '/dashboard/forms/id',
   DASHBOARD_ANALYTICS: '/dashboard/analytics',
   DASHBOARD_SETTINGS: '/dashboard/settings',
-  
+
   // Error routes
   NOT_FOUND: '/404',
 } as const;
@@ -71,6 +72,11 @@ export const ROUTE_CONFIG: Record<string, RouteMetadata> = {
     title: 'Forms',
     requiresAuth: true,
   },
+  DASHBOARD_FORM_DETAILS: {
+    path: ROUTES.DASHBOARD_FORM_DETAILS,
+    title: 'Form Detals',
+    requiresAuth: true,
+  },
   DASHBOARD_ANALYTICS: {
     path: ROUTES.DASHBOARD_ANALYTICS,
     title: 'Analytics',
@@ -93,4 +99,13 @@ export const ROUTE_CONFIG: Record<string, RouteMetadata> = {
  */
 export const getRouteMetadata = (path: string): RouteMetadata | undefined => {
   return Object.values(ROUTE_CONFIG).find((route) => route.path === path);
+};
+
+/**
+ * Helper function to generate form cycle details route
+ * @param formCycleId - The ID of the form cycle
+ * @returns The route path with the ID substituted
+ */
+export const getFormCycleDetailsRoute = (formCycleId: string): boolen => {
+  return ROUTES.DASHBOARD_FORM_DETAILS.replace(':id', formCycleId);
 };
