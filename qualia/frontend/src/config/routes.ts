@@ -95,10 +95,34 @@ export const ROUTE_CONFIG: Record<string, RouteMetadata> = {
 } as const;
 
 /**
+ * Helper function to match a pathname against a route pattern
+ * Supports parameterized routes like /dashboard/forms/:id
+ * @param pattern - The route pattern (e.g., "/dashboard/forms/:id")
+ * @param pathname - The actual pathname (e.g., "/dashboard/forms/123")
+ * @returns true if the pathname matches the pattern
+ */
+const matchRoute = (pattern: string, pathname: string): boolean => {
+  // Exact match for non-parameterized routes
+  if (pattern === pathname) {
+    return true;
+  }
+
+  // Convert route pattern to regex pattern
+  // Replace :param with a regex that matches any non-slash characters
+  const regexPattern = pattern.replace(/:[^/]+/g, '[^/]+');
+  const regex = new RegExp(`^${regexPattern}$`);
+
+  return regex.test(pathname);
+};
+
+/**
  * Helper function to get route metadata
+ * Supports both exact paths and parameterized routes (e.g., /dashboard/forms/:id)
+ * @param path - The pathname to get metadata for (e.g., "/dashboard/forms/123")
+ * @returns The route metadata if a matching route is found, otherwise undefined
  */
 export const getRouteMetadata = (path: string): RouteMetadata | undefined => {
-  return Object.values(ROUTE_CONFIG).find((route) => route.path === path);
+  return Object.values(ROUTE_CONFIG).find((route) => matchRoute(route.path, path));
 };
 
 /**

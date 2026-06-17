@@ -155,20 +155,19 @@ function Forms() {
       form.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDeleteForm = (id: string) => {
+  const handleDeleteForm = (_id: string) => {
     // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
     refetch();
   };
 
-  const handleDuplicateForm = (form: FormItem) => {
+  const handleDuplicateForm = (_form: FormItem) => {
     // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
     refetch();
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- formData required by CreateFormModal interface
-  const handleCreateForm = (formData: { id: string; status: string }) => {
+  const handleCreateForm = (_formData: { id: string; status: string }) => {
     // Refetch the assigned forms list after successful form cycle creation
     refetch();
   };
@@ -298,12 +297,25 @@ function Forms() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredForms.map((form) => (
-                  <TableRow
-                    key={form.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(getFormCycleDetailsRoute(form.id))}
-                  >
+                filteredForms.map((form) => {
+                  const handleNavigate = () => navigate(getFormCycleDetailsRoute(form.id));
+                  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleNavigate();
+                    }
+                  };
+
+                  return (
+                    <TableRow
+                      key={form.id}
+                      className="cursor-pointer hover:bg-muted/50 focus:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      onClick={handleNavigate}
+                      onKeyDown={handleKeyDown}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`View details for ${form.name}`}
+                    >
                     <TableCell className="font-medium">{form.name}</TableCell>
                     <TableCell className="max-w-md truncate">
                       {form.description}
@@ -341,7 +353,8 @@ function Forms() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
