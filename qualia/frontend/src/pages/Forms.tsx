@@ -298,37 +298,20 @@ function Forms() {
                 </TableRow>
               ) : (
                 filteredForms.map((form) => {
-                  const handleNavigate = () => navigate(getFormCycleDetailsRoute(form.id));
-                  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
-                    // Don't navigate if the event originated from an interactive element (button, link, etc.)
-                    const target = e.target as HTMLElement;
-                    const isInteractiveElement =
-                      target.tagName === 'BUTTON' ||
-                      target.closest('button') !== null ||
-                      target.tagName === 'A' ||
-                      target.closest('a') !== null;
-
-                    if (isInteractiveElement) {
-                      return; // Let the interactive element handle its own keyboard events
-                    }
-
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleNavigate();
-                    }
-                  };
-
                   return (
                     <TableRow
                       key={form.id}
-                      className="cursor-pointer hover:bg-muted/50 focus:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      onClick={handleNavigate}
-                      onKeyDown={handleKeyDown}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`View details for ${form.name}`}
+                      className="hover:bg-muted/50"
                     >
-                    <TableCell className="font-medium">{form.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <button
+                        onClick={() => navigate(getFormCycleDetailsRoute(form.id))}
+                        className="text-left w-full hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                        aria-label={`View details for ${form.name}`}
+                      >
+                        {form.name}
+                      </button>
+                    </TableCell>
                     <TableCell className="max-w-md truncate">
                       {form.description}
                     </TableCell>
@@ -337,7 +320,7 @@ function Forms() {
                       {form.submissions !== null ? form.submissions : "N/A"}
                     </TableCell>
                     <TableCell>{form.updatedAt}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon-sm" aria-label="Form actions menu">
