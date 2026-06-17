@@ -35,7 +35,7 @@ globalThis.IntersectionObserver = class IntersectionObserver {
 
   observe(target: Element) {
     this.elements.add(target)
-    // Trigger callback immediately with default intersecting state
+    // Trigger callback asynchronously to mimic real browser behavior
     // This simulates the element being visible in the viewport
     const entries: IntersectionObserverEntry[] = [{
       boundingClientRect: target.getBoundingClientRect(),
@@ -47,7 +47,10 @@ globalThis.IntersectionObserver = class IntersectionObserver {
       time: Date.now(),
     } as IntersectionObserverEntry]
 
-    this.callback(entries, this)
+    // Schedule callback as a microtask to match real IntersectionObserver behavior
+    queueMicrotask(() => {
+      this.callback(entries, this)
+    })
   }
 
   unobserve(target: Element) {
