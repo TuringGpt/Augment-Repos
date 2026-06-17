@@ -19,7 +19,6 @@ coverage
 # Lock files
 package-lock.json
 pnpm-lock.yaml
-yarn.lock
 
 # Yarn cache and install state
 .yarn/install-state.gz
