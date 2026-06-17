@@ -91,8 +91,8 @@ const getDummySubmissions = (): Submission[] => [
 // Helper functions
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "N/A";
-  const date = Date(dateString);
-  return date.toDateString("en-US", {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
