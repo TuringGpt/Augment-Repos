@@ -180,7 +180,9 @@ function FormCycleDetails() {
           <CardContent>
             <div className="text-3xl font-bold">{formCycle.completed_submissions}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {Math.round((formCycle.completed_submissions / formCycle.total_reviewers) * 100)}% completion rate
+              {formCycle.total_reviewers > 0
+                ? `${Math.round((formCycle.completed_submissions / formCycle.total_reviewers) * 100)}% completion rate`
+                : "No reviewers assigned"}
             </p>
           </CardContent>
         </Card>
