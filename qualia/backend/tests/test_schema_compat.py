@@ -76,13 +76,16 @@ class _ScalarResult:
     def __init__(self, value: object) -> None:
         self._value = value
 
+    def scalar_one(self) -> object:
+        return self._value
+
     def scalar_one_or_none(self) -> object:
         return self._value
 
 
 class _FailingQuestionSession:
     def __init__(self, user: User, section: Section) -> None:
-        self._results = [_ScalarResult(user), _ScalarResult(section)]
+        self._results = [_ScalarResult(user), _ScalarResult(section), _ScalarResult(0)]
         self.rollback_calls = 0
 
     async def execute(self, _query: object) -> _ScalarResult:
