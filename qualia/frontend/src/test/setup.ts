@@ -21,14 +21,46 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock IntersectionObserver (required for some UI components)
+// This mock automatically triggers callbacks to prevent components from hanging
 globalThis.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  takeRecords() {
+  readonly root: Element | null = null
+  readonly rootMargin: string = '0px'
+  readonly thresholds: ReadonlyArray<number> = [0]
+  private callback: IntersectionObserverCallback
+  private elements: Set<Element> = new Set()
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+  }
+
+  observe(target: Element) {
+    this.elements.add(target)
+    // Trigger callback immediately with default intersecting state
+    // This simulates the element being visible in the viewport
+    const entries: IntersectionObserverEntry[] = [{
+      boundingClientRect: target.getBoundingClientRect(),
+      intersectionRatio: 1,
+      intersectionRect: target.getBoundingClientRect(),
+      isIntersecting: true,
+      rootBounds: null,
+      target,
+      time: Date.now(),
+    } as IntersectionObserverEntry]
+
+    this.callback(entries, this)
+  }
+
+  unobserve(target: Element) {
+    this.elements.delete(target)
+  }
+
+  disconnect() {
+    this.elements.clear()
+  }
+
+  takeRecords(): IntersectionObserverEntry[] {
     return []
   }
-  unobserve() {}
 } as any
 
 // Cleanup after each test
