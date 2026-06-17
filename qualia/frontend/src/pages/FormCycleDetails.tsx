@@ -95,6 +95,7 @@ const getDummySubmissions = (): Submission[] => [
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid Date";
   return date.toLocaleString("en-US", {
     year: "numeric",
     month: "short",
