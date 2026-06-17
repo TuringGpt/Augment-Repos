@@ -1,6 +1,8 @@
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from app.main import app
 from app.models.question import Question
 from app.models.section import Section
 from app.sections import QuestionCreate
@@ -33,3 +35,23 @@ def test_question_create_normalizes_null_conditional_logic() -> None:
 
     assert payload.question_text == "Prompt"
     assert payload.conditional_logic == {}
+
+
+def test_question_create_rejects_falsy_non_dict_conditional_logic() -> None:
+    with pytest.raises(ValidationError):
+        QuestionCreate(
+            question_text="Prompt",
+            question_type="short_text",
+            conditional_logic=[],
+        )
+
+
+def test_question_create_path_uses_form_cycle_id() -> None:
+    with TestClient(app) as client:
+        openapi_schema = client.get("/openapi.json").json()
+
+    post_operation = openapi_schema["paths"]["/api/v1/forms/{form_cycle_id}/sections/{section_id}/questions"]["post"]
+    parameter_names = {parameter["name"] for parameter in post_operation["parameters"]}
+
+    assert "form_cycle_id" in parameter_names
+    assert "form_id" not in parameter_names

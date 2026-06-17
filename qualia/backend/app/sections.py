@@ -56,7 +56,9 @@ class QuestionCreate(BaseModel):
 
     @validator("conditional_logic", pre=True, always=True)
     def normalize_conditional_logic(cls, value: dict | None) -> dict:
-        return value or {}
+        if value is None:
+            return {}
+        return value
 
 
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
@@ -125,14 +127,14 @@ async def create_section(
     )
 
 
-@router.post("/{form_id}/sections/{section_id}/questions", status_code=201)
+@router.post("/{form_cycle_id}/sections/{section_id}/questions", status_code=201)
 @router.post(
-    "/{form_id}/sections/{section_id}/questions/",
+    "/{form_cycle_id}/sections/{section_id}/questions/",
     status_code=201,
     include_in_schema=False,
 )
 async def create_question(
-    form_id: uuid.UUID,
+    form_cycle_id: uuid.UUID,
     section_id: uuid.UUID,
     payload: QuestionCreate,
     credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
@@ -153,7 +155,7 @@ async def create_question(
     if user.role != Role.admin or not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="Admin access required")
     section = (await db.execute(select(Section).where(Section.id == section_id))).scalar_one_or_none()
-    if section is None or section.form_cycle_id != form_id:
+    if section is None or section.form_cycle_id != form_cycle_id:
         raise HTTPException(status_code=404, detail="Section not found")
     display_order = payload.display_order
     if display_order is None:
@@ -163,7 +165,7 @@ async def create_question(
         display_order = (current_max_order or 0) + 1
     question = Question(
         section_id=section.id,
-        form_cycle_id=form_id,
+        form_cycle_id=form_cycle_id,
         question_text=payload.question_text,
         question_type=payload.question_type,
         is_required=payload.is_required,
