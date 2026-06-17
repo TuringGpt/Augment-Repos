@@ -15,3 +15,13 @@ def test_signed_unsigned_256_boundaries():
     assert signed_to_unsigned_256(SizeLimits.MIN_INT256) == 2**255
     assert unsigned_to_signed_256(SizeLimits.MAX_UINT256) == -1
     assert unsigned_to_signed_256(2**255) == SizeLimits.MIN_INT256
+
+
+def test_signed_unsigned_256_require_ints():
+    for fn in (signed_to_unsigned_256, unsigned_to_signed_256):
+        try:
+            fn(1.5)
+        except AssertionError:
+            pass
+        else:
+            raise AssertionError("expected AssertionError for non-int input")

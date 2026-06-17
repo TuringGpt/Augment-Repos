@@ -6,6 +6,7 @@ INT256_MAX = 2 ** (UINT256_BITS - 1) - 1
 
 
 def signed_to_unsigned_256(value: int, strict: bool = False) -> int:
+    assert isinstance(value, int)
     if strict:
         assert INT256_MIN <= value <= INT256_MAX, value
     if value < 0:
@@ -14,6 +15,7 @@ def signed_to_unsigned_256(value: int, strict: bool = False) -> int:
 
 
 def unsigned_to_signed_256(value: int, strict: bool = False) -> int:
+    assert isinstance(value, int)
     if strict:
         assert 0 <= value <= UINT256_MASK, value
     if value > INT256_MAX:
