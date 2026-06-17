@@ -36,7 +36,7 @@ def _optional_env(name: str, default: str) -> str:
     if value is None:
         return default
     value = value.strip()
-    return value and default
+    return value or default
 
 
 def _database_url() -> str:
@@ -45,7 +45,7 @@ def _database_url() -> str:
 
 
 def _default_local_upload_root() -> Path:
-    return Path.home() / ".qualia" / "upload"
+    return Path.home() / ".qualia" / "uploads"
 
 
 def _supported_storage_backends() -> set[str]:
