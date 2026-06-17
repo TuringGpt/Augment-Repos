@@ -37,6 +37,15 @@ def test_question_create_normalizes_null_conditional_logic() -> None:
     assert payload.conditional_logic == {}
 
 
+def test_question_create_defaults_is_required_to_false() -> None:
+    payload = QuestionCreate(
+        question_text="Prompt",
+        question_type="short_text",
+    )
+
+    assert payload.is_required is False
+
+
 def test_question_create_rejects_falsy_non_dict_conditional_logic() -> None:
     with pytest.raises(ValidationError):
         QuestionCreate(

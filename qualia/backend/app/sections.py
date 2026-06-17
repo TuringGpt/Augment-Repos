@@ -41,7 +41,7 @@ class SectionResponse(BaseModel):
 class QuestionCreate(BaseModel):
     question_text: str = Field(min_length=1)
     question_type: QuestionType
-    is_required: bool = True
+    is_required: bool = False
     config: dict = Field(default_factory=dict)
     conditional_logic: dict | None = None
     display_order: int | None = None
