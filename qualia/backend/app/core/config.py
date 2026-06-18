@@ -66,7 +66,10 @@ def _get_debug_flag() -> bool:
 def _cors_allow_origins() -> list[str]:
     raw = _optional_env("CORS_ALLOW_ORIGINS", "")
     if not raw:
-        raw = _optional_env("CORS_ALLOW_ORIGIN", "http://localhost:3000,http://127.0.0.1:5173")
+        raw = _optional_env(
+            "CORS_ALLOW_ORIGIN",
+            "http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173",
+        )
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
