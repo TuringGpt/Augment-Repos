@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const create = async (Model, req, res) => {
   // Creating a new document in the collection
   req.body.removed = false;
@@ -6,7 +8,8 @@ const create = async (Model, req, res) => {
   }).save();
 
   // Returning successfull response
-  return res.status(200).json({
+  return sendDtoResponse(res, {
+    status: 200,
     success: true,
     result,
     message: 'Successfully Created the document in Model ',

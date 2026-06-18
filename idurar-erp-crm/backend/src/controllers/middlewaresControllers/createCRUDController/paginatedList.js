@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const paginatedList = async (Model, req, res) => {
   const page = req.query.page || 1;
   const limit = parseInt(req.query.items) || 10;
@@ -55,11 +57,12 @@ const paginatedList = async (Model, req, res) => {
   // Getting Pagination Object
   const pagination = { page, pages, count };
   if (count > 0) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
-      pagination,
       message: 'Successfully found all documents',
+      pagination,
     });
   } else {
     return res.status(203).json({

@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const search = async (Model, req, res) => {
   // console.log(req.query.fields)
   // if (req.query.q === undefined || req.query.q.trim() === '') {
@@ -28,7 +30,8 @@ const search = async (Model, req, res) => {
     .exec();
 
   if (results.length >= 1) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result: results,
       message: 'Successfully found all documents',

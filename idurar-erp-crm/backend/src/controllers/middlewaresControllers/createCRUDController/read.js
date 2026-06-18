@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const read = async (Model, req, res) => {
   // Find document by id
   const result = await Model.findOne({
@@ -13,7 +15,8 @@ const read = async (Model, req, res) => {
     });
   } else {
     // Return success resposne
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'we found this document ',

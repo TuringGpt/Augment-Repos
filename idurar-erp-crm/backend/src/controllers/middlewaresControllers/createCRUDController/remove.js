@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const remove = async (Model, req, res) => {
   // Find the document by id and delete it
   let updates = {
@@ -21,7 +23,8 @@ const remove = async (Model, req, res) => {
       message: 'No document found ',
     });
   } else {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'Successfully Deleted the document ',

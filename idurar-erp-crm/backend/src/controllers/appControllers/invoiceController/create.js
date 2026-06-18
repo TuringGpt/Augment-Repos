@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
 
@@ -64,7 +65,8 @@ const create = async (req, res) => {
   });
 
   // Returning successfull response
-  return res.status(200).json({
+  return sendDtoResponse(res, {
+    status: 200,
     success: true,
     result: updateResult,
     message: 'Invoice created successfully',

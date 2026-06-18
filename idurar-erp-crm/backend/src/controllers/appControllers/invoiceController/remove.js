@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const Model = mongoose.model('Invoice');
 const ModelPayment = mongoose.model('Payment');
@@ -27,7 +28,8 @@ const remove = async (req, res) => {
     { invoice: deletedInvoice._id },
     { $set: { removed: true } }
   );
-  return res.status(200).json({
+  return sendDtoResponse(res, {
+    status: 200,
     success: true,
     result: deletedInvoice,
     message: 'Invoice deleted successfully',

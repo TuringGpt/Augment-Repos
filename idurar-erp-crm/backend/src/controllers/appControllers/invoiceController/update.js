@@ -5,6 +5,7 @@ const Model = mongoose.model('Invoice');
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 const schema = require('./schemaValidate');
 
 const update = async (req, res) => {
@@ -73,7 +74,8 @@ const update = async (req, res) => {
 
   // Returning successfull response
 
-  return res.status(200).json({
+  return sendDtoResponse(res, {
+    status: 200,
     success: true,
     result,
     message: 'we update this document ',

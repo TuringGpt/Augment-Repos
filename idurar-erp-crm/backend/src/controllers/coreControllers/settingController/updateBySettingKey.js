@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const Model = mongoose.model('Setting');
 
@@ -38,7 +39,8 @@ const updateBySettingKey = async (req, res) => {
       message: 'No document found by this settingKey: ' + settingKey,
     });
   } else {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'we update this document by this settingKey: ' + settingKey,

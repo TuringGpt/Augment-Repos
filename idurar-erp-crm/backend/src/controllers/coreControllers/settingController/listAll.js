@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 const Model = mongoose.model('Setting');
 
 const listAll = async (req, res) => {
@@ -11,7 +12,8 @@ const listAll = async (req, res) => {
   }).sort({ created: sort });
 
   if (result.length > 0) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'Successfully found all documents',

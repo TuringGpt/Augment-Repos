@@ -5,6 +5,7 @@ const Invoice = mongoose.model('Invoice');
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const update = async (req, res) => {
   if (req.body.amount === 0) {
@@ -76,7 +77,8 @@ const update = async (req, res) => {
     }
   ).exec();
 
-  return res.status(200).json({
+  return sendDtoResponse(res, {
+    status: 200,
     success: true,
     result,
     message: 'Successfully updated the Payment ',

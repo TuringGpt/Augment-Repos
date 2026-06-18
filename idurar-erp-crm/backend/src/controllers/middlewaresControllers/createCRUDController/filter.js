@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const filter = async (Model, req, res) => {
   if (req.query.filter === undefined || req.query.equal === undefined) {
     return res.status(403).json({
@@ -20,7 +22,8 @@ const filter = async (Model, req, res) => {
     });
   } else {
     // Return success resposne
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'Successfully found all documents  ',

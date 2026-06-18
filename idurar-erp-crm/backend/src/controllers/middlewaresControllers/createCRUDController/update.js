@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const update = async (Model, req, res) => {
   // Find document by id and updates with the required fields
   req.body.removed = false;
@@ -19,7 +21,8 @@ const update = async (Model, req, res) => {
       message: 'No document found ',
     });
   } else {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'we update this document ',
