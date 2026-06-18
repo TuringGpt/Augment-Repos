@@ -80,7 +80,7 @@ describe('AlertDialog', () => {
 
   describe('Content Variants', () => {
     it('renders with default size', async () => {
-      const user = userEvent.setup
+      const user = userEvent.setup()
 
       render(
         <AlertDialog>
