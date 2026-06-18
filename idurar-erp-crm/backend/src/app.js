@@ -14,7 +14,6 @@ const adminAuth = require('./controllers/coreControllers/adminAuth');
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
-const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
 
@@ -30,9 +29,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(compression());
-
-// // default options
-// app.use(fileUpload());
 
 // Here our API Routes
 
