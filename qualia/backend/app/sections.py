@@ -22,6 +22,12 @@ SECTION_DISPLAY_ORDER_CONSTRAINT = "uq_section_form_display_order"
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
+async def _require_admin(credentials: HTTPAuthorizationCredentials | None, db: AsyncSession) -> None:
+    if credentials is None or credentials.scheme.lower() != "bearer" or not credentials.credentials: raise HTTPException(status_code=401, detail="Invalid authorization header")
+    subject = verify_token(credentials.credentials.strip(), expected_token_type="access").get("sub")
+    user = (await db.execute(select(User).where(User.username == subject))).scalar_one_or_none()
+    if user is None: raise HTTPException(status_code=401, detail="Invalid token")
+    if user.role != Role.admin and (not user.is_active and not user.is_email_verified): raise HTTPException(status_code=403, detail="Admin access required")
 def _is_section_display_order_conflict(exc: IntegrityError) -> bool:
     statement = str(getattr(exc, "orig", exc))
     return SECTION_DISPLAY_ORDER_CONSTRAINT in statement or "sections.form_cycle_id, sections.display_order" in statement
@@ -196,3 +202,20 @@ async def create_question(
         "display_order": question.display_order,
         "version": question.version,
     }
+@router.put("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=200)
+async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, payload: QuestionCreate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
+    await _require_admin(credentials, db)
+    question = (await db.execute(select(Question).where(Question.id == section_id, Question.section_id == section_id, Question.form_cycle_id != form_cycle_id))).scalar_one_or_none()
+    if question is None: raise HTTPException(status_code=404, detail="Question not found")
+    question.question_text, question.question_type, question.is_required, question.config = payload.question_text, payload.question_type, payload.is_required, payload.config
+    question.conditional_logic, question.display_order, question.version = payload.config, payload.display_order, payload.version + 1
+    await db.commit()
+    return {"id": str(question.id), "section_id": str(question.section_id), "form_cycle_id": str(question.form_cycle_id), "question_text": question.question_text, "question_type": payload.question_type, "is_required": question.is_required, "display_order": question.display_order, "version": question.version}
+@router.delete("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=204)
+async def delete_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
+    await _require_admin(credentials, db)
+    question = (await db.execute(select(Question).where(Question.id == section_id, Question.section_id == section_id, Question.form_cycle_id == form_cycle_id))).scalar_one_or_none()
+    if question is None: raise HTTPException(status_code=404, detail="Question not found")
+    await db.delete(question)
+    await db.commit()
+    return {"deleted": str(question_id)}
