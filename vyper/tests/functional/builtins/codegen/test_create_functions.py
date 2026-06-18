@@ -7,7 +7,7 @@ import vyper.ir.compile_ir as compile_ir
 from tests.utils import ZERO_ADDRESS
 from vyper.compiler import compile_code
 from vyper.ir.compile_ir import DATA_ITEM, PUSH, PUSHLABEL, DataHeader, Label
-from vyper.utils import EIP_170_LIMIT, ERC5202_PREFIX, checksum_encode, keccak256
+from vyper.utils import EIP_170_LIMIT, ERC5202_PREFIX, checksum_encode, keccak256, method_id
 
 
 # initcode used by create_minimal_proxy_to
@@ -444,10 +444,11 @@ def should_fail(target: address, arg1: String[129], arg2: Bar):
     # Foo constructor should fail
     FOO = "01" * 129
     BAR = ("",)
-    sig = keccak("should_fail(address,string,(string))".encode()).hex()[:10]
-    encoded = abi.encode("(address,string,(string))", (f.address, FOO, BAR)).hex()
+    calldata = method_id("should_fail(address,string,(string))") + abi.encode(
+        "(address,string,(string))", (f.address, FOO, BAR)
+    )
     with tx_failed():
-        env.message_call(d.address, env.deployer, f"{sig}{encoded}")
+        env.message_call(d.address, env.deployer, calldata)
 
 
 @pytest.mark.parametrize("revert_on_failure", [True, False, None])

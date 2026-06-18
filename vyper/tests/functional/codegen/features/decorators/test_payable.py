@@ -2,6 +2,7 @@ import pytest
 
 from vyper.compiler import compile_code
 from vyper.exceptions import CallViolation
+from vyper.utils import method_id
 
 
 @pytest.mark.parametrize(
@@ -183,9 +184,8 @@ def test_nonpayable_runtime_assertion(env, keccak, tx_failed, get_contract, code
     env.set_balance(env.deployer, 10**18)
 
     c.foo(value=0)
-    sig = keccak("foo()".encode()).hex()[:10]
     with tx_failed():
-        env.message_call(c.address, data=sig, value=10**18)
+        env.message_call(c.address, data=method_id("foo()"), value=10**18)
 
 
 payable_code = [

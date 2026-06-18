@@ -5,6 +5,7 @@ from tests.utils import ZERO_ADDRESS
 from vyper import compile_code
 from vyper.builtins.functions import eip1167_bytecode
 from vyper.exceptions import ArgumentException, StateAccessViolation, TypeMismatch
+from vyper.utils import method_id
 
 
 def test_max_outsize_exceeds_returndatasize(get_contract):
@@ -257,8 +258,7 @@ def __default__():
     caller.set_target(target.address)
 
     # manually construct msg.data for `caller` contract
-    sig = keccak("foo()".encode()).hex()[:10]
-    assert env.message_call(caller.address, data=sig) == b""
+    assert env.message_call(caller.address, data=method_id("foo()")) == b""
 
 
 def _strip_initcode_suffix(bytecode):

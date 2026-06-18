@@ -2,22 +2,21 @@ from decimal import Decimal
 
 import pytest
 from eth.codecs import abi
-from eth_utils import keccak
 
 from tests.utils import ZERO_ADDRESS, decimal_to_int
-from vyper.utils import int_bounds
+from vyper.utils import int_bounds, method_id
 
 
 def _make_tx(env, address, signature, values):
     # helper function to create data that will fail runtime clamp
-    sig = keccak(signature.encode()).hex()[:8]
+    sig = method_id(signature).hex()
     data = "".join(int(i).to_bytes(32, "big", signed=i < 0).hex() for i in values)
     env.message_call(address, data=f"0x{sig}{data}")
 
 
 def _make_abi_encode_tx(env, address, signature, input_types, values):
     # helper function to broadcast transactions where data is constructed from abi_encode
-    sig = keccak(signature.encode()).hex()[:8]
+    sig = method_id(signature).hex()
     data = abi.encode(input_types, values).hex()
     env.message_call(address, data=f"0x{sig}{data}")
 
@@ -29,7 +28,7 @@ def _make_dynarray_data(offset, length, values):
 
 
 def _make_invalid_dynarray_tx(env, address, signature, data):
-    sig = keccak(signature.encode()).hex()[:8]
+    sig = method_id(signature).hex()
     env.message_call(address, data=f"0x{sig}{data}")
 
 
