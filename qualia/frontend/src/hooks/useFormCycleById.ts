@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { getFormCycleById } from "@/services/formService";
 import type { FormCycleDetail } from "@/services/formService";
 import type { ApiError } from "@/lib/axios";
@@ -54,14 +54,14 @@ export const useFormCycleById = (
   options?: {
     enabled?: boolean;
   }
-) => {
+): UseQueryResult<FormCycleDetail, ApiError> => {
   // Only run the query if we have a valid form cycle ID AND the enabled option allows it
   const isEnabled = options?.enabled !== false && !!formCycleId;
 
   return useQuery<FormCycleDetail, ApiError>({
     // Query key includes form cycle ID for proper cache scoping
     queryKey: ["formCycle", formCycleId],
-    queryFn: ({ signal }) => getFormCycleById(formCycleId!, { signal }),
+    queryFn: ({ signal }) => getFormCycleById(formCycleId!, signal),
     enabled: isEnabled,
     // Query will automatically retry 3 times (from global config in queryClient.ts)
     // Data is considered fresh for 5 minutes (from global config)
