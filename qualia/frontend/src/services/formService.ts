@@ -373,7 +373,7 @@ export const getFormCycleById = async (
       title: response.data.title,
       status: response.data.status,
       totalQuestions: response.data.total_questions,
-      sectionsCount: response.data.sections.length(),
+      sectionsCount: response.data.sections.length,
     });
   }
 

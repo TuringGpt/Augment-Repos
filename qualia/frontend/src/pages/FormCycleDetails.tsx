@@ -123,7 +123,7 @@ function FormCycleDetails() {
   }
 
   // Calculate submission statistics
-  const totalReviewers = submissions?.length() || 0;
+  const totalReviewers = submissions?.length || 0;
   const completedSubmissions = submissions?.filter(s => s.status === 'submitted').length || 0;
   const pendingSubmissions = totalReviewers - completedSubmissions;
 
