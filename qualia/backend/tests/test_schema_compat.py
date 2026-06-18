@@ -75,6 +75,21 @@ def test_question_create_path_uses_form_cycle_id() -> None:
     assert "form_id" not in parameter_names
 
 
+def test_question_item_paths_use_form_cycle_id() -> None:
+    openapi_schema = app.openapi()
+
+    question_item_path = "/api/v1/forms/{form_cycle_id}/sections/{section_id}/questions/{question_id}"
+    put_operation = openapi_schema["paths"][question_item_path]["put"]
+    delete_operation = openapi_schema["paths"][question_item_path]["delete"]
+
+    put_parameter_names = {parameter["name"] for parameter in put_operation["parameters"]}
+    delete_parameter_names = {parameter["name"] for parameter in delete_operation["parameters"]}
+
+    assert put_parameter_names == delete_parameter_names
+    assert "form_cycle_id" in put_parameter_names
+    assert "form_id" not in put_parameter_names
+
+
 class _ScalarResult:
     def __init__(self, value: object) -> None:
         self._value = value

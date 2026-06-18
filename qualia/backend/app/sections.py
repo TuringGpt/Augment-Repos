@@ -261,6 +261,11 @@ async def create_question(
 
 
 @router.put("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=200)
+@router.put(
+    "/{form_cycle_id}/sections/{section_id}/questions/{question_id}/",
+    status_code=200,
+    include_in_schema=False,
+)
 async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, payload: QuestionUpdate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
     await _require_admin(credentials, db)
     question = (
@@ -287,6 +292,11 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
 
 
 @router.delete("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=204)
+@router.delete(
+    "/{form_cycle_id}/sections/{section_id}/questions/{question_id}/",
+    status_code=204,
+    include_in_schema=False,
+)
 async def delete_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> None:
     await _require_admin(credentials, db)
     question = (
