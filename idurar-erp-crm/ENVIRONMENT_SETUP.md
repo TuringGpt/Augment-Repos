@@ -37,7 +37,7 @@ cp backend/.env.example backend/.env
 | `PORT` | ❌ | HTTP port the API listens on. Defaults to `8888` if omitted |
 | `NODE_ENV` | ❌ | Runtime mode. Use `development` locally, `production` in deployments |
 | `PUBLIC_SERVER_FILE` | ✅ | Public base URL where uploaded files are served from, e.g. `http://localhost:8888/` |
-| `OPENSSL_CONF` | ❌ | Optional workaround. Only set to `/dev/null` if the backend throws OpenSSL legacy-provider errors; leave it unset otherwise, as it disables the default OpenSSL config for the process |
+| `OPENSSL_CONF` | ❌ | Optional workaround (Unix/macOS only). Only set to `/dev/null` if the backend throws OpenSSL legacy-provider errors — typically on Node.js 17+ (OpenSSL 3.x) when a legacy system `openssl.cnf` is loaded. It disables the default OpenSSL config for the process, so leave it unset otherwise. Windows has no `/dev/null` equivalent; Windows users should leave it unset |
 
 ---
 
