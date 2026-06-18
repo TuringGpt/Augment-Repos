@@ -82,6 +82,55 @@ class QuestionCreate(BaseModel):
         return dict(value)
 
 
+class QuestionUpdate(BaseModel):
+    question_text: str | None = Field(default=None, min_length=1)
+    question_type: QuestionType | None = None
+    is_required: bool | None = None
+    config: dict | None = None
+    conditional_logic: dict | None = None
+    display_order: int | None = Field(default=None, ge=1)
+
+    @validator("question_text")
+    def validate_question_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("question_text must not be blank")
+        return normalized
+
+    @validator("config")
+    def validate_config(cls, value: dict | None) -> dict | None:
+        if value is None:
+            return None
+        if not isinstance(value, Mapping):
+            raise ValueError("config must be an object")
+        return dict(value)
+
+    @validator("conditional_logic")
+    def normalize_conditional_logic(cls, value: dict | None) -> dict | None:
+        if value is None:
+            return {}
+        if not isinstance(value, Mapping):
+            raise ValueError("conditional_logic must be an object")
+        return dict(value)
+
+
+def _serialize_question(question: Question) -> dict[str, object]:
+    return {
+        "id": str(question.id),
+        "form_cycle_id": str(question.form_cycle_id),
+        "section_id": str(question.section_id),
+        "question_text": question.question_text,
+        "question_type": question.question_type.value,
+        "is_required": question.is_required,
+        "config": question.config,
+        "conditional_logic": question.conditional_logic,
+        "display_order": question.display_order,
+        "version": question.version,
+    }
+
+
 @router.post("/{form_cycle_id}/sections", status_code=201, response_model=SectionResponse)
 @router.post(
     "/{form_cycle_id}/sections/",
@@ -202,20 +251,9 @@ async def create_question(
     except IntegrityError as exc:
         await db.rollback()
         raise HTTPException(status_code=409, detail="Question could not be created due to a data conflict") from exc
-    return {
-        "id": str(question.id),
-        "form_cycle_id": str(question.form_cycle_id),
-        "section_id": str(question.section_id),
-        "question_text": question.question_text,
-        "question_type": question.question_type.value,
-        "is_required": question.is_required,
-        "config": question.config,
-        "conditional_logic": question.conditional_logic,
-        "display_order": question.display_order,
-        "version": question.version,
-    }
+    return _serialize_question(question)
 @router.put("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=200)
-async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, payload: QuestionCreate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
+async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, payload: QuestionUpdate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
     await _require_admin(credentials, db)
     question = (
         await db.execute(
@@ -226,14 +264,18 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
             )
         )
     ).scalar_one_or_none()
-    if question is None: raise HTTPException(status_code=404, detail="Question not found")
-    question.question_text, question.question_type, question.is_required, question.config = payload.question_text, payload.question_type, payload.is_required, payload.config
-    question.conditional_logic = payload.conditional_logic
-    if payload.display_order is not None:
-        question.display_order = payload.display_order
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    updates = payload.dict(exclude_unset=True)
+    for field, value in updates.items():
+        setattr(question, field, value)
     question.version = question.version + 1
-    await db.commit()
-    return {"id": str(question.id), "section_id": str(question.section_id), "form_cycle_id": str(question.form_cycle_id), "question_text": question.question_text, "question_type": question.question_type.value, "is_required": question.is_required, "display_order": question.display_order, "version": question.version}
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Question could not be updated due to a data conflict") from exc
+    return _serialize_question(question)
 @router.delete("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=204)
 async def delete_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> None:
     await _require_admin(credentials, db)
