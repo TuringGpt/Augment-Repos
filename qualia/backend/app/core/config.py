@@ -63,6 +63,16 @@ def _get_debug_flag() -> bool:
     return os.getenv("DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _cors_allow_origins() -> list[str]:
+    raw = _optional_env("CORS_ALLOW_ORIGINS", "")
+    if not raw:
+        raw = _optional_env(
+            "CORS_ALLOW_ORIGIN",
+            "http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173",
+        )
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
 @dataclass
 class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
@@ -74,6 +84,7 @@ class Settings:
         default_factory=lambda: Path(_optional_env("LOCAL_UPLOAD_ROOT", str(_default_local_upload_root())))
     )
     debug: bool = field(default_factory=_get_debug_flag)
+    cors_allow_origins: list[str] = field(default_factory=_cors_allow_origins)
 
     def __post_init__(self) -> None:
         self.storage_backend = self.storage_backend.strip().lower()
@@ -94,3 +105,7 @@ def get_jwt_secret() -> str:
 
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_cors_allow_origins() -> list[str]:
+    return _cors_allow_origins()
