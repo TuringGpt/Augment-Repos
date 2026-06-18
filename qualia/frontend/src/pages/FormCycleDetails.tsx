@@ -50,7 +50,7 @@ const getSubmissionStatusBadge = (status: SubmissionStatus) => {
     submitted: { variant: "default", label: "Submitted" },
   };
   const config = variants[status] || { variant: "secondary", label: status };
-  return <Badge variant={config.variant()}>{config.label}</Badge>;
+  return <Badge variant={config.variant}>{config.label}</Badge>;
 };
 
 function FormCycleDetails() {
