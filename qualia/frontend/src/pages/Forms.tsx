@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ROUTES } from "@/config/routes";
+import { ROUTES, getFormCycleDetailsRoute } from "@/config/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -155,20 +155,19 @@ function Forms() {
       form.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDeleteForm = (id: string) => {
+  const handleDeleteForm = (_id: string) => {
     // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
     refetch();
   };
 
-  const handleDuplicateForm = (form: FormItem) => {
+  const handleDuplicateForm = (_form: FormItem) => {
     // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
     refetch();
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- formData required by CreateFormModal interface
-  const handleCreateForm = (formData: { id: string; status: string }) => {
+  const handleCreateForm = (_formData: { id: string; status: string }) => {
     // Refetch the assigned forms list after successful form cycle creation
     refetch();
   };
@@ -298,9 +297,22 @@ function Forms() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredForms.map((form) => (
-                  <TableRow key={form.id}>
-                    <TableCell className="font-medium">{form.name}</TableCell>
+                filteredForms.map((form) => {
+                  return (
+                    <TableRow
+                      key={form.id}
+                      className="hover:bg-muted/50"
+                    >
+                    <TableCell className="font-medium">
+                      <button
+                        type="button"
+                        onClick={() => navigate(getFormCycleDetailsRoute(form.id))}
+                        className="text-left w-full hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                        aria-label={`View details for ${form.name}`}
+                      >
+                        {form.name}
+                      </button>
+                    </TableCell>
                     <TableCell className="max-w-md truncate">
                       {form.description}
                     </TableCell>
@@ -337,7 +349,8 @@ function Forms() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
