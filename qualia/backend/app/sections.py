@@ -228,7 +228,10 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
     ).scalar_one_or_none()
     if question is None: raise HTTPException(status_code=404, detail="Question not found")
     question.question_text, question.question_type, question.is_required, question.config = payload.question_text, payload.question_type, payload.is_required, payload.config
-    question.conditional_logic, question.display_order, question.version = payload.conditional_logic, payload.display_order, payload.version + 1
+    question.conditional_logic = payload.conditional_logic
+    if payload.display_order is not None:
+        question.display_order = payload.display_order
+    question.version = question.version + 1
     await db.commit()
     return {"id": str(question.id), "section_id": str(question.section_id), "form_cycle_id": str(question.form_cycle_id), "question_text": question.question_text, "question_type": question.question_type.value, "is_required": question.is_required, "display_order": question.display_order, "version": question.version}
 @router.delete("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=204)

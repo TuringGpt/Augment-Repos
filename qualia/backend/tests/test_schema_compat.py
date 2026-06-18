@@ -13,6 +13,7 @@ from app.models.section import Section
 from app.models.user import Role, User
 from app.sections import create_question
 from app.sections import QuestionCreate
+from app.sections import update_question
 
 
 def test_section_table_name() -> None:
@@ -104,6 +105,22 @@ class _FailingQuestionSession:
         self.rollback_calls += 1
 
 
+class _UpdateQuestionSession:
+    def __init__(self, user: User, question: Question) -> None:
+        self._results = [_ScalarResult(question)]
+        self._user = user
+        self.commit_calls = 0
+
+    async def execute(self, query: object) -> _ScalarResult:
+        query_text = str(query)
+        if "FROM users" in query_text:
+            return _ScalarResult(self._user)
+        return self._results.pop(0)
+
+    async def commit(self) -> None:
+        self.commit_calls += 1
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -136,3 +153,88 @@ def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyP
     asyncio.run(_run())
 
     assert session.rollback_calls == 1
+
+
+def test_update_question_preserves_display_order_when_omitted(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type="short_text",
+        display_order=7,
+        version=5,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionCreate(question_text="New prompt", question_type="long_text"),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["display_order"] == 7
+        assert response["version"] == 6
+
+    asyncio.run(_run())
+
+    assert question.display_order == 7
+    assert question.version == 6
+    assert session.commit_calls == 1
+
+
+def test_update_question_ignores_stale_payload_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type="short_text",
+        display_order=3,
+        version=9,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionCreate(question_text="New prompt", question_type="short_text", version=1),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["version"] == 10
+
+    asyncio.run(_run())
+
+    assert question.version == 10
