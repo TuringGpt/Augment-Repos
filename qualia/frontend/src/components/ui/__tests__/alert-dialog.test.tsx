@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, waitFor } from '@/test/utils'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import {
   AlertDialog,
@@ -164,8 +164,8 @@ describe('AlertDialog', () => {
       await user.click(screen.getByRole('button', { name: /open/i }))
 
       await waitFor(() => {
-        expect(screen.getByRole.all('button', { name: /cancel/i })).toBeInTheDocument()
-        expect(screen.getByRole.all('button', { name: /confirm/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument()
       })
     })
 
@@ -470,7 +470,7 @@ describe('AlertDialog', () => {
       await user.click(screen.getByRole('button', { name: /open/i }))
 
       await waitFor(() => {
-        expect(screen.getByRole('alertdialog')).tohaveAttribute('data-slot', 'alert-dialog-content')
+        expect(screen.getByRole('alertdialog')).toHaveAttribute('data-slot', 'alert-dialog-content')
       })
     })
   })
