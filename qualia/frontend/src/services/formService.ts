@@ -289,3 +289,93 @@ export const getFormSubmissions = async (
 
   return response.data;
 };
+
+/**
+ * Question from form cycle detail
+ */
+export interface FormDetailQuestion {
+  id: string;
+  question_type: string;
+  question_text: string;
+  description: string | null;
+  is_required: boolean;
+  display_order: number;
+  config: Record<string, unknown>;
+  conditional_logic: Record<string, unknown>;
+}
+
+/**
+ * Section from form cycle detail
+ */
+export interface FormDetailSection {
+  id: string;
+  title: string | null;
+  display_order: number;
+  questions: FormDetailQuestion[];
+}
+
+/**
+ * Form cycle detail response from API (admin/reviewer view)
+ */
+export interface FormCycleDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  is_published: boolean;
+  submission_deadline: string; // ISO 8601 format with timezone
+  sections: FormDetailSection[];
+  created_at: string; // ISO 8601 format with timezone
+  total_questions: number;
+}
+
+/**
+ * Get a form cycle by ID (admin/reviewer access)
+ * @param formCycleId - The ID of the form cycle
+ * @param signal - Optional AbortSignal to cancel the request (provided by TanStack Query)
+ * @returns Promise with form cycle details
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, authentication errors, authorization errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const formCycle = await getFormCycleById("550e8400-e29b-41d4-a716-446655440000");
+ * console.log(formCycle.title); // "Q2 2026 QA Cycle"
+ * console.log(formCycle.status); // "draft" or "active" or "completed"
+ * console.log(formCycle.total_questions); // 25
+ * console.log(formCycle.sections.length); // 5
+ * ```
+ */
+export const getFormCycleById = async (
+  formCycleId: string,
+  signal?: AbortSignal,
+): Promise<FormCycleDetail> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get form cycle by ID request:", {
+      endpoint: `/forms/${formCycleId}`,
+      formCycleId: formCycleId,
+    });
+  }
+
+  const response = await apiClient.get<FormCycleDetail>(
+    `/forms/${formCycleId}`,
+    {
+      signal,
+    },
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Get form cycle by ID response:", {
+      id: response.data.id,
+      title: response.data.title,
+      status: response.data.status,
+      totalQuestions: response.data.total_questions,
+      sectionsCount: response.data.sections.length,
+    });
+  }
+
+  return response.data;
+};

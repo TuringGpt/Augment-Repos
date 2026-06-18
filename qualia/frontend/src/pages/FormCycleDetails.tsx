@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, CalendarIcon, UsersIcon, ClockIcon, FileTextIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -12,84 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ROUTES } from "@/config/routes";
+import { useFormCycleById } from "@/hooks/useFormCycleById";
+import { useFormSubmissions } from "@/hooks/useFormSubmissions";
+import type { SubmissionStatus } from "@/services/formService";
 
-// Dummy data types
-interface FormCycleDetails {
-  id: string;
-  title: string;
-  description: string;
-  status: "draft" | "active" | "completed" | "archived";
-  submission_deadline: string;
-  created_at: string;
-  total_reviewers: number;
-  completed_submissions: number;
-  pending_submissions: number;
-}
 
-interface Submission {
-  id: string;
-  reviewer_name: string;
-  reviewer_email: string;
-  status: "not_started" | "in_progress" | "submitted";
-  started_at: string | null;
-  submitted_at: string | null;
-}
-
-// Dummy data
-const getDummyFormCycle = (id: string): FormCycleDetails => ({
-  id,
-  title: "Q2 2026 Quality Assurance Review",
-  description: "Comprehensive quarterly review of team performance and quality standards. This cycle focuses on evaluating adherence to coding standards, documentation quality, and collaboration metrics.",
-  status: "active",
-  submission_deadline: "2026-06-30T23:59:59",
-  created_at: "2026-06-01T09:00:00",
-  total_reviewers: 12,
-  completed_submissions: 7,
-  pending_submissions: 5,
-});
-
-const getDummySubmissions = (): Submission[] => [
-  {
-    id: "sub-1",
-    reviewer_name: "John Doe",
-    reviewer_email: "john.doe@example.com",
-    status: "submitted",
-    started_at: "2026-06-10T10:30:00",
-    submitted_at: "2026-06-12T14:20:00",
-  },
-  {
-    id: "sub-2",
-    reviewer_name: "Jane Smith",
-    reviewer_email: "jane.smith@example.com",
-    status: "submitted",
-    started_at: "2026-06-11T08:15:00",
-    submitted_at: "2026-06-13T16:45:00",
-  },
-  {
-    id: "sub-3",
-    reviewer_name: "Michael Johnson",
-    reviewer_email: "michael.j@example.com",
-    status: "in_progress",
-    started_at: "2026-06-14T11:00:00",
-    submitted_at: null,
-  },
-  {
-    id: "sub-4",
-    reviewer_name: "Emily Davis",
-    reviewer_email: "emily.davis@example.com",
-    status: "submitted",
-    started_at: "2026-06-09T13:20:00",
-    submitted_at: "2026-06-11T10:30:00",
-  },
-  {
-    id: "sub-5",
-    reviewer_name: "Robert Wilson",
-    reviewer_email: "robert.w@example.com",
-    status: "not_started",
-    started_at: null,
-    submitted_at: null,
-  },
-];
 
 // Helper functions
 const formatDate = (dateString: string | null): string => {
@@ -105,31 +33,48 @@ const formatDate = (dateString: string | null): string => {
   });
 };
 
-const getStatusBadge = (status: FormCycleDetails["status"]) => {
-  const variants = {
-    draft: { variant: "secondary" as const, label: "Draft" },
-    active: { variant: "default" as const, label: "Active" },
-    completed: { variant: "default" as const, label: "Completed" },
-    archived: { variant: "outline" as const, label: "Archived" },
+const getStatusBadge = (status: string) => {
+  const variants: Record<string, { variant: "secondary" | "default" | "outline", label: string }> = {
+    draft: { variant: "secondary", label: "Draft" },
+    active: { variant: "default", label: "Active" },
+    completed: { variant: "default", label: "Completed" },
+    archived: { variant: "outline", label: "Archived" },
   };
-  const { variant, label } = variants[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  const config = variants[status] || { variant: "secondary", label: status };
+  return <Badge variant={config.variant}>{config.label}</Badge>;
 };
 
-const getSubmissionStatusBadge = (status: Submission["status"]) => {
-  const variants = {
-    not_started: { variant: "secondary" as const, label: "Not Started" },
-    in_progress: { variant: "outline" as const, label: "In Progress" },
-    submitted: { variant: "default" as const, label: "Submitted" },
+const getSubmissionStatusBadge = (status: SubmissionStatus) => {
+  const variants: Record<string, { variant: "secondary" | "default" | "outline", label: string }> = {
+    draft: { variant: "secondary", label: "Not Started" },
+    started: { variant: "outline", label: "In Progress" },
+    submitted: { variant: "default", label: "Submitted" },
   };
-  const { variant, label } = variants[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  const config = variants[status] || { variant: "secondary", label: status };
+  return <Badge variant={config.variant}>{config.label}</Badge>;
 };
 
 function FormCycleDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  // Fetch form cycle details
+  const {
+    data: formCycle,
+    isLoading: isLoadingCycle,
+    isError: isCycleError,
+    error: cycleError
+  } = useFormCycleById(id);
+
+  // Fetch submissions for statistics (only if we have a valid ID)
+  const {
+    data: submissions,
+    isLoading: isLoadingSubmissions,
+    isError: isSubmissionsError,
+    error: submissionsError
+  } = useFormSubmissions(id || '', { enabled: !!id });
+
+  // Handle invalid ID
   if (!id) {
     return (
       <div className="text-center py-8">
@@ -138,8 +83,51 @@ function FormCycleDetails() {
     );
   }
 
-  const formCycle = getDummyFormCycle(id);
-  const submissions = getDummySubmissions();
+  // Loading state
+  if (isLoadingCycle || isLoadingSubmissions) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner className="size-8" />
+          <p className="text-muted-foreground">Loading form cycle details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state for form cycle
+  if (isCycleError) {
+    return (
+      <div className="text-center py-8">
+        <div className="flex flex-col items-center gap-4">
+          <AlertCircleIcon className="size-12 text-destructive" />
+          <div>
+            <p className="text-destructive font-semibold mb-2">Failed to load form cycle</p>
+            <p className="text-sm text-muted-foreground">{cycleError?.message || "An error occurred"}</p>
+          </div>
+          <Button variant="outline" onClick={() => navigate(ROUTES.DASHBOARD_FORMS)}>
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Back to Forms
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Form cycle not found
+  if (!formCycle) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Form cycle not found</p>
+      </div>
+    );
+  }
+
+  // Calculate submission statistics
+  // If submissions query failed, set stats to null to indicate unavailable data
+  const totalReviewers = isSubmissionsError ? null : (submissions?.length || 0);
+  const completedSubmissions = isSubmissionsError ? null : ((submissions?.filter(s => s.status === 'submitted').length) ?? 0);
+  const pendingSubmissions = isSubmissionsError ? null : (totalReviewers! - completedSubmissions!);
 
   return (
     <div className="space-y-6">
@@ -156,7 +144,9 @@ function FormCycleDetails() {
             <h1 className="text-3xl font-bold">{formCycle.title}</h1>
             {getStatusBadge(formCycle.status)}
           </div>
-          <p className="text-muted-foreground">{formCycle.description}</p>
+          {formCycle.description && (
+            <p className="text-muted-foreground">{formCycle.description}</p>
+          )}
         </div>
       </div>
 
@@ -170,7 +160,14 @@ function FormCycleDetails() {
             <UsersIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formCycle.total_reviewers}</div>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold">{totalReviewers}</div>
+            )}
           </CardContent>
         </Card>
 
@@ -182,12 +179,21 @@ function FormCycleDetails() {
             <FileTextIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formCycle.completed_submissions}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formCycle.total_reviewers > 0
-                ? `${Math.round((formCycle.completed_submissions / formCycle.total_reviewers) * 100)}% completion rate`
-                : "No reviewers assigned"}
-            </p>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-3xl font-bold">{completedSubmissions}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {totalReviewers! > 0
+                    ? `${Math.round((completedSubmissions! / totalReviewers!) * 100)}% completion rate`
+                    : "No reviewers assigned"}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -199,7 +205,14 @@ function FormCycleDetails() {
             <ClockIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formCycle.pending_submissions}</div>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold">{pendingSubmissions}</div>
+            )}
           </CardContent>
         </Card>
 
@@ -225,28 +238,41 @@ function FormCycleDetails() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Reviewer</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Started At</TableHead>
-                <TableHead>Submitted At</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {submissions.map((submission) => (
-                <TableRow key={submission.id}>
-                  <TableCell className="font-medium">{submission.reviewer_name}</TableCell>
-                  <TableCell>{submission.reviewer_email}</TableCell>
-                  <TableCell>{getSubmissionStatusBadge(submission.status)}</TableCell>
-                  <TableCell>{formatDate(submission.started_at)}</TableCell>
-                  <TableCell>{formatDate(submission.submitted_at)}</TableCell>
+          {isSubmissionsError ? (
+            <div className="text-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <AlertCircleIcon className="size-8 text-destructive" />
+                <p className="text-sm text-destructive">{submissionsError?.message || "Failed to load submissions"}</p>
+              </div>
+            </div>
+          ) : submissions && submissions.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Reviewer ID</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Started At</TableHead>
+                  <TableHead>Submitted At</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {submissions.map((submission) => (
+                  <TableRow key={submission.id}>
+                    <TableCell className="font-medium font-mono text-xs">{submission.reviewer_id}</TableCell>
+                    <TableCell>{submission.reviewer_email || 'N/A'}</TableCell>
+                    <TableCell>{getSubmissionStatusBadge(submission.status)}</TableCell>
+                    <TableCell>{formatDate(submission.started_at)}</TableCell>
+                    <TableCell>{formatDate(submission.submitted_at)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No submissions yet</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
