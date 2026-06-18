@@ -251,6 +251,7 @@ class EventT(_UserType):
         Event
         """
         members: dict = {}
+        member_nodes: dict = {}
         indexed: list = []
 
         if len(base_node.body) == 1 and isinstance(base_node.body[0], vy_ast.Pass):
@@ -269,9 +270,10 @@ class EventT(_UserType):
 
             member_name = node.target.id
             if member_name in members:
-                # TODO: add prev_decl
                 raise NamespaceCollision(
-                    f"Event member '{member_name}' has already been declared", node.target
+                    f"Event member '{member_name}' has already been declared",
+                    node.target,
+                    prev_decl=member_nodes[member_name],
                 )
 
             annotation = node.annotation
@@ -288,6 +290,7 @@ class EventT(_UserType):
 
             member_type = type_from_annotation(annotation)
             members[member_name] = member_type
+            member_nodes[member_name] = node.target
             node.target._metadata["type"] = member_type
 
         return cls(base_node.name, members, indexed, base_node)
