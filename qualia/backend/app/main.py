@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401
 from app.auth import router as auth_router
-from app.core.config import get_settings
+from app.core.config import get_cors_allow_origins
 from app.core.database import ensure_section_table_name
 from app.form_cycles import router as form_cycle_router
 from app.sections import router as section_router
@@ -15,10 +15,9 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
-settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allow_origins,
+    allow_origins=get_cors_allow_origins(),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

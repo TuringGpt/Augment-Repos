@@ -64,8 +64,8 @@ def _get_debug_flag() -> bool:
 
 
 def _cors_allow_origins() -> list[str]:
-    raw = os.getenv("CORS_ALLOW_ORIGINS")
-    if raw is None:
+    raw = _optional_env("CORS_ALLOW_ORIGINS", "")
+    if not raw:
         raw = _optional_env("CORS_ALLOW_ORIGIN", "http://localhost:3000,http://127.0.0.1:5173")
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
@@ -102,3 +102,7 @@ def get_jwt_secret() -> str:
 
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_cors_allow_origins() -> list[str]:
+    return _cors_allow_origins()
