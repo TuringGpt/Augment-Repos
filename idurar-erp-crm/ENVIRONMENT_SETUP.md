@@ -37,7 +37,7 @@ cp backend/.env.example backend/.env
 | `PORT` | ❌ | HTTP port the API listens on. Defaults to `8888` if omitted |
 | `NODE_ENV` | ❌ | Runtime mode. Use `development` locally, `production` in deployments |
 | `PUBLIC_SERVER_FILE` | ✅ | Public base URL where uploaded files are served from, e.g. `http://localhost:8888/` |
-| `OPENSSL_CONF` | ❌ | Set to `/dev/null` to suppress OpenSSL config warnings on some systems |
+| `OPENSSL_CONF` | ❌ | Optional workaround. Only set to `/dev/null` if the backend throws OpenSSL legacy-provider errors; leave it unset otherwise, as it disables the default OpenSSL config for the process |
 
 ---
 
@@ -50,7 +50,7 @@ File uploads (invoice PDFs, attachments, logos) are stored in [DigitalOcean Spac
 | `DO_SPACES_KEY` | ✅ | Spaces / S3 access key ID |
 | `DO_SPACES_SECRET` | ✅ | Spaces / S3 secret access key |
 | `DO_SPACES_NAME` | ✅ | Bucket (Space) name |
-| `DO_SPACES_URL` | ✅ | Endpoint URL, e.g. `https://nyc3.digitaloceanspaces.com` |
+| `DO_SPACES_URL` | ✅ | Endpoint **host only**, no scheme — the backend prepends `https://` automatically. E.g. `nyc3.digitaloceanspaces.com` |
 | `REGION` | ✅ | Bucket region, e.g. `nyc3` |
 
 **How to get it:** In the DigitalOcean console go to *Spaces → Create a Space*, then *API → Spaces Keys* to generate a key pair.
@@ -91,13 +91,13 @@ All frontend variables **must** be prefixed with `VITE_` — Vite only exposes v
 |---|---|---|
 | `VITE_BACKEND_SERVER` | ✅ | Full URL of the running backend API, including trailing slash. E.g. `http://localhost:8888/` |
 | `VITE_FILE_BASE_URL` | ✅ | Base URL where uploaded files are publicly accessible. Matches `PUBLIC_SERVER_FILE` on the backend. E.g. `http://localhost:8888/` |
-| `VITE_DEV_REMOTE` | ❌ | Set to `true` to point the local Vite dev server at a remote backend instead of localhost |
+| `VITE_DEV_REMOTE` | ❌ | Set to the literal string `remote` to point the local Vite dev server at a remote backend. Only the exact value `remote` enables it; any other value uses localhost |
 
 ---
 
 ## Security Notes
 
-- **Never commit real secrets to version control.** Both `.env` files are listed in `.gitignore`.
+- **Never commit real secrets to version control.** This PR adds `.env` to both the backend and frontend `.gitignore` files, but always double-check `git status` before committing.
 - Rotate `JWT_SECRET` immediately if it is ever exposed — all existing sessions will be invalidated.
 - Restrict MongoDB IP whitelist to your server's IP in production.
 - Use environment-specific Resend API keys (one for staging, one for production).
