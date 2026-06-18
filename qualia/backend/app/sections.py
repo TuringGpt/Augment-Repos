@@ -90,6 +90,12 @@ class QuestionUpdate(BaseModel):
     conditional_logic: dict | None = None
     display_order: int | None = Field(default=None, ge=1)
 
+    @validator("question_text", "question_type", "is_required", "config", "display_order", pre=True)
+    def reject_explicit_nulls(cls, value: object) -> object:
+        if value is None:
+            raise ValueError("field may not be null")
+        return value
+
     @validator("question_text")
     def validate_question_text(cls, value: str | None) -> str | None:
         if value is None:
@@ -252,6 +258,8 @@ async def create_question(
         await db.rollback()
         raise HTTPException(status_code=409, detail="Question could not be created due to a data conflict") from exc
     return _serialize_question(question)
+
+
 @router.put("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=200)
 async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, payload: QuestionUpdate, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> dict[str, object]:
     await _require_admin(credentials, db)
@@ -276,6 +284,8 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
         await db.rollback()
         raise HTTPException(status_code=409, detail="Question could not be updated due to a data conflict") from exc
     return _serialize_question(question)
+
+
 @router.delete("/{form_cycle_id}/sections/{section_id}/questions/{question_id}", status_code=204)
 async def delete_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, question_id: uuid.UUID, credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme), db: AsyncSession = Depends(get_db)) -> None:
     await _require_admin(credentials, db)
@@ -288,6 +298,11 @@ async def delete_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
             )
         )
     ).scalar_one_or_none()
-    if question is None: raise HTTPException(status_code=404, detail="Question not found")
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
     await db.delete(question)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Question could not be deleted due to a data conflict") from exc
