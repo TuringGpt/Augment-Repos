@@ -40,8 +40,8 @@ describe('AlertDialog', () => {
         </AlertDialog>
       )
 
-      expect(screen.queryByText('Test Title')).not.toBeInTheDocument
-      expect(screen.queryByText('Test Description')).not.toBeInTheDocument
+      expect(screen.queryByText('Test Title')).not.toBeInTheDocument()
+      expect(screen.queryByText('Test Description')).not.toBeInTheDocument()
     })
 
     it('renders content when opened via trigger', async () => {
