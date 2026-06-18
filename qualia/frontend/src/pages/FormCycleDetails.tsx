@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Spinner } from "@/component/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ROUTES } from "@/config/routes";
+import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useFormSubmissions } from "@/hooks/useFormSubmissions";
 import type { SubmissionStatus } from "@/services/formService";
 
@@ -123,9 +124,10 @@ function FormCycleDetails() {
   }
 
   // Calculate submission statistics
-  const totalReviewers = submissions?.length || 0;
-  const completedSubmissions = (submissions?.filter(s => s.status === 'submitted').length) ?? 0;
-  const pendingSubmissions = totalReviewers - completedSubmissions;
+  // If submissions query failed, set stats to null to indicate unavailable data
+  const totalReviewers = isSubmissionsError ? null : (submissions?.length || 0);
+  const completedSubmissions = isSubmissionsError ? null : ((submissions?.filter(s => s.status === 'submitted').length) ?? 0);
+  const pendingSubmissions = isSubmissionsError ? null : (totalReviewers! - completedSubmissions!);
 
   return (
     <div className="space-y-6">
@@ -158,7 +160,14 @@ function FormCycleDetails() {
             <UsersIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalReviewers}</div>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold">{totalReviewers}</div>
+            )}
           </CardContent>
         </Card>
 
@@ -170,12 +179,21 @@ function FormCycleDetails() {
             <FileTextIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{completedSubmissions}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {totalReviewers > 0
-                ? `${Math.round((completedSubmissions / totalReviewers) * 100)}% completion rate`
-                : "No reviewers assigned"}
-            </p>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <>
+                <div className="text-3xl font-bold">{completedSubmissions}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {totalReviewers! > 0
+                    ? `${Math.round((completedSubmissions! / totalReviewers!) * 100)}% completion rate`
+                    : "No reviewers assigned"}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -187,7 +205,14 @@ function FormCycleDetails() {
             <ClockIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{pendingSubmissions}</div>
+            {isSubmissionsError ? (
+              <div className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircleIcon className="w-4 h-4" />
+                <span>Unavailable</span>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold">{pendingSubmissions}</div>
+            )}
           </CardContent>
         </Card>
 
