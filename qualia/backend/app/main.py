@@ -18,10 +18,10 @@ app = FastAPI(
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allow_origin,
+    allow_origins=settings.cors_allow_origins,
     allow_credentials=False,
-    allow_methods=["GET"],
-    allow_headers=["Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(form_cycle_router, prefix="/api/v1")
