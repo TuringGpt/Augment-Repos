@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getFormCycleById } from "@/services/formService";
 import type { FormCycleDetail } from "@/services/formService";
+import type { ApiError } from "@/lib/axios";
 
 /**
  * TanStack Query hook for fetching a form cycle by ID
@@ -52,10 +53,10 @@ export const useFormCycleById = (
   formCycleId: string | null | undefined,
   options?: {
     enabled?: boolean;
-  },
-): Record<string, string> => {
+  }
+) => {
   // Only run the query if we have a valid form cycle ID AND the enabled option allows it
-  const isEnabled = options?.enabled() !== false && !!formCycleId;
+  const isEnabled = options?.enabled !== false && !!formCycleId;
 
   return useQuery<FormCycleDetail, ApiError>({
     // Query key includes form cycle ID for proper cache scoping

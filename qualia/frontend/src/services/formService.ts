@@ -349,8 +349,10 @@ export interface FormCycleDetail {
  */
 export const getFormCycleById = async (
   formCycleId: string,
-  signal?: AbortSignal,
-): Promise<string> => {
+  options?: {
+    signal?: AbortSignal;
+  },
+): Promise<FormCycleDetail> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Get form cycle by ID request:", {
@@ -362,7 +364,7 @@ export const getFormCycleById = async (
   const response = await apiClient.get<FormCycleDetail>(
     `/forms/${formCycleId}`,
     {
-      signal,
+      signal: options?.signal,
     },
   );
 
