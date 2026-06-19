@@ -25,22 +25,20 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 
-def _required_env(name: str) -> str:
-    value = os.getenv(name)
-    if value is None:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    value = value.strip()
-    if not value:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    return value
+def _required_env(name: str, *aliases: str) -> str:
+    for candidate in (*aliases, name):
+        value = os.getenv(candidate)
+        if value and value.strip():
+            return value.strip()
+    raise RuntimeError(f"Missing required environment variable: {name}")
 
 
-def _optional_env(name: str, default: str) -> str:
-    value = os.getenv(name)
-    if value is None:
-        return default
-    value = value.strip()
-    return value or default
+def _optional_env(name: str, default: str, *aliases: str) -> str:
+    for candidate in (*aliases, name):
+        value = os.getenv(candidate)
+        if value and value.strip():
+            return value.strip()
+    return default
 
 
 def _database_url() -> str:
@@ -81,9 +79,14 @@ def _cors_allow_origins() -> list[str]:
 class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
     database_url: str = field(default_factory=_database_url, repr=False)
-    jwt_secret: str = field(default_factory=lambda: _required_env("JWT_SECRET"), repr=False)
+    jwt_secret: str = field(
+        default_factory=lambda: _required_env("JWT_SECRET", "JWT_SECRETKEY"), repr=False
+    )
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
-    storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
+    storage_bucket: str = field(
+        default_factory=lambda: _optional_env("STORAGE_BUCKET", "", "AWS_STORAGE_BUCKET"),
+        repr=False,
+    )
     local_upload_root: Path = field(
         default_factory=lambda: Path(_optional_env("LOCAL_UPLOAD_ROOT", str(_default_local_upload_root())))
     )
@@ -104,7 +107,7 @@ class Settings:
 
 
 def get_jwt_secret() -> str:
-    return _required_env("JWT_SECRET")
+    return _required_env("JWT_SECRET", "JWT_SECRET_KEY")
 
 
 def get_settings() -> Settings:
