@@ -44,11 +44,22 @@ def _database_url() -> str:
     return _optional_env("DATABASE_URL", f"sqlite+aiosqlite:///{default_sqlite_path}")
 
 
+def _backend_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
 def _resolve_backend_path(raw_path: str) -> Path:
     path = Path(raw_path).expanduser()
     if path.is_absolute():
-        return (Path(__file__).resolve().parents[1] / path.name).resolve()
-    return path.resolve()
+        return path.resolve()
+    return (_backend_root() / path).resolve()
+
+
+def _local_upload_root_env() -> str:
+    return _optional_env(
+        "LOCAL_STORAGE_ROOT",
+        _optional_env("LOCAL_UPLOAD_ROOT", str(_default_local_upload_root())),
+    )
 
 
 def _default_local_upload_root() -> Path:
@@ -88,9 +99,7 @@ class Settings:
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
     storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
     local_upload_root: Path = field(
-        default_factory=lambda: _resolve_backend_path(
-            _optional_env("LOCAL_STORAGE_ROOT", str(_default_local_upload_root()))
-        )
+        default_factory=lambda: _resolve_backend_path(_local_upload_root_env())
     )
     debug: bool = field(default_factory=_get_debug_flag)
     cors_allow_origins: list[str] = field(default_factory=_cors_allow_origins)
@@ -101,7 +110,7 @@ class Settings:
             raise RuntimeError(
                 "Unsupported STORAGE_BACKEND. Expected one of: local, s3"
             )
-        self.local_upload_root = _resolve_backend_path(str(self.local_upload_root.parent))
+        self.local_upload_root = _resolve_backend_path(str(self.local_upload_root))
         if self.storage_backend == "local":
             self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:
