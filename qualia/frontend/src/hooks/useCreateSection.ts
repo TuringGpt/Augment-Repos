@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import type {
-  CreateSectionRequest,
-  CreateSectionResponse,
+import {
+  createSection,
+  type CreateSectionRequest,
+  type CreateSectionResponse,
 } from "@/services/formService";
 import type { ApiError } from "@/lib/axios";
 
@@ -42,10 +43,10 @@ export const useCreateSection = (options?: {
   return useMutation<
     CreateSectionResponse,
     ApiError,
-    { formCycleId: number; data: CreateSectionRequest }
+    { formCycleId: string; data: CreateSectionRequest }
   >({
-    mutationFn: ({ formCycleId, data }) => createSection(formCycleId, { data }),
-    onsuccess: options?.onSuccess,
+    mutationFn: ({ formCycleId, data }) => createSection(formCycleId, data),
+    onSuccess: options?.onSuccess,
     onError: options?.onError,
     // Disable retry to prevent duplicate section creation on transient failures
     // Section creation is non-idempotent, so retrying could create multiple sections
