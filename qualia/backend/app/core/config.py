@@ -3,8 +3,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+def _backend_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
 def _load_dotenv() -> None:
-    env_path = Path(__file__).resolve().parents[2] / ".env"
+    env_path = _backend_root() / ".env"
     if not env_path.exists():
         return
     for raw_line in env_path.read_text().splitlines():
@@ -40,7 +44,7 @@ def _optional_env(name: str, default: str) -> str:
 
 
 def _database_url() -> str:
-    default_sqlite_path = Path(__file__).resolve().parents[2] / "qualia.db"
+    default_sqlite_path = _backend_root() / "qualia.db"
     return _optional_env("DATABASE_URL", f"sqlite+aiosqlite:///{default_sqlite_path}")
 
 
