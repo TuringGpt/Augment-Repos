@@ -32,7 +32,8 @@ describe('Badge', () => {
     it('applies default variant class', () => {
       render(<Badge data-testid="badge">Default Badge</Badge>)
       const badge = screen.getByTestId('badge')
-      expect(badge).toHaveAttribute('data-variant', 'default')
+      expect(badge).toHaveClass('bg-primary')
+      expect(badge).toHaveClass('text-primary-foreground')
     })
 
     it('applies secondary variant', () => {
@@ -107,6 +108,8 @@ describe('Badge', () => {
       expect(badge.tagName).toBe('BUTTON')
       expect(badge).toHaveAttribute('data-variant', 'secondary')
       expect(badge).toHaveAttribute('data-slot', 'badge')
+      expect(badge).toHaveClass('bg-secondary')
+      expect(badge).toHaveClass('text-secondary-foreground')
     })
   })
 
