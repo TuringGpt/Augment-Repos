@@ -8,11 +8,14 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.main import app
-from app.models.question import Question
+from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, User
 from app.sections import create_question
+from app.sections import delete_question
 from app.sections import QuestionCreate
+from app.sections import QuestionUpdate
+from app.sections import update_question
 
 
 def test_section_table_name() -> None:
@@ -72,6 +75,21 @@ def test_question_create_path_uses_form_cycle_id() -> None:
     assert "form_id" not in parameter_names
 
 
+def test_question_item_paths_use_form_cycle_id() -> None:
+    openapi_schema = app.openapi()
+
+    question_item_path = "/api/v1/forms/{form_cycle_id}/sections/{section_id}/questions/{question_id}"
+    put_operation = openapi_schema["paths"][question_item_path]["put"]
+    delete_operation = openapi_schema["paths"][question_item_path]["delete"]
+
+    put_parameter_names = {parameter["name"] for parameter in put_operation["parameters"]}
+    delete_parameter_names = {parameter["name"] for parameter in delete_operation["parameters"]}
+
+    assert put_parameter_names == delete_parameter_names
+    assert "form_cycle_id" in put_parameter_names
+    assert "form_id" not in put_parameter_names
+
+
 class _ScalarResult:
     def __init__(self, value: object) -> None:
         self._value = value
@@ -99,6 +117,56 @@ class _FailingQuestionSession:
 
     async def commit(self) -> None:
         raise AssertionError("commit should not run after a failed flush")
+
+    async def rollback(self) -> None:
+        self.rollback_calls += 1
+
+
+class _UpdateQuestionSession:
+    def __init__(self, user: User, question: Question) -> None:
+        self._results = [_ScalarResult(question)]
+        self._user = user
+        self.commit_calls = 0
+        self.rollback_calls = 0
+        self.raise_integrity_error = False
+
+    async def execute(self, query: object) -> _ScalarResult:
+        query_text = str(query)
+        if "FROM users" in query_text:
+            return _ScalarResult(self._user)
+        return self._results.pop(0)
+
+    async def commit(self) -> None:
+        if self.raise_integrity_error:
+            raise IntegrityError("update questions", {}, Exception("constraint failed"))
+        self.commit_calls += 1
+
+    async def rollback(self) -> None:
+        self.rollback_calls += 1
+
+
+class _DeleteQuestionSession:
+    def __init__(self, user: User, question: Question) -> None:
+        self._question = question
+        self._user = user
+        self.deleted: object | None = None
+        self.commit_calls = 0
+        self.rollback_calls = 0
+        self.raise_integrity_error = False
+
+    async def execute(self, query: object) -> _ScalarResult:
+        query_text = str(query)
+        if "FROM users" in query_text:
+            return _ScalarResult(self._user)
+        return _ScalarResult(self._question)
+
+    async def delete(self, obj: object) -> None:
+        self.deleted = obj
+
+    async def commit(self) -> None:
+        if self.raise_integrity_error:
+            raise IntegrityError("delete questions", {}, Exception("constraint failed"))
+        self.commit_calls += 1
 
     async def rollback(self) -> None:
         self.rollback_calls += 1
@@ -135,4 +203,235 @@ def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyP
 
     asyncio.run(_run())
 
+    assert session.rollback_calls == 1
+
+
+def test_update_question_preserves_display_order_when_omitted(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        display_order=7,
+        version=5,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionUpdate(question_text="New prompt", question_type=QuestionType.long_text),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["display_order"] == 7
+        assert response["version"] == 6
+        assert response["config"] == {}
+        assert response["conditional_logic"] == {}
+
+    asyncio.run(_run())
+
+    assert question.display_order == 7
+    assert question.version == 6
+    assert session.commit_calls == 1
+
+
+def test_update_question_ignores_stale_payload_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        display_order=3,
+        version=9,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionUpdate(question_text="New prompt", question_type=QuestionType.short_text),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["version"] == 10
+
+    asyncio.run(_run())
+
+    assert question.version == 10
+
+
+def test_update_question_preserves_existing_fields_when_omitted(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        is_required=True,
+        config={"choices": ["yes"]},
+        conditional_logic={"when": "ready"},
+        display_order=4,
+        version=2,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionUpdate(question_text="Updated prompt"),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["question_type"] == "short_text"
+        assert response["is_required"] is True
+        assert response["config"] == {"choices": ["yes"]}
+        assert response["conditional_logic"] == {"when": "ready"}
+
+    asyncio.run(_run())
+
+    assert question.question_type.value == "short_text"
+    assert question.is_required is True
+    assert question.config == {"choices": ["yes"]}
+    assert question.conditional_logic == {"when": "ready"}
+
+
+def test_update_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        display_order=5,
+        version=1,
+    )
+    session = _UpdateQuestionSession(user, question)
+    session.raise_integrity_error = True
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException) as exc_info:
+            await update_question(
+                form_cycle_id=form_cycle_id,
+                section_id=section_id,
+                question_id=question_id,
+                payload=QuestionUpdate(display_order=1),
+                credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+                db=session,
+            )
+
+        assert exc_info.value.status_code == 409
+        assert exc_info.value.detail == "Question could not be updated due to a data conflict"
+
+    asyncio.run(_run())
+
+    assert session.rollback_calls == 1
+
+
+@pytest.mark.parametrize("field_name", ["question_text", "question_type", "is_required", "config", "display_order"])
+def test_question_update_rejects_explicit_null_for_non_nullable_fields(field_name: str) -> None:
+    with pytest.raises(ValidationError):
+        QuestionUpdate(**{field_name: None})
+
+
+def test_delete_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        display_order=5,
+        version=1,
+    )
+    session = _DeleteQuestionSession(user, question)
+    session.raise_integrity_error = True
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException) as exc_info:
+            await delete_question(
+                form_cycle_id=form_cycle_id,
+                section_id=section_id,
+                question_id=question_id,
+                credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+                db=session,
+            )
+
+        assert exc_info.value.status_code == 409
+        assert exc_info.value.detail == "Question could not be deleted due to a data conflict"
+
+    asyncio.run(_run())
+
+    assert session.deleted is question
     assert session.rollback_calls == 1
