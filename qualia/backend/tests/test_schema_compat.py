@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
+from app.core import config
 from app.main import app
 from app.models.question import Question, QuestionType
 from app.models.section import Section
@@ -88,6 +89,29 @@ def test_question_item_paths_use_form_cycle_id() -> None:
     assert put_parameter_names == delete_parameter_names
     assert "form_cycle_id" in put_parameter_names
     assert "form_id" not in put_parameter_names
+
+
+def test_required_env_prefers_canonical_name_over_alias(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("QUALIA_CANONICAL", "canonical")
+    monkeypatch.setenv("QUALIA_ALIAS", "alias")
+
+    assert config._required_env("QUALIA_CANONICAL", "QUALIA_ALIAS") == "canonical"
+
+
+def test_get_jwt_secret_accepts_documented_alias(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    monkeypatch.setenv("JWT_SECRET_KEY", "documented-secret")
+    monkeypatch.delenv("JWT_SECRETKEY", raising=False)
+
+    assert config.get_jwt_secret() == "documented-secret"
+
+
+def test_get_jwt_secret_accepts_legacy_alias(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
+    monkeypatch.setenv("JWT_SECRETKEY", "legacy-secret")
+
+    assert config.get_jwt_secret() == "legacy-secret"
 
 
 class _ScalarResult:

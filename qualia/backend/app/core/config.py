@@ -26,7 +26,7 @@ _load_dotenv()
 
 
 def _required_env(name: str, *aliases: str) -> str:
-    for candidate in (*aliases, name):
+    for candidate in (name, *aliases):
         value = os.getenv(candidate)
         if value and value.strip():
             return value.strip()
@@ -34,7 +34,7 @@ def _required_env(name: str, *aliases: str) -> str:
 
 
 def _optional_env(name: str, default: str, *aliases: str) -> str:
-    for candidate in (*aliases, name):
+    for candidate in (name, *aliases):
         value = os.getenv(candidate)
         if value and value.strip():
             return value.strip()
@@ -80,7 +80,8 @@ class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
     database_url: str = field(default_factory=_database_url, repr=False)
     jwt_secret: str = field(
-        default_factory=lambda: _required_env("JWT_SECRET", "JWT_SECRETKEY"), repr=False
+        default_factory=lambda: _required_env("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY"),
+        repr=False,
     )
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
     storage_bucket: str = field(
@@ -107,7 +108,7 @@ class Settings:
 
 
 def get_jwt_secret() -> str:
-    return _required_env("JWT_SECRET", "JWT_SECRET_KEY")
+    return _required_env("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY")
 
 
 def get_settings() -> Settings:
