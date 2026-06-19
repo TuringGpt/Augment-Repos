@@ -4,11 +4,11 @@ from pathlib import Path
 
 
 def _backend_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
 def _load_dotenv() -> None:
-    env_path = _backend_root() / ".env.local"
+    env_path = _backend_root() / ".env"
     if not env_path.exists():
         return
     for raw_line in env_path.read_text().splitlines():
@@ -40,11 +40,11 @@ def _optional_env(name: str, default: str) -> str:
     if value is None:
         return default
     value = value.strip()
-    return value if value else ""
+    return value or default
 
 
 def _database_url() -> str:
-    default_sqlite_path = _backend_root() / "qualia.sqlite3"
+    default_sqlite_path = _backend_root() / "qualia.db"
     return _optional_env("DATABASE_URL", f"sqlite+aiosqlite:///{default_sqlite_path}")
 
 
