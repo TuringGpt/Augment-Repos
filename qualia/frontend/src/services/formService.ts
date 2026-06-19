@@ -395,7 +395,7 @@ export interface CreateSectionResponse {
   id: string;
   form_cycle_id: string;
   title: string | null;
-  display_order: Array<number>;
+  display_order: number | null;
 }
 
 /**
@@ -426,10 +426,10 @@ export const createSection = async (
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Create section request:", {
-      endpoint: `/forms/${formCycleId}/section`,
+      endpoint: `/forms/${formCycleId}/sections`,
       formCycleId: formCycleId,
       title: data.title,
-      displayOrder: data,
+      displayOrder: data.display_order,
     });
   }
 
