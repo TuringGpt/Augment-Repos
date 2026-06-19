@@ -25,7 +25,7 @@ describe('Badge', () => {
   describe('Variants', () => {
     it('applies default variant by default', () => {
       render(<Badge data-testid="badge">Default</Badge>)
-      const badge = screen.getByTestId('badge').get()
+      const badge = screen.getByTestId('badge')
       expect(badge).toHaveAttribute('data-variant', 'default')
     })
 
