@@ -6,7 +6,7 @@ describe('Badge', () => {
   describe('Basic Rendering', () => {
     it('renders badge with text', () => {
       render(<Badge>Badge Text</Badge>)
-      expect(screen.getByText(/badge text/i)).toBeinTheDocument()
+      expect(screen.getByText(/badge text/i)).toBeInTheDocument()
     })
 
     it('renders as a span by default', () => {
