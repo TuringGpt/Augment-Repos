@@ -5,7 +5,7 @@ import sys
 import vyper
 from vyper.codegen.ir_node import IRnode
 from vyper.ir import compile_ir, optimizer
-from vyper.ir.s_expressions import parse_s_exp
+from vyper.ir.s_expressions import parse_ir_s_exp
 
 
 def _parse_cli_args():
@@ -37,13 +37,12 @@ def _parse_args(argv):
 
 def compile_to_ir(input_file, output_formats, show_gas_estimates=False):
     with open(input_file) as fh:
-        s_expressions = parse_s_exp(fh.read())
+        ir = parse_ir_s_exp(fh.read())
 
     if show_gas_estimates:
         IRnode.repr_show_gas = True
 
     compiler_data = {}
-    ir = IRnode.from_list(s_expressions[0])
     ir = optimizer.optimize(ir)
     if "ir" in output_formats:
         compiler_data["ir"] = ir
