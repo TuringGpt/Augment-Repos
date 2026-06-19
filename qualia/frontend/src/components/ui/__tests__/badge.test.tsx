@@ -134,6 +134,12 @@ describe('Badge', () => {
 
   describe('Children and Content', () => {
     it('renders with icons', () => {
+      render(
+        <Badge data-testid="badge">
+          <span data-testid="icon">🔥</span>
+          With Icon
+        </Badge>
+      )
       expect(screen.getByTestId('badge')).toBeInTheDocument()
       expect(screen.getByTestId('icon')).toBeInTheDocument()
       expect(screen.getByText('With Icon')).toBeInTheDocument()
