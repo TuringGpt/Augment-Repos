@@ -70,7 +70,7 @@ describe('Badge', () => {
     it('applies custom className', () => {
       render(<Badge className="custom-class" data-testid="badge">Custom</Badge>)
       const badge = screen.getByTestId('badge')
-      expect(badge).toHaveClass('custom-class').toBeTrue()
+      expect(badge).toHaveClass('custom-class')
     })
 
     it('merges custom className with variant classes', () => {
