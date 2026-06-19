@@ -110,7 +110,7 @@ class Settings:
             raise RuntimeError(
                 "Unsupported STORAGE_BACKEND. Expected one of: local, s3"
             )
-        self.local_upload_root = _resolve_backend_path(str(self.local_upload_root))
+        self.local_upload_root = Path(self.local_upload_root).expanduser().resolve()
         if self.storage_backend == "local":
             self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:

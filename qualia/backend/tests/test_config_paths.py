@@ -44,3 +44,14 @@ def test_local_storage_root_takes_precedence_over_legacy_name(monkeypatch) -> No
     settings = Settings()
 
     assert settings.local_upload_root == (Path(__file__).resolve().parents[1] / "preferred-uploads").resolve()
+
+
+def test_settings_preserve_programmatic_relative_local_upload_root(monkeypatch, tmp_path) -> None:
+    _disable_local_upload_root_setup(monkeypatch)
+    monkeypatch.setenv("JWT_SECRET", "secret")
+    monkeypatch.setenv("STORAGE_BACKEND", "local")
+    monkeypatch.chdir(tmp_path)
+
+    settings = Settings(local_upload_root=Path("programmatic-uploads"))
+
+    assert settings.local_upload_root == (tmp_path / "programmatic-uploads").resolve()
