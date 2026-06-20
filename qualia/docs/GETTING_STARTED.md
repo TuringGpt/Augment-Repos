@@ -1,5 +1,7 @@
 # Qualia - Getting Started Guide
 
+> **Historical document.** Its Docker, PostgreSQL, Redis, Celery, and AI setup instructions are not part of the active Form Cycle scope. Refer to [Product Scope](./PRODUCT_SCOPE.md) before changing the development environment.
+
 Quick start guide for developers building the Qualia QA Intelligence Platform from scratch.
 
 ## Prerequisites

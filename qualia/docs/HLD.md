@@ -1,5 +1,7 @@
 # Qualia - High-Level Design (HLD)
 
+> **Historical document.** This design describes the previous three-role, AI-platform proposal. The active requirements are in [Product Scope](./PRODUCT_SCOPE.md); use it instead for all new work.
+
 ## 1. System Overview
 
 ### 1.1 Purpose

@@ -1,5 +1,7 @@
 # Qualia - Low-Level Design (LLD)
 
+> **Historical document.** This specification is not the active schema or API contract. Follow [Product Scope](./PRODUCT_SCOPE.md) and [Change Record](./CHANGE_RECORD.md) for new work.
+
 ## 1. Database Schema Design
 
 ### 1.1 Entity Relationship Diagram (ERD) Overview
