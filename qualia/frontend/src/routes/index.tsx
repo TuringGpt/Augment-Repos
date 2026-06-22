@@ -149,9 +149,11 @@ export function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD_FORM_EDIT}
         element={
-          <DashboardLayout>
-            <LazyRoute component={FormEdit} />
-          </DashboardLayout>
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LazyRoute component={FormEdit} />
+            </DashboardLayout>
+          </ProtectedRoute>
         }
       />
 
