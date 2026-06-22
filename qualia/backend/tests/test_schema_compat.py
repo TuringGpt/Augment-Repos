@@ -132,6 +132,15 @@ def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPat
         config.Settings()
 
 
+def test_settings_storage_bucket_accepts_documented_alias(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("JWT_SECRET", "secret")
+    monkeypatch.setenv("STORAGE_BACKEND", "s3")
+    monkeypatch.delenv("STORAGE_BUCKET", raising=False)
+    monkeypatch.setenv("AWS_STORAGE_BUCKET", "docs-bucket")
+
+    assert config.Settings().storage_bucket == "docs-bucket"
+
+
 class _ScalarResult:
     def __init__(self, value: object) -> None:
         self._value = value
