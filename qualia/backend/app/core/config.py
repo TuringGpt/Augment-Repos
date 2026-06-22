@@ -25,22 +25,29 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 
-def _required_env(name: str) -> str:
-    value = os.getenv(name)
-    if value is None:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    value = value.strip()
-    if not value:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    return value
+JWT_SECRET_ENV_NAMES = ("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY")
+STORAGE_BUCKET_ENV_NAMES = ("STORAGE_BUCKET", "AWS_STORAGE_BUCKET")
 
 
-def _optional_env(name: str, default: str) -> str:
-    value = os.getenv(name)
-    if value is None:
-        return default
-    value = value.strip()
-    return value or default
+def _missing_env_error(name: str, aliases: tuple[str, ...]) -> RuntimeError:
+    accepted_names = ", ".join((name, *aliases))
+    return RuntimeError(f"Missing required environment variable. Accepted names: {accepted_names}")
+
+
+def _required_env(name: str, *aliases: str) -> str:
+    for candidate in (name, *aliases):
+        value = os.getenv(candidate)
+        if value and value.strip():
+            return value.strip()
+    raise _missing_env_error(name, aliases)
+
+
+def _optional_env(name: str, default: str, *aliases: str) -> str:
+    for candidate in (name, *aliases):
+        value = os.getenv(candidate)
+        if value and value.strip():
+            return value.strip()
+    return default
 
 
 def _database_url() -> str:
@@ -99,9 +106,15 @@ def _cors_allow_origins() -> list[str]:
 class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
     database_url: str = field(default_factory=_database_url, repr=False)
-    jwt_secret: str = field(default_factory=lambda: _required_env("JWT_SECRET"), repr=False)
+    jwt_secret: str = field(
+        default_factory=lambda: _required_env(*JWT_SECRET_ENV_NAMES),
+        repr=False,
+    )
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
-    storage_bucket: str = field(default_factory=lambda: _optional_env("STORAGE_BUCKET", ""), repr=False)
+    storage_bucket: str = field(
+        default_factory=lambda: _optional_env(STORAGE_BUCKET_ENV_NAMES[0], "", *STORAGE_BUCKET_ENV_NAMES[1:]),
+        repr=False,
+    )
     local_upload_root: Path = field(
         default_factory=lambda: _resolve_backend_path(_local_upload_root_env())
     )
@@ -118,11 +131,11 @@ class Settings:
         if self.storage_backend == "local":
             self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:
-            raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
+            raise _missing_env_error(STORAGE_BUCKET_ENV_NAMES[0], STORAGE_BUCKET_ENV_NAMES[1:])
 
 
 def get_jwt_secret() -> str:
-    return _required_env("JWT_SECRET")
+    return _required_env(*JWT_SECRET_ENV_NAMES)
 
 
 def get_settings() -> Settings:
