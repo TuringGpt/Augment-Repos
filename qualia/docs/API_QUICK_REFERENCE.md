@@ -187,7 +187,7 @@ These endpoints are for the authenticated user. They must never return another u
 | --- | --- | --- |
 | `GET` | `/me/assigned-form-cycles` | List active Form Cycles assigned to current user |
 | `GET` | `/me/submissions` | List current user's submissions |
-| `GET` | `/form-cycles/{cycle_id}/my-submission` | Get current user's draft/submission |
+| `GET` | `/forms/{cycle_id}/my-submission` | Get current user's draft/submission |
 | `PATCH` | `/form-cycles/{cycle_id}/my-submission` | Create/update own draft answers |
 | `POST` | `/form-cycles/{cycle_id}/my-submission/submit` | Submit own draft |
 

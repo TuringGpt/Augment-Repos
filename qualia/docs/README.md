@@ -14,7 +14,7 @@
 The following documents describe an earlier proposal that included three roles and an AI reporting platform. They are retained as reference material, but are **not** the current requirements or implementation contract.
 
 - [Getting Started Guide](./GETTING_STARTED.md)
-- [High-Level Design](./HLD.md)
+- [Current High-Level Design](./HLD.md)
 - [Low-Level Design](./LLD.md)
 
 Do not implement an endpoint, role, infrastructure dependency, or AI feature based only on a historical document. Update or replace it after the active Form Cycle scope has been implemented.

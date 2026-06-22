@@ -18,7 +18,7 @@ There are exactly two roles.
 | Manage a Form Cycle they own | Yes | Yes |
 | Assign users to a Form Cycle | Yes | Yes, when they own it |
 | Complete an assigned Form Cycle | Yes | Yes |
-| View any submission | Yes | No |
+| View any submission | Yes | Yes |
 | View submissions to a Form Cycle they own | Yes | Yes |
 | View their own submission | Yes | Yes |
 

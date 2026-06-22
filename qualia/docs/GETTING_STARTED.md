@@ -6,7 +6,7 @@ Quick start guide for developers building the Qualia QA Intelligence Platform fr
 
 ## Prerequisites
 
-- **Python**: 3.11+
+- **Python**: 3.8+
 - **Node.js**: 18+
 - **PostgreSQL**: 15+ (with pgvector extension)
 - **Redis**: 7+

@@ -71,7 +71,7 @@ LOCAL_STORAGE_ROOT=~/.qualia/uploads
 
 # Optional local development settings.
 DEBUG=true
-CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CORS_ALLOW_ORIGINS=http://localhost:3000
 ```
 
 Generate a local secret if needed:

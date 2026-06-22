@@ -15,7 +15,7 @@ This record documents the active product decisions made after reviewing the exis
 7. An admin can view every submission.
 8. A Form Cycle supports multiple assigned users and multiple submissions: one submission per assigned user.
 9. User management is an admin capability.
-10. The immediate scope excludes AI reporting and the former viewer role.
+10. The immediate scope includes AI reporting and the former viewer role.
 
 ### Existing backend items to retain
 

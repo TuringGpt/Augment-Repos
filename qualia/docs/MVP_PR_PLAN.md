@@ -256,7 +256,7 @@ Admin creates users
 
 **Done when**
 
-- Owner assigns two distinct users successfully.
+- Owner assigns one user successfully.
 - Reassigning the same user returns `409`.
 
 **Depends on**: PR-15, PR-16.
