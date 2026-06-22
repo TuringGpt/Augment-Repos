@@ -149,5 +149,5 @@ export const getFormCycleDetailsRoute = (formCycleId: string): string => {
  * @returns The route path with the ID substituted and URL-encoded
  */
 export const getFormCycleEditRoute = (formCycleId: string): string => {
-  return ROUTES.DASHBOARD_FORM_EDIT.replace(':id', encodeURLComponent(formCycleId));
+  return ROUTES.DASHBOARD_FORM_EDIT.replace(':id', encodeURIComponent(formCycleId));
 };
