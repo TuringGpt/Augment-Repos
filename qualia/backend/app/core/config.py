@@ -25,12 +25,20 @@ def _load_dotenv() -> None:
 _load_dotenv()
 
 
+JWT_SECRET_ENV_NAMES = ("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY")
+
+
+def _missing_env_error(name: str, aliases: tuple[str, ...]) -> RuntimeError:
+    accepted_names = ", ".join((name, *aliases))
+    return RuntimeError(f"Missing required environment variable. Accepted names: {accepted_names}")
+
+
 def _required_env(name: str, *aliases: str) -> str:
     for candidate in (name, *aliases):
         value = os.getenv(candidate)
         if value and value.strip():
             return value.strip()
-    raise RuntimeError(f"Missing required environment variable: {name}")
+    raise _missing_env_error(name, aliases)
 
 
 def _optional_env(name: str, default: str, *aliases: str) -> str:
@@ -80,7 +88,7 @@ class Settings:
     app_name: str = field(default_factory=lambda: _optional_env("APP_NAME", "Qualia API"))
     database_url: str = field(default_factory=_database_url, repr=False)
     jwt_secret: str = field(
-        default_factory=lambda: _required_env("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY"),
+        default_factory=lambda: _required_env(*JWT_SECRET_ENV_NAMES),
         repr=False,
     )
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
@@ -108,7 +116,7 @@ class Settings:
 
 
 def get_jwt_secret() -> str:
-    return _required_env("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY")
+    return _required_env(*JWT_SECRET_ENV_NAMES)
 
 
 def get_settings() -> Settings:

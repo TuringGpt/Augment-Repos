@@ -98,6 +98,14 @@ def test_required_env_prefers_canonical_name_over_alias(monkeypatch: pytest.Monk
     assert config._required_env("QUALIA_CANONICAL", "QUALIA_ALIAS") == "canonical"
 
 
+def test_required_env_error_lists_aliases(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("QUALIA_CANONICAL", raising=False)
+    monkeypatch.delenv("QUALIA_ALIAS", raising=False)
+
+    with pytest.raises(RuntimeError, match="Accepted names: QUALIA_CANONICAL, QUALIA_ALIAS"):
+        config._required_env("QUALIA_CANONICAL", "QUALIA_ALIAS")
+
+
 def test_get_jwt_secret_accepts_documented_alias(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("JWT_SECRET", raising=False)
     monkeypatch.setenv("JWT_SECRET_KEY", "documented-secret")
