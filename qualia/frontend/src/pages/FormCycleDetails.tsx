@@ -150,7 +150,7 @@ function FormCycleDetails() {
         </div>
         <Button onClick={() => navigate(getFormCycleEditRoute(id))}>
           <EditIcon className="w-4 h-4 mr-2" />
-          Edit Fom
+          Edit Form
         </Button>
       </div>
 
