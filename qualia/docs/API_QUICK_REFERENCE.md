@@ -118,6 +118,8 @@ All routes in this section require `admin`.
 
 ### Create Form Cycle
 
+Use `POST /form-cycles` with this JSON body:
+
 ```json
 {
   "title": "Website QA — June 2026",
