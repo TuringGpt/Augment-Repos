@@ -136,11 +136,11 @@ Only the owner or an admin may transition lifecycle state. Assigned users can re
 
 ## Sections and questions
 
-`GET /form-cycles/{cycle_id}/sections` is available to an admin, the original creator, or an assigned user for a published Form Cycle. The write routes in this section require an admin or the original creator of the Form Cycle.
+`GET /form-cycles/{cycle_id}/sections` is available to an admin or the original creator in both draft and published states. Assigned users can read sections and questions only after the Form Cycle is published. The write routes in this section require an admin or the original creator of the Form Cycle.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/form-cycles/{cycle_id}/sections` | List ordered sections and questions for an admin, owner, or assigned user of a published Form Cycle |
+| `GET` | `/form-cycles/{cycle_id}/sections` | List ordered sections and questions for an admin or owner in draft/published states, and for an assigned user after publish |
 | `POST` | `/form-cycles/{cycle_id}/sections` | Create section |
 | `PATCH` | `/form-cycles/{cycle_id}/sections/{section_id}` | Update or reorder section |
 | `DELETE` | `/form-cycles/{cycle_id}/sections/{section_id}` | Delete section |

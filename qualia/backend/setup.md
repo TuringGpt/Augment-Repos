@@ -71,7 +71,7 @@ LOCAL_STORAGE_ROOT=~/.qualia/uploads
 
 # Optional local development settings.
 DEBUG=true
-CORS_ALLOW_ORIGINS=http://localhost:3000
+CORS_ALLOW_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
 Generate a local secret if needed:
@@ -88,7 +88,7 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 | `DATABASE_URL` | No | `sqlite+aiosqlite:///./qualia.db` | Defaults to `backend/qualia.db` when omitted. The seed script supports SQLite only. |
 | `STORAGE_BACKEND` | Yes for uploads | `local` | Use `local`; `s3` is not implemented for direct uploads. |
 | `LOCAL_STORAGE_ROOT` | No | `~/.qualia/uploads` | Local attachment root. The process creates it with owner-only permissions. |
-| `CORS_ALLOW_ORIGINS` | No | Vite development URLs | Comma-separated allowed browser origins. |
+| `CORS_ALLOW_ORIGINS` | No | `http://localhost:5173,http://localhost:3000` | Comma-separated allowed browser origins for common local frontend ports, including Vite's default dev server. |
 | `DEBUG` | No | `true` | Enables local debug setting only. |
 
 Never commit `.env`, SQLite database files, or uploaded files. They can contain secrets and local data.

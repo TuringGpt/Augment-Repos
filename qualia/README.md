@@ -2,14 +2,14 @@
 
 Qualia is an internal QA form-cycle application. Users create **Form Cycles**, assign people to complete them, collect submissions, and review the resulting answers.
 
-The active product scope has two roles:
+The active product scope targets two roles:
 
 | Role | Access |
 | --- | --- |
 | **Admin** | Manages every user, Form Cycle, assignment, and submission. |
 | **User** | Creates and manages their own Form Cycles, completes assigned cycles, and sees only their own submissions or submissions to cycles they own. |
 
-The access model is enforced by the backend:
+This is the target access model for the Form Cycle MVP. The current backend still contains legacy `admin`, `reviewer`, and `viewer` roles while that transition is in progress:
 
 - An admin can access every record.
 - A user who owns a Form Cycle can manage it and view submissions made to it.
@@ -30,4 +30,4 @@ See [Product Scope](docs/PRODUCT_SCOPE.md) for the authoritative feature scope a
 
 ## Documentation status
 
-The legacy HLD, LLD, and setup guide describe an earlier, broader AI-platform proposal. They are retained for history only and must not be used as the active requirements or API contract.
+The legacy architecture docs at `qualia/docs/HLD.md` and `qualia/docs/LLD.md` describe an earlier, broader AI-platform proposal. Use `qualia/backend/setup.md` for the current backend setup, and treat the legacy docs as historical context only.
