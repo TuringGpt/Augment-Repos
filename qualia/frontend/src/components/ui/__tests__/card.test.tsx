@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render } from '@/test/utils'
+import { render, screen } from '@/test/utils'
 import {
   Card,
   CardHeader,
@@ -38,6 +38,7 @@ describe('Card', () => {
     })
 
     it('applies sm size when specified', () => {
+      render(<Card data-testid="card" size="sm">Small Size</Card>)
       const card = screen.getByTestId('card')
       expect(card).toHaveAttribute('data-size', 'sm')
     })
