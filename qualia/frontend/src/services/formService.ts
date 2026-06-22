@@ -379,3 +379,74 @@ export const getFormCycleById = async (
 
   return response.data;
 };
+
+/**
+ * Request payload for creating a section
+ */
+export interface CreateSectionRequest {
+  title?: string | null;
+  display_order?: number | null;
+}
+
+/**
+ * Response from creating a section
+ */
+export interface CreateSectionResponse {
+  id: string;
+  form_cycle_id: string;
+  title: string | null;
+  display_order: number | null;
+}
+
+/**
+ * Create a section for a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @param data - Section data (title, display_order)
+ * @returns Promise with section creation response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const section = await createSection("550e8400-e29b-41d4-a716-446655440000", {
+ *   title: "Personal Information",
+ *   display_order: 1
+ * });
+ * console.log(section.id); // "660e8400-e29b-41d4-a716-446655440002"
+ * console.log(section.form_cycle_id); // "550e8400-e29b-41d4-a716-446655440000"
+ * console.log(section.title); // "Personal Information"
+ * console.log(section.display_order); // 1
+ * ```
+ */
+export const createSection = async (
+  formCycleId: string,
+  data: CreateSectionRequest,
+): Promise<CreateSectionResponse> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Create section request:", {
+      endpoint: `/forms/${formCycleId}/sections`,
+      formCycleId: formCycleId,
+      title: data.title,
+      displayOrder: data.display_order,
+    });
+  }
+
+  const response = await apiClient.post<CreateSectionResponse>(
+    `/forms/${formCycleId}/sections`,
+    data,
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Create section response:", {
+      id: response.data.id,
+      formCycleId: response.data.form_cycle_id,
+      title: response.data.title,
+      displayOrder: response.data.display_order,
+    });
+  }
+
+  return response.data;
+};
