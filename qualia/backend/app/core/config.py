@@ -26,6 +26,7 @@ _load_dotenv()
 
 
 JWT_SECRET_ENV_NAMES = ("JWT_SECRET", "JWT_SECRET_KEY", "JWT_SECRETKEY")
+STORAGE_BUCKET_ENV_NAMES = ("STORAGE_BUCKET", "AWS_STORAGE_BUCKET")
 
 
 def _missing_env_error(name: str, aliases: tuple[str, ...]) -> RuntimeError:
@@ -93,7 +94,7 @@ class Settings:
     )
     storage_backend: str = field(default_factory=lambda: _optional_env("STORAGE_BACKEND", "s3"))
     storage_bucket: str = field(
-        default_factory=lambda: _optional_env("STORAGE_BUCKET", "", "AWS_STORAGE_BUCKET"),
+        default_factory=lambda: _optional_env(STORAGE_BUCKET_ENV_NAMES[0], "", *STORAGE_BUCKET_ENV_NAMES[1:]),
         repr=False,
     )
     local_upload_root: Path = field(
@@ -112,7 +113,7 @@ class Settings:
         if self.storage_backend == "local":
             self.local_upload_root = _prepare_local_upload_root(self.local_upload_root)
         if self.storage_backend == "s3" and not self.storage_bucket:
-            raise RuntimeError("Missing required environment variable: STORAGE_BUCKET")
+            raise _missing_env_error(STORAGE_BUCKET_ENV_NAMES[0], STORAGE_BUCKET_ENV_NAMES[1:])
 
 
 def get_jwt_secret() -> str:

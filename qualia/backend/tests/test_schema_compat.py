@@ -122,6 +122,16 @@ def test_get_jwt_secret_accepts_legacy_alias(monkeypatch: pytest.MonkeyPatch) ->
     assert config.get_jwt_secret() == "legacy-secret"
 
 
+def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("JWT_SECRET", "secret")
+    monkeypatch.setenv("STORAGE_BACKEND", "s3")
+    monkeypatch.delenv("STORAGE_BUCKET", raising=False)
+    monkeypatch.delenv("AWS_STORAGE_BUCKET", raising=False)
+
+    with pytest.raises(RuntimeError, match="Accepted names: STORAGE_BUCKET, AWS_STORAGE_BUCKET"):
+        config.Settings()
+
+
 class _ScalarResult:
     def __init__(self, value: object) -> None:
         self._value = value
