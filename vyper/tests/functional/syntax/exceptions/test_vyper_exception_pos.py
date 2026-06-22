@@ -1,7 +1,7 @@
 from pytest import raises
 
 from vyper import compile_code
-from vyper.exceptions import SyntaxException, VyperException
+from vyper.exceptions import ExceptionList, SyntaxException, VyperException
 
 
 def test_type_exception_pos():
@@ -13,6 +13,23 @@ def test_type_exception_pos():
     assert e.value.lineno == 1
     assert e.value.col_offset == 2
     assert str(e.value) == "line 1:2 Fail!"
+
+
+def test_exception_list_preserves_source_order_and_lineno():
+    exceptions = ExceptionList(
+        [VyperException("first", (1, 2)), VyperException("second", (3, 4))]
+    )
+
+    with raises(VyperException) as e:
+        exceptions.raise_if_not_empty()
+
+    assert e.value.lineno == 1
+    assert e.value.col_offset == 2
+    assert str(e.value) == (
+        "line 1:2 Compilation failed with the following errors:\n\n"
+        "VyperException: line 1:2 first\n\n"
+        "VyperException: line 3:4 second"
+    )
 
 
 # multiple exceptions in file
