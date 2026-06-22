@@ -1,5 +1,7 @@
 # Qualia - High-Level Design (HLD)
 
+> **Historical document.** This design describes the previous three-role, AI-platform proposal. The active requirements are in [Product Scope](./PRODUCT_SCOPE.md); use it instead for all new work.
+
 ## 1. System Overview
 
 ### 1.1 Purpose
@@ -16,7 +18,7 @@ Qualia is an internal QA Intelligence Platform designed to replace Google Forms-
 | Role | Permissions |
 |------|-------------|
 | **Admin** | Full access: form management, view all submissions, generate AI reports, manage users |
-| **Reviewer** | Submit QA forms, view own submission history |
+| **Reviewer** | Complete assigned QA forms and view only their own submissions |
 | **Viewer** | Read-only access to aggregated reports and dashboards |
 
 ---

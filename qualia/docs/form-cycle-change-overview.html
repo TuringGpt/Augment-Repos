@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qualia — Form Cycle Change Overview</title>
+    <style>
+      :root {
+        --ink: #15221b;
+        --muted: #5e6c63;
+        --paper: #f8f7f2;
+        --surface: #ffffff;
+        --line: #dce2dc;
+        --green: #176b44;
+        --green-soft: #e2f3e9;
+        --orange: #a64a13;
+        --orange-soft: #fff0e6;
+        --blue: #155e95;
+        --blue-soft: #e8f3fb;
+        --shadow: 0 14px 35px rgba(32, 57, 42, .08);
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+      .shell { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+      .eyebrow { color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+      h1 { max-width: 850px; margin: 8px 0 12px; font-size: clamp(2.25rem, 5vw, 4.5rem); letter-spacing: -.06em; line-height: .98; }
+      h2 { margin: 0; font-size: 1.45rem; letter-spacing: -.025em; }
+      h3 { margin: 0 0 8px; font-size: 1rem; }
+      .lead { max-width: 800px; color: var(--muted); font-size: 1.12rem; }
+      .notice { display: flex; gap: 12px; align-items: flex-start; margin: 28px 0; padding: 16px 18px; border: 1px solid #bcdaca; border-radius: 14px; background: var(--green-soft); }
+      .notice strong { color: var(--green); }
+      .tabs, .roles { display: flex; flex-wrap: wrap; gap: 8px; }
+      button { font: inherit; cursor: pointer; }
+      .tab, .role {
+        border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; background: var(--surface); color: var(--muted); font-weight: 700;
+      }
+      .tab[aria-selected="true"] { border-color: var(--ink); color: var(--surface); background: var(--ink); }
+      .role[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+      .panel { display: none; margin-top: 22px; }
+      .panel.active { display: block; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+      .card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); }
+      .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; } .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+      .state { display: inline-flex; margin-bottom: 12px; border-radius: 99px; padding: 4px 9px; font-size: .75rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+      .current { color: var(--orange); background: var(--orange-soft); }
+      .target { color: var(--green); background: var(--green-soft); }
+      .list { padding: 0; margin: 10px 0 0; list-style: none; }
+      .list li { position: relative; padding: 8px 0 8px 24px; border-bottom: 1px solid #eef1ee; }
+      .list li:last-child { border-bottom: 0; }
+      .list li::before { position: absolute; left: 1px; color: var(--green); content: "✓"; font-weight: 900; }
+      .warning li::before { color: var(--orange); content: "!"; }
+      .flow { display: flex; gap: 10px; align-items: stretch; overflow-x: auto; padding: 4px 0 12px; }
+      .step { min-width: 150px; flex: 1; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+      .step-number { display: block; margin-bottom: 8px; color: var(--green); font-size: .75rem; font-weight: 900; }
+      .arrow { align-self: center; color: var(--muted); font-size: 1.35rem; }
+      .comparison { width: 100%; border-collapse: collapse; margin-top: 16px; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; }
+      .comparison th, .comparison td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      .comparison th { background: #f1f4f0; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+      .comparison tr:last-child td { border-bottom: 0; }
+      .old { color: var(--orange); } .new { color: var(--green); }
+      .role-summary { margin-top: 16px; padding: 18px; border-radius: 14px; background: var(--blue-soft); color: #164b70; }
+      .role-summary p { margin: 6px 0 0; }
+      .matrix { display: grid; grid-template-columns: minmax(165px, 2fr) repeat(3, 1fr); overflow: hidden; margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; }
+      .matrix > div { padding: 11px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .matrix > div:nth-child(4n) { border-right: 0; }
+      .matrix .heading { background: #f1f4f0; font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+      .yes { color: var(--green); font-weight: 800; } .no { color: #9a3b29; font-weight: 800; } .limited { color: var(--blue); font-weight: 800; }
+      .footnote { margin-top: 16px; color: var(--muted); font-size: .9rem; }
+      .feature { transition: border-color .15s, transform .15s; } .feature:hover { transform: translateY(-2px); border-color: #8cbca0; }
+      @media (max-width: 760px) { .shell { padding: 24px 16px 48px; } .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; } .arrow { display: none; } .matrix { grid-template-columns: minmax(130px, 1.5fr) repeat(3, 1fr); font-size: .8rem; } .matrix > div { padding: 9px 7px; } }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="eyebrow">Qualia · team briefing</div>
+      <h1>Form Cycles: from role-only access to ownership-based collaboration.</h1>
+      <p class="lead">This page explains the current backend behavior, the target product model, and the practical difference for admins, Form Cycle creators, and assigned users.</p>
+
+      <div class="notice"><strong>Core decision</strong><span>Assignment means <em>“you may submit answers”</em>. It never means <em>“you may edit this Form Cycle.”</em></span></div>
+
+      <nav class="tabs" aria-label="Presentation view">
+        <button class="tab" type="button" data-panel="current" aria-selected="true">Current state</button>
+        <button class="tab" type="button" data-panel="target" aria-selected="false">Target state</button>
+        <button class="tab" type="button" data-panel="difference" aria-selected="false">What changes</button>
+      </nav>
+
+      <section class="panel active" id="current">
+        <div class="grid">
+          <article class="card span-4">
+            <span class="state current">Current roles</span>
+            <h2>Three role model</h2>
+            <ul class="list warning">
+              <li><strong>Admin</strong> creates and manages Form Cycles.</li>
+              <li><strong>Reviewer</strong> can complete an assignment.</li>
+              <li><strong>Viewer</strong> exists in the model but has no useful product flow.</li>
+            </ul>
+          </article>
+          <article class="card span-4">
+            <span class="state current">Current permissions</span>
+            <h2>Role-based, not owner-based</h2>
+            <ul class="list warning">
+              <li>Only admins can create and modify Form Cycles.</li>
+              <li>Any admin can manage any Form Cycle.</li>
+              <li>The original creator is recorded but does not control authorization.</li>
+            </ul>
+          </article>
+          <article class="card span-4">
+            <span class="state current">Current blocker</span>
+            <h2>One assignment per cycle</h2>
+            <ul class="list warning">
+              <li>Database uniqueness permits one submission per Form Cycle.</li>
+              <li>A second reviewer assignment is rejected.</li>
+              <li>Multi-reviewer QA cannot work correctly.</li>
+            </ul>
+          </article>
+          <article class="card span-12">
+            <h2>Current workflow</h2>
+            <div class="flow">
+              <div class="step"><span class="step-number">01</span><strong>Admin</strong><br />creates a Form Cycle</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">02</span><strong>Admin</strong><br />adds sections/questions</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">03</span><strong>Admin</strong><br />assigns one reviewer</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">04</span><strong>Reviewer</strong><br />saves and submits</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">05</span><strong>Admin</strong><br />sees basic submission list</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="target">
+        <div class="grid">
+          <article class="card span-4 feature">
+            <span class="state target">Role 1</span>
+            <h2>Admin</h2>
+            <ul class="list">
+              <li>Manages users and account status.</li>
+              <li>Manages every Form Cycle.</li>
+              <li>Views every submission.</li>
+            </ul>
+          </article>
+          <article class="card span-4 feature">
+            <span class="state target">Role 2</span>
+            <h2>User / original creator</h2>
+            <ul class="list">
+              <li>Creates and manages only their own Form Cycles.</li>
+              <li>Assigns users to their own cycles.</li>
+              <li>Reviews submissions to their own cycles.</li>
+            </ul>
+          </article>
+          <article class="card span-4 feature">
+            <span class="state target">Assignment</span>
+            <h2>Assigned user</h2>
+            <ul class="list">
+              <li>Reads published questions.</li>
+              <li>Saves and submits only their own answers.</li>
+              <li>Cannot alter the Form Cycle definition or see other users' answers.</li>
+            </ul>
+          </article>
+          <article class="card span-12">
+            <h2>Target workflow</h2>
+            <div class="flow">
+              <div class="step"><span class="step-number">01</span><strong>Admin or user</strong><br />creates Form Cycle</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">02</span><strong>Original creator</strong><br />builds and publishes it</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">03</span><strong>Owner</strong><br />assigns many users</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">04</span><strong>Assigned users</strong><br />save drafts and submit</div><div class="arrow">→</div>
+              <div class="step"><span class="step-number">05</span><strong>Owner / admin</strong><br />reviews allowed submissions</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="difference">
+        <article class="card">
+          <h2>Current state → target state</h2>
+          <table class="comparison">
+            <thead><tr><th>Area</th><th>Current</th><th>Target</th></tr></thead>
+            <tbody>
+              <tr><td>Roles</td><td class="old">Admin, Reviewer, Viewer</td><td class="new">Admin, User</td></tr>
+              <tr><td>Cycle creation</td><td class="old">Admin only</td><td class="new">Admin and user</td></tr>
+              <tr><td>Cycle management</td><td class="old">Any admin</td><td class="new">Admin or original creator</td></tr>
+              <tr><td>Assignment meaning</td><td class="old">Reviewer may submit</td><td class="new">Submission-only access, explicitly no editing</td></tr>
+              <tr><td>Assignments per cycle</td><td class="old">One reviewer due to database constraint</td><td class="new">Many assigned users</td></tr>
+              <tr><td>Submission visibility</td><td class="old">Admin list only</td><td class="new">Admin all; owner for own cycle; user for own submission</td></tr>
+              <tr><td>User management</td><td class="old">Not implemented</td><td class="new">Admin-managed users, roles, activation, password reset</td></tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="card" style="margin-top: 22px">
+        <div class="eyebrow">Interactive permissions</div>
+        <h2>Choose a person to see their allowed actions</h2>
+        <div class="roles" style="margin-top: 14px">
+          <button class="role" type="button" data-role="admin" aria-pressed="true">Admin</button>
+          <button class="role" type="button" data-role="owner" aria-pressed="false">Original creator</button>
+          <button class="role" type="button" data-role="assignee" aria-pressed="false">Assigned user</button>
+        </div>
+        <div class="role-summary" id="role-summary"></div>
+        <div class="matrix" aria-label="Permission matrix">
+          <div class="heading">Action</div><div class="heading">Admin</div><div class="heading">Creator</div><div class="heading">Assigned user</div>
+          <div>Manage any Form Cycle</div><div class="yes">Yes</div><div class="no">No</div><div class="no">No</div>
+          <div>Manage own Form Cycle</div><div class="yes">Yes</div><div class="yes">Yes</div><div class="no">No</div>
+          <div>Assign users</div><div class="yes">Yes</div><div class="yes">Own cycle only</div><div class="no">No</div>
+          <div>Submit answers</div><div class="limited">If assigned</div><div class="limited">If assigned</div><div class="yes">Yes</div>
+          <div>View submissions</div><div class="yes">All</div><div class="limited">Own cycles only</div><div class="limited">Own only</div>
+        </div>
+        <p class="footnote">The original creator and assigned user can be the same person. Their permissions are combined, but only for Form Cycles they own or are assigned to.</p>
+      </section>
+    </main>
+    <script>
+      const tabs = document.querySelectorAll('.tab');
+      const panels = document.querySelectorAll('.panel');
+      tabs.forEach((tab) => tab.addEventListener('click', () => {
+        tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+        panels.forEach((panel) => panel.classList.toggle('active', panel.id === tab.dataset.panel));
+      }));
+      const descriptions = {
+        admin: '<strong>Admin:</strong><p>Can manage users, every Form Cycle, every assignment, and every submission. Admin access is an override, not ownership.</p>',
+        owner: '<strong>Original creator:</strong><p>Can edit, publish, assign users, and review submissions only for Form Cycles they created. They cannot manage another owner’s cycles.</p>',
+        assignee: '<strong>Assigned user:</strong><p>Can open a published Form Cycle, save a draft, submit answers, and view their own response. Assignment never grants editor access.</p>'
+      };
+      const roleButtons = document.querySelectorAll('.role');
+      const summary = document.querySelector('#role-summary');
+      function selectRole(role) {
+        roleButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.role === role)));
+        summary.innerHTML = descriptions[role];
+      }
+      roleButtons.forEach((button) => button.addEventListener('click', () => selectRole(button.dataset.role)));
+      selectRole('admin');
+    </script>
+  </body>
+</html>
