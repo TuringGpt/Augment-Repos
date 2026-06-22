@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon, PlusIcon, AlertCircleIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +32,10 @@ function FormEdit() {
   const [sectionTitle, setSectionTitle] = useState("");
   const [sectionError, setSectionError] = useState("");
 
+  // Capture the formCycleId at the time of mutation to avoid race conditions
+  // if the user navigates to another form while the mutation is in-flight
+  const mutationFormCycleIdRef = useRef<string | undefined>(undefined);
+
   // Fetch form cycle details
   const {
     data: formCycle,
@@ -47,9 +51,13 @@ function FormEdit() {
       setSectionTitle("");
       setSectionError("");
       setIsAddSectionOpen(false);
-      
+
       // Invalidate the form cycle query to refetch and show the new section
-      await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
+      // Use the captured formCycleId from the ref to avoid invalidating the wrong cache
+      // if the route param changed while this mutation was in-flight
+      if (mutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", mutationFormCycleIdRef.current] });
+      }
     },
     onError: (error) => {
       const errorMessage = error.message || "Failed to create section";
@@ -113,6 +121,15 @@ function FormEdit() {
       setSectionError("Section title is required");
       return;
     }
+
+    if (sectionTitle.trim().length > 255) {
+      setSectionError("Section title must be at most 255 characters");
+      return;
+    }
+
+    // Capture the formCycleId at mutation time to avoid race conditions
+    // if the user navigates while the mutation is in-flight
+    mutationFormCycleIdRef.current = id;
 
     // Let the backend auto-assign display_order to avoid race conditions
     // across multiple tabs/users (omitting display_order triggers safe auto-assignment)
@@ -211,6 +228,7 @@ function FormEdit() {
                       value={sectionTitle}
                       onChange={(e) => setSectionTitle(e.target.value)}
                       disabled={isCreatingSection}
+                      maxLength={255}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !isCreatingSection) {
                           e.preventDefault();
