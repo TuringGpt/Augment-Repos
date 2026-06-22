@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon, EditIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +148,10 @@ function FormCycleDetails() {
             <p className="text-muted-foreground">{formCycle.description}</p>
           )}
         </div>
+        <Button onClick={() => navigate(getFormCycleEditRoute(id))}>
+          <EditIcon className="w-4 h-4 mr-2" />
+          Edit Fom
+        </Button>
       </div>
 
       {/* Stats Cards */}
