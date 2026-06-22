@@ -233,7 +233,7 @@ function FormEdit() {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleAddSection} disabled={!isCreatingSection}>
+                  <Button onClick={handleAddSection} disabled={isCreatingSection}>
                     {isCreatingSection ? "Adding..." : "Add Section"}
                   </Button>
                 </DialogFooter>
