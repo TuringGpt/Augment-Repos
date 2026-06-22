@@ -18,7 +18,7 @@ import type { ApiError } from "@/lib/axios";
  *   onSuccess: (data) => {
  *     console.log('Section created:', data.id);
  *     toast.success('Section created successfully!');
- *     queryClient.invalidateQueries(['formCycle', formCycleId]);
+ *     queryClient.invalidateQueries({ queryKey: ['formCycle', formCycleId] });
  *   },
  *   onError: (error) => {
  *     console.error('Section creation failed:', error.message);
