@@ -34,7 +34,7 @@
 - `username` (String, unique)
 - `password_hash` (String)
 - `first_name`, `last_name` (String)
-- `role` (Enum: admin, user, indexed)
+- `role` (Enum: admin, reviewer, viewer, indexed)
 - `is_active`, `is_email_verified` (Boolean)
 - `last_login`, `created_at`, `updated_at` (DateTime with timezone)
 

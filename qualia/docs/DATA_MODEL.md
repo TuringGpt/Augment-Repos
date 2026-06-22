@@ -106,7 +106,7 @@ Assignment grants the user submission rights only. It does not grant Form Cycle 
 Database constraint:
 
 ```text
-UNIQUE(form_cycle_id)
+UNIQUE(form_cycle_id, submitted_by_user_id)
 ```
 
 `submission_answers` holds one answer for a question within a submission.
@@ -143,7 +143,7 @@ The service layer validates that each answer matches its question type and confi
 | `storage_key` | string | Required, unique, not exposed as authorization |
 | `created_at` | timestamp | Required |
 
-Any authenticated user may download an attachment.
+Only the uploading user, the Form Cycle owner, and admins may download an attachment.
 
 ## Audit logs
 

@@ -18,7 +18,7 @@ Qualia is an internal QA Intelligence Platform designed to replace Google Forms-
 | Role | Permissions |
 |------|-------------|
 | **Admin** | Full access: form management, view all submissions, generate AI reports, manage users |
-| **Reviewer** | Manage all QA forms and view every submission |
+| **Reviewer** | Complete assigned QA forms and view only their own submissions |
 | **Viewer** | Read-only access to aggregated reports and dashboards |
 
 ---

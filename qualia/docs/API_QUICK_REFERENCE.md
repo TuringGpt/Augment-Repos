@@ -136,11 +136,11 @@ Only the owner or an admin may transition lifecycle state. Assigned users can re
 
 ## Sections and questions
 
-All routes in this section require an admin or the original creator of the Form Cycle.
+`GET /form-cycles/{cycle_id}/sections` is available to an admin, the original creator, or an assigned user for a published Form Cycle. The write routes in this section require an admin or the original creator of the Form Cycle.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/form-cycles/{cycle_id}/sections` | List ordered sections and questions |
+| `GET` | `/form-cycles/{cycle_id}/sections` | List ordered sections and questions for an admin, owner, or assigned user of a published Form Cycle |
 | `POST` | `/form-cycles/{cycle_id}/sections` | Create section |
 | `PATCH` | `/form-cycles/{cycle_id}/sections/{section_id}` | Update or reorder section |
 | `DELETE` | `/form-cycles/{cycle_id}/sections/{section_id}` | Delete section |
@@ -187,7 +187,7 @@ These endpoints are for the authenticated user. They must never return another u
 | --- | --- | --- |
 | `GET` | `/me/assigned-form-cycles` | List active Form Cycles assigned to current user |
 | `GET` | `/me/submissions` | List current user's submissions |
-| `GET` | `/forms/{cycle_id}/my-submission` | Get current user's draft/submission |
+| `GET` | `/form-cycles/{cycle_id}/my-submission` | Get current user's draft/submission |
 | `PATCH` | `/form-cycles/{cycle_id}/my-submission` | Create/update own draft answers |
 | `POST` | `/form-cycles/{cycle_id}/my-submission/submit` | Submit own draft |
 
