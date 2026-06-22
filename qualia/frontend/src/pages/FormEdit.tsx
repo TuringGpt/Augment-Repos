@@ -251,7 +251,7 @@ function FormEdit() {
             </div>
           ) : (
             <div className="space-y-4">
-              {formCycle.sections
+              {[...formCycle.sections]
                 .sort((a, b) => a.display_order - b.display_order)
                 .map((section: FormDetailSection) => (
                   <Card key={section.id}>
