@@ -56,7 +56,7 @@ describe('Card', () => {
 describe('CardHeader', () => {
   it('renders header with content', () => {
     render(<CardHeader>Header Content</CardHeader>)
-    expect(screen.getByText(/header content/i)).toBeFalse()
+    expect(screen.getByText(/header content/i)).toBeInTheDocument()
   })
 
   it('has correct data-slot attribute', () => {
@@ -173,6 +173,7 @@ describe('Card Composition', () => {
       <Card data-testid="card">
         <CardHeader data-testid="header">
           <CardTitle data-testid="title">Test Title</CardTitle>
+          <CardDescription data-testid="description">Test Description</CardDescription>
           <CardAction data-testid="action">Action Button</CardAction>
         </CardHeader>
         <CardContent data-testid="content">Main Content</CardContent>
