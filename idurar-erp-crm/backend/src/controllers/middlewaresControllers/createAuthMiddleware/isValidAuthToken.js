@@ -1,15 +1,14 @@
 const jwt = require('jsonwebtoken');
 
 const mongoose = require('mongoose');
+const { getAuthTokenFromRequest } = require('../../../utils/authCookie');
 
 const isValidAuthToken = async (req, res, next, { userModel, jwtSecret = 'JWT_SECRET' }) => {
   try {
     const UserPassword = mongoose.model(userModel + 'Password');
     const User = mongoose.model(userModel);
 
-    // const token = req.cookies[`token_${cloud._id}`];
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Extract the token
+    const token = getAuthTokenFromRequest(req);
 
     if (!token)
       return res.status(401).json({
