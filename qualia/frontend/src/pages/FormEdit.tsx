@@ -108,22 +108,18 @@ function FormEdit() {
 
   const handleAddSection = () => {
     setSectionError("");
-    
+
     if (!sectionTitle.trim()) {
       setSectionError("Section title is required");
       return;
     }
 
-    // Calculate the next display order
-    const nextDisplayOrder = formCycle.sections.length > 0
-      ? Math.max(...formCycle.sections.map(s => s.display_order)) + 1
-      : 1;
-
+    // Let the backend auto-assign display_order to avoid race conditions
+    // across multiple tabs/users (omitting display_order triggers safe auto-assignment)
     createSection({
       formCycleId: id,
       data: {
         title: sectionTitle.trim(),
-        display_order: nextDisplayOrder,
       },
     });
   };
