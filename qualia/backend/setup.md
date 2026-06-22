@@ -153,7 +153,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
 The response contains `access_token` and `refresh_token`. Use the access token with protected endpoints such as admin-only Form Cycle routes:
 
 ```bash
-curl http://127.0.0.1:8000/api/v1/form-cycles \
+curl http://127.0.0.1:8000/api/v1/forms \
   -H "Authorization: Bearer <access_token>"
 ```
 

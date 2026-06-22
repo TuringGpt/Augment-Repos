@@ -13,7 +13,7 @@ This is the target access model for the Form Cycle MVP. The current backend stil
 
 - An admin can access every record.
 - A user who owns a Form Cycle can manage it and view submissions made to it.
-- An assigned user can create, save, submit, and view submissions for their assigned Form Cycle.
+- An assigned user can create, save, submit, and view only their own submission.
 - A user cannot view another user's submission unless they own that Form Cycle.
 
 ## Current product direction
