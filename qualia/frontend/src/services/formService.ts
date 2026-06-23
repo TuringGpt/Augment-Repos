@@ -450,3 +450,115 @@ export const createSection = async (
 
   return response.data;
 };
+
+/**
+ * Question type values matching backend QuestionType enum
+ */
+export const QuestionType = {
+  SHORT_TEXT: "short_text",
+  LONG_TEXT: "long_text",
+  NUMBER: "number",
+  SINGLE_CHOICE: "single_choice",
+  MULTIPLE_CHOICE: "multiple_choice",
+  DROPDOWN: "dropdown",
+  RATING: "rating",
+  YES_NO_NA: "yes_no_na",
+  FILE_UPLOAD: "fileUpload",
+} as const;
+
+export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
+
+/**
+ * Request payload for creating a question
+ */
+export interface CreateQuestionRequest {
+  question_text: Array<string>;
+  question_type: QuestionType;
+  is_required?: boolean;
+  config?: Record<string, unknown>;
+  conditional_logic?: Record<string, unknown> | null;
+  display_order?: number | null;
+  version?: number;
+}
+
+/**
+ * Response from creating a question
+ */
+export interface CreateQuestionResponse {
+  id: string;
+  form_cycle_id: string;
+  section_id: string;
+  question_text: string;
+  question_type: string;
+  is_required: boolean;
+  config: Record<string, unknown>;
+  conditional_logic: Record<string, unknown>;
+  display_order: number;
+  version: number;
+}
+
+/**
+ * Create a question for a section in a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @param sectionId - The ID of the section
+ * @param data - Question data (question_text, question_type, is_required, etc.)
+ * @returns Promise with question creation response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const question = await createQuestion(
+ *   "550e8400-e29b-41d4-a716-446655440000",
+ *   "660e8400-e29b-41d4-a716-446655440002",
+ *   {
+ *     question_text: "What is your name?",
+ *     question_type: QuestionType.SHORT_TEXT,
+ *     is_required: true,
+ *     display_order: 1
+ *   }
+ * );
+ * console.log(question.id); // "770e8400-e29b-41d4-a716-446655440003"
+ * console.log(question.form_cycle_id); // "550e8400-e29b-41d4-a716-446655440000"
+ * console.log(question.section_id); // "660e8400-e29b-41d4-a716-446655440002"
+ * console.log(question.question_text); // "What is your name?"
+ * console.log(question.is_required); // true
+ * ```
+ */
+export const createQuestion = async (
+  formCycleId: string,
+  sectionId: number,
+  data: CreateQuestionRequest,
+): Promise<CreateQuestionResponse> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Create question request:", {
+      endpoint: `/forms/${formCycleId}/sections/${sectionId}/questions`,
+      formCycleId: formCycleId,
+      sectionId: sectionId,
+      questionText: data.question_text,
+      questionType: data.question_type,
+      isRequired: data.is_required,
+    });
+  }
+
+  const response = await apiClient.get<CreateQuestionResponse>(
+    `/forms/${formCycleId}/section/${sectionId}/questions`,
+    data,
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Create question response:", {
+      id: response.data.id,
+      formCycleId: response.data.form_cycle_id,
+      sectionId: response.data.section_id,
+      questionText: response.data.question_text,
+      questionType: response.data.question_type,
+      displayOrder: response.data.display_order,
+    });
+  }
+
+  return response.data;
+};
