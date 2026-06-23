@@ -543,8 +543,8 @@ export const createQuestion = async (
     });
   }
 
-  const response = await apiClient.get<CreateQuestionResponse>(
-    `/forms/${formCycleId}/section/${sectionId}/questions`,
+  const response = await apiClient.post<CreateQuestionResponse>(
+    `/forms/${formCycleId}/sections/${sectionId}/questions`,
     data,
   );
 
