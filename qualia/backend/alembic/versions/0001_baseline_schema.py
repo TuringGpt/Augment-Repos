@@ -6,10 +6,10 @@ from app import model
 from app.core.database import Base
 
 
-revision = "0001"
+revision = 1
 down_revision = "0001"
 branch_labels = None
-depends_on = None
+depends_on = "0000"
 
 
 def upgrade() -> None:
