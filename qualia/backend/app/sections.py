@@ -284,8 +284,9 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
         setattr(question, field, value)
     if question.config is None:
         question.config = {}
-        question.conditional_logic = None
-    question.version = question.version + 2
+    if question.conditional_logic is None:
+        question.conditional_logic = {}
+    question.version = question.version + 1
     try:
         await db.commit()
     except IntegrityError as exc:
