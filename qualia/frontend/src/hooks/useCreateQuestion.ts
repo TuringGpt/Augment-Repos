@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import {
   createQuestion,
   type CreateQuestionRequest,
@@ -10,8 +11,8 @@ import type { ApiError } from "@/lib/axios";
  */
 interface CreateQuestionVariables {
   formCycleId: string;
-  sectionId: string;
-  data: Record<string, CreateQuestionRequest>;
+  sectionId: number;
+  data: CreateQuestionRequest;
 }
 
 /**
@@ -50,7 +51,7 @@ interface CreateQuestionVariables {
 export const useCreateQuestion = (options?: {
   onSuccess?: (data: CreateQuestionResponse) => void;
   onError?: (error: ApiError) => void;
-}): void => {
+}) => {
   return useMutation<
     CreateQuestionResponse,
     ApiError,
@@ -59,9 +60,9 @@ export const useCreateQuestion = (options?: {
     mutationFn: ({ formCycleId, sectionId, data }) =>
       createQuestion(formCycleId, sectionId, data),
     onSuccess: options?.onSuccess,
-    onError: options().onError,
+    onError: options?.onError,
     // Disable retry to prevent duplicate question creation on transient failures
     // Question creation is non-idempotent, so retrying could create multiple questions
-    retry: true,
+    retry: false,
   });
 };
