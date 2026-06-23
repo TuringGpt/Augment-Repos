@@ -427,6 +427,84 @@ def test_archive_b64_output(input_files):
     assert out[contract_file] == out2[archive_path]
 
 
+def test_archive_output_with_multiple_vy_files(chdir_tmp_path, make_file):
+    make_file(
+        "lib1.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 1
+        """,
+    )
+    make_file(
+        "lib2.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 2
+        """,
+    )
+    contract_file = make_file(
+        "main.vy",
+        """
+import lib1
+import lib2
+
+@external
+def foo() -> uint256:
+    return lib1.foo() + lib2.foo()
+        """,
+    )
+
+    out = compile_files([contract_file], ["archive"], paths=["."])
+    archive_path = Path("multiple-sources.zip")
+    archive_path.write_bytes(out[contract_file]["archive"])
+
+    direct_output = compile_files([contract_file], ["integrity", "bytecode"], paths=["."])
+    archive_output = compile_files([archive_path], ["integrity", "bytecode"])
+
+    assert direct_output[contract_file] == archive_output[archive_path]
+
+
+def test_archive_output_with_conflicting_module_names(chdir_tmp_path, make_file):
+    make_file(
+        "pkg1/lib.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 1
+        """,
+    )
+    make_file(
+        "pkg2/lib.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 2
+        """,
+    )
+    contract_file = make_file(
+        "main.vy",
+        """
+import pkg1.lib as lib1
+import pkg2.lib as lib2
+
+@external
+def foo() -> uint256:
+    return lib1.foo() + lib2.foo()
+        """,
+    )
+
+    out = compile_files([contract_file], ["archive"], paths=["."])
+    archive_path = Path("conflicting-modules.zip")
+    archive_path.write_bytes(out[contract_file]["archive"])
+
+    direct_output = compile_files([contract_file], ["integrity", "bytecode"], paths=["."])
+    archive_output = compile_files([archive_path], ["integrity", "bytecode"])
+
+    assert direct_output[contract_file] == archive_output[archive_path]
+
+
 def test_archive_compile_options(input_files):
     tmpdir, _, _, _, contract_file, _ = input_files
     search_paths = [".", tmpdir]
