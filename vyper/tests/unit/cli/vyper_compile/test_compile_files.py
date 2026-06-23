@@ -427,6 +427,88 @@ def test_archive_b64_output(input_files):
     assert out[contract_file] == out2[archive_path]
 
 
+# main contract importing two distinct modules which share the same module
+# name (`lib`) but live in different folders. the archive must keep both
+# source files at distinct paths so neither overwrites the other.
+CONFLICTING_MODULES_MAIN = """
+import a.lib as lib_a
+import b.lib as lib_b
+
+@external
+def foo() -> uint256:
+    return lib_a.foo() + lib_b.foo()
+"""
+
+CONFLICTING_LIB_A = """
+@internal
+def foo() -> uint256:
+    return 1
+"""
+
+CONFLICTING_LIB_B = """
+@internal
+def foo() -> uint256:
+    return 2
+"""
+
+
+@pytest.fixture
+def conflicting_module_files(make_file, chdir_tmp_path):
+    make_file("a/lib.vy", CONFLICTING_LIB_A)
+    make_file("b/lib.vy", CONFLICTING_LIB_B)
+    return make_file("main.vy", CONFLICTING_MODULES_MAIN)
+
+
+def test_archive_conflicting_module_names(conflicting_module_files):
+    contract_file = conflicting_module_files
+    search_paths = ["."]
+
+    s = compile_files([contract_file], ["archive"], paths=search_paths)
+    archive_bytes = s[contract_file]["archive"]
+
+    archive_path = Path("conflicting.zip")
+    with archive_path.open("wb") as f:
+        f.write(archive_bytes)
+
+    assert zipfile.is_zipfile(archive_path)
+
+    # both same-named `lib` modules must be packaged at distinct paths
+    with zipfile.ZipFile(archive_path) as z:
+        namelist = z.namelist()
+    source_entries = [n for n in namelist if not n.startswith("MANIFEST/")]
+    assert "a/lib.vy" in source_entries
+    assert "b/lib.vy" in source_entries
+    assert "main.vy" in source_entries
+
+    # there must still be exactly one compilation target
+    compiler_data = compiler_data_from_zip(archive_path, None, False)
+    assert compiler_data.file_input.resolved_path.name == "main.vy"
+
+    # compiling the archive reproduces the bundle's bytecode/integrity, which
+    # also proves neither `lib` clobbered the other (foo() == 1 + 2)
+    out = compile_files([contract_file], ["integrity", "bytecode"], paths=search_paths)
+    out2 = compile_files([archive_path], ["integrity", "bytecode"])
+    assert out[contract_file] == out2[archive_path]
+
+
+def test_archive_b64_conflicting_module_names(conflicting_module_files):
+    contract_file = conflicting_module_files
+    search_paths = ["."]
+
+    out = compile_files(
+        [contract_file], ["archive_b64", "integrity", "bytecode"], paths=search_paths
+    )
+    archive_b64 = out[contract_file].pop("archive_b64")
+
+    archive_path = Path("conflicting.zip.b64")
+    with archive_path.open("w") as f:
+        f.write(archive_b64)
+
+    # exercises the base64-decode branch of compiler_data_from_zip
+    out2 = compile_files([archive_path], ["integrity", "bytecode"])
+    assert out[contract_file] == out2[archive_path]
+
+
 def test_archive_compile_options(input_files):
     tmpdir, _, _, _, contract_file, _ = input_files
     search_paths = [".", tmpdir]
