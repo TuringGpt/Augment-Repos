@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import {
   createQuestion,
   type CreateQuestionRequest,
@@ -51,7 +51,11 @@ interface CreateQuestionVariables {
 export const useCreateQuestion = (options?: {
   onSuccess?: (data: CreateQuestionResponse) => void;
   onError?: (error: ApiError) => void;
-}) => {
+}): UseMutationResult<
+  CreateQuestionResponse,
+  ApiError,
+  CreateQuestionVariables
+> => {
   return useMutation<
     CreateQuestionResponse,
     ApiError,
