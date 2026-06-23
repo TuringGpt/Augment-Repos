@@ -161,17 +161,17 @@ Use the seeded reviewer account for `/forms/assigned`, draft autosave, and submi
 
 ## 7. Run tests
 
-The backend now carries test path configuration in `pytest.toml`, so the canonical command is:
+Run the backend test suite from `qualia/backend` with:
 
 ```bash
-pytest test -q
+pytest tests -q
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:PYTHON_PATH = "."
-pytest test -q
+$env:PYTHONPATH = "."
+pytest tests -q
 ```
 
 This command should pass once the local environment is configured.
