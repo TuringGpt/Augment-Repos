@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Forms = lazy(() => import("@/pages/Forms"));
 const FormCycleDetails = lazy(() => import("@/pages/FormCycleDetails"));
+const FormEdit = lazy(() => import("@/pages/FormEdit"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 /**
@@ -140,6 +141,17 @@ export function AppRoutes() {
           <ProtectedRoute>
             <DashboardLayout>
               <LazyRoute component={FormCycleDetails} />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path={ROUTES.DASHBOARD_FORM_EDIT}
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LazyRoute component={FormEdit} />
             </DashboardLayout>
           </ProtectedRoute>
         }

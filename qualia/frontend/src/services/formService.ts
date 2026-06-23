@@ -409,14 +409,14 @@ export interface CreateSectionResponse {
  *
  * @example
  * ```typescript
+ * // Omit display_order to let backend auto-assign safely (prevents race conditions)
  * const section = await createSection("550e8400-e29b-41d4-a716-446655440000", {
  *   title: "Personal Information",
- *   display_order: 1
  * });
  * console.log(section.id); // "660e8400-e29b-41d4-a716-446655440002"
  * console.log(section.form_cycle_id); // "550e8400-e29b-41d4-a716-446655440000"
  * console.log(section.title); // "Personal Information"
- * console.log(section.display_order); // 1
+ * console.log(section.display_order); // 1 (auto-assigned by backend)
  * ```
  */
 export const createSection = async (

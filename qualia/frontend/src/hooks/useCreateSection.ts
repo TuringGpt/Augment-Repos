@@ -18,7 +18,7 @@ import type { ApiError } from "@/lib/axios";
  *   onSuccess: (data) => {
  *     console.log('Section created:', data.id);
  *     toast.success('Section created successfully!');
- *     queryClient.invalidateQueries(['formCycle', formCycleId]);
+ *     queryClient.invalidateQueries({ queryKey: ['formCycle', formCycleId] });
  *   },
  *   onError: (error) => {
  *     console.error('Section creation failed:', error.message);
@@ -31,7 +31,7 @@ import type { ApiError } from "@/lib/axios";
  *   formCycleId: "550e8400-e29b-41d4-a716-446655440000",
  *   data: {
  *     title: "Personal Information",
- *     display_order: 1
+ *     // Omit display_order to let backend auto-assign safely (prevents race conditions)
  *   }
  * });
  * ```
