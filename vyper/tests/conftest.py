@@ -252,6 +252,22 @@ def compiler_settings(optimize, experimental_codegen, evm_version, debug):
 _HEVM_MARKER = None
 
 
+def _apply_venom_xfail_marker(item):
+    marker = item.get_closest_marker("venom_xfail")
+    if marker is None:
+        return
+
+    if not item.config.getoption("experimental_codegen"):
+        return
+
+    item.add_marker(pytest.mark.xfail(*marker.args, **marker.kwargs))
+
+
+def pytest_collection_modifyitems(items):
+    for item in items:
+        _apply_venom_xfail_marker(item)
+
+
 # request.node.get_closest_marker does something different if fixture is module-scoped,
 # workaround with a global variable
 @pytest.fixture(autouse=True)
