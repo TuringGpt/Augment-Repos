@@ -11,7 +11,7 @@ import type { ApiError } from "@/lib/axios";
  */
 interface CreateQuestionVariables {
   formCycleId: string;
-  sectionId: number;
+  sectionId: string;
   data: CreateQuestionRequest;
 }
 

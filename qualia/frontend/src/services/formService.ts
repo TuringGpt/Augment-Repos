@@ -472,7 +472,7 @@ export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
  * Request payload for creating a question
  */
 export interface CreateQuestionRequest {
-  question_text: Array<string>;
+  question_text: string;
   question_type: QuestionType;
   is_required?: boolean;
   config?: Record<string, unknown>;
@@ -528,7 +528,7 @@ export interface CreateQuestionResponse {
  */
 export const createQuestion = async (
   formCycleId: string,
-  sectionId: number,
+  sectionId: string,
   data: CreateQuestionRequest,
 ): Promise<CreateQuestionResponse> => {
   // Debug logging in development
