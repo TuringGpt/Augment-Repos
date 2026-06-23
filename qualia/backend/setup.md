@@ -161,20 +161,20 @@ Use the seeded reviewer account for `/forms/assigned`, draft autosave, and submi
 
 ## 7. Run tests
 
-The current tests need the application directory on Python's import path:
+The backend now carries test path configuration in `pytest.toml`, so the canonical command is:
 
 ```bash
-PYTHONPATH=. pytest tests -q
+pytest test -q
 ```
 
 On Windows PowerShell:
 
 ```powershell
-$env:PYTHONPATH = "."
-pytest tests -q
+$env:PYTHON_PATH = "."
+pytest test -q
 ```
 
-At the time of writing, the suite has one known failing assertion involving question-update defaults (`config` returns `null` instead of `{}`). This is tracked as PR-02 in the MVP plan. The command is still useful for verifying the rest of the environment.
+This command should pass once the local environment is configured.
 
 ## Common problems
 
