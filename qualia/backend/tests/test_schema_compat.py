@@ -385,6 +385,50 @@ def test_update_question_preserves_existing_fields_when_omitted(monkeypatch: pyt
     assert question.conditional_logic == {"when": "ready"}
 
 
+def test_update_question_normalizes_missing_conditional_logic_to_object(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    section_id = uuid.uuid4()
+    question_id = uuid.uuid4()
+    user = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    question = Question(
+        id=question_id,
+        section_id=section_id,
+        form_cycle_id=form_cycle_id,
+        question_text="Old prompt",
+        question_type=QuestionType.short_text,
+        is_required=True,
+        config={"choices": ["yes"]},
+        conditional_logic=None,
+        display_order=4,
+        version=2,
+    )
+    session = _UpdateQuestionSession(user, question)
+    monkeypatch.setattr("app.sections.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+
+    async def _run() -> None:
+        response = await update_question(
+            form_cycle_id=form_cycle_id,
+            section_id=section_id,
+            question_id=question_id,
+            payload=QuestionUpdate(question_text="Updated prompt"),
+            credentials=HTTPAuthorizationCredentials(scheme="Bearer", credentials="token"),
+            db=session,
+        )
+
+        assert response["conditional_logic"] == {}
+
+    asyncio.run(_run())
+
+    assert question.conditional_logic == {}
+
+
 def test_update_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()

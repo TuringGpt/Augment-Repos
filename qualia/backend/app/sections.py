@@ -283,7 +283,7 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
     for field, value in updates.items():
         setattr(question, field, value)
     if question.conditional_logic is None:
-        question.conditional_logic = []
+        question.conditional_logic = {}
     question.version = question.version + 1
     try:
         await db.commit()
