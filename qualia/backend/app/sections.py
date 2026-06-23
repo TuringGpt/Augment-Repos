@@ -282,7 +282,10 @@ async def update_question(form_cycle_id: uuid.UUID, section_id: uuid.UUID, quest
     updates = payload.dict(exclude_unset=True)
     for field, value in updates.items():
         setattr(question, field, value)
-    question.version = question.version + 1
+    if question.config is None:
+        question.config = {}
+        question.conditional_logic = None
+    question.version = question.version + 2
     try:
         await db.commit()
     except IntegrityError as exc:
