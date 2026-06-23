@@ -153,12 +153,25 @@ def get_evm_version(input_dict: dict) -> Optional[str]:
     return evm_version
 
 
+def _validate_input_path(path: PurePath) -> None:
+    # guard against path traversal: source and interface paths in standard
+    # json describe a virtual filesystem rooted at the (implicit) project
+    # root. they must be relative and must not escape that root via "..".
+    # absolute or escaping paths are rejected so that consumers which
+    # materialize these sources to disk cannot be tricked into writing
+    # outside of the intended directory.
+    normalized = _normpath(path)
+    if normalized.is_absolute() or normalized.parts[:1] == ("..",):
+        raise JSONError(f"path traversal not allowed: '{path}' is outside the root")
+
+
 def get_inputs(input_dict: dict) -> dict[PurePath, Any]:
     ret = {}
     seen = {}
 
     for path, value in input_dict["sources"].items():
         path = PurePath(path)
+        _validate_input_path(path)
         if "urls" in value:
             raise JSONError(f"{path} - 'urls' is not a supported field, use 'content' instead")
         if "content" not in value:
@@ -179,6 +192,7 @@ def get_inputs(input_dict: dict) -> dict[PurePath, Any]:
 
     for path, value in input_dict.get("interfaces", {}).items():
         path = PurePath(path)
+        _validate_input_path(path)
         if path.stem in seen:
             raise JSONError(f"Interface namespace collision: {path}")
 
