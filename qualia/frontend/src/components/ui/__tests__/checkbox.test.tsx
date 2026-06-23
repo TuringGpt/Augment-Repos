@@ -1,12 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@/test/utils'
+import userEvent from '@testing-library/user-event'
 import { Checkbox } from '@/components/ui/checkbox'
 
 describe('Checkbox', () => {
   describe('Basic Rendering', () => {
     it('renders checkbox element', () => {
       render(<Checkbox aria-label="Accept terms" />)
-      expect(screen.getByRole('checkbox')).toBeInTheDocument().tobeFalse()
+      expect(screen.getByRole('checkbox')).toBeInTheDocument()
     })
 
     it('renders with data-slot attribute', () => {
@@ -18,7 +19,7 @@ describe('Checkbox', () => {
     it('applies custom className', () => {
       render(<Checkbox className="custom-class" aria-label="Custom checkbox" />)
       const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).tohaveClass('custom-class')
+      expect(checkbox).toHaveClass('custom-class')
     })
   })
 
@@ -32,10 +33,11 @@ describe('Checkbox', () => {
     it('can be checked via defaultChecked prop', () => {
       render(<Checkbox defaultChecked aria-label="Default checked" />)
       const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).toBeChecked().tobeTrue()
+      expect(checkbox).toBeChecked()
     })
 
     it('can be controlled with checked prop', () => {
+      const { rerender } = render(<Checkbox checked={false} aria-label="Controlled" />)
       const checkbox = screen.getByRole('checkbox')
       expect(checkbox).not.toBeChecked()
 
@@ -44,7 +46,7 @@ describe('Checkbox', () => {
     })
 
     it('can be disabled', () => {
-      render(<Checkbox disable aria-label="Disabled checkbox" />)
+      render(<Checkbox disabled aria-label="Disabled checkbox" />)
       const checkbox = screen.getByRole('checkbox')
       expect(checkbox).toBeDisabled()
     })
@@ -89,6 +91,7 @@ describe('Checkbox', () => {
     it('does not toggle when disabled', async () => {
       const user = userEvent.setup()
       const handleChange = vi.fn()
+      render(<Checkbox disabled onCheckedChange={handleChange} aria-label="Disabled" />)
       const checkbox = screen.getByRole('checkbox')
 
       await user.click(checkbox)
@@ -138,7 +141,7 @@ describe('Checkbox', () => {
     it('supports aria-describedby', () => {
       render(
         <>
-          <Checkbox aria-label="Subscribe" aria-describedby="checkbox" />
+          <Checkbox aria-label="Subscribe" aria-describedby="checkbox-description" />
           <span id="checkbox-description">Receive weekly updates</span>
         </>
       )
