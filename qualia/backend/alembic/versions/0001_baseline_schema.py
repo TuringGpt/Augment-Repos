@@ -2,7 +2,7 @@
 
 from alembic import op
 
-from app import model
+from app import models  # noqa: F401
 from app.core.database import Base
 
 
