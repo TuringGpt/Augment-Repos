@@ -463,7 +463,7 @@ export const QuestionType = {
   DROPDOWN: "dropdown",
   RATING: "rating",
   YES_NO_NA: "yes_no_na",
-  FILE_UPLOAD: "fileUpload",
+  FILE_UPLOAD: "file_upload",
 } as const;
 
 export type QuestionType = typeof QuestionType[keyof typeof QuestionType];
