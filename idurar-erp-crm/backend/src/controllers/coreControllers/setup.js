@@ -10,6 +10,7 @@ const setup = async (req, res) => {
   const Admin = mongoose.model('Admin');
   const AdminPassword = mongoose.model('AdminPassword');
   const Setting = mongoose.model('Setting');
+  const Sequence = mongoose.model('Sequence');
 
   const PaymentMode = mongoose.model('PaymentMode');
   const Taxes = mongoose.model('Taxes');
@@ -80,6 +81,17 @@ const setup = async (req, res) => {
   }
 
   await Setting.insertMany(settingData);
+
+  const financeSequenceSettings = settingData.filter(({ settingKey }) => {
+    return ['last_invoice_number', 'last_quote_number'].includes(settingKey);
+  });
+
+  await Sequence.insertMany(
+    financeSequenceSettings.map(({ settingKey, settingValue }) => ({
+      sequenceKey: settingKey.replace('last_', '').replace('_number', ''),
+      currentValue: Number(settingValue) || 0,
+    }))
+  );
 
   await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
 

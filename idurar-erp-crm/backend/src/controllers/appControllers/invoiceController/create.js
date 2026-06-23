@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
-const { increaseBySettingKey } = require('@/middlewares/settings');
+const { updateBySettingKey } = require('@/middlewares/settings');
+const getNextSequenceNumber = require('@/middlewares/sequences/getNextSequenceNumber');
 const schema = require('./schemaValidate');
 
 const create = async (req, res) => {
@@ -46,6 +47,7 @@ const create = async (req, res) => {
 
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;
+  body['number'] = await getNextSequenceNumber({ entity: 'invoice' });
 
   // Creating a new document in the collection
   const result = await new Model(body).save();
@@ -59,8 +61,9 @@ const create = async (req, res) => {
   ).exec();
   // Returning successfull response
 
-  increaseBySettingKey({
+  await updateBySettingKey({
     settingKey: 'last_invoice_number',
+    settingValue: body['number'],
   });
 
   // Returning successfull response
