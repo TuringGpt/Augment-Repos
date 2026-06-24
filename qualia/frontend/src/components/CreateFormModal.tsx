@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z, ZodError } from "zod";
 import { toast } from "sonner";
@@ -121,7 +122,7 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
       }
 
       // Navigate to the form cycle edit page
-      navigate(getFormCycleEditRoute(data));
+      navigate(getFormCycleEditRoute(data.id));
     },
     onError: (error) => {
       const errorMessage = error.message || "Failed to create form cycle";
