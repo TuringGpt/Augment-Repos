@@ -107,12 +107,14 @@ apiClient.interceptors.request.use(
         safeRemoveLocalStorage('access_token');
         safeRemoveLocalStorage('refresh_token');
 
-        // Redirect to login page
+        // Redirect to login page (only if not already on sign-in page)
         const currentPath = window.location.pathname;
-        const redirectParam = currentPath !== '/' && currentPath !== '/signin'
-          ? `?redirect=${encodeURIComponent(currentPath)}`
-          : '';
-        window.location.href = `/signin${redirectParam}`;
+        if (currentPath !== '/signin') {
+          const redirectParam = currentPath !== '/'
+            ? `?redirect=${encodeURIComponent(currentPath)}`
+            : '';
+          window.location.href = `/signin${redirectParam}`;
+        }
 
         // Reject the request to prevent it from being sent
         return Promise.reject(normalizeError(new Error('Token expired')));
@@ -256,11 +258,14 @@ apiClient.interceptors.response.use(
 
           // Redirect to login page with the current location for post-login redirect
           // Use window.location.href to ensure a full page reload and proper cleanup of app state
+          // Only redirect if not already on sign-in page to prevent unnecessary reloads
           const currentPath = window.location.pathname;
-          const redirectParam = currentPath !== '/' && currentPath !== '/signin'
-            ? `?redirect=${encodeURIComponent(currentPath)}`
-            : '';
-          window.location.href = `/signin${redirectParam}`;
+          if (currentPath !== '/signin') {
+            const redirectParam = currentPath !== '/'
+              ? `?redirect=${encodeURIComponent(currentPath)}`
+              : '';
+            window.location.href = `/signin${redirectParam}`;
+          }
         }
       }
 
