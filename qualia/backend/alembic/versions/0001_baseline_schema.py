@@ -1,6 +1,6 @@
 """Baseline schema migration."""
 
-from alembic import op
+from alembic import context, op
 import sqlalchemy as sa
 
 
@@ -234,6 +234,9 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_users_role"), table_name="users")
     op.drop_index(op.f("ix_users_is_active"), table_name="users")
     op.drop_table("users")
+
+    if context.is_offline_mode():
+        return
 
     if op.get_bind().dialect.name == "postgresql":
         for enum_name in ENUM_TYPE_NAMES:
