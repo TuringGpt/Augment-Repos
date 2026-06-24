@@ -60,18 +60,52 @@ function SignIn() {
   const isMountedRef = useRef(true);
   const navigationTimerRef = useRef<number | null>(null);
 
+  /**
+   * Validates that a redirect path is safe for internal navigation
+   * Only allows relative paths that start with "/" to prevent:
+   * - Cross-origin navigation (absolute URLs)
+   * - Protocol handlers (javascript:, data:, etc.)
+   * - Unexpected navigation errors
+   *
+   * @param path - The path to validate
+   * @returns true if the path is a valid internal path, false otherwise
+   */
+  const isValidInternalPath = (path: string): boolean => {
+    // Must be a non-empty string
+    if (!path || typeof path !== 'string') {
+      return false;
+    }
+
+    // Must start with "/" to be a relative path
+    if (!path.startsWith('/')) {
+      return false;
+    }
+
+    // Must not contain protocol (e.g., http://, https://, javascript:)
+    if (path.includes(':')) {
+      return false;
+    }
+
+    // Must not contain "//" which could indicate absolute URL or protocol-relative URL
+    if (path.includes('//')) {
+      return false;
+    }
+
+    return true;
+  };
+
   // Determine redirect destination after successful login
   // Priority: 1. Query param (?redirect=...), 2. Location state (from ProtectedRoute), 3. Default to dashboard
   const getRedirectPath = (): string => {
     // Check for redirect query parameter
     const redirectParam = searchParams.get('redirect');
-    if (redirectParam) {
+    if (redirectParam && isValidInternalPath(redirectParam)) {
       return redirectParam;
     }
 
     // Check for location state from ProtectedRoute
     const locationState = location.state as { from?: { pathname: string } } | null;
-    if (locationState?.from?.pathname) {
+    if (locationState?.from?.pathname && isValidInternalPath(locationState.from.pathname)) {
       return locationState.from.pathname;
     }
 
