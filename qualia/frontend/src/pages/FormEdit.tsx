@@ -509,7 +509,7 @@ function FormEdit() {
               <Checkbox
                 id="is-required"
                 checked={isRequired}
-                onCheckedChange={(checked) => setIsRequired(checked as boolean)}
+                onCheckedChange={(checked) => setIsRequired(checked === true)}
                 disabled={isCreatingQuestion}
               />
               <Label
