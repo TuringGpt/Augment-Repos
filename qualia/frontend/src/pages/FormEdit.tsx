@@ -104,7 +104,7 @@ function FormEdit() {
     onError: (error) => {
       const errorMessage = error.message || "Failed to create question";
       setQuestionError(errorMessage);
-      toast.success("Error", {
+      toast.error("Error", {
         description: errorMessage,
       });
     },
