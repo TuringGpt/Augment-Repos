@@ -100,7 +100,7 @@ export function isTokenExpired(token: string | null): boolean {
 
     // exp is in seconds, Date.now() is in milliseconds
     const currentTime = Math.floor(Date.now() / 1000);
-    return payload.exp < currentTime;
+    return payload.exp <= currentTime;
   } catch {
     // If we can't decode the token, consider it expired
     return true;
