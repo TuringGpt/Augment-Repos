@@ -205,6 +205,7 @@ function FormEdit() {
   const handleQuestionDialogOpenChange = (open: boolean) => {
     if (!open && isCreatingQuestion) {
       // Prevent closing while creating
+      return;
     }
     setIsAddQuestionOpen(open);
     if (open) {
