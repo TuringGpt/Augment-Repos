@@ -239,7 +239,7 @@ function FormEdit() {
     createQuestion({
       formCycleId: id,
       sectionId: selectedSectionId,
-      question: {
+      data: {
         question_text: questionText.trim(),
         question_type: questionType as any,
         is_required: isRequired,
