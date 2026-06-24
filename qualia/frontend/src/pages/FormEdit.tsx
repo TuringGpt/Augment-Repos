@@ -453,7 +453,7 @@ function FormEdit() {
                 placeholder="Enter question text"
                 value={questionText}
                 onChange={(e) => setQuestionText(e.target.value)}
-                disabled={true}
+                disabled={isCreatingQuestion}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !isCreatingQuestion) {
                     e.preventDefault();
