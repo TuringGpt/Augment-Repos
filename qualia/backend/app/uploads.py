@@ -68,13 +68,13 @@ async def upload_attachment(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_submission_user(token.strip(), db)
+    submission_user = await _get_authorized_submission_user(token.strip(), db)
 
     record = (await db.execute(select(File).where(File.id == file_id))).scalar_one_or_none()
     if record is None:
         raise HTTPException(status_code=404, detail="File not found")
-    if record.uploaded_by != reviewer.id:
-        raise HTTPException(status_code=403, detail="Upload does not belong to reviewer")
+    if record.uploaded_by != submission_user.id:
+        raise HTTPException(status_code=403, detail="Upload does not belong to this user")
     cycle = (
         await db.execute(select(FormCycle).where(FormCycle.id == _form_cycle_id_from_storage_path(record.storage_path)))
     ).scalar_one_or_none()
@@ -85,12 +85,12 @@ async def upload_attachment(
         await db.execute(
             select(Submission).where(
                 Submission.form_cycle_id == cycle.id,
-                Submission.reviewer_id == reviewer.id,
+                Submission.reviewer_id == submission_user.id,
             )
         )
     ).scalar_one_or_none()
     if submission is None:
-        raise HTTPException(status_code=403, detail="Reviewer is not assigned to this form cycle")
+        raise HTTPException(status_code=403, detail="User is not assigned to this form cycle")
     if submission.status == SubmissionStatus.submitted:
         raise HTTPException(status_code=400, detail="Submission has already been submitted")
     if record.storage_type != StorageType.local:

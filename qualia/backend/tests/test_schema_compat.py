@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.core import config
+from app.core.database import _sqlite_users_table_has_legacy_role_schema
 from app.form_cycles import _validate_assigned_user
 from app.main import app
 from app.models.question import Question, QuestionType
@@ -130,6 +131,28 @@ def test_role_type_maps_legacy_review_roles_to_user() -> None:
     assert role_type.process_result_value("viewer", None) is Role.user
     assert role_type.process_bind_param("reviewer", None) == "user"
     assert role_type.process_bind_param("viewer", None) == "user"
+
+
+def test_sqlite_users_table_schema_detection_flags_legacy_role_values() -> None:
+    assert _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT 'viewer' CHECK (role IN ('reviewer', 'viewer', 'admin'))
+        )
+        """
+    )
+
+
+def test_sqlite_users_table_schema_detection_accepts_canonical_role_values() -> None:
+    assert not _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT 'user'
+        )
+        """
+    )
 
 
 def test_validate_assigned_user_rejects_admin_role() -> None:
