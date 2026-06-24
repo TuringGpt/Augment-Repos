@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from logging.config import fileConfig
+import threading
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -46,7 +47,7 @@ def run_migrations_online() -> None:
     database_url = _database_url_value()
     configuration["sqlalchemy.url"] = database_url
     if _uses_async_driver(database_url):
-        asyncio.run(run_async_migrations(configuration))
+        _run_async_migrations_blocking(configuration)
         return
 
     connectable = engine_from_config(configuration, prefix="sqlalchemy.", poolclass=pool.NullPool)
@@ -69,6 +70,29 @@ async def run_async_migrations(configuration: dict[str, str]) -> None:
         await connection.run_sync(_run_sync_migrations)
 
     await connectable.dispose()
+
+
+def _run_async_migrations_blocking(configuration: dict[str, str]) -> None:
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(run_async_migrations(configuration))
+        return
+
+    error: BaseException | None = None
+
+    def _runner() -> None:
+        nonlocal error
+        try:
+            asyncio.run(run_async_migrations(configuration))
+        except BaseException as exc:
+            error = exc
+
+    thread = threading.Thread(target=_runner)
+    thread.start()
+    thread.join()
+    if error is not None:
+        raise error
 
 
 def _run_sync_migrations(connection) -> None:

@@ -10,6 +10,16 @@ branch_labels = None
 depends_on = None
 
 
+ENUM_TYPE_NAMES = (
+    "ai_report_status_enum",
+    "file_storage_type_enum",
+    "submission_status_enum",
+    "question_type_enum",
+    "form_cycle_status_enum",
+    "user_role_enum",
+)
+
+
 def upgrade() -> None:
     user_role_enum = sa.Enum("reviewer", "admin", "viewer", name="user_role_enum")
     form_cycle_status_enum = sa.Enum("draft", "active", "closed", "archived", name="form_cycle_status_enum")
@@ -224,3 +234,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_users_role"), table_name="users")
     op.drop_index(op.f("ix_users_is_active"), table_name="users")
     op.drop_table("users")
+
+    if op.get_bind().dialect.name == "postgresql":
+        for enum_name in ENUM_TYPE_NAMES:
+            op.execute(f"DROP TYPE IF EXISTS {enum_name}")
