@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { PlusIcon } from "lucide-react";
 import { useCreateFormCycle } from "@/hooks/useCreateFormCycle";
+import { getFormCycleEditRoute } from "@/config/routes";
 
 // Zod schema for create form validation
 const createFormSchema = z.object({
@@ -94,6 +95,7 @@ interface CreateFormModalProps {
 }
 
 export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -115,7 +117,11 @@ export function CreateFormModal({ onFormCreated }: CreateFormModalProps) {
         toast.error("Error", {
           description: errorMessage,
         });
+        return; // Don't navigate if callback failed
       }
+
+      // Navigate to the form cycle edit page
+      navigate(getFormCycleEditRoute(data));
     },
     onError: (error) => {
       const errorMessage = error.message || "Failed to create form cycle";
