@@ -3,16 +3,42 @@ import uuid
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, String, Uuid, false, func, text
+from sqlalchemy import Boolean, DateTime, String, Uuid, false, func, text
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import TypeDecorator
 
 from app.core.database import Base
 
 
 class Role(str, enum.Enum):
-    user = "users"
+    user = "user"
     admin = "admin"
-    viewer = "viewer"
+
+
+class RoleType(TypeDecorator[Role]):
+    impl = String(32)
+    cache_ok = True
+
+    @staticmethod
+    def _normalized_role(value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized in {"reviewer", "viewer"}:
+            return Role.user.value
+        return normalized
+
+    def process_bind_param(self, value: Role | str | None, _dialect) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, Role):
+            return value.value
+        if isinstance(value, str):
+            return Role(self._normalized_role(value)).value
+        raise TypeError(f"Unsupported role value: {value!r}")
+
+    def process_result_value(self, value: str | None, _dialect) -> Role | None:
+        if value is None:
+            return None
+        return Role(self._normalized_role(value))
 
 
 class User(Base):
@@ -25,9 +51,9 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[Role] = mapped_column(
-        Enum(Role, name="user_role_enum"),
-        default=Role.viewer,
-        server_default=text("'viewer'"),
+        RoleType(),
+        default=Role.user,
+        server_default=text("'user'"),
         index=True,
         nullable=False,
     )

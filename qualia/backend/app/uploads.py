@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.form_cycles import _get_authorized_reviewer, _validate_submission_window
+from app.form_cycles import _get_authorized_submission_user, _validate_submission_window
 from app.models.file import File, StorageType
 from app.models.form_cycle import FormCycle
 from app.models.submission import Submission, SubmissionStatus
@@ -68,7 +68,7 @@ async def upload_attachment(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    reviewer = await _get_authorized_submission_user(token.strip(), db)
 
     record = (await db.execute(select(File).where(File.id == file_id))).scalar_one_or_none()
     if record is None:

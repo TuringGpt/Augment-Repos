@@ -8,10 +8,11 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.core import config
+from app.form_cycles import _validate_assigned_user
 from app.main import app
 from app.models.question import Question, QuestionType
 from app.models.section import Section
-from app.models.user import Role, User
+from app.models.user import Role, RoleType, User
 from app.sections import create_question
 from app.sections import delete_question
 from app.sections import QuestionCreate
@@ -120,6 +121,31 @@ def test_get_jwt_secret_accepts_legacy_alias(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("JWT_SECRETKEY", "legacy-secret")
 
     assert config.get_jwt_secret() == "legacy-secret"
+
+
+def test_role_type_maps_legacy_review_roles_to_user() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_result_value("reviewer", None) is Role.user
+    assert role_type.process_result_value("viewer", None) is Role.user
+    assert role_type.process_bind_param("reviewer", None) == "user"
+    assert role_type.process_bind_param("viewer", None) == "user"
+
+
+def test_validate_assigned_user_rejects_admin_role() -> None:
+    admin = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Assigned account must have user role") as exc_info:
+        _validate_assigned_user(admin)
+
+    assert exc_info.value.status_code == 400
 
 
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:

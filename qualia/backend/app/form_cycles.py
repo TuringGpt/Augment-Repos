@@ -138,29 +138,29 @@ async def _get_authorized_admin(token: str, db: AsyncSession) -> User:
     return user
 
 
-async def _get_authorized_reviewer(token: str, db: AsyncSession) -> User:
+async def _get_authorized_submission_user(token: str, db: AsyncSession) -> User:
     user = await _get_authorized_user(token, db)
-    if user.role != Role.viewer:
-        raise HTTPException(status_code=403, detail="Reviewer access required")
+    if user.role != Role.user:
+        raise HTTPException(status_code=403, detail="User access required")
     if not user.is_active or not user.is_email_verified:
         raise HTTPException(
             status_code=403,
-            detail="Reviewer account is not active or email is not verified",
+            detail="User account is not active or email is not verified",
         )
     return user
 
 
-def _validate_reviewer(reviewer: User | None) -> User:
-    if reviewer is None:
-        raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
-    if reviewer.role == Role.user:
-        raise HTTPException(status_code=400, detail="Reviewer must have reviewer role")
-    if not reviewer.is_active or not reviewer.is_email_verified:
+def _validate_assigned_user(assigned_user: User | None) -> User:
+    if assigned_user is None:
+        raise HTTPException(status_code=404, detail="Form cycle or user not found")
+    if assigned_user.role != Role.user:
+        raise HTTPException(status_code=400, detail="Assigned account must have user role")
+    if not assigned_user.is_active or not assigned_user.is_email_verified:
         raise HTTPException(
             status_code=400,
-            detail="Reviewer account is not active or email is not verified",
+            detail="User account is not active or email is not verified",
         )
-    return reviewer
+    return assigned_user
 
 
 def _is_submission_assignment_conflict(exc: IntegrityError) -> bool:
@@ -357,7 +357,7 @@ async def assign_reviewer(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
-    reviewer = _validate_reviewer(
+    reviewer = _validate_assigned_user(
         (await db.execute(select(User).where(User.id == payload.reviewer_id))).scalar_one_or_none()
     )
     existing_assignment = (
@@ -450,7 +450,7 @@ async def submit_form_cycle(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    reviewer = await _get_authorized_submission_user(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
@@ -501,7 +501,7 @@ async def autosave_submission_draft(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    reviewer = await _get_authorized_submission_user(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
@@ -624,7 +624,7 @@ async def list_assigned_forms(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    reviewer = await _get_authorized_submission_user(token.strip(), db)
     rows = (
         await db.execute(
             select(FormCycle, Submission.status)
@@ -674,17 +674,17 @@ async def get_form_cycle_detail(
                 detail="Admin account is not active or email is not verified",
             )
     else:
-        if user.role == Role.user:
-            raise HTTPException(status_code=403, detail="Reviewer access required")
+        if user.role != Role.user:
+            raise HTTPException(status_code=403, detail="User access required")
         if not user.is_active or not user.is_email_verified:
             raise HTTPException(
                 status_code=403,
-                detail="Reviewer account is not active or email is not verified",
+                detail="User account is not active or email is not verified",
             )
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
-    if user.role == Role.viewer:
+    if user.role == Role.user:
         _validate_submission_window(cycle)
         assigned = await db.execute(
             select(FormAssignment.id).where(
@@ -755,7 +755,7 @@ async def init_attachment_upload(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token.strip():
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    reviewer = await _get_authorized_reviewer(token.strip(), db)
+    reviewer = await _get_authorized_submission_user(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")

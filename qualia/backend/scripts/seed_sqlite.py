@@ -111,7 +111,7 @@ async def seed_database() -> str:
                 password_hash=hash_password("reviewer123"),
                 first_name="Rita",
                 last_name="Reviewer",
-                role=Role.reviewer,
+                role=Role.user,
                 is_active=True,
                 is_email_verified=True,
             )
@@ -121,7 +121,7 @@ async def seed_database() -> str:
                 password_hash=hash_password("viewer123"),
                 first_name="Victor",
                 last_name="Viewer",
-                role=Role.viewer,
+                role=Role.user,
                 is_active=True,
                 is_email_verified=True,
             )
