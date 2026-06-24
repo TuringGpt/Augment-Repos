@@ -514,7 +514,7 @@ function FormEdit() {
             >
               Cancel
             </Button>
-            <Button disabled={isCreatingQuestion}>
+            <Button onClick={handleAddQuestion} disabled={isCreatingQuestion}>
               {isCreatingQuestion ? "Adding..." : "Add Question"}
             </Button>
           </DialogFooter>
