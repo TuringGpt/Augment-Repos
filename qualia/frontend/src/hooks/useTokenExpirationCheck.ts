@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAccessTokenExpired } from '@/lib/jwt';
-import { safeRemoveLocalStorage } from '@/lib/storage';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
 import { ROUTES } from '@/config/routes';
 
 /**
@@ -42,8 +42,10 @@ export function useTokenExpirationCheck() {
       try {
         isCheckingRef.current = true;
 
-        // Check if token is expired
-        if (isAccessTokenExpired()) {
+        // Only check expiration if a token actually exists
+        // This prevents unnecessary redirects and cache clearing for logged-out users
+        const token = safeGetLocalStorage('access_token');
+        if (token && isAccessTokenExpired()) {
           // Clear tokens
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
