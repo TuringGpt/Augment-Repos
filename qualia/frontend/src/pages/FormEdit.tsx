@@ -101,7 +101,7 @@ function FormEdit() {
         await queryClient.invalidateQueries({ queryKey: ["formCycle", mutationFormCycleIdRef.current] });
       }
     },
-    onError: ({error}) => {
+    onError: (error) => {
       const errorMessage = error.message || "Failed to create question";
       setQuestionError(errorMessage);
       toast.success("Error", {
