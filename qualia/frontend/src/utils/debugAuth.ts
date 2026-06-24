@@ -3,7 +3,7 @@
  * Use this to troubleshoot 403 Forbidden errors
  */
 
-import { safeGetLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage } from '@/lib/storage';
 import { decodeJWT } from '@/lib/jwt';
 
 /**

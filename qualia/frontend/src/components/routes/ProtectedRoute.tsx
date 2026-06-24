@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
 import { isTokenExpired } from '@/lib/jwt';
 
 interface ProtectedRouteProps {

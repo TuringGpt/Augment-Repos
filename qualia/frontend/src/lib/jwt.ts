@@ -3,7 +3,7 @@
  * Provides JWT token decoding without external dependencies
  */
 
-import { safeGetLocalStorage } from './axios';
+import { safeGetLocalStorage } from './storage';
 
 export interface JWTPayload {
   sub?: string;  // Subject (typically user ID or email)

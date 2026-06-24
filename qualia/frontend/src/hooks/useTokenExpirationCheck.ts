@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAccessTokenExpired } from '@/lib/jwt';
-import { safeRemoveLocalStorage } from '@/lib/axios';
+import { safeRemoveLocalStorage } from '@/lib/storage';
 import { ROUTES } from '@/config/routes';
 
 /**
