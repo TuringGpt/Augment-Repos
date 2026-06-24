@@ -509,7 +509,7 @@ function FormEdit() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {}}
+              onClick={() => handleQuestionDialogOpenChange(false)}
               disabled={isCreatingQuestion}
             >
               Cancel
