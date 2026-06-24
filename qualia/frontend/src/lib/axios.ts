@@ -108,10 +108,12 @@ apiClient.interceptors.request.use(
         safeRemoveLocalStorage('refresh_token');
 
         // Redirect to login page (only if not already on sign-in page)
+        // Preserve full URL including query parameters and hash fragments
         const currentPath = window.location.pathname;
         if (currentPath !== '/signin') {
-          const redirectParam = currentPath !== '/'
-            ? `?redirect=${encodeURIComponent(currentPath)}`
+          const fullPath = currentPath + window.location.search + window.location.hash;
+          const redirectParam = fullPath !== '/'
+            ? `?redirect=${encodeURIComponent(fullPath)}`
             : '';
           window.location.href = `/signin${redirectParam}`;
         }
@@ -259,10 +261,12 @@ apiClient.interceptors.response.use(
           // Redirect to login page with the current location for post-login redirect
           // Use window.location.href to ensure a full page reload and proper cleanup of app state
           // Only redirect if not already on sign-in page to prevent unnecessary reloads
+          // Preserve full URL including query parameters and hash fragments
           const currentPath = window.location.pathname;
           if (currentPath !== '/signin') {
-            const redirectParam = currentPath !== '/'
-              ? `?redirect=${encodeURIComponent(currentPath)}`
+            const fullPath = currentPath + window.location.search + window.location.hash;
+            const redirectParam = fullPath !== '/'
+              ? `?redirect=${encodeURIComponent(fullPath)}`
               : '';
             window.location.href = `/signin${redirectParam}`;
           }

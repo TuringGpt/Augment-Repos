@@ -67,6 +67,8 @@ function SignIn() {
    * - Protocol handlers (javascript:, data:, etc.)
    * - Unexpected navigation errors
    *
+   * Allows query strings and hash fragments (e.g., /path?query=value#hash)
+   *
    * @param path - The path to validate
    * @returns true if the path is a valid internal path, false otherwise
    */
@@ -81,13 +83,15 @@ function SignIn() {
       return false;
     }
 
-    // Must not contain protocol (e.g., http://, https://, javascript:)
-    if (path.includes(':')) {
+    // Must not contain "//" which could indicate absolute URL or protocol-relative URL
+    if (path.includes('//')) {
       return false;
     }
 
-    // Must not contain "//" which could indicate absolute URL or protocol-relative URL
-    if (path.includes('//')) {
+    // Check for protocol handlers (e.g., http://, https://, javascript:, data:)
+    // Only check the portion before any query string or hash to allow colons in those parts
+    const pathBeforeQueryOrHash = path.split(/[?#]/)[0];
+    if (pathBeforeQueryOrHash.includes(':')) {
       return false;
     }
 
@@ -104,9 +108,13 @@ function SignIn() {
     }
 
     // Check for location state from ProtectedRoute
-    const locationState = location.state as { from?: { pathname: string } } | null;
-    if (locationState?.from?.pathname && isValidInternalPath(locationState.from.pathname)) {
-      return locationState.from.pathname;
+    // Preserve full path including query parameters and hash fragments
+    const locationState = location.state as { from?: { pathname: string; search: string; hash: string } } | null;
+    if (locationState?.from?.pathname) {
+      const fullPath = locationState.from.pathname + (locationState.from.search || '') + (locationState.from.hash || '');
+      if (isValidInternalPath(fullPath)) {
+        return fullPath;
+      }
     }
 
     // Default to dashboard
