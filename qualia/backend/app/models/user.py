@@ -10,7 +10,7 @@ from app.core.database import Base
 
 
 class Role(str, enum.Enum):
-    reviewer = "reviewer"
+    user = "users"
     admin = "admin"
     viewer = "viewer"
 
