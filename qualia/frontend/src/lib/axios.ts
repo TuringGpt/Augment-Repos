@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { isTokenExpired } from './jwt';
 
 /**
  * Base API URL from environment variables
@@ -140,6 +141,7 @@ function normalizeError(error: unknown): ApiError {
 
 /**
  * Request interceptor to add authentication token
+ * Checks for token expiration before sending requests
  * Normalizes errors to ApiError format for consistent error handling
  */
 apiClient.interceptors.request.use(
@@ -147,6 +149,23 @@ apiClient.interceptors.request.use(
     // Get token from localStorage (if available)
     const token = safeGetLocalStorage('access_token');
     if (token) {
+      // Check if token is expired before using it
+      if (isTokenExpired(token)) {
+        // Token is expired, clear it and redirect to login
+        safeRemoveLocalStorage('access_token');
+        safeRemoveLocalStorage('refresh_token');
+
+        // Redirect to login page
+        const currentPath = window.location.pathname;
+        const redirectParam = currentPath !== '/' && currentPath !== '/signin'
+          ? `?redirect=${encodeURIComponent(currentPath)}`
+          : '';
+        window.location.href = `/signin${redirectParam}`;
+
+        // Reject the request to prevent it from being sent
+        return Promise.reject(normalizeError(new Error('Token expired')));
+      }
+
       // Ensure headers object exists
       config.headers = config.headers || {};
 
@@ -282,8 +301,14 @@ apiClient.interceptors.response.use(
         if (hasAuthorizationHeader(axiosError.config?.headers)) {
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
-          // You might want to redirect to login page here
-          // window.location.href = '/signin';
+
+          // Redirect to login page with the current location for post-login redirect
+          // Use window.location.href to ensure a full page reload and proper cleanup of app state
+          const currentPath = window.location.pathname;
+          const redirectParam = currentPath !== '/' && currentPath !== '/signin'
+            ? `?redirect=${encodeURIComponent(currentPath)}`
+            : '';
+          window.location.href = `/signin${redirectParam}`;
         }
       }
 

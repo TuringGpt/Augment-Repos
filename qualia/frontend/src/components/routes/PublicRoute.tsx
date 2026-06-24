@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
+import { isTokenExpired } from '@/lib/jwt';
 
 interface PublicRouteProps {
   children: ReactNode;
@@ -10,12 +11,13 @@ interface PublicRouteProps {
 
 /**
  * PublicRoute component
- * 
+ *
  * Wraps public routes (like sign-in, register) that should redirect
  * authenticated users to the dashboard.
- * 
+ * Checks for token expiration and clears expired tokens.
+ *
  * This prevents users from accessing login/register pages when already logged in.
- * 
+ *
  * @example
  * ```tsx
  * <Route path="/signin" element={
@@ -25,13 +27,19 @@ interface PublicRouteProps {
  * } />
  * ```
  */
-export function PublicRoute({ 
-  children, 
-  redirectIfAuthenticated = false 
+export function PublicRoute({
+  children,
+  redirectIfAuthenticated = false
 }: PublicRouteProps) {
-  // Check if user is authenticated by verifying token exists
+  // Check if user is authenticated by verifying token exists and is not expired
   const accessToken = safeGetLocalStorage('access_token');
-  const isAuthenticated = !!accessToken;
+  const isAuthenticated = !!accessToken && !isTokenExpired(accessToken);
+
+  // If token exists but is expired, clear it
+  if (accessToken && isTokenExpired(accessToken)) {
+    safeRemoveLocalStorage('access_token');
+    safeRemoveLocalStorage('refresh_token');
+  }
 
   if (isAuthenticated && redirectIfAuthenticated) {
     // Redirect authenticated users to dashboard
