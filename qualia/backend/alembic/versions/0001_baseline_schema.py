@@ -235,9 +235,7 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_users_is_active"), table_name="users")
     op.drop_table("users")
 
-    if context.is_offline_mode():
-        return
-
-    if op.get_bind().dialect.name == "postgresql":
+    dialect_name = context.get_context().dialect.name if context.is_offline_mode() else op.get_bind().dialect.name
+    if dialect_name == "postgresql":
         for enum_name in ENUM_TYPE_NAMES:
             op.execute(f"DROP TYPE IF EXISTS {enum_name}")
