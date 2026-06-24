@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAccessTokenExpired } from '@/lib/jwt';
-import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
+import { safeRemoveLocalStorage } from '@/lib/axios';
 import { ROUTES } from '@/config/routes';
 
 /**
@@ -42,10 +42,8 @@ export function useTokenExpirationCheck() {
       try {
         isCheckingRef.current = true;
 
-        // Only check expiration if a token actually exists
-        // This prevents unnecessary redirects and cache clearing for logged-out users
-        const token = safeGetLocalStorage('access_token');
-        if (token && isAccessTokenExpired()) {
+        // Check if token is expired
+        if (isAccessTokenExpired()) {
           // Clear tokens
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
@@ -64,13 +62,24 @@ export function useTokenExpirationCheck() {
           // Redirect to sign-in page
           navigate(ROUTES.SIGN_IN, { replace: true });
         }
+      } catch (error) {
+        // Log error but don't throw to prevent unhandled promise rejection
+        // This ensures periodic checking continues even if one check fails
+        if (import.meta.env.DEV) {
+          console.error('Error during token expiration check:', error);
+        }
       } finally {
         isCheckingRef.current = false;
       }
     };
 
     // Check immediately on mount
-    checkTokenExpiration();
+    // Catch any promise rejections to prevent unhandled rejection warnings
+    checkTokenExpiration().catch((error) => {
+      if (import.meta.env.DEV) {
+        console.error('Error during initial token expiration check:', error);
+      }
+    });
 
     // Set up periodic check every 30 seconds
     // 30 seconds is a good balance between responsiveness and performance
