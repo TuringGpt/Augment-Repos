@@ -161,10 +161,10 @@ Use the seeded reviewer account for `/forms/assigned`, draft autosave, and submi
 
 ## 7. Run tests
 
-The current tests need the application directory on Python's import path:
+Run the backend test suite from `qualia/backend` with:
 
 ```bash
-PYTHONPATH=. pytest tests -q
+pytest tests -q
 ```
 
 On Windows PowerShell:
@@ -174,7 +174,7 @@ $env:PYTHONPATH = "."
 pytest tests -q
 ```
 
-At the time of writing, the suite has one known failing assertion involving question-update defaults (`config` returns `null` instead of `{}`). This is tracked as PR-02 in the MVP plan. The command is still useful for verifying the rest of the environment.
+This command should pass once the local environment is configured.
 
 ## Common problems
 
