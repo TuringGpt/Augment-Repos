@@ -51,8 +51,11 @@ function FormEdit() {
   const [questionError, setQuestionError] = useState("");
 
   // Capture the formCycleId at the time of mutation to avoid race conditions
-  // if the user navigates to another form while the mutation is in-flight
-  const mutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  // if the user navigates to another form while the mutation is in-flight.
+  // Use separate refs for section and question mutations to prevent one mutation
+  // from overwriting the ref value while another is in-flight.
+  const sectionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  const questionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
 
   // Reset add-question state when the route param 'id' changes to prevent
   // cross-form state leakage (e.g., posting a question to a stale section ID)
@@ -84,8 +87,8 @@ function FormEdit() {
       // Invalidate the form cycle query to refetch and show the new section
       // Use the captured formCycleId from the ref to avoid invalidating the wrong cache
       // if the route param changed while this mutation was in-flight
-      if (mutationFormCycleIdRef.current) {
-        await queryClient.invalidateQueries({ queryKey: ["formCycle", mutationFormCycleIdRef.current] });
+      if (sectionMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", sectionMutationFormCycleIdRef.current] });
       }
     },
     onError: (error) => {
@@ -109,8 +112,8 @@ function FormEdit() {
       setSelectedSectionId(null);
 
       // Invalidate the form cycle query to refetch and show the new question
-      if (mutationFormCycleIdRef.current) {
-        await queryClient.invalidateQueries({ queryKey: ["formCycle", mutationFormCycleIdRef.current] });
+      if (questionMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", questionMutationFormCycleIdRef.current] });
       }
     },
     onError: (error) => {
@@ -183,7 +186,7 @@ function FormEdit() {
 
     // Capture the formCycleId at mutation time to avoid race conditions
     // if the user navigates while the mutation is in-flight
-    mutationFormCycleIdRef.current = id;
+    sectionMutationFormCycleIdRef.current = id;
 
     // Let the backend auto-assign display_order to avoid race conditions
     // across multiple tabs/users (omitting display_order triggers safe auto-assignment)
@@ -245,7 +248,7 @@ function FormEdit() {
     }
 
     // Capture the formCycleId at mutation time to avoid race conditions
-    mutationFormCycleIdRef.current = id;
+    questionMutationFormCycleIdRef.current = id;
 
     // Let the backend auto-assign display_order to avoid race conditions
     createQuestion({
