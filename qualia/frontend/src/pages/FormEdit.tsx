@@ -46,7 +46,7 @@ function FormEdit() {
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState<string>(QuestionType.SHORT_TEXT);
+  const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.SHORT_TEXT);
   const [isRequired, setIsRequired] = useState(false);
   const [questionError, setQuestionError] = useState("");
 
@@ -253,7 +253,7 @@ function FormEdit() {
       sectionId: selectedSectionId,
       data: {
         question_text: questionText.trim(),
-        question_type: questionType as any,
+        question_type: questionType,
         is_required: isRequired,
       },
     });
@@ -482,7 +482,7 @@ function FormEdit() {
               </Label>
               <Select
                 value={questionType}
-                onValueChange={setQuestionType}
+                onValueChange={(value) => setQuestionType(value as QuestionType)}
                 disabled={isCreatingQuestion}
               >
                 <SelectTrigger id="question-type" className="w-full">
