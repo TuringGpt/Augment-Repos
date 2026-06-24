@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -54,9 +54,30 @@ const formFields = [
 
 function SignIn() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [error, setError] = useState<string>("");
   const isMountedRef = useRef(true);
   const navigationTimerRef = useRef<number | null>(null);
+
+  // Determine redirect destination after successful login
+  // Priority: 1. Query param (?redirect=...), 2. Location state (from ProtectedRoute), 3. Default to dashboard
+  const getRedirectPath = (): string => {
+    // Check for redirect query parameter
+    const redirectParam = searchParams.get('redirect');
+    if (redirectParam) {
+      return redirectParam;
+    }
+
+    // Check for location state from ProtectedRoute
+    const locationState = location.state as { from?: { pathname: string } } | null;
+    if (locationState?.from?.pathname) {
+      return locationState.from.pathname;
+    }
+
+    // Default to dashboard
+    return ROUTES.DASHBOARD;
+  };
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
@@ -78,12 +99,16 @@ function SignIn() {
         console.log("Login successful");
       }
 
+      const redirectPath = getRedirectPath();
+
       // Show success toast notification
       toast.success("Login successful!", {
-        description: "Redirecting to dashboard...",
+        description: redirectPath === ROUTES.DASHBOARD
+          ? "Redirecting to dashboard..."
+          : "Redirecting...",
       });
 
-      // Redirect to dashboard after successful login
+      // Redirect to the intended destination after successful login
       // Small delay to allow toast to be visible
       // Clear any existing timeout before scheduling a new one
       if (navigationTimerRef.current !== null) {
@@ -91,7 +116,7 @@ function SignIn() {
       }
       navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
-          navigate(ROUTES.DASHBOARD);
+          navigate(redirectPath, { replace: true });
         }
       }, 500);
     },
