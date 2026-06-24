@@ -1,7 +1,7 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
 import { isTokenExpired } from '@/lib/jwt';
 
 interface ProtectedRouteProps {
@@ -30,22 +30,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Check if user is authenticated by verifying token exists and is not expired
   const accessToken = safeGetLocalStorage('access_token');
+  const isAuthenticated = !!accessToken && !isTokenExpired(accessToken);
 
-  // Compute expiration status once to avoid decoding the JWT twice
-  const tokenExpired = useMemo(
-    () => accessToken ? isTokenExpired(accessToken) : false,
-    [accessToken]
-  );
-
-  const isAuthenticated = !!accessToken && !tokenExpired;
-
-  // Clear expired tokens in an effect to avoid side effects during render
-  useEffect(() => {
-    if (accessToken && tokenExpired) {
-      safeRemoveLocalStorage('access_token');
-      safeRemoveLocalStorage('refresh_token');
-    }
-  }, [accessToken, tokenExpired]);
+  // If token exists but is expired, clear it
+  if (accessToken && isTokenExpired(accessToken)) {
+    safeRemoveLocalStorage('access_token');
+    safeRemoveLocalStorage('refresh_token');
+  }
 
   if (!isAuthenticated) {
     // Redirect to sign-in page while preserving the attempted location
