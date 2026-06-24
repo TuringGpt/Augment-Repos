@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon, PlusIcon, AlertCircleIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
+  SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -45,13 +46,24 @@ function FormEdit() {
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState<number>(QuestionType.SHORT_TEXT);
+  const [questionType, setQuestionType] = useState<string>(QuestionType.SHORT_TEXT);
   const [isRequired, setIsRequired] = useState(false);
   const [questionError, setQuestionError] = useState("");
 
   // Capture the formCycleId at the time of mutation to avoid race conditions
   // if the user navigates to another form while the mutation is in-flight
   const mutationFormCycleIdRef = useRef<string | undefined>(undefined);
+
+  // Reset add-question state when the route param 'id' changes to prevent
+  // cross-form state leakage (e.g., posting a question to a stale section ID)
+  useEffect(() => {
+    setIsAddQuestionOpen(false);
+    setSelectedSectionId(null);
+    setQuestionText("");
+    setQuestionType(QuestionType.SHORT_TEXT);
+    setIsRequired(false);
+    setQuestionError("");
+  }, [id]);
 
   // Fetch form cycle details
   const {
