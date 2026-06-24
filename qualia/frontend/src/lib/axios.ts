@@ -101,8 +101,12 @@ apiClient.interceptors.request.use(
     // Get token from localStorage (if available)
     const token = safeGetLocalStorage('access_token');
     if (token) {
-      // Check if token is expired before using it
-      if (isTokenExpired(token)) {
+      // Skip token expiration check for authentication endpoints that don't require authentication
+      // These endpoints should be allowed to proceed even with an expired token in storage
+      const isAuthEndpoint = config.url?.startsWith('/auth/login') || config.url?.startsWith('/auth/signup');
+
+      // Check if token is expired before using it (except for auth endpoints)
+      if (!isAuthEndpoint && isTokenExpired(token)) {
         // Token is expired, clear it and redirect to login
         safeRemoveLocalStorage('access_token');
         safeRemoveLocalStorage('refresh_token');
@@ -122,14 +126,18 @@ apiClient.interceptors.request.use(
         return Promise.reject(normalizeError(new Error('Token expired')));
       }
 
-      // Ensure headers object exists
-      config.headers = config.headers || {};
+      // Only attach the Authorization header if the token is not expired
+      // For auth endpoints with expired tokens, we skip adding the header
+      if (!isTokenExpired(token)) {
+        // Ensure headers object exists
+        config.headers = config.headers || {};
 
-      // Defensively handle both AxiosHeaders instance and plain object
-      if (typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', `Bearer ${token}`);
-      } else {
-        config.headers['Authorization'] = `Bearer ${token}`;
+        // Defensively handle both AxiosHeaders instance and plain object
+        if (typeof config.headers.set === 'function') {
+          config.headers.set('Authorization', `Bearer ${token}`);
+        } else {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
       }
     }
     return config;
