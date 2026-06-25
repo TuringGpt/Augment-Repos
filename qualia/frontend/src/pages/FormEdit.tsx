@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon, PlusIcon, AlertCircleIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +28,10 @@ import {
 import { ROUTES } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useCreateSection } from "@/hooks/useCreateSection";
+import { useCreateQuestion } from "@/hooks/useCreateQuestion";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
+import { QuestionType } from "@/services/formService";
 
 function FormEdit() {
   const { id } = useParams<{ id: string }>();
@@ -32,9 +42,31 @@ function FormEdit() {
   const [sectionTitle, setSectionTitle] = useState("");
   const [sectionError, setSectionError] = useState("");
 
+  // State for adding questions
+  const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [questionText, setQuestionText] = useState("");
+  const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.SHORT_TEXT);
+  const [isRequired, setIsRequired] = useState(false);
+  const [questionError, setQuestionError] = useState("");
+
   // Capture the formCycleId at the time of mutation to avoid race conditions
-  // if the user navigates to another form while the mutation is in-flight
-  const mutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  // if the user navigates to another form while the mutation is in-flight.
+  // Use separate refs for section and question mutations to prevent one mutation
+  // from overwriting the ref value while another is in-flight.
+  const sectionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  const questionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
+
+  // Reset add-question state when the route param 'id' changes to prevent
+  // cross-form state leakage (e.g., posting a question to a stale section ID)
+  useEffect(() => {
+    setIsAddQuestionOpen(false);
+    setSelectedSectionId(null);
+    setQuestionText("");
+    setQuestionType(QuestionType.SHORT_TEXT);
+    setIsRequired(false);
+    setQuestionError("");
+  }, [id]);
 
   // Fetch form cycle details
   const {
@@ -55,13 +87,38 @@ function FormEdit() {
       // Invalidate the form cycle query to refetch and show the new section
       // Use the captured formCycleId from the ref to avoid invalidating the wrong cache
       // if the route param changed while this mutation was in-flight
-      if (mutationFormCycleIdRef.current) {
-        await queryClient.invalidateQueries({ queryKey: ["formCycle", mutationFormCycleIdRef.current] });
+      if (sectionMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", sectionMutationFormCycleIdRef.current] });
       }
     },
     onError: (error) => {
       const errorMessage = error.message || "Failed to create section";
       setSectionError(errorMessage);
+      toast.error("Error", {
+        description: errorMessage,
+      });
+    },
+  });
+
+  // Create question mutation
+  const { mutate: createQuestion, isPending: isCreatingQuestion } = useCreateQuestion({
+    onSuccess: async () => {
+      toast.success("Question added successfully!");
+      setQuestionText("");
+      setQuestionType(QuestionType.SHORT_TEXT);
+      setIsRequired(false);
+      setQuestionError("");
+      setIsAddQuestionOpen(false);
+      setSelectedSectionId(null);
+
+      // Invalidate the form cycle query to refetch and show the new question
+      if (questionMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", questionMutationFormCycleIdRef.current] });
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error.message || "Failed to create question";
+      setQuestionError(errorMessage);
       toast.error("Error", {
         description: errorMessage,
       });
@@ -129,7 +186,7 @@ function FormEdit() {
 
     // Capture the formCycleId at mutation time to avoid race conditions
     // if the user navigates while the mutation is in-flight
-    mutationFormCycleIdRef.current = id;
+    sectionMutationFormCycleIdRef.current = id;
 
     // Let the backend auto-assign display_order to avoid race conditions
     // across multiple tabs/users (omitting display_order triggers safe auto-assignment)
@@ -152,6 +209,57 @@ function FormEdit() {
       setSectionTitle("");
       setSectionError("");
     }
+  };
+
+  const handleOpenAddQuestion = (sectionId: string) => {
+    setSelectedSectionId(sectionId);
+    setQuestionError("");
+    setIsAddQuestionOpen(true);
+  };
+
+  const handleQuestionDialogOpenChange = (open: boolean) => {
+    if (!open && isCreatingQuestion) {
+      // Prevent closing while creating
+      return;
+    }
+    setIsAddQuestionOpen(open);
+    if (open) {
+      setQuestionError("");
+    } else {
+      setQuestionText("");
+      setQuestionType(QuestionType.SHORT_TEXT);
+      setIsRequired(false);
+      setQuestionError("");
+      setSelectedSectionId(null);
+    }
+  };
+
+  const handleAddQuestion = () => {
+    setQuestionError("");
+
+    if (!questionText.trim()) {
+      setQuestionError("Question text is required");
+      return;
+    }
+
+    if (!selectedSectionId) {
+      setQuestionError("No section selected");
+      return;
+    }
+
+    // Capture the formCycleId at mutation time to avoid race conditions
+    questionMutationFormCycleIdRef.current = id;
+
+    // Let the backend auto-assign display_order to avoid race conditions
+    createQuestion({
+      formCycleId: id,
+      sectionId: selectedSectionId,
+      data: {
+        question_text: questionText.trim(),
+        question_type: questionType,
+        is_required: isRequired,
+      },
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -271,7 +379,7 @@ function FormEdit() {
                   <Card key={section.id}>
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <CardTitle className="text-lg">
                             {section.title || "Untitled Section"}
                           </CardTitle>
@@ -279,15 +387,154 @@ function FormEdit() {
                             {section.questions.length} question{section.questions.length !== 1 ? "s" : ""}
                           </CardDescription>
                         </div>
-                        <Badge variant="outline">Order {section.display_order}</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Order {section.display_order}</Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenAddQuestion(section.id)}
+                          >
+                            <PlusIcon className="mr-2 h-4 w-4" />
+                            Add Question
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
+                    {section.questions.length > 0 && (
+                      <CardContent>
+                        <div className="space-y-2">
+                          {[...section.questions]
+                            .sort((a, b) => a.display_order - b.display_order)
+                            .map((question) => (
+                              <div
+                                key={question.id}
+                                className="flex items-start justify-between p-3 border rounded-md"
+                              >
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">
+                                    {question.question_text}
+                                    {question.is_required && (
+                                      <span className="text-destructive ml-1">*</span>
+                                    )}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {question.question_type.replace(/_/g, " ")}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                      Order {question.display_order}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </CardContent>
+                    )}
                   </Card>
                 ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Add Question Dialog */}
+      <Dialog open={isAddQuestionOpen} onOpenChange={handleQuestionDialogOpenChange}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New Question</DialogTitle>
+            <DialogDescription>
+              Create a new question for this section.
+            </DialogDescription>
+          </DialogHeader>
+
+          {questionError && (
+            <div
+              className="rounded-md bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive animate-in fade-in slide-in-from-top-2 duration-300"
+              role="alert"
+            >
+              {questionError}
+            </div>
+          )}
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="question-text">
+                Question Text
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <Input
+                id="question-text"
+                placeholder="Enter question text"
+                value={questionText}
+                onChange={(e) => setQuestionText(e.target.value)}
+                disabled={isCreatingQuestion}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isCreatingQuestion) {
+                    e.preventDefault();
+                    handleAddQuestion();
+                  }
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="question-type">
+                Question Type
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <Select
+                value={questionType}
+                onValueChange={(value) => setQuestionType(value as QuestionType)}
+                disabled={isCreatingQuestion}
+              >
+                <SelectTrigger id="question-type" className="w-full">
+                  <SelectValue placeholder="Select question type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={QuestionType.SHORT_TEXT}>Short Text</SelectItem>
+                  <SelectItem value={QuestionType.LONG_TEXT}>Long Text</SelectItem>
+                  <SelectItem value={QuestionType.NUMBER}>Number</SelectItem>
+                  <SelectItem value={QuestionType.SINGLE_CHOICE}>Single Choice</SelectItem>
+                  <SelectItem value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</SelectItem>
+                  <SelectItem value={QuestionType.DROPDOWN}>Dropdown</SelectItem>
+                  <SelectItem value={QuestionType.RATING}>Rating</SelectItem>
+                  <SelectItem value={QuestionType.YES_NO_NA}>Yes/No/N/A</SelectItem>
+                  <SelectItem value={QuestionType.FILE_UPLOAD}>File Upload</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is-required"
+                checked={isRequired}
+                onCheckedChange={(checked) => setIsRequired(checked === true)}
+                disabled={isCreatingQuestion}
+              />
+              <Label
+                htmlFor="is-required"
+                className="text-sm font-normal cursor-pointer"
+              >
+                This question is required
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => handleQuestionDialogOpenChange(false)}
+              disabled={isCreatingQuestion}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddQuestion} disabled={isCreatingQuestion}>
+              {isCreatingQuestion ? "Adding..." : "Add Question"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
