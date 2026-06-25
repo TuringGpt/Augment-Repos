@@ -22,7 +22,7 @@ class RoleType(TypeDecorator[Role]):
     cache_ok = True
 
     _ROLE_BY_VALUE = {role.value: role for role in Role}
-    _LEGACY_STORAGE_VALUE = Role.viewer.value
+    _LEGACY_STORAGE_VALUE = "viewer"
 
     def process_bind_param(self, value: Role | str | None, _dialect) -> str | None:
         if value is None:
