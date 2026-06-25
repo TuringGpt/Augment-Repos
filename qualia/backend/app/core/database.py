@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 import logging
 import os
+import re
 
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
@@ -43,7 +44,14 @@ def _sqlite_users_table_has_legacy_role_schema(create_sql: str | None) -> bool:
     if not create_sql:
         return False
     normalized = create_sql.lower()
-    return "role" in normalized and ("'reviewer'" in normalized or "'viewer'" in normalized)
+    if "role" not in normalized:
+        return False
+    return bool(re.search(r"\b(reviewer|viewer)\b", normalized))
+
+
+async def _sqlite_users_table_has_legacy_role_rows(conn: AsyncConnection) -> bool:
+    result = await conn.execute(text("SELECT 1 FROM users WHERE role = 'reviewer' LIMIT 1"))
+    return result.scalar_one_or_none() is not None
 
 
 async def ensure_section_table_name() -> None:
@@ -77,4 +85,6 @@ async def ensure_user_role_storage_compatibility() -> None:
                 "Legacy SQLite users.role schema detected. Recreate the local database with "
                 "`PYTHONPATH=. python scripts/seed_sqlite.py` before starting the app."
             )
+        if not await _sqlite_users_table_has_legacy_role_rows(conn):
+            return
         await conn.execute(text("UPDATE users SET role = 'user' WHERE role IN ('reviewer', 'viewer')"))

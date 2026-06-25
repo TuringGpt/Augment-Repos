@@ -152,7 +152,7 @@ async def _get_authorized_submission_user(token: str, db: AsyncSession) -> User:
 
 def _validate_assigned_user(assigned_user: User | None) -> User:
     if assigned_user is None:
-        raise HTTPException(status_code=404, detail="Form cycle or user not found")
+        raise HTTPException(status_code=404, detail="Assigned user not found")
     if assigned_user.role != Role.user:
         raise HTTPException(status_code=400, detail="Assigned account must have user role")
     if not assigned_user.is_active or not assigned_user.is_email_verified:

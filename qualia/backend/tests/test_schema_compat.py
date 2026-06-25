@@ -144,6 +144,17 @@ def test_sqlite_users_table_schema_detection_flags_legacy_role_values() -> None:
     )
 
 
+def test_sqlite_users_table_schema_detection_flags_double_quoted_legacy_role_values() -> None:
+    assert _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT "viewer" CHECK (role IN ("reviewer", "viewer", "admin"))
+        )
+        """
+    )
+
+
 def test_sqlite_users_table_schema_detection_accepts_canonical_role_values() -> None:
     assert not _sqlite_users_table_has_legacy_role_schema(
         """
@@ -169,6 +180,13 @@ def test_validate_assigned_user_rejects_admin_role() -> None:
         _validate_assigned_user(admin)
 
     assert exc_info.value.status_code == 400
+
+
+def test_validate_assigned_user_reports_missing_user() -> None:
+    with pytest.raises(HTTPException, match="Assigned user not found") as exc_info:
+        _validate_assigned_user(None)
+
+    assert exc_info.value.status_code == 404
 
 
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
