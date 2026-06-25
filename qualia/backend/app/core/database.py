@@ -13,6 +13,7 @@ from app.core.config import _database_url
 
 Base = declarative_base()
 logger = logging.getLogger(__name__)
+_SQLITE_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9_]+$")
 engine = create_async_engine(
     _database_url(),
     echo=os.getenv("SQL_ECHO", "false").lower() in {"1", "true", "yes", "on"},
@@ -40,8 +41,14 @@ async def _sqlite_table_sql(conn: AsyncConnection, table_name: str) -> str | Non
     return result.scalar_one_or_none()
 
 
+def _sqlite_identifier(identifier: str) -> str:
+    if not _SQLITE_IDENTIFIER_RE.fullmatch(identifier):
+        raise ValueError(f"Unsupported SQLite identifier: {identifier}")
+    return f'"{identifier}"'
+
+
 async def _sqlite_table_column_names(conn: AsyncConnection, table_name: str) -> set[str]:
-    result = await conn.execute(text(f"PRAGMA table_info({table_name})"))
+    result = await conn.execute(text(f"PRAGMA table_info({_sqlite_identifier(table_name)})"))
     return {row[1] for row in result}
 
 
