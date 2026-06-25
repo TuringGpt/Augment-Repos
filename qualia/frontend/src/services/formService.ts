@@ -133,7 +133,59 @@ export const assignReviewer = async (
     });
   }
 
-  return response.data
+  return response.data;
+};
+
+/**
+ * Response from publishing a form cycle
+ */
+export interface PublishFormCycleResponse {
+  id: string;
+  status: string;
+  is_published: number;
+}
+
+/**
+ * Publish a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @returns Promise with publish response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const result = await publishFormCycle("550e8400-e29b-41d4-a716-446655440000");
+ * console.log(result.id); // "550e8400-e29b-41d4-a716-446655440000"
+ * console.log(result.status); // "active"
+ * console.log(result.is_published); // true
+ * ```
+ */
+export const publishFormCycle = async (
+  formCycleId: string,
+): Promise<Record<string, PublishFormCycleResponse>> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Publish form cycle request:", {
+      endpoint: `/form/${formCycleId}/publish`,
+      formCycleId: formCycleId,
+    });
+  }
+
+  const response = await apiClient.post<PublishFormCycleResponse>(
+    `/forms/${formCycleId}/publish`,
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Publish form cycle response:", {
+      id: response.data.id,
+      status: response.data.status,
+      isPublished: response.data.is_published,
+    });
+  }
+
+  return response.data;
 };
 
 /**
