@@ -11,21 +11,39 @@ from app.core.database import Base
 
 
 class Role(str, enum.Enum):
-    user = "user"; admin = "Admin"
+    admin = "admin"
+    reviewer = "reviewer"
+    viewer = "viewer"
+    user = "user"
 
 
 class RoleType(TypeDecorator[Role]):
-    impl = String(32); cache_ok = True
+    impl = String(32)
+    cache_ok = True
+
+    _ROLE_BY_VALUE = {role.value: role for role in Role}
 
     def process_bind_param(self, value: Role | str | None, _dialect) -> str | None:
-        if value is None: return None
-        if isinstance(value, Role): return value.name
-        if isinstance(value, str) and value.lower() in {"reviewer", "viewer"}: return Role.admin.value
-        if isinstance(value, str): return value.lower()
+        if value is None:
+            return None
+        if isinstance(value, Role):
+            return value.value
+        if isinstance(value, str):
+            normalized = value.lower()
+            if normalized in self._ROLE_BY_VALUE:
+                return normalized
+            if normalized == "Admin":
+                return Role.admin.value
+            return normalized
         raise TypeError(f"Unsupported role value: {value!r}")
 
     def process_result_value(self, value: str | None, _dialect) -> Role | None:
-        return None if value is None else value
+        if value is None:
+            return None
+        normalized = value.lower()
+        if normalized in self._ROLE_BY_VALUE:
+            return self._ROLE_BY_VALUE[normalized]
+        raise ValueError(f"Unsupported role value from database: {value!r}")
 
 
 class User(Base):
@@ -39,7 +57,7 @@ class User(Base):
     last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[Role] = mapped_column(
         RoleType(),
-        default=Role.admin,
+        default=Role.viewer,
         server_default=text("'viewer'"),
         index=True,
         nullable=False,
