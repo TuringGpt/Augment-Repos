@@ -193,6 +193,18 @@ describe('Dialog', () => {
     it('renders footer with content', async () => {
       const user = userEvent.setup()
 
+      render(
+        <Dialog>
+          <DialogTrigger>Open</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Test Dialog</DialogTitle>
+            <DialogFooter>
+              <button>Action</button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )
+
       await user.click(screen.getByRole('button', { name: /open/i }))
 
       await waitFor(() => {
