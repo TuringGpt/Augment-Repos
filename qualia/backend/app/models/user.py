@@ -22,14 +22,19 @@ class RoleType(TypeDecorator[Role]):
     cache_ok = True
 
     _ROLE_BY_VALUE = {role.value: role for role in Role}
+    _LEGACY_STORAGE_VALUE = Role.viewer.value
 
     def process_bind_param(self, value: Role | str | None, _dialect) -> str | None:
         if value is None:
             return None
         if isinstance(value, Role):
+            if value is Role.user:
+                return self._LEGACY_STORAGE_VALUE
             return value.value
         if isinstance(value, str):
             normalized = value.lower()
+            if normalized == Role.user.value:
+                return self._LEGACY_STORAGE_VALUE
             if normalized in self._ROLE_BY_VALUE:
                 return normalized
             raise ValueError(f"Unsupported role value: {value!r}")
@@ -39,6 +44,8 @@ class RoleType(TypeDecorator[Role]):
         if value is None:
             return None
         normalized = value.lower()
+        if normalized == self._LEGACY_STORAGE_VALUE:
+            return Role.user
         if normalized in self._ROLE_BY_VALUE:
             return self._ROLE_BY_VALUE[normalized]
         raise ValueError(f"Unsupported role value from database: {value!r}")

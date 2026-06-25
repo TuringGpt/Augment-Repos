@@ -11,7 +11,7 @@ from app.core import config
 from app.main import app
 from app.models.question import Question, QuestionType
 from app.models.section import Section
-from app.models.user import Role, User
+from app.models.user import Role, RoleType, User
 from app.sections import create_question
 from app.sections import delete_question
 from app.sections import QuestionCreate
@@ -130,6 +130,19 @@ def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPat
 
     with pytest.raises(RuntimeError, match="Accepted names: STORAGE_BUCKET, AWS_STORAGE_BUCKET"):
         config.Settings()
+
+
+def test_role_type_persists_user_role_as_legacy_viewer_value() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_bind_param(Role.user, None) == "viewer"
+    assert role_type.process_bind_param("user", None) == "viewer"
+
+
+def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_result_value("viewer", None) is Role.user
 
 
 class _ScalarResult:
