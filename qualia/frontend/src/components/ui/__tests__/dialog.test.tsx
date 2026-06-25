@@ -236,7 +236,7 @@ describe('Dialog', () => {
     })
 
     it('applies custom className to footer', async () => {
-      const user = userEvent.setup
+      const user = userEvent.setup()
 
       render(
         <Dialog>
@@ -378,6 +378,7 @@ describe('Dialog', () => {
     })
 
     it('applies custom className to title', async () => {
+      const user = userEvent.setup()
 
       render(
         <Dialog>
