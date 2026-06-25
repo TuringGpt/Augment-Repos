@@ -50,7 +50,7 @@ def _sqlite_users_table_has_legacy_role_schema(create_sql: str | None) -> bool:
 
 
 async def _sqlite_users_table_has_legacy_role_rows(conn: AsyncConnection) -> bool:
-    result = await conn.execute(text("SELECT 1 FROM users WHERE role = 'reviewer' LIMIT 1"))
+    result = await conn.execute(text("SELECT 1 FROM users WHERE role IN ('reviewer', 'viewer') LIMIT 1"))
     return result.scalar_one_or_none() is not None
 
 
