@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -54,9 +54,72 @@ const formFields = [
 
 function SignIn() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [error, setError] = useState<string>("");
   const isMountedRef = useRef(true);
   const navigationTimerRef = useRef<number | null>(null);
+
+  /**
+   * Validates that a redirect path is safe for internal navigation
+   * Only allows relative paths that start with "/" to prevent:
+   * - Cross-origin navigation (absolute URLs)
+   * - Protocol handlers (javascript:, data:, etc.)
+   * - Unexpected navigation errors
+   *
+   * Allows query strings and hash fragments (e.g., /path?query=value#hash)
+   *
+   * @param path - The path to validate
+   * @returns true if the path is a valid internal path, false otherwise
+   */
+  const isValidInternalPath = (path: string): boolean => {
+    // Must be a non-empty string
+    if (!path || typeof path !== 'string') {
+      return false;
+    }
+
+    // Must start with "/" to be a relative path
+    if (!path.startsWith('/')) {
+      return false;
+    }
+
+    // Must not contain "//" which could indicate absolute URL or protocol-relative URL
+    if (path.includes('//')) {
+      return false;
+    }
+
+    // Check for protocol handlers (e.g., http://, https://, javascript:, data:)
+    // Only check the portion before any query string or hash to allow colons in those parts
+    const pathBeforeQueryOrHash = path.split(/[?#]/)[0];
+    if (pathBeforeQueryOrHash.includes(':')) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Determine redirect destination after successful login
+  // Priority: 1. Query param (?redirect=...), 2. Location state (from ProtectedRoute), 3. Default to dashboard
+  const getRedirectPath = (): string => {
+    // Check for redirect query parameter
+    const redirectParam = searchParams.get('redirect');
+    if (redirectParam && isValidInternalPath(redirectParam)) {
+      return redirectParam;
+    }
+
+    // Check for location state from ProtectedRoute
+    // Preserve full path including query parameters and hash fragments
+    const locationState = location.state as { from?: { pathname: string; search: string; hash: string } } | null;
+    if (locationState?.from?.pathname) {
+      const fullPath = locationState.from.pathname + (locationState.from.search || '') + (locationState.from.hash || '');
+      if (isValidInternalPath(fullPath)) {
+        return fullPath;
+      }
+    }
+
+    // Default to dashboard
+    return ROUTES.DASHBOARD;
+  };
 
   // Track mount state to prevent state updates after unmount
   useEffect(() => {
@@ -78,12 +141,16 @@ function SignIn() {
         console.log("Login successful");
       }
 
+      const redirectPath = getRedirectPath();
+
       // Show success toast notification
       toast.success("Login successful!", {
-        description: "Redirecting to dashboard...",
+        description: redirectPath === ROUTES.DASHBOARD
+          ? "Redirecting to dashboard..."
+          : "Redirecting...",
       });
 
-      // Redirect to dashboard after successful login
+      // Redirect to the intended destination after successful login
       // Small delay to allow toast to be visible
       // Clear any existing timeout before scheduling a new one
       if (navigationTimerRef.current !== null) {
@@ -91,7 +158,7 @@ function SignIn() {
       }
       navigationTimerRef.current = window.setTimeout(() => {
         if (isMountedRef.current) {
-          navigate(ROUTES.DASHBOARD);
+          navigate(redirectPath, { replace: true });
         }
       }, 500);
     },

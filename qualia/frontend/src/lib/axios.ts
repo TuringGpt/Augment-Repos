@@ -1,4 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import { isTokenExpired } from './jwt';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from './storage';
 
 /**
  * Base API URL from environment variables
@@ -59,56 +61,7 @@ export const apiClient = axios.create({
   },
 });
 
-/**
- * Safely retrieves a value from localStorage.
- * Returns null if localStorage is unavailable (SSR, tests, or blocked by browser).
- */
-export function safeGetLocalStorage(key: string): string | null {
-  try {
-    // Check if we're in a browser environment
-    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-      return null;
-    }
-    return window.localStorage.getItem(key);
-  } catch {
-    // localStorage access can throw when disabled/blocked
-    return null;
-  }
-}
 
-/**
- * Safely sets a value in localStorage.
- * Returns true if the operation succeeded, false otherwise.
- * @returns boolean indicating whether the value was successfully stored
- */
-export function safeSetLocalStorage(key: string, value: string): boolean {
-  try {
-    // Check if we're in a browser environment
-    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-      window.localStorage.setItem(key, value);
-      // Verify the value was actually stored by reading it back
-      return window.localStorage.getItem(key) === value;
-    }
-    return false;
-  } catch {
-    // localStorage access can throw when disabled/blocked
-    return false;
-  }
-}
-
-/**
- * Safely removes a value from localStorage.
- * Silently fails if localStorage is unavailable.
- */
-export function safeRemoveLocalStorage(key: string): void {
-  try {
-    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-      window.localStorage.removeItem(key);
-    }
-  } catch {
-    // Silently fail if localStorage is blocked
-  }
-}
 
 /**
  * Helper function to normalize any error into ApiError format
@@ -140,6 +93,7 @@ function normalizeError(error: unknown): ApiError {
 
 /**
  * Request interceptor to add authentication token
+ * Checks for token expiration before sending requests
  * Normalizes errors to ApiError format for consistent error handling
  */
 apiClient.interceptors.request.use(
@@ -147,14 +101,43 @@ apiClient.interceptors.request.use(
     // Get token from localStorage (if available)
     const token = safeGetLocalStorage('access_token');
     if (token) {
-      // Ensure headers object exists
-      config.headers = config.headers || {};
+      // Skip token expiration check for authentication endpoints that don't require authentication
+      // These endpoints should be allowed to proceed even with an expired token in storage
+      const isAuthEndpoint = config.url?.startsWith('/auth/login') || config.url?.startsWith('/auth/signup');
 
-      // Defensively handle both AxiosHeaders instance and plain object
-      if (typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', `Bearer ${token}`);
-      } else {
-        config.headers['Authorization'] = `Bearer ${token}`;
+      // Check if token is expired before using it (except for auth endpoints)
+      if (!isAuthEndpoint && isTokenExpired(token)) {
+        // Token is expired, clear it and redirect to login
+        safeRemoveLocalStorage('access_token');
+        safeRemoveLocalStorage('refresh_token');
+
+        // Redirect to login page (only if not already on sign-in page)
+        // Preserve full URL including query parameters and hash fragments
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/signin') {
+          const fullPath = currentPath + window.location.search + window.location.hash;
+          const redirectParam = fullPath !== '/'
+            ? `?redirect=${encodeURIComponent(fullPath)}`
+            : '';
+          window.location.href = `/signin${redirectParam}`;
+        }
+
+        // Reject the request to prevent it from being sent
+        return Promise.reject(normalizeError(new Error('Token expired')));
+      }
+
+      // Only attach the Authorization header if the token is not expired
+      // For auth endpoints with expired tokens, we skip adding the header
+      if (!isTokenExpired(token)) {
+        // Ensure headers object exists
+        config.headers = config.headers || {};
+
+        // Defensively handle both AxiosHeaders instance and plain object
+        if (typeof config.headers.set === 'function') {
+          config.headers.set('Authorization', `Bearer ${token}`);
+        } else {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
       }
     }
     return config;
@@ -282,8 +265,19 @@ apiClient.interceptors.response.use(
         if (hasAuthorizationHeader(axiosError.config?.headers)) {
           safeRemoveLocalStorage('access_token');
           safeRemoveLocalStorage('refresh_token');
-          // You might want to redirect to login page here
-          // window.location.href = '/signin';
+
+          // Redirect to login page with the current location for post-login redirect
+          // Use window.location.href to ensure a full page reload and proper cleanup of app state
+          // Only redirect if not already on sign-in page to prevent unnecessary reloads
+          // Preserve full URL including query parameters and hash fragments
+          const currentPath = window.location.pathname;
+          if (currentPath !== '/signin') {
+            const fullPath = currentPath + window.location.search + window.location.hash;
+            const redirectParam = fullPath !== '/'
+              ? `?redirect=${encodeURIComponent(fullPath)}`
+              : '';
+            window.location.href = `/signin${redirectParam}`;
+          }
         }
       }
 
