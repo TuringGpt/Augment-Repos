@@ -36,7 +36,7 @@ class RoleType(TypeDecorator[Role]):
             if normalized == Role.user.value:
                 return self._LEGACY_STORAGE_VALUE
             if normalized == self._LEGACY_STORAGE_VALUE:
-                return value
+                return normalized
             if normalized in self._ROLE_BY_VALUE:
                 return normalized
             raise ValueError(f"Unsupported role value: {value!r}")
