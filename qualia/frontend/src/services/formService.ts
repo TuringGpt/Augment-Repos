@@ -142,7 +142,7 @@ export const assignReviewer = async (
 export interface PublishFormCycleResponse {
   id: string;
   status: string;
-  is_published: number;
+  is_published: true;
 }
 
 /**
@@ -167,7 +167,7 @@ export const publishFormCycle = async (
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Publish form cycle request:", {
-      endpoint: `/form/${formCycleId}/publish`,
+      endpoint: `/forms/${formCycleId}/publish`,
       formCycleId: formCycleId,
     });
   }
