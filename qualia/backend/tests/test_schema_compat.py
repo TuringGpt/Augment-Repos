@@ -143,6 +143,11 @@ def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
     role_type = RoleType()
 
     assert role_type.process_result_value("viewer", None) is Role.user
+    assert Role.viewer is Role.user
+
+
+def test_user_role_default_matches_runtime_user_role() -> None:
+    assert User.role.default.arg is Role.user
 
 
 class _ScalarResult:

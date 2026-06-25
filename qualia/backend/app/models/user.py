@@ -13,8 +13,8 @@ from app.core.database import Base
 class Role(str, enum.Enum):
     admin = "admin"
     reviewer = "reviewer"
-    viewer = "viewer"
     user = "user"
+    viewer = "user"
 
 
 class RoleType(TypeDecorator[Role]):
@@ -62,7 +62,7 @@ class User(Base):
     last_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[Role] = mapped_column(
         RoleType(),
-        default=Role.viewer,
+        default=Role.user,
         server_default=text("'viewer'"),
         index=True,
         nullable=False,
