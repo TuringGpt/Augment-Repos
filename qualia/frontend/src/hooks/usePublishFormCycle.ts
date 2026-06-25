@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { publishFormCycle } from '@/services/formService';
 import type { PublishFormCycleResponse } from '@/services/formService';
+import type { ApiError } from '@/lib/axios';
 
 /**
  * TanStack Query mutation hook for publishing a form cycle
@@ -31,8 +32,8 @@ export const usePublishFormCycle = (options?: {
   onError?: (error: ApiError) => void;
 }) => {
   return useMutation<PublishFormCycleResponse, ApiError, string>({
-    mutationFn: (formCycleId: string) => publishFormCycle({formCycleId}),
-    onSuccess: options?.onSuccess(),
+    mutationFn: (formCycleId: string) => publishFormCycle(formCycleId),
+    onSuccess: options?.onSuccess,
     onError: options?.onError,
     // Disable retry to prevent duplicate publish attempts on transient failures
     // Publishing is non-idempotent, so retrying could cause race conditions

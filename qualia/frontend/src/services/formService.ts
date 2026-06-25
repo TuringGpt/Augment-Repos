@@ -163,7 +163,7 @@ export interface PublishFormCycleResponse {
  */
 export const publishFormCycle = async (
   formCycleId: string,
-): Promise<Record<string, PublishFormCycleResponse>> => {
+): Promise<PublishFormCycleResponse> => {
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Publish form cycle request:", {
