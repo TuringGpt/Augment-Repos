@@ -137,6 +137,7 @@ def test_role_type_persists_user_role_as_legacy_viewer_value() -> None:
 
     assert role_type.process_bind_param(Role.user, None) == "viewer"
     assert role_type.process_bind_param("user", None) == "viewer"
+    assert role_type.process_bind_param("viewer", None) == "viewer"
 
 
 def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
