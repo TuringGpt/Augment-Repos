@@ -3,7 +3,7 @@
  * Provides JWT token decoding without external dependencies
  */
 
-import { safeGetLocalStorage } from './axios';
+import { safeGetLocalStorage } from './storage';
 
 export interface JWTPayload {
   sub?: string;  // Subject (typically user ID or email)
@@ -82,23 +82,59 @@ export function getUserFromToken(): JWTPayload | null {
 }
 
 /**
+ * Check if a JWT token is expired
+ *
+ * @param token - JWT token string
+ * @returns true if the token is expired, false otherwise
+ */
+export function isTokenExpired(token: string | null): boolean {
+  if (!token) {
+    return true;
+  }
+
+  try {
+    const payload = decodeJWT(token);
+    if (!payload || !payload.exp) {
+      return true;
+    }
+
+    // exp is in seconds, Date.now() is in milliseconds
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp <= currentTime;
+  } catch {
+    // If we can't decode the token, consider it expired
+    return true;
+  }
+}
+
+/**
+ * Check if the access token in localStorage is expired
+ *
+ * @returns true if the token is expired or missing, false otherwise
+ */
+export function isAccessTokenExpired(): boolean {
+  const token = safeGetLocalStorage('access_token');
+  return isTokenExpired(token);
+}
+
+/**
  * Extract user's display name from token
  * Falls back to email username if no name is present
- * 
+ *
  * @returns User's display name or 'User' as fallback
  */
 export function getUserDisplayName(): string {
   const user = getUserFromToken();
-  
+
   if (!user) {
     return 'User';
   }
-  
+
   // Try to get name from token
   if (user.name && typeof user.name === 'string') {
     return user.name;
   }
-  
+
   // Try to get email and extract username
   const email = user.email || user.sub;
   if (email && typeof email === 'string') {
@@ -110,6 +146,6 @@ export function getUserDisplayName(): string {
       return username.charAt(0).toUpperCase() + username.slice(1);
     }
   }
-  
+
   return 'User';
 }

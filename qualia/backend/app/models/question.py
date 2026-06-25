@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import Boolean, Enum, ForeignKey, Integer, JSON, Text, Uuid, false, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.database import Base
+from app.core.db_base import Base
 
 
 class QuestionType(str, enum.Enum):

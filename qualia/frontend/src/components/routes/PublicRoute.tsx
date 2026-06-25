@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
+import { isTokenExpired } from '@/lib/jwt';
 
 interface PublicRouteProps {
   children: ReactNode;
@@ -10,12 +11,13 @@ interface PublicRouteProps {
 
 /**
  * PublicRoute component
- * 
+ *
  * Wraps public routes (like sign-in, register) that should redirect
  * authenticated users to the dashboard.
- * 
+ * Checks for token expiration and clears expired tokens.
+ *
  * This prevents users from accessing login/register pages when already logged in.
- * 
+ *
  * @example
  * ```tsx
  * <Route path="/signin" element={
@@ -25,13 +27,28 @@ interface PublicRouteProps {
  * } />
  * ```
  */
-export function PublicRoute({ 
-  children, 
-  redirectIfAuthenticated = false 
+export function PublicRoute({
+  children,
+  redirectIfAuthenticated = false
 }: PublicRouteProps) {
-  // Check if user is authenticated by verifying token exists
+  // Check if user is authenticated by verifying token exists and is not expired
   const accessToken = safeGetLocalStorage('access_token');
-  const isAuthenticated = !!accessToken;
+
+  // Compute expiration status once to avoid decoding the JWT twice
+  const tokenExpired = useMemo(
+    () => accessToken ? isTokenExpired(accessToken) : false,
+    [accessToken]
+  );
+
+  const isAuthenticated = !!accessToken && !tokenExpired;
+
+  // Clear expired tokens in an effect to avoid side effects during render
+  useEffect(() => {
+    if (accessToken && tokenExpired) {
+      safeRemoveLocalStorage('access_token');
+      safeRemoveLocalStorage('refresh_token');
+    }
+  }, [accessToken, tokenExpired]);
 
   if (isAuthenticated && redirectIfAuthenticated) {
     // Redirect authenticated users to dashboard

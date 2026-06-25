@@ -2,7 +2,7 @@ import enum, uuid
 from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Uuid, false, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.database import Base
+from app.core.db_base import Base
 
 
 class FormCycleStatus(str, enum.Enum):

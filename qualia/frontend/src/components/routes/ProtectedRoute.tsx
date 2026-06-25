@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
-import { safeGetLocalStorage } from '@/lib/axios';
+import { safeGetLocalStorage, safeRemoveLocalStorage } from '@/lib/storage';
+import { isTokenExpired } from '@/lib/jwt';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -9,11 +10,12 @@ interface ProtectedRouteProps {
 
 /**
  * ProtectedRoute component
- * 
+ *
  * Wraps routes that require authentication.
  * Redirects unauthenticated users to the sign-in page.
+ * Checks for token expiration and clears expired tokens.
  * Preserves the attempted URL to redirect back after login.
- * 
+ *
  * @example
  * ```tsx
  * <Route path="/dashboard" element={
@@ -25,10 +27,16 @@ interface ProtectedRouteProps {
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
-  
-  // Check if user is authenticated by verifying token exists
+
+  // Check if user is authenticated by verifying token exists and is not expired
   const accessToken = safeGetLocalStorage('access_token');
-  const isAuthenticated = !!accessToken;
+  const isAuthenticated = !!accessToken && !isTokenExpired(accessToken);
+
+  // If token exists but is expired, clear it
+  if (accessToken && isTokenExpired(accessToken)) {
+    safeRemoveLocalStorage('access_token');
+    safeRemoveLocalStorage('refresh_token');
+  }
 
   if (!isAuthenticated) {
     // Redirect to sign-in page while preserving the attempted location

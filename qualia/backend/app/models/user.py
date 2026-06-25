@@ -7,13 +7,13 @@ from sqlalchemy import Boolean, DateTime, String, Uuid, false, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
 
-from app.core.database import Base
+from app.core.db_base import Base
 
 
 class Role(str, enum.Enum):
-    admin = "admin"
-    reviewer = "reviewer"
     user = "user"
+    admin = "admin"
+    reviewer = "user"
     viewer = "user"
 
 
@@ -21,8 +21,14 @@ class RoleType(TypeDecorator[Role]):
     impl = String(32)
     cache_ok = True
 
-    _ROLE_BY_VALUE = {role.value: role for role in Role}
     _LEGACY_STORAGE_VALUE = "viewer"
+
+    @classmethod
+    def _normalized_role(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized in {"reviewer", "viewer"}:
+            return Role.user.value
+        return normalized
 
     def process_bind_param(self, value: Role | str | None, _dialect) -> str | None:
         if value is None:
@@ -32,25 +38,16 @@ class RoleType(TypeDecorator[Role]):
                 return self._LEGACY_STORAGE_VALUE
             return value.value
         if isinstance(value, str):
-            normalized = value.lower()
+            normalized = self._normalized_role(value)
             if normalized == Role.user.value:
                 return self._LEGACY_STORAGE_VALUE
-            if normalized == self._LEGACY_STORAGE_VALUE:
-                return normalized
-            if normalized in self._ROLE_BY_VALUE:
-                return normalized
-            raise ValueError(f"Unsupported role value: {value!r}")
+            return Role(normalized).value
         raise TypeError(f"Unsupported role value: {value!r}")
 
     def process_result_value(self, value: str | None, _dialect) -> Role | None:
         if value is None:
             return None
-        normalized = value.lower()
-        if normalized == self._LEGACY_STORAGE_VALUE:
-            return Role.user
-        if normalized in self._ROLE_BY_VALUE:
-            return self._ROLE_BY_VALUE[normalized]
-        raise ValueError(f"Unsupported role value from database: {value!r}")
+        return Role(self._normalized_role(value))
 
 
 class User(Base):
