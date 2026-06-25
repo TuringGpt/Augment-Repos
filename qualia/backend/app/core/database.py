@@ -40,6 +40,11 @@ async def _sqlite_table_sql(conn: AsyncConnection, table_name: str) -> str | Non
     return result.scalar_one_or_none()
 
 
+async def _sqlite_table_column_names(conn: AsyncConnection, table_name: str) -> set[str]:
+    result = await conn.execute(text(f"PRAGMA table_info({table_name})"))
+    return {row[1] for row in result}
+
+
 def _sqlite_users_table_has_legacy_role_schema(create_sql: str | None) -> bool:
     if not create_sql:
         return False
@@ -80,6 +85,12 @@ async def ensure_user_role_storage_compatibility() -> None:
         users_table_sql = await _sqlite_table_sql(conn, "users")
         if users_table_sql is None:
             return
+        user_column_names = await _sqlite_table_column_names(conn, "users")
+        if "role" not in user_column_names:
+            raise RuntimeError(
+                "SQLite users table is missing the required role column. Recreate the local database with "
+                "`PYTHONPATH=. python scripts/seed_sqlite.py` before starting the app."
+            )
         if _sqlite_users_table_has_legacy_role_schema(users_table_sql):
             raise RuntimeError(
                 "Legacy SQLite users.role schema detected. Recreate the local database with "
