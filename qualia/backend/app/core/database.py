@@ -5,12 +5,11 @@ import os
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import declarative_base
 
 from app.core.config import _database_url
+from app.core.db_base import Base
 
 
-Base = declarative_base()
 logger = logging.getLogger(__name__)
 engine = create_async_engine(
     _database_url(),
