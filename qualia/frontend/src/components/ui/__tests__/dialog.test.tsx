@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@/test/utils'
+import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import {
   Dialog,
@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 
@@ -132,6 +133,8 @@ describe('Dialog', () => {
       await waitFor(() => {
         expect(screen.getByText('Test Dialog')).toBeInTheDocument()
       })
+
+      await user.click(screen.getByRole('button', { name: /close/i }))
 
       await waitFor(() => {
         expect(screen.queryByText('Test Dialog')).not.toBeInTheDocument()
