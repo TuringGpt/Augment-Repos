@@ -32,9 +32,7 @@ class RoleType(TypeDecorator[Role]):
             normalized = value.lower()
             if normalized in self._ROLE_BY_VALUE:
                 return normalized
-            if normalized == "Admin":
-                return Role.admin.value
-            return normalized
+            raise ValueError(f"Unsupported role value: {value!r}")
         raise TypeError(f"Unsupported role value: {value!r}")
 
     def process_result_value(self, value: str | None, _dialect) -> Role | None:
