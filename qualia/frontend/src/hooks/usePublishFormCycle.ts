@@ -28,7 +28,7 @@ import type { ApiError } from '@/lib/axios';
  * ```
  */
 export const usePublishFormCycle = (options?: {
-  onSuccess?: (data: PublishFormCycleResponse) => Promise<string>;
+  onSuccess?: (data: PublishFormCycleResponse) => void;
   onError?: (error: ApiError) => void;
 }) => {
   return useMutation<PublishFormCycleResponse, ApiError, string>({
