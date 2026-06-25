@@ -70,6 +70,8 @@ async def ensure_user_role_storage_compatibility() -> None:
         return
     async with engine.begin() as conn:
         users_table_sql = await _sqlite_table_sql(conn, "users")
+        if users_table_sql is None:
+            return
         if _sqlite_users_table_has_legacy_role_schema(users_table_sql):
             raise RuntimeError(
                 "Legacy SQLite users.role schema detected. Recreate the local database with "

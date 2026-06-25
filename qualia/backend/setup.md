@@ -108,12 +108,12 @@ It creates:
 | Account | Email | Password | Current role |
 | --- | --- | --- | --- |
 | Admin | `admin@qualia.local` | `admin123` | `admin` |
-| Reviewer | `reviewer@qualia.local` | `reviewer123` | `reviewer` |
-| Viewer | `viewer@qualia.local` | `viewer123` | `viewer` |
+| Reviewer | `reviewer@qualia.local` | `reviewer123` | `user` |
+| Viewer | `viewer@qualia.local` | `viewer123` | `user` |
 
-It also creates one published sample Form Cycle assigned to the reviewer, with sample questions and a submitted response.
+It also creates one published sample Form Cycle assigned to the seeded reviewer account, with sample questions and a submitted response.
 
-These roles reflect the current implementation. The planned product changes replace `reviewer` and `viewer` with one `user` role.
+The seeded non-admin accounts now use the canonical `user` role. Their email addresses stay the same for local testing, but submission flows check for `user`, not `reviewer`.
 
 ## 5. Run the API
 
@@ -157,7 +157,7 @@ curl http://127.0.0.1:8000/api/v1/forms \
   -H "Authorization: Bearer <access_token>"
 ```
 
-Use the seeded reviewer account for `/forms/assigned`, draft autosave, and submission endpoints. The current API only allows the `reviewer` role to use reviewer submission routes.
+Use either seeded non-admin account for `/forms/assigned`, draft autosave, and submission endpoints. The current API requires the `user` role for submission flows.
 
 ## 7. Run tests
 
