@@ -142,7 +142,7 @@ export const assignReviewer = async (
 export interface PublishFormCycleResponse {
   id: string;
   status: string;
-  is_published: true;
+  is_published: boolean;
 }
 
 /**
