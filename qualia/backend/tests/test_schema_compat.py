@@ -147,7 +147,7 @@ def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
 
 
 def test_user_role_default_matches_runtime_user_role() -> None:
-    assert User.role.default.arg is Role.user
+    assert User.__table__.c.role.default.arg is Role.user
 
 
 class _ScalarResult:
