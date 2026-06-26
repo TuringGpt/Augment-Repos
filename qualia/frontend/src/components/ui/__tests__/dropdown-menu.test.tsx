@@ -486,6 +486,15 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         expect(screen.getByText('More Options')).toBeInTheDocument()
       })
+
+      // Interact with submenu trigger to open submenu
+      const subTrigger = screen.getByText('More Options')
+      await user.hover(subTrigger)
+
+      // Verify submenu content is displayed
+      await waitFor(() => {
+        expect(screen.getByText('Sub Item 1')).toBeInTheDocument()
+      })
     })
 
     it('renders submenu trigger with inset prop', async () => {
