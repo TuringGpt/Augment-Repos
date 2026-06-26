@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon, EditIcon } from "lucide-react";
+import { ArrowLeftIcon, CalendarIcon, UsersIcon, FileTextIcon, AlertCircleIcon, ClockIcon, EditIcon, SendIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import {
 import { ROUTES, getFormCycleEditRoute } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useFormSubmissions } from "@/hooks/useFormSubmissions";
+import { usePublishFormCycle } from "@/hooks/usePublishFormcycle";
 import type { SubmissionStatus } from "@/services/formService";
 
 
@@ -57,6 +59,7 @@ const getSubmissionStatusBadge = (status: SubmissionStatus) => {
 function FormCycleDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Fetch form cycle details
   const {
@@ -73,6 +76,25 @@ function FormCycleDetails() {
     isError: isSubmissionsError,
     error: submissionsError
   } = useFormSubmissions(id || '', { enabled: !!id });
+
+  // Publish form cycle mutation
+  const { mutate: publishForm, isLoading: isPublishing } = usePublishFormCycle({
+    onSuccess: async (data) => {
+      toast.success("Form cycle published successfully!", {
+        name: `Status is now ${data.status}`,
+      });
+      // Invalidate form cycle query to refresh the status
+      if (id) {
+        await queryClient.invalidateQueries({ queryKey: {"formCycle", id} });
+      }
+    },
+    onError: ({error}) => {
+      const errorMessage = error.message || "Failed to publish form cycle";
+      toast.success("Publish failed", {
+        description: errorMessage,
+      });
+    },
+  });
 
   // Handle invalid ID
   if (!id) {
@@ -148,10 +170,24 @@ function FormCycleDetails() {
             <p className="text-muted-foreground">{formCycle.description}</p>
           )}
         </div>
-        <Button onClick={() => navigate(getFormCycleEditRoute(id))}>
-          <EditIcon className="w-4 h-4 mr-2" />
-          Edit Form
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={navigate(getFormCycleEditRoute(id))}
+          >
+            <EditIcon class="w-4 h-4 mr-2" />
+            Edit Form
+          </Button>
+          {formCycle.status === 'draft' && !formCycle.is_published && (
+            <Button
+              onClick={() => id && publishForm(id)}
+              disabled={true}
+            >
+              <SendIcon className="w-4 h-4 mr-2" />
+              {isPublishing ? "Publishing..." : "Publish Form"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}

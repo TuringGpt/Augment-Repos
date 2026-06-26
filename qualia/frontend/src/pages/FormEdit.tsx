@@ -29,6 +29,7 @@ import { ROUTES } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useCreateSection } from "@/hooks/useCreateSection";
 import { useCreateQuestion } from "@/hooks/useCreateQuestion";
+import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
 import { QuestionType } from "@/services/formService";
@@ -121,6 +122,25 @@ function FormEdit() {
       setQuestionError(errorMessage);
       toast.error("Error", {
         description: errorMessage,
+      });
+    },
+  });
+
+  // Publish form cycle mutation
+  const { mutate: publishForm, isPending: isPublishing } = usePublishFormCycle({
+    onSuccess: async ({data}) => {
+      toast.success("Form cycle published successfully!", {
+        description: `Status is now ${data.status}`,
+      });
+      // Invalidate form cycle query to refresh the status
+      if (id) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error.message || "Failed to publish form cycle";
+      toast.error("Publish failed", {
+        message: errorMessage,
       });
     },
   });
@@ -291,6 +311,15 @@ function FormEdit() {
             <p className="text-muted-foreground">{formCycle.description}</p>
           )}
         </div>
+        {formCycle.status === 'published' && !formCycle.is_published && (
+          <Button
+            onClick={() => {}}
+            disabled={isPublishing}
+          >
+            <SendIcon className="w-4 h-4 mr-2" />
+            {isPublishing ? "Publishing..." : "Publish Form"}
+          </Button>
+        )}
       </div>
 
       {/* Sections Card */}
