@@ -20,16 +20,20 @@ def _get_token_subject_email(token: str) -> str:
     try:
         subject = verify_token(token, expected_token_type="access").get("sub")
     except ValueError as exc:
-        raise HTTPException(status_code=403, detail="Invalid credentials") from exc
+        raise HTTPException(status_code=401, detail="Invalid credentials") from exc
     if not isinstance(subject, str):
         raise HTTPException(status_code=401, detail="Invalid token subject")
-    return subject.strip().lower()
+    normalized_subject = subject.strip(" ").lower()
+    if not normalized_subject:
+        raise HTTPException(status_code=401, detail="Invalid token subject")
+    return normalized_subject
 
 
 async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)) -> User:
     subject = _get_token_subject_email(token)
     user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
-    if user is None: raise HTTPException(status_code=404, detail="User not found")
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="User account is not active or email is not verified")
     return user
