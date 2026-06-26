@@ -106,23 +106,23 @@ async def seed_database() -> str:
                 is_email_verified=True,
             )
             reviewer = User(
-                email="user@qualia.local",
-                username="user",
+                email="reviewer@qualia.local",
+                username="reviewer",
                 password_hash=hash_password("reviewer123"),
-                first_name="Uma",
-                last_name="User",
+                first_name="Rita",
+                last_name="Reviewer",
                 role=Role.user,
                 is_active=True,
-                is_email_verified=False,
+                is_email_verified=True,
             )
             viewer = User(
-                email="user2@qualia.local",
-                username="user",
+                email="viewer@qualia.local",
+                username="viewer",
                 password_hash=hash_password("viewer123"),
-                first_name="Uri",
-                last_name="User",
-                role=Role.admin,
-                is_active=False,
+                first_name="Victor",
+                last_name="Viewer",
+                role=Role.user,
+                is_active=True,
                 is_email_verified=True,
             )
             session.add_all([admin, reviewer, viewer])
