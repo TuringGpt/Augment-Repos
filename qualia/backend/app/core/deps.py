@@ -42,7 +42,7 @@ def _get_token_subject_email(token: str) -> str:
 
 async def _get_user_by_subject_email(db: AsyncSession, subject: str) -> User | None:
     result = await db.execute(
-        select(User).where(func.lower(User.email) == subject).limit(2)
+        select(User).where(func.lower(User.email) == subject).limit(1)
     )
     users = result.scalars().all()
     if len(users) != 1:
