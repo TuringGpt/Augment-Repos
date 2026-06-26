@@ -17,7 +17,7 @@ import {
 import { ROUTES, getFormCycleEditRoute } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useFormSubmissions } from "@/hooks/useFormSubmissions";
-import { usePublishFormCycle } from "@/hooks/usePublishFormcycle";
+import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import type { SubmissionStatus } from "@/services/formService";
 
 
