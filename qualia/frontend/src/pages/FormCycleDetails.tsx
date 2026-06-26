@@ -182,7 +182,7 @@ function FormCycleDetails() {
           {formCycle.status === 'draft' && !formCycle.is_published && (
             <Button
               onClick={() => id && publishForm(id)}
-              disabled={true}
+              disabled={isPublishing}
             >
               <SendIcon className="w-4 h-4 mr-2" />
               {isPublishing ? "Publishing..." : "Publish Form"}
