@@ -81,7 +81,7 @@ function FormCycleDetails() {
   const { mutate: publishForm, isPending: isPublishing } = usePublishFormCycle({
     onSuccess: async (data) => {
       toast.success("Form cycle published successfully!", {
-        name: `Status is now ${data.status}`,
+        description: `Status is now ${data.status}`,
       });
       // Invalidate form cycle query to refresh the status
       if (id) {

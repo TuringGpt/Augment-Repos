@@ -140,7 +140,7 @@ function FormEdit() {
     onError: (error) => {
       const errorMessage = error.message || "Failed to publish form cycle";
       toast.error("Publish failed", {
-        message: errorMessage,
+        description: errorMessage,
       });
     },
   });
