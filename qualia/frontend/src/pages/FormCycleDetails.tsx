@@ -179,7 +179,7 @@ function FormCycleDetails() {
             <EditIcon className="w-4 h-4 mr-2" />
             Edit Form
           </Button>
-          {formCycle.status === 'draft' && !formCycle.is_published && !isPublishing && (
+          {formCycle.status === 'draft' && !formCycle.is_published && (
             <Button
               onClick={() => id && publishForm(id)}
               disabled={isPublishing}

@@ -311,7 +311,7 @@ function FormEdit() {
             <p className="text-muted-foreground">{formCycle.description}</p>
           )}
         </div>
-        {formCycle.status === 'draft' && !formCycle.is_published && !isPublishing && (
+        {formCycle.status === 'draft' && !formCycle.is_published && (
           <Button
             onClick={() => id && publishForm(id)}
             disabled={isPublishing}
