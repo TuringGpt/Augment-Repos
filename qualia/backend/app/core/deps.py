@@ -23,7 +23,9 @@ def _get_token_subject_email(token: str) -> str:
         raise HTTPException(status_code=401, detail="Invalid credentials") from exc
     if not isinstance(subject, str):
         raise HTTPException(status_code=401, detail="Invalid token subject")
-    normalized_subject = subject.strip(" ").lower()
+    normalized_subject = subject.strip().lower()
+    if len(normalized_subject) > 320:
+        normalized_subject = normalized_subject[:320]
     if not normalized_subject:
         raise HTTPException(status_code=401, detail="Invalid token subject")
     return normalized_subject
@@ -31,9 +33,12 @@ def _get_token_subject_email(token: str) -> str:
 
 async def _get_user_by_subject_email(db: AsyncSession, subject: str) -> User | None:
     result = await db.execute(
-        select(User).where(func.lower(User.email) == subject).limit(1)
+        select(User).where(func.lower(User.email) == subject).limit(2)
     )
-    return result.scalar_one_or_none()
+    users = result.scalars().all()
+    if len(users) != 1:
+        return None
+    return users[0]
 
 
 async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)) -> User:
