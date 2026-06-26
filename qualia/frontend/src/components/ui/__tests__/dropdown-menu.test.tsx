@@ -571,7 +571,7 @@ describe('DropdownMenu', () => {
   })
 
   describe('Content Alignment', () => {
-    it('renders content with default align prop', async () => {
+    it('renders content with default align prop (start)', async () => {
       const user = userEvent.setup()
 
       render(
@@ -588,10 +588,11 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         const content = screen.getByTestId('content')
         expect(content).toBeInTheDocument()
+        expect(content).toHaveAttribute('data-align', 'start')
       })
     })
 
-    it('renders content with custom align prop', async () => {
+    it('renders content with custom align prop (end)', async () => {
       const user = userEvent.setup()
 
       render(
@@ -608,6 +609,28 @@ describe('DropdownMenu', () => {
       await waitFor(() => {
         const content = screen.getByTestId('content')
         expect(content).toBeInTheDocument()
+        expect(content).toHaveAttribute('data-align', 'end')
+      })
+    })
+
+    it('renders content with center align prop', async () => {
+      const user = userEvent.setup()
+
+      render(
+        <DropdownMenu>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent align="center" data-testid="content">
+            <DropdownMenuItem>Item</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+
+      await user.click(screen.getByRole('button', { name: /open/i }))
+
+      await waitFor(() => {
+        const content = screen.getByTestId('content')
+        expect(content).toBeInTheDocument()
+        expect(content).toHaveAttribute('data-align', 'center')
       })
     })
   })
