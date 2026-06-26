@@ -33,7 +33,7 @@ def _get_token_subject_email(token: str) -> str:
     if not isinstance(subject, str):
         raise HTTPException(status_code=401, detail="Invalid token subject", headers=AUTH_HEADERS)
     normalized_subject = subject.strip().lower()
-    if len(normalized_subject) >= USER_EMAIL_MAX_LENGTH:
+    if len(normalized_subject) > USER_EMAIL_MAX_LENGTH:
         raise HTTPException(status_code=401, detail="Invalid token subject", headers=AUTH_HEADERS)
     if not normalized_subject:
         raise HTTPException(status_code=401, detail="Invalid token subject", headers=AUTH_HEADERS)

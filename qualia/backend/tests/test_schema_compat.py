@@ -8,6 +8,8 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.core import config
+from app.core.deps import _get_token_subject_email
+from app.core.deps import get_active_user
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
 from app.form_cycles import _validate_assigned_user
 from app.main import app
@@ -588,3 +590,76 @@ def test_delete_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyP
 
     assert session.deleted is question
     assert session.rollback_calls == 1
+
+
+class _AuthScalarList:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    def all(self) -> list[User]:
+        return list(self._users)
+
+    def scalar_one_or_none(self) -> User | None:
+        return self._users[0]
+
+
+class _AuthResultList:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    def scalars(self) -> _AuthScalarList:
+        return _AuthScalarList(self._users)
+
+
+class _AuthLookupSession:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    async def execute(self, _query: object) -> _AuthResultList:
+        return _AuthResultList(self._users)
+
+
+def test_get_token_subject_email_accepts_max_length_subject(monkeypatch: pytest.MonkeyPatch) -> None:
+    subject = f"{'A' * 243}@example.com"
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": subject})
+
+    assert len(subject) == 255
+    assert _get_token_subject_email("token") == subject.lower()
+
+
+def test_get_token_subject_email_rejects_blank_subject(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": "   "})
+
+    with pytest.raises(HTTPException, match="Invalid token subject") as exc_info:
+        _get_token_subject_email("token")
+
+    assert exc_info.value.status_code == 401
+
+
+def test_get_active_user_rejects_duplicate_case_variant_emails(monkeypatch: pytest.MonkeyPatch) -> None:
+    primary = User(
+        email="User@Example.com",
+        username="primary",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    duplicate = User(
+        email="user@example.com",
+        username="duplicate",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _AuthLookupSession([primary, duplicate])
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": " USER@EXAMPLE.COM "})
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="Invalid credentials") as exc_info:
+            await get_active_user(token="token", db=session)
+
+        assert exc_info.value.status_code == 401
+
+    asyncio.run(_run())
