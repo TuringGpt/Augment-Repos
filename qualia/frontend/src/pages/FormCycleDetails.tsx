@@ -174,7 +174,7 @@ function FormCycleDetails() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={navigate(getFormCycleEditRoute(id))}
+            onClick={() => navigate(getFormCycleEditRoute(id))}
           >
             <EditIcon class="w-4 h-4 mr-2" />
             Edit Form
