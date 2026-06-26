@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, PlusIcon, AlertCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, AlertCircleIcon, SendIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -311,9 +311,9 @@ function FormEdit() {
             <p className="text-muted-foreground">{formCycle.description}</p>
           )}
         </div>
-        {formCycle.status === 'published' && !formCycle.is_published && (
+        {formCycle.status === 'draft' && !formCycle.is_published && (
           <Button
-            onClick={() => {}}
+            onClick={() => id && publishForm(id)}
             disabled={isPublishing}
           >
             <SendIcon className="w-4 h-4 mr-2" />
