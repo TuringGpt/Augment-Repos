@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 import logging
 import os
+import re
 
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
@@ -11,6 +12,7 @@ from app.core.db_base import Base
 
 
 logger = logging.getLogger(__name__)
+_SQLITE_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9_]+$")
 engine = create_async_engine(
     _database_url(),
     echo=os.getenv("SQL_ECHO", "false").lower() in {"1", "true", "yes", "on"},
@@ -30,6 +32,39 @@ async def _sqlite_section_table_names(conn: AsyncConnection) -> set[str]:
     return {name for (name,) in result}
 
 
+async def _sqlite_table_sql(conn: AsyncConnection, table_name: str) -> str | None:
+    result = await conn.execute(
+        text("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = :table_name"),
+        {"table_name": table_name},
+    )
+    return result.scalar_one_or_none()
+
+
+def _sqlite_identifier(identifier: str) -> str:
+    if not _SQLITE_IDENTIFIER_RE.fullmatch(identifier):
+        raise ValueError(f"Unsupported SQLite identifier: {identifier}")
+    return f'"{identifier}"'
+
+
+async def _sqlite_table_column_names(conn: AsyncConnection, table_name: str) -> set[str]:
+    result = await conn.execute(text(f"PRAGMA table_info({_sqlite_identifier(table_name)})"))
+    return {row[1] for row in result}
+
+
+def _sqlite_users_table_has_legacy_role_schema(create_sql: str | None) -> bool:
+    if not create_sql:
+        return False
+    normalized = create_sql.lower()
+    if "role" not in normalized:
+        return False
+    return bool(re.search(r"\b(reviewer|viewer)\b", normalized))
+
+
+async def _sqlite_users_table_has_legacy_role_rows(conn: AsyncConnection) -> bool:
+    result = await conn.execute(text("SELECT 1 FROM users WHERE role IN ('reviewer', 'viewer') LIMIT 1"))
+    return result.scalar_one_or_none() is not None
+
+
 async def ensure_section_table_name() -> None:
     if not engine.url.drivername.startswith("sqlite"):
         return
@@ -47,3 +82,26 @@ async def ensure_section_table_name() -> None:
             if "sections" in table_names and "section" not in table_names:
                 return
             raise
+
+
+async def ensure_user_role_storage_compatibility() -> None:
+    if not engine.url.drivername.startswith("sqlite"):
+        return
+    async with engine.begin() as conn:
+        users_table_sql = await _sqlite_table_sql(conn, "users")
+        if users_table_sql is None:
+            return
+        user_column_names = await _sqlite_table_column_names(conn, "users")
+        if "role" not in user_column_names:
+            raise RuntimeError(
+                "SQLite users table is missing the required role column. Recreate the local database with "
+                "`PYTHONPATH=. python scripts/seed_sqlite.py` before starting the app."
+            )
+        if _sqlite_users_table_has_legacy_role_schema(users_table_sql):
+            raise RuntimeError(
+                "Legacy SQLite users.role schema detected. Recreate the local database with "
+                "`PYTHONPATH=. python scripts/seed_sqlite.py` before starting the app."
+            )
+        if not await _sqlite_users_table_has_legacy_role_rows(conn):
+            return
+        await conn.execute(text("UPDATE users SET role = 'user' WHERE role IN ('reviewer', 'viewer')"))

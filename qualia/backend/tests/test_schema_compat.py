@@ -8,10 +8,12 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.core import config
+from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.form_cycles import _validate_assigned_user
 from app.main import app
 from app.models.question import Question, QuestionType
 from app.models.section import Section
-from app.models.user import Role, User
+from app.models.user import Role, RoleType, User
 from app.sections import create_question
 from app.sections import delete_question
 from app.sections import QuestionCreate
@@ -122,6 +124,71 @@ def test_get_jwt_secret_accepts_legacy_alias(monkeypatch: pytest.MonkeyPatch) ->
     assert config.get_jwt_secret() == "legacy-secret"
 
 
+def test_role_type_maps_legacy_review_roles_to_user() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_result_value("reviewer", None) is Role.user
+    assert role_type.process_result_value("viewer", None) is Role.user
+    assert role_type.process_bind_param("reviewer", None) == "viewer"
+    assert role_type.process_bind_param("viewer", None) == "viewer"
+
+
+def test_sqlite_users_table_schema_detection_flags_legacy_role_values() -> None:
+    assert _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT 'viewer' CHECK (role IN ('reviewer', 'viewer', 'admin'))
+        )
+        """
+    )
+
+
+def test_sqlite_users_table_schema_detection_flags_double_quoted_legacy_role_values() -> None:
+    assert _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT "viewer" CHECK (role IN ("reviewer", "viewer", "admin"))
+        )
+        """
+    )
+
+
+def test_sqlite_users_table_schema_detection_accepts_canonical_role_values() -> None:
+    assert not _sqlite_users_table_has_legacy_role_schema(
+        """
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            role VARCHAR(32) NOT NULL DEFAULT 'user'
+        )
+        """
+    )
+
+
+def test_validate_assigned_user_rejects_admin_role() -> None:
+    admin = User(
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Assigned account must have user role") as exc_info:
+        _validate_assigned_user(admin)
+
+    assert exc_info.value.status_code == 400
+
+
+def test_validate_assigned_user_reports_missing_user() -> None:
+    with pytest.raises(HTTPException, match="Assigned user not found") as exc_info:
+        _validate_assigned_user(None)
+
+    assert exc_info.value.status_code == 404
+
+
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("JWT_SECRET", "secret")
     monkeypatch.setenv("STORAGE_BACKEND", "s3")
@@ -130,6 +197,25 @@ def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPat
 
     with pytest.raises(RuntimeError, match="Accepted names: STORAGE_BUCKET, AWS_STORAGE_BUCKET"):
         config.Settings()
+
+
+def test_role_type_persists_user_role_as_legacy_viewer_value() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_bind_param(Role.user, None) == "viewer"
+    assert role_type.process_bind_param("user", None) == "viewer"
+    assert role_type.process_bind_param("viewer", None) == "viewer"
+
+
+def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_result_value("viewer", None) is Role.user
+    assert Role.viewer is Role.user
+
+
+def test_user_role_default_matches_runtime_user_role() -> None:
+    assert User.__table__.c.role.default.arg is Role.user
 
 
 class _ScalarResult:
