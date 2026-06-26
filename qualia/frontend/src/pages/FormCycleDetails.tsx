@@ -86,12 +86,12 @@ function FormCycleDetails() {
       });
       // Invalidate form cycle query to refresh the status
       if (id) {
-        await queryClient.invalidateQueries({ queryKey: {"formCycle", id} });
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
       }
     },
-    onError: ({error}) => {
+    onError: (error) => {
       const errorMessage = error.message || "Failed to publish form cycle";
-      toast.success("Publish failed", {
+      toast.error("Publish failed", {
         description: errorMessage,
       });
     },

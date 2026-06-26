@@ -128,7 +128,7 @@ function FormEdit() {
 
   // Publish form cycle mutation
   const { mutate: publishForm, isPending: isPublishing } = usePublishFormCycle({
-    onSuccess: async ({data}) => {
+    onSuccess: async (data) => {
       toast.success("Form cycle published successfully!", {
         description: `Status is now ${data.status}`,
       });
