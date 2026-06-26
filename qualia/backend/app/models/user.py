@@ -13,14 +13,18 @@ from app.core.db_base import Base
 class Role(str, enum.Enum):
     user = "user"
     admin = "admin"
+    reviewer = "user"
+    viewer = "user"
 
 
 class RoleType(TypeDecorator[Role]):
     impl = String(32)
     cache_ok = True
 
-    @staticmethod
-    def _normalized_role(value: str) -> str:
+    _LEGACY_STORAGE_VALUE = "viewer"
+
+    @classmethod
+    def _normalized_role(cls, value: str) -> str:
         normalized = value.strip().lower()
         if normalized in {"reviewer", "viewer"}:
             return Role.user.value
@@ -30,9 +34,14 @@ class RoleType(TypeDecorator[Role]):
         if value is None:
             return None
         if isinstance(value, Role):
+            if value is Role.user:
+                return self._LEGACY_STORAGE_VALUE
             return value.value
         if isinstance(value, str):
-            return Role(self._normalized_role(value)).value
+            normalized = self._normalized_role(value)
+            if normalized == Role.user.value:
+                return self._LEGACY_STORAGE_VALUE
+            return Role(normalized).value
         raise TypeError(f"Unsupported role value: {value!r}")
 
     def process_result_value(self, value: str | None, _dialect) -> Role | None:
@@ -53,7 +62,7 @@ class User(Base):
     role: Mapped[Role] = mapped_column(
         RoleType(),
         default=Role.user,
-        server_default=text("'user'"),
+        server_default=text("'viewer'"),
         index=True,
         nullable=False,
     )
