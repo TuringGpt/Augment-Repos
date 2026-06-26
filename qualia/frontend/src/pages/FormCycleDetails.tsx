@@ -78,7 +78,7 @@ function FormCycleDetails() {
   } = useFormSubmissions(id || '', { enabled: !!id });
 
   // Publish form cycle mutation
-  const { mutate: publishForm, isLoading: isPublishing } = usePublishFormCycle({
+  const { mutate: publishForm, isPending: isPublishing } = usePublishFormCycle({
     onSuccess: async (data) => {
       toast.success("Form cycle published successfully!", {
         name: `Status is now ${data.status}`,
