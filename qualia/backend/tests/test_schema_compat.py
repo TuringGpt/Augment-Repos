@@ -600,7 +600,7 @@ class _AuthScalarList:
         return list(self._users)
 
     def scalar_one_or_none(self) -> User | None:
-        return self._users[0]
+        return self._users[0] if self._users else None
 
 
 class _AuthResultList:
