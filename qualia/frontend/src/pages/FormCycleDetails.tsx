@@ -176,7 +176,7 @@ function FormCycleDetails() {
             variant="outline"
             onClick={() => navigate(getFormCycleEditRoute(id))}
           >
-            <EditIcon class="w-4 h-4 mr-2" />
+            <EditIcon className="w-4 h-4 mr-2" />
             Edit Form
           </Button>
           {formCycle.status === 'draft' && !formCycle.is_published && (
