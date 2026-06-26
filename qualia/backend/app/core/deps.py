@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -29,9 +29,16 @@ def _get_token_subject_email(token: str) -> str:
     return normalized_subject
 
 
+async def _get_user_by_subject_email(db: AsyncSession, subject: str) -> User | None:
+    result = await db.execute(
+        select(User).where(func.lower(User.email) == subject).limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
 async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)) -> User:
     subject = _get_token_subject_email(token)
-    user = (await db.execute(select(User).where(User.email == subject))).scalar_one_or_none()
+    user = await _get_user_by_subject_email(db, subject)
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not user.is_active or not user.is_email_verified:
