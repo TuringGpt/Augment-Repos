@@ -131,8 +131,8 @@ def test_role_type_maps_legacy_review_roles_to_user() -> None:
 
     assert role_type.process_result_value("reviewer", None) is Role.user
     assert role_type.process_result_value("viewer", None) is Role.user
-    assert role_type.process_bind_param("reviewer", None) == "user"
-    assert role_type.process_bind_param("viewer", None) == "user"
+    assert role_type.process_bind_param("reviewer", None) == "viewer"
+    assert role_type.process_bind_param("viewer", None) == "viewer"
 
 
 def test_sqlite_users_table_schema_detection_flags_legacy_role_values() -> None:
@@ -199,6 +199,25 @@ def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPat
 
     with pytest.raises(RuntimeError, match="Accepted names: STORAGE_BUCKET, AWS_STORAGE_BUCKET"):
         config.Settings()
+
+
+def test_role_type_persists_user_role_as_legacy_viewer_value() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_bind_param(Role.user, None) == "viewer"
+    assert role_type.process_bind_param("user", None) == "viewer"
+    assert role_type.process_bind_param("viewer", None) == "viewer"
+
+
+def test_role_type_reads_legacy_viewer_value_as_user_role() -> None:
+    role_type = RoleType()
+
+    assert role_type.process_result_value("viewer", None) is Role.user
+    assert Role.viewer is Role.user
+
+
+def test_user_role_default_matches_runtime_user_role() -> None:
+    assert User.__table__.c.role.default.arg is Role.user
 
 
 class _ScalarResult:

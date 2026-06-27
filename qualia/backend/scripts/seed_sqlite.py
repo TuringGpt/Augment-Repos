@@ -105,27 +105,17 @@ async def seed_database() -> str:
                 is_active=True,
                 is_email_verified=True,
             )
-            reviewer = User(
-                email="reviewer@qualia.local",
-                username="reviewer",
-                password_hash=hash_password("reviewer123"),
-                first_name="Rita",
-                last_name="Reviewer",
-                role=Role.user,
-                is_active=True,
-                is_email_verified=True,
-            )
-            viewer = User(
-                email="viewer@qualia.local",
-                username="viewer",
-                password_hash=hash_password("viewer123"),
+            user = User(
+                email="user@qualia.local",
+                username="user",
+                password_hash=hash_password("user123"),
                 first_name="Victor",
                 last_name="Viewer",
                 role=Role.user,
                 is_active=True,
                 is_email_verified=True,
             )
-            session.add_all([admin, reviewer, viewer])
+            session.add_all([admin, user])
             await session.flush()
 
             form_cycle = FormCycle(
@@ -195,14 +185,14 @@ async def seed_database() -> str:
             session.add(
                 FormAssignment(
                     form_cycle_id=form_cycle.id,
-                    assigned_to=reviewer.id,
+                    assigned_to=user.id,
                     assigned_by=admin.id,
                 )
             )
 
             submission = Submission(
                 form_cycle_id=form_cycle.id,
-                reviewer_id=reviewer.id,
+                reviewer_id=user.id,
                 status=SubmissionStatus.submitted,
                 started_at=now - timedelta(hours=2),
                 submitted_at=now - timedelta(hours=1),
@@ -211,11 +201,11 @@ async def seed_database() -> str:
             await session.flush()
 
             file_record = File(
-                uploaded_by=reviewer.id,
+                uploaded_by=user.id,
                 file_name="checkout-spacing-bug.png",
                 file_size=245760,
                 mime_type="image/png",
-                storage_path=f"pending/{form_cycle.id}/{reviewer.id}/checkout-spacing-bug.png",
+                storage_path=f"pending/{form_cycle.id}/{user.id}/checkout-spacing-bug.png",
                 storage_type=StorageType.local,
                 is_public=False,
             )
