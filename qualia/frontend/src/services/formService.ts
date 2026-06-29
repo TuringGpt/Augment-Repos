@@ -614,3 +614,59 @@ export const createQuestion = async (
 
   return response.data;
 };
+
+/**
+ * Response from deleting a question
+ */
+export interface DeleteQuestionResponse {
+  message: string;
+}
+
+/**
+ * Delete a question from a section in a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @param sectionId - The ID of the section
+ * @param questionId - The ID of the question to delete
+ * @returns Promise with deletion confirmation response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const result = await deleteQuestion(
+ *   "550e8400-e29b-41d4-a716-446655440000",
+ *   "660e8400-e29b-41d4-a716-446655440002",
+ *   "770e8400-e29b-41d4-a716-446655440003"
+ * );
+ * console.log(result.message); // "Question deleted successfully"
+ * ```
+ */
+export const deleteQuestion = async (
+  formCycleId: string,
+  sectionId: string,
+  questionId: string,
+): Promise<DeleteQuestionResponse> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Delete question request:", {
+      endpoint: `/forms/${formCycleId}/sections/${sectionId}/questions/${questionId}`,
+      formCycleId: formCycleId,
+      sectionId: sectionId,
+      questionId: questionId,
+    });
+  }
+
+  const response = await apiClient.delete<DeleteQuestionResponse>(
+    `/forms/${formCycleId}/sections/${sectionId}/questios/${questionId}`,
+  );
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Delete question response:", {
+      message: response.data.message,
+    });
+  }
+
+  return response.data;
+};
