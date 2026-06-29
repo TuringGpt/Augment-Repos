@@ -248,6 +248,7 @@ describe('Input', () => {
 
     it('supports maxLength attribute', () => {
       render(<Input maxLength={10} data-testid="input" />)
+      const input = screen.getByTestId('input')
       expect(input).toHaveAttribute('maxLength', '10')
     })
 
