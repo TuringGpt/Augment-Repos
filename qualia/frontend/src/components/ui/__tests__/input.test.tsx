@@ -134,10 +134,10 @@ describe('Input', () => {
     it('can be cleared', async () => {
       const user = userEvent.setup()
       render(<Input defaultValue="Clear me" data-testid="input" />)
-      
+
       const input = screen.getByTestId('input')
-      await user.clear()
-      
+      await user.clear(input)
+
       expect(input).toHaveValue('')
     })
   })
