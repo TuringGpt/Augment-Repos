@@ -194,7 +194,7 @@ def test_validate_assigned_user_reports_missing_user() -> None:
     assert exc_info.value.status_code == 404
 
 
-class _ScalarResult:
+class _ScalarOneOrNoneResult:
     def __init__(self, value: object) -> None:
         self._value = value
 
@@ -207,10 +207,10 @@ class _SubmitFormCycleSession:
         self._results = list(results)
         self.execute_calls = 0
 
-    async def execute(self, _query: object) -> _ScalarResult:
+    async def execute(self, _query: object) -> _ScalarOneOrNoneResult:
         result = self._results[self.execute_calls]
         self.execute_calls += 1
-        return _ScalarResult(result)
+        return _ScalarOneOrNoneResult(result)
 
 
 def test_submit_form_cycle_rejects_unassigned_reviewer_without_leaking_assignment(
