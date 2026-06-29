@@ -13,7 +13,7 @@ describe('Input', () => {
     it('renders with data-slot attribute', () => {
       render(<Input data-testid="input" />)
       const input = screen.getByTestId('input')
-      expect(input).toHaveAttribute('input')
+      expect(input).toHaveAttribute('data-slot', 'input')
     })
 
     it('renders with placeholder', () => {
