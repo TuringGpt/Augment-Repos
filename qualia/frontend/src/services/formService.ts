@@ -614,3 +614,68 @@ export const createQuestion = async (
 
   return response.data;
 };
+
+/**
+ * Response from deleting a question
+ */
+export interface DeleteQuestionResponse {
+  message: string;
+}
+
+/**
+ * Delete a question from a section in a form cycle
+ * @param formCycleId - The ID of the form cycle
+ * @param sectionId - The ID of the section
+ * @param questionId - The ID of the question to delete
+ * @returns Promise with deletion confirmation response
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, validation errors, permission errors, and server errors.
+ *
+ * @example
+ * ```typescript
+ * const result = await deleteQuestion(
+ *   "550e8400-e29b-41d4-a716-446655440000",
+ *   "660e8400-e29b-41d4-a716-446655440002",
+ *   "770e8400-e29b-41d4-a716-446655440003"
+ * );
+ * console.log(result.message); // "Question deleted successfully"
+ * ```
+ */
+export const deleteQuestion = async (
+  formCycleId: string,
+  sectionId: string,
+  questionId: string,
+): Promise<DeleteQuestionResponse> => {
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Delete question request:", {
+      endpoint: `/forms/${formCycleId}/sections/${sectionId}/questions/${questionId}`,
+      formCycleId: formCycleId,
+      sectionId: sectionId,
+      questionId: questionId,
+    });
+  }
+
+  const response = await apiClient.delete<DeleteQuestionResponse>(
+    `/forms/${formCycleId}/sections/${sectionId}/questions/${questionId}`,
+  );
+
+  // Handle 204 No Content or empty response body
+  // Axios can return response.data as undefined, empty string, or null for 204/empty bodies
+  // We need to check if response.data is a valid object with a message property
+  const result: DeleteQuestionResponse =
+    response.data && typeof response.data === "object" && "message" in response.data
+      ? response.data
+      : { message: "Question deleted successfully" };
+
+  // Debug logging in development
+  if (import.meta.env.DEV) {
+    console.log("Delete question response:", {
+      message: result.message,
+      status: response.status,
+    });
+  }
+
+  return result;
+};
