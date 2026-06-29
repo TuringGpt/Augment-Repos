@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
@@ -62,13 +64,13 @@ async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSessi
 
 
 async def require_cycle_owner_or_admin(
-    form_cycle_id: str,
+    form_cycle_id: uuid.UUID,
     user: User = Depends(get_active_user),
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> FormCycle:
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
-        raise HTTPException(status_code=403, detail="Form cycle not found")
-    if user.role == Role.admin and cycle.created_by_id == user.email:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+    if user.role == Role.admin or cycle.created_by_id == user.id:
         return cycle
     raise HTTPException(status_code=403, detail="Form cycle owner or admin access required")

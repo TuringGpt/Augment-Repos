@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from datetime import datetime, timezone
 
 import pytest
 from fastapi import HTTPException
@@ -10,9 +11,11 @@ from sqlalchemy.exc import IntegrityError
 from app.core import config
 from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
+from app.core.deps import require_cycle_owner_or_admin
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
 from app.form_cycles import _validate_assigned_user
 from app.main import app
+from app.models.form_cycle import FormCycle
 from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, RoleType, User
@@ -21,6 +24,22 @@ from app.sections import delete_question
 from app.sections import QuestionCreate
 from app.sections import QuestionUpdate
 from app.sections import update_question
+
+
+class _ScalarResultStub:
+    def __init__(self, cycle: FormCycle | None) -> None:
+        self._cycle = cycle
+
+    def scalar_one_or_none(self) -> FormCycle | None:
+        return self._cycle
+
+
+class _SessionStub:
+    def __init__(self, cycle: FormCycle | None) -> None:
+        self._cycle = cycle
+
+    async def execute(self, _statement) -> _ScalarResultStub:
+        return _ScalarResultStub(self._cycle)
 
 
 def test_section_table_name() -> None:
@@ -93,6 +112,95 @@ def test_question_item_paths_use_form_cycle_id() -> None:
     assert put_parameter_names == delete_parameter_names
     assert "form_cycle_id" in put_parameter_names
     assert "form_id" not in put_parameter_names
+
+
+def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
+    owner_id = uuid.uuid4()
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=owner_id,
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    owner = User(
+        id=owner_id,
+        email="owner@example.com",
+        username="owner",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    resolved_cycle = asyncio.run(
+        require_cycle_owner_or_admin(cycle.id, user=owner, db=_SessionStub(cycle))
+    )
+
+    assert resolved_cycle is cycle
+
+
+def test_require_cycle_owner_or_admin_returns_cycle_for_admin() -> None:
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=uuid.uuid4(),
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    resolved_cycle = asyncio.run(
+        require_cycle_owner_or_admin(cycle.id, user=admin, db=_SessionStub(cycle))
+    )
+
+    assert resolved_cycle is cycle
+
+
+def test_require_cycle_owner_or_admin_raises_not_found_for_missing_cycle() -> None:
+    user = User(
+        id=uuid.uuid4(),
+        email="user@example.com",
+        username="user",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
+        asyncio.run(require_cycle_owner_or_admin(uuid.uuid4(), user=user, db=_SessionStub(None)))
+
+    assert exc_info.value.status_code == 404
+
+
+def test_require_cycle_owner_or_admin_rejects_non_owner_non_admin() -> None:
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=uuid.uuid4(),
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    user = User(
+        id=uuid.uuid4(),
+        email="user@example.com",
+        username="user",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Form cycle owner or admin access required") as exc_info:
+        asyncio.run(require_cycle_owner_or_admin(cycle.id, user=user, db=_SessionStub(cycle)))
+
+    assert exc_info.value.status_code == 403
 
 
 def test_required_env_prefers_canonical_name_over_alias(monkeypatch: pytest.MonkeyPatch) -> None:
