@@ -87,9 +87,9 @@ describe('Input', () => {
       
       const input = screen.getByTestId('input')
       await user.type(input, 'Test')
-      
+
       expect(handleChange).toHaveBeenCalled()
-      expect(handleChange).toHaveBeenCalledTimes() // Once per character
+      expect(handleChange).toHaveBeenCalledTimes(4) // Once per character
     })
 
     it('handles onBlur event', async () => {
