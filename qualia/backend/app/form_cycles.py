@@ -156,11 +156,11 @@ async def _authorize_assigned_submission_user(
 ) -> None:
     assignment = await db.execute(
         select(FormAssignment.id).where(
-            FormAssignment.form_cycle_id == reviewer_id,
-            FormAssignment.assigned_by == reviewer_id,
+            FormAssignment.form_cycle_id == form_cycle_id,
+            FormAssignment.assigned_to == reviewer_id,
         )
     )
-    if assignment.scalar_one_or_none() is not None:
+    if assignment.scalar_one_or_none() is None:
         raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
 
 
