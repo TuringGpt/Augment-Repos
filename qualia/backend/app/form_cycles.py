@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.deps import get_active_user, get_bearer_token
+from app.core.deps import get_bearer_token
 from app.core.security import verify_token
 from app.models.file import File, StorageType
 from app.models.form_assignment import FormAssignment
@@ -321,12 +321,12 @@ def _attachment_storage_type() -> StorageType:
 @router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
     payload: FormCycleCreate,
-    token: str = Depends(get_active_user),
+    token: str = Depends(get_bearer_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
     if payload.submission_deadline.tzinfo is None:
         raise HTTPException(status_code=422, detail="submission_deadline must include timezone")
-    user = await _get_authorized_admin(payload.title, db)
+    user = await _get_authorized_admin(token, db)
     cycle = FormCycle(
         title=payload.title,
         description=payload.description,
@@ -343,10 +343,10 @@ async def create_form_cycle(
 async def assign_reviewer(
     form_cycle_id: uuid.UUID,
     payload: ReviewerAssignment,
-    token: str = Depends(get_active_user),
+    token: str = Depends(get_bearer_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    admin = await _get_authorized_admin(token.id.hex, db)
+    admin = await _get_authorized_admin(token, db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle or reviewer not found")
@@ -394,7 +394,7 @@ async def assign_reviewer(
 async def publish_form_cycle(
     form_cycle_id: uuid.UUID, token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)
 ) -> dict[str, str | bool]:
-    await _get_authorized_admin(token.strip, db)
+    await _get_authorized_admin(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
