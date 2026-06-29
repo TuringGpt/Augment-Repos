@@ -35,10 +35,17 @@ class _ScalarResultStub:
 
 
 class _SessionStub:
-    def __init__(self, cycle: FormCycle | None) -> None:
+    def __init__(self, cycle: FormCycle | None, expected_form_cycle_id: uuid.UUID | None = None) -> None:
         self._cycle = cycle
+        self._expected_form_cycle_id = expected_form_cycle_id
 
-    async def execute(self, _statement) -> _ScalarResultStub:
+    async def execute(self, statement) -> _ScalarResultStub:
+        if self._expected_form_cycle_id is not None:
+            compiled = statement.compile()
+            compiled_values = {str(value) for value in compiled.params.values()}
+
+            assert "form_cycles.id" in str(compiled)
+            assert str(self._expected_form_cycle_id) in compiled_values
         return _ScalarResultStub(self._cycle)
 
 
@@ -133,7 +140,11 @@ def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
     )
 
     resolved_cycle = asyncio.run(
-        require_cycle_owner_or_admin(cycle.id, user=owner, db=_SessionStub(cycle))
+        require_cycle_owner_or_admin(
+            cycle.id,
+            user=owner,
+            db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+        )
     )
 
     assert resolved_cycle is cycle
@@ -157,7 +168,11 @@ def test_require_cycle_owner_or_admin_returns_cycle_for_admin() -> None:
     )
 
     resolved_cycle = asyncio.run(
-        require_cycle_owner_or_admin(cycle.id, user=admin, db=_SessionStub(cycle))
+        require_cycle_owner_or_admin(
+            cycle.id,
+            user=admin,
+            db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+        )
     )
 
     assert resolved_cycle is cycle
@@ -175,7 +190,14 @@ def test_require_cycle_owner_or_admin_raises_not_found_for_missing_cycle() -> No
     )
 
     with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
-        asyncio.run(require_cycle_owner_or_admin(uuid.uuid4(), user=user, db=_SessionStub(None)))
+        missing_cycle_id = uuid.uuid4()
+        asyncio.run(
+            require_cycle_owner_or_admin(
+                missing_cycle_id,
+                user=user,
+                db=_SessionStub(None, expected_form_cycle_id=missing_cycle_id),
+            )
+        )
 
     assert exc_info.value.status_code == 404
 
@@ -198,7 +220,13 @@ def test_require_cycle_owner_or_admin_rejects_non_owner_non_admin() -> None:
     )
 
     with pytest.raises(HTTPException, match="Form cycle owner or admin access required") as exc_info:
-        asyncio.run(require_cycle_owner_or_admin(cycle.id, user=user, db=_SessionStub(cycle)))
+        asyncio.run(
+            require_cycle_owner_or_admin(
+                cycle.id,
+                user=user,
+                db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+            )
+        )
 
     assert exc_info.value.status_code == 403
 
