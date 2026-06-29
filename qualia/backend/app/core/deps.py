@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import verify_token
-from app.models.user import User
+from app.models.user import Role, User
 
 bearer_scheme = HTTPBearer(auto_error=False)
 AUTH_HEADERS = {"WWW-Authenticate": "Bearer"}
@@ -57,4 +57,10 @@ async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSessi
         raise HTTPException(status_code=401, detail="Invalid credentials", headers=AUTH_HEADERS)
     if not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="User account is not active or email is not verified")
+    return user
+
+
+async def require_admin(user: User = Depends(get_active_user)) -> User:
+    if user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
     return user
