@@ -662,10 +662,12 @@ export const deleteQuestion = async (
   );
 
   // Handle 204 No Content or empty response body
-  // If the server responds with 204, response.data will be undefined
-  const result: DeleteQuestionResponse = response.data ?? {
-    message: "Question deleted successfully",
-  };
+  // Axios can return response.data as undefined, empty string, or null for 204/empty bodies
+  // We need to check if response.data is a valid object with a message property
+  const result: DeleteQuestionResponse =
+    response.data && typeof response.data === "object" && "message" in response.data
+      ? response.data
+      : { message: "Question deleted successfully" };
 
   // Debug logging in development
   if (import.meta.env.DEV) {
