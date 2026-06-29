@@ -161,7 +161,7 @@ async def _authorize_assigned_submission_user(
         )
     )
     if assignment.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Reviewer is not assigned to this form cycle")
+        raise HTTPException(status_code=404, detail="Form cycle not found")
 
 
 def _validate_assigned_user(assigned_user: User | None) -> User:
