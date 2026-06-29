@@ -269,7 +269,7 @@ describe('Input', () => {
     it('supports min and max attributes for number type', () => {
       render(<Input type="number" min={0} max={100} data-testid="input" />)
       const input = screen.getByTestId('input')
-      expect(input).toHaveAttribute('min', '-100')
+      expect(input).toHaveAttribute('min', '0')
       expect(input).toHaveAttribute('max', '100')
     })
 
