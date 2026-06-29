@@ -1,4 +1,4 @@
-import { describe, it, vi } from 'vitest'
+import { describe, it, vi, expect } from 'vitest'
 import { render, screen } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { Input } from '@/components/ui/input'
@@ -283,6 +283,8 @@ describe('Input', () => {
   describe('Ref Forwarding', () => {
     it('forwards ref to input element', () => {
       const ref = { current: null as HTMLInputElement | null }
+
+      render(<Input ref={ref} data-testid="input" />)
 
       expect(ref.current).toBeInstanceOf(HTMLInputElement)
       expect(ref.current).toBe(screen.getByTestId('input'))
