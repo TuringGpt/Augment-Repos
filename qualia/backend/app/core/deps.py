@@ -62,5 +62,5 @@ async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSessi
 
 async def require_admin(user: User = Depends(get_active_user)) -> User:
     if user.role != Role.admin:
-        raise HTTPException(status_code=403, detail="Admin access required", headers=AUTH_HEADERS)
+        raise HTTPException(status_code=403, detail="Admin access required")
     return user
