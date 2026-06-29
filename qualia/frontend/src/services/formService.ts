@@ -661,12 +661,19 @@ export const deleteQuestion = async (
     `/forms/${formCycleId}/sections/${sectionId}/questions/${questionId}`,
   );
 
+  // Handle 204 No Content or empty response body
+  // If the server responds with 204, response.data will be undefined
+  const result: DeleteQuestionResponse = response.data ?? {
+    message: "Question deleted successfully",
+  };
+
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Delete question response:", {
-      message: response.data.message,
+      message: result.message,
+      status: response.status,
     });
   }
 
-  return response.data;
+  return result;
 };
