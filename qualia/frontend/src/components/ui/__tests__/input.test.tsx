@@ -32,6 +32,7 @@ describe('Input', () => {
     })
 
     it('renders as email type', () => {
+      render(<Input type="email" data-testid="input" />)
       const input = screen.getByTestId('input')
       expect(input).toHaveAttribute('type', 'email')
     })
