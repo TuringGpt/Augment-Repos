@@ -72,11 +72,11 @@ describe('Input', () => {
     it('handles text input', async () => {
       const user = userEvent.setup()
       render(<Input data-testid="input" />)
-      
+
       const input = screen.getByTestId('input')
       await user.type(input, 'Hello World')
-      
-      expect(input).toHaveValue()
+
+      expect(input).toHaveValue('Hello World')
     })
 
     it('handles onChange event', async () => {
