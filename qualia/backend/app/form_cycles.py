@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.deps import get_bearer_token
 from app.core.security import verify_token
 from app.models.file import File, StorageType
 from app.models.form_assignment import FormAssignment
@@ -320,13 +321,9 @@ def _attachment_storage_type() -> StorageType:
 @router.post("", status_code=201, include_in_schema=False)
 async def create_form_cycle(
     payload: FormCycleCreate,
-    authorization: str = Header(""),
+    token: str = Depends(get_bearer_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    scheme, _, token = authorization.partition(" ")
-    token = token.strip()
-    if scheme.lower() != "bearer" or not token:
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
     if payload.submission_deadline.tzinfo is None:
         raise HTTPException(status_code=422, detail="submission_deadline must include timezone")
     user = await _get_authorized_admin(token, db)
@@ -346,13 +343,9 @@ async def create_form_cycle(
 async def assign_reviewer(
     form_cycle_id: uuid.UUID,
     payload: ReviewerAssignment,
-    authorization: str = Header(""),
+    token: str = Depends(get_bearer_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    scheme, _, token = authorization.partition(" ")
-    token = token.strip()
-    if scheme.lower() != "bearer" or not token:
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
     admin = await _get_authorized_admin(token, db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
@@ -399,11 +392,8 @@ async def assign_reviewer(
 
 @router.post("/{form_cycle_id}/publish", status_code=200)
 async def publish_form_cycle(
-    form_cycle_id: uuid.UUID, authorization: str = Header(""), db: AsyncSession = Depends(get_db)
+    form_cycle_id: uuid.UUID, token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)
 ) -> dict[str, str | bool]:
-    scheme, _, token = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not token.strip():
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
     await _get_authorized_admin(token.strip(), db)
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:

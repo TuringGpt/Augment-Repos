@@ -74,3 +74,9 @@ async def require_cycle_owner_or_admin(
     if user.role == Role.admin or cycle.created_by_id == user.id:
         return cycle
     raise HTTPException(status_code=403, detail="Form cycle owner or admin access required")
+
+
+async def require_admin(user: User = Depends(get_active_user)) -> User:
+    if user.role != Role.admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
