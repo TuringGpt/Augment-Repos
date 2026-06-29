@@ -1,6 +1,7 @@
 import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import {
   deleteQuestion,
+  type DeleteQuestionResponse,
 } from "@/services/formService";
 import type { ApiError } from "@/lib/axios";
 
