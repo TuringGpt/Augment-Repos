@@ -213,7 +213,7 @@ describe('Input', () => {
     it('supports name attribute', () => {
       render(<Input name="username" data-testid="input" />)
       const input = screen.getByTestId('input')
-      expect(input).toHaveAttribute('name')
+      expect(input).toHaveAttribute('name', 'username')
     })
 
     it('supports id attribute', () => {
