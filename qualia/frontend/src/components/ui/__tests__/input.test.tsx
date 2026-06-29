@@ -94,8 +94,8 @@ describe('Input', () => {
 
     it('handles onBlur event', async () => {
       const user = userEvent.setup()
-      const handleBlur = vi.fn
-      
+      const handleBlur = vi.fn()
+
       render(<Input onBlur={handleBlur} data-testid="input" />)
       
       const input = screen.getByTestId('input')
