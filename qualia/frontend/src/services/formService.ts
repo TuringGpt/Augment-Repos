@@ -658,7 +658,7 @@ export const deleteQuestion = async (
   }
 
   const response = await apiClient.delete<DeleteQuestionResponse>(
-    `/forms/${formCycleId}/sections/${sectionId}/questios/${questionId}`,
+    `/forms/${formCycleId}/sections/${sectionId}/questions/${questionId}`,
   );
 
   // Debug logging in development
