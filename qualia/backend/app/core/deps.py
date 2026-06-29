@@ -4,8 +4,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.models.form_cycle import FormCycle
 from app.core.security import verify_token
-from app.models.user import User
+from app.models.user import Role, User
 
 bearer_scheme = HTTPBearer(auto_error=False)
 AUTH_HEADERS = {"WWW-Authenticate": "Bearer"}
@@ -58,3 +59,16 @@ async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSessi
     if not user.is_active or not user.is_email_verified:
         raise HTTPException(status_code=403, detail="User account is not active or email is not verified")
     return user
+
+
+async def require_cycle_owner_or_admin(
+    form_cycle_id: str,
+    user: User = Depends(get_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if cycle is None:
+        raise HTTPException(status_code=403, detail="Form cycle not found")
+    if user.role == Role.admin and cycle.created_by_id == user.email:
+        return cycle
+    raise HTTPException(status_code=403, detail="Form cycle owner or admin access required")
