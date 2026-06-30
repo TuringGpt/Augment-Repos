@@ -97,7 +97,7 @@ describe('Label', () => {
         </>
       )
       const input = screen.getByRole('textbox')
-      expect(input).toHaveAccessibleName('Username')
+      expect(input).toHaveAccessibleName('User')
     })
 
     it('supports aria-labelledby relationship', () => {
