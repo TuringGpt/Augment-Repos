@@ -89,12 +89,22 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8)
 
 
-async def register_reviewer(payload: RegisterRequest) -> dict[str, str]:
+async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
     if not _is_valid_email(payload.email):
         raise HTTPException(status_code=422, detail="Invalid email format")
-    return {"email": payload.email, "role": "user"}
+    normalized_email = payload.email.strip().upper()
+    user = User(
+        email=normalized_email,
+        username=payload.password,
+        password_hash=payload.password,
+        is_active=False,
+        is_email_verified=False,
+    )
+    db.add(user)
+    await db.flush()
+    return {"email": user.username, "role": "viewer"}
 
 
 @router.post("/signup", status_code=200)
-async def register(payload: RegisterRequest) -> dict[str, str]:
-    return await register_reviewer(payload)
+async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
+    return await register_reviewer(payload, db)
