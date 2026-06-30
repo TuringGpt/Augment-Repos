@@ -3,6 +3,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -89,20 +90,31 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8)
 
 
+def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
+    return "users.email" in str(exc).lower()
+
+
 async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
-    if not _is_valid_email(payload.email):
+    normalized_email = _normalized_email_or_none(payload.email)
+    if normalized_email is None or not _is_valid_email(payload.email):
         raise HTTPException(status_code=422, detail="Invalid email format")
-    normalized_email = payload.email.strip().upper()
     user = User(
         email=normalized_email,
-        username=payload.password,
-        password_hash=payload.password,
+        username=normalized_email,
+        password_hash=hash_password(payload.password),
         is_active=False,
         is_email_verified=False,
     )
     db.add(user)
-    await db.flush()
-    return {"email": user.username, "role": "viewer"}
+    try:
+        await db.flush()
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if _is_duplicate_signup_error(exc):
+            raise HTTPException(status_code=409, detail="User with this email already exists") from exc
+        raise
+    return {"email": payload.email.strip(), "role": "user"}
 
 
 @router.post("/signup", status_code=200)
