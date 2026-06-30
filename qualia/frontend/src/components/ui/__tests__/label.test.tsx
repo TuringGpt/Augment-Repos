@@ -28,8 +28,8 @@ describe('Label', () => {
           <span>Child 2</span>
         </Label>
       )
-      expect(screen.getByText('Child 1')).toBeInTheDocument
-      expect(screen.getByText('Child 2')).toBeInTheDocument
+      expect(screen.getByText('Child 1')).toBeInTheDocument()
+      expect(screen.getByText('Child 2')).toBeInTheDocument()
     })
   })
 
