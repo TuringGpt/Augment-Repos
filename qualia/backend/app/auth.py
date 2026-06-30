@@ -3,6 +3,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -89,12 +90,40 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8)
 
 
-async def register_reviewer(payload: RegisterRequest) -> dict[str, str]:
-    if not _is_valid_email(payload.email):
+def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
+    statement = str(getattr(exc, "orig", exc)).lower()
+    duplicate_markers = (
+        "users.email",
+        "users.username",
+        "users_email_key",
+        "users_username_key",
+    )
+    return any(marker in statement for marker in duplicate_markers)
+
+
+async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
+    normalized_email = _normalized_email_or_none(payload.email)
+    if normalized_email is None or not _is_valid_email(normalized_email):
         raise HTTPException(status_code=422, detail="Invalid email format")
-    return {"email": payload.email, "role": "user"}
+    user = User(
+        email=normalized_email,
+        username=normalized_email,
+        password_hash=hash_password(payload.password),
+        is_active=False,
+        is_email_verified=False,
+    )
+    db.add(user)
+    try:
+        await db.flush()
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if _is_duplicate_signup_error(exc):
+            raise HTTPException(status_code=409, detail="User with this email already exists") from exc
+        raise
+    return {"email": payload.email.strip(), "role": "user"}
 
 
 @router.post("/signup", status_code=200)
-async def register(payload: RegisterRequest) -> dict[str, str]:
-    return await register_reviewer(payload)
+async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
+    return await register_reviewer(payload, db)
