@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render } from '@/test/utils'
+import { render, screen } from '@/test/utils'
 import { Label } from '@/components/ui/label'
 
 describe('Label', () => {
