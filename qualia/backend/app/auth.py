@@ -103,7 +103,7 @@ def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
 
 async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
     normalized_email = _normalized_email_or_none(payload.email)
-    if normalized_email is None or not _is_valid_email(payload.email):
+    if normalized_email is None or not _is_valid_email(normalized_email):
         raise HTTPException(status_code=422, detail="Invalid email format")
     user = User(
         email=normalized_email,
