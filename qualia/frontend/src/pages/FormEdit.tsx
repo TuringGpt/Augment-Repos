@@ -43,6 +43,7 @@ import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
 import { QuestionType } from "@/services/formService";
+import type { ApiError } from "@/lib/axios";
 
 function FormEdit() {
   const { id } = useParams<{ id: string }>();
@@ -156,7 +157,7 @@ function FormEdit() {
         await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
       }
     },
-    onError: ({error}) => {
+    onError: (error: ApiError) => {
       const errorMessage = error.message || "Failed to delete question";
       toast.error("Error", {
         description: errorMessage,
