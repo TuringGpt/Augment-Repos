@@ -151,6 +151,19 @@ async def _get_authorized_submission_user(token: str, db: AsyncSession) -> User:
     return user
 
 
+async def _authorize_assigned_submission_user(
+    form_cycle_id: uuid.UUID, reviewer_id: uuid.UUID, db: AsyncSession
+) -> None:
+    assignment = await db.execute(
+        select(FormAssignment.id).where(
+            FormAssignment.form_cycle_id == form_cycle_id,
+            FormAssignment.assigned_to == reviewer_id,
+        )
+    )
+    if assignment.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Form cycle not found")
+
+
 def _validate_assigned_user(assigned_user: User | None) -> User:
     if assigned_user is None:
         raise HTTPException(status_code=404, detail="Assigned user not found")
@@ -444,6 +457,7 @@ async def submit_form_cycle(
     cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
     if cycle is None:
         raise HTTPException(status_code=404, detail="Form cycle not found")
+    await _authorize_assigned_submission_user(form_cycle_id, reviewer.id, db)
     submission = (
         await db.execute(
             select(Submission).where(

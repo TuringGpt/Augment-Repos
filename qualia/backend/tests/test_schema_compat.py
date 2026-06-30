@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from types import SimpleNamespace
 from datetime import datetime, timezone
 
 import pytest
@@ -13,11 +14,13 @@ from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
 from app.core.deps import require_cycle_owner_or_admin
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.form_cycles import submit_form_cycle
 from app.form_cycles import _validate_assigned_user
 from app.main import app
 from app.models.form_cycle import FormCycle
 from app.models.question import Question, QuestionType
 from app.models.section import Section
+from app.models.submission import SubmissionStatus
 from app.models.user import Role, RoleType, User
 from app.sections import create_question
 from app.sections import delete_question
@@ -325,6 +328,99 @@ def test_validate_assigned_user_reports_missing_user() -> None:
         _validate_assigned_user(None)
 
     assert exc_info.value.status_code == 404
+
+
+class _ScalarOneOrNoneResult:
+    def __init__(self, value: object) -> None:
+        self._value = value
+
+    def scalar_one_or_none(self) -> object:
+        return self._value
+
+
+class _SubmitFormCycleSession:
+    def __init__(self, results: list[object]) -> None:
+        self._results = list(results)
+        self.execute_calls = 0
+
+    async def execute(self, _query: object) -> _ScalarOneOrNoneResult:
+        result = self._results[self.execute_calls]
+        self.execute_calls += 1
+        return _ScalarOneOrNoneResult(result)
+
+
+def test_submit_form_cycle_rejects_unassigned_reviewer_without_leaking_assignment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SubmitFormCycleSession([SimpleNamespace(id=form_cycle_id), None])
+
+    async def _authorized_reviewer(_token: str, _db: object) -> User:
+        return reviewer
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_submission_user", _authorized_reviewer)
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
+            await submit_form_cycle(
+                form_cycle_id=form_cycle_id,
+                authorization="Bearer token",
+                db=session,
+            )
+
+        assert exc_info.value.status_code == 404
+
+    asyncio.run(_run())
+
+    assert session.execute_calls == 2
+
+
+def test_submit_form_cycle_allows_assigned_reviewer_to_reuse_existing_submission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    submission_id = uuid.uuid4()
+    submission = SimpleNamespace(id=submission_id, status=SubmissionStatus.submitted)
+    session = _SubmitFormCycleSession([SimpleNamespace(id=form_cycle_id), uuid.uuid4(), submission])
+
+    async def _authorized_reviewer(_token: str, _db: object) -> User:
+        return reviewer
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_submission_user", _authorized_reviewer)
+
+    async def _run() -> None:
+        response = await submit_form_cycle(
+            form_cycle_id=form_cycle_id,
+            authorization="Bearer token",
+            db=session,
+        )
+
+        assert response == {
+            "submission_id": str(submission_id),
+            "status": SubmissionStatus.submitted.value,
+        }
+
+    asyncio.run(_run())
+
+    assert session.execute_calls == 3
 
 
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
