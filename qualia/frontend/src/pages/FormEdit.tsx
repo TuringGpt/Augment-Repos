@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -658,13 +657,13 @@ function FormEdit() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeletingQuestion}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={isDeletingQuestion}
             >
               {isDeletingQuestion ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
