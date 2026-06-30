@@ -1,5 +1,7 @@
 import asyncio
 import uuid
+from types import SimpleNamespace
+from datetime import datetime, timezone
 
 import pytest
 from fastapi import HTTPException
@@ -11,17 +13,44 @@ import app.core.deps as deps
 from app.core import config
 from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
+from app.core.deps import require_cycle_owner_or_admin
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.form_cycles import submit_form_cycle
 from app.form_cycles import _validate_assigned_user
 from app.main import app
+from app.models.form_cycle import FormCycle
 from app.models.question import Question, QuestionType
 from app.models.section import Section
+from app.models.submission import SubmissionStatus
 from app.models.user import Role, RoleType, User
 from app.sections import create_question
 from app.sections import delete_question
 from app.sections import QuestionCreate
 from app.sections import QuestionUpdate
 from app.sections import update_question
+
+
+class _ScalarResultStub:
+    def __init__(self, cycle: FormCycle | None) -> None:
+        self._cycle = cycle
+
+    def scalar_one_or_none(self) -> FormCycle | None:
+        return self._cycle
+
+
+class _SessionStub:
+    def __init__(self, cycle: FormCycle | None, expected_form_cycle_id: uuid.UUID | None = None) -> None:
+        self._cycle = cycle
+        self._expected_form_cycle_id = expected_form_cycle_id
+
+    async def execute(self, statement) -> _ScalarResultStub:
+        if self._expected_form_cycle_id is not None:
+            compiled = statement.compile()
+            compiled_values = {str(value) for value in compiled.params.values()}
+
+            assert "form_cycles.id" in str(compiled)
+            assert str(self._expected_form_cycle_id) in compiled_values
+        return _ScalarResultStub(self._cycle)
 
 
 def test_section_table_name() -> None:
@@ -94,6 +123,116 @@ def test_question_item_paths_use_form_cycle_id() -> None:
     assert put_parameter_names == delete_parameter_names
     assert "form_cycle_id" in put_parameter_names
     assert "form_id" not in put_parameter_names
+
+
+def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
+    owner_id = uuid.uuid4()
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=owner_id,
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    owner = User(
+        id=owner_id,
+        email="owner@example.com",
+        username="owner",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    resolved_cycle = asyncio.run(
+        require_cycle_owner_or_admin(
+            cycle.id,
+            user=owner,
+            db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+        )
+    )
+
+    assert resolved_cycle is cycle
+
+
+def test_require_cycle_owner_or_admin_returns_cycle_for_admin() -> None:
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=uuid.uuid4(),
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    resolved_cycle = asyncio.run(
+        require_cycle_owner_or_admin(
+            cycle.id,
+            user=admin,
+            db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+        )
+    )
+
+    assert resolved_cycle is cycle
+
+
+def test_require_cycle_owner_or_admin_raises_not_found_for_missing_cycle() -> None:
+    user = User(
+        id=uuid.uuid4(),
+        email="user@example.com",
+        username="user",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
+        missing_cycle_id = uuid.uuid4()
+        asyncio.run(
+            require_cycle_owner_or_admin(
+                missing_cycle_id,
+                user=user,
+                db=_SessionStub(None, expected_form_cycle_id=missing_cycle_id),
+            )
+        )
+
+    assert exc_info.value.status_code == 404
+
+
+def test_require_cycle_owner_or_admin_rejects_non_owner_non_admin() -> None:
+    cycle = FormCycle(
+        id=uuid.uuid4(),
+        title="Quarterly Review",
+        created_by_id=uuid.uuid4(),
+        submission_deadline=datetime.now(timezone.utc),
+    )
+    user = User(
+        id=uuid.uuid4(),
+        email="user@example.com",
+        username="user",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+
+    with pytest.raises(HTTPException, match="Form cycle owner or admin access required") as exc_info:
+        asyncio.run(
+            require_cycle_owner_or_admin(
+                cycle.id,
+                user=user,
+                db=_SessionStub(cycle, expected_form_cycle_id=cycle.id),
+            )
+        )
+
+    assert exc_info.value.status_code == 403
 
 
 def test_required_env_prefers_canonical_name_over_alias(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -192,24 +331,141 @@ def test_validate_assigned_user_reports_missing_user() -> None:
     assert exc_info.value.status_code == 404
 
 
+class _ScalarOneOrNoneResult:
+    def __init__(self, value: object) -> None:
+        self._value = value
+
+    def scalar_one_or_none(self) -> object:
+        return self._value
+
+
 class _SubmitFormCycleSession:
     def __init__(self, results: list[object]) -> None:
-        self._results = results
+        self._results = list(results)
+        self.execute_calls = 0
 
-    async def execute(self, _query: object) -> "_ScalarResult":
-        return _ScalarResult(self._results.pop() if self._results else None)
+    async def execute(self, _query: object) -> _ScalarOneOrNoneResult:
+        result = self._results[self.execute_calls]
+        self.execute_calls += 1
+        return _ScalarOneOrNoneResult(result)
 
 
-@pytest.mark.parametrize(("policy", "role", "result", "status"), [("require_cycle_owner_or_admin", "admin", None, None), ("require_cycle_owner_or_admin", "owner", "self", None), ("require_assignee", "assignee", "assigned", None), ("require_cycle_owner_or_admin", "assignee", "assigned", 403), ("require_assignee", "user", None, 403)])
-def test_authorization_policy_matrix(policy: str, role: str, result: str | None, status: int | None) -> None:
-    form_cycle_id = uuid.uuid4(); user = User(id=uuid.uuid4(), email="reviewer@example.com", username=role, password_hash="secret", role=Role.admin if role == "admin" else Role.user, is_active=True, is_email_verified=True); session = _SubmitFormCycleSession([user.id if result == "self" else uuid.uuid4() if result else None]); fn = getattr(deps, policy)
+def test_submit_form_cycle_rejects_unassigned_reviewer_without_leaking_assignment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SubmitFormCycleSession([SimpleNamespace(id=form_cycle_id), None])
+
+    async def _authorized_reviewer(_token: str, _db: object) -> User:
+        return reviewer
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_submission_user", _authorized_reviewer)
+
     async def _run() -> None:
-        if status is None: assert await fn(form_cycle_id, user, session) is user
-        else:
-            with pytest.raises(HTTPException) as exc_info: await fn(form_cycle_id, user, session)
-            assert exc_info.value.status_code == status
+        with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
+            await submit_form_cycle(
+                form_cycle_id=form_cycle_id,
+                authorization="Bearer token",
+                db=session,
+            )
+
+        assert exc_info.value.status_code == 404
+
     asyncio.run(_run())
 
+    assert session.execute_calls == 2
+
+
+def test_submit_form_cycle_allows_assigned_reviewer_to_reuse_existing_submission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    submission_id = uuid.uuid4()
+    submission = SimpleNamespace(id=submission_id, status=SubmissionStatus.submitted)
+    session = _SubmitFormCycleSession([SimpleNamespace(id=form_cycle_id), uuid.uuid4(), submission])
+
+    async def _authorized_reviewer(_token: str, _db: object) -> User:
+        return reviewer
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_submission_user", _authorized_reviewer)
+
+    async def _run() -> None:
+        response = await submit_form_cycle(
+            form_cycle_id=form_cycle_id,
+            authorization="Bearer token",
+            db=session,
+        )
+
+        assert response == {
+            "submission_id": str(submission_id),
+            "status": SubmissionStatus.submitted.value,
+        }
+
+    asyncio.run(_run())
+
+    assert session.execute_calls == 3
+
+
+@pytest.mark.parametrize(
+    ("policy", "role", "result", "status"),
+    [
+        ("require_cycle_owner_or_admin", "admin", None, None),
+        ("require_cycle_owner_or_admin", "owner", "self", None),
+        ("require_assignee", "assignee", "assigned", None),
+        ("require_cycle_owner_or_admin", "assignee", "assigned", 403),
+        ("require_assignee", "user", None, 403),
+    ],
+)
+def test_authorization_policy_matrix(
+    policy: str,
+    role: str,
+    result: str | None,
+    status: int | None,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    user = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username=role,
+        password_hash="secret",
+        role=Role.admin if role == "admin" else Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SubmitFormCycleSession(
+        [user.id if result == "self" else uuid.uuid4() if result else None]
+    )
+    fn = getattr(deps, policy)
+
+    async def _run() -> None:
+        if status is None:
+            assert await fn(form_cycle_id, user, session) is user
+            return
+
+        with pytest.raises(HTTPException) as exc_info:
+            await fn(form_cycle_id, user, session)
+
+        assert exc_info.value.status_code == status
+
+    asyncio.run(_run())
 
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("JWT_SECRET", "secret")
