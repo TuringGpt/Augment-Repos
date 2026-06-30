@@ -35,6 +35,7 @@ describe('Label', () => {
 
   describe('Styling', () => {
     it('applies custom className', () => {
+      render(<Label data-testid="label" className="custom-class">Test</Label>)
       const label = screen.getByTestId('label')
       expect(label).toHaveClass('custom-class')
     })
