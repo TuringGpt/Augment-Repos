@@ -58,7 +58,9 @@ describe('Label', () => {
       expect(label).toHaveClass('flex')
       expect(label).toHaveClass('items-center')
       expect(label).toHaveClass('text-lg') // Custom class overrides text-sm
+      expect(label).not.toHaveClass('text-sm') // Verify text-sm is not present
       expect(label).toHaveClass('font-bold') // Custom class overrides font-medium
+      expect(label).not.toHaveClass('font-medium') // Verify font-medium is not present
     })
   })
 
