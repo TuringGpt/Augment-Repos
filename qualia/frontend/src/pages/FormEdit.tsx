@@ -512,7 +512,7 @@ function FormEdit() {
                                 <Button
                                   size="icon-sm"
                                   variant="ghost"
-                                  onClick={handleOpenDeleteDialog(question.id, section.id, question.question_text)}
+                                  onClick={() => handleOpenDeleteDialog(question.id, section.id, question.question_text)}
                                   className="text-muted-foreground hover:text-destructive"
                                 >
                                   <TrashIcon className="h-4 w-4" />
