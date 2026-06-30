@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.models.form_assignment import FormAssignment
+from app.models.form_cycle import FormCycle
 from app.models.user import Role, User
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -63,4 +65,15 @@ async def get_active_user(token: str = Depends(get_bearer_token), db: AsyncSessi
 async def require_admin(user: User = Depends(get_active_user)) -> User:
     if user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+async def require_cycle_owner_or_admin(form_cycle_id: object, user: User, db: AsyncSession) -> User:
+    if user.role == Role.admin: return user
+    owner_id = (await db.execute(select(FormCycle.created_by_id).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
+    if owner_id is None: raise HTTPException(status_code=403, detail="Form cycle not found")
+    if owner_id != user.email: raise HTTPException(status_code=403, detail="Form cycle owner or admin access required")
+    return user
+async def require_assignee(form_cycle_id: object, user: User, db: AsyncSession) -> User:
+    if user.role == Role.admin: return user
+    assigned = (await db.execute(select(FormAssignment.id).where(FormAssignment.form_cycle_id == form_cycle_id, FormAssignment.assigned_to == user.id))).scalar_one_or_none()
+    if assigned is not None: raise HTTPException(status_code=403, detail="Assigned user access required")
     return user

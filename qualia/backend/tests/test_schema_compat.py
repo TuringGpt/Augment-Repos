@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
+import app.core.deps as deps
 from app.core import config
 from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
@@ -189,6 +190,17 @@ def test_validate_assigned_user_reports_missing_user() -> None:
         _validate_assigned_user(None)
 
     assert exc_info.value.status_code == 404
+
+
+@pytest.mark.parametrize(("policy", "role", "result", "status"), [("require_cycle_owner_or_admin", "admin", None, None), ("require_cycle_owner_or_admin", "owner", "self", None), ("require_assignee", "assignee", "assigned", None), ("require_cycle_owner_or_admin", "assignee", "assigned", 404), ("require_assignee", "user", None, 403)])
+def test_authorization_policy_matrix(policy: str, role: str, result: str | None, status: int | None) -> None:
+    form_cycle_id = uuid.uuid4(); user = User(id=uuid.uuid4(), email="reviewer@example.com", username=role, password_hash="secret", role=Role.admin if role == "admin" else Role.user, is_active=True, is_email_verified=True); session = _SubmitFormCycleSession([user.id if result == "self" else uuid.uuid4() if result else None]); fn = getattr(deps, policy)
+    async def _run() -> None:
+        if status is None: assert await fn(form_cycle_id, user, session) is user
+        else:
+            with pytest.raises(HTTPException) as exc_info: await fn(form_cycle_id, user, session)
+            assert exc_info.status_code == status
+    asyncio.run(_run())
 
 
 def test_settings_storage_bucket_error_lists_alias(monkeypatch: pytest.MonkeyPatch) -> None:
