@@ -323,7 +323,7 @@ function FormEdit() {
 
   const handleOpenDeleteDialog = (questionId: string, sectionId: string, questionText: string) => {
     setQuestionToDelete({ questionId, sectionId, questionText });
-    setIsDeleteDialogOpen(false);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
