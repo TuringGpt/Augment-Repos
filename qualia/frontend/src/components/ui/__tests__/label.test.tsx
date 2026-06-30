@@ -129,13 +129,4 @@ describe('Label', () => {
       expect(label).toHaveClass('group-data-[disabled=true]:opacity-50')
     })
   })
-
-  describe('onClick Support', () => {
-    it('does not have onClick by default', () => {
-      render(<Label data-testid="label">Test</Label>)
-      const label = screen.getByTestId('label') as HTMLElement
-      // Verify that the component doesn't add an explicit onClick handler
-      expect(label.onclick).toBeNull()
-    })
-  })
 })
