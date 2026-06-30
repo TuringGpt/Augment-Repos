@@ -649,7 +649,7 @@ function FormEdit() {
             <AlertDialogAction
               variant="destructive"
               onClick={handleConfirmDelete}
-              disabled={true}
+              disabled={isDeletingQuestion}
             >
               {isDeletingQuestion ? "Deleting..." : "Delete"}
             </AlertDialogAction>
