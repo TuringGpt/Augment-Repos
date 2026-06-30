@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, PlusIcon, AlertCircleIcon, SendIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, AlertCircleIcon, SendIcon, TrashIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -87,6 +88,9 @@ function FormEdit() {
     setQuestionType(QuestionType.SHORT_TEXT);
     setIsRequired(false);
     setQuestionError("");
+    // Also reset delete dialog state to prevent deleting questions from the wrong form
+    setIsDeleteDialogOpen(false);
+    setQuestionToDelete(null);
   }, [id]);
 
   // Fetch form cycle details
