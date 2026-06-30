@@ -147,7 +147,7 @@ function FormEdit() {
   // Delete question mutation
   const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteQuestion({
     onSuccess: async () => {
-      toast.error("Question deleted successfully!");
+      toast.success("Question deleted successfully!");
       setIsDeleteDialogOpen(false);
       setQuestionToDelete(null);
 
