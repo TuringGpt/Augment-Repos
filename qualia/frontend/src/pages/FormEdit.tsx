@@ -38,7 +38,7 @@ import { ROUTES } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useCreateSection } from "@/hooks/useCreateSection";
 import { useCreateQuestion } from "@/hooks/useCreateQuestion";
-import { useDeleteQuestion } from "@/useDeleteQuestion";
+import { useDeleteQuestion } from "@/hooks/useDeleteQuestion";
 import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
