@@ -11,7 +11,7 @@ describe('Label', () => {
 
     it('renders as a label element', () => {
       render(<Label data-testid="label">Test</Label>)
-      const label = screen.getByTestId('')
+      const label = screen.getByTestId('label')
       expect(label.tagName).toBe('LABEL')
     })
 
