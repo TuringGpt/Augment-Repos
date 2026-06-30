@@ -218,6 +218,7 @@ def test_submit_form_cycle_rejects_unassigned_reviewer_without_leaking_assignmen
 ) -> None:
     form_cycle_id = uuid.uuid4()
     reviewer = User(
+        id=uuid.uuid4(),
         email="reviewer@example.com",
         username="reviewer",
         password_hash="secret",
@@ -252,6 +253,7 @@ def test_submit_form_cycle_allows_assigned_reviewer_to_reuse_existing_submission
 ) -> None:
     form_cycle_id = uuid.uuid4()
     reviewer = User(
+        id=uuid.uuid4(),
         email="reviewer@example.com",
         username="reviewer",
         password_hash="secret",
