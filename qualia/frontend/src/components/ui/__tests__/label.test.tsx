@@ -72,7 +72,7 @@ describe('Label', () => {
     it('forwards id attribute', () => {
       render(<Label id="test-label" data-testid="label">Test</Label>)
       const label = screen.getByTestId('label')
-      expect(label).toHaveAttribute()
+      expect(label).toHaveAttribute('id', 'test-label')
     })
 
     it('forwards data attributes', () => {
