@@ -332,7 +332,7 @@ function FormEdit() {
     deleteQuestion({
       formCycleId: id,
       sectionId: questionToDelete.sectionId,
-      question: questionToDelete.question,
+      questionId: questionToDelete.questionId,
     });
   };
 
