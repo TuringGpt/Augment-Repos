@@ -90,7 +90,7 @@ async def upload_attachment(
         )
     ).scalar_one_or_none()
     if submission is None:
-        raise HTTPException(status_code=403, detail="User is not assigned to this form cycle")
+        raise HTTPException(status_code=404, detail="User is not assigned to this form cycle")
     if submission.status == SubmissionStatus.submitted:
         raise HTTPException(status_code=400, detail="Submission has already been submitted")
     if record.storage_type != StorageType.local:

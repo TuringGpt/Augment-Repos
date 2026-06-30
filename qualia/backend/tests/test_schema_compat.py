@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi import HTTPException
@@ -14,7 +15,11 @@ from app.core.database import _sqlite_users_table_has_legacy_role_schema
 from app.auth import register_reviewer
 from app.auth import RegisterRequest
 from app.form_cycles import _validate_assigned_user
+from app.form_cycles import AttachmentUploadInitRequest
+from app.form_cycles import get_form_cycle_detail
+from app.form_cycles import init_attachment_upload
 from app.main import app
+from app.models.form_cycle import FormCycle, FormCycleStatus
 from app.models.question import Question, QuestionType
 from app.models.section import Section
 from app.models.user import Role, RoleType, User
@@ -233,6 +238,15 @@ class _ScalarResult:
         return self._value
 
 
+class _SequenceSession:
+    def __init__(self, results: list[object]) -> None:
+        self._results = results
+
+    async def execute(self, _query: object) -> _ScalarResult:
+        value = self._results.pop(0) if self._results else None
+        return _ScalarResult(value)
+
+
 class _FailingQuestionSession:
     def __init__(self, user: User, section: Section) -> None:
         self._results = [_ScalarResult(user), _ScalarResult(section), _ScalarResult(0)]
@@ -399,6 +413,79 @@ def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
 
     assert session.commit_calls == 0
     assert session.rollback_calls == 1
+
+
+def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SequenceSession([reviewer, None])
+    monkeypatch.setattr("app.form_cycles.verify_token", lambda *_args, **_kwargs: {"sub": reviewer.email})
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="Form cycle not found") as exc_info:
+            await get_form_cycle_detail(
+                form_cycle_id=form_cycle_id,
+                authorization="Bearer token",
+                db=session,
+            )
+        assert exc_info.value.status_code == 404
+
+    asyncio.run(_run())
+
+
+def test_init_attachment_upload_reports_unassigned_reviewer_as_not_found(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    form_cycle_id = uuid.uuid4()
+    reviewer = User(
+        id=uuid.uuid4(),
+        email="reviewer@example.com",
+        username="reviewer",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    cycle = FormCycle(
+        id=form_cycle_id,
+        title="Cycle",
+        description=None,
+        created_by_id=uuid.uuid4(),
+        status=FormCycleStatus.active,
+        is_published=True,
+        submission_deadline=datetime.now(UTC) + timedelta(days=1),
+    )
+    session = _SequenceSession([cycle, None])
+
+    async def _authorized_submission_user(*_args: object, **_kwargs: object) -> User:
+        return reviewer
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_submission_user", _authorized_submission_user)
+    monkeypatch.setattr("app.form_cycles._validate_submission_window", lambda *_args, **_kwargs: None)
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="Reviewer is not assigned to this form cycle") as exc_info:
+            await init_attachment_upload(
+                form_cycle_id=form_cycle_id,
+                payload=AttachmentUploadInitRequest(
+                    file_name="report.pdf",
+                    file_size=4,
+                    mime_type="application/pdf",
+                ),
+                authorization="Bearer token",
+                db=session,
+            )
+        assert exc_info.value.status_code == 404
+
+    asyncio.run(_run())
 
 
 def test_update_question_preserves_display_order_when_omitted(monkeypatch: pytest.MonkeyPatch) -> None:
