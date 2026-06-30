@@ -309,9 +309,10 @@ class _SignupSession:
         self.flush_error = flush_error
         self.commit_calls = 0
         self.rollback_calls = 0
+        self.added_user: User | None = None
 
-    def add(self, _obj: object) -> None:
-        return None
+    def add(self, obj: object) -> None:
+        self.added_user = obj if isinstance(obj, User) else None
 
     async def flush(self) -> None:
         if self.flush_error is not None:
@@ -372,6 +373,9 @@ def test_register_reviewer_commits_normalized_signup() -> None:
 
     assert session.commit_calls == 1
     assert session.rollback_calls == 0
+    assert session.added_user is not None
+    assert session.added_user.email == "person@example.com"
+    assert session.added_user.username == "person@example.com"
 
 
 def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
