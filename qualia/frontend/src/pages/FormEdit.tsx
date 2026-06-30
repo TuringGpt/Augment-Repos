@@ -72,10 +72,11 @@ function FormEdit() {
 
   // Capture the formCycleId at the time of mutation to avoid race conditions
   // if the user navigates to another form while the mutation is in-flight.
-  // Use separate refs for section and question mutations to prevent one mutation
+  // Use separate refs for section, question, and delete mutations to prevent one mutation
   // from overwriting the ref value while another is in-flight.
   const sectionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
   const questionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  const deleteMutationFormCycleIdRef = useRef<string | undefined>(undefined);
 
   // Reset add-question state when the route param 'id' changes to prevent
   // cross-form state leakage (e.g., posting a question to a stale section ID)
@@ -153,8 +154,10 @@ function FormEdit() {
       setQuestionToDelete(null);
 
       // Invalidate the form cycle query to refetch and update the UI
-      if (id) {
-        await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
+      // Use the captured formCycleId from the ref to avoid invalidating the wrong cache
+      // if the route param changed while this mutation was in-flight
+      if (deleteMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", deleteMutationFormCycleIdRef.current] });
       }
     },
     onError: (error: ApiError) => {
@@ -328,6 +331,9 @@ function FormEdit() {
 
   const handleConfirmDelete = () => {
     if (!questionToDelete || !id) return;
+
+    // Capture the formCycleId at mutation time to avoid race conditions
+    deleteMutationFormCycleIdRef.current = id;
 
     deleteQuestion({
       formCycleId: id,
