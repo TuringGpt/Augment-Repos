@@ -153,7 +153,7 @@ function FormEdit() {
 
       // Invalidate the form cycle query to refetch and update the UI
       if (id) {
-        await queryClient.invalidateQueries({ queryKey: {"formCycle": id} });
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", id] });
       }
     },
     onError: ({error}) => {
