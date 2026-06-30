@@ -91,7 +91,14 @@ class RegisterRequest(BaseModel):
 
 
 def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
-    return "users.email" in str(exc).lower()
+    statement = str(getattr(exc, "orig", exc)).lower()
+    duplicate_markers = (
+        "users.email",
+        "users.username",
+        "users_email_key",
+        "users_username_key",
+    )
+    return any(marker in statement for marker in duplicate_markers)
 
 
 async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:

@@ -11,6 +11,8 @@ from app.core import config
 from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.auth import register_reviewer
+from app.auth import RegisterRequest
 from app.form_cycles import _validate_assigned_user
 from app.main import app
 from app.models.question import Question, QuestionType
@@ -302,6 +304,26 @@ class _DeleteQuestionSession:
         self.rollback_calls += 1
 
 
+class _SignupSession:
+    def __init__(self, flush_error: IntegrityError | None = None) -> None:
+        self.flush_error = flush_error
+        self.commit_calls = 0
+        self.rollback_calls = 0
+
+    def add(self, _obj: object) -> None:
+        return None
+
+    async def flush(self) -> None:
+        if self.flush_error is not None:
+            raise self.flush_error
+
+    async def commit(self) -> None:
+        self.commit_calls += 1
+
+    async def rollback(self) -> None:
+        self.rollback_calls += 1
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -333,6 +355,45 @@ def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyP
 
     asyncio.run(_run())
 
+    assert session.rollback_calls == 1
+
+
+def test_register_reviewer_commits_normalized_signup() -> None:
+    session = _SignupSession()
+
+    async def _run() -> None:
+        response = await register_reviewer(
+            RegisterRequest(email="  Person@example.com  ", password="long-secret"),
+            session,
+        )
+        assert response == {"email": "Person@example.com", "role": "user"}
+
+    asyncio.run(_run())
+
+    assert session.commit_calls == 1
+    assert session.rollback_calls == 0
+
+
+def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
+    session = _SignupSession(
+        flush_error=IntegrityError(
+            "insert into users",
+            {},
+            Exception('duplicate key value violates unique constraint "users_username_key"'),
+        )
+    )
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="User with this email already exists") as exc_info:
+            await register_reviewer(
+                RegisterRequest(email="person@example.com", password="long-secret"),
+                session,
+            )
+        assert exc_info.value.status_code == 409
+
+    asyncio.run(_run())
+
+    assert session.commit_calls == 0
     assert session.rollback_calls == 1
 
 
