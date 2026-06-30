@@ -133,9 +133,9 @@ describe('Label', () => {
   describe('onClick Support', () => {
     it('does not have onClick by default', () => {
       render(<Label data-testid="label">Test</Label>)
-      const label = screen.getByTestId('label')
-      // Label elements are interactive by nature, but this component doesn't add explicit onClick
-      expect(label).toBeInTheDocument()
+      const label = screen.getByTestId('label') as HTMLElement
+      // Verify that the component doesn't add an explicit onClick handler
+      expect(label.onclick).toBeNull()
     })
   })
 })
