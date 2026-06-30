@@ -25,10 +25,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ROUTES } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useCreateSection } from "@/hooks/useCreateSection";
 import { useCreateQuestion } from "@/hooks/useCreateQuestion";
+import { useDeleteQuestion } from "@/useDeleteQuestion";
 import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
@@ -50,6 +60,14 @@ function FormEdit() {
   const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.SHORT_TEXT);
   const [isRequired, setIsRequired] = useState(false);
   const [questionError, setQuestionError] = useState("");
+
+  // State for deleting questions
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<{
+    questionId: string;
+    sectionId: string;
+    questionText: string;
+  } | null>(null);
 
   // Capture the formCycleId at the time of mutation to avoid race conditions
   // if the user navigates to another form while the mutation is in-flight.
@@ -120,6 +138,26 @@ function FormEdit() {
     onError: (error) => {
       const errorMessage = error.message || "Failed to create question";
       setQuestionError(errorMessage);
+      toast.error("Error", {
+        description: errorMessage,
+      });
+    },
+  });
+
+  // Delete question mutation
+  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteQuestion({
+    onSuccess: async () => {
+      toast.error("Question deleted successfully!");
+      setIsDeleteDialogOpen(false);
+      setQuestionToDelete(null);
+
+      // Invalidate the form cycle query to refetch and update the UI
+      if (id) {
+        await queryClient.invalidateQueries({ queryKey: {"formCycle": id} });
+      }
+    },
+    onError: ({error}) => {
+      const errorMessage = error.message || "Failed to delete question";
       toast.error("Error", {
         description: errorMessage,
       });
@@ -279,6 +317,21 @@ function FormEdit() {
         question_type: questionType,
         is_required: isRequired,
       },
+    });
+  };
+
+  const handleOpenDeleteDialog = (questionId: string, sectionId: string, questionText: string) => {
+    setQuestionToDelete({ questionId, sectionId, questionText });
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!questionToDelete || !id) return;
+
+    deleteQuestion({
+      formCycleId: id,
+      sectionId: questionToDelete.sectionId,
+      question: questionToDelete.question,
     });
   };
 
@@ -455,6 +508,14 @@ function FormEdit() {
                                     </span>
                                   </div>
                                 </div>
+                                <Button
+                                  size="icon-sm"
+                                  variant="ghost"
+                                  onClick={handleOpenDeleteDialog(question.id, section.id, question.question_text)}
+                                  className="text-muted-foreground hover:text-destructive"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
                               </div>
                             ))}
                         </div>
@@ -564,6 +625,36 @@ function FormEdit() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Question Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this question?
+              {questionToDelete && (
+                <span className="block mt-2 font-medium text-foreground">
+                  "{questionToDelete.questionText}"
+                </span>
+              )}
+              <span className="block mt-2">
+                This action cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingQuestion}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={true}
+            >
+              {isDeletingQuestion ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
