@@ -6,11 +6,13 @@ from datetime import UTC, datetime, timedelta, timezone
 import pytest
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 import app.core.deps as deps
 from app.core import config
+from app.core.database import get_db
 from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
 from app.core.deps import require_cycle_owner_or_admin
@@ -56,6 +58,40 @@ class _SessionStub:
             assert "form_cycles.id" in str(compiled)
             assert str(self._expected_form_cycle_id) in compiled_values
         return _ScalarResultStub(self._cycle)
+
+
+class _AuthUsersResultStub:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    def scalars(self) -> "_AuthUsersResultStub":
+        return self
+
+    def all(self) -> list[User]:
+        return self._users
+
+
+class _AuthSessionStub:
+    def __init__(self, users: list[User] | None = None) -> None:
+        self._users = users or []
+
+    async def execute(self, statement) -> _AuthUsersResultStub:
+        compiled = statement.compile()
+        compiled_values = {str(value).lower() for value in compiled.params.values()}
+
+        matched_users = [
+            user
+            for user in self._users
+            if user.email.lower() in compiled_values or user.username.lower() in compiled_values
+        ]
+        return _AuthUsersResultStub(matched_users)
+
+
+def _override_get_db(session: _AuthSessionStub):
+    async def _get_db_override():
+        yield session
+
+    return _get_db_override
 
 
 def test_section_table_name() -> None:
@@ -593,7 +629,8 @@ class _DeleteQuestionSession:
 
 
 class _SignupSession:
-    def __init__(self, flush_error: IntegrityError | None = None) -> None:
+    def __init__(self, users: list[User] | None = None, flush_error: IntegrityError | None = None) -> None:
+        self._users = users or []
         self.flush_error = flush_error
         self.commit_calls = 0
         self.rollback_calls = 0
@@ -601,6 +638,9 @@ class _SignupSession:
 
     def add(self, obj: object) -> None:
         self.added_user = obj if isinstance(obj, User) else None
+
+    async def execute(self, _statement) -> _AuthUsersResultStub:
+        return _AuthUsersResultStub(self._users)
 
     async def flush(self) -> None:
         if self.flush_error is not None:
@@ -664,6 +704,76 @@ def test_register_reviewer_commits_normalized_signup() -> None:
     assert session.added_user is not None
     assert session.added_user.email == "person@example.com"
     assert session.added_user.username == "person@example.com"
+    assert session.added_user.is_active is not True
+    assert session.added_user.is_email_verified is not True
+
+
+def test_signup_rejects_unauthenticated_requests() -> None:
+    app.dependency_overrides[get_db] = _override_get_db(_AuthSessionStub())
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 401
+
+
+def test_signup_rejects_non_admin_requests(monkeypatch: pytest.MonkeyPatch) -> None:
+    user = User(
+        email="reviewer@example.com",
+        username="reviewer@example.com",
+        password_hash="hashed-password",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
+    app.dependency_overrides[get_db] = _override_get_db(_AuthSessionStub([user]))
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+                headers={"Authorization": "Bearer token"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 403
+
+
+def test_signup_allows_admin_requests_and_creates_user(monkeypatch: pytest.MonkeyPatch) -> None:
+    admin = User(
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="hashed-password",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SignupSession(users=[admin])
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": admin.email})
+    app.dependency_overrides[get_db] = _override_get_db(session)
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+                headers={"Authorization": "Bearer token"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"email": "person@example.com", "role": "user"}
+    assert session.commit_calls == 1
+    assert session.added_user is not None
+    assert session.added_user.email == "person@example.com"
+    assert session.added_user.role is Role.user
 
 
 def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
