@@ -511,6 +511,11 @@ class _ScalarResult:
     def scalar_one_or_none(self) -> object:
         return self._value
 
+    def all(self) -> list[object]:
+        if isinstance(self._value, list):
+            return self._value[:1]
+        return []
+
 
 class _SequenceSession:
     def __init__(self, results: list[object]) -> None:
@@ -593,8 +598,13 @@ class _DeleteQuestionSession:
 
 
 class _SignupSession:
-    def __init__(self, flush_error: IntegrityError | None = None) -> None:
+    def __init__(
+        self,
+        flush_error: IntegrityError | None = None,
+        existing_rows: list[tuple[str, str]] | None = None,
+    ) -> None:
         self.flush_error = flush_error
+        self.existing_rows = existing_rows or []
         self.commit_calls = 0
         self.rollback_calls = 0
         self.added_user: User | None = None
@@ -605,6 +615,9 @@ class _SignupSession:
     async def flush(self) -> None:
         if self.flush_error is not None:
             raise self.flush_error
+
+    async def execute(self, _statement: object) -> _ScalarResult:
+        return _ScalarResult(self.existing_rows)
 
     async def commit(self) -> None:
         self.commit_calls += 1
@@ -676,7 +689,7 @@ def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
     )
 
     async def _run() -> None:
-        with pytest.raises(HTTPException, match="User with this email already exists") as exc_info:
+        with pytest.raises(HTTPException, match="User with this username already exists") as exc_info:
             await register_reviewer(
                 RegisterRequest(email="person@example.com", password="long-secret"),
                 session,
