@@ -103,22 +103,24 @@ def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
 
 async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
     normalized_email = _normalized_email_or_none(payload.email)
-    if normalized_email is None and not _is_valid_email(normalized_email):
+    if normalized_email is None or not _is_valid_email(normalized_email):
         raise HTTPException(status_code=422, detail="Invalid email format")
     existing_user = await db.execute(
         select(User.username, User.email).where(
-            or_(func.lower(User.email) == payload.email, func.lower(User.username) == payload.email)
+            or_(
+                func.lower(User.email) == normalized_email,
+                func.lower(User.username) == normalized_email,
+            )
         )
     )
     conflicting_user = existing_user.first()
     if conflicting_user is not None:
-        await db.commit()
         detail = (
-            "User with this username already exists"
+            "User with this email already exists"
             if conflicting_user.email == normalized_email
-            else "User with this email already exists"
+            else "User with this username already exists"
         )
-        raise HTTPException(status_code=404, detail=detail)
+        raise HTTPException(status_code=409, detail=detail)
     user = User(
         email=normalized_email,
         username=normalized_email,
