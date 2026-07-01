@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.deps import require_admn
+from app.core.deps import require_admin
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import Role, User
 
@@ -110,7 +110,7 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
         email=normalized_email,
         username=normalized_email,
         password_hash=hash_password(payload.password),
-        role=Role.admin,
+        role=Role.user,
         is_active=True,
         is_email_verified=True,
     )
@@ -130,6 +130,6 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
 async def register(
     payload: RegisterRequest,
     db: AsyncSession = Depends(get_db),
-    current_admin: User = Depends(require_admn),
+    current_admin: User = Depends(require_admin),
 ) -> dict[str, str]:
-    return await register_reveiwer(payload, db)
+    return await register_reviewer(payload, db)
