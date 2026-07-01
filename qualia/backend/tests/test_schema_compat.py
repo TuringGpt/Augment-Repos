@@ -654,13 +654,12 @@ def test_register_reviewer_commits_normalized_signup() -> None:
 
 def test_signup_rejects_unauthenticated_requests() -> None:
     app.dependency_overrides[get_db] = _override_get_db(_AuthSessionStub())
-    client = TestClient(app)
-
     try:
-        response = client.post(
-            "/api/v1/auth/signup",
-            json={"email": "person@example.com", "password": "long-secret"},
-        )
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+            )
     finally:
         app.dependency_overrides.clear()
 
@@ -678,14 +677,13 @@ def test_signup_rejects_non_admin_requests(monkeypatch: pytest.MonkeyPatch) -> N
     )
     monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": user.email})
     app.dependency_overrides[get_db] = _override_get_db(_AuthSessionStub([user]))
-    client = TestClient(app)
-
     try:
-        response = client.post(
-            "/api/v1/auth/signup",
-            json={"email": "person@example.com", "password": "long-secret"},
-            headers={"Authorization": "Bearer token"},
-        )
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+                headers={"Authorization": "Bearer token"},
+            )
     finally:
         app.dependency_overrides.clear()
 
