@@ -577,7 +577,8 @@ class _DeleteQuestionSession:
 
 
 class _SignupSession:
-    def __init__(self, flush_error: IntegrityError | None = None) -> None:
+    def __init__(self, users: list[User] | None = None, flush_error: IntegrityError | None = None) -> None:
+        self._users = users or []
         self.flush_error = flush_error
         self.commit_calls = 0
         self.rollback_calls = 0
@@ -585,6 +586,9 @@ class _SignupSession:
 
     def add(self, obj: object) -> None:
         self.added_user = obj if isinstance(obj, User) else None
+
+    async def execute(self, _statement) -> _AuthUsersResultStub:
+        return _AuthUsersResultStub(self._users)
 
     async def flush(self) -> None:
         if self.flush_error is not None:
@@ -688,6 +692,35 @@ def test_signup_rejects_non_admin_requests(monkeypatch: pytest.MonkeyPatch) -> N
         app.dependency_overrides.clear()
 
     assert response.status_code == 403
+
+
+def test_signup_allows_admin_requests_and_creates_user(monkeypatch: pytest.MonkeyPatch) -> None:
+    admin = User(
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="hashed-password",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _SignupSession(users=[admin])
+    monkeypatch.setattr("app.core.deps.verify_token", lambda *_args, **_kwargs: {"sub": admin.email})
+    app.dependency_overrides[get_db] = _override_get_db(session)
+    try:
+        with TestClient(app) as client:
+            response = client.post(
+                "/api/v1/auth/signup",
+                json={"email": "person@example.com", "password": "long-secret"},
+                headers={"Authorization": "Bearer token"},
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json() == {"email": "person@example.com", "role": "user"}
+    assert session.commit_calls == 1
+    assert session.added_user is not None
+    assert session.added_user.email == "person@example.com"
 
 
 def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
