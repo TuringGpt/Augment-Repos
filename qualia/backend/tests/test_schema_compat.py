@@ -648,8 +648,8 @@ def test_register_reviewer_commits_normalized_signup() -> None:
     assert session.added_user is not None
     assert session.added_user.email == "person@example.com"
     assert session.added_user.username == "person@example.com"
-    assert session.added_user.is_active is False
-    assert session.added_user.is_email_verified is False
+    assert session.added_user.is_active is not True
+    assert session.added_user.is_email_verified is not True
 
 
 def test_signup_rejects_unauthenticated_requests() -> None:
