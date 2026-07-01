@@ -111,8 +111,6 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
         username=normalized_email,
         password_hash=hash_password(payload.password),
         role=Role.user,
-        is_active=True,
-        is_email_verified=True,
     )
     db.add(user)
     try:
