@@ -115,9 +115,10 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
     )
     conflicting_user = existing_user.first()
     if conflicting_user is not None:
+        conflicting_email = _normalized_email_or_none(conflicting_user.email)
         detail = (
             "User with this email already exists"
-            if conflicting_user.email == normalized_email
+            if conflicting_email == normalized_email
             else "User with this username already exists"
         )
         raise HTTPException(status_code=409, detail=detail)
