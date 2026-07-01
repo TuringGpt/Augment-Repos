@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, PlusIcon, AlertCircleIcon, SendIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, AlertCircleIcon, SendIcon, TrashIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +25,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ROUTES } from "@/config/routes";
 import { useFormCycleById } from "@/hooks/useFormCycleById";
 import { useCreateSection } from "@/hooks/useCreateSection";
 import { useCreateQuestion } from "@/hooks/useCreateQuestion";
+import { useDeleteQuestion } from "@/hooks/useDeleteQuestion";
 import { usePublishFormCycle } from "@/hooks/usePublishFormCycle";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FormDetailSection } from "@/services/formService";
 import { QuestionType } from "@/services/formService";
+import type { ApiError } from "@/lib/axios";
 
 function FormEdit() {
   const { id } = useParams<{ id: string }>();
@@ -51,12 +62,21 @@ function FormEdit() {
   const [isRequired, setIsRequired] = useState(false);
   const [questionError, setQuestionError] = useState("");
 
+  // State for deleting questions
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<{
+    questionId: string;
+    sectionId: string;
+    questionText: string;
+  } | null>(null);
+
   // Capture the formCycleId at the time of mutation to avoid race conditions
   // if the user navigates to another form while the mutation is in-flight.
-  // Use separate refs for section and question mutations to prevent one mutation
+  // Use separate refs for section, question, and delete mutations to prevent one mutation
   // from overwriting the ref value while another is in-flight.
   const sectionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
   const questionMutationFormCycleIdRef = useRef<string | undefined>(undefined);
+  const deleteMutationFormCycleIdRef = useRef<string | undefined>(undefined);
 
   // Reset add-question state when the route param 'id' changes to prevent
   // cross-form state leakage (e.g., posting a question to a stale section ID)
@@ -67,6 +87,9 @@ function FormEdit() {
     setQuestionType(QuestionType.SHORT_TEXT);
     setIsRequired(false);
     setQuestionError("");
+    // Also reset delete dialog state to prevent deleting questions from the wrong form
+    setIsDeleteDialogOpen(false);
+    setQuestionToDelete(null);
   }, [id]);
 
   // Fetch form cycle details
@@ -120,6 +143,28 @@ function FormEdit() {
     onError: (error) => {
       const errorMessage = error.message || "Failed to create question";
       setQuestionError(errorMessage);
+      toast.error("Error", {
+        description: errorMessage,
+      });
+    },
+  });
+
+  // Delete question mutation
+  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteQuestion({
+    onSuccess: async () => {
+      toast.success("Question deleted successfully!");
+      setIsDeleteDialogOpen(false);
+      setQuestionToDelete(null);
+
+      // Invalidate the form cycle query to refetch and update the UI
+      // Use the captured formCycleId from the ref to avoid invalidating the wrong cache
+      // if the route param changed while this mutation was in-flight
+      if (deleteMutationFormCycleIdRef.current) {
+        await queryClient.invalidateQueries({ queryKey: ["formCycle", deleteMutationFormCycleIdRef.current] });
+      }
+    },
+    onError: (error: ApiError) => {
+      const errorMessage = error.message || "Failed to delete question";
       toast.error("Error", {
         description: errorMessage,
       });
@@ -279,6 +324,24 @@ function FormEdit() {
         question_type: questionType,
         is_required: isRequired,
       },
+    });
+  };
+
+  const handleOpenDeleteDialog = (questionId: string, sectionId: string, questionText: string) => {
+    setQuestionToDelete({ questionId, sectionId, questionText });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!questionToDelete || !id) return;
+
+    // Capture the formCycleId at mutation time to avoid race conditions
+    deleteMutationFormCycleIdRef.current = id;
+
+    deleteQuestion({
+      formCycleId: id,
+      sectionId: questionToDelete.sectionId,
+      questionId: questionToDelete.questionId,
     });
   };
 
@@ -455,6 +518,16 @@ function FormEdit() {
                                     </span>
                                   </div>
                                 </div>
+                                <Button
+                                  size="icon-sm"
+                                  variant="ghost"
+                                  onClick={() => handleOpenDeleteDialog(question.id, section.id, question.question_text)}
+                                  className="text-muted-foreground hover:text-destructive"
+                                  aria-label="Delete question"
+                                  disabled={isDeletingQuestion}
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
                               </div>
                             ))}
                         </div>
@@ -564,6 +637,36 @@ function FormEdit() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Question Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this question?
+              {questionToDelete && (
+                <span className="block mt-2 font-medium text-foreground">
+                  "{questionToDelete.questionText}"
+                </span>
+              )}
+              <span className="block mt-2">
+                This action cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingQuestion}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isDeletingQuestion}
+            >
+              {isDeletingQuestion ? "Deleting..." : "Delete"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
