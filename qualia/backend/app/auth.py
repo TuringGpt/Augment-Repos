@@ -101,6 +101,34 @@ def _is_duplicate_signup_error(exc: IntegrityError) -> bool:
     return any(marker in statement for marker in duplicate_markers)
 
 
+def _signup_conflict_detail(conflicts: set[str]) -> str | None:
+    if "email" in conflicts:
+        return "User with this email already exists"
+    if "username" in conflicts:
+        return "User with this username already exists"
+    return None
+
+
+def _signup_conflicts_for_rows(rows: list[tuple[str, str]], normalized_email: str) -> set[str]:
+    conflicts: set[str] = set()
+    for username, email in rows:
+        if _normalized_email_or_none(email) == normalized_email:
+            conflicts.add("email")
+        if _normalized_email_or_none(username) == normalized_email:
+            conflicts.add("username")
+    return conflicts
+
+
+def _signup_conflicts_for_integrity_error(exc: IntegrityError) -> set[str]:
+    statement = str(getattr(exc, "orig", exc)).lower()
+    conflicts: set[str] = set()
+    if "users.email" in statement or "users_email_key" in statement:
+        conflicts.add("email")
+    if "users.username" in statement or "users_username_key" in statement:
+        conflicts.add("username")
+    return conflicts
+
+
 async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[str, str]:
     normalized_email = _normalized_email_or_none(payload.email)
     if normalized_email is None or not _is_valid_email(normalized_email):
@@ -113,14 +141,9 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
             )
         )
     )
-    conflicting_user = existing_user.first()
-    if conflicting_user is not None:
-        conflicting_email = _normalized_email_or_none(conflicting_user.email)
-        detail = (
-            "User with this email already exists"
-            if conflicting_email == normalized_email
-            else "User with this username already exists"
-        )
+    conflicts = _signup_conflicts_for_rows(existing_user.all(), normalized_email)
+    detail = _signup_conflict_detail(conflicts)
+    if detail is not None:
         raise HTTPException(status_code=409, detail=detail)
     user = User(
         email=normalized_email,
@@ -136,7 +159,8 @@ async def register_reviewer(payload: RegisterRequest, db: AsyncSession) -> dict[
     except IntegrityError as exc:
         await db.rollback()
         if _is_duplicate_signup_error(exc):
-            raise HTTPException(status_code=409, detail="User with this email already exists") from exc
+            detail = _signup_conflict_detail(_signup_conflicts_for_integrity_error(exc))
+            raise HTTPException(status_code=409, detail=detail or "User with this email already exists") from exc
         raise
     return {"email": payload.email.strip(), "role": "user"}
 
