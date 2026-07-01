@@ -513,7 +513,7 @@ class _ScalarResult:
 
     def all(self) -> list[object]:
         if isinstance(self._value, list):
-            return self._value[:1]
+            return list(self._value)
         return []
 
 
