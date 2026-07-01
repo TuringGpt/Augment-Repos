@@ -606,6 +606,7 @@ class _SignupSession:
         self.flush_error = flush_error
         self.existing_rows = existing_rows or []
         self.commit_calls = 0
+        self.flush_calls = 0
         self.rollback_calls = 0
         self.added_user: User | None = None
 
@@ -615,6 +616,7 @@ class _SignupSession:
     async def flush(self) -> None:
         if self.flush_error is not None:
             raise self.flush_error
+        self.flush_calls += 1
 
     async def execute(self, _statement: object) -> _ScalarResult:
         return _ScalarResult(self.existing_rows)
@@ -700,6 +702,24 @@ def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
 
     assert session.commit_calls == 0
     assert session.rollback_calls == 1
+
+
+def test_register_reviewer_rejects_existing_email_before_flush_or_commit() -> None:
+    session = _SignupSession(existing_rows=[("other-user", "person@example.com")])
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="User with this email already exists") as exc_info:
+            await register_reviewer(
+                RegisterRequest(email="person@example.com", password="long-secret"),
+                session,
+            )
+        assert exc_info.value.status_code == 409
+
+    asyncio.run(_run())
+
+    assert session.flush_calls == 0
+    assert session.commit_calls == 0
+    assert session.rollback_calls == 0
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
