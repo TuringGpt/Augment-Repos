@@ -74,8 +74,16 @@ class _AuthSessionStub:
     def __init__(self, users: list[User] | None = None) -> None:
         self._users = users or []
 
-    async def execute(self, _statement) -> _AuthUsersResultStub:
-        return _AuthUsersResultStub(self._users)
+    async def execute(self, statement) -> _AuthUsersResultStub:
+        compiled = statement.compile()
+        compiled_values = {str(value).lower() for value in compiled.params.values()}
+
+        matched_users = [
+            user
+            for user in self._users
+            if user.email.lower() in compiled_values or user.username.lower() in compiled_values
+        ]
+        return _AuthUsersResultStub(matched_users)
 
 
 def _override_get_db(session: _AuthSessionStub):
@@ -721,6 +729,7 @@ def test_signup_allows_admin_requests_and_creates_user(monkeypatch: pytest.Monke
     assert session.commit_calls == 1
     assert session.added_user is not None
     assert session.added_user.email == "person@example.com"
+    assert session.added_user.role is Role.user
 
 
 def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
