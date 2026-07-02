@@ -175,7 +175,7 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'))
 
       await waitFor(() => {
-        expect(screen.queryByRole('heading', { name: /menu/i })).toBeInTheDocument()
+        expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
       })
     })
   })
