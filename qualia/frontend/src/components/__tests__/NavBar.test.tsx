@@ -35,7 +35,7 @@ describe('NavBar', () => {
       render(<NavBar />)
       expect(screen.getByRole('link', { name: /features/i })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /sign in/i })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /get started/i })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /get started/i })).toBeInTheDocument()
     })
 
     it('renders mobile menu trigger on mobile', () => {
