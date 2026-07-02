@@ -238,7 +238,8 @@ describe('NavBar', () => {
       mockElement.id = 'features'
       mockElement.scrollIntoView = vi.fn()
 
-      vi.spyOn(document, 'getElementById').mockReturnValue(mockElement)
+      // Reconfigure the existing spy instead of creating a new one
+      vi.mocked(document.getElementById).mockReturnValue(mockElement)
 
       render(<NavBar />)
 
@@ -284,9 +285,10 @@ describe('NavBar', () => {
 
   describe('Theme Selector', () => {
     it('renders theme selector in desktop view', () => {
-      const { container } = render(<NavBar />)
-      // Theme selector should be present (check the component exists in the container)
-      expect(container.querySelector('.hidden.md\\:flex')).toBeInTheDocument()
+      render(<NavBar />)
+      // Theme selector should be present - check for the actual ThemeSelector button
+      const themeButtons = screen.getAllByLabelText(/open theme menu/i)
+      expect(themeButtons.length).toBeGreaterThan(0)
     })
   })
 
