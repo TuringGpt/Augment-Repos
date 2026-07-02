@@ -4,12 +4,18 @@ import { render as rtlRender } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NavBar from '@/components/NavBar'
 import { ROUTES } from '@/config/routes'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@/components/theme-provider'
 
 describe('NavBar', () => {
   let originalInnerWidthDescriptor: PropertyDescriptor | undefined
+
+  // Helper component to display current location for testing
+  const LocationDisplay = () => {
+    const location = useLocation()
+    return <div data-testid="location-display">{location.pathname}{location.hash}</div>
+  }
 
   // Helper function to render NavBar with a custom initial route
   const renderWithRoute = (initialRoute: string) => {
@@ -30,6 +36,7 @@ describe('NavBar', () => {
         <MemoryRouter initialEntries={[initialRoute]}>
           <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
             <NavBar />
+            <LocationDisplay />
           </ThemeProvider>
         </MemoryRouter>
       </QueryClientProvider>
@@ -394,10 +401,18 @@ describe('NavBar', () => {
         // Render NavBar on a non-home route (e.g., /signin)
         renderWithRoute(ROUTES.SIGN_IN)
 
+        // Verify initial location is the sign-in page
+        expect(screen.getByTestId('location-display')).toHaveTextContent(ROUTES.SIGN_IN)
+
         const featuresLink = screen.getByRole('link', { name: /features/i })
 
         // Click the features link
         await user.click(featuresLink)
+
+        // Verify navigation occurred to home page with hash
+        await waitFor(() => {
+          expect(screen.getByTestId('location-display')).toHaveTextContent(`${ROUTES.HOME}#features`)
+        })
 
         // Verify requestAnimationFrame was called (twice, as per implementation)
         expect(mockRaf).toHaveBeenCalled()
