@@ -310,10 +310,14 @@ describe('NavBar', () => {
 
   describe('Theme Selector', () => {
     it('renders theme selector in desktop view', () => {
-      render(<NavBar />)
-      // Theme selector should be present - check for the actual ThemeSelector button
-      const themeButtons = screen.getAllByLabelText(/open theme menu/i)
-      expect(themeButtons.length).toBeGreaterThan(0)
+      const { container } = render(<NavBar />)
+      // Find the desktop navigation container (hidden on mobile, visible on md+)
+      const desktopNav = container.querySelector('.hidden.md\\:flex')
+
+      // Verify ThemeSelector is specifically within the desktop navigation
+      // This ensures the test fails if the desktop ThemeSelector is removed
+      const desktopThemeButton = within(desktopNav as HTMLElement).getByLabelText(/open theme menu/i)
+      expect(desktopThemeButton).toBeDefined()
     })
   })
 
