@@ -269,6 +269,7 @@ describe('NavBar', () => {
   describe('Accessibility', () => {
     it('has proper aria-label for logo link', () => {
       render(<NavBar />)
+      const logoLink = screen.getByLabelText(/qualia home/i)
       expect(logoLink).toHaveAttribute('aria-label', 'Qualia Home')
     })
 
