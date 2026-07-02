@@ -219,6 +219,9 @@ describe('NavBar', () => {
 
       const featuresLink = screen.getByRole('link', { name: /features/i })
 
+      // Click the features link to trigger the scroll behavior
+      await user.click(featuresLink)
+
       await waitFor(() => {
         expect(mockElement.scrollIntoView).toHaveBeenCalledWith({
           behavior: 'smooth',
