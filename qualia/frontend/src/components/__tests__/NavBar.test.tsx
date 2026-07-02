@@ -103,9 +103,9 @@ describe('NavBar', () => {
     it('mobile menu contains navigation links', async () => {
       const user = userEvent.setup()
       render(<NavBar />)
-      
+
       const menuTrigger = screen.getByLabelText(/open menu/i)
-      await user.click()
+      await user.click(menuTrigger)
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /menu/i })).toBeInTheDocument()
