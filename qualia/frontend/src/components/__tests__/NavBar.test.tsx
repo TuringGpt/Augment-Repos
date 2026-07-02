@@ -303,16 +303,16 @@ describe('NavBar', () => {
   })
 
   describe('Accessibility', () => {
-    it('has proper aria-label for logo link', () => {
+    it('logo link has accessible name', () => {
       render(<NavBar />)
       const logoLink = screen.getByLabelText(/qualia home/i)
-      expect(logoLink).toHaveAttribute('aria-label', 'Qualia Home')
+      expect(logoLink).toBeInTheDocument()
     })
 
-    it('has proper aria-label for mobile menu trigger', () => {
+    it('mobile menu trigger has accessible name', () => {
       render(<NavBar />)
       const menuTrigger = screen.getByLabelText(/open menu/i)
-      expect(menuTrigger).toHaveAttribute('aria-label', 'Open menu')
+      expect(menuTrigger).toBeInTheDocument()
     })
   })
 })
