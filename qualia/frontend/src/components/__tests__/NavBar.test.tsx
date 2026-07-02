@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, within, waitFor } from '@/test/utils'
+import { render, screen, within, waitFor, act } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import NavBar from '@/components/NavBar'
 import { ROUTES } from '@/config/routes'
@@ -188,8 +188,17 @@ describe('NavBar', () => {
         value: 1024,
       })
 
+      // Wait for the resize event listener to be set up with the updated isOpen state.
+      // The useEffect that installs the listener depends on isOpen, so we need to
+      // ensure it has re-run after isOpen changed to true before dispatching resize.
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0))
+      })
+
       // Trigger resize event
-      window.dispatchEvent(new Event('resize'))
+      await act(async () => {
+        window.dispatchEvent(new Event('resize'))
+      })
 
       await waitFor(() => {
         expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
