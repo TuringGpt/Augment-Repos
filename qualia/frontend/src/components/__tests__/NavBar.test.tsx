@@ -247,21 +247,30 @@ describe('NavBar', () => {
       }
     })
 
-    it('prevents default behavior and attempts to find features element', async () => {
+    it('prevents default navigation behavior when Features link is clicked', async () => {
       const user = userEvent.setup()
       render(<NavBar />)
 
       const featuresLink = screen.getByRole('link', { name: /features/i })
 
-      // Clear any calls from rendering
-      vi.mocked(document.getElementById).mockClear()
+      // Track preventDefault calls by adding a click event listener
+      const preventDefaultSpy = vi.fn()
+      featuresLink.addEventListener('click', (e: Event) => {
+        // Spy on whether preventDefault was called
+        const originalPreventDefault = e.preventDefault.bind(e)
+        e.preventDefault = () => {
+          preventDefaultSpy()
+          originalPreventDefault()
+        }
+      }, { capture: true })
 
-      // Click the features link - handleFeaturesClick should prevent default
-      // and attempt to find the features element
+      // Click the features link
       await user.click(featuresLink)
 
-      // Verify that handleFeaturesClick executed by checking it called getElementById
-      // This proves the click handler ran (preventDefault was called and scroll logic executed)
+      // Verify that preventDefault was called, which prevents default navigation
+      expect(preventDefaultSpy).toHaveBeenCalled()
+
+      // Also verify the handler executed by checking it called getElementById
       await waitFor(() => {
         expect(document.getElementById).toHaveBeenCalledWith('features')
       })
