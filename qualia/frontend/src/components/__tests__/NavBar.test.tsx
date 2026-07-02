@@ -180,11 +180,16 @@ describe('NavBar', () => {
 
   describe('Features Click Handler', () => {
     beforeEach(() => {
-      // Mock scrollIntoView
-      Element.prototype.scrollIntoView = vi.fn()
+      // Mock scrollIntoView using vi.spyOn to ensure proper cleanup
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(vi.fn())
 
       // Mock document.getElementById
       vi.spyOn(document, 'getElementById').mockReturnValue(null)
+    })
+
+    afterEach(() => {
+      // Restore mocks specific to this suite
+      vi.restoreAllMocks()
     })
 
     it('prevents default behavior for Features link on regular click', async () => {
