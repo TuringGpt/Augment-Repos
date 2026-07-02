@@ -252,7 +252,7 @@ describe('NavBar', () => {
         await user.click(mobileFeaturesLink)
 
         await waitFor(() => {
-          expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument
+          expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
         })
       }
     })
