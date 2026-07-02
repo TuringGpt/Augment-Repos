@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@/test/utils'
+import { render, screen, within, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import NavBar from '@/components/NavBar'
 import { ROUTES } from '@/config/routes'
@@ -111,9 +111,20 @@ describe('NavBar', () => {
         expect(screen.getByRole('heading', { name: /menu/i })).toBeInTheDocument()
       })
 
-      // Check for links in mobile menu
-      const allFeaturesLinks = screen.getAllByRole('link', { name: /features/i })
-      expect(allFeaturesLinks.length).toBeGreaterThan(0)
+      // Check for links specifically within mobile menu (SheetContent)
+      // Use the heading "Menu" to find the mobile menu container
+      const menuHeading = screen.getByRole('heading', { name: /menu/i })
+      const mobileMenuContainer = menuHeading.closest('[role="dialog"]') || menuHeading.parentElement?.parentElement
+
+      if (!mobileMenuContainer) {
+        throw new Error('Could not find mobile menu container')
+      }
+
+      // Query specifically within the mobile menu to ensure these links are in the mobile menu
+      const mobileMenu = within(mobileMenuContainer)
+      expect(mobileMenu.getByRole('link', { name: /features/i })).toBeInTheDocument()
+      expect(mobileMenu.getByRole('link', { name: /sign in/i })).toBeInTheDocument()
+      expect(mobileMenu.getByRole('link', { name: /get started/i })).toBeInTheDocument()
     })
 
     it('closes mobile menu when a link is clicked', async () => {
