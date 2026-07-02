@@ -140,17 +140,16 @@ describe('NavBar', () => {
 
       // Find and click Sign In link in the mobile menu
       const signInLinks = screen.getAllByRole('link', { name: /sign in/i })
-      const mobileSignInLink = signInLinks.find(link => 
+      const mobileSignInLink = signInLinks.find(link =>
         link.className.includes('text-lg')
       )
-      
-      if (mobileSignInLink) {
-        await user.click(mobileSignInLink)
-        
-        await waitFor(() => {
-          expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
-        })
-      }
+
+      expect(mobileSignInLink).toBeDefined()
+      await user.click(mobileSignInLink!)
+
+      await waitFor(() => {
+        expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
+      })
     })
   })
 
@@ -259,13 +258,12 @@ describe('NavBar', () => {
         link.className.includes('text-lg')
       )
 
-      if (mobileFeaturesLink) {
-        await user.click(mobileFeaturesLink)
+      expect(mobileFeaturesLink).toBeDefined()
+      await user.click(mobileFeaturesLink!)
 
-        await waitFor(() => {
-          expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
-        })
-      }
+      await waitFor(() => {
+        expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
+      })
     })
   })
 
