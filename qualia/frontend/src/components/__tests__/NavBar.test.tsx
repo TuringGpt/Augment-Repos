@@ -1,11 +1,40 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within, waitFor, act } from '@/test/utils'
+import { render as rtlRender } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NavBar from '@/components/NavBar'
 import { ROUTES } from '@/config/routes'
+import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from '@/components/theme-provider'
 
 describe('NavBar', () => {
   let originalInnerWidthDescriptor: PropertyDescriptor | undefined
+
+  // Helper function to render NavBar with a custom initial route
+  const renderWithRoute = (initialRoute: string) => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+          gcTime: Infinity,
+        },
+        mutations: {
+          retry: false,
+        },
+      },
+    })
+
+    return rtlRender(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[initialRoute]}>
+          <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+            <NavBar />
+          </ThemeProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+  }
 
   beforeEach(() => {
     // Save the original window.innerWidth descriptor
@@ -339,6 +368,61 @@ describe('NavBar', () => {
       await waitFor(() => {
         expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
       })
+    })
+
+    it('navigates to home and scrolls when Features link is clicked from non-home route', async () => {
+      const user = userEvent.setup()
+
+      // Mock requestAnimationFrame to execute callbacks synchronously
+      const rafCallbacks: FrameRequestCallback[] = []
+      const mockRaf = vi.fn((callback: FrameRequestCallback) => {
+        rafCallbacks.push(callback)
+        return rafCallbacks.length
+      })
+      const originalRaf = window.requestAnimationFrame
+      window.requestAnimationFrame = mockRaf
+
+      // Create a mock element
+      const mockElement = document.createElement('div')
+      mockElement.id = 'features'
+      mockElement.scrollIntoView = vi.fn()
+
+      // Reconfigure the existing spy to return the mock element
+      vi.mocked(document.getElementById).mockReturnValue(mockElement)
+
+      // Render NavBar on a non-home route (e.g., /signin)
+      renderWithRoute(ROUTES.SIGN_IN)
+
+      const featuresLink = screen.getByRole('link', { name: /features/i })
+
+      // Click the features link
+      await user.click(featuresLink)
+
+      // Verify requestAnimationFrame was called (twice, as per implementation)
+      expect(mockRaf).toHaveBeenCalled()
+
+      // Execute the queued requestAnimationFrame callbacks
+      await act(async () => {
+        // First raf callback
+        if (rafCallbacks.length > 0) {
+          rafCallbacks[0](0)
+        }
+        // Second raf callback
+        if (rafCallbacks.length > 1) {
+          rafCallbacks[1](0)
+        }
+      })
+
+      // Verify scrollIntoView was called after navigation
+      await waitFor(() => {
+        expect(mockElement.scrollIntoView).toHaveBeenCalledWith({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      })
+
+      // Restore requestAnimationFrame
+      window.requestAnimationFrame = originalRaf
     })
   })
 
