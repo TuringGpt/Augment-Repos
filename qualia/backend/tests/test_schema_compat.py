@@ -547,6 +547,11 @@ class _ScalarResult:
     def scalar_one_or_none(self) -> object:
         return self._value
 
+    def all(self) -> list[object]:
+        if isinstance(self._value, list):
+            return list(self._value)
+        return []
+
 
 class _SequenceSession:
     def __init__(self, results: list[object]) -> None:
@@ -629,22 +634,37 @@ class _DeleteQuestionSession:
 
 
 class _SignupSession:
-    def __init__(self, users: list[User] | None = None, flush_error: IntegrityError | None = None) -> None:
+    def __init__(
+        self,
+        users: list[User] | None = None,
+        flush_error: IntegrityError | None = None,
+        existing_rows: list[tuple[str, str]] | None = None,
+    ) -> None:
         self._users = users or []
         self.flush_error = flush_error
+        self.existing_rows = existing_rows or []
         self.commit_calls = 0
+        self.flush_calls = 0
         self.rollback_calls = 0
         self.added_user: User | None = None
 
     def add(self, obj: object) -> None:
         self.added_user = obj if isinstance(obj, User) else None
 
-    async def execute(self, _statement) -> _AuthUsersResultStub:
+    async def execute(self, statement: object) -> _AuthUsersResultStub | _ScalarResult:
+        query_text = str(statement)
+        if (
+            "users.username" in query_text
+            and "users.email" in query_text
+            and "users.password_hash" not in query_text
+        ):
+            return _ScalarResult(self.existing_rows)
         return _AuthUsersResultStub(self._users)
 
     async def flush(self) -> None:
         if self.flush_error is not None:
             raise self.flush_error
+        self.flush_calls += 1
 
     async def commit(self) -> None:
         self.commit_calls += 1
@@ -786,7 +806,7 @@ def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
     )
 
     async def _run() -> None:
-        with pytest.raises(HTTPException, match="User with this email already exists") as exc_info:
+        with pytest.raises(HTTPException, match="User with this username already exists") as exc_info:
             await register_reviewer(
                 RegisterRequest(email="person@example.com", password="long-secret"),
                 session,
@@ -797,6 +817,24 @@ def test_register_reviewer_maps_username_unique_violation_to_conflict() -> None:
 
     assert session.commit_calls == 0
     assert session.rollback_calls == 1
+
+
+def test_register_reviewer_rejects_existing_email_before_flush_or_commit() -> None:
+    session = _SignupSession(existing_rows=[("other-user", "person@example.com")])
+
+    async def _run() -> None:
+        with pytest.raises(HTTPException, match="User with this email already exists") as exc_info:
+            await register_reviewer(
+                RegisterRequest(email="person@example.com", password="long-secret"),
+                session,
+            )
+        assert exc_info.value.status_code == 409
+
+    asyncio.run(_run())
+
+    assert session.flush_calls == 0
+    assert session.commit_calls == 0
+    assert session.rollback_calls == 0
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
