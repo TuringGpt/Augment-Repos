@@ -40,6 +40,13 @@ describe('NavBar', () => {
     })
 
     it('renders mobile menu trigger on mobile', () => {
+      // Set mobile width to test mobile-specific rendering
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: 375,
+      })
+
       render(<NavBar />)
       expect(screen.getByLabelText(/open menu/i)).toBeInTheDocument()
     })
