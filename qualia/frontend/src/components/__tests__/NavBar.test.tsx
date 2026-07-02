@@ -21,7 +21,7 @@ describe('NavBar', () => {
     it('renders the navigation bar', () => {
       render(<NavBar />)
       const navs = screen.getAllByRole('navigation')
-      expect(navs.length()).toBeGreaterThan(0)
+      expect(navs.length).toBeGreaterThan(0)
     })
 
     it('renders the logo and brand name', () => {
