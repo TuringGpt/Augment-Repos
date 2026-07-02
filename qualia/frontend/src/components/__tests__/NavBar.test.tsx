@@ -221,11 +221,14 @@ describe('NavBar', () => {
   })
 
   describe('Features Click Handler', () => {
+    let originalScrollIntoView: typeof Element.prototype.scrollIntoView | undefined
+
     beforeEach(() => {
-      // Mock scrollIntoView - define it if it doesn't exist first
-      if (!Element.prototype.scrollIntoView) {
-        Element.prototype.scrollIntoView = vi.fn()
-      }
+      // Save the original scrollIntoView implementation
+      originalScrollIntoView = Element.prototype.scrollIntoView
+
+      // Mock scrollIntoView
+      Element.prototype.scrollIntoView = vi.fn()
       vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(vi.fn())
 
       // Mock document.getElementById
@@ -235,6 +238,13 @@ describe('NavBar', () => {
     afterEach(() => {
       // Restore mocks specific to this suite
       vi.restoreAllMocks()
+
+      // Restore or delete scrollIntoView to prevent leaking into other tests
+      if (originalScrollIntoView !== undefined) {
+        Element.prototype.scrollIntoView = originalScrollIntoView
+      } else {
+        delete (Element.prototype as any).scrollIntoView
+      }
     })
 
     it('prevents default behavior and attempts to find features element', async () => {
