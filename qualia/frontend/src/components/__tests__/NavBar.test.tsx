@@ -119,9 +119,9 @@ describe('NavBar', () => {
     it('closes mobile menu when a link is clicked', async () => {
       const user = userEvent.setup()
       render(<NavBar />)
-      
+
       const menuTrigger = screen.getByLabelText(/open menu/i)
-      await click(menuTrigger)
+      await user.click(menuTrigger)
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /menu/i })).toBeInTheDocument()
