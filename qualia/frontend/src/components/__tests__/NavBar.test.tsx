@@ -32,23 +32,37 @@ describe('NavBar', () => {
       expect(qualiaText.length).toBeGreaterThan(0)
     })
 
-    it('renders desktop navigation links on larger screens', () => {
-      render(<NavBar />)
+    it('renders desktop navigation with responsive CSS classes', () => {
+      // Note: NavBar uses Tailwind's responsive classes (hidden md:flex)
+      // for responsive behavior. Desktop nav is always in the DOM but hidden
+      // via CSS on mobile. We test that the correct responsive classes are applied.
+      const { container } = render(<NavBar />)
+
+      // Desktop navigation should have 'hidden md:flex' classes
+      const desktopNav = container.querySelector('.hidden.md\\:flex')
+      expect(desktopNav).toBeInTheDocument()
+      expect(desktopNav).toHaveClass('hidden', 'md:flex')
+
+      // Verify navigation links are present
       expect(screen.getByRole('link', { name: /features/i })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /sign in/i })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /get started/i })).toBeInTheDocument()
     })
 
-    it('renders mobile menu trigger on mobile', () => {
-      // Set mobile width to test mobile-specific rendering
-      Object.defineProperty(window, 'innerWidth', {
-        writable: true,
-        configurable: true,
-        value: 375,
-      })
-
+    it('renders mobile menu trigger with responsive CSS classes', () => {
+      // Note: NavBar uses Tailwind's responsive classes (md:hidden, hidden md:flex)
+      // for responsive behavior, not JavaScript conditional rendering.
+      // The mobile trigger is always in the DOM but hidden via CSS on desktop.
+      // We test that the correct responsive classes are applied.
       render(<NavBar />)
-      expect(screen.getByLabelText(/open menu/i)).toBeInTheDocument()
+
+      const menuTrigger = screen.getByLabelText(/open menu/i)
+      expect(menuTrigger).toBeInTheDocument()
+
+      // Verify the trigger's parent container has the md:hidden class
+      const mobileContainer = menuTrigger.closest('.md\\:hidden')
+      expect(mobileContainer).toBeInTheDocument()
+      expect(mobileContainer).toHaveClass('md:hidden')
     })
   })
 
