@@ -148,7 +148,7 @@ describe('NavBar', () => {
       const user = userEvent.setup()
 
       // Set initial width to mobile
-      Object.defineProperty('innerWidth', {
+      Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
         value: 500,
