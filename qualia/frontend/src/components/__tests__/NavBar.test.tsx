@@ -135,10 +135,10 @@ describe('NavBar', () => {
       // Check for links specifically within mobile menu (SheetContent)
       // Use the heading "Menu" to find the mobile menu container
       const menuHeading = screen.getByRole('heading', { name: /menu/i })
-      const mobileMenuContainer = menuHeading.closest('[role="dialog"]') || menuHeading.parentElement?.parentElement
+      const mobileMenuContainer = menuHeading.closest('[role="dialog"]')
 
       if (!mobileMenuContainer) {
-        throw new Error('Could not find mobile menu container')
+        throw new Error('Could not find Sheet dialog element - mobile menu markup may have changed')
       }
 
       // Query specifically within the mobile menu to ensure these links are in the mobile menu
