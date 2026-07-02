@@ -5,7 +5,12 @@ import NavBar from '@/components/NavBar'
 import { ROUTES } from '@/config/routes'
 
 describe('NavBar', () => {
+  let originalInnerWidthDescriptor: PropertyDescriptor | undefined
+
   beforeEach(() => {
+    // Save the original window.innerWidth descriptor
+    originalInnerWidthDescriptor = Object.getOwnPropertyDescriptor(window, 'innerWidth')
+
     // Mock window.innerWidth for responsive tests
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
@@ -15,6 +20,13 @@ describe('NavBar', () => {
   })
 
   afterEach(() => {
+    // Restore the original window.innerWidth descriptor
+    if (originalInnerWidthDescriptor) {
+      Object.defineProperty(window, 'innerWidth', originalInnerWidthDescriptor)
+    } else {
+      delete (window as any).innerWidth
+    }
+
     vi.restoreAllMocks()
   })
 
