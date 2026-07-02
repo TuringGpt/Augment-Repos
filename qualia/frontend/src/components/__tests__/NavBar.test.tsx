@@ -25,6 +25,7 @@ describe('NavBar', () => {
     })
 
     it('renders the logo and brand name', () => {
+      render(<NavBar />)
       expect(screen.getByLabelText(/qualia home/i)).toBeInTheDocument()
       const qualiaText = screen.getAllByText(/qualia/i)
       expect(qualiaText.length).toBeGreaterThan(0)
