@@ -382,47 +382,49 @@ describe('NavBar', () => {
       const originalRaf = window.requestAnimationFrame
       window.requestAnimationFrame = mockRaf
 
-      // Create a mock element
-      const mockElement = document.createElement('div')
-      mockElement.id = 'features'
-      mockElement.scrollIntoView = vi.fn()
+      try {
+        // Create a mock element
+        const mockElement = document.createElement('div')
+        mockElement.id = 'features'
+        mockElement.scrollIntoView = vi.fn()
 
-      // Reconfigure the existing spy to return the mock element
-      vi.mocked(document.getElementById).mockReturnValue(mockElement)
+        // Reconfigure the existing spy to return the mock element
+        vi.mocked(document.getElementById).mockReturnValue(mockElement)
 
-      // Render NavBar on a non-home route (e.g., /signin)
-      renderWithRoute(ROUTES.SIGN_IN)
+        // Render NavBar on a non-home route (e.g., /signin)
+        renderWithRoute(ROUTES.SIGN_IN)
 
-      const featuresLink = screen.getByRole('link', { name: /features/i })
+        const featuresLink = screen.getByRole('link', { name: /features/i })
 
-      // Click the features link
-      await user.click(featuresLink)
+        // Click the features link
+        await user.click(featuresLink)
 
-      // Verify requestAnimationFrame was called (twice, as per implementation)
-      expect(mockRaf).toHaveBeenCalled()
+        // Verify requestAnimationFrame was called (twice, as per implementation)
+        expect(mockRaf).toHaveBeenCalled()
 
-      // Execute the queued requestAnimationFrame callbacks
-      await act(async () => {
-        // First raf callback
-        if (rafCallbacks.length > 0) {
-          rafCallbacks[0](0)
-        }
-        // Second raf callback
-        if (rafCallbacks.length > 1) {
-          rafCallbacks[1](0)
-        }
-      })
-
-      // Verify scrollIntoView was called after navigation
-      await waitFor(() => {
-        expect(mockElement.scrollIntoView).toHaveBeenCalledWith({
-          behavior: 'smooth',
-          block: 'start',
+        // Execute the queued requestAnimationFrame callbacks
+        await act(async () => {
+          // First raf callback
+          if (rafCallbacks.length > 0) {
+            rafCallbacks[0](0)
+          }
+          // Second raf callback
+          if (rafCallbacks.length > 1) {
+            rafCallbacks[1](0)
+          }
         })
-      })
 
-      // Restore requestAnimationFrame
-      window.requestAnimationFrame = originalRaf
+        // Verify scrollIntoView was called after navigation
+        await waitFor(() => {
+          expect(mockElement.scrollIntoView).toHaveBeenCalledWith({
+            behavior: 'smooth',
+            block: 'start',
+          })
+        })
+      } finally {
+        // Restore requestAnimationFrame - this will run even if assertions fail
+        window.requestAnimationFrame = originalRaf
+      }
     })
   })
 
