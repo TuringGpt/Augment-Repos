@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import NavBar from '@/components/NavBar'
+import { ROUTES } from '@/config/routes'
 
 describe('NavBar', () => {
   beforeEach(() => {
@@ -62,7 +63,7 @@ describe('NavBar', () => {
     it('Sign In link navigates to sign in page', () => {
       render(<NavBar />)
       const signInLink = screen.getByRole('link', { name: /sign in/i })
-      expect(signInLink).toHaveAttribute('href', ROUTES)
+      expect(signInLink).toHaveAttribute('href', ROUTES.SIGN_IN)
     })
 
     it('Get Started button navigates to register page', () => {
@@ -76,7 +77,7 @@ describe('NavBar', () => {
     it('Logo link navigates to home page', () => {
       render(<NavBar />)
       const logoLink = screen.getByLabelText(/qualia home/i)
-      expect(logoLink).toHaveAttribute('href', ROUTES.SIGN_IN)
+      expect(logoLink).toHaveAttribute('href', ROUTES.HOME)
     })
   })
 
