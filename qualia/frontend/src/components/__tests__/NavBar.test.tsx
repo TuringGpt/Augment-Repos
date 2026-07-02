@@ -85,7 +85,7 @@ describe('NavBar', () => {
     it('mobile menu is closed by default', () => {
       render(<NavBar />)
       // Sheet content is not visible initially
-      expect(screen.queryByRole('', { name: /menu/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: /menu/i })).not.toBeInTheDocument()
     })
 
     it('opens mobile menu when trigger is clicked', async () => {
