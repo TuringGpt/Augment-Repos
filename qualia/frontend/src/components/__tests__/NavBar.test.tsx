@@ -245,6 +245,9 @@ describe('NavBar', () => {
       } else {
         delete (Element.prototype as any).scrollIntoView
       }
+
+      // Reset window.location.hash to prevent state bleed into other tests
+      window.location.hash = ''
     })
 
     it('prevents default navigation behavior when Features link is clicked', async () => {
