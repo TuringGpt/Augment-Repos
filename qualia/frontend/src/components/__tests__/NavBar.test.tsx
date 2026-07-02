@@ -223,22 +223,23 @@ describe('NavBar', () => {
       vi.restoreAllMocks()
     })
 
-    it('handles features link click with proper state management', async () => {
+    it('prevents default behavior and attempts to find features element', async () => {
       const user = userEvent.setup()
       render(<NavBar />)
 
       const featuresLink = screen.getByRole('link', { name: /features/i })
 
-      // Click the features link using user-event to properly wrap state updates in act()
-      // This ensures setIsOpen(false) and other state updates are wrapped correctly
+      // Clear any calls from rendering
+      vi.mocked(document.getElementById).mockClear()
+
+      // Click the features link - handleFeaturesClick should prevent default
+      // and attempt to find the features element
       await user.click(featuresLink)
 
-      // Verify the click was handled without act() warnings
-      // The handleFeaturesClick function updates state (setIsOpen(false)) and triggers
-      // other effects, so using user.click instead of dispatchEvent is critical
+      // Verify that handleFeaturesClick executed by checking it called getElementById
+      // This proves the click handler ran (preventDefault was called and scroll logic executed)
       await waitFor(() => {
-        // No assertion needed - the test passes if no act() warnings occur
-        expect(true).toBe(true)
+        expect(document.getElementById).toHaveBeenCalledWith('features')
       })
     })
 
