@@ -192,7 +192,10 @@ describe('NavBar', () => {
 
   describe('Features Click Handler', () => {
     beforeEach(() => {
-      // Mock scrollIntoView using vi.spyOn to ensure proper cleanup
+      // Mock scrollIntoView - define it if it doesn't exist first
+      if (!Element.prototype.scrollIntoView) {
+        Element.prototype.scrollIntoView = vi.fn()
+      }
       vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(vi.fn())
 
       // Mock document.getElementById
@@ -210,11 +213,23 @@ describe('NavBar', () => {
 
       const featuresLink = screen.getByRole('link', { name: /features/i })
 
-      // Click the features link
-      await user.click(featuresLink)
+      // Create a mock click event to verify preventDefault is called
+      const preventDefaultSpy = vi.fn()
+      const mockClickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        button: 0
+      })
+      Object.defineProperty(mockClickEvent, 'preventDefault', {
+        value: preventDefaultSpy,
+        writable: true
+      })
 
-      // Verify the click was handled (menu stays visible)
-      expect(featuresLink).toBeInTheDocument()
+      // Click the features link with the mock event
+      featuresLink.dispatchEvent(mockClickEvent)
+
+      // Verify preventDefault was called
+      expect(preventDefaultSpy).toHaveBeenCalled()
     })
 
     it('scrolls to features element when it exists', async () => {
