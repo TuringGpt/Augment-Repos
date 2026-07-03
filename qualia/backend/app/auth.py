@@ -172,3 +172,16 @@ async def register(
     current_admin: User = Depends(require_admin),
 ) -> dict[str, str]:
     return await register_reviewer(payload, db)
+
+
+@router.get("/users", status_code=200)
+async def list_users(_admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db)) -> list[dict[str, str]]:
+    users = (
+        await db.execute(
+            select(User)
+            .where(User.is_active.is_(True))
+            .order_by(User.created_at.asc(), User.id.asc())
+            .limit(25)
+        )
+    ).scalars()
+    return [{"id": str(user.id), "email": user.email} for user in users]
