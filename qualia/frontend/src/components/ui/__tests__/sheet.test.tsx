@@ -141,7 +141,11 @@ describe('Sheet', () => {
       )
 
       const content = screen.getByRole('dialog')
-      expect(content).toHaveClass('right-0', 'border-l', 'slide-in-from-right')
+      expect(content).toHaveClass(
+        'right-0',
+        'border-l',
+        'data-[state=open]:slide-in-from-right'
+      )
     })
 
     it('applies left-side classes when side is left', () => {
@@ -154,7 +158,11 @@ describe('Sheet', () => {
       )
 
       const content = screen.getByRole('dialog')
-      expect(content).toHaveClass('left-0', 'border-r', 'slide-in-from-left')
+      expect(content).toHaveClass(
+        'left-0',
+        'border-r',
+        'data-[state=open]:slide-in-from-left'
+      )
     })
 
     it('applies top-side classes when side is top', () => {
@@ -167,7 +175,11 @@ describe('Sheet', () => {
       )
 
       const content = screen.getByRole('dialog')
-      expect(content).toHaveClass('top-0', 'border-b', 'slide-in-from-top')
+      expect(content).toHaveClass(
+        'top-0',
+        'border-b',
+        'data-[state=open]:slide-in-from-top'
+      )
     })
 
     it('applies bottom-side classes when side is bottom', () => {
@@ -180,7 +192,11 @@ describe('Sheet', () => {
       )
 
       const content = screen.getByRole('dialog')
-      expect(content).toHaveClass('bottom-0', 'border-t', 'slide-in-from-bottom')
+      expect(content).toHaveClass(
+        'bottom-0',
+        'border-t',
+        'data-[state=open]:slide-in-from-bottom'
+      )
     })
   })
 
