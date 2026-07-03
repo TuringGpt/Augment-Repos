@@ -7,8 +7,6 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
@@ -665,7 +663,9 @@ describe('Select', () => {
   })
 
   describe('Default Value', () => {
-    it('renders with defaultValue', () => {
+    it('renders with defaultValue', async () => {
+      const user = userEvent.setup()
+
       render(
         <Select defaultValue="option2">
           <SelectTrigger aria-label="Select option">
@@ -678,8 +678,15 @@ describe('Select', () => {
         </Select>
       )
 
-      // The trigger should exist
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      const trigger = screen.getByRole('combobox')
+
+      expect(trigger).toHaveTextContent('Option 2')
+
+      await user.click(trigger)
+
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'Option 2' })).toHaveAttribute('aria-selected', 'true')
+      })
     })
   })
 })

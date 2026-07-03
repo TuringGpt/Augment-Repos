@@ -75,29 +75,44 @@ if (typeof globalThis.IntersectionObserver === 'undefined') {
 // Mock PointerEvent for Radix UI components (like Select)
 // jsdom doesn't support PointerEvent, which is required by Radix UI
 if (typeof window !== 'undefined') {
-  class MockPointerEvent extends Event {
-    button: number
-    ctrlKey: boolean
-    pointerType: string
+  if (typeof window.PointerEvent === 'undefined') {
+    class MockPointerEvent extends Event {
+      button: number
+      ctrlKey: boolean
+      pointerType: string
 
-    constructor(type: string, props: PointerEventInit = {}) {
-      super(type, props)
-      this.button = props.button || 0
-      this.ctrlKey = props.ctrlKey || false
-      this.pointerType = props.pointerType || 'mouse'
+      constructor(type: string, props: PointerEventInit = {}) {
+        super(type, props)
+        this.button = props.button || 0
+        this.ctrlKey = props.ctrlKey || false
+        this.pointerType = props.pointerType || 'mouse'
+      }
     }
+
+    window.PointerEvent = MockPointerEvent as typeof PointerEvent
   }
 
-  window.PointerEvent = MockPointerEvent as any
-  window.HTMLElement.prototype.scrollIntoView = vi.fn()
-  window.HTMLElement.prototype.hasPointerCapture = vi.fn()
-  window.HTMLElement.prototype.releasePointerCapture = vi.fn()
-  window.HTMLElement.prototype.setPointerCapture = vi.fn()
+  if (typeof window.HTMLElement.prototype.scrollIntoView !== 'function') {
+    window.HTMLElement.prototype.scrollIntoView = vi.fn((_arg?: boolean | ScrollIntoViewOptions) => {})
+  }
+
+  if (typeof window.HTMLElement.prototype.hasPointerCapture !== 'function') {
+    window.HTMLElement.prototype.hasPointerCapture = vi.fn((_pointerId: number) => false)
+  }
+
+  if (typeof window.HTMLElement.prototype.releasePointerCapture !== 'function') {
+    window.HTMLElement.prototype.releasePointerCapture = vi.fn((_pointerId: number) => {})
+  }
+
+  if (typeof window.HTMLElement.prototype.setPointerCapture !== 'function') {
+    window.HTMLElement.prototype.setPointerCapture = vi.fn((_pointerId: number) => {})
+  }
 }
 
 // Cleanup after each test
 afterEach(() => {
   cleanup()
+  vi.clearAllMocks()
   // Clear localStorage to prevent theme persistence across tests
   // Guard against non-DOM environments
   if (typeof localStorage !== 'undefined') {
