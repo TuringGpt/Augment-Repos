@@ -185,9 +185,11 @@ async def list_users(
     if active is not None:
         statement = statement.where(User.is_active.is_(active))
     if search:
-        term = f"%{search.lower()}%"
         statement = statement.where(
-            or_(func.lower(User.email).like(term), func.lower(User.username).like(term))
+            or_(
+                func.lower(User.email).contains(search.lower(), autoescape=True),
+                func.lower(User.username).contains(search.lower(), autoescape=True),
+            )
         )
     users = (
         await db.execute(statement.order_by(User.created_at.asc(), User.id.asc()).limit(25))

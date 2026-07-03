@@ -700,7 +700,7 @@ def _flatten_boolean_clauses(clause: object) -> list[object]:
 def _bind_value(clause: object) -> str | None:
     right = getattr(clause, "right", None)
     value = getattr(right, "value", None)
-    return None if value is None else str(value).lower()
+    return None if right is None else str(value if value is not None else right).lower()
 
 
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -908,8 +908,8 @@ def test_list_users_applies_active_and_search_filters_together() -> None:
         for clause in _flatten_boolean_clauses(search_clause)
     }
     assert search_terms == {
-        "lower(users.email)": "%person%",
-        "lower(users.username)": "%person%",
+        "lower(users.email)": "person",
+        "lower(users.username)": "person",
     }
 
 
@@ -939,8 +939,8 @@ def test_list_users_skips_active_filter_when_not_requested() -> None:
         for clause in _flatten_boolean_clauses(where_clauses[0])
     }
     assert search_terms == {
-        "lower(users.email)": "%person%",
-        "lower(users.username)": "%person%",
+        "lower(users.email)": "person",
+        "lower(users.username)": "person",
     }
 
 
