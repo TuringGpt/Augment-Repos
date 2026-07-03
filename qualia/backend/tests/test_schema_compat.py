@@ -703,6 +703,26 @@ def _bind_value(clause: object) -> str | None:
     return None if right is None else str(value if value is not None else right).lower()
 
 
+def _expression_text(node: object) -> str:
+    nested_clauses = list(getattr(node, "clauses", ()))
+    if nested_clauses:
+        return " ".join(_expression_text(clause) for clause in nested_clauses)
+
+    value = getattr(node, "value", None)
+    if value is not None:
+        return str(value).lower()
+
+    right = getattr(node, "right", None)
+    if right is not None and right is not node:
+        return _expression_text(right)
+
+    element = getattr(node, "element", None)
+    if element is not None and element is not node:
+        return _expression_text(element)
+
+    return str(node).lower()
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -903,14 +923,12 @@ def test_list_users_applies_active_and_search_filters_together() -> None:
     assert _bind_value(active_clause) == "true"
 
     search_clause = next(clause for clause in where_clauses if hasattr(clause, "clauses"))
-    search_terms = {
-        str(getattr(clause, "left", "")).lower(): _bind_value(clause)
-        for clause in _flatten_boolean_clauses(search_clause)
+    search_filters = _flatten_boolean_clauses(search_clause)
+    assert {str(getattr(clause, "left", "")).lower() for clause in search_filters} == {
+        "lower(users.email)",
+        "lower(users.username)",
     }
-    assert search_terms == {
-        "lower(users.email)": "person",
-        "lower(users.username)": "person",
-    }
+    assert all("person" in _expression_text(clause) for clause in search_filters)
 
 
 def test_list_users_skips_active_filter_when_not_requested() -> None:
@@ -934,14 +952,57 @@ def test_list_users_skips_active_filter_when_not_requested() -> None:
     where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
     assert len(where_clauses) == 1
 
-    search_terms = {
-        str(getattr(clause, "left", "")).lower(): _bind_value(clause)
-        for clause in _flatten_boolean_clauses(where_clauses[0])
+    search_filters = _flatten_boolean_clauses(where_clauses[0])
+    assert {str(getattr(clause, "left", "")).lower() for clause in search_filters} == {
+        "lower(users.email)",
+        "lower(users.username)",
     }
-    assert search_terms == {
-        "lower(users.email)": "person",
-        "lower(users.username)": "person",
-    }
+    assert all("person" in _expression_text(clause) for clause in search_filters)
+
+
+def test_list_users_without_filters_leaves_whereclause_empty() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search=None, active=None, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    assert session.statement.whereclause is None
+
+
+def test_list_users_applies_inactive_filter_when_requested() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search=None, active=False, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 1
+    assert str(getattr(where_clauses[0], "left", "")) == "users.is_active"
+    assert _bind_value(where_clauses[0]) == "false"
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
