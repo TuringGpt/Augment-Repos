@@ -1,6 +1,6 @@
 from collections import defaultdict, deque
 import time
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -175,13 +175,23 @@ async def register(
 
 
 @router.get("/users", status_code=200)
-async def list_users(_admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db)) -> list[dict[str, str]]:
-    users = (
-        await db.execute(
-            select(User)
-            .where(User.is_active.is_(True))
-            .order_by(User.created_at.asc(), User.id.asc())
-            .limit(25)
+async def list_users(
+    search: str | None = None,
+    active: bool | None = Query(None),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict[str, str]]:
+    statement = select(User)
+    if active is not None:
+        statement = statement.where(User.is_active.is_(active))
+    if search:
+        statement = statement.where(
+            or_(
+                func.lower(User.email).contains(search.lower(), autoescape=True),
+                func.lower(User.username).contains(search.lower(), autoescape=True),
+            )
         )
+    users = (
+        await db.execute(statement.order_by(User.created_at.asc(), User.id.asc()).limit(25))
     ).scalars()
     return [{"id": str(user.id), "email": user.email} for user in users]

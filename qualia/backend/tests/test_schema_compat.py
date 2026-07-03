@@ -17,6 +17,7 @@ from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
 from app.core.deps import require_cycle_owner_or_admin
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.auth import list_users
 from app.auth import register_reviewer
 from app.auth import RegisterRequest
 from app.form_cycles import submit_form_cycle
@@ -673,6 +674,55 @@ class _SignupSession:
         self.rollback_calls += 1
 
 
+class _ListUsersResult:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    def scalars(self) -> list[User]:
+        return self._users
+
+
+class _ListUsersSession:
+    def __init__(self, users: list[User]) -> None:
+        self.users = users
+        self.statement = None
+
+    async def execute(self, statement: object) -> _ListUsersResult:
+        self.statement = statement
+        return _ListUsersResult(self.users)
+
+
+def _flatten_boolean_clauses(clause: object) -> list[object]:
+    clauses = list(getattr(clause, "clauses", ()))
+    return clauses or [clause]
+
+
+def _bind_value(clause: object) -> str | None:
+    right = getattr(clause, "right", None)
+    value = getattr(right, "value", None)
+    return None if right is None else str(value if value is not None else right).lower()
+
+
+def _expression_text(node: object) -> str:
+    nested_clauses = list(getattr(node, "clauses", ()))
+    if nested_clauses:
+        return " ".join(_expression_text(clause) for clause in nested_clauses)
+
+    value = getattr(node, "value", None)
+    if value is not None:
+        return str(value).lower()
+
+    right = getattr(node, "right", None)
+    if right is not None and right is not node:
+        return _expression_text(right)
+
+    element = getattr(node, "element", None)
+    if element is not None and element is not node:
+        return _expression_text(element)
+
+    return str(node).lower()
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -835,6 +885,124 @@ def test_register_reviewer_rejects_existing_email_before_flush_or_commit() -> No
     assert session.flush_calls == 0
     assert session.commit_calls == 0
     assert session.rollback_calls == 0
+
+
+def test_list_users_applies_active_and_search_filters_together() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    listed_user = User(
+        id=uuid.uuid4(),
+        email="person@example.com",
+        username="person",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([listed_user])
+
+    async def _run() -> None:
+        response = await list_users(search="PERSON", active=True, _admin=admin, db=session)
+        assert response == [{"id": str(listed_user.id), "email": "person@example.com"}]
+
+    asyncio.run(_run())
+
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 2
+
+    active_clause = next(
+        clause for clause in where_clauses if str(getattr(clause, "left", "")) == "users.is_active"
+    )
+    assert _bind_value(active_clause) == "true"
+
+    search_clause = next(clause for clause in where_clauses if hasattr(clause, "clauses"))
+    search_filters = _flatten_boolean_clauses(search_clause)
+    assert {str(getattr(clause, "left", "")).lower() for clause in search_filters} == {
+        "lower(users.email)",
+        "lower(users.username)",
+    }
+    assert all("person" in _expression_text(clause) for clause in search_filters)
+
+
+def test_list_users_skips_active_filter_when_not_requested() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search="person", active=None, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 1
+
+    search_filters = _flatten_boolean_clauses(where_clauses[0])
+    assert {str(getattr(clause, "left", "")).lower() for clause in search_filters} == {
+        "lower(users.email)",
+        "lower(users.username)",
+    }
+    assert all("person" in _expression_text(clause) for clause in search_filters)
+
+
+def test_list_users_without_filters_leaves_whereclause_empty() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search=None, active=None, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    assert session.statement.whereclause is None
+
+
+def test_list_users_applies_inactive_filter_when_requested() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search=None, active=False, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 1
+    assert str(getattr(where_clauses[0], "left", "")) == "users.is_active"
+    assert _bind_value(where_clauses[0]) == "false"
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
