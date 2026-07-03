@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import {
@@ -155,6 +155,174 @@ describe('Sheet', () => {
 
       const content = screen.getByRole('dialog')
       expect(content).toHaveClass('left-0', 'border-r', 'slide-in-from-left')
+    })
+
+    it('applies top-side classes when side is top', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent side="top">
+            <SheetTitle>Top Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      const content = screen.getByRole('dialog')
+      expect(content).toHaveClass('top-0', 'border-b', 'slide-in-from-top')
+    })
+
+    it('applies bottom-side classes when side is bottom', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent side="bottom">
+            <SheetTitle>Bottom Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      const content = screen.getByRole('dialog')
+      expect(content).toHaveClass('bottom-0', 'border-t', 'slide-in-from-bottom')
+    })
+  })
+
+  describe('Controlled State', () => {
+    it('respects controlled open state changes', () => {
+      const { rerender } = render(
+        <Sheet open={false}>
+          <SheetContent>
+            <SheetTitle>Controlled Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.queryByText('Controlled Sheet')).not.toBeInTheDocument()
+
+      rerender(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Controlled Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByText('Controlled Sheet')).toBeInTheDocument()
+    })
+
+    it('calls onOpenChange when sheet state changes', async () => {
+      const user = userEvent.setup()
+      const handleOpenChange = vi.fn()
+
+      render(
+        <Sheet onOpenChange={handleOpenChange}>
+          <SheetTrigger>Open</SheetTrigger>
+          <SheetContent>
+            <SheetTitle>Test</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      await user.click(screen.getByRole('button', { name: /open/i }))
+
+      await waitFor(() => {
+        expect(handleOpenChange).toHaveBeenCalledWith(true)
+      })
+    })
+  })
+
+  describe('Custom Styling', () => {
+    it('applies custom className to content', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent className="custom-content" data-testid="sheet-content">
+            <SheetTitle>Custom Styled Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByTestId('sheet-content')).toHaveClass('custom-content')
+    })
+
+    it('applies custom className to title', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle className="custom-title" data-testid="sheet-title">
+              Styled Title
+            </SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByTestId('sheet-title')).toHaveClass('custom-title')
+    })
+
+    it('applies custom className to description', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Title</SheetTitle>
+            <SheetDescription className="custom-desc" data-testid="sheet-description">
+              Styled Description
+            </SheetDescription>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByTestId('sheet-description')).toHaveClass('custom-desc')
+    })
+  })
+
+  describe('Accessibility', () => {
+    it('renders with proper ARIA role', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Accessible Sheet</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    it('associates title with sheet content', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Sheet Title</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      const dialog = screen.getByRole('dialog')
+      expect(dialog).toHaveAccessibleName('Sheet Title')
+      expect(screen.getByText('Sheet Title')).toBeInTheDocument()
+    })
+
+    it('includes description in accessible description', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Title</SheetTitle>
+            <SheetDescription>This is a sheet description</SheetDescription>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+        'This is a sheet description'
+      )
+    })
+
+    it('has accessible close button', () => {
+      render(
+        <Sheet open={true}>
+          <SheetContent>
+            <SheetTitle>Test</SheetTitle>
+          </SheetContent>
+        </Sheet>
+      )
+
+      expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument()
     })
   })
 
