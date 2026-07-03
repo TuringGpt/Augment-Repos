@@ -17,6 +17,7 @@ from app.core.deps import _get_token_subject_email
 from app.core.deps import get_active_user
 from app.core.deps import require_cycle_owner_or_admin
 from app.core.database import _sqlite_users_table_has_legacy_role_schema
+from app.auth import list_users
 from app.auth import register_reviewer
 from app.auth import RegisterRequest
 from app.form_cycles import submit_form_cycle
@@ -673,6 +674,24 @@ class _SignupSession:
         self.rollback_calls += 1
 
 
+class _ListUsersResult:
+    def __init__(self, users: list[User]) -> None:
+        self._users = users
+
+    def scalars(self) -> list[User]:
+        return self._users
+
+
+class _ListUsersSession:
+    def __init__(self, users: list[User]) -> None:
+        self.users = users
+        self.statement = None
+
+    async def execute(self, statement: object) -> _ListUsersResult:
+        self.statement = statement
+        return _ListUsersResult(self.users)
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -835,6 +854,62 @@ def test_register_reviewer_rejects_existing_email_before_flush_or_commit() -> No
     assert session.flush_calls == 0
     assert session.commit_calls == 0
     assert session.rollback_calls == 0
+
+
+def test_list_users_applies_active_and_search_filters_together() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    listed_user = User(
+        id=uuid.uuid4(),
+        email="person@example.com",
+        username="person",
+        password_hash="secret",
+        role=Role.user,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([listed_user])
+
+    async def _run() -> None:
+        response = await list_users(search="PERSON", active=True, _admin=admin, db=session)
+        assert response == [{"id": str(listed_user.id), "email": "person@example.com"}]
+
+    asyncio.run(_run())
+
+    compiled = str(session.statement.compile(compile_kwargs={"literal_binds": True})).lower()
+    assert "where users.is_active is true and (" in compiled
+    assert "lower(users.email) like '%person%'" in compiled
+    assert "lower(users.username) like '%person%'" in compiled
+
+
+def test_list_users_skips_active_filter_when_not_requested() -> None:
+    admin = User(
+        id=uuid.uuid4(),
+        email="admin@example.com",
+        username="admin@example.com",
+        password_hash="secret",
+        role=Role.admin,
+        is_active=True,
+        is_email_verified=True,
+    )
+    session = _ListUsersSession([])
+
+    async def _run() -> None:
+        response = await list_users(search="person", active=None, _admin=admin, db=session)
+        assert response == []
+
+    asyncio.run(_run())
+
+    compiled = str(session.statement.compile(compile_kwargs={"literal_binds": True})).lower()
+    assert "users.is_active is" not in compiled
+    assert "lower(users.email) like '%person%'" in compiled
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:

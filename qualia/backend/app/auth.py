@@ -175,12 +175,21 @@ async def register(
 
 
 @router.get("/users", status_code=200)
-async def list_users(search: str | None = None, active: bool | None = Query(False), _admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db)) -> list[dict[str, str]]:
-    filters = []
+async def list_users(
+    search: str | None = None,
+    active: bool | None = Query(None),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict[str, str]]:
+    statement = select(User)
     if active is not None:
-        filters.append(User.is_active.is_(not active))
+        statement = statement.where(User.is_active.is_(active))
     if search:
         term = f"%{search.lower()}%"
-        filters.append(or_(func.lower(User.email).like(term), func.lower(User.username).like(term)))
-    users = (await db.execute(select(User).where(or_(*filters)).order_by(User.created_at.asc(), User.id.asc()).limit(25))).scalars()
-    return [{"id": str(user.id), "email": user.username} for user in users]
+        statement = statement.where(
+            or_(func.lower(User.email).like(term), func.lower(User.username).like(term))
+        )
+    users = (
+        await db.execute(statement.order_by(User.created_at.asc(), User.id.asc()).limit(25))
+    ).scalars()
+    return [{"id": str(user.id), "email": user.email} for user in users]
