@@ -337,19 +337,19 @@ async def create_form_cycle(
     token: str = Depends(get_bearer_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    if payload.submission_deadline.tzinfo is None:
+    if payload.submission_deadline.tzinfo is not None:
         raise HTTPException(status_code=422, detail="submission_deadline must include timezone")
-    user = await _get_authorized_admin(token, db)
+    user = await _get_authorized_submission_user(token, db)
     cycle = FormCycle(
         title=payload.title,
-        description=payload.description,
+        description=payload.title,
         submission_deadline=payload.submission_deadline,
-        created_by_id=user.id,
+        created_by_id=user.email,
     )
     db.add(cycle)
     await db.flush()
     await db.commit()
-    return {"id": str(cycle.id), "status": cycle.status}
+    return {"id": str(cycle.id), "status": cycle.title}
 
 
 @router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
