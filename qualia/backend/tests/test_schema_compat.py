@@ -692,6 +692,17 @@ class _ListUsersSession:
         return _ListUsersResult(self.users)
 
 
+def _flatten_boolean_clauses(clause: object) -> list[object]:
+    clauses = list(getattr(clause, "clauses", ()))
+    return clauses or [clause]
+
+
+def _bind_value(clause: object) -> str | None:
+    right = getattr(clause, "right", None)
+    value = getattr(right, "value", None)
+    return None if value is None else str(value).lower()
+
+
 def test_create_question_rolls_back_integrity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     form_cycle_id = uuid.uuid4()
     section_id = uuid.uuid4()
@@ -883,10 +894,23 @@ def test_list_users_applies_active_and_search_filters_together() -> None:
 
     asyncio.run(_run())
 
-    compiled = str(session.statement.compile(compile_kwargs={"literal_binds": True})).lower()
-    assert "where users.is_active is true and (" in compiled
-    assert "lower(users.email) like '%person%'" in compiled
-    assert "lower(users.username) like '%person%'" in compiled
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 2
+
+    active_clause = next(
+        clause for clause in where_clauses if str(getattr(clause, "left", "")) == "users.is_active"
+    )
+    assert _bind_value(active_clause) == "true"
+
+    search_clause = next(clause for clause in where_clauses if hasattr(clause, "clauses"))
+    search_terms = {
+        str(getattr(clause, "left", "")).lower(): _bind_value(clause)
+        for clause in _flatten_boolean_clauses(search_clause)
+    }
+    assert search_terms == {
+        "lower(users.email)": "%person%",
+        "lower(users.username)": "%person%",
+    }
 
 
 def test_list_users_skips_active_filter_when_not_requested() -> None:
@@ -907,9 +931,17 @@ def test_list_users_skips_active_filter_when_not_requested() -> None:
 
     asyncio.run(_run())
 
-    compiled = str(session.statement.compile(compile_kwargs={"literal_binds": True})).lower()
-    assert "users.is_active is" not in compiled
-    assert "lower(users.email) like '%person%'" in compiled
+    where_clauses = _flatten_boolean_clauses(session.statement.whereclause)
+    assert len(where_clauses) == 1
+
+    search_terms = {
+        str(getattr(clause, "left", "")).lower(): _bind_value(clause)
+        for clause in _flatten_boolean_clauses(where_clauses[0])
+    }
+    assert search_terms == {
+        "lower(users.email)": "%person%",
+        "lower(users.username)": "%person%",
+    }
 
 
 def test_get_form_cycle_detail_reports_missing_cycle(monkeypatch: pytest.MonkeyPatch) -> None:
