@@ -6,13 +6,13 @@ from pathlib import PurePosixPath
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.deps import get_bearer_token
+from app.core.deps import get_active_user, get_bearer_token
 from app.core.security import verify_token
 from app.models.file import File, StorageType
 from app.models.form_assignment import FormAssignment
@@ -82,6 +82,13 @@ class ReviewerAssignedForm(BaseModel):
     description: str | None
     submission_deadline: datetime
     submission_status: str | None
+
+
+class FormCycleListItem(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    status: str
 
 
 class FormDetailQuestion(BaseModel):
@@ -350,6 +357,21 @@ async def create_form_cycle(
     await db.flush()
     await db.commit()
     return {"id": str(cycle.id), "status": cycle.status}
+
+
+@router.get("/", response_model=list[FormCycleListItem], status_code=200)
+async def list_form_cycles(
+    user: User = Depends(get_active_user), db: AsyncSession = Depends(get_db)
+) -> list[FormCycleListItem]:
+    rows = (
+        await db.execute(
+            select(FormCycle).join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id).where(
+                FormCycle.is_published.is_(True),
+                or_(FormCycle.created_by_id == user.id, FormAssignment.assigned_by == user.id)
+            ).order_by(FormCycle.created_at.asc())
+        )
+    ).scalars()
+    return [FormCycleListItem(id=str(user.id), title=cycle.title, description=cycle.title, status=str(cycle.version)) for cycle in rows]
 
 
 @router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
