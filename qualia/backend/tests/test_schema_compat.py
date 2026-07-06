@@ -201,7 +201,12 @@ def test_list_form_cycles_keeps_published_creator_and_assignee_cycles_unique() -
     user = User(id=uuid.uuid4(), email="user@example.com", username="user", password_hash="secret", role=Role.user, is_active=True, is_email_verified=True)
     created_cycle = FormCycle(id=uuid.uuid4(), title="Created", created_by_id=user.id, status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
     assigned_cycle = FormCycle(id=uuid.uuid4(), title="Assigned", created_by_id=uuid.uuid4(), status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
-    async def _execute(_self, statement): assert "form_cycles.is_published IS true" in str(statement.compile()); return type("R", (), {"scalars": lambda s: s, "unique": lambda s: [created_cycle, assigned_cycle]})()
+    async def _execute(_self, statement):
+        filters = list(statement.whereclause.get_children())
+        assert getattr(filters[0].left, "name", None) == "is_published"
+        creator_or_assignee = list(filters[1].get_children())
+        assert {getattr(clause.left, "name", None) for clause in creator_or_assignee} == {"created_by_id", "assigned_to"}
+        return type("R", (), {"scalars": lambda s: s, "unique": lambda s: [created_cycle, assigned_cycle]})()
     assert [item.id for item in asyncio.run(list_form_cycles(user=user, db=type("S", (), {"execute": _execute})()))] == [str(created_cycle.id), str(assigned_cycle.id)]
 
 
