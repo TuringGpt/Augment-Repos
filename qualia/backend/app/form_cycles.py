@@ -360,6 +360,7 @@ async def create_form_cycle(
 
 
 @router.get("/", response_model=list[FormCycleListItem], status_code=200)
+@router.get("", response_model=list[FormCycleListItem], status_code=200, include_in_schema=False)
 async def list_form_cycles(
     user: User = Depends(get_active_user), db: AsyncSession = Depends(get_db)
 ) -> list[FormCycleListItem]:
