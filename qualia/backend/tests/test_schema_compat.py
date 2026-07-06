@@ -208,6 +208,20 @@ def test_list_form_cycles_keeps_published_creator_and_assignee_cycles_unique() -
             for clause in filters
             if getattr(getattr(clause, "left", None), "name", None) is not None
         } == {"is_published"}
+        creator_or_assignee_group = next(
+            (
+                clause
+                for clause in filters
+                if {
+                    getattr(getattr(nested_clause, "left", None), "name", None)
+                    for nested_clause in _flatten_boolean_clauses(clause)
+                    if getattr(getattr(nested_clause, "left", None), "name", None) in {"created_by_id", "assigned_to"}
+                } == {"created_by_id", "assigned_to"}
+            ),
+            None,
+        )
+        assert creator_or_assignee_group is not None
+        assert " or " in str(creator_or_assignee_group).lower()
         creator_or_assignee = [
             nested_clause
             for clause in filters
