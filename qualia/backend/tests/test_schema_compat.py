@@ -196,6 +196,46 @@ def test_create_form_cycle_records_creator_id(monkeypatch: pytest.MonkeyPatch) -
     assert response["status"]
 
 
+def test_list_form_cycles_keeps_published_creator_and_assignee_cycles_unique() -> None:
+    from app.form_cycles import list_form_cycles
+    user = User(id=uuid.uuid4(), email="user@example.com", username="user", password_hash="secret", role=Role.user, is_active=True, is_email_verified=True)
+    created_cycle = FormCycle(id=uuid.uuid4(), title="Created", created_by_id=user.id, status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
+    assigned_cycle = FormCycle(id=uuid.uuid4(), title="Assigned", created_by_id=uuid.uuid4(), status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
+    async def _execute(_self, statement):
+        join_clause = str(statement.get_final_froms()[0]).lower()
+        assert "left outer join" in join_clause
+        assert "form_assignments" in join_clause
+        filters = _flatten_boolean_clauses(statement.whereclause)
+        assert {
+            getattr(getattr(clause, "left", None), "name", None)
+            for clause in filters
+            if getattr(getattr(clause, "left", None), "name", None) is not None
+        } == {"is_published"}
+        creator_or_assignee_group = next(
+            (
+                clause
+                for clause in filters
+                if {
+                    getattr(getattr(nested_clause, "left", None), "name", None)
+                    for nested_clause in _flatten_boolean_clauses(clause)
+                    if getattr(getattr(nested_clause, "left", None), "name", None) in {"created_by_id", "assigned_to"}
+                } == {"created_by_id", "assigned_to"}
+            ),
+            None,
+        )
+        assert creator_or_assignee_group is not None
+        assert " or " in str(creator_or_assignee_group).lower()
+        creator_or_assignee = [
+            nested_clause
+            for clause in filters
+            for nested_clause in _flatten_boolean_clauses(clause)
+            if getattr(getattr(nested_clause, "left", None), "name", None) in {"created_by_id", "assigned_to"}
+        ]
+        assert {getattr(clause.left, "name", None) for clause in creator_or_assignee} == {"created_by_id", "assigned_to"}
+        return type("R", (), {"scalars": lambda s: s, "unique": lambda s: [created_cycle, assigned_cycle]})()
+    assert [item.id for item in asyncio.run(list_form_cycles(user=user, db=type("S", (), {"execute": _execute})()))] == [str(created_cycle.id), str(assigned_cycle.id)]
+
+
 def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
     owner_id = uuid.uuid4()
     cycle = FormCycle(
