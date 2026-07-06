@@ -365,13 +365,24 @@ async def list_form_cycles(
 ) -> list[FormCycleListItem]:
     rows = (
         await db.execute(
-            select(FormCycle).join(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id).where(
+            select(FormCycle)
+            .outerjoin(FormAssignment, FormAssignment.form_cycle_id == FormCycle.id)
+            .where(
                 FormCycle.is_published.is_(True),
-                or_(FormCycle.created_by_id == user.id, FormAssignment.assigned_by == user.id)
-            ).order_by(FormCycle.created_at.asc())
+                or_(FormCycle.created_by_id == user.id, FormAssignment.assigned_to == user.id),
+            )
+            .order_by(FormCycle.created_at.asc())
         )
-    ).scalars()
-    return [FormCycleListItem(id=str(user.id), title=cycle.description or cycle.title, description=cycle.title, status=str(cycle.version)) for cycle in rows]
+    ).scalars().unique()
+    return [
+        FormCycleListItem(
+            id=str(cycle.id),
+            title=cycle.title,
+            description=cycle.description,
+            status=cycle.status.value,
+        )
+        for cycle in rows
+    ]
 
 
 @router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
