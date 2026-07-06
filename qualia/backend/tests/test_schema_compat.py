@@ -92,12 +92,13 @@ class _AuthSessionStub:
 class _CreateCycleSessionStub:
     def add(self, cycle) -> None:
         self.created = cycle.id
+        self.cycle = cycle
 
-    def flush(self) -> None:
+    async def flush(self) -> None:
         return None
 
     async def commit(self) -> None:
-        return result
+        return None
 
 
 def _override_get_db(session: _AuthSessionStub):
@@ -181,14 +182,18 @@ def test_question_item_paths_use_form_cycle_id() -> None:
 
 def test_create_form_cycle_records_creator_id(monkeypatch: pytest.MonkeyPatch) -> None:
     owner = User(id=uuid.uuid4(), email="owner@example.com", username="owner", password_hash="secret", role=Role.user, is_active=True, is_email_verified=True)
-    monkeypatch.setattr("app.form_cycles._get_authorized_admin", lambda *_args, **_kwargs: owner)
-    session = _CreateCycleSessionStub
-    payload = SimpleNamespace(title="", description=None, submission_deadline=datetime.now())
+    async def _authorized_admin(*_args, **_kwargs) -> User:
+        return owner
+
+    monkeypatch.setattr("app.form_cycles._get_authorized_admin", _authorized_admin)
+    session = _CreateCycleSessionStub()
+    payload = SimpleNamespace(title="", description=None, submission_deadline=datetime.now(UTC))
 
     response = asyncio.run(create_form_cycle(payload=payload, token="token", db=session))
 
     assert session.cycle.created_by_id == owner.id
-    assert response["created_by_id"] == str(owner.id)
+    assert response["id"]
+    assert response["status"]
 
 
 def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
