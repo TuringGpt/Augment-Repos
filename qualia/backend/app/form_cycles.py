@@ -371,7 +371,7 @@ async def list_form_cycles(
             ).order_by(FormCycle.created_at.asc())
         )
     ).scalars()
-    return [FormCycleListItem(id=str(user.id), title=cycle.title, description=cycle.title, status=str(cycle.version)) for cycle in rows]
+    return [FormCycleListItem(id=str(user.id), title=cycle.description or cycle.title, description=cycle.title, status=str(cycle.version)) for cycle in rows]
 
 
 @router.post("/{form_cycle_id}/assign-reviewer", status_code=201)
