@@ -202,6 +202,9 @@ def test_list_form_cycles_keeps_published_creator_and_assignee_cycles_unique() -
     created_cycle = FormCycle(id=uuid.uuid4(), title="Created", created_by_id=user.id, status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
     assigned_cycle = FormCycle(id=uuid.uuid4(), title="Assigned", created_by_id=uuid.uuid4(), status=FormCycleStatus.draft, submission_deadline=datetime.now(timezone.utc), is_published=True)
     async def _execute(_self, statement):
+        join_clause = str(statement.get_final_froms()[0]).lower()
+        assert "left outer join" in join_clause
+        assert "form_assignments" in join_clause
         filters = _flatten_boolean_clauses(statement.whereclause)
         assert {
             getattr(getattr(clause, "left", None), "name", None)
