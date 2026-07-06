@@ -196,6 +196,15 @@ def test_create_form_cycle_records_creator_id(monkeypatch: pytest.MonkeyPatch) -
     assert response["status"]
 
 
+def test_list_form_cycles_keeps_published_creator_and_assignee_cycles_unique() -> None:
+    from app.form_cycles import list_form_cycles
+    user = User(id=uuid.uuid4(), email="user@example.com", username="user", password_hash="secret", role=Role.user, is_active=True, is_email_verified=True)
+    created_cycle = FormCycle(id=uuid.uuid4(), title="Created", created_by_id=user.id, submission_deadline=datetime.now(timezone.utc), is_published=True)
+    assigned_cycle = FormCycle(id=uuid.uuid4(), title="Assigned", created_by_id=uuid.uuid4(), submission_deadline=datetime.now(timezone.utc), is_published=True)
+    async def _execute(_self, statement): assert "form_cycles.is_published IS true" in str(statement.compile()); return type("R", (), {"scalars": lambda s: s, "unique": lambda s: [created_cycle, assigned_cycle, assigned_cycle]})()
+    assert [item.id for item in asyncio.run(list_form_cycles(user=user, db=type("S", (), {"execute": _execute})()))] == [str(created_cycle.id), str(assigned_cycle.id)]
+
+
 def test_require_cycle_owner_or_admin_returns_cycle_for_owner() -> None:
     owner_id = uuid.uuid4()
     cycle = FormCycle(
