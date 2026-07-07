@@ -115,7 +115,9 @@ afterEach(() => {
   vi.clearAllMocks()
   // Clear localStorage to prevent theme persistence across tests
   // Guard against non-DOM environments
-  if (typeof localStorage !== 'undefined') {
-    localStorage.clear()
+  const storage = globalThis.localStorage
+
+  if (storage && typeof storage.clear === 'function') {
+    storage.clear()
   }
 })
