@@ -13,6 +13,20 @@ vi.mock('next-themes', () => ({
   ThemeProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
+vi.mock('lucide-react', () => {
+  const makeIcon =
+    (iconName: string) =>
+    ({ className }: { className?: string }) => <svg data-icon={iconName} className={className} />
+
+  return {
+    CircleCheckIcon: makeIcon('CircleCheckIcon'),
+    InfoIcon: makeIcon('InfoIcon'),
+    TriangleAlertIcon: makeIcon('TriangleAlertIcon'),
+    OctagonXIcon: makeIcon('OctagonXIcon'),
+    Loader2Icon: makeIcon('Loader2Icon'),
+  }
+})
+
 vi.mock('sonner', () => ({
   Toaster: (props: any) => {
     sonnerPropsSpy(props)
@@ -41,7 +55,7 @@ describe('Toaster', () => {
     sonnerPropsSpy.mockClear()
   })
 
-  const expectIconToHaveClass = (testId: string, ...classNames: string[]) => {
+  const expectIcon = (testId: string, iconName: string, ...classNames: string[]) => {
     const svg = screen.getByTestId(testId).querySelector('svg')
 
     expect(svg).not.toBeNull()
@@ -49,6 +63,7 @@ describe('Toaster', () => {
       return
     }
 
+    expect(svg).toHaveAttribute('data-icon', iconName)
     expect(svg).toHaveClass(...classNames)
   }
 
@@ -85,10 +100,10 @@ describe('Toaster', () => {
   it('provides icons for each supported toast variant', () => {
     render(<Toaster />)
 
-    expectIconToHaveClass('success-icon', 'size-4')
-    expectIconToHaveClass('info-icon', 'size-4')
-    expectIconToHaveClass('warning-icon', 'size-4')
-    expectIconToHaveClass('error-icon', 'size-4')
-    expectIconToHaveClass('loading-icon', 'size-4', 'animate-spin')
+    expectIcon('success-icon', 'CircleCheckIcon', 'size-4')
+    expectIcon('info-icon', 'InfoIcon', 'size-4')
+    expectIcon('warning-icon', 'TriangleAlertIcon', 'size-4')
+    expectIcon('error-icon', 'OctagonXIcon', 'size-4')
+    expectIcon('loading-icon', 'Loader2Icon', 'size-4', 'animate-spin')
   })
 })
