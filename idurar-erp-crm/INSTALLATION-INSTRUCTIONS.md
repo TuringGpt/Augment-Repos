@@ -48,6 +48,8 @@ npm install
 
 This command will install all the required packages specified in the package.json file.
 
+If you store uploads in S3, see `backend/docs/s3-attachment-lifecycle.md` to configure the attachment lifecycle rule that moves old uploads to infrequent access after 90 days.
+
 #### Step 6: Run Setup Script
 
 While still in the /backend directory of the project, execute the following command to run the setup script:
