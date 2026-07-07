@@ -13,10 +13,13 @@ const adminAuth = require('./controllers/coreControllers/adminAuth');
 
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
+const { requestCorrelation } = require('./middlewares/requestCorrelation');
 
 const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
+
+app.use(requestCorrelation);
 
 app.use(
   cors({
