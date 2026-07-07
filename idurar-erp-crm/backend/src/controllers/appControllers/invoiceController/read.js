@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
+const { pickDtoFields, sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const Model = mongoose.model('Invoice');
+
+const invoiceDtoOptions = {
+  propertyTransformers: {
+    createdBy: (createdBy) => pickDtoFields(createdBy, ['name']),
+  },
+};
 
 const read = async (req, res) => {
   // Find document by id
@@ -19,10 +26,12 @@ const read = async (req, res) => {
     });
   } else {
     // Return success resposne
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'we found this document ',
+      dtoOptions: invoiceDtoOptions,
     });
   }
 };

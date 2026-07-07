@@ -1,3 +1,5 @@
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
+
 const listAll = async (Model, req, res) => {
   const sort = req.query.sort || 'desc';
   const enabled = req.query.enabled || undefined;
@@ -23,7 +25,8 @@ const listAll = async (Model, req, res) => {
   }
 
   if (result.length > 0) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'Successfully found all documents',

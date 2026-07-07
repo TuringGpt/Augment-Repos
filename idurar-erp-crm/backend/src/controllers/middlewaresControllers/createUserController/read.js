@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const read = async (userModel, req, res) => {
   const User = mongoose.model(userModel);
@@ -27,7 +28,8 @@ const read = async (userModel, req, res) => {
       role: tmpResult.role,
     };
 
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
       message: 'we found this document ',

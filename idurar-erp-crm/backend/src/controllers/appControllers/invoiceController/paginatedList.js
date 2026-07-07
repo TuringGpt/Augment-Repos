@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
+const { pickDtoFields, sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const Model = mongoose.model('Invoice');
+
+const invoiceDtoOptions = {
+  propertyTransformers: {
+    createdBy: (createdBy) => pickDtoFields(createdBy, ['name']),
+  },
+};
 
 const paginatedList = async (req, res) => {
   const page = req.query.page || 1;
@@ -48,11 +55,13 @@ const paginatedList = async (req, res) => {
   // Getting Pagination Object
   const pagination = { page, pages, count };
   if (count > 0) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result,
-      pagination,
       message: 'Successfully found all documents',
+      pagination,
+      dtoOptions: invoiceDtoOptions,
     });
   } else {
     return res.status(203).json({

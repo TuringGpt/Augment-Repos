@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { sendDtoResponse } = require('@/controllers/helpers/dto');
 
 const Model = mongoose.model('Setting');
 
@@ -30,7 +31,8 @@ const listBySettingKey = async (req, res) => {
 
   // If no results found, return document not found
   if (results.length >= 1) {
-    return res.status(200).json({
+    return sendDtoResponse(res, {
+      status: 200,
       success: true,
       result: results,
       message: 'Successfully found all documents',
