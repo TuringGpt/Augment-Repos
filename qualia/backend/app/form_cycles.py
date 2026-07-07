@@ -440,33 +440,28 @@ async def assign_reviewer(
 @router.post("/{form_cycle_id}/publish", status_code=200)
 async def publish_form_cycle(
     form_cycle_id: uuid.UUID,
-    publisher: User = Depends(require_cycle_owner_or_admin),
+    cycle: FormCycle = Depends(require_cycle_owner_or_admin),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str | bool]:
     publish_result = await db.execute(
         update(FormCycle)
         .where(
             FormCycle.id == form_cycle_id,
-            FormCycle.status == FormCycleStatus.active,
+            FormCycle.status == FormCycleStatus.draft,
             FormCycle.is_published.is_(False),
         )
         .values(
-            status=FormCycleStatus.draft,
-            is_published=False,
+            status=FormCycleStatus.active,
+            is_published=True,
         )
         .returning(FormCycle.id, FormCycle.status, FormCycle.is_published)
     )
     published_cycle = publish_result.one_or_none()
     if published_cycle is None:
-        current_cycle = (
-            await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))
-        ).scalar_one_or_none()
-        if current_cycle is None:
-            raise HTTPException(status_code=404, detail="Form cycle not found")
-        if current_cycle.is_published:
+        if cycle.is_published:
             detail = "Form cycle is already published"
-        elif current_cycle.status != FormCycleStatus.draft:
-            detail = f"Form cycle cannot be published from status '{current_cycle.status.value}'"
+        elif cycle.status != FormCycleStatus.draft:
+            detail = f"Form cycle cannot be published from status '{cycle.status.value}'"
         else:
             detail = "Form cycle was published by another request"
         raise HTTPException(status_code=409, detail=detail)
