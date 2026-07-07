@@ -6,7 +6,6 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.form_cycle import FormCycle
 from app.core.security import verify_token
 from app.models.form_assignment import FormAssignment
 from app.models.form_cycle import FormCycle
@@ -81,28 +80,6 @@ async def require_cycle_owner_or_admin(
 async def require_admin(user: User = Depends(get_active_user)) -> User:
     if user.role != Role.admin:
         raise HTTPException(status_code=403, detail="Admin access required")
-    return user
-
-
-async def require_cycle_owner_or_admin(
-    form_cycle_id: object,
-    user: User = Depends(get_active_user),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    if user.role == Role.admin:
-        return user
-    owner_id = (
-        await db.execute(
-            select(FormCycle.created_by_id).where(FormCycle.id == form_cycle_id)
-        )
-    ).scalar_one_or_none()
-    if owner_id is None:
-        raise HTTPException(status_code=404, detail="Form cycle not found")
-    if owner_id != user.id:
-        raise HTTPException(
-            status_code=403,
-            detail="Form cycle owner or admin access required",
-        )
     return user
 
 

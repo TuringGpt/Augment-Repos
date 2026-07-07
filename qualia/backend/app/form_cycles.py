@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.deps import get_active_user, get_bearer_token
+from app.core.deps import get_active_user, get_bearer_token, require_cycle_owner_or_admin
 from app.core.security import verify_token
 from app.models.file import File, StorageType
 from app.models.form_assignment import FormAssignment
@@ -437,14 +437,20 @@ async def assign_reviewer(
     return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
 
 
+def _get_publish_conflict_detail(current_cycle: FormCycle) -> str:
+    if current_cycle.status != FormCycleStatus.draft:
+        return f"Form cycle cannot be published from status '{current_cycle.status.value}'"
+    if current_cycle.is_published:
+        return "Form cycle is already published"
+    return "Form cycle was published by another request"
+
+
 @router.post("/{form_cycle_id}/publish", status_code=200)
 async def publish_form_cycle(
-    form_cycle_id: uuid.UUID, token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)
+    form_cycle_id: uuid.UUID,
+    cycle: FormCycle = Depends(require_cycle_owner_or_admin),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, str | bool]:
-    await _get_authorized_admin(token.strip(), db)
-    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
-    if cycle is None:
-        raise HTTPException(status_code=404, detail="Form cycle not found")
     publish_result = await db.execute(
         update(FormCycle)
         .where(
@@ -461,17 +467,15 @@ async def publish_form_cycle(
     published_cycle = publish_result.one_or_none()
     if published_cycle is None:
         current_cycle = (
-            await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))
+            await db.execute(
+                select(FormCycle)
+                .where(FormCycle.id == form_cycle_id)
+                .execution_options(populate_existing=True)
+            )
         ).scalar_one_or_none()
         if current_cycle is None:
             raise HTTPException(status_code=404, detail="Form cycle not found")
-        if current_cycle.is_published:
-            detail = "Form cycle is already published"
-        elif current_cycle.status != FormCycleStatus.draft:
-            detail = f"Form cycle cannot be published from status '{current_cycle.status.value}'"
-        else:
-            detail = "Form cycle was published by another request"
-        raise HTTPException(status_code=409, detail=detail)
+        raise HTTPException(status_code=409, detail=_get_publish_conflict_detail(current_cycle))
     await db.commit()
     return {
         "id": str(published_cycle.id),
