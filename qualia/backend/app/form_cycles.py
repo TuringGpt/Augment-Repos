@@ -437,6 +437,14 @@ async def assign_reviewer(
     return {"form_cycle_id": str(cycle.id), "reviewer_id": str(reviewer.id)}
 
 
+def _get_publish_conflict_detail(current_cycle: FormCycle) -> str:
+    if current_cycle.status != FormCycleStatus.draft:
+        return f"Form cycle cannot be published from status '{current_cycle.status.value}'"
+    if current_cycle.is_published:
+        return "Form cycle is already published"
+    return "Form cycle was published by another request"
+
+
 @router.post("/{form_cycle_id}/publish", status_code=200)
 async def publish_form_cycle(
     form_cycle_id: uuid.UUID,
@@ -458,13 +466,16 @@ async def publish_form_cycle(
     )
     published_cycle = publish_result.one_or_none()
     if published_cycle is None:
-        if cycle.is_published:
-            detail = "Form cycle is already published"
-        elif cycle.status != FormCycleStatus.draft:
-            detail = f"Form cycle cannot be published from status '{cycle.status.value}'"
-        else:
-            detail = "Form cycle was published by another request"
-        raise HTTPException(status_code=409, detail=detail)
+        current_cycle = (
+            await db.execute(
+                select(FormCycle)
+                .where(FormCycle.id == form_cycle_id)
+                .execution_options(populate_existing=True)
+            )
+        ).scalar_one_or_none()
+        if current_cycle is None:
+            raise HTTPException(status_code=404, detail="Form cycle not found")
+        raise HTTPException(status_code=409, detail=_get_publish_conflict_detail(current_cycle))
     await db.commit()
     return {
         "id": str(published_cycle.id),
