@@ -77,7 +77,7 @@ afterEach(() => {
   cleanup()
   // Clear localStorage to prevent theme persistence across tests
   // Guard against non-DOM environments
-  const storage = typeof window !== 'undefined' ? window.localStorage : undefined
+  const storage = globalThis.localStorage
 
   if (storage && typeof storage.clear === 'function') {
     storage.clear()

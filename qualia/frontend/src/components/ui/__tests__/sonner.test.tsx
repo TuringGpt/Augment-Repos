@@ -41,6 +41,17 @@ describe('Toaster', () => {
     sonnerPropsSpy.mockClear()
   })
 
+  const expectIconToHaveClass = (testId: string, ...classNames: string[]) => {
+    const svg = screen.getByTestId(testId).querySelector('svg')
+
+    expect(svg).not.toBeNull()
+    if (!svg) {
+      return
+    }
+
+    expect(svg).toHaveClass(...classNames)
+  }
+
   it('uses the active theme and forwards props to sonner', () => {
     render(<Toaster position="bottom-right" closeButton />)
 
@@ -74,10 +85,10 @@ describe('Toaster', () => {
   it('provides icons for each supported toast variant', () => {
     render(<Toaster />)
 
-    expect(screen.getByTestId('success-icon').querySelector('svg')).toHaveClass('size-4')
-    expect(screen.getByTestId('info-icon').querySelector('svg')).toHaveClass('size-4')
-    expect(screen.getByTestId('warning-icon').querySelector('svg')).toHaveClass('size-4')
-    expect(screen.getByTestId('error-icon').querySelector('svg')).toHaveClass('size-4')
-    expect(screen.getByTestId('loading-icon').querySelector('svg')).toHaveClass('size-4', 'animate-spin')
+    expectIconToHaveClass('success-icon', 'size-4')
+    expectIconToHaveClass('info-icon', 'size-4')
+    expectIconToHaveClass('warning-icon', 'size-4')
+    expectIconToHaveClass('error-icon', 'size-4')
+    expectIconToHaveClass('loading-icon', 'size-4', 'animate-spin')
   })
 })
