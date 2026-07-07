@@ -13,7 +13,8 @@ describe('AuthLayout', () => {
       </MemoryRouter>
     )
 
-    expect(container.querySelector('.min-h-screen')).toHaveClass('bg-secondary')
+    expect(container.firstElementChild).toHaveClass('min-h-screen')
+    expect(container.firstElementChild).toHaveClass('bg-secondary')
   })
 
   it('renders a subtle footer with the current copyright notice', () => {
