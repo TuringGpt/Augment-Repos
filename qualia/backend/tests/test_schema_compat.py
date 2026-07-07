@@ -538,8 +538,8 @@ def test_submit_form_cycle_allows_assigned_reviewer_to_reuse_existing_submission
 @pytest.mark.parametrize(
     ("policy", "role", "result", "status"),
     [
-        ("require_cycle_owner_or_admin", "admin", None, None),
-        ("require_cycle_owner_or_admin", "owner", "self", None),
+        ("require_cycle_owner_or_admin", "admin", "cycle", None),
+        ("require_cycle_owner_or_admin", "owner", "cycle", None),
         ("require_assignee", "assignee", "assigned", None),
         ("require_cycle_owner_or_admin", "assignee", "assigned", 403),
         ("require_assignee", "user", None, 403),
@@ -561,14 +561,22 @@ def test_authorization_policy_matrix(
         is_active=True,
         is_email_verified=True,
     )
+    cycle = FormCycle(
+        id=form_cycle_id,
+        title="Quarterly Review",
+        created_by_id=user.id if role == "owner" else uuid.uuid4(),
+        submission_deadline=datetime.now(timezone.utc),
+    )
     session = _SubmitFormCycleSession(
-        [user.id if result == "self" else uuid.uuid4() if result else None]
+        [cycle if policy == "require_cycle_owner_or_admin" else user.id if result else None]
     )
     fn = getattr(deps, policy)
 
     async def _run() -> None:
         if status is None:
-            assert await fn(form_cycle_id, user, session) is user
+            resolved = await fn(form_cycle_id, user, session)
+            expected = cycle if result == "cycle" else user
+            assert resolved is expected
             return
 
         with pytest.raises(HTTPException) as exc_info:
