@@ -305,12 +305,39 @@ def test_exc_handler_raises_compiler(input_json):
 def test_exc_handler_to_dict_compiler(input_json):
     input_json["sources"]["badcode.vy"] = {"content": BAD_COMPILER_CODE}
     result = compile_json(input_json, exc_handler_to_dict)
-    assert sorted(result.keys()) == ["compiler", "errors"]
+    # Partial results from the 3 valid contracts are still returned alongside the error.
+    assert "errors" in result
+    assert "contracts" in result
     assert result["compiler"] == f"vyper-{vyper.__version__}"
     assert len(result["errors"]) == 1
     error = result["errors"][0]
     assert error["component"] == "compiler"
     assert error["type"] == "TypeMismatch"
+
+
+def test_exc_handler_to_dict_multiple_errors(input_json):
+    # Two bad contracts added after the three valid ones.
+    input_json["sources"]["badsyntax.vy"] = {"content": BAD_SYNTAX_CODE}
+    input_json["sources"]["badcompiler.vy"] = {"content": BAD_COMPILER_CODE}
+    result = compile_json(input_json, exc_handler_to_dict)
+
+    # All per-file errors must be present — compilation must not stop at the first failure.
+    assert "errors" in result
+    assert len(result["errors"]) == 2
+    error_types = {e["type"] for e in result["errors"]}
+    assert "SyntaxException" in error_types
+    assert "TypeMismatch" in error_types
+
+    # Each error carries the originating file path.
+    error_files = {str(e["sourceLocation"]["file"]) for e in result["errors"]}
+    assert "badsyntax.vy" in error_files
+    assert "badcompiler.vy" in error_files
+
+    # The three contracts that compiled successfully are still included.
+    assert "contracts" in result
+    assert "contracts/foo.vy" in result["contracts"]
+    assert "contracts/library.vy" in result["contracts"]
+    assert "contracts/bar.vy" in result["contracts"]
 
 
 def test_unknown_storage_layout_overrides(input_json):

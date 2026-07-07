@@ -556,7 +556,7 @@ def test_solc_json_output(input_files):
 
     # tamper with the integrity sum
     json_input["integrity"] = TAMPERED_INTEGRITY_SUM
-    _, warn_data = compile_from_input_dict(json_input)
+    _, warn_data, _ = compile_from_input_dict(json_input)
 
     w = warn_data[Path("contract.vy")]
     assert len(w) == 1, [s.message for s in w]
