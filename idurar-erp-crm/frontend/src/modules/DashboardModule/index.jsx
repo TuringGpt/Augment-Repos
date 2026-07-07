@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { Tag, Row, Col } from 'antd';
+import { Row, Col } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 import { useMoney } from '@/settings';
+import {
+  numberColumn,
+  clientNameColumn,
+  totalColumn,
+  statusColumn,
+} from '@/modules/shared/columns/invoiceQuoteColumns';
 
 import { request } from '@/request';
 import useFetch from '@/hooks/useFetch';
@@ -58,34 +64,12 @@ export default function DashboardModule() {
     }
   }, [money_format_settings.default_currency_code]);
 
+  const columnParams = { translate, moneyFormatter };
   const dataTableColumns = [
-    {
-      title: translate('number'),
-      dataIndex: 'number',
-    },
-    {
-      title: translate('Client'),
-      dataIndex: ['client', 'name'],
-    },
-
-    {
-      title: translate('Total'),
-      dataIndex: 'total',
-      onCell: () => {
-        return {
-          style: {
-            textAlign: 'right',
-            whiteSpace: 'nowrap',
-            direction: 'ltr',
-          },
-        };
-      },
-      render: (total, record) => moneyFormatter({ amount: total, currency_code: record.currency }),
-    },
-    {
-      title: translate('Status'),
-      dataIndex: 'status',
-    },
+    numberColumn(columnParams),
+    clientNameColumn(columnParams),
+    totalColumn(columnParams),
+    statusColumn(columnParams),
   ];
 
   const entityData = [
