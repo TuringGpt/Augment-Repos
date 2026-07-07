@@ -29,6 +29,8 @@ describe('AuthLayout', () => {
     const footerText = screen.getByText(/qualia\. all rights reserved\./i)
 
     expect(footerText).toBeInTheDocument()
+    expect(footer).toHaveClass('justify-center')
+    expect(footer).toHaveClass('text-center')
     expect(footer).toHaveClass('py-6')
     expect(footer).toHaveClass('text-xs')
     expect(footer).toHaveClass('text-muted-foreground/70')
