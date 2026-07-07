@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.deps import get_active_user, get_bearer_token
+from app.core.deps import get_active_user, get_bearer_token, require_cycle_owner_or_admin
 from app.core.security import verify_token
 from app.models.file import File, StorageType
 from app.models.form_assignment import FormAssignment
@@ -439,22 +439,20 @@ async def assign_reviewer(
 
 @router.post("/{form_cycle_id}/publish", status_code=200)
 async def publish_form_cycle(
-    form_cycle_id: uuid.UUID, token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)
+    form_cycle_id: uuid.UUID,
+    publisher: User = Depends(require_cycle_owner_or_admin),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, str | bool]:
-    await _get_authorized_admin(token.strip(), db)
-    cycle = (await db.execute(select(FormCycle).where(FormCycle.id == form_cycle_id))).scalar_one_or_none()
-    if cycle is None:
-        raise HTTPException(status_code=404, detail="Form cycle not found")
     publish_result = await db.execute(
         update(FormCycle)
         .where(
             FormCycle.id == form_cycle_id,
-            FormCycle.status == FormCycleStatus.draft,
+            FormCycle.status == FormCycleStatus.active,
             FormCycle.is_published.is_(False),
         )
         .values(
-            status=FormCycleStatus.active,
-            is_published=True,
+            status=FormCycleStatus.draft,
+            is_published=False,
         )
         .returning(FormCycle.id, FormCycle.status, FormCycle.is_published)
     )
