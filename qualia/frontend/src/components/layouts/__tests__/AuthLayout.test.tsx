@@ -1,31 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { AuthLayout } from '@/components/layouts/AuthLayout'
-
-const originalLocalStorage = globalThis.localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  key: vi.fn(),
-  length: 0,
-}
-
-beforeAll(() => {
-  Object.defineProperty(globalThis, 'localStorage', {
-    configurable: true,
-    value: localStorageMock,
-  })
-})
-
-afterAll(() => {
-  Object.defineProperty(globalThis, 'localStorage', {
-    configurable: true,
-    value: originalLocalStorage,
-  })
-})
 
 describe('AuthLayout', () => {
   it('keeps the auth shell on a shared secondary background', () => {
