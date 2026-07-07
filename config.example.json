@@ -1,0 +1,8 @@
+{
+  "sitemap_url": "https://example.com/sitemap.xml",
+  "target_urls": [
+    "https://example.com/important-page",
+    "https://example.com/another-page"
+  ],
+  "timeout": 30
+}
