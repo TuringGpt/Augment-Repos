@@ -23,9 +23,9 @@ interface AuthLayoutProps {
  */
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className='min-h-screen flex flex-col bg-background'>
+    <div className='min-h-screen flex flex-col bg-secondary'>
       {/* Main Content */}
-      <main className='flex-1 h-full w-full flex flex-col gap-10 items-center justify-center bg-secondary p-5 animate-in fade-in duration-500'>
+      <main className='flex-1 h-full w-full flex flex-col gap-10 items-center justify-center px-5 pt-5 pb-8 animate-in fade-in duration-500'>
         <Link
           to={ROUTES.HOME}
           className={cn(
@@ -41,8 +41,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       </main>
 
       {/* Footer */}
-      <footer className='shrink py-6 text-center text-sm text-muted-foreground'>
-        <p>&copy; {new Date().getFullYear()} Qualia. All rights reserved.</p>
+      <footer className='flex justify-center px-5 py-6 text-center text-xs text-muted-foreground/70'>
+        <p className='mx-auto max-w-sm'>&copy; {new Date().getFullYear()} Qualia. All rights reserved.</p>
       </footer>
     </div>
   );
