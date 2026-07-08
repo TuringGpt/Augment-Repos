@@ -10,15 +10,24 @@ Patterns eliminated:
    - Eliminated when x,y are non-negative and max(x) + max(y) <= 2**256 - 1
    - Proof: if x,y are unsigned and x + y does not wrap, then x + y >= x
 
-2. Unsigned sub underflow: assert (iszero (gt (sub x y), x))
+2. Signed add overflow: assert (eq (slt y, 0), (slt (add x y), x))
+   - Eliminated when min(x) + min(y) >= SIGNED_MIN and max(x) + max(y) <= SIGNED_MAX
+   - Proof: if signed add cannot overflow, the hardware overflow predicate is always false
+
+3. Unsigned sub underflow: assert (iszero (gt (sub x y), x))
    - Eliminated when x,y are non-negative and min(x) >= max(y)
    - Proof: if x >= y, then x - y <= x, so (x - y) > x is always false
 """
 
 from vyper.venom.analysis import DFGAnalysis, LivenessAnalysis
 from vyper.venom.analysis.variable_range import VariableRangeAnalysis
-from vyper.venom.analysis.variable_range.value_range import UNSIGNED_MAX, ValueRange
-from vyper.venom.basicblock import IRInstruction, IROperand, IRVariable
+from vyper.venom.analysis.variable_range.value_range import (
+    SIGNED_MAX,
+    SIGNED_MIN,
+    UNSIGNED_MAX,
+    ValueRange,
+)
+from vyper.venom.basicblock import IRInstruction, IRLiteral, IROperand, IRVariable
 from vyper.venom.passes.base_pass import IRPass
 
 # Error messages for overflow checks that can be eliminated
@@ -73,23 +82,27 @@ class OverflowEliminationPass(IRPass):
             return False
 
         operand = assert_inst.operands[0]
+        check_inst = self._get_producer(operand)
+        if check_inst is None:
+            return False
 
         # Pattern: assert %ok where %ok = iszero %cmp
-        iszero_inst = self._get_producer(operand)
-        if iszero_inst is None or iszero_inst.opcode != "iszero":
-            return False
+        if check_inst.opcode == "iszero":
+            cmp_operand = check_inst.operands[0]
 
-        cmp_operand = iszero_inst.operands[0]
+            # Pattern: %ok = iszero %cmp where %cmp = lt/gt %res, %x
+            cmp_inst = self._get_producer(cmp_operand)
+            if cmp_inst is None:
+                return False
 
-        # Pattern: %ok = iszero %cmp where %cmp = lt/gt %res, %x
-        cmp_inst = self._get_producer(cmp_operand)
-        if cmp_inst is None:
-            return False
+            if cmp_inst.opcode == "lt":
+                return self._try_eliminate_add_overflow(cmp_inst)
+            elif cmp_inst.opcode == "gt":
+                return self._try_eliminate_sub_underflow(cmp_inst)
 
-        if cmp_inst.opcode == "lt":
-            return self._try_eliminate_add_overflow(cmp_inst)
-        elif cmp_inst.opcode == "gt":
-            return self._try_eliminate_sub_underflow(cmp_inst)
+        # Pattern: assert %ok where %ok = eq (slt y, 0), (slt (add x y), x)
+        if check_inst.opcode == "eq":
+            return self._try_eliminate_signed_add_overflow(check_inst)
 
         return False
 
@@ -134,6 +147,54 @@ class OverflowEliminationPass(IRPass):
 
         # If max(x) + max(y) fits in 256 bits, overflow is impossible
         return (x_range.hi + y_range.hi) <= UNSIGNED_MAX
+
+    def _try_eliminate_signed_add_overflow(self, eq_inst: IRInstruction) -> bool:
+        """
+        Eliminate: eq (slt y, 0), (slt (add x y), x)
+        Condition: signed add range stays within int256 bounds.
+        """
+        lhs_inst = self._get_producer(eq_inst.operands[0])
+        rhs_inst = self._get_producer(eq_inst.operands[1])
+
+        return self._matches_signed_add_check(lhs_inst, rhs_inst) or self._matches_signed_add_check(
+            rhs_inst, lhs_inst
+        )
+
+    def _matches_signed_add_check(
+        self, y_neg_inst: IRInstruction | None, res_lt_x_inst: IRInstruction | None
+    ) -> bool:
+        if y_neg_inst is None or y_neg_inst.opcode != "slt":
+            return False
+        if res_lt_x_inst is None or res_lt_x_inst.opcode != "slt":
+            return False
+
+        y_operand = y_neg_inst.operands[-1]
+        zero_operand = y_neg_inst.operands[-2]
+        if zero_operand != IRLiteral(0):
+            return False
+
+        res_operand = res_lt_x_inst.operands[-1]
+        x_operand = res_lt_x_inst.operands[-2]
+
+        add_inst = self._get_producer(res_operand)
+        if add_inst is None or add_inst.opcode != "add":
+            return False
+
+        add_op0 = add_inst.operands[0]
+        add_op1 = add_inst.operands[1]
+        if self._operands_match(add_op0, x_operand) and self._operands_match(add_op1, y_operand):
+            pass
+        elif self._operands_match(add_op1, x_operand) and self._operands_match(add_op0, y_operand):
+            pass
+        else:
+            return False
+
+        x_range = self.range_analysis.get_range(x_operand, add_inst)
+        y_range = self.range_analysis.get_range(y_operand, add_inst)
+        if x_range.is_top or y_range.is_top or x_range.is_empty or y_range.is_empty:
+            return False
+
+        return x_range.lo + y_range.lo >= SIGNED_MIN and x_range.hi + y_range.hi <= SIGNED_MAX
 
     def _try_eliminate_sub_underflow(self, gt_inst: IRInstruction) -> bool:
         """
