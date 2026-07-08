@@ -4,129 +4,171 @@
 
 ```bash
 git clone https://github.com/idurar/idurar-erp-crm.git
-```
-
-```bash
 cd idurar-erp-crm
 ```
 
-#### Step 2: Create Your MongoDB Account and Database Cluster
+#### Step 2: Create your MongoDB database
 
-- Create your own MongoDB account by visiting the MongoDB website and signing up for a new account.
+- Create a MongoDB database or Atlas cluster.
+- Copy the connection string for your application.
+- If you are using MongoDB Atlas, add your current IP address to the network allowlist.
 
-- Create a new database or cluster by following the instructions provided in the MongoDB documentation. Remember to note down the "Connect to your application URI" for the database, as you will need it later. Also, make sure to change `<password>` with your own password
+#### Step 3: Edit the environment files
 
-- add your current IP address to the MongoDB database's IP whitelist to allow connections (this is needed whenever your ip changes)
+### Environment Setup
 
-#### Step 3: Edit the Environment File
+This project uses separate env files for the backend and frontend:
 
-- Check a file named .env in the /backend directory.
+- `backend/.env` for the Express + MongoDB API
+- `frontend/.env` for the Vite frontend
 
-  This file will store environment variables for the project to run.
+Start by copying the included example files:
 
-#### Step 4: Update MongoDB URI
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
 
-In the .env file, find the line that reads:
+If you are on Windows, create `backend/.env` and `frontend/.env` manually from the matching `.env.example` files.
 
-`DATABASE="your-mongodb-uri"`
+#### Frontend env vars (`frontend/.env`)
 
-Replace "your-mongodb-uri" with the actual URI of your MongoDB database.
+| Variable | Required | Example | Purpose |
+| --- | --- | --- | --- |
+| `VITE_BACKEND_SERVER` | Yes | `http://localhost:8888/` | Base URL for the backend server used by the frontend. Keep the trailing slash. |
+| `VITE_FILE_BASE_URL` | Yes | `http://localhost:8888/` | Base URL used for public file links and downloads. Usually the same as the backend URL in local development. |
+| `VITE_DEV_REMOTE` | Optional | `remote` | Only needed if you want to run the frontend locally while pointing it at a remote backend. |
 
-#### Step 5: Install Backend Dependencies
+#### Backend env vars (`backend/.env`)
 
-In your terminal, navigate to the /backend directory
+##### Required to boot the backend
+
+| Variable | Required | Example | Purpose |
+| --- | --- | --- | --- |
+| `DATABASE` | Yes | `mongodb://127.0.0.1:27017/idurar` | MongoDB connection string used when the server starts and during `npm run setup`. |
+| `JWT_SECRET` | Yes | `replace-with-a-long-random-secret` | Secret used to sign and verify authentication tokens. |
+| `PUBLIC_SERVER_FILE` | Yes | `http://localhost:8888/` | Public server base URL used when generating file and PDF links. Keep the trailing slash. |
+
+##### Optional backend settings
+
+| Variable | When needed | Example | Purpose |
+| --- | --- | --- | --- |
+| `PORT` | Optional | `8888` | Overrides the default backend port. |
+| `NODE_ENV` | Optional | `development` | Standard Node environment flag. |
+| `OPENSSL_CONF` | Optional | `/dev/null` | Existing workaround sometimes used in local environments. |
+| `OPENAI_API_KEY` | Optional | `sk-...` | Only needed if you use OpenAI-powered features. |
+
+##### S3-compatible storage settings
+
+These are required if you want file uploads to work with the current storage middleware. The project uses DigitalOcean Spaces variables, but the API is S3-compatible.
+
+| Variable | Required for uploads | Example | Purpose |
+| --- | --- | --- | --- |
+| `DO_SPACES_KEY` | Yes | `your-access-key` | Access key for the S3-compatible bucket. |
+| `DO_SPACES_SECRET` | Yes | `your-secret-key` | Secret key for the S3-compatible bucket. |
+| `DO_SPACES_URL` | Yes | `nyc3.digitaloceanspaces.com` | Bucket endpoint without `https://`. |
+| `DO_SPACES_NAME` | Yes | `idurar-assets` | Bucket name used for uploads. |
+| `REGION` | Yes | `nyc3` | Bucket region used by the S3 client. |
+
+##### Email / Resend settings
+
+| Variable | Required for email flows | Example | Purpose |
+| --- | --- | --- | --- |
+| `RESEND_API` | Yes | `re_123456789` | API key used for password reset and verification emails. |
+
+#### Step 4: Update the MongoDB URI
+
+Open `backend/.env` and replace the `DATABASE` value with your real MongoDB connection string.
+
+Example:
+
+```bash
+DATABASE="mongodb+srv://<username>:<password>@cluster.mongodb.net/idurar"
+```
+
+#### Step 5: Install backend dependencies
+
+In your terminal, navigate to the backend directory and install dependencies:
 
 ```bash
 cd backend
-```
-
-the urn the following command to install the backend dependencies:
-
-```bash
 npm install
 ```
 
-This command will install all the required packages specified in the package.json file.
+#### Step 6: Run setup script
 
-#### Step 6: Run Setup Script
-
-While still in the /backend directory of the project, execute the following command to run the setup script:
+While still in `backend`, execute:
 
 ```bash
 npm run setup
 ```
 
-This setup script may perform necessary database migrations or any other initialization tasks required for the project.
+This seeds the initial application data, including the default admin user.
 
-#### Step 7: Run the Backend Server
+#### Step 7: Run the backend server
 
-In the same terminal, run the following command to start the backend server:
+In the same terminal, start the backend server:
 
 ```bash
 npm run dev
 ```
 
-This command will start the backend server, and it will listen for incoming requests.
+The backend runs on `http://localhost:8888` by default unless you set `PORT`.
 
-#### Step 8: Install Frontend Dependencies
+#### Step 8: Install frontend dependencies
 
-Open a new terminal window , and run the following command to install the frontend dependencies:
+Open a new terminal, then install frontend dependencies:
 
 ```bash
 cd frontend
-```
-
-```bash
 npm install
 ```
 
-#### Step 9: Run the Frontend Server
+#### Step 9: Run the frontend server
 
-After installing the frontend dependencies, run the following command in the same terminal to start the frontend server:
+Start the frontend:
 
 ```bash
 npm run dev
 ```
 
-This command will start the frontend server, and you'll be able to access the website on localhost:3000 in your web browser.
+The app will be available at `http://localhost:3000`.
 
-:exclamation: :warning:` If you encounter an OpenSSL error while running the frontend server, follow these additional steps:`
+> If you want to use a remote backend while keeping the frontend local, set `VITE_DEV_REMOTE=remote` in `frontend/.env` and point `VITE_BACKEND_SERVER` at that backend.
 
-Reason behind error: This is caused by the node.js V17 compatible issues with OpenSSL, see [this](https://github.com/nodejs/node/issues/40547) and [this](https://github.com/webpack/webpack/issues/14532) issue on GitHub.
+:exclamation: :warning: `If you encounter an OpenSSL error while running the frontend server, follow these additional steps:`
 
+This usually happens with older Node/OpenSSL combinations.
 
-Try one of these and error will be solved
+Try one of these options:
 
-- > upgrade to Node.js v20.
+- Upgrade to Node.js v20.
+- Enable the legacy OpenSSL provider.
 
-- > Enable legacy OpenSSL provider
-
-Here is how you can enable legacy OpenSSL provider
-
-- On Unix-like (Linux, macOS, Git bash, etc.)
+On Unix-like systems (Linux, macOS, Git Bash, etc.):
 
 ```bash
 export NODE_OPTIONS=--openssl-legacy-provider
 ```
 
-- On Windows command prompt:
+On Windows Command Prompt:
 
 ```bash
 set NODE_OPTIONS=--openssl-legacy-provider
 ```
 
-- On PowerShell:
+On PowerShell:
 
 ```bash
-$env:NODE_OPTIONS = "--openssl-legacy-provider"
+$env:NODE_OPTIONS="--openssl-legacy-provider"
 ```
 
-Here is [reference](https://github.com/webpack/webpack/issues/14532#issuecomment-947012063) about enabling legacy OpenSSL provider
+Reference: [webpack/webpack#14532](https://github.com/webpack/webpack/issues/14532#issuecomment-947012063)
 
-After trying above solutions, run below command
+After applying one of the fixes, run:
 
 ```bash
 npm run dev
 ```
 
-> If you still facing issue, then follow [this stackoverflow thread](https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported). It has so many different types of opinions. You definitely have solution after going through the thread.
+If you still have issues, this [Stack Overflow thread](https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported) covers additional fixes.
