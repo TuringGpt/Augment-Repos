@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   EyeOutlined,
@@ -22,6 +22,7 @@ import { useMoney, useDate } from '@/settings';
 import { generate as uniqueId } from 'shortid';
 
 import { useCrudContext } from '@/context/crud';
+import useDebounce from '@/hooks/useDebounce';
 
 function AddNewItem({ config }) {
   const { crudContextAction } = useCrudContext();
@@ -152,15 +153,36 @@ export default function DataTable({ config, extra = [] }) {
 
   const dispatch = useDispatch();
 
-  const handelDataTableLoad = useCallback((pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
-    dispatch(crud.list({ entity, options }));
-  }, []);
+  const [searchValue, setSearchValue] = useState('');
+  const lastSearchedValue = useRef('');
+
+  const handelDataTableLoad = useCallback(
+    (pagination) => {
+      lastSearchedValue.current = searchValue;
+      const options = {
+        q: searchValue,
+        fields: searchConfig?.searchFields || '',
+        page: pagination.current || 1,
+        items: pagination.pageSize || 10,
+      };
+      dispatch(crud.list({ entity, options }));
+    },
+    [searchValue, entity, searchConfig, dispatch]
+  );
+
+  useDebounce(
+    () => {
+      if (searchValue === lastSearchedValue.current) return;
+      lastSearchedValue.current = searchValue;
+      const options = { q: searchValue, fields: searchConfig?.searchFields || '' };
+      dispatch(crud.list({ entity, options }));
+    },
+    300,
+    [searchValue]
+  );
 
   const filterTable = (e) => {
-    const value = e.target.value;
-    const options = { q: value, fields: searchConfig?.searchFields || '' };
-    dispatch(crud.list({ entity, options }));
+    setSearchValue(e.target.value);
   };
 
   const dispatcher = () => {

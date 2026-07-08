@@ -57,7 +57,7 @@ export default function AutoCompleteAsync({
       //  setState("Typing stopped");
       setDebouncedValue(valToSearch);
     },
-    500,
+    300,
     [valToSearch]
   );
 

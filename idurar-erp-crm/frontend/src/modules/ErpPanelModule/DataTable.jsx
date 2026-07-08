@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   EyeOutlined,
   EditOutlined,
@@ -150,13 +150,28 @@ export default function DataTable({ config, extra = [] }) {
 
   const dispatch = useDispatch();
 
+  const [filterValue, setFilterValue] = useState(undefined);
+
   const handelDataTableLoad = (pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
+    const options = {
+      filter: searchConfig?.entity,
+      page: pagination.current || 1,
+      items: pagination.pageSize || 10,
+    };
+    if (filterValue !== undefined) {
+      options.equal = filterValue;
+    }
     dispatch(erp.list({ entity, options }));
   };
 
   const dispatcher = () => {
-    dispatch(erp.list({ entity }));
+    const options = {
+      filter: searchConfig?.entity,
+    };
+    if (filterValue !== undefined) {
+      options.equal = filterValue;
+    }
+    dispatch(erp.list({ entity, options }));
   };
 
   useEffect(() => {
@@ -168,6 +183,7 @@ export default function DataTable({ config, extra = [] }) {
   }, []);
 
   const filterTable = (value) => {
+    setFilterValue(value);
     const options = { equal: value, filter: searchConfig?.entity };
     dispatch(erp.list({ entity, options }));
   };
