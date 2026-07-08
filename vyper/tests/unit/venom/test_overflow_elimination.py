@@ -107,9 +107,9 @@ def test_eliminate_sub_underflow_bounded_operands():
     _check_pre_post(pre, post)
 
 
-def test_no_eliminate_signed_add_overflow_crossing_sign_boundary():
+def test_no_eliminate_signed_add_overflow_exceeding_signed_max():
     """
-    Do NOT eliminate signed add overflow check when the sum can cross the sign boundary.
+    Do NOT eliminate signed add overflow check when bounded non-negative inputs can still exceed SIGNED_MAX.
     """
     bound = 2**254
     pre = f"""
