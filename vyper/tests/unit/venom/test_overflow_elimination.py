@@ -42,6 +42,39 @@ def test_eliminate_add_overflow_bounded_operands():
     _check_pre_post(pre, post)
 
 
+def test_eliminate_signed_add_overflow_bounded_operands():
+    """
+    Eliminate signed add overflow check when VRA proves the sum stays in int256.
+    """
+    pre = """
+    main:
+        %x_in = source
+        %y_in = source
+        %x = mod %x_in, 100
+        %y_pos = mod %y_in, 10
+        %y = sub 0, %y_pos
+        %res = add %x, %y
+        %y_neg = slt %y, 0
+        %res_lt_x = slt %res, %x
+        %ok = eq %y_neg, %res_lt_x
+        assert %ok
+        sink %res
+    """
+
+    post = """
+    main:
+        %x_in = source
+        %y_in = source
+        %x = mod %x_in, 100
+        %y_pos = mod %y_in, 10
+        %y = sub 0, %y_pos
+        %res = add %x, %y
+        sink %res
+    """
+
+    _check_pre_post(pre, post)
+
+
 def test_eliminate_sub_underflow_bounded_operands():
     """
     Eliminate sub underflow check when min(x) >= max(y).
@@ -70,6 +103,30 @@ def test_eliminate_sub_underflow_bounded_operands():
         %res = sub %x, %y
         sink %res
     """
+
+    _check_pre_post(pre, post)
+
+
+def test_no_eliminate_signed_add_overflow_crossing_sign_boundary():
+    """
+    Do NOT eliminate signed add overflow check when the sum can cross the sign boundary.
+    """
+    bound = 2**254
+    pre = f"""
+    main:
+        %x_in = source
+        %y_in = source
+        %x = mod %x_in, {bound + 1}
+        %y = mod %y_in, {bound + 1}
+        %res = add %x, %y
+        %y_neg = slt %y, 0
+        %res_lt_x = slt %res, %x
+        %ok = eq %y_neg, %res_lt_x
+        assert %ok
+        sink %res
+    """
+
+    post = pre
 
     _check_pre_post(pre, post)
 
