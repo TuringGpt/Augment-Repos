@@ -1,8 +1,8 @@
 import NotFound from '@/components/NotFound';
 import { ErpLayout } from '@/layout';
 import ReadItem from '@/modules/ErpPanelModule/ReadItem';
+import ReadItemSkeleton from '@/modules/ErpPanelModule/ReadItemSkeleton';
 
-import PageLoader from '@/components/PageLoader';
 import { erp } from '@/redux/erp/actions';
 
 import { selectReadItem } from '@/redux/erp/selectors';
@@ -23,7 +23,7 @@ export default function ReadQuoteModule({ config }) {
   if (isLoading) {
     return (
       <ErpLayout>
-        <PageLoader />
+        <ReadItemSkeleton config={config} />
       </ErpLayout>
     );
   } else
