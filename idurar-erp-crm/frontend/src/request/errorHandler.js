@@ -1,6 +1,46 @@
 import { notification } from 'antd';
 import codeMessage from './codeMessage';
 
+const SESSION_EXPIRED_LOGOUT_PATH = '/logout?reason=session-expired';
+const sessionExpiredResponse = {
+  success: false,
+  result: null,
+  message: 'Your session expired. Please sign in again to continue.',
+};
+
+let isSessionExpiredLogoutInProgress = false;
+
+const clearAuthState = () => {
+  window.localStorage.removeItem('auth');
+  window.localStorage.removeItem('settings');
+  window.localStorage.removeItem('isLogout');
+};
+
+const handleSessionExpired = () => {
+  if (isSessionExpiredLogoutInProgress) {
+    return sessionExpiredResponse;
+  }
+
+  isSessionExpiredLogoutInProgress = true;
+  clearAuthState();
+
+  notification.config({
+    duration: 8,
+    maxCount: 1,
+  });
+  notification.warning({
+    key: 'session-expired',
+    message: 'Session expired',
+    description: sessionExpiredResponse.message,
+  });
+
+  if (window.location.pathname !== '/logout') {
+    window.location.replace(SESSION_EXPIRED_LOGOUT_PATH);
+  }
+
+  return sessionExpiredResponse;
+};
+
 const errorHandler = (error) => {
   if (!navigator.onLine) {
     notification.config({
@@ -39,21 +79,18 @@ const errorHandler = (error) => {
   }
 
   if (response && response.data && response.data.jwtExpired) {
-    const result = window.localStorage.getItem('auth');
-    const jsonFile = window.localStorage.getItem('isLogout');
-    const { isLogout } = (jsonFile && JSON.parse(jsonFile)) || false;
-    window.localStorage.removeItem('auth');
-    window.localStorage.removeItem('isLogout');
-    if (result || isLogout) {
-      window.location.href = '/logout';
-    }
+    return handleSessionExpired();
   }
 
   if (response && response.status) {
+    if (response?.data?.error?.name === 'JsonWebTokenError') {
+      return handleSessionExpired();
+    }
+
     const message = response.data && response.data.message;
 
     const errorText = message || codeMessage[response.status];
-    const { status, error } = response;
+    const { status } = response;
     notification.config({
       duration: 20,
       maxCount: 2,
@@ -63,11 +100,7 @@ const errorHandler = (error) => {
       description: errorText,
     });
 
-    if (response?.data?.error?.name === 'JsonWebTokenError') {
-      window.localStorage.removeItem('auth');
-      window.localStorage.removeItem('isLogout');
-      window.location.href = '/logout';
-    } else return response.data;
+    return response.data;
   } else {
     notification.config({
       duration: 15,
