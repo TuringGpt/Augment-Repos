@@ -11,6 +11,7 @@ const listAll = async (Model, req, res) => {
     })
       .sort({ created: sort })
       .populate()
+      .lean({ autopopulate: true })
       .exec();
   } else {
     result = await Model.find({
@@ -19,6 +20,7 @@ const listAll = async (Model, req, res) => {
     })
       .sort({ created: sort })
       .populate()
+      .lean({ autopopulate: true })
       .exec();
   }
 

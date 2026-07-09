@@ -38,6 +38,7 @@ const paginatedList = async (Model, req, res) => {
     .limit(limit)
     .sort({ [sortBy]: sortValue })
     .populate()
+    .lean({ autopopulate: true })
     .exec();
 
   // Counting the total documents
