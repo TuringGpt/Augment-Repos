@@ -2,8 +2,6 @@ import { UploadOutlined } from '@ant-design/icons';
 import { message, Upload, Form, Button } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
-// import photo from '@/style/images/photo.png';
-
 const beforeUpload = (file) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
   if (!isJpgOrPng) {
