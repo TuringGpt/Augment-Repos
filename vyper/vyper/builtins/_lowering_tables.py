@@ -124,6 +124,9 @@ def build_legacy_builtin_table(
     if missing:
         raise ValueError(f"Missing builtin lowerings: {missing}")
 
+    # Keep zero-arg factories here instead of prebuilt handler instances so each
+    # table materializes fresh builtin objects, matching the historical `Foo()`
+    # registrations and avoiding aliasing across expr/stmt tables for shared ids.
     return {builtin_id: merged_factories[builtin_id]() for builtin_id in builtin_ids}
 
 
