@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union
 
+from vyper.builtins._lowering_tables import build_venom_builtin_table
 from vyper.exceptions import CompilerPanic
 from vyper.venom.basicblock import IROperand
 
@@ -34,19 +35,20 @@ from .system import HANDLERS as SYSTEM_HANDLERS
 
 __all__ = ["BUILTIN_HANDLERS", "lower_builtin"]
 
-# Combine all handlers
-BUILTIN_HANDLERS: dict = {
-    **SIMPLE_HANDLERS,
-    **MATH_HANDLERS,
-    **HASHING_HANDLERS,
-    **BYTES_HANDLERS,
-    **CONVERT_HANDLERS,
-    **ABI_HANDLERS,
-    **SYSTEM_HANDLERS,
-    **CREATE_HANDLERS,
-    **MISC_HANDLERS,
-    **STRINGS_HANDLERS,
-}
+BUILTIN_HANDLERS: dict = build_venom_builtin_table(
+    {
+        "simple": SIMPLE_HANDLERS,
+        "math": MATH_HANDLERS,
+        "hashing": HASHING_HANDLERS,
+        "bytes": BYTES_HANDLERS,
+        "convert": CONVERT_HANDLERS,
+        "abi": ABI_HANDLERS,
+        "system": SYSTEM_HANDLERS,
+        "create": CREATE_HANDLERS,
+        "misc": MISC_HANDLERS,
+        "strings": STRINGS_HANDLERS,
+    }
+)
 
 
 def lower_builtin(builtin_id: str, node, ctx) -> Union[IROperand, VyperValue]:
