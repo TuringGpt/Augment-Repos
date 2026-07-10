@@ -9,8 +9,9 @@ import {
   EllipsisOutlined,
   ArrowRightOutlined,
   ArrowLeftOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
-import { Dropdown, Table, Button } from 'antd';
+import { Dropdown, Table, Button, Checkbox } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 
 import AutoCompleteAsync from '@/components/AutoCompleteAsync';
@@ -20,6 +21,7 @@ import { erp } from '@/redux/erp/actions';
 import { selectListItems } from '@/redux/erp/selectors';
 import { useErpContext } from '@/context/erp';
 import { useNavigate } from 'react-router-dom';
+import useTableSettings, { getColumnKey } from '@/hooks/useTableSettings';
 
 import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
 
@@ -50,6 +52,8 @@ export default function DataTable({ config, extra = [] }) {
 
   const { erpContextAction } = useErpContext();
   const { modal } = erpContextAction;
+
+  const { hiddenColumns, pageSize, setColumnVisible, setPageSize } = useTableSettings(entity);
 
   const items = [
     {
@@ -104,8 +108,13 @@ export default function DataTable({ config, extra = [] }) {
     navigate(`/invoice/pay/${record._id}`);
   };
 
+  const toggleableColumns = [...dataTableColumns];
+  const visibleColumns = toggleableColumns.filter(
+    (column) => !hiddenColumns.includes(getColumnKey(column))
+  );
+
   dataTableColumns = [
-    ...dataTableColumns,
+    ...visibleColumns,
     {
       title: '',
       key: 'action',
@@ -150,14 +159,45 @@ export default function DataTable({ config, extra = [] }) {
 
   const dispatch = useDispatch();
 
-  const handelDataTableLoad = (pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
+  const handelDataTableLoad = (tablePagination) => {
+    const newPageSize = tablePagination?.pageSize || pageSize;
+    if (tablePagination?.pageSize) {
+      setPageSize(tablePagination.pageSize);
+    }
+    const options = { page: tablePagination?.current || 1, items: newPageSize };
     dispatch(erp.list({ entity, options }));
   };
 
   const dispatcher = () => {
-    dispatch(erp.list({ entity }));
+    dispatch(erp.list({ entity, options: { page: 1, items: pageSize } }));
   };
+
+  const columnVisibilityMenu = (
+    <div
+      style={{
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08)',
+        padding: '8px 12px',
+        maxHeight: 320,
+        overflowY: 'auto',
+      }}
+    >
+      {toggleableColumns.map((column, index) => {
+        const columnKey = getColumnKey(column);
+        return (
+          <div key={columnKey || index} style={{ padding: '4px 0' }}>
+            <Checkbox
+              checked={!hiddenColumns.includes(columnKey)}
+              onChange={(e) => setColumnVisible(columnKey, e.target.checked)}
+            >
+              {column.title || columnKey}
+            </Checkbox>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -193,6 +233,13 @@ export default function DataTable({ config, extra = [] }) {
           <Button onClick={handelDataTableLoad} key="refresh-button" icon={<RedoOutlined />}>
             {translate('Refresh')}
           </Button>,
+          <Dropdown
+            key="column-visibility"
+            trigger={['click']}
+            dropdownRender={() => columnVisibilityMenu}
+          >
+            <Button icon={<SettingOutlined />}>{translate('Columns')}</Button>
+          </Dropdown>,
 
           !disableAdd && <AddNewItem config={config} key="add-new-item" />,
         ]}
@@ -205,7 +252,7 @@ export default function DataTable({ config, extra = [] }) {
         columns={dataTableColumns}
         rowKey={(item) => item._id}
         dataSource={dataSource}
-        pagination={pagination}
+        pagination={{ ...pagination, pageSize, showSizeChanger: true }}
         loading={listIsLoading}
         onChange={handelDataTableLoad}
         scroll={{ x: true }}

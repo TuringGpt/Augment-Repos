@@ -8,8 +8,9 @@ import {
   RedoOutlined,
   ArrowRightOutlined,
   ArrowLeftOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
-import { Dropdown, Table, Button, Input } from 'antd';
+import { Dropdown, Table, Button, Input, Checkbox } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,6 +19,7 @@ import { selectListItems } from '@/redux/crud/selectors';
 import useLanguage from '@/locale/useLanguage';
 import { dataForTable } from '@/utils/dataStructure';
 import { useMoney, useDate } from '@/settings';
+import useTableSettings, { getColumnKey } from '@/hooks/useTableSettings';
 
 import { generate as uniqueId } from 'shortid';
 
@@ -46,6 +48,7 @@ export default function DataTable({ config, extra = [] }) {
   const translate = useLanguage();
   const { moneyFormatter } = useMoney();
   const { dateFormat } = useDate();
+  const { hiddenColumns, pageSize, setColumnVisible, setPageSize } = useTableSettings(entity);
 
   const items = [
     {
@@ -103,8 +106,12 @@ export default function DataTable({ config, extra = [] }) {
     dispatchColumns = [...dataTableColumns];
   }
 
+  const visibleColumns = dispatchColumns.filter(
+    (column) => !hiddenColumns.includes(getColumnKey(column))
+  );
+
   dataTableColumns = [
-    ...dispatchColumns,
+    ...visibleColumns,
     {
       title: '',
       key: 'action',
@@ -152,10 +159,17 @@ export default function DataTable({ config, extra = [] }) {
 
   const dispatch = useDispatch();
 
-  const handelDataTableLoad = useCallback((pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
-    dispatch(crud.list({ entity, options }));
-  }, []);
+  const handelDataTableLoad = useCallback(
+    (tablePagination) => {
+      const newPageSize = tablePagination?.pageSize || pageSize;
+      if (tablePagination?.pageSize) {
+        setPageSize(tablePagination.pageSize);
+      }
+      const options = { page: tablePagination?.current || 1, items: newPageSize };
+      dispatch(crud.list({ entity, options }));
+    },
+    [pageSize, setPageSize]
+  );
 
   const filterTable = (e) => {
     const value = e.target.value;
@@ -164,8 +178,35 @@ export default function DataTable({ config, extra = [] }) {
   };
 
   const dispatcher = () => {
-    dispatch(crud.list({ entity }));
+    dispatch(crud.list({ entity, options: { page: 1, items: pageSize } }));
   };
+
+  const columnVisibilityMenu = (
+    <div
+      style={{
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        boxShadow: '0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.08)',
+        padding: '8px 12px',
+        maxHeight: 320,
+        overflowY: 'auto',
+      }}
+    >
+      {dispatchColumns.map((column, index) => {
+        const columnKey = getColumnKey(column);
+        return (
+          <div key={columnKey || index} style={{ padding: '4px 0' }}>
+            <Checkbox
+              checked={!hiddenColumns.includes(columnKey)}
+              onChange={(e) => setColumnVisible(columnKey, e.target.checked)}
+            >
+              {column.title || columnKey}
+            </Checkbox>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -192,6 +233,13 @@ export default function DataTable({ config, extra = [] }) {
           <Button onClick={handelDataTableLoad} key={`${uniqueId()}`} icon={<RedoOutlined />}>
             {translate('Refresh')}
           </Button>,
+          <Dropdown
+            key={`columnVisibilityDataTable`}
+            trigger={['click']}
+            dropdownRender={() => columnVisibilityMenu}
+          >
+            <Button icon={<SettingOutlined />}>{translate('Columns')}</Button>
+          </Dropdown>,
 
           <AddNewItem key={`${uniqueId()}`} config={config} />,
         ]}
@@ -204,7 +252,7 @@ export default function DataTable({ config, extra = [] }) {
         columns={dataTableColumns}
         rowKey={(item) => item._id}
         dataSource={dataSource}
-        pagination={pagination}
+        pagination={{ ...pagination, pageSize, showSizeChanger: true }}
         loading={listIsLoading}
         onChange={handelDataTableLoad}
         scroll={{ x: true }}
