@@ -5,6 +5,7 @@ import operator
 from vyper import ast as vy_ast
 from vyper.abi_types import ABI_Tuple
 from vyper.ast.validation import validate_call_args
+from vyper.builtins._lowering_tables import build_legacy_builtin_table
 from vyper.codegen.abi_encoder import abi_encode
 from vyper.codegen.context import Context
 from vyper.codegen.core import (
@@ -2495,66 +2496,67 @@ class Epsilon(TypenameFoldedFunctionT):
         return vy_ast.Decimal.from_node(node, value=input_type.epsilon)
 
 
-DISPATCH_TABLE = {
-    "abi_encode": ABIEncode(),
-    "abi_decode": ABIDecode(),
-    "_abi_encode": OldABIEncode(),
-    "_abi_decode": OldABIDecode(),
-    "floor": Floor(),
-    "ceil": Ceil(),
-    "convert": Convert(),
-    "slice": Slice(),
-    "len": Len(),
-    "concat": Concat(),
-    "sha256": Sha256(),
-    "method_id": MethodID(),
-    "keccak256": Keccak256(),
-    "ecrecover": ECRecover(),
-    "ecadd": ECAdd(),
-    "ecmul": ECMul(),
-    "extract32": Extract32(),
-    "as_wei_value": AsWeiValue(),
-    "raw_call": RawCall(),
-    "blockhash": BlockHash(),
-    "blobhash": BlobHash(),
-    "uint256_addmod": AddMod(),
-    "uint256_mulmod": MulMod(),
-    "unsafe_add": UnsafeAdd(),
-    "unsafe_sub": UnsafeSub(),
-    "unsafe_mul": UnsafeMul(),
-    "unsafe_div": UnsafeDiv(),
-    "pow_mod256": PowMod256(),
-    "uint2str": Uint2Str(),
-    "sqrt": Sqrt(),
-    "isqrt": ISqrt(),
-    "shift": Shift(),
-    "create_minimal_proxy_to": CreateMinimalProxyTo(),
-    "create_forwarder_to": CreateForwarderTo(),
-    "create_copy_of": CreateCopyOf(),
-    "create_from_blueprint": CreateFromBlueprint(),
-    "min": Min(),
-    "max": Max(),
-    "empty": Empty(),
-    "abs": Abs(),
-    "min_value": MinValue(),
-    "max_value": MaxValue(),
-    "epsilon": Epsilon(),
+_SHARED_LEGACY_BUILTIN_FACTORIES = {
+    "abi_encode": ABIEncode,
+    "abi_decode": ABIDecode,
+    "_abi_encode": OldABIEncode,
+    "_abi_decode": OldABIDecode,
+    "floor": Floor,
+    "ceil": Ceil,
+    "convert": Convert,
+    "slice": Slice,
+    "len": Len,
+    "concat": Concat,
+    "sha256": Sha256,
+    "keccak256": Keccak256,
+    "ecrecover": ECRecover,
+    "ecadd": ECAdd,
+    "ecmul": ECMul,
+    "extract32": Extract32,
+    "as_wei_value": AsWeiValue,
+    "raw_call": RawCall,
+    "blockhash": BlockHash,
+    "blobhash": BlobHash,
+    "uint256_addmod": AddMod,
+    "uint256_mulmod": MulMod,
+    "unsafe_add": UnsafeAdd,
+    "unsafe_sub": UnsafeSub,
+    "unsafe_mul": UnsafeMul,
+    "unsafe_div": UnsafeDiv,
+    "pow_mod256": PowMod256,
+    "uint2str": Uint2Str,
+    "shift": Shift,
+    "create_minimal_proxy_to": CreateMinimalProxyTo,
+    "create_forwarder_to": CreateForwarderTo,
+    "create_copy_of": CreateCopyOf,
+    "create_from_blueprint": CreateFromBlueprint,
+    "min": Min,
+    "max": Max,
+    "empty": Empty,
+    "abs": Abs,
+    "min_value": MinValue,
+    "max_value": MaxValue,
+    "epsilon": Epsilon,
+    "send": Send,
+    "print": Print,
+    "breakpoint": Breakpoint,
+    "selfdestruct": SelfDestruct,
+    "raw_create": RawCreate,
+    "raw_log": RawLog,
+    "raw_revert": RawRevert,
 }
 
-STMT_DISPATCH_TABLE = {
-    "send": Send(),
-    "print": Print(),
-    "breakpoint": Breakpoint(),
-    "selfdestruct": SelfDestruct(),
-    "raw_call": RawCall(),
-    "raw_create": RawCreate(),
-    "raw_log": RawLog(),
-    "raw_revert": RawRevert(),
-    "create_minimal_proxy_to": CreateMinimalProxyTo(),
-    "create_forwarder_to": CreateForwarderTo(),
-    "create_copy_of": CreateCopyOf(),
-    "create_from_blueprint": CreateFromBlueprint(),
-}
+_LEGACY_EXPR_ONLY_BUILTIN_FACTORIES = {"method_id": MethodID, "sqrt": Sqrt, "isqrt": ISqrt}
+
+DISPATCH_TABLE = build_legacy_builtin_table(
+    include_expr=True,
+    factories=_SHARED_LEGACY_BUILTIN_FACTORIES,
+    extra_factories=_LEGACY_EXPR_ONLY_BUILTIN_FACTORIES,
+)
+
+STMT_DISPATCH_TABLE = build_legacy_builtin_table(
+    include_expr=False, factories=_SHARED_LEGACY_BUILTIN_FACTORIES
+)
 
 BUILTIN_FUNCTIONS = {**STMT_DISPATCH_TABLE, **DISPATCH_TABLE}.keys()
 
