@@ -65,6 +65,8 @@ export default function CreateItem({ config, CreateForm }) {
           }
           if (item.quantity && item.price) {
             let total = calculate.multiply(item['quantity'], item['price']);
+            // apply per-line discount (%) when present
+            total = calculate.multiply(total, (100 - (item['discount'] || 0)) / 100);
             //sub total
             subTotal = calculate.add(subTotal, total);
           }
@@ -92,7 +94,8 @@ export default function CreateItem({ config, CreateForm }) {
       if (fieldsValue.items) {
         let newList = [...fieldsValue.items];
         newList.map((item) => {
-          item.total = calculate.multiply(item.quantity, item.price);
+          const lineTotal = calculate.multiply(item.quantity, item.price);
+          item.total = calculate.multiply(lineTotal, (100 - (item.discount || 0)) / 100);
         });
         fieldsValue = {
           ...fieldsValue,
