@@ -106,6 +106,11 @@ def build_legacy_builtin_table(
         A mapping from builtin ID to a freshly constructed legacy builtin handler.
     """
 
+    shared_builtin_ids = {spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS}
+    unexpected = sorted(set(factories) - shared_builtin_ids)
+    if unexpected:
+        raise ValueError(f"Unexpected builtin lowerings in factories: {unexpected}")
+
     flag = "legacy_expr" if include_expr else "legacy_stmt"
     builtin_ids = [spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS if getattr(spec, flag)]
     if extra_factories:

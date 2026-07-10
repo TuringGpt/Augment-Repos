@@ -18,6 +18,12 @@ def _shared_factories_without(missing_builtin_id):
     }
 
 
+def _shared_factories_with_extra(extra_builtin_id):
+    factories = {spec.builtin_id: object for spec in SHARED_BUILTIN_LOWERINGS}
+    factories[extra_builtin_id] = object
+    return factories
+
+
 def _venom_group_handlers():
     return {
         group_name: {
@@ -45,6 +51,15 @@ def test_legacy_only_expr_builtins_are_not_registered_in_venom():
 def test_build_legacy_builtin_table_reports_missing_builtin():
     with pytest.raises(ValueError, match="Missing builtin lowerings: \\['len'\\]"):
         build_legacy_builtin_table(include_expr=True, factories=_shared_factories_without("len"))
+
+
+def test_build_legacy_builtin_table_reports_unexpected_factory_builtin():
+    with pytest.raises(
+        ValueError, match="Unexpected builtin lowerings in factories: \\['_unexpected'\\]"
+    ):
+        build_legacy_builtin_table(
+            include_expr=True, factories=_shared_factories_with_extra("_unexpected")
+        )
 
 
 def test_build_venom_builtin_table_reports_group_mismatch():
