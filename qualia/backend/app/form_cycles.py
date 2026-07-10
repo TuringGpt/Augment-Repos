@@ -91,6 +91,16 @@ class FormCycleListItem(BaseModel):
     status: str
 
 
+class AdminFormCycleListItem(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    status: str
+    is_published: bool
+    submission_deadline: datetime
+    created_at: datetime
+
+
 class FormDetailQuestion(BaseModel):
     id: str
     question_type: str
@@ -381,6 +391,28 @@ async def list_form_cycles(
             title=cycle.title,
             description=cycle.description,
             status=cycle.status.value,
+        )
+        for cycle in rows
+    ]
+
+
+@router.get("/all", response_model=list[AdminFormCycleListItem], status_code=200)
+async def list_all_form_cycles(
+    token: str = Depends(get_bearer_token), db: AsyncSession = Depends(get_db)
+) -> list[AdminFormCycleListItem]:
+    await _get_authorized_admin(token, db)
+    rows = (
+        await db.execute(select(FormCycle).order_by(FormCycle.created_at.asc(), FormCycle.id.asc()))
+    ).scalars().all()
+    return [
+        AdminFormCycleListItem(
+            id=str(cycle.id),
+            title=cycle.title,
+            description=cycle.description,
+            status=cycle.status.value,
+            is_published=cycle.is_published,
+            submission_deadline=cycle.submission_deadline,
+            created_at=cycle.created_at,
         )
         for cycle in rows
     ]
