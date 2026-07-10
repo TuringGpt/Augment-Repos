@@ -175,5 +175,8 @@ const invoiceSchema = new mongoose.Schema({
   },
 });
 
+// Enforce unique invoice numbers (scoped per year, ignoring soft-removed invoices)
+invoiceSchema.index({ number: 1, year: 1 }, { unique: true, partialFilterExpression: { removed: false } });
+
 invoiceSchema.plugin(require('mongoose-autopopulate'));
 module.exports = mongoose.model('Invoice', invoiceSchema);

@@ -17,6 +17,23 @@ exports.catchErrors = (fn) => {
           controller: fn.name,
           error: error,
         });
+      } else if (error.code === 11000 || error.code === 11001) {
+        // Duplicate key error raised by a unique index (e.g. invoice number)
+        const duplicatedFields = Object.keys(error.keyValue || error.keyPattern || {});
+        let message = duplicatedFields.length
+          ? `A record with the same ${duplicatedFields.join(', ')} already exists. Please use a unique value.`
+          : 'A record with the same value already exists. Please use a unique value.';
+        if (duplicatedFields.includes('number')) {
+          message =
+            'An invoice with this number already exists for the selected year. Please use a different invoice number.';
+        }
+        return res.status(409).json({
+          success: false,
+          result: null,
+          message,
+          controller: fn.name,
+          error: error,
+        });
       } else {
         // Server Error
         return res.status(500).json({
