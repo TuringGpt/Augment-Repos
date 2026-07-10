@@ -36,10 +36,17 @@ def _venom_group_handlers():
 
 
 def test_shared_builtin_lowerings_stay_in_sync():
+    shared_expr_ids = {spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS if spec.legacy_expr}
+    shared_stmt_ids = {spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS if spec.legacy_stmt}
+    legacy_only_expr_ids = {"method_id", "sqrt", "isqrt"}
+
     for spec in SHARED_BUILTIN_LOWERINGS:
         assert spec.builtin_id in BUILTIN_HANDLERS
         assert (spec.builtin_id in DISPATCH_TABLE) is spec.legacy_expr
         assert (spec.builtin_id in STMT_DISPATCH_TABLE) is spec.legacy_stmt
+
+    assert set(DISPATCH_TABLE) == shared_expr_ids | legacy_only_expr_ids
+    assert set(STMT_DISPATCH_TABLE) == shared_stmt_ids
 
 
 def test_legacy_only_expr_builtins_are_not_registered_in_venom():
