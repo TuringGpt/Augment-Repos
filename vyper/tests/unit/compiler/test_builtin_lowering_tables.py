@@ -77,6 +77,10 @@ def test_build_venom_builtin_table_reports_group_mismatch():
 def test_build_venom_builtin_table_reports_builtin_mismatch():
     group_handlers = _venom_group_handlers()
     group_handlers["simple"].pop("len")
+    group_handlers["simple"]["_unexpected"] = object()
 
-    with pytest.raises(ValueError, match="Venom builtin group 'simple' mismatch: .*'len'"):
+    with pytest.raises(
+        ValueError,
+        match="Venom builtin group 'simple' mismatch: missing=\\['len'\\] extra=\\['_unexpected'\\]",
+    ):
         build_venom_builtin_table(group_handlers)

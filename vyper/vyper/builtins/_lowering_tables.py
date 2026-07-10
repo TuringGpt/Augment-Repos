@@ -151,10 +151,11 @@ def build_venom_builtin_table(group_handlers: Mapping[str, Mapping[str, T]]) -> 
         expected_ids = {
             spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS if spec.venom_group == group_name
         }
-        if set(handlers) != expected_ids:
+        actual_ids = set(handlers)
+        if actual_ids != expected_ids:
             raise ValueError(
                 f"Venom builtin group '{group_name}' mismatch: "
-                f"expected={sorted(expected_ids)} actual={sorted(handlers)}"
+                f"missing={sorted(expected_ids - actual_ids)} extra={sorted(actual_ids - expected_ids)}"
             )
         builtin_handlers.update(handlers)
 
