@@ -36,7 +36,7 @@ import {
   LoaderIcon,
 } from "lucide-react";
 import { CreateFormModal } from "@/components/CreateFormModal";
-import { useAssignedForms } from "@/hooks/useAssignedForms";
+import { useAllForms } from "@/hooks/useAllForms";
 import { debugAuthState } from "@/utils/debugAuth";
 
 // Form type definition
@@ -44,7 +44,7 @@ type FormItem = {
   id: string;
   name: string;
   description: string;
-  status: "active" | "draft" | "archived";
+  status: "active" | "draft" | "closed" | "archived";
   submissions: number | null; // null when count is unavailable from API
   createdAt: string;
   updatedAt: string;
@@ -54,13 +54,13 @@ function Forms() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch assigned forms from API
-  const { data: assignedForms, isLoading, isError, error, refetch, isUnauthenticated } = useAssignedForms();
+  // Fetch all forms from API
+  const { data: allForms, isLoading, isError, error, refetch, isUnauthenticated } = useAllForms();
 
   // Debug authentication on mount and when error occurs
   useEffect(() => {
     if (isUnauthenticated && import.meta.env.DEV) {
-      console.log('⚠️ Forms query disabled: No valid user ID found in token');
+      console.log('⚠️ Forms query disabled: No access token found');
       // Run debug utility to help diagnose authentication issues
       debugAuthState();
     } else if (isError && import.meta.env.DEV) {
@@ -70,26 +70,21 @@ function Forms() {
         message: error?.message || 'Unknown error',
         status: error?.status,
       };
-      console.log('❌ Error fetching forms:', sanitizedError);
+      console.log('❌ Error fetching all forms:', sanitizedError);
       // Run debug utility to help diagnose the issue
       debugAuthState();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnauthenticated, isError]); // Intentionally omit 'error' to prevent noisy re-runs when error object identity changes
 
-  // Map submission_status from API to display status
-  const mapSubmissionStatusToFormStatus = (submission_status: string | null): FormItem["status"] => {
-    // Map API submission_status values to UI display status
-    switch (submission_status) {
-      case "in_progress":
-        return "active";
+  const mapFormStatus = (status: string): FormItem["status"] => {
+    switch (status) {
+      case "active":
       case "draft":
-        return "draft";
-      case "submitted":
-      case "completed":
-        return "archived";
+      case "closed":
+      case "archived":
+        return status;
       default:
-        // Default to "draft" for null or any unknown status
         return "draft";
     }
   };
@@ -135,16 +130,13 @@ function Forms() {
   };
 
   // Map API response to FormItem type for display
-  const forms: FormItem[] = assignedForms?.map((form) => ({
+  const forms: FormItem[] = allForms?.map((form) => ({
     id: form.id,
     name: form.title,
     description: form.description || "",
-    status: mapSubmissionStatusToFormStatus(form.submission_status),
+    status: mapFormStatus(form.status),
     submissions: null, // API doesn't provide submissions count yet - null indicates unavailable
-    // API only provides submission_deadline, not created_at/updated_at
-    // Using "N/A" for createdAt since backend doesn't provide it
-    // updatedAt is populated with deadline to display in the "Deadline" column
-    createdAt: "N/A",
+    createdAt: formatDateSafe(form.created_at),
     updatedAt: formatDateSafe(form.submission_deadline),
   })) || [];
 
@@ -155,20 +147,20 @@ function Forms() {
       form.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleDeleteForm = (_id: string) => {
+  const handleDeleteForm = () => {
     // TODO: Implement delete API call
     toast.success("Form deleted successfully!");
     refetch();
   };
 
-  const handleDuplicateForm = (_form: FormItem) => {
+  const handleDuplicateForm = () => {
     // TODO: Implement duplicate API call
     toast.success("Form duplicated successfully!");
     refetch();
   };
 
-  const handleCreateForm = (_formData: { id: string; status: string }) => {
-    // Refetch the assigned forms list after successful form cycle creation
+  const handleCreateForm = () => {
+    // Refetch the forms list after successful form cycle creation
     refetch();
   };
 
@@ -176,6 +168,7 @@ function Forms() {
     const variants: Record<FormItem["status"], { variant: "default" | "secondary" | "outline"; label: string }> = {
       active: { variant: "default", label: "Active" },
       draft: { variant: "secondary", label: "Draft" },
+      closed: { variant: "outline", label: "Closed" },
       archived: { variant: "outline", label: "Archived" },
     };
 
@@ -247,7 +240,7 @@ function Forms() {
                     <div className="text-destructive">
                       <p className="font-medium mb-2">Authentication Required</p>
                       <p className="text-sm text-muted-foreground mb-4">
-                        You must be logged in to view assigned forms. Please sign in to continue.
+                        You must be logged in to view forms. Please sign in to continue.
                       </p>
                       <Button
                         variant="outline"
