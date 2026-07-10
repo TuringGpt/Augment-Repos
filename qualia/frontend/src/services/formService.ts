@@ -200,6 +200,19 @@ export interface AssignedForm {
 }
 
 /**
+ * Admin form item from the API
+ */
+export interface AdminForm {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  is_published: boolean;
+  submission_deadline: string; // ISO 8601 format with timezone
+  created_at: string; // ISO 8601 format with timezone
+}
+
+/**
  * Get forms assigned to the current user (reviewer)
  * @param signal - Optional AbortSignal to cancel the request (provided by TanStack Query)
  * @returns Promise with array of assigned forms
@@ -232,6 +245,36 @@ export const getAssignedForms = async (
   // Debug logging in development
   if (import.meta.env.DEV) {
     console.log("Get assigned forms response:", {
+      count: response.data.length,
+    });
+  }
+
+  return response.data;
+};
+
+/**
+ * Get all forms for the admin forms table
+ * @param signal - Optional AbortSignal to cancel the request (provided by TanStack Query)
+ * @returns Promise with array of all forms
+ * @throws When the API request fails, throws an error object produced by apiClient interceptors
+ *         (see ApiError interface in @/lib/axios) with properties: status?, message, data?, originalError.
+ *         This includes network errors, authentication errors, and server errors.
+ */
+export const getAllForms = async (
+  signal?: AbortSignal,
+): Promise<AdminForm[]> => {
+  if (import.meta.env.DEV) {
+    console.log("Get all forms request:", {
+      endpoint: "/forms/all",
+    });
+  }
+
+  const response = await apiClient.get<AdminForm[]>("/forms/all", {
+    signal,
+  });
+
+  if (import.meta.env.DEV) {
+    console.log("Get all forms response:", {
       count: response.data.length,
     });
   }
