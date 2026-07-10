@@ -9,6 +9,15 @@ T = TypeVar("T")
 
 @dataclass(frozen=True)
 class SharedBuiltinLowering:
+    """Describe how a builtin is registered across lowering backends.
+
+    Parameters:
+        builtin_id: The Vyper builtin name used by the semantic/type layer.
+        venom_group: The Venom handler group that must contain the builtin.
+        legacy_expr: Whether the builtin belongs in the legacy expression table.
+        legacy_stmt: Whether the builtin belongs in the legacy statement table.
+    """
+
     builtin_id: str
     venom_group: str
     legacy_expr: bool = False
@@ -85,6 +94,18 @@ def build_legacy_builtin_table(
     factories: Mapping[str, Callable[[], T]],
     extra_factories: Mapping[str, Callable[[], T]] | None = None,
 ) -> dict[str, T]:
+    """Build a legacy builtin dispatch table from shared lowering metadata.
+
+    Parameters:
+        include_expr: When true, build the expression table; otherwise build the
+            statement table.
+        factories: Constructors for builtins covered by the shared metadata.
+        extra_factories: Constructors for legacy-only builtins to append.
+
+    Returns:
+        A mapping from builtin ID to a freshly constructed legacy builtin handler.
+    """
+
     flag = "legacy_expr" if include_expr else "legacy_stmt"
     builtin_ids = [spec.builtin_id for spec in SHARED_BUILTIN_LOWERINGS if getattr(spec, flag)]
     if extra_factories:
@@ -102,6 +123,15 @@ def build_legacy_builtin_table(
 
 
 def build_venom_builtin_table(group_handlers: Mapping[str, Mapping[str, T]]) -> dict[str, T]:
+    """Build the combined Venom builtin handler table and validate its groups.
+
+    Parameters:
+        group_handlers: Per-group Venom handler mappings keyed by group name.
+
+    Returns:
+        A combined mapping from builtin ID to Venom lowering handler.
+    """
+
     expected_groups = set(VENOM_BUILTIN_GROUP_ORDER)
     seen_groups = set(group_handlers)
     if seen_groups != expected_groups:
