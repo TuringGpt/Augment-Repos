@@ -5,6 +5,7 @@ import inspect
 import json
 import os
 import sys
+from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any, Optional
 
@@ -22,7 +23,7 @@ from vyper.compiler.settings import (
 )
 from vyper.typing import ContractPath, OutputFormats
 from vyper.utils import uniq
-from vyper.warnings import warnings_filter
+from vyper.warnings import warning_category_counter, warnings_filter
 
 format_options_help = """Format to print, one or more of (comma-separated):
 bytecode (default) - Deployable bytecode
@@ -364,8 +365,13 @@ def _apply_warnings_filter(func):
         ba.apply_defaults()
 
         warnings_control = ba.arguments["warnings_control"]
+        warning_counts = ba.arguments.get("warning_counts")
         with warnings_filter(warnings_control):
-            return func(*args, **kwargs)
+            if warning_counts is None:
+                return func(*args, **kwargs)
+
+            with warning_category_counter(warning_counts):
+                return func(*args, **kwargs)
 
     return inner
 
@@ -381,6 +387,7 @@ def compile_files(
     storage_layout_paths: list[str] = None,
     no_bytecode_metadata: bool = False,
     warnings_control: Optional[str] = None,
+    warning_counts: Optional[MutableMapping[str, int]] = None,
 ) -> dict:
     search_paths = get_search_paths(paths, include_sys_path)
     input_bundle = FilesystemInputBundle(search_paths)
