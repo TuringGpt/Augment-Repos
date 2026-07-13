@@ -38,6 +38,8 @@ OUTPUT_FORMATS = {
     "asm_runtime": output.build_asm_runtime_output,
     "source_map": output.build_source_map_output,
     "source_map_runtime": output.build_source_map_runtime_output,
+    "source_map_modern": output.build_modern_source_map_output,
+    "source_map_modern_runtime": output.build_modern_source_map_runtime_output,
     # requires bytecode
     "bytecode": output.build_bytecode_output,
     "bytecode_runtime": output.build_bytecode_runtime_output,

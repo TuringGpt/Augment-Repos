@@ -374,6 +374,72 @@ def _getpos(node):
     return (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset)
 
 
+def _build_modern_source_map(compiler_data, bytecode, ast_map, jump_map):
+    """
+    Build a modern structured source map as a complement to the deprecated
+    Solidity-style compressed source map (pc_pos_map_compressed).
+
+    The modern source map provides structured per-PC source location data,
+    suitable for debuggers and source analysis tools without the lossy
+    run-length compression of the Solidity format.
+
+    Returns a dict with:
+      - 'version': int, format version (currently 2)
+      - 'sources': list of source file paths, ordered by source_id
+      - 'pc_mappings': list of per-PC source location entries
+    """
+    sources_by_id: dict[int, str] = {}
+    for node in ast_map.values():
+        if node.module_node is not None:
+            sid = node.module_node.source_id
+            sources_by_id[sid] = str(safe_relpath(node.module_node.resolved_path))
+
+    sources = [path for _, path in sorted(sources_by_id.items())]
+
+    pc_mappings = []
+    for pc in range(len(bytecode)):
+        if pc in ast_map:
+            node = ast_map[pc]
+            src_parts = node.src.split(":")
+            try:
+                start = int(src_parts[0])
+                length = node.end_col_offset - node.col_offset
+                file_idx = int(src_parts[2]) if len(src_parts) > 2 else 0
+            except (ValueError, IndexError):
+                start, length, file_idx = -1, 0, -1
+
+            entry = {
+                "pc": pc,
+                "source_id": file_idx,
+                "start": start,
+                "length": length,
+                "line": node.lineno,
+                "col": node.col_offset,
+                "end_line": node.end_lineno,
+                "end_col": node.end_col_offset,
+            }
+        else:
+            entry = {
+                "pc": pc,
+                "source_id": -1,
+                "start": -1,
+                "length": 0,
+                "line": -1,
+                "col": -1,
+                "end_line": -1,
+                "end_col": -1,
+            }
+
+        entry["jump"] = jump_map.get(pc)
+        pc_mappings.append(entry)
+
+    return {
+        "version": 2,
+        "sources": sources,
+        "pc_mappings": pc_mappings,
+    }
+
+
 def _build_source_map_output(compiler_data, bytecode, pc_maps):
     """
     Generate source map output in various formats. Note that integrations
@@ -402,6 +468,9 @@ def _build_source_map_output(compiler_data, bytecode, pc_maps):
     out["pc_ast_map"] = node_id_map
     # hint to consumers what the fields in pc_ast_map mean
     out["pc_ast_map_item_keys"] = ("source_id", "node_id")
+    out["modern_source_map"] = _build_modern_source_map(
+        compiler_data, bytecode, ast_map, out["pc_jump_map"]
+    )
     return out
 
 
@@ -415,6 +484,28 @@ def build_source_map_runtime_output(compiler_data: CompilerData) -> dict:
     bytecode = compiler_data.bytecode_runtime
     source_map = compiler_data.source_map_runtime
     return _build_source_map_output(compiler_data, bytecode, source_map)
+
+
+def build_modern_source_map_output(compiler_data: CompilerData) -> dict:
+    """Generate the modern structured source map for the deployment bytecode."""
+    bytecode = compiler_data.bytecode
+    pc_maps = compiler_data.source_map
+    ast_map = pc_maps.get("pc_raw_ast_map", {}).copy()
+    jump_map = pc_maps.get("pc_jump_map", {})
+    if 0 not in ast_map:
+        ast_map[0] = compiler_data.annotated_vyper_module
+    return _build_modern_source_map(compiler_data, bytecode, ast_map, jump_map)
+
+
+def build_modern_source_map_runtime_output(compiler_data: CompilerData) -> dict:
+    """Generate the modern structured source map for the runtime bytecode."""
+    bytecode = compiler_data.bytecode_runtime
+    pc_maps = compiler_data.source_map_runtime
+    ast_map = pc_maps.get("pc_raw_ast_map", {}).copy()
+    jump_map = pc_maps.get("pc_jump_map", {})
+    if 0 not in ast_map:
+        ast_map[0] = compiler_data.annotated_vyper_module
+    return _build_modern_source_map(compiler_data, bytecode, ast_map, jump_map)
 
 
 # generate a solidity-style source map. this functionality is deprecated

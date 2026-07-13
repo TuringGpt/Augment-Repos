@@ -32,6 +32,8 @@ abi                - ABI in JSON format
 abi_python         - ABI in python format
 source_map         - Vyper source map of deployable bytecode
 source_map_runtime - Vyper source map of runtime bytecode
+source_map_modern  - Modern structured source map of deployable bytecode
+source_map_modern_runtime - Modern structured source map of runtime bytecode
 method_identifiers - Dictionary of method signature to method identifier
 userdoc            - Natspec user documentation
 devdoc             - Natspec developer documentation
