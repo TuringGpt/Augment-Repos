@@ -18,10 +18,9 @@ from vyper.codegen.core import (
     wrap_value_for_external_return,
 )
 from vyper.codegen.ir_node import Encoding, IRnode
-from vyper.evm.address_space import MEMORY
+from vyper.evm import MEMORY
 from vyper.exceptions import TypeCheckFailure
-from vyper.semantics.types import InterfaceT, TupleT
-from vyper.semantics.types.function import StateMutability
+from vyper.semantics import InterfaceT, StateMutability, TupleT
 
 
 @dataclass

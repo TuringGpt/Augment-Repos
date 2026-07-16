@@ -5,7 +5,7 @@ import contextlib
 from typing import Optional
 
 from vyper import ast as vy_ast
-from vyper.ast.validation import validate_call_args
+from vyper.ast import validate_call_args
 from vyper.exceptions import (
     CallViolation,
     CompilerPanic,
@@ -1021,7 +1021,7 @@ class ExprVisitor(VyperNodeVisitorBase):
         else:
             # builtin functions and interfaces
             if self.function_analyzer and hasattr(func_type, "mutability"):
-                from vyper.builtins.functions import RawCall
+                from vyper.builtins import RawCall
 
                 if isinstance(func_type, RawCall):
                     # as opposed to other functions, raw_call's mutability

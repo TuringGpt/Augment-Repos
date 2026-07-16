@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.data_locations import DataLocation
-from vyper.venom.basicblock import IROperand, IRVariable
+from vyper.semantics import DataLocation
+from vyper.venom import IROperand, IRVariable
 
 
 @dataclass(frozen=True)

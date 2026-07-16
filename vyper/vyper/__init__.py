@@ -4,6 +4,14 @@ from pathlib import Path as _Path
 
 from vyper.compiler import compile_code, compile_from_file_input
 
+__all__ = [
+    "__commit__",
+    "__long_version__",
+    "__version__",
+    "compile_code",
+    "compile_from_file_input",
+]
+
 _commit_hash_file = _Path(__file__).parent.joinpath("vyper_git_commithash.txt")
 
 if _commit_hash_file.exists():

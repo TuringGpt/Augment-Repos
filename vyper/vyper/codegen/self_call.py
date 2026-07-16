@@ -4,9 +4,9 @@ import dataclasses
 from vyper import ast as vy_ast
 from vyper.codegen.core import _freshname, eval_once_check, make_setter
 from vyper.codegen.ir_node import IRnode
-from vyper.evm.address_space import MEMORY
+from vyper.evm import MEMORY
 from vyper.exceptions import StateAccessViolation
-from vyper.semantics.types.subscriptable import TupleT
+from vyper.semantics import TupleT
 
 
 def _align_kwargs(func_t, args_ir):

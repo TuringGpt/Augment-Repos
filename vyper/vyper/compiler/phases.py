@@ -3,11 +3,11 @@ from functools import cached_property
 from pathlib import Path, PurePath
 from typing import Any, Optional
 
-import vyper.codegen.core as codegen
 from vyper import ast as vy_ast
 from vyper.ast import natspec
+from vyper.codegen import IRnode
+from vyper.codegen import core as codegen
 from vyper.codegen import module
-from vyper.codegen.ir_node import IRnode
 from vyper.compiler.input_bundle import FileInput, FilesystemInputBundle, InputBundle, JSONInput
 from vyper.compiler.settings import (
     OptimizationLevel,
@@ -17,11 +17,15 @@ from vyper.compiler.settings import (
     should_run_legacy_optimizer,
 )
 from vyper.ir import compile_ir, optimizer
-from vyper.semantics import analyze_modules, set_data_positions, validate_compilation_target
-from vyper.semantics.analysis.data_positions import generate_layout_export
-from vyper.semantics.analysis.imports import resolve_imports
-from vyper.semantics.types.function import ContractFunctionT
-from vyper.semantics.types.module import ModuleT
+from vyper.semantics import (
+    ContractFunctionT,
+    ModuleT,
+    analyze_modules,
+    generate_layout_export,
+    resolve_imports,
+    set_data_positions,
+    validate_compilation_target,
+)
 from vyper.typing import StorageLayout
 from vyper.utils import ERC5202_PREFIX, sha256sum
 from vyper.venom import generate_assembly_experimental

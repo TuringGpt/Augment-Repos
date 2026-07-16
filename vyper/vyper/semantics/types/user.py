@@ -3,7 +3,7 @@ from typing import Optional
 
 from vyper import ast as vy_ast
 from vyper.abi_types import ABI_GIntM, ABI_Tuple, ABIType
-from vyper.ast.validation import validate_call_args
+from vyper.ast import validate_call_args
 from vyper.exceptions import (
     EventDeclarationException,
     FlagDeclarationException,

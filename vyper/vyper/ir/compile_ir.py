@@ -6,11 +6,11 @@ from typing import Any, Optional
 
 import cbor2
 
-from vyper.codegen.ir_node import IRnode
+from vyper.codegen import IRnode
 from vyper.compiler.settings import OptimizationLevel
-from vyper.evm.assembler.core import assembly_to_evm, get_data_segment_lengths
-from vyper.evm.assembler.instructions import (
+from vyper.evm import (
     CONST,
+    CONSTREF,
     DATA_ITEM,
     JUMP,
     JUMPI,
@@ -19,12 +19,14 @@ from vyper.evm.assembler.instructions import (
     PUSHLABEL,
     AssemblyInstruction,
     DataHeader,
+    Label,
     TaggedInstruction,
+    assembly_to_evm,
+    get_data_segment_lengths,
+    get_opcodes,
     mkdebug,
+    optimize_assembly,
 )
-from vyper.evm.assembler.optimizer import optimize_assembly
-from vyper.evm.assembler.symbols import CONSTREF, Label
-from vyper.evm.opcodes import get_opcodes
 from vyper.exceptions import CodegenPanic, CompilerPanic
 from vyper.utils import MemoryPositions
 from vyper.version import version_tuple

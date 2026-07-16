@@ -5,8 +5,8 @@ This module provides flow-sensitive range analysis over Venom IR, tracking
 the bounds of integer values through the control flow graph.
 """
 
-from .analysis import VariableRangeAnalysis
-from .value_range import (
+from vyper.venom.analysis.variable_range.analysis import VariableRangeAnalysis
+from vyper.venom.analysis.variable_range.value_range import (
     RANGE_WIDTH_LIMIT,
     SIGNED_MAX,
     SIGNED_MIN,

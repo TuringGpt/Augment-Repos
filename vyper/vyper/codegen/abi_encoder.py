@@ -8,10 +8,9 @@ from vyper.codegen.core import (
     zero_pad,
 )
 from vyper.codegen.ir_node import IRnode
-from vyper.evm.address_space import MEMORY
+from vyper.evm import MEMORY
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.types import DArrayT, SArrayT, _BytestringT
-from vyper.semantics.types.shortcuts import UINT256_T
+from vyper.semantics import UINT256_T, DArrayT, SArrayT, _BytestringT
 
 
 def _is_complex_type(typ):

@@ -3,7 +3,7 @@ import math
 
 import vyper.codegen.arithmetic as arithmetic
 from vyper import ast as vy_ast
-from vyper.codegen import external_call, self_call
+from vyper.codegen import external_call, keccak256_helper, self_call
 from vyper.codegen.core import (
     append_dyn_array,
     check_assign,
@@ -28,9 +28,7 @@ from vyper.codegen.core import (
     unwrap_location,
 )
 from vyper.codegen.ir_node import IRnode
-from vyper.codegen.keccak256_helper import keccak256_helper
-from vyper.evm.address_space import MEMORY
-from vyper.evm.opcodes import version_check
+from vyper.evm import MEMORY, version_check
 from vyper.exceptions import (
     CodegenPanic,
     CompilerPanic,
@@ -41,26 +39,28 @@ from vyper.exceptions import (
     UnimplementedException,
     tag_exceptions,
 )
-from vyper.semantics.analysis.utils import get_expr_writes
-from vyper.semantics.types import (
+from vyper.semantics import (
+    BYTES32_T,
+    UINT256_T,
     AddressT,
     BoolT,
     BytesT,
+    ContractFunctionT,
     DArrayT,
     DecimalT,
     FlagT,
     HashMapT,
     InterfaceT,
+    MemberFunctionT,
     ModuleT,
     SArrayT,
     StringT,
     StructT,
     TupleT,
+    _BytestringT,
+    get_expr_writes,
     is_type_t,
 )
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.function import ContractFunctionT, MemberFunctionT
-from vyper.semantics.types.shortcuts import BYTES32_T, UINT256_T
 from vyper.utils import DECIMAL_DIVISOR, bytes_to_int, is_checksum_encoded
 from vyper.warnings import VyperWarning, vyper_warn
 
@@ -681,7 +681,7 @@ class Expr:
     # Function calls
     def parse_Call(self):
         # TODO fix cyclic import
-        from vyper.builtins._signatures import BuiltinFunctionT
+        from vyper.builtins import BuiltinFunctionT
 
         func = self.expr.func
         func_t = func._metadata["type"]
@@ -746,7 +746,7 @@ class Expr:
     @classmethod
     def handle_external_call(cls, expr, context):
         # TODO fix cyclic import
-        from vyper.builtins._signatures import BuiltinFunctionT
+        from vyper.builtins import BuiltinFunctionT
 
         call_node = expr.value
         assert isinstance(call_node, vy_ast.Call)

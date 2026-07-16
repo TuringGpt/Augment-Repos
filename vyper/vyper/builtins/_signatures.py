@@ -2,18 +2,20 @@ import functools
 from typing import Any, Optional
 
 from vyper import ast as vy_ast
-from vyper.ast.validation import validate_call_args
-from vyper.codegen.expr import Expr
-from vyper.codegen.ir_node import IRnode
+from vyper.ast import validate_call_args
+from vyper.codegen import Expr, IRnode
 from vyper.exceptions import CompilerPanic, TypeMismatch, UnfoldableNode
-from vyper.semantics.analysis.base import Modifiability, StateMutability
-from vyper.semantics.analysis.utils import (
+from vyper.semantics import (
+    TYPE_T,
+    KwargSettings,
+    Modifiability,
+    StateMutability,
+    VyperType,
     check_modifiability,
     get_exact_type_from_node,
+    type_from_annotation,
     validate_expected_type,
 )
-from vyper.semantics.types import TYPE_T, KwargSettings, VyperType
-from vyper.semantics.types.utils import type_from_annotation
 
 
 def process_arg(arg, expected_arg_type, context):

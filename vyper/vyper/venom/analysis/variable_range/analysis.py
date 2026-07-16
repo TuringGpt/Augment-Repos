@@ -5,6 +5,14 @@ from typing import Iterable, Optional
 
 from vyper.utils import wrap256
 from vyper.venom.analysis import CFGAnalysis, DFGAnalysis, IRAnalysis
+from vyper.venom.analysis.variable_range.evaluators import eval_op
+from vyper.venom.analysis.variable_range.value_range import (
+    SIGNED_MAX,
+    SIGNED_MIN,
+    UNSIGNED_MAX,
+    RangeState,
+    ValueRange,
+)
 from vyper.venom.basicblock import (
     IRBasicBlock,
     IRInstruction,
@@ -13,9 +21,6 @@ from vyper.venom.basicblock import (
     IROperand,
     IRVariable,
 )
-
-from .evaluators import eval_op
-from .value_range import SIGNED_MAX, SIGNED_MIN, UNSIGNED_MAX, RangeState, ValueRange
 
 
 def _operand_range(operand: IROperand, env: RangeState) -> ValueRange:

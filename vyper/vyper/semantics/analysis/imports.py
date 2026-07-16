@@ -5,9 +5,9 @@ from dataclasses import asdict, dataclass
 from pathlib import Path, PurePath
 from typing import Any, Iterator, Optional
 
-import vyper.builtins.interfaces
-import vyper.builtins.stdlib
 from vyper import ast as vy_ast
+from vyper import builtins as vy_builtins
+from vyper.builtins import interfaces, stdlib
 from vyper.compiler.input_bundle import (
     BUILTIN,
     CompilerInput,
@@ -312,8 +312,8 @@ _builtins_cache: dict[PathLike, tuple[CompilerInput, vy_ast.Module]] = {}
 
 # builtin import path -> (prefix for removal, package, suffix)
 BUILTIN_MODULE_RULES = {
-    "ethereum.ercs": ("ethereum.ercs", vyper.builtins.interfaces.__package__, ".vyi"),
-    "math": ("", vyper.builtins.stdlib.__package__, ".vy"),
+    "ethereum.ercs": ("ethereum.ercs", interfaces.__package__, ".vyi"),
+    "math": ("", stdlib.__package__, ".vy"),
 }
 
 
@@ -335,7 +335,7 @@ def _load_builtin_import(level: int, module_str: str) -> tuple[CompilerInput, vy
 
     assert level == 0, "builtin imports are absolute"
 
-    builtins_path = vyper.builtins.__path__[0]
+    builtins_path = vy_builtins.__path__[0]
     # hygiene: convert to relpath to avoid leaking user directory info
     # (note Path.relative_to cannot handle absolute to relative path
     # conversion, so we must use the `os` module).

@@ -1,6 +1,6 @@
 import contextlib
 
-from vyper.ast.identifiers import validate_identifier
+from vyper.ast import validate_identifier
 from vyper.exceptions import CompilerPanic, NamespaceCollision, UndeclaredDefinition
 from vyper.semantics.analysis.levenshtein_utils import get_levenshtein_error_suggestions
 
@@ -24,7 +24,7 @@ class Namespace(dict):
         super().__init__()
         # NOTE cyclic imports!
         # TODO: break this cycle by providing an `init_vyper_namespace` in 3rd module
-        from vyper.builtins.functions import get_builtin_functions
+        from vyper.builtins import get_builtin_functions
         from vyper.semantics import environment
         from vyper.semantics.analysis.base import VarInfo
         from vyper.semantics.types import PRIMITIVE_TYPES

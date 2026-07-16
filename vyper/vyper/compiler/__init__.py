@@ -1,12 +1,74 @@
 from pathlib import Path
 from typing import Callable, Dict, Optional
 
-import vyper.codegen.core as codegen
 import vyper.compiler.output as output
-from vyper.compiler.input_bundle import FileInput, InputBundle, JSONInput, PathLike
-from vyper.compiler.phases import CompilerData
-from vyper.compiler.settings import Settings, anchor_settings, get_global_settings
+from vyper.codegen import core as codegen
+from vyper.compiler.input_bundle import (
+    BUILTIN,
+    CompilerInput,
+    FileInput,
+    FilesystemInputBundle,
+    InputBundle,
+    JSONInput,
+    JSONInputBundle,
+    PathLike,
+    ZipInputBundle,
+    _normpath,
+)
+from vyper.compiler.phases import CompilerData, generate_bytecode
+from vyper.compiler.settings import (
+    VYPER_COLOR_OUTPUT,
+    VYPER_ERROR_CONTEXT_LINES,
+    VYPER_ERROR_LINE_NUMBERS,
+    VYPER_TRACEBACK_LIMIT,
+    OptimizationLevel,
+    Settings,
+    VenomOptimizationFlags,
+    _is_debug_mode,
+    _opt_codesize,
+    _opt_gas,
+    _opt_none,
+    anchor_settings,
+    get_global_settings,
+    merge_settings,
+    set_global_settings,
+)
 from vyper.typing import OutputFormats, StorageLayout
+
+__all__ = [
+    "BUILTIN",
+    "CompilerData",
+    "CompilerInput",
+    "FileInput",
+    "FilesystemInputBundle",
+    "InputBundle",
+    "INTERFACE_OUTPUT_FORMATS",
+    "JSONInput",
+    "JSONInputBundle",
+    "OUTPUT_FORMATS",
+    "OptimizationLevel",
+    "PathLike",
+    "Settings",
+    "UNKNOWN_CONTRACT_NAME",
+    "VYPER_COLOR_OUTPUT",
+    "VYPER_ERROR_CONTEXT_LINES",
+    "VYPER_ERROR_LINE_NUMBERS",
+    "VYPER_TRACEBACK_LIMIT",
+    "VenomOptimizationFlags",
+    "ZipInputBundle",
+    "compile_code",
+    "compile_from_file_input",
+    "generate_bytecode",
+    "get_global_settings",
+    "merge_settings",
+    "outputs_from_compiler_data",
+    "set_global_settings",
+    "_is_debug_mode",
+    "_normpath",
+    "_opt_codesize",
+    "_opt_gas",
+    "_opt_none",
+]
 
 OUTPUT_FORMATS = {
     # requires vyper_module

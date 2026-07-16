@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from vyper import ast as vy_ast
-from vyper.venom.basicblock import IRLiteral, IROperand
+from vyper.venom import IRLiteral, IROperand
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

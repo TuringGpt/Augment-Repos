@@ -14,13 +14,21 @@ from __future__ import annotations
 
 from typing import Optional
 
+from vyper.codegen_venom.calling_convention import pass_via_stack, returns_stack_count
 from vyper.codegen_venom.module import generate_deploy_venom, generate_runtime_venom
 from vyper.compiler.settings import Settings
-from vyper.semantics.types.module import ModuleT
-from vyper.venom import run_passes_on
-from vyper.venom.context import IRContext
+from vyper.semantics import ModuleT
+from vyper.venom import IRContext, run_passes_on
 
 MAIN_ENTRY_LABEL = "__main_entry"
+
+__all__ = [
+    "MAIN_ENTRY_LABEL",
+    "generate_venom_deploy",
+    "generate_venom_runtime",
+    "pass_via_stack",
+    "returns_stack_count",
+]
 
 
 def _finalize_venom_ctx(ctx: IRContext, settings: Settings) -> IRContext:

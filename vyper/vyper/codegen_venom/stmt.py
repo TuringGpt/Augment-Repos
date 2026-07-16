@@ -11,23 +11,27 @@ from __future__ import annotations
 from typing import Optional
 
 from vyper import ast as vy_ast
-from vyper.codegen.core import calculate_type_for_external_return
+from vyper.codegen import calculate_type_for_external_return
 from vyper.codegen_venom.abi import abi_encode_to_buf
 from vyper.codegen_venom.arithmetic import apply_binop
+from vyper.codegen_venom.buffer import Ptr
+from vyper.codegen_venom.calling_convention import returns_stack_count
+from vyper.codegen_venom.context import Constancy, VenomCodegenContext
+from vyper.codegen_venom.expr import Expr
+from vyper.codegen_venom.value import VyperValue
 from vyper.exceptions import CompilerPanic, TypeCheckFailure
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.function import ContractFunctionT
-from vyper.semantics.types.subscriptable import DArrayT, SArrayT, TupleT
-from vyper.semantics.types.user import EventT, StructT
+from vyper.semantics import (
+    ContractFunctionT,
+    DArrayT,
+    DataLocation,
+    EventT,
+    SArrayT,
+    StructT,
+    TupleT,
+    _BytestringT,
+)
 from vyper.utils import method_id_int
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
-
-from .buffer import Ptr
-from .calling_convention import returns_stack_count
-from .context import Constancy, VenomCodegenContext
-from .expr import Expr
-from .value import VyperValue
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 
 class Stmt:

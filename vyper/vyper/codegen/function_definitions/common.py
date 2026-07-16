@@ -5,14 +5,12 @@ from typing import TYPE_CHECKING, Optional
 from vyper.codegen.context import Constancy, Context
 from vyper.codegen.ir_node import IRnode
 from vyper.codegen.memory_allocator import MemoryAllocator
-from vyper.evm.opcodes import version_check
-from vyper.semantics.types import VyperType
-from vyper.semantics.types.function import ContractFunctionT, StateMutability
-from vyper.semantics.types.module import ModuleT
+from vyper.evm import version_check
+from vyper.semantics import ContractFunctionT, ModuleT, StateMutability, VyperType
 from vyper.utils import MemoryPositions
 
 if TYPE_CHECKING:
-    from vyper.venom.basicblock import IRVariable
+    from vyper.venom import IRVariable
 
 
 @dataclass

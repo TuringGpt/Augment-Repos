@@ -3,8 +3,9 @@ import functools
 import math
 
 from vyper import ast as vy_ast
-from vyper.codegen.core import (
+from vyper.codegen import (
     LOAD,
+    Expr,
     IRnode,
     bytes_clamp,
     bytes_data_ptr,
@@ -22,7 +23,6 @@ from vyper.codegen.core import (
     shr,
     unwrap_location,
 )
-from vyper.codegen.expr import Expr
 from vyper.exceptions import (
     CompilerPanic,
     InvalidLiteral,
@@ -30,7 +30,10 @@ from vyper.exceptions import (
     StructureException,
     TypeMismatch,
 )
-from vyper.semantics.types import (
+from vyper.semantics import (
+    INT256_T,
+    UINT160_T,
+    UINT256_T,
     AddressT,
     BoolT,
     BytesM_T,
@@ -39,9 +42,8 @@ from vyper.semantics.types import (
     FlagT,
     IntegerT,
     StringT,
+    _BytestringT,
 )
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.shortcuts import INT256_T, UINT160_T, UINT256_T
 from vyper.utils import DECIMAL_DIVISOR, round_towards_zero, unsigned_to_signed
 
 

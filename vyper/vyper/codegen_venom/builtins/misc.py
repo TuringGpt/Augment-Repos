@@ -15,14 +15,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from vyper import ast as vy_ast
-from vyper.builtins.functions import AsWeiValue
+from vyper.builtins import AsWeiValue
 from vyper.codegen_venom.abi.abi_encoder import abi_encode_to_buf
 from vyper.codegen_venom.constants import BLOCKHASH_LOOKBACK_LIMIT, ECRECOVER_PRECOMPILE
-from vyper.evm.opcodes import version_check
+from vyper.evm import version_check
 from vyper.exceptions import EvmVersionException
-from vyper.semantics.types import BytesT, DecimalT, StringT, TupleT
+from vyper.semantics import BytesT, DecimalT, StringT, TupleT
 from vyper.utils import DECIMAL_DIVISOR, method_id_int
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

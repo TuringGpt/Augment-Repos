@@ -1,23 +1,22 @@
 from collections import deque
 from typing import Callable, Optional
 
-import vyper.evm.address_space as addr_space
+from vyper.evm import address_space as addr_space
 from vyper.exceptions import CompilerPanic
 from vyper.utils import OrderedSet
-from vyper.venom.basicblock import IRBasicBlock, IRInstruction, IRLiteral, IROperand, IRVariable
-from vyper.venom.effects import Effects, to_addr_space
-from vyper.venom.memory_location import InstAccessOps, MemoryLocation
-
-from .analysis import IRAnalysis
-from .base_ptr_analysis import BasePtrAnalysis
-from .cfg import CFGAnalysis
-from .dfg import DFGAnalysis
-from .mem_alias import (
+from vyper.venom.analysis.analysis import IRAnalysis
+from vyper.venom.analysis.base_ptr_analysis import BasePtrAnalysis
+from vyper.venom.analysis.cfg import CFGAnalysis
+from vyper.venom.analysis.dfg import DFGAnalysis
+from vyper.venom.analysis.mem_alias import (
     MemoryAliasAnalysis,
     StorageAliasAnalysis,
     TransientAliasAnalysis,
     mem_alias_type_factory,
 )
+from vyper.venom.basicblock import IRBasicBlock, IRInstruction, IRLiteral, IROperand, IRVariable
+from vyper.venom.effects import Effects, to_addr_space
+from vyper.venom.memory_location import InstAccessOps, MemoryLocation
 
 _LatticeKey = IROperand | MemoryLocation
 _GetMemloc = Callable[[_LatticeKey], MemoryLocation]

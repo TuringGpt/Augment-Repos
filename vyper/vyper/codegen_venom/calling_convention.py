@@ -9,8 +9,8 @@ This module is the single source of truth for these decisions.
 
 from __future__ import annotations
 
-from vyper.codegen.core import is_tuple_like
-from vyper.semantics.types import VyperType
+from vyper.codegen import is_tuple_like
+from vyper.semantics import VyperType
 
 # Maximum number of word-type arguments passed via the stack.
 MAX_STACK_ARGS = 6

@@ -10,9 +10,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from vyper import ast as vy_ast
-from vyper.semantics.types import BytesM_T
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.semantics import BytesM_T, _BytestringT
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

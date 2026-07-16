@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from vyper.venom.analysis.analysis import IRGlobalAnalysis
+from vyper.venom.analysis.dfg import DFGAnalysis
 from vyper.venom.basicblock import IRInstruction, IRLabel, IROperand, IRVariable
 from vyper.venom.function import IRFunction
 from vyper.venom.memory_location import memory_write_ops
-
-from .analysis import IRGlobalAnalysis
-from .dfg import DFGAnalysis
 
 
 @dataclass(frozen=True)

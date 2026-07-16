@@ -4,18 +4,16 @@ from pathlib import PurePath
 from typing import Iterable
 
 import vyper.ast as vy_ast
-from vyper.ast.utils import ast_to_dict
-from vyper.codegen.ir_node import IRnode
-from vyper.codegen_venom.calling_convention import pass_via_stack, returns_stack_count
+from vyper.ast import ast_to_dict
+from vyper.codegen import IRnode
+from vyper.codegen_venom import pass_via_stack, returns_stack_count
 from vyper.compiler.output_bundle import SolcJSONWriter, VyperArchiveWriter
 from vyper.compiler.phases import CompilerData
 from vyper.compiler.utils import build_gas_estimates
-from vyper.evm import opcodes
-from vyper.evm.assembler.symbols import resolve_symbols
+from vyper.evm import opcodes, resolve_symbols
 from vyper.exceptions import VyperException
 from vyper.ir import compile_ir
-from vyper.semantics.types.function import ContractFunctionT, FunctionVisibility, StateMutability
-from vyper.semantics.types.user import EventT
+from vyper.semantics import ContractFunctionT, EventT, FunctionVisibility, StateMutability
 from vyper.typing import StorageLayout
 from vyper.utils import OrderedSet, safe_relpath
 from vyper.warnings import ContractSizeLimit, vyper_warn

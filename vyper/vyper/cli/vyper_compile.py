@@ -9,17 +9,18 @@ from pathlib import Path
 from typing import Any, Optional
 
 import vyper
-import vyper.codegen.ir_node as ir_node
-import vyper.evm.opcodes as evm
 from vyper.cli import vyper_json
 from vyper.cli.compile_archive import NotZipInput, compile_from_zip
-from vyper.compiler.input_bundle import FileInput, FilesystemInputBundle
-from vyper.compiler.settings import (
+from vyper.codegen import ir_node
+from vyper.compiler import (
     VYPER_TRACEBACK_LIMIT,
+    FileInput,
+    FilesystemInputBundle,
     OptimizationLevel,
     Settings,
     VenomOptimizationFlags,
 )
+from vyper.evm import opcodes as evm
 from vyper.typing import ContractPath, OutputFormats
 from vyper.utils import uniq
 from vyper.warnings import warnings_filter

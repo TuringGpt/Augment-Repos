@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import vyper.evm.address_space as addr_space
+from vyper.evm import address_space as addr_space
 from vyper.venom.basicblock import IRInstruction, IROperand, IRVariable
 from vyper.venom.effects import EMPTY, Effects
 from vyper.venom.memory_location import MemoryLocation

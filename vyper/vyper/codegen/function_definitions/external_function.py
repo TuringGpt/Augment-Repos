@@ -11,9 +11,8 @@ from vyper.codegen.function_definitions.common import (
 )
 from vyper.codegen.ir_node import Encoding, IRnode
 from vyper.codegen.stmt import parse_body
-from vyper.evm.address_space import CALLDATA, DATA
-from vyper.semantics.types import TupleT
-from vyper.semantics.types.function import ContractFunctionT
+from vyper.evm import CALLDATA, DATA
+from vyper.semantics import ContractFunctionT, TupleT
 from vyper.utils import calc_mem_gas
 
 

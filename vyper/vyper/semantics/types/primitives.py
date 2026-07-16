@@ -13,10 +13,9 @@ from vyper.exceptions import (
     OverflowException,
     VyperException,
 )
+from vyper.semantics.types.base import VyperType
+from vyper.semantics.types.bytestrings import BytesT
 from vyper.utils import checksum_encode, int_bounds, is_checksum_encoded
-
-from .base import VyperType
-from .bytestrings import BytesT
 
 
 class _PrimT(VyperType):

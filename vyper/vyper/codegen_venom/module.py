@@ -17,29 +17,28 @@ from __future__ import annotations
 from typing import Optional
 
 import vyper.ast as vy_ast
-from vyper.codegen import jumptable_utils
-from vyper.codegen.function_definitions.common import EntryPointInfo, _FuncIRInfo
+from vyper.codegen import EntryPointInfo, _FuncIRInfo, jumptable_utils
 from vyper.codegen_venom.abi.abi_decoder import _getelemptr_abi, abi_decode_to_buf
 from vyper.codegen_venom.buffer import Ptr
+from vyper.codegen_venom.calling_convention import pass_via_stack, returns_stack_count
 from vyper.codegen_venom.constants import SELECTOR_BYTES, SELECTOR_SHIFT_BITS
+from vyper.codegen_venom.context import Constancy, VenomCodegenContext
+from vyper.codegen_venom.expr import Expr
+from vyper.codegen_venom.stmt import Stmt
 from vyper.codegen_venom.value import VyperValue
 from vyper.compiler.settings import Settings, _opt_codesize, _opt_none
-from vyper.evm.opcodes import version_check
+from vyper.evm import version_check
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import TupleT, VyperType
-from vyper.semantics.types.function import ContractFunctionT, StateMutability
-from vyper.semantics.types.module import ModuleT
+from vyper.semantics import (
+    ContractFunctionT,
+    DataLocation,
+    ModuleT,
+    StateMutability,
+    TupleT,
+    VyperType,
+)
 from vyper.utils import OrderedSet, method_id_int
-from vyper.venom.basicblock import IRLabel, IRLiteral, IRVariable
-from vyper.venom.builder import VenomBuilder
-from vyper.venom.context import IRContext
-from vyper.venom.memory_location import Allocation
-
-from .calling_convention import pass_via_stack, returns_stack_count
-from .context import Constancy, VenomCodegenContext
-from .expr import Expr
-from .stmt import Stmt
+from vyper.venom import Allocation, IRContext, IRLabel, IRLiteral, IRVariable, VenomBuilder
 
 
 def _get_constancy(func_t: ContractFunctionT) -> Constancy:

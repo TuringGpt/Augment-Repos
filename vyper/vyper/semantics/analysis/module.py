@@ -4,7 +4,7 @@ from itertools import zip_longest
 from typing import Optional
 
 from vyper import ast as vy_ast
-from vyper.evm.opcodes import version_check
+from vyper.evm import version_check
 from vyper.exceptions import (
     BorrowException,
     CallViolation,

@@ -1,8 +1,7 @@
 from bisect import bisect_left
 from dataclasses import dataclass
 
-from vyper.evm.address_space import CALLDATA, DATA, MEMORY, AddrSpace
-from vyper.evm.opcodes import version_check
+from vyper.evm import CALLDATA, DATA, MEMORY, AddrSpace, version_check
 from vyper.utils import OrderedSet
 from vyper.venom.analysis import BasePtrAnalysis, DFGAnalysis, LivenessAnalysis, MemoryAliasAnalysis
 from vyper.venom.basicblock import IRBasicBlock, IRInstruction, IRLiteral, IROperand, IRVariable

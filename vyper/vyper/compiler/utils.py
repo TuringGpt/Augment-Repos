@@ -1,6 +1,6 @@
 from typing import Dict
 
-from vyper.semantics.types.function import ContractFunctionT
+from vyper.semantics import ContractFunctionT
 
 
 def build_gas_estimates(func_ts: Dict[str, ContractFunctionT]) -> dict:
