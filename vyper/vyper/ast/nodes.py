@@ -58,6 +58,36 @@ NODE_SRC_ATTRIBUTES = (
 DICT_AST_SKIPLIST = ("full_source_code", "node_source_code")
 
 
+def _enum_to_flag_source(node) -> str:
+    if node.node_source_code:
+        lines = node.node_source_code.splitlines()
+        if lines:
+            first_line = lines[0]
+            prefix_len = len(first_line) - len(first_line.lstrip())
+            prefix = first_line[:prefix_len]
+            stripped = first_line[prefix_len:]
+            if stripped.startswith("enum"):
+                lines[0] = f"{prefix}flag{stripped[4:]}"
+                return "\n".join(lines)
+
+    body = []
+    for item in node.body:
+        if isinstance(item, Name):
+            body.append(f"    {item.id}")
+        elif isinstance(item, Pass):
+            body.append("    pass")
+
+    return "\n".join([f"flag {node.name}:", *body])
+
+
+def _enum_usage_warning(node) -> EnumUsage:
+    msg = "enum will be deprecated in a future release. "
+    msg += "`enum` already uses flag semantics, so rename the declaration "
+    msg += "to `flag` to preserve current behavior. Example:\n"
+    msg += f"```\n{_enum_to_flag_source(node)}\n```"
+    return EnumUsage(msg, node)
+
+
 def get_node(
     ast_struct: Union[dict, python_ast.AST], parent: Optional["VyperNode"] = None
 ) -> "VyperNode":
@@ -134,9 +164,7 @@ def get_node(
     node = vy_class(parent=parent, **ast_struct)
 
     if enum_warn:
-        vyper_warn(
-            EnumUsage("enum will be deprecated in a future release, use flag instead.", node)
-        )
+        vyper_warn(_enum_usage_warning(node))
 
     node.validate()
 
