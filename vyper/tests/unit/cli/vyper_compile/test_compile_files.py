@@ -427,7 +427,9 @@ def test_archive_b64_output(input_files):
     assert out[contract_file] == out2[archive_path]
 
 
-def _assert_archive_roundtrip(contract_file, archive_path, expected_paths, search_paths):
+def _assert_archive_roundtrip(
+    contract_file, archive_path, expected_paths, expected_target_path, search_paths
+):
     archive_bundle = compile_files([contract_file], ["archive"], paths=search_paths)
     archive_path.write_bytes(archive_bundle[contract_file]["archive"])
 
@@ -437,7 +439,7 @@ def _assert_archive_roundtrip(contract_file, archive_path, expected_paths, searc
         archived_paths = set(archive_zip.namelist())
         assert expected_paths.issubset(archived_paths)
         assert archive_zip.read("MANIFEST/compilation_targets").decode("utf-8").splitlines() == [
-            str(contract_file)
+            expected_target_path
         ]
         archive_integrity = archive_zip.read("MANIFEST/integrity").decode("utf-8").strip()
 
@@ -489,6 +491,7 @@ def foo() -> uint256:
             "MANIFEST/compilation_targets",
             "MANIFEST/integrity",
         },
+        "main.vy",
         ["."],
     )
 
@@ -532,6 +535,7 @@ def foo() -> uint256:
             "MANIFEST/compilation_targets",
             "MANIFEST/integrity",
         },
+        "main.vy",
         ["."],
     )
 
