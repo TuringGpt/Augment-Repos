@@ -427,6 +427,119 @@ def test_archive_b64_output(input_files):
     assert out[contract_file] == out2[archive_path]
 
 
+def _assert_archive_roundtrip(
+    contract_file, archive_path, expected_paths, expected_target_path, search_paths
+):
+    archive_bundle = compile_files([contract_file], ["archive"], paths=search_paths)
+    archive_path.write_bytes(archive_bundle[contract_file]["archive"])
+
+    assert zipfile.is_zipfile(archive_path)
+
+    with zipfile.ZipFile(archive_path) as archive_zip:
+        archived_paths = set(archive_zip.namelist())
+        assert expected_paths.issubset(archived_paths)
+        assert archive_zip.read("MANIFEST/compilation_targets").decode("utf-8").splitlines() == [
+            expected_target_path
+        ]
+        archive_integrity = archive_zip.read("MANIFEST/integrity").decode("utf-8").strip()
+
+    direct_output = compile_files(
+        [contract_file], ["integrity", "bytecode", "layout"], paths=search_paths
+    )
+    archive_output = compile_files([archive_path], ["integrity", "bytecode", "layout"])
+
+    assert archive_integrity == direct_output[contract_file]["integrity"]
+    assert direct_output[contract_file] == archive_output[archive_path]
+
+
+def test_archive_roundtrip_with_multiple_vyper_sources(chdir_tmp_path, make_file):
+    make_file(
+        "lib1.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 1
+        """,
+    )
+    make_file(
+        "lib2.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 2
+        """,
+    )
+    contract_file = make_file(
+        "main.vy",
+        """
+import lib1
+import lib2
+
+@external
+def foo() -> uint256:
+    return lib1.foo() + lib2.foo()
+        """,
+    )
+
+    _assert_archive_roundtrip(
+        contract_file,
+        Path("multiple-sources.zip"),
+        {
+            "main.vy",
+            "lib1.vy",
+            "lib2.vy",
+            "MANIFEST/compilation_targets",
+            "MANIFEST/integrity",
+        },
+        "main.vy",
+        ["."],
+    )
+
+
+def test_archive_roundtrip_with_duplicate_module_basenames(chdir_tmp_path, make_file):
+    make_file(
+        "pkg1/lib.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 1
+        """,
+    )
+    make_file(
+        "pkg2/lib.vy",
+        """
+@internal
+def foo() -> uint256:
+    return 2
+        """,
+    )
+    contract_file = make_file(
+        "main.vy",
+        """
+import pkg1.lib as lib1
+import pkg2.lib as lib2
+
+@external
+def foo() -> uint256:
+    return lib1.foo() + lib2.foo()
+        """,
+    )
+
+    _assert_archive_roundtrip(
+        contract_file,
+        Path("conflicting-modules.zip"),
+        {
+            "main.vy",
+            "pkg1/lib.vy",
+            "pkg2/lib.vy",
+            "MANIFEST/compilation_targets",
+            "MANIFEST/integrity",
+        },
+        "main.vy",
+        ["."],
+    )
+
+
 def test_archive_compile_options(input_files):
     tmpdir, _, _, _, contract_file, _ = input_files
     search_paths = [".", tmpdir]
