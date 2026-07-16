@@ -3,7 +3,7 @@ from __future__ import annotations
 import textwrap
 from typing import TYPE_CHECKING, Iterator, Optional
 
-from vyper.codegen.ir_node import IRnode
+from vyper.codegen import IRnode
 from vyper.venom.basicblock import IRBasicBlock, IRLabel, IRVariable
 
 if TYPE_CHECKING:

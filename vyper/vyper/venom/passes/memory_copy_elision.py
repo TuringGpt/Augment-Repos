@@ -1,6 +1,6 @@
 from collections import deque
 
-import vyper.evm.address_space as addr_space
+from vyper.evm import address_space as addr_space
 from vyper.venom.analysis import (
     BasePtrAnalysis,
     CFGAnalysis,

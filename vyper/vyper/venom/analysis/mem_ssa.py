@@ -1,7 +1,7 @@
 import contextlib
 from typing import Iterable, Optional
 
-from vyper.evm.address_space import MEMORY, STORAGE, TRANSIENT, AddrSpace
+from vyper.evm import MEMORY, STORAGE, TRANSIENT, AddrSpace
 from vyper.utils import OrderedSet
 from vyper.venom.analysis import CFGAnalysis, DominatorTreeAnalysis, IRAnalysis
 from vyper.venom.analysis.mem_alias import (

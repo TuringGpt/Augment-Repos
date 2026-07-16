@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Generic, Optional, TypeVar
 
 from vyper import ast as vy_ast
-from vyper.evm.opcodes import version_check
+from vyper.evm import version_check
 from vyper.exceptions import CompilerPanic, StorageLayoutException
 from vyper.semantics.analysis.base import VarOffset
 from vyper.semantics.data_locations import DataLocation

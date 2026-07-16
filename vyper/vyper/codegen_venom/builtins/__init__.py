@@ -14,23 +14,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
 from vyper.exceptions import CompilerPanic
-from vyper.venom.basicblock import IROperand
+from vyper.venom import IROperand
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext
 
+from vyper.codegen_venom.builtins.abi import HANDLERS as ABI_HANDLERS
+from vyper.codegen_venom.builtins.bytes import HANDLERS as BYTES_HANDLERS
+from vyper.codegen_venom.builtins.convert import HANDLERS as CONVERT_HANDLERS
+from vyper.codegen_venom.builtins.create import HANDLERS as CREATE_HANDLERS
+from vyper.codegen_venom.builtins.hashing import HANDLERS as HASHING_HANDLERS
+from vyper.codegen_venom.builtins.math import HANDLERS as MATH_HANDLERS
+from vyper.codegen_venom.builtins.misc import HANDLERS as MISC_HANDLERS
+from vyper.codegen_venom.builtins.simple import HANDLERS as SIMPLE_HANDLERS
+from vyper.codegen_venom.builtins.strings import HANDLERS as STRINGS_HANDLERS
+from vyper.codegen_venom.builtins.system import HANDLERS as SYSTEM_HANDLERS
 from vyper.codegen_venom.value import VyperValue
-
-from .abi import HANDLERS as ABI_HANDLERS
-from .bytes import HANDLERS as BYTES_HANDLERS
-from .convert import HANDLERS as CONVERT_HANDLERS
-from .create import HANDLERS as CREATE_HANDLERS
-from .hashing import HANDLERS as HASHING_HANDLERS
-from .math import HANDLERS as MATH_HANDLERS
-from .misc import HANDLERS as MISC_HANDLERS
-from .simple import HANDLERS as SIMPLE_HANDLERS
-from .strings import HANDLERS as STRINGS_HANDLERS
-from .system import HANDLERS as SYSTEM_HANDLERS
 
 __all__ = ["BUILTIN_HANDLERS", "lower_builtin"]
 

@@ -3,6 +3,9 @@ from typing import Optional
 
 from vyper.exceptions import CompilerPanic
 from vyper.utils import OrderedSet
+from vyper.venom.analysis.analysis import IRAnalysis
+from vyper.venom.analysis.base_ptr_analysis import BasePtrAnalysis, Ptr
+from vyper.venom.analysis.cfg import CFGAnalysis
 from vyper.venom.basicblock import (
     IRBasicBlock,
     IRInstruction,
@@ -17,10 +20,6 @@ from vyper.venom.memory_location import (
     get_memory_write_op,
     get_write_size,
 )
-
-from .analysis import IRAnalysis
-from .base_ptr_analysis import BasePtrAnalysis, Ptr
-from .cfg import CFGAnalysis
 
 
 class MemLivenessAnalysis(IRAnalysis):

@@ -14,7 +14,7 @@ from vyper.codegen.core import (
     wrap_value_for_external_return,
 )
 from vyper.codegen.ir_node import IRnode
-from vyper.evm.address_space import MEMORY
+from vyper.evm import MEMORY
 from vyper.exceptions import TypeCheckFailure
 
 Stmt = Any  # mypy kludge

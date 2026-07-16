@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Optional
 
 from vyper.codegen_venom.buffer import Ptr
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.data_locations import DataLocation
-from vyper.venom.basicblock import IROperand
+from vyper.semantics import DataLocation
+from vyper.venom import IROperand
 
 if TYPE_CHECKING:
-    from vyper.semantics.types.base import VyperType
+    from vyper.semantics import VyperType
 
 
 @dataclass(frozen=True)

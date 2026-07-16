@@ -15,11 +15,10 @@ from typing import TYPE_CHECKING, Optional
 from vyper import ast as vy_ast
 from vyper.codegen_venom.abi import abi_encode_to_buf
 from vyper.exceptions import CompilerPanic, UnfoldableNode
-from vyper.ir.compile_ir import assembly_to_evm
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import TupleT
+from vyper.ir import assembly_to_evm
+from vyper.semantics import DataLocation, TupleT
 from vyper.utils import bytes_to_int
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

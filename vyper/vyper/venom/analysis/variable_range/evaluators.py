@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 from vyper.utils import wrap256
-
-from .value_range import RANGE_WIDTH_LIMIT, SIGNED_MAX, SIGNED_MIN, UNSIGNED_MAX, ValueRange
+from vyper.venom.analysis.variable_range.value_range import (
+    RANGE_WIDTH_LIMIT,
+    SIGNED_MAX,
+    SIGNED_MIN,
+    UNSIGNED_MAX,
+    ValueRange,
+)
 
 
 def _range_spans_sign_boundary(r: ValueRange) -> bool:

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from vyper import ast as vy_ast
 from vyper.codegen_venom.buffer import Buffer
 from vyper.codegen_venom.value import VyperValue
-from vyper.venom.basicblock import IRLiteral
+from vyper.venom import IRLiteral
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

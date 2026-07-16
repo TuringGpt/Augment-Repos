@@ -7,7 +7,7 @@ from vyper.evm.assembler.instructions import (
     is_label,
 )
 from vyper.exceptions import CompilerPanic
-from vyper.ir.optimizer import COMMUTATIVE_OPS
+from vyper.ir import COMMUTATIVE_OPS
 
 _TERMINAL_OPS = ("JUMP", "RETURN", "REVERT", "STOP", "INVALID")
 

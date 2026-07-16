@@ -17,16 +17,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from vyper.codegen.core import is_tuple_like
+from vyper.codegen import is_tuple_like
 from vyper.codegen_venom.buffer import Buffer, Ptr
 from vyper.codegen_venom.value import VyperValue
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import (
+from vyper.semantics import (
+    BYTES32_T,
+    INT256_T,
+    UINT256_T,
     AddressT,
     BoolT,
     BytesM_T,
     DArrayT,
+    DataLocation,
     DecimalT,
     FlagT,
     IntegerT,
@@ -35,8 +38,7 @@ from vyper.semantics.types import (
     VyperType,
     _BytestringT,
 )
-from vyper.semantics.types.shortcuts import BYTES32_T, INT256_T, UINT256_T
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

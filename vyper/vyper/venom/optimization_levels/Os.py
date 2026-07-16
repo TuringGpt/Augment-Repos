@@ -4,7 +4,7 @@
 
 from typing import List
 
-from vyper.evm.address_space import MEMORY, STORAGE, TRANSIENT
+from vyper.evm import MEMORY, STORAGE, TRANSIENT
 from vyper.venom.optimization_levels.types import PassConfig
 from vyper.venom.passes import (
     CSE,

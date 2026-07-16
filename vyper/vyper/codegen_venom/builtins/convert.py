@@ -17,11 +17,20 @@ from typing import TYPE_CHECKING
 
 from vyper import ast as vy_ast
 from vyper.exceptions import CompilerPanic, InvalidLiteral, TypeMismatch
-from vyper.semantics.types import AddressT, BoolT, BytesM_T, BytesT, DecimalT, IntegerT, StringT
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.shortcuts import UINT160_T, UINT256_T
-from vyper.semantics.types.user import FlagT
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.semantics import (
+    UINT160_T,
+    UINT256_T,
+    AddressT,
+    BoolT,
+    BytesM_T,
+    BytesT,
+    DecimalT,
+    FlagT,
+    IntegerT,
+    StringT,
+    _BytestringT,
+)
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

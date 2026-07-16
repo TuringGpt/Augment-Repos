@@ -7,10 +7,9 @@ from typing import Any, List, Optional, Union
 
 import vyper.ast as vy_ast
 from vyper.compiler.settings import VYPER_COLOR_OUTPUT, get_global_settings
-from vyper.evm.address_space import AddrSpace
-from vyper.evm.opcodes import get_ir_opcodes
+from vyper.evm import AddrSpace, get_ir_opcodes
 from vyper.exceptions import CodegenPanic, CompilerPanic
-from vyper.semantics.types import VyperType, _BytestringT
+from vyper.semantics import VyperType, _BytestringT
 from vyper.utils import VALID_IR_MACROS, ceil32
 
 # Set default string representation for ints in IR output.
@@ -454,7 +453,7 @@ class IRnode:
             return self
 
         # TODO figure out how to fix this circular import
-        from vyper.ir.optimizer import optimize
+        from vyper.ir import optimize
 
         return optimize(self)
 

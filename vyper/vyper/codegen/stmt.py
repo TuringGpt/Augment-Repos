@@ -20,8 +20,7 @@ from vyper.codegen.core import (
 from vyper.codegen.expr import Expr
 from vyper.codegen.return_ import make_return_stmt
 from vyper.exceptions import CodegenPanic, StructureException, TypeCheckFailure, tag_exceptions
-from vyper.semantics.types import DArrayT
-from vyper.semantics.types.shortcuts import UINT256_T
+from vyper.semantics import UINT256_T, DArrayT
 
 
 class Stmt:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Iterator
 
-import vyper.evm.address_space as addr_space
+from vyper.evm import address_space as addr_space
 from vyper.venom.analysis import (
     BasePtrAnalysis,
     DFGAnalysis,

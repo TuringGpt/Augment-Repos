@@ -8,9 +8,16 @@ from pathlib import Path, PurePath
 from typing import Any, Callable, Hashable, Optional
 
 import vyper
-from vyper.compiler.input_bundle import FileInput, JSONInput, JSONInputBundle, _normpath
-from vyper.compiler.settings import OptimizationLevel, Settings, VenomOptimizationFlags
-from vyper.evm.opcodes import EVM_VERSIONS
+from vyper.compiler import (
+    FileInput,
+    JSONInput,
+    JSONInputBundle,
+    OptimizationLevel,
+    Settings,
+    VenomOptimizationFlags,
+    _normpath,
+)
+from vyper.evm import EVM_VERSIONS
 from vyper.exceptions import JSONError
 from vyper.utils import OrderedSet, keccak256
 from vyper.warnings import Deprecation, vyper_warn

@@ -44,7 +44,7 @@ def _parse_natspec(annotated_vyper_module: vy_ast.Module) -> NatspecOutput:
     dict
         NatSpec developer documentation
     """
-    from vyper.semantics.types.function import FunctionVisibility
+    from vyper.semantics import FunctionVisibility
 
     userdoc, devdoc = {}, {}
     source: str = annotated_vyper_module.full_source_code

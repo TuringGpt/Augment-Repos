@@ -1,7 +1,7 @@
 from enum import Flag, auto
 from typing import Optional
 
-import vyper.evm.address_space as space
+from vyper.evm import address_space as space
 
 
 class Effects(Flag):

@@ -1,9 +1,9 @@
 import operator
 from typing import List, Optional, Tuple, Union
 
-from vyper.codegen.ir_node import IRnode
+from vyper.codegen import IRnode
 from vyper.compiler.settings import get_global_settings
-from vyper.evm.opcodes import version_check
+from vyper.evm import version_check
 from vyper.exceptions import CompilerPanic, StaticAssertionException
 from vyper.utils import (
     ceil32,

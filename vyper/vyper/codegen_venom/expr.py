@@ -12,46 +12,51 @@ from typing import Optional
 
 import vyper.utils as util
 from vyper import ast as vy_ast
-from vyper.builtins._signatures import BuiltinFunctionT
-from vyper.codegen.core import (
+from vyper.builtins import BuiltinFunctionT
+from vyper.codegen import (
     DYNAMIC_ARRAY_OVERHEAD,
     calculate_type_for_external_return,
     needs_external_call_wrap,
 )
+from vyper.codegen_venom.abi import abi_decode_to_buf, abi_encode_to_buf
 from vyper.codegen_venom.arithmetic import apply_binop
+from vyper.codegen_venom.buffer import Buffer, Ptr
+from vyper.codegen_venom.calling_convention import pass_via_stack, returns_stack_count
+from vyper.codegen_venom.context import VenomCodegenContext
+from vyper.codegen_venom.value import VyperValue
 from vyper.exceptions import (
     CompilerPanic,
     StateAccessViolation,
     TypeMismatch,
     UnimplementedException,
 )
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import (
+from vyper.semantics import (
+    BYTES32_T,
+    UINT256_T,
+    VOID_TYPE,
     AddressT,
     BoolT,
     BytesM_T,
     BytesT,
+    ContractFunctionT,
+    DArrayT,
+    DataLocation,
     DecimalT,
+    FlagT,
+    HashMapT,
     IntegerT,
     InterfaceT,
+    MemberFunctionT,
+    SArrayT,
+    StateMutability,
     StringT,
+    StructT,
     TupleT,
+    _BytestringT,
     is_type_t,
 )
-from vyper.semantics.types.base import VOID_TYPE
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.function import ContractFunctionT, MemberFunctionT, StateMutability
-from vyper.semantics.types.shortcuts import BYTES32_T, UINT256_T
-from vyper.semantics.types.subscriptable import DArrayT, HashMapT, SArrayT
-from vyper.semantics.types.user import FlagT, StructT
 from vyper.utils import DECIMAL_DIVISOR, keccak256
-from vyper.venom.basicblock import IRLabel, IRLiteral, IROperand, IRVariable
-
-from .abi import abi_decode_to_buf, abi_encode_to_buf
-from .buffer import Buffer, Ptr
-from .calling_convention import pass_via_stack, returns_stack_count
-from .context import VenomCodegenContext
-from .value import VyperValue
+from vyper.venom import IRLabel, IRLiteral, IROperand, IRVariable
 
 
 @dataclass

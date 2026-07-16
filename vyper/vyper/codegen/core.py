@@ -1,7 +1,7 @@
 import vyper.codegen.context as ctx
 from vyper.codegen.ir_node import Encoding, IRnode
 from vyper.compiler.settings import _opt_codesize, _opt_gas, _opt_none
-from vyper.evm.address_space import (
+from vyper.evm import (
     CALLDATA,
     DATA,
     IMMUTABLES,
@@ -10,27 +10,29 @@ from vyper.evm.address_space import (
     TRANSIENT,
     AddrSpace,
     legal_in_staticcall,
+    version_check,
 )
-from vyper.evm.opcodes import version_check
 from vyper.exceptions import CompilerPanic, TypeCheckFailure, TypeMismatch
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import (
+from vyper.semantics import (
+    BYTES32_T,
+    INT256_T,
+    UINT256_T,
     AddressT,
     BoolT,
     BytesM_T,
     DArrayT,
+    DataLocation,
     DecimalT,
+    FlagT,
     HashMapT,
     IntegerT,
     InterfaceT,
+    SArrayT,
     StructT,
     TupleT,
     VyperType,
     _BytestringT,
 )
-from vyper.semantics.types.shortcuts import BYTES32_T, INT256_T, UINT256_T
-from vyper.semantics.types.subscriptable import SArrayT
-from vyper.semantics.types.user import FlagT
 from vyper.utils import GAS_COPY_WORD, GAS_IDENTITY, GAS_IDENTITYWORD, ceil32
 
 DYNAMIC_ARRAY_OVERHEAD = 1

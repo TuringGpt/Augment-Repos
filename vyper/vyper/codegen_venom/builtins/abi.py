@@ -11,14 +11,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from vyper import ast as vy_ast
-from vyper.codegen.core import calculate_type_for_external_return
+from vyper.codegen import calculate_type_for_external_return
 from vyper.codegen_venom.abi import abi_decode_to_buf, abi_encode_to_buf
 from vyper.codegen_venom.buffer import Buffer, Ptr
 from vyper.codegen_venom.value import VyperValue
-from vyper.semantics.data_locations import DataLocation
-from vyper.semantics.types import BytesT, TupleT
+from vyper.semantics import BytesT, DataLocation, TupleT
 from vyper.utils import fourbytes_to_int
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

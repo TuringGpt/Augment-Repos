@@ -8,10 +8,8 @@ from typing import TYPE_CHECKING, Union
 
 from vyper import ast as vy_ast
 from vyper.codegen_venom.value import VyperValue
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.shortcuts import UINT256_T
-from vyper.semantics.types.subscriptable import DArrayT
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.semantics import UINT256_T, DArrayT, _BytestringT
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

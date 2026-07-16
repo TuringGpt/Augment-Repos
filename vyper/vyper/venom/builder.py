@@ -15,7 +15,7 @@ from vyper.venom.basicblock import (
 from vyper.venom.function import IRFunction
 
 if TYPE_CHECKING:
-    from vyper.semantics.data_locations import DataLocation
+    from vyper.semantics import DataLocation
     from vyper.venom.context import IRContext
 
 # IROperand is the base class for IRVariable, IRLiteral, IRLabel
@@ -200,7 +200,7 @@ class VenomBuilder:
     # === Location-aware load/store ===
     def load(self, ptr: Operand, location: "DataLocation") -> IRVariable:
         """Load from ptr, dispatching based on data location."""
-        from vyper.semantics.data_locations import DataLocation
+        from vyper.semantics import DataLocation
 
         if location == DataLocation.STORAGE:
             return self.sload(ptr)
@@ -218,7 +218,7 @@ class VenomBuilder:
 
     def store(self, ptr: Operand, val: Operand, location: "DataLocation") -> None:
         """Store val to ptr, dispatching based on data location."""
-        from vyper.semantics.data_locations import DataLocation
+        from vyper.semantics import DataLocation
 
         if location == DataLocation.STORAGE:
             self.sstore(ptr, val)
@@ -234,11 +234,11 @@ class VenomBuilder:
         self, dst: Operand, src: Operand, size: Operand, src_location: "DataLocation"
     ) -> None:
         """Copy size bytes from src_location to memory at dst."""
-        from vyper.semantics.data_locations import DataLocation
+        from vyper.semantics import DataLocation
 
         if src_location == DataLocation.MEMORY:
             assert isinstance(src, IRVariable)
-            from vyper.evm.opcodes import version_check
+            from vyper.evm import version_check
 
             if version_check(begin="cancun"):
                 assert isinstance(dst, IRVariable)

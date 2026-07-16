@@ -4,13 +4,17 @@ import operator
 
 from vyper import ast as vy_ast
 from vyper.abi_types import ABI_Tuple
-from vyper.ast.validation import validate_call_args
-from vyper.codegen.abi_encoder import abi_encode
-from vyper.codegen.context import Context
-from vyper.codegen.core import (
+from vyper.ast import validate_call_args
+from vyper.builtins._convert import convert
+from vyper.builtins._signatures import BuiltinFunctionT, process_inputs
+from vyper.codegen import (
     LOAD,
     STORE,
+    Context,
+    Encoding,
+    Expr,
     IRnode,
+    abi_encode,
     add_ofst,
     bytes_data_ptr,
     calculate_type_for_external_return,
@@ -29,19 +33,17 @@ from vyper.codegen.core import (
     get_bytearray_length,
     get_type_for_exact_size,
     ir_tuple_from_args,
+    keccak256_helper,
     make_setter,
     potential_overlap,
     promote_signed_int,
     sar,
+    scope_multi,
     shl,
     shr,
     unwrap_location,
 )
-from vyper.codegen.expr import Expr
-from vyper.codegen.ir_node import Encoding, scope_multi
-from vyper.codegen.keccak256_helper import keccak256_helper
-from vyper.evm.address_space import MEMORY
-from vyper.evm.opcodes import version_check
+from vyper.evm import MEMORY, version_check
 from vyper.exceptions import (
     ArgumentException,
     CompilerPanic,
@@ -55,15 +57,13 @@ from vyper.exceptions import (
     UnimplementedException,
     ZeroDivisionException,
 )
-from vyper.semantics.analysis.base import Modifiability, StateMutability
-from vyper.semantics.analysis.utils import (
-    get_common_types,
-    get_exact_type_from_node,
-    get_possible_types_from_node,
-    validate_expected_type,
-)
-from vyper.semantics.types import (
+from vyper.semantics import (
+    BYTES4_T,
+    BYTES32_T,
+    INT256_T,
     TYPE_T,
+    UINT8_T,
+    UINT256_T,
     AddressT,
     BoolT,
     BytesM_T,
@@ -73,13 +73,18 @@ from vyper.semantics.types import (
     HashMapT,
     IntegerT,
     KwargSettings,
+    Modifiability,
     SArrayT,
+    StateMutability,
     StringT,
     TupleT,
+    _BytestringT,
+    get_common_types,
+    get_exact_type_from_node,
+    get_possible_types_from_node,
+    type_from_annotation,
+    validate_expected_type,
 )
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.shortcuts import BYTES4_T, BYTES32_T, INT256_T, UINT8_T, UINT256_T
-from vyper.semantics.types.utils import type_from_annotation
 from vyper.utils import (
     DECIMAL_DIVISOR,
     EIP_170_LIMIT,
@@ -95,9 +100,6 @@ from vyper.utils import (
     method_id_int,
 )
 from vyper.warnings import vyper_warn
-
-from ._convert import convert
-from ._signatures import BuiltinFunctionT, process_inputs
 
 SHA256_ADDRESS = 2
 SHA256_BASE_GAS = 60
@@ -1489,7 +1491,7 @@ def _create_addl_gas_estimate(size, should_use_create2):
 
 def eip1167_bytecode():
     # NOTE cyclic import?
-    from vyper.ir.compile_ir import assembly_to_evm
+    from vyper.ir import assembly_to_evm
 
     loader_asm = [
         "PUSH1",
@@ -1542,7 +1544,7 @@ def eip1167_bytecode():
 # returns the code starting from 0x0b with len `codesize`.
 # NOTE: it assumes codesize <= 2**24.
 def _create_preamble(codesize):
-    from vyper.ir.compile_ir import assembly_to_evm
+    from vyper.ir import assembly_to_evm
 
     evm_len = 0x0B  # 11 bytes
     asm = [

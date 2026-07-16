@@ -4,18 +4,22 @@
 from typing import Any, Dict, List
 
 from vyper.compiler.settings import OptimizationLevel, VenomOptimizationFlags
-from vyper.ir.compile_ir import AssemblyInstruction
+from vyper.ir import AssemblyInstruction
 from vyper.venom.analysis import IRGlobalAnalysesCache, ReadonlyMemoryArgsGlobalAnalysis
 from vyper.venom.analysis.analysis import IRAnalysesCache
 from vyper.venom.analysis.fcg import FCGGlobalAnalysis
-from vyper.venom.check_venom import check_calling_convention, check_mem_ops
+from vyper.venom.basicblock import IRLabel, IRLiteral, IROperand, IRVariable
+from vyper.venom.builder import VenomBuilder
+from vyper.venom.check_venom import check_calling_convention, check_mem_ops, check_venom_ctx
 from vyper.venom.context import IRContext
 from vyper.venom.function import IRFunction
+from vyper.venom.memory_location import Allocation
 from vyper.venom.optimization_levels.O2 import PASSES_O2
 from vyper.venom.optimization_levels.O3 import PASSES_O3
 from vyper.venom.optimization_levels.Os import PASSES_Os
 from vyper.venom.optimization_levels.pass_order import validate_pass_order
 from vyper.venom.optimization_levels.types import PassConfig
+from vyper.venom.parser import parse_venom
 from vyper.venom.passes import (
     CSE,
     SCCP,
@@ -36,6 +40,26 @@ from vyper.venom.passes.base_pass import IRPass
 from vyper.venom.venom_to_assembly import VenomCompiler
 
 DEFAULT_OPT_LEVEL = OptimizationLevel.default()
+
+__all__ = [
+    "Allocation",
+    "AssemblyInstruction",
+    "DEFAULT_OPT_LEVEL",
+    "IRContext",
+    "IRFunction",
+    "IRLabel",
+    "IRLiteral",
+    "IROperand",
+    "IRVariable",
+    "OPTIMIZATION_PASSES",
+    "PASS_FLAG_MAP",
+    "PassRunConfig",
+    "VenomBuilder",
+    "check_venom_ctx",
+    "generate_assembly_experimental",
+    "parse_venom",
+    "run_passes_on",
+]
 
 # Pass configuration for each optimization level
 # TODO: O1 (minimal passes) is currently disabled because it can cause

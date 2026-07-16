@@ -1,16 +1,43 @@
-from .analysis import IRAnalysesCache, IRAnalysis, IRGlobalAnalysesCache, IRGlobalAnalysis
-from .base_ptr_analysis import BasePtrAnalysis
-from .cfg import CFGAnalysis
-from .dfg import DFGAnalysis
-from .dominators import DominatorTreeAnalysis
-from .fcg import FCGGlobalAnalysis
-from .liveness import LivenessAnalysis
-from .load_analysis import LoadAnalysis
-from .mem_alias import MemoryAliasAnalysis
-from .mem_liveness import MemLivenessAnalysis
-from .mem_ssa import MemSSA
-from .reachable import ReachableAnalysis
-from .readonly_memory_args import ReadonlyMemoryArgsGlobalAnalysis
-from .stack_order import StackOrderAnalysis
-from .var_definition import VarDefinition
-from .variable_range import VariableRangeAnalysis
+from vyper.venom.analysis.analysis import (
+    IRAnalysesCache,
+    IRAnalysis,
+    IRGlobalAnalysesCache,
+    IRGlobalAnalysis,
+)
+from vyper.venom.analysis.base_ptr_analysis import BasePtrAnalysis
+from vyper.venom.analysis.cfg import CFGAnalysis
+from vyper.venom.analysis.dfg import DFGAnalysis
+from vyper.venom.analysis.dominators import DominatorTreeAnalysis
+from vyper.venom.analysis.fcg import FCGGlobalAnalysis
+from vyper.venom.analysis.liveness import LivenessAnalysis
+from vyper.venom.analysis.load_analysis import LoadAnalysis
+from vyper.venom.analysis.mem_alias import MemoryAliasAnalysis
+from vyper.venom.analysis.mem_liveness import MemLivenessAnalysis
+from vyper.venom.analysis.mem_ssa import MemSSA
+from vyper.venom.analysis.reachable import ReachableAnalysis
+from vyper.venom.analysis.readonly_memory_args import ReadonlyMemoryArgsGlobalAnalysis
+from vyper.venom.analysis.stack_order import StackOrderAnalysis
+from vyper.venom.analysis.var_definition import VarDefinition
+from vyper.venom.analysis.variable_range import VariableRangeAnalysis
+
+__all__ = [
+    "BasePtrAnalysis",
+    "CFGAnalysis",
+    "DFGAnalysis",
+    "DominatorTreeAnalysis",
+    "FCGGlobalAnalysis",
+    "IRAnalysesCache",
+    "IRAnalysis",
+    "IRGlobalAnalysesCache",
+    "IRGlobalAnalysis",
+    "LivenessAnalysis",
+    "LoadAnalysis",
+    "MemLivenessAnalysis",
+    "MemSSA",
+    "MemoryAliasAnalysis",
+    "ReachableAnalysis",
+    "ReadonlyMemoryArgsGlobalAnalysis",
+    "StackOrderAnalysis",
+    "VarDefinition",
+    "VariableRangeAnalysis",
+]

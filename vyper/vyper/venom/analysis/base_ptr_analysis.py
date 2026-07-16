@@ -4,16 +4,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import vyper.venom.effects as effects
-from vyper.evm.address_space import (
-    CALLDATA,
-    CODE,
-    DATA,
-    MEMORY,
-    RETURNDATA,
-    STORAGE,
-    TRANSIENT,
-    AddrSpace,
-)
+from vyper.evm import CALLDATA, CODE, DATA, MEMORY, RETURNDATA, STORAGE, TRANSIENT, AddrSpace
 from vyper.exceptions import CompilerPanic
 from vyper.venom.analysis.analysis import IRAnalysis
 from vyper.venom.analysis.cfg import CFGAnalysis

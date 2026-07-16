@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import Any, Dict, List, NoReturn, Optional, Tuple
 
 from vyper import ast as vy_ast
-from vyper.ast.validation import validate_call_args
+from vyper.ast import validate_call_args
 from vyper.compiler.settings import Settings
 from vyper.exceptions import (
     ArgumentException,

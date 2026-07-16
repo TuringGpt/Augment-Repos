@@ -1,11 +1,10 @@
 import ast as python_ast
 from typing import Any, Optional, Sequence, Type, Union
 
+from vyper.ast.natspec import parse_natspec as parse_natspec
+from vyper.ast.parse import parse_to_ast as parse_to_ast
+from vyper.ast.utils import ast_to_dict as ast_to_dict
 from vyper.compiler.settings import Settings
-
-from .natspec import parse_natspec as parse_natspec
-from .parse import parse_to_ast as parse_to_ast
-from .utils import ast_to_dict as ast_to_dict
 
 NODE_BASE_ATTRIBUTES: Any
 NODE_SRC_ATTRIBUTES: Any
@@ -14,6 +13,7 @@ DICT_AST_SKIPLIST: Any
 def get_node(
     ast_struct: Union[dict, python_ast.AST], parent: Optional[VyperNode] = ...
 ) -> VyperNode: ...
+def as_tuple(node: VyperNode) -> tuple[VyperNode, ...]: ...
 
 class VyperNode:
     full_source_code: str = ...

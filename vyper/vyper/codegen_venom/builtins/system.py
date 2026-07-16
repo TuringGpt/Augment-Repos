@@ -14,9 +14,8 @@ from typing import TYPE_CHECKING, Optional, Union
 from vyper import ast as vy_ast
 from vyper.codegen_venom.value import VyperValue
 from vyper.exceptions import ArgumentException, StateAccessViolation
-from vyper.semantics.types import BytesT, TupleT
-from vyper.semantics.types.shortcuts import BYTES32_T, UINT256_T
-from vyper.venom.basicblock import IRLiteral, IROperand, IRVariable
+from vyper.semantics import BYTES32_T, UINT256_T, BytesT, TupleT
+from vyper.venom import IRLiteral, IROperand, IRVariable
 
 if TYPE_CHECKING:
     from vyper.codegen_venom.context import VenomCodegenContext

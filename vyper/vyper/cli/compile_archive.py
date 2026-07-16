@@ -8,9 +8,8 @@ import json
 import zipfile
 from pathlib import PurePath
 
-from vyper.compiler import outputs_from_compiler_data
+from vyper.compiler import CompilerData, outputs_from_compiler_data
 from vyper.compiler.input_bundle import FileInput, ZipInputBundle
-from vyper.compiler.phases import CompilerData
 from vyper.compiler.settings import Settings, merge_settings
 from vyper.exceptions import BadArchive
 

@@ -10,7 +10,7 @@ from vyper.compiler.settings import OptimizationLevel, Settings
 
 # seems a bit early to be importing this but we want it to validate the
 # evm-version pragma
-from vyper.evm.opcodes import EVM_VERSIONS
+from vyper.evm import EVM_VERSIONS
 from vyper.exceptions import PragmaException, SyntaxException, VersionException
 
 

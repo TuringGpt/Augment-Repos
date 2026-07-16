@@ -5,9 +5,9 @@ from typing import Any, Optional
 
 from vyper.codegen.ir_node import Encoding, IRnode
 from vyper.compiler.settings import get_global_settings
-from vyper.evm.address_space import MEMORY, AddrSpace
+from vyper.evm import MEMORY, AddrSpace
 from vyper.exceptions import CompilerPanic, StateAccessViolation
-from vyper.semantics.types import VyperType
+from vyper.semantics import VyperType
 
 
 class Constancy(enum.Enum):

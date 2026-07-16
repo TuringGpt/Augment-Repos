@@ -1,7 +1,7 @@
 import bisect
 from typing import Optional
 
-from vyper.evm.address_space import MEMORY, STORAGE, TRANSIENT, AddrSpace
+from vyper.evm import MEMORY, STORAGE, TRANSIENT, AddrSpace
 from vyper.utils import OrderedSet
 from vyper.venom.analysis import BasePtrAnalysis, CFGAnalysis, DFGAnalysis, IRAnalysis
 from vyper.venom.basicblock import IRInstruction

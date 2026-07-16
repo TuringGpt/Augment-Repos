@@ -3,8 +3,7 @@ from math import ceil
 from vyper.codegen.core import bytes_data_ptr, ensure_in_memory, get_bytearray_length
 from vyper.codegen.ir_node import IRnode
 from vyper.exceptions import CompilerPanic
-from vyper.semantics.types.bytestrings import _BytestringT
-from vyper.semantics.types.shortcuts import BYTES32_T
+from vyper.semantics import BYTES32_T, _BytestringT
 from vyper.utils import SHA3_BASE, SHA3_PER_WORD, MemoryPositions
 
 

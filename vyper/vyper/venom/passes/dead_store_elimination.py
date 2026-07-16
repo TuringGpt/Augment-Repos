@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from vyper.evm.address_space import MEMORY, STORAGE, TRANSIENT, AddrSpace
+from vyper.evm import MEMORY, STORAGE, TRANSIENT, AddrSpace
 from vyper.utils import OrderedSet
 from vyper.venom.analysis import BasePtrAnalysis, CFGAnalysis, DFGAnalysis
 from vyper.venom.analysis.mem_ssa import MemoryDef, mem_ssa_type_factory
