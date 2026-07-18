@@ -3,7 +3,7 @@ import pytest
 from vyper.codegen.ir_node import IRnode
 from vyper.evm.opcodes import version_check
 from vyper.ir import compile_ir
-from vyper.ir.s_expressions import parse_s_exp
+from vyper.ir.s_expressions import parse_ir_s_exp
 
 fail_list = [
     [-(2**255) - 3],
@@ -59,8 +59,7 @@ def test_ir_from_s_expression(get_contract_from_ir):
         }
     ]
 
-    s_expressions = parse_s_exp(code)
-    ir = IRnode.from_list(s_expressions[0])
+    ir = parse_ir_s_exp(code)
     c = get_contract_from_ir(ir, abi=abi)
     assert c.test(-123456) == -123456
 

@@ -38,3 +38,9 @@ def parse_s_exp(string):
         else:
             word += char
     return sexp[0]
+
+
+def parse_ir_s_exp(string, **kwargs):
+    from vyper.codegen.ir_node import IRnode
+
+    return IRnode.from_list(parse_s_exp(string)[0], **kwargs)
