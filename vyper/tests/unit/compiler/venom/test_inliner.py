@@ -1,9 +1,12 @@
+from collections import Counter
+
 from tests.venom_utils import parse_venom
 from vyper.compiler.settings import OptimizationLevel, VenomOptimizationFlags
 from vyper.venom.analysis.analysis import IRAnalysesCache
 from vyper.venom.analysis.fcg import FCGGlobalAnalysis
 from vyper.venom.basicblock import IRLabel
 from vyper.venom.check_venom import check_venom_ctx
+from vyper.venom.function import IRFunction
 from vyper.venom.passes import FunctionInlinerPass, SimplifyCFGPass
 
 
@@ -134,3 +137,50 @@ def test_fcg_analysis_remains_requestable_from_function_cache():
     fcg = IRAnalysesCache(ctx.entry_function).force_analysis(FCGGlobalAnalysis)
 
     assert fcg.get_callees(ctx.entry_function).first() == ctx.get_function(IRLabel("callee"))
+
+
+def test_inliner_caches_unchanged_function_size_estimates(monkeypatch):
+    src = """
+    function main {
+    main:
+        %1 = invoke @large
+        %2 = invoke @large
+        %3 = invoke @small
+        %4 = invoke @small
+        sink %1, %2, %3, %4
+        stop
+    }
+
+    function large {
+    large:
+        %retpc = param
+        %1 = add 1, 2
+        %2 = add %1, 3
+        ret %2, %retpc
+    }
+
+    function small {
+    small:
+        %retpc = param
+        %1 = add 1, 2
+        ret %1, %retpc
+    }
+    """
+
+    ctx = parse_venom(src)
+    ir_analyses = {fn: IRAnalysesCache(fn) for fn in ctx.functions.values()}
+
+    original_code_size_cost = IRFunction.code_size_cost.fget
+    assert original_code_size_cost is not None
+    access_counts: Counter[str] = Counter()
+
+    def counting_code_size_cost(self):
+        access_counts[self.name.value] += 1
+        return original_code_size_cost(self)
+
+    monkeypatch.setattr(IRFunction, "code_size_cost", property(counting_code_size_cost))
+
+    flags = VenomOptimizationFlags(level=OptimizationLevel.CODESIZE, inline_threshold=2)
+    FunctionInlinerPass(ir_analyses, ctx, flags).run_pass()
+
+    assert access_counts["large"] == 1
