@@ -13,6 +13,13 @@ def parse_s_exp(string):
     word = ""
     in_str = False
     in_comment = False
+
+    def flush_word():
+        nonlocal word
+        if word:
+            sexp[-1].append(parse_literal(word))
+            word = ""
+
     for char in string:
         if in_comment:
             if char == "\n":  # comment ends at the end of a line
@@ -24,15 +31,11 @@ def parse_s_exp(string):
         if char == "(" and not in_str:
             sexp.append([])
         elif char == ")" and not in_str:
-            if word:
-                sexp[-1].append(parse_literal(word))
-                word = ""
+            flush_word()
             temp = sexp.pop()
             sexp[-1].append(temp)
         elif char in (" ", "\n", "\t") and not in_str:
-            if word:
-                sexp[-1].append(parse_literal(word))
-                word = ""
+            flush_word()
         elif char == '"':
             in_str = not in_str
         else:
