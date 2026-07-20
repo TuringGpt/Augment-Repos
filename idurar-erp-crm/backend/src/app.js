@@ -12,11 +12,14 @@ const corePublicRouter = require('./routes/coreRoutes/corePublicRouter');
 const adminAuth = require('./controllers/coreControllers/adminAuth');
 
 const errorHandlers = require('./handlers/errorHandlers');
+const requestContext = require('./middlewares/requestContext');
 const erpApiRouter = require('./routes/appRoutes/appApi');
 
 const fileUpload = require('express-fileupload');
 // create our Express app
 const app = express();
+
+app.use(requestContext);
 
 app.use(
   cors({
