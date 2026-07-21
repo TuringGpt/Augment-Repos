@@ -1,3 +1,38 @@
+"""Helpers for SCCP's literal-only abstract interpreter.
+
+`SCCP._eval()` in :mod:`vyper.venom.passes.sccp.sccp` only calls into this
+module once every operand has already collapsed to an `IRLiteral`. At that
+point the abstract interpreter has five cases, each mirroring an EVM operand
+discipline while still returning a normalized 256-bit literal for the lattice:
+
+* `_wrap_binop`: two-input ops interpreted as unsigned 256-bit values. This is
+  the default case for arithmetic, comparisons, bitwise ops, shifts whose
+  inputs are both unsigned, and helpers such as `byte`.
+* `_wrap_signed_binop`: two-input ops whose semantics depend on signed
+  interpretation (`sdiv`, `smod`, `slt`, `sgt`). Inputs are decoded as signed
+  256-bit integers, the Python operation runs in signed space, and the result
+  is encoded back into the unsigned literal domain used by Venom.
+* `_wrap_unop`: one-input ops that still operate on a 256-bit word (`not`,
+  `iszero`). The helper preserves EVM-style wrapping after the Python call.
+* `_wrap_ternop`: three-input unsigned ops (`addmod`, `mulmod`) whose bespoke
+  edge cases live in dedicated `_evm_*` helpers.
+* `_wrap_sar`: the one mixed-signedness case. `sar` treats the shift amount as
+  unsigned but the shifted value as signed, so it cannot share the generic
+  binary wrappers.
+
+Two details are easy to miss when reading the table below. First, operands are
+read in reverse order because Venom stores them in EVM stack order, so the
+left-hand operand of `a OP b` is typically `ops[1]` and the right-hand operand
+is `ops[0]`. Second, every wrapper masks or re-encodes the final value back to
+the 256-bit literal space expected by SCCP, even when Python itself would keep
+arbitrary-precision integers.
+
+The `_evm_*` helpers document the EVM-specific corners that do not map cleanly
+to a raw Python operator: zero-modulus rules for `addmod`/`mulmod`, signed-bit
+propagation for `signextend`/`sar`, byte indexing, and the distinction between
+logical and arithmetic shifts.
+"""
+
 import operator
 from typing import Callable
 
