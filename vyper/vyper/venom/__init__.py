@@ -1,7 +1,10 @@
 # maybe rename this `main.py` or `venom.py`
 # (can have an `__init__.py` which exposes the API).
 
-from typing import Any, Dict, List
+import time
+from collections import defaultdict
+from contextlib import contextmanager
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 from vyper.compiler.settings import OptimizationLevel, VenomOptimizationFlags
 from vyper.ir.compile_ir import AssemblyInstruction
@@ -32,7 +35,7 @@ from vyper.venom.passes import (
     RemoveUnusedVariablesPass,
     SimplifyCFGPass,
 )
-from vyper.venom.passes.base_pass import IRPass
+from vyper.venom.passes.base_pass import IRGlobalPass, IRPass
 from vyper.venom.venom_to_assembly import VenomCompiler
 
 DEFAULT_OPT_LEVEL = OptimizationLevel.default()
@@ -84,10 +87,60 @@ PASS_FLAG_MAP = {
 PassRunConfig = tuple[type[IRPass], dict[str, Any]]
 
 
-def _run_passes(fn: IRFunction, pass_pipeline: list[PassRunConfig], ac: IRAnalysesCache) -> None:
+class PassTimer:
+    """
+    Collects wall-clock durations of venom passes, aggregated by pass name.
+    A pass may run multiple times (e.g. once per function), so durations and
+    invocation counts are accumulated per name.
+    """
+
+    def __init__(self) -> None:
+        self.durations: dict[str, float] = defaultdict(float)
+        self.counts: dict[str, int] = defaultdict(int)
+
+    @contextmanager
+    def timeit(self, name: str) -> Iterator[None]:
+        start = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.durations[name] += time.perf_counter() - start
+            self.counts[name] += 1
+
+    def format_report(self) -> str:
+        total = sum(self.durations.values())
+        name_width = max((len(name) for name in self.durations), default=len("total"))
+        lines = [f"{'pass':<{name_width}}  {'time (ms)':>10}  {'runs':>5}  {'pct':>6}"]
+        ordered = sorted(self.durations.items(), key=lambda kv: kv[1], reverse=True)
+        for name, duration in ordered:
+            pct = (duration / total * 100) if total > 0 else 0.0
+            lines.append(
+                f"{name:<{name_width}}  {duration * 1000:>10.3f}  "
+                f"{self.counts[name]:>5}  {pct:>5.1f}%"
+            )
+        lines.append(f"{'total':<{name_width}}  {total * 1000:>10.3f}")
+        return "\n".join(lines)
+
+
+def _run_one_pass(
+    pass_instance: Union[IRPass, IRGlobalPass], timer: Optional[PassTimer], **kwargs
+) -> None:
+    if timer is None:
+        pass_instance.run_pass(**kwargs)
+        return
+    with timer.timeit(type(pass_instance).__name__):
+        pass_instance.run_pass(**kwargs)
+
+
+def _run_passes(
+    fn: IRFunction,
+    pass_pipeline: list[PassRunConfig],
+    ac: IRAnalysesCache,
+    timer: Optional[PassTimer] = None,
+) -> None:
     for pass_cls, kwargs in pass_pipeline:
         pass_instance = pass_cls(ac, fn)
-        pass_instance.run_pass(**kwargs)
+        _run_one_pass(pass_instance, timer, **kwargs)
 
 
 def _normalize_pass_config(pass_config: PassConfig) -> PassRunConfig:
@@ -115,25 +168,34 @@ def _build_fn_pass_pipeline(flags: VenomOptimizationFlags) -> list[PassRunConfig
 
 
 def _run_global_passes(
-    ctx: IRContext, flags: VenomOptimizationFlags, ir_analyses: dict[IRFunction, IRAnalysesCache]
+    ctx: IRContext,
+    flags: VenomOptimizationFlags,
+    ir_analyses: dict[IRFunction, IRAnalysesCache],
+    timer: Optional[PassTimer] = None,
 ) -> None:
     ctx.global_analyses_cache = IRGlobalAnalysesCache(ctx, ir_analyses)
     ctx.global_analyses_cache.force_analysis(ReadonlyMemoryArgsGlobalAnalysis)
     # Clean unreachable blocks before passes that require dominator analysis
     for fn in ctx.get_functions():
-        SimplifyCFGPass(ir_analyses[fn], fn).run_pass()
+        _run_one_pass(SimplifyCFGPass(ir_analyses[fn], fn), timer)
     # Intentionally run invoke-copy forwarding twice in the full pipeline:
     # 1) here (pre-inlining) to shrink obvious frontend-emitted staging copies
     # 2) again in O2/O3/Os per-function pipelines to catch shapes created later.
     # Keep this note in sync with optimization_levels/* where the second run is listed.
     for fn in ctx.get_functions():
-        InternalReturnCopyForwardingPass(ir_analyses[fn], fn).run_pass()
-        ReadonlyInvokeArgCopyForwardingPass(ir_analyses[fn], fn).run_pass()
+        _run_one_pass(InternalReturnCopyForwardingPass(ir_analyses[fn], fn), timer)
+        _run_one_pass(ReadonlyInvokeArgCopyForwardingPass(ir_analyses[fn], fn), timer)
     if not flags.disable_inlining:
-        FunctionInlinerPass(ir_analyses, ctx, flags).run_pass()
+        _run_one_pass(FunctionInlinerPass(ir_analyses, ctx, flags), timer)
 
 
-def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_checks=False) -> None:
+def run_passes_on(
+    ctx: IRContext,
+    flags: VenomOptimizationFlags,
+    disable_mem_checks=False,
+    time_passes: bool = False,
+) -> Optional[PassTimer]:
+    timer = PassTimer() if time_passes else None
     ir_analyses: dict[IRFunction, IRAnalysesCache] = {}
     # Validate calling convention invariants before running passes
     if not disable_mem_checks:
@@ -142,7 +204,7 @@ def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_che
     for fn in ctx.functions.values():
         ir_analyses[fn] = IRAnalysesCache(fn)
 
-    _run_global_passes(ctx, flags, ir_analyses)
+    _run_global_passes(ctx, flags, ir_analyses, timer)
 
     ctx.global_analyses_cache = None
     ir_analyses = {}
@@ -161,8 +223,10 @@ def run_passes_on(ctx: IRContext, flags: VenomOptimizationFlags, disable_mem_che
     ctx.global_analyses_cache.force_analysis(ReadonlyMemoryArgsGlobalAnalysis)
 
     pass_pipeline = _build_fn_pass_pipeline(flags)
-    _run_fn_passes(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses)
+    _run_fn_passes(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, timer)
     ctx.global_analyses_cache = None
+
+    return timer
 
 
 def _run_fn_passes(
@@ -171,10 +235,11 @@ def _run_fn_passes(
     fn: IRFunction,
     pass_pipeline: list[PassRunConfig],
     ir_analyses: dict[IRFunction, IRAnalysesCache],
+    timer: Optional[PassTimer] = None,
 ):
     visited: set[IRFunction] = set()
     assert ctx.entry_function is not None
-    _run_fn_passes_r(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, visited)
+    _run_fn_passes_r(ctx, fcg, ctx.entry_function, pass_pipeline, ir_analyses, visited, timer)
 
 
 def _run_fn_passes_r(
@@ -184,11 +249,12 @@ def _run_fn_passes_r(
     pass_pipeline: list[PassRunConfig],
     ir_analyses: dict[IRFunction, IRAnalysesCache],
     visited: set,
+    timer: Optional[PassTimer] = None,
 ):
     if fn in visited:
         return
     visited.add(fn)
     for next_fn in fcg.get_callees(fn):
-        _run_fn_passes_r(ctx, fcg, next_fn, pass_pipeline, ir_analyses, visited)
+        _run_fn_passes_r(ctx, fcg, next_fn, pass_pipeline, ir_analyses, visited, timer)
 
-    _run_passes(fn, pass_pipeline, ir_analyses[fn])
+    _run_passes(fn, pass_pipeline, ir_analyses[fn], timer)
