@@ -10,13 +10,13 @@ from vyper.venom.function import IRFunction
 class DominatorTreeAnalysis(IRAnalysis):
     """
     Dominator tree implementation. This class computes the dominator tree of a
-    function and provides methods to query the tree. The tree is computed using
-    the Lengauer-Tarjan algorithm.
+    function and provides methods to query the tree. Immediate dominators are
+    computed using the iterative Cooper-Harvey-Kennedy algorithm.
     """
 
     fn: IRFunction
     entry_block: IRBasicBlock
-    dominators: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
+    _dominators: dict[IRBasicBlock, OrderedSet[IRBasicBlock]] | None
     immediate_dominators: dict[IRBasicBlock, IRBasicBlock]
     dominated: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
     dominator_frontiers: dict[IRBasicBlock, OrderedSet[IRBasicBlock]]
@@ -28,7 +28,7 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         self.fn = self.function
         self.entry_block = self.fn.entry
-        self.dominators = {}
+        self._dominators = None
         self.immediate_dominators = {}
         self.dominated = {}
         self.dominator_frontiers = {}
@@ -38,9 +38,15 @@ class DominatorTreeAnalysis(IRAnalysis):
         self.cfg_post_walk = list(self.cfg.dfs_post_walk)
         self.cfg_post_order = {bb: idx for idx, bb in enumerate(self.cfg_post_walk)}
 
-        self._compute_dominators()
         self._compute_idoms()
         self._compute_df()
+
+    @property
+    def dominators(self) -> dict[IRBasicBlock, OrderedSet[IRBasicBlock]]:
+        if self._dominators is None:
+            self._compute_dominators()
+        assert self._dominators is not None
+        return self._dominators
 
     def get_all_dominated_blocks(self, bb: IRBasicBlock) -> OrderedSet[IRBasicBlock]:
         result: OrderedSet[IRBasicBlock] = OrderedSet()
@@ -59,7 +65,15 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         Check if `dom` dominates `sub`.
         """
-        return dom in self.dominators[sub]
+        runner = sub
+        while True:
+            if runner == dom:
+                return True
+            if runner == self.entry_block:
+                return False
+            runner = self.immediate_dominators[runner]
+            if runner is None:
+                return False
 
     def immediate_dominator(self, bb):
         """
@@ -71,41 +85,65 @@ class DominatorTreeAnalysis(IRAnalysis):
         """
         Compute dominators
         """
-        basic_blocks = self.cfg_post_walk
-        self.dominators = {bb: OrderedSet(basic_blocks) for bb in basic_blocks}
-        self.dominators[self.entry_block] = OrderedSet([self.entry_block])
-        changed = True
-        count = len(basic_blocks) ** 2  # TODO: find a proper bound for this
-        while changed:
-            count -= 1
-            if count < 0:
-                raise CompilerPanic("Dominators computation failed to converge")
-            changed = False
-            for bb in basic_blocks:
-                if bb == self.entry_block:
-                    continue
-                preds = self.cfg.cfg_in(bb)
-                if len(preds) == 0:
-                    continue
-                new_dominators = OrderedSet.intersection(*[self.dominators[pred] for pred in preds])
-                new_dominators.add(bb)
-                if new_dominators != self.dominators[bb]:
-                    self.dominators[bb] = new_dominators
-                    changed = True
+        dominators = {}
+
+        for bb in self.cfg_post_walk:
+            bb_dominators: OrderedSet[IRBasicBlock] = OrderedSet()
+            runner = bb
+            while True:
+                bb_dominators.add(runner)
+                if runner == self.entry_block:
+                    break
+                runner = self.immediate_dominators[runner]
+                if runner is None:
+                    raise CompilerPanic("Dominators computation failed to converge")
+
+            dominators[bb] = bb_dominators
+
+        self._dominators = dominators
 
     def _compute_idoms(self):
         """
         Compute immediate dominators
         """
-        self.immediate_dominators = {bb: None for bb in self.cfg_post_walk}
-        self.immediate_dominators[self.entry_block] = self.entry_block
-        for bb in self.cfg_post_walk:
-            if bb == self.entry_block:
-                continue
-            doms = sorted(self.dominators[bb], key=lambda x: self.cfg_post_order[x])
-            self.immediate_dominators[bb] = doms[1]
+        basic_blocks = self.cfg_post_walk
+        reverse_post_order = list(reversed(basic_blocks))
+        # Cooper-Harvey-Kennedy is monotone in reverse postorder: each block's
+        # immediate dominator can only move closer to the entry block. There are
+        # at most len(basic_blocks) such moves on any path before convergence.
+        max_iterations = len(basic_blocks)
 
-        self.dominated = {bb: OrderedSet() for bb in self.cfg_post_walk}
+        self.immediate_dominators = {bb: None for bb in basic_blocks}
+        self.immediate_dominators[self.entry_block] = self.entry_block
+
+        for _ in range(max_iterations):
+            changed = False
+            for bb in reverse_post_order:
+                if bb == self.entry_block:
+                    continue
+
+                new_idom = None
+                for pred in self.cfg.cfg_in(bb):
+                    if self.immediate_dominators.get(pred) is None:
+                        continue
+                    if new_idom is None:
+                        new_idom = pred
+                    else:
+                        new_idom = self._intersect(pred, new_idom)
+
+                if new_idom is None:
+                    continue
+
+                if self.immediate_dominators[bb] != new_idom:
+                    self.immediate_dominators[bb] = new_idom
+                    changed = True
+
+            if not changed:
+                break
+        else:
+            raise CompilerPanic("Dominators computation failed to converge")
+
+        self.dominated = {bb: OrderedSet() for bb in basic_blocks}
         for dom, target in self.immediate_dominators.items():
             self.dominated[target].add(dom)
 
