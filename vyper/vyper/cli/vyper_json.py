@@ -8,7 +8,7 @@ from pathlib import Path, PurePath
 from typing import Any, Callable, Hashable, Optional
 
 import vyper
-from vyper.compiler.input_bundle import FileInput, JSONInput, JSONInputBundle, _normpath
+from vyper.compiler.input_bundle import FileInput, JSONInput, JSONInputBundle, _normpath_within_root
 from vyper.compiler.settings import OptimizationLevel, Settings, VenomOptimizationFlags
 from vyper.evm.opcodes import EVM_VERSIONS
 from vyper.exceptions import JSONError
@@ -158,7 +158,7 @@ def get_inputs(input_dict: dict) -> dict[PurePath, Any]:
     seen = {}
 
     for path, value in input_dict["sources"].items():
-        path = PurePath(path)
+        path = _normpath_within_root(PurePath(path), "source path")
         if "urls" in value:
             raise JSONError(f"{path} - 'urls' is not a supported field, use 'content' instead")
         if "content" not in value:
@@ -178,7 +178,7 @@ def get_inputs(input_dict: dict) -> dict[PurePath, Any]:
         seen[path.stem] = True
 
     for path, value in input_dict.get("interfaces", {}).items():
-        path = PurePath(path)
+        path = _normpath_within_root(PurePath(path), "interface path")
         if path.stem in seen:
             raise JSONError(f"Interface namespace collision: {path}")
 
@@ -221,7 +221,7 @@ def get_storage_layout_overrides(input_dict: dict) -> dict[PurePath, JSONInput]:
         if not isinstance(value, dict) and len(value.items()) != 1:
             raise JSONError(f"invalid storage layout override: {value}")
         override_path, override_data = next(iter(value.items()))
-        override_path = _normpath(override_path)
+        override_path = _normpath_within_root(override_path, "storage layout override path")
         storage_layout_input = JSONInput(
             contents=json.dumps(override_data),
             data=override_data,
@@ -293,7 +293,9 @@ def get_output_formats(input_dict: dict) -> dict[PurePath, list[str]]:
 
 def get_search_paths(input_dict: dict) -> list[PurePath]:
     ret = input_dict["settings"].get("search_paths", ".")
-    return [PurePath(p) for p in ret]
+    if isinstance(ret, str):
+        ret = [ret]
+    return [_normpath_within_root(PurePath(p), "search path") for p in ret]
 
 
 def get_settings(input_dict: dict) -> Settings:

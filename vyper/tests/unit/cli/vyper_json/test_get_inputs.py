@@ -2,7 +2,7 @@ from pathlib import PurePath
 
 import pytest
 
-from vyper.cli.vyper_json import get_inputs
+from vyper.cli.vyper_json import get_inputs, get_search_paths
 from vyper.exceptions import JSONError
 from vyper.utils import keccak256
 
@@ -52,7 +52,33 @@ def test_contracts_keccak():
 
 def test_contracts_outside_pwd():
     input_json = {"sources": {"../foo.vy": {"content": FOO_CODE}}}
-    get_inputs(input_json)
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_contracts_absolute_path():
+    input_json = {"sources": {"/tmp/foo.vy": {"content": FOO_CODE}}}
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_interfaces_outside_pwd():
+    input_json = {
+        "sources": {"foo.vy": {"content": FOO_CODE}},
+        "interfaces": {"../bar.json": {"abi": BAR_ABI}},
+    }
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_search_paths_outside_root():
+    with pytest.raises(JSONError):
+        get_search_paths({"settings": {"search_paths": ["../contracts"]}})
+
+
+def test_search_paths_absolute_path():
+    with pytest.raises(JSONError):
+        get_search_paths({"settings": {"search_paths": ["/tmp/contracts"]}})
 
 
 def test_contract_collision():

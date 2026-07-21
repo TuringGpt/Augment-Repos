@@ -5,6 +5,7 @@ import pytest
 
 from tests.utils import working_directory
 from vyper.compiler.input_bundle import FileInput, FilesystemInputBundle, JSONInput, JSONInputBundle
+from vyper.exceptions import JSONError
 
 
 # FilesystemInputBundle which uses same search path as make_file
@@ -225,6 +226,37 @@ def test_json_input_bundle_normpath():
     with input_bundle.search_path(PurePath("foo")):
         file = input_bundle.load_file(PurePath("../bar.vy"))
         assert file == FileInput(0, PurePath("../bar.vy"), barpath, contents)
+
+
+def test_json_input_bundle_rejects_unsafe_paths():
+    with pytest.raises(JSONError):
+        JSONInputBundle({PurePath("../foo.vy"): {"content": ""}}, [PurePath(".")])
+
+    with pytest.raises(JSONError):
+        JSONInputBundle({PurePath("/foo.vy"): {"content": ""}}, [PurePath(".")])
+
+    with pytest.raises(JSONError):
+        JSONInputBundle({PurePath("foo.vy"): {"content": ""}}, [PurePath("../contracts")])
+
+
+def test_json_input_bundle_rejects_load_outside_root():
+    input_bundle = JSONInputBundle({PurePath("foo.vy"): {"content": ""}}, [PurePath(".")])
+    with pytest.raises(JSONError):
+        input_bundle.load_file(PurePath("../foo.vy"))
+
+    with pytest.raises(JSONError):
+        input_bundle.load_file(PurePath("/foo.vy"))
+
+
+def test_json_input_bundle_rejects_unsafe_search_path_contexts():
+    input_bundle = JSONInputBundle({PurePath("foo.vy"): {"content": ""}}, [PurePath(".")])
+    with pytest.raises(JSONError):
+        with input_bundle.search_path(PurePath("../contracts")):
+            pass
+
+    with pytest.raises(JSONError):
+        with input_bundle.temporary_search_paths([PurePath("/contracts")]):
+            pass
 
 
 def test_json_input_abi():

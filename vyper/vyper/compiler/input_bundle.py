@@ -209,6 +209,15 @@ def _normpath(path):
     return cls(posixpath.normpath(path))
 
 
+def _normpath_within_root(path, field_name="path"):
+    if isinstance(path, str):
+        path = PurePath(path)
+    path = _normpath(path)
+    if path.is_absolute() or ".." in path.parts:
+        raise JSONError(f"{field_name} escapes the standard-json virtual root: {path}")
+    return path
+
+
 # fake filesystem for "standard JSON" (aka solc-style) inputs. takes search
 # paths, and `load_file()` "reads" the file from the JSON input. Note that this
 # input bundle type never actually interacts with the filesystem -- it is
@@ -217,17 +226,32 @@ class JSONInputBundle(InputBundle):
     input_json: dict[PurePath, Any]
 
     def __init__(self, input_json, search_paths):
+        search_paths = [_normpath_within_root(path, "search path") for path in search_paths]
         super().__init__(search_paths)
         self.input_json = {}
         for path, item in input_json.items():
-            path = _normpath(path)
+            path = _normpath_within_root(path, "source path")
 
-            # should be checked by caller
-            assert path not in self.input_json
+            if path in self.input_json:
+                raise JSONError(f"duplicate standard-json source path: {path}")
             self.input_json[path] = item
 
     def _normalize_path(self, path: PurePath) -> PurePath:
-        return _normpath(path)
+        return _normpath_within_root(path)
+
+    @contextlib.contextmanager
+    def search_path(self, path: Optional[PathLike]) -> Iterator[None]:
+        if path is None:
+            yield
+        else:
+            with super().search_path(_normpath_within_root(path, "search path")):
+                yield
+
+    @contextlib.contextmanager
+    def temporary_search_paths(self, new_paths: list[PathLike]) -> Iterator[None]:
+        new_paths = [_normpath_within_root(path, "search path") for path in new_paths]
+        with super().temporary_search_paths(new_paths):
+            yield
 
     def _load_from_path(self, resolved_path: PurePath, original_path: PurePath) -> CompilerInput:
         try:
