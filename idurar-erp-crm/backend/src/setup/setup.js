@@ -37,6 +37,7 @@ async function setupApp() {
     console.log('👍 Admin created : Done!');
 
     const Setting = require('../models/coreModels/Setting');
+    const Sequence = require('../models/coreModels/Sequence');
 
     const settingFiles = [];
 
@@ -48,6 +49,17 @@ async function setupApp() {
     }
 
     await Setting.insertMany(settingFiles);
+
+    const financeSequenceSettings = settingFiles.filter(({ settingKey }) => {
+      return ['last_invoice_number', 'last_quote_number'].includes(settingKey);
+    });
+
+    await Sequence.insertMany(
+      financeSequenceSettings.map(({ settingKey, settingValue }) => ({
+        sequenceKey: settingKey.replace('last_', '').replace('_number', ''),
+        currentValue: Number(settingValue) || 0,
+      }))
+    );
 
     console.log('👍 Settings created : Done!');
 
