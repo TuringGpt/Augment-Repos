@@ -128,6 +128,19 @@ class VenomOptimizationFlags:
             data["level"] = OptimizationLevel.from_string(data["level"])
         return cls(**data)
 
+    @classmethod
+    def from_overrides(
+        cls, level: Optional[OptimizationLevel], overrides: dict
+    ) -> "VenomOptimizationFlags":
+        # build flags for the given optimization level, then apply any
+        # explicitly provided overrides. keys map to field names; None values
+        # are ignored so callers can pass unspecified options uniformly.
+        flags = cls(level=level if level is not None else OptimizationLevel.default())
+        for name, value in overrides.items():
+            if value is not None:
+                setattr(flags, name, value)
+        return flags
+
 
 @dataclass
 class Settings:

@@ -332,10 +332,8 @@ def get_settings(input_dict: dict) -> Settings:
     enable_decimals = input_dict["settings"].get("enable_decimals", None)
     disable_static_exceptions = input_dict["settings"].get("disableStaticExceptions", None)
 
-    # Create Venom optimization flags with the optimization level
-    venom_flags = VenomOptimizationFlags(level=optimize)
-
-    # Check for Venom-specific settings
+    # Collect Venom-specific overrides from the input, validating types
+    venom_overrides: dict = {}
     venom_settings = input_dict["settings"].get("venom", {})
     if venom_settings:
         # TODO: refactor this
@@ -354,7 +352,6 @@ def get_settings(input_dict: dict) -> Settings:
             "disableAssertElimination": ("disable_assert_elimination", bool),
         }
 
-        # merge user-provided settings into venom_flags
         for json_field, (attr_name, expected_type) in flag_mapping.items():
             if json_field in venom_settings:
                 value = venom_settings[json_field]
@@ -363,7 +360,10 @@ def get_settings(input_dict: dict) -> Settings:
                         f"venom.{json_field} must be {expected_type.__name__}, "
                         f"got {type(value).__name__}"
                     )
-                setattr(venom_flags, attr_name, value)
+                venom_overrides[attr_name] = value
+
+    # Create Venom optimization flags with the optimization level
+    venom_flags = VenomOptimizationFlags.from_overrides(optimize, venom_overrides)
 
     return Settings(
         evm_version=evm_version,
