@@ -9,6 +9,15 @@ Needed = list[IRVariable]
 Stack = list[IROperand]
 
 
+def _stack_operands(inst: IRInstruction) -> list[IROperand]:
+    if inst.opcode == "invoke":
+        # The invoke target is emitted as an immediate jump label, not as a
+        # caller-provided stack argument. Keep this in sync with
+        # venom_to_assembly._generate_evm_for_instruction().
+        return list(inst.get_non_label_operands())
+    return inst.operands
+
+
 def _swap(stack: Stack, op: IROperand):
     top = len(stack) - 1
     index = None
@@ -61,14 +70,15 @@ class StackOrderAnalysis(IRAnalysis):
             else:
                 self._handle_inst(inst)
 
-            if len(inst.operands) > 0:
+            stack_ops = _stack_operands(inst)
+            if len(stack_ops) > 0:
                 if not inst.is_bb_terminator:
-                    assert self.stack[-len(inst.operands) :] == inst.operands, (
+                    assert self.stack[-len(stack_ops) :] == stack_ops, (
                         inst,
                         self.stack,
-                        inst.operands,
+                        stack_ops,
                     )
-                self.stack = self.stack[: -len(inst.operands)]
+                self.stack = self.stack[: -len(stack_ops)]
             self.stack.extend(inst.get_outputs())
 
         for pred in self.cfg.cfg_in(bb):
@@ -131,7 +141,7 @@ class StackOrderAnalysis(IRAnalysis):
             assert target_stack == self.stack[-len(target_stack) :], (target_stack, self.stack)
 
     def _handle_inst(self, inst: IRInstruction):
-        ops = inst.operands
+        ops = _stack_operands(inst)
         for op in ops:
             if isinstance(op, IRVariable) and op not in self.stack:
                 self._add_needed(op)
