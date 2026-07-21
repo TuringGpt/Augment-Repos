@@ -125,3 +125,12 @@ def foo({input_value}) -> int128:
     else:
         with tx_failed():
             contract.foo(*values)
+
+
+def test_binop_deeply_nested_literals():
+    literal_op = " + ".join(["1"] * 2000)
+
+    vyper_ast = parse_and_fold(literal_op)
+    new_node = vyper_ast.body[0].value.get_folded_value()
+
+    assert new_node.value == 2000
