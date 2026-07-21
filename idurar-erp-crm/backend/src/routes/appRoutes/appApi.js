@@ -1,5 +1,6 @@
 const express = require('express');
 const { catchErrors } = require('@/handlers/errorHandlers');
+const { mailRateLimit } = require('@/middlewares/rateLimit');
 const router = express.Router();
 
 const appControllers = require('@/controllers/appControllers');
@@ -17,7 +18,7 @@ const routerApp = (entity, controller) => {
   router.route(`/${entity}/summary`).get(catchErrors(controller['summary']));
 
   if (entity === 'invoice' || entity === 'quote' || entity === 'payment') {
-    router.route(`/${entity}/mail`).post(catchErrors(controller['mail']));
+    router.route(`/${entity}/mail`).post(mailRateLimit, catchErrors(controller['mail']));
   }
 
   if (entity === 'quote') {
