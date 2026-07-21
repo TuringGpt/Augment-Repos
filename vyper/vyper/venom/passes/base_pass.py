@@ -1,4 +1,5 @@
-from typing import ClassVar, TypeAlias, Union
+import warnings
+from typing import Any, ClassVar, TypeAlias, Union
 
 from vyper.venom.analysis import IRAnalysesCache
 from vyper.venom.basicblock import IRLabel
@@ -9,7 +10,49 @@ from vyper.venom.passes.machinery.inst_updater import InstUpdater
 PassRef: TypeAlias = Union[str, type["IRPass"]]
 
 
-class IRPass:
+class PassMetricsMixin:
+    """
+    Uniform metrics reporting shared by all Venom IR passes.
+
+    Every pass reports debugging information in the same shape via
+    ``get_metrics()``. The backing store is the private ``_metrics`` dict, which
+    should only be mutated through ``_record_metric`` so the accumulate-numerics
+    / overwrite-everything-else semantics are not bypassed.
+    """
+
+    _metrics: dict[str, Any]
+
+    def _init_metrics(self) -> None:
+        self._metrics = {}
+
+    def _record_metric(self, name: str, value: Any = 1) -> None:
+        # Numeric metrics accumulate; everything else overwrites. bool is a
+        # subclass of int, so exclude it to keep boolean flags from silently
+        # accumulating into integers when recorded more than once.
+        current = self._metrics.get(name)
+        if self._is_number(value) and self._is_number(current):
+            self._metrics[name] = current + value
+            return
+        # Overwriting an existing non-accumulable value discards earlier
+        # diagnostic data, so surface it to the pass author rather than losing
+        # it silently.
+        if name in self._metrics and current != value:
+            warnings.warn(f"metric {name!r} overwritten: {current!r} -> {value!r}", stacklevel=2)
+        self._metrics[name] = value
+
+    @staticmethod
+    def _is_number(value: Any) -> bool:
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+    def get_metrics(self) -> dict[str, Any]:
+        # Nest the recorded metrics under "metrics" so a pass-defined metric can
+        # never clobber the self-describing "pass" field, and so callers can
+        # aggregate reports keyed by pass name without entries overwriting. A
+        # copy is returned so external callers cannot mutate the backing store.
+        return {"pass": self.__class__.__name__, "metrics": dict(self._metrics)}
+
+
+class IRPass(PassMetricsMixin):
     """
     Base class for all Venom IR passes.
     """
@@ -31,6 +74,7 @@ class IRPass:
     def __init__(self, analyses_cache: IRAnalysesCache, function: IRFunction):
         self.function = function
         self.analyses_cache = analyses_cache
+        self._init_metrics()
 
     def _replace_all_labels(self, label_map: dict[IRLabel, IRLabel]) -> None:
         for bb in self.function.get_basic_blocks():
@@ -47,7 +91,7 @@ class IRPass:
         raise NotImplementedError(f"Not implemented! {self.__class__}.run_pass()")
 
 
-class IRGlobalPass:
+class IRGlobalPass(PassMetricsMixin):
     """
     Base class for all Venom IR passes.
     """
@@ -58,6 +102,7 @@ class IRGlobalPass:
     def __init__(self, analyses_caches: dict[IRFunction, IRAnalysesCache], ctx: IRContext):
         self.analyses_caches = analyses_caches
         self.ctx = ctx
+        self._init_metrics()
 
     def run_pass(self, *args, **kwargs):
         raise NotImplementedError(f"Not implemented! {self.__class__}.run_pass()")
