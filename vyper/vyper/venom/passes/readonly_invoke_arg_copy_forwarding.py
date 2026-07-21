@@ -17,34 +17,15 @@ class ReadonlyInvokeArgCopyForwardingPass(InvokeCopyForwardingBase):
     """
 
     def run_pass(self):
-        self._prepare()
-        changed = False
-
         # Run to a local fixpoint so chained staging copies are fully
         # collapsed in a single pass invocation.
-        while True:
-            iter_changed = False
-            for bb in self.function.get_basic_blocks():
-                for inst in list(bb.instructions):
-                    if inst.opcode != "mcopy":
-                        continue
-                    iter_changed |= self._try_forward_readonly_copy(inst)
-
-            if not iter_changed:
-                break
-            changed = True
-
-        self._finish(changed)
+        self._run_mcopy_forwarding(self._try_forward_readonly_copy, to_fixpoint=True)
 
     def _try_forward_readonly_copy(self, copy_inst: IRInstruction) -> bool:
-        dst = copy_inst.operands[2]
-        if not isinstance(dst, IRVariable):
+        dst_info = self._copy_operand_alloca_root(copy_inst, 2)
+        if dst_info is None:
             return False
-
-        root = self._assign_root_var(dst)
-        root_inst = self.dfg.get_producing_instruction(root)
-        if root_inst is None or root_inst.opcode != "alloca":
-            return False
+        root, root_inst = dst_info
         dst_alloca = Allocation(root_inst)
 
         aliases = self._collect_assign_aliases(root)
@@ -70,13 +51,10 @@ class ReadonlyInvokeArgCopyForwardingPass(InvokeCopyForwardingBase):
 
         # Keep this local and conservative: only forward when all uses are
         # in the same block and dominated by the source copy.
-        bb_insts = copy_inst.parent.instructions
-        copy_idx = bb_insts.index(copy_inst)
-        for invoke_inst, _ in rewrite_sites:
-            if invoke_inst.parent is not copy_inst.parent:
-                return False
-            if bb_insts.index(invoke_inst) < copy_idx:
-                return False
+        if not self._same_block_uses_after(
+            copy_inst, (invoke_inst for invoke_inst, _ in rewrite_sites)
+        ):
+            return False
 
         if self._has_src_clobber_between(copy_inst, rewrite_sites):
             return False

@@ -19,40 +19,20 @@ class InternalReturnCopyForwardingPass(InvokeCopyForwardingBase):
     """
 
     def run_pass(self):
-        self._prepare()
-        changed = False
-
-        for bb in self.function.get_basic_blocks():
-            for inst in list(bb.instructions):
-                if inst.opcode != "mcopy":
-                    continue
-                changed |= self._try_forward_internal_return_copy(inst)
-
-        self._finish(changed)
+        self._run_mcopy_forwarding(self._try_forward_internal_return_copy)
 
     def _try_forward_internal_return_copy(self, copy_inst: IRInstruction) -> bool:
-        dst = copy_inst.operands[2]
-        src = copy_inst.operands[1]
-        if not isinstance(dst, IRVariable) or not isinstance(src, IRVariable):
-            return False
         size = self.copy_forwarding.copy_size(copy_inst)
         if size is None:
             return False
 
-        dst_root = self._assign_root_var(dst)
-        src_root = self._assign_root_var(src)
+        dst_info = self._copy_operand_alloca_root(copy_inst, 2, size)
+        src_info = self._copy_operand_alloca_root(copy_inst, 1, size)
+        if dst_info is None or src_info is None:
+            return False
+        dst_root, _ = dst_info
+        src_root, _ = src_info
         if dst_root == src_root:
-            return False
-
-        dst_root_inst = self.dfg.get_producing_instruction(dst_root)
-        src_root_inst = self.dfg.get_producing_instruction(src_root)
-
-        if not self._is_alloca_like(dst_root_inst) or not self._is_alloca_like(src_root_inst):
-            return False
-        assert dst_root_inst is not None and src_root_inst is not None  # ensured above
-        if not self._matches_alloca_size(dst_root_inst, size):
-            return False
-        if not self._matches_alloca_size(src_root_inst, size):
             return False
 
         if not self._is_internal_return_buffer_source(src_root, copy_inst):
@@ -68,9 +48,7 @@ class InternalReturnCopyForwardingPass(InvokeCopyForwardingBase):
                 continue
             if use.opcode == "phi":
                 return False
-            if use.parent is not copy_inst.parent:
-                return False
-            if not self._is_after(copy_inst, use):
+            if not self._same_block_uses_after(copy_inst, (use,)):
                 return False
             rewrite_insts.add(use)
 
