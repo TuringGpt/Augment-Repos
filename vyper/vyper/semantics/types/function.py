@@ -41,7 +41,7 @@ from vyper.semantics.types.shortcuts import UINT256_T
 from vyper.semantics.types.subscriptable import TupleT
 from vyper.semantics.types.user import EventT
 from vyper.semantics.types.utils import type_from_abi, type_from_annotation
-from vyper.utils import OrderedSet, keccak256
+from vyper.utils import OrderedSet, method_id_int
 from vyper.warnings import Deprecation, vyper_warn
 
 
@@ -1176,5 +1176,4 @@ class MemberFunctionT(VyperType):
 
 def _generate_method_id(name: str, canonical_abi_types: List[str]) -> Dict[str, int]:
     function_sig = f"{name}({','.join(canonical_abi_types)})"
-    selector = keccak256(function_sig.encode())[:4].hex()
-    return {function_sig: int(selector, 16)}
+    return {function_sig: method_id_int(function_sig)}
