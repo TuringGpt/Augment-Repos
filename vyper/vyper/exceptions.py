@@ -14,13 +14,33 @@ class ExceptionList(list):
     is completed.
     """
 
+    @staticmethod
+    def _get_source_position(exc):
+        if exc.lineno is not None:
+            return exc.lineno, exc.col_offset
+
+        for annotation in exc.annotations or []:
+            node = annotation[1] if isinstance(annotation, tuple) else annotation
+            get_original_node = getattr(node, "get_original_node", None)
+            if callable(get_original_node):
+                node = get_original_node()
+
+            lineno = getattr(node, "lineno", None)
+            if lineno is not None:
+                return lineno, getattr(node, "col_offset", None)
+
+        return None, None
+
     def raise_if_not_empty(self):
         if len(self) == 1:
             raise self[0]
         elif len(self) > 1:
             err_msg = ["Compilation failed with the following errors:"]
-            err_msg += [f"{type(i).__name__}: {i}" for i in reversed(self)]
-            raise VyperException("\n\n".join(err_msg))
+            err_msg += [f"{type(i).__name__}: {i}" for i in self]
+            lineno, col_offset = self._get_source_position(self[0])
+            if lineno is None:
+                raise VyperException("\n\n".join(err_msg))
+            raise VyperException("\n\n".join(err_msg), (lineno, col_offset))
 
 
 class _BaseVyperException(Exception):
