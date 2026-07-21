@@ -222,7 +222,7 @@ class DecimalContextOverride(decimal.Context):
 decimal.setcontext(DecimalContextOverride(prec=78))
 
 
-def keccak256(x):
+def keccak256(x: bytes) -> bytes:
     return keccak.new(digest_bits=256, data=x).digest()
 
 
@@ -300,12 +300,12 @@ def trace(n=5, out=sys.stderr):
 
 
 # converts a signature like Func(bool,uint256,address) to its 4 byte method ID
-# TODO replace manual calculations in codebase with this
 def method_id_int(method_sig: str) -> int:
     method_id_bytes = method_id(method_sig)
     return fourbytes_to_int(method_id_bytes)
 
 
+@functools.lru_cache(maxsize=512)
 def method_id(method_str: str) -> bytes:
     return keccak256(bytes(method_str, "utf-8"))[:4]
 

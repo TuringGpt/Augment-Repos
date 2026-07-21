@@ -44,7 +44,7 @@ from vyper.semantics.types.function import ContractFunctionT, MemberFunctionT, S
 from vyper.semantics.types.shortcuts import BYTES32_T, UINT256_T
 from vyper.semantics.types.subscriptable import DArrayT, HashMapT, SArrayT
 from vyper.semantics.types.user import FlagT, StructT
-from vyper.utils import DECIMAL_DIVISOR, keccak256
+from vyper.utils import DECIMAL_DIVISOR, bytes_to_int, keccak256
 from vyper.venom.basicblock import IRLabel, IRLiteral, IROperand, IRVariable
 
 from .abi import abi_decode_to_buf, abi_encode_to_buf
@@ -963,13 +963,13 @@ class Expr:
         if isinstance(reduced, vy_ast.Str):
             # String literal: encode to bytes and hash the raw bytes
             bytez = reduced.value.encode("utf-8")
-            hash_val = int.from_bytes(keccak256(bytez), "big")
+            hash_val = bytes_to_int(keccak256(bytez))
             return IRLiteral(hash_val)
 
         if isinstance(reduced, vy_ast.Bytes):
             # Bytes literal: hash the raw bytes
             bytez = reduced.value
-            hash_val = int.from_bytes(keccak256(bytez), "big")
+            hash_val = bytes_to_int(keccak256(bytez))
             return IRLiteral(hash_val)
 
         # Not a constant - compute at runtime

@@ -23,7 +23,7 @@ from vyper.semantics.data_locations import DataLocation
 from vyper.semantics.types.base import VyperType
 from vyper.semantics.types.subscriptable import HashMapT
 from vyper.semantics.types.utils import type_from_abi, type_from_annotation
-from vyper.utils import keccak256
+from vyper.utils import bytes_to_int, keccak256
 from vyper.warnings import Deprecation, vyper_warn
 
 
@@ -190,7 +190,7 @@ class EventT(_UserType):
         self.name = name
         self.indexed = indexed
         assert len(self.indexed) == len(self.arguments)
-        self.event_id = int(keccak256(self.signature.encode()).hex(), 16)
+        self.event_id = bytes_to_int(keccak256(self.signature.encode()))
 
         self.decl_node = decl_node
 
