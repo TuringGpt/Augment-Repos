@@ -3,6 +3,7 @@ const { catchErrors } = require('@/handlers/errorHandlers');
 const router = express.Router();
 
 const appControllers = require('@/controllers/appControllers');
+const quoteController = require('@/controllers/appControllers/quoteController');
 const { routesList } = require('@/models/utils');
 
 const routerApp = (entity, controller) => {
@@ -24,6 +25,8 @@ const routerApp = (entity, controller) => {
     router.route(`/${entity}/convert/:id`).get(catchErrors(controller['convert']));
   }
 };
+
+router.route('/quote/suggest-email-subject').post(catchErrors(quoteController['suggestEmailSubject']));
 
 routesList.forEach(({ entity, controllerName }) => {
   const controller = appControllers[controllerName];
