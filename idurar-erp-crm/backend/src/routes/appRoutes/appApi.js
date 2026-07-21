@@ -1,9 +1,17 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { catchErrors } = require('@/handlers/errorHandlers');
 const router = express.Router();
 
 const appControllers = require('@/controllers/appControllers');
 const { routesList } = require('@/models/utils');
+
+const quoteConvertLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const routerApp = (entity, controller) => {
   router.route(`/${entity}/create`).post(catchErrors(controller['create']));
@@ -21,7 +29,7 @@ const routerApp = (entity, controller) => {
   }
 
   if (entity === 'quote') {
-    router.route(`/${entity}/convert/:id`).get(catchErrors(controller['convert']));
+    router.route(`/${entity}/convert/:id`).get(quoteConvertLimiter, catchErrors(controller['convert']));
   }
 };
 
