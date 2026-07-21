@@ -187,6 +187,14 @@ def find_semantic_errors(context: IRContext) -> list[VenomError]:
 
 
 def check_venom_ctx(context: IRContext):
+    """Validate a Venom IR context for semantic errors.
+
+    Args:
+        context: The Venom IR context to validate.
+
+    Raises:
+        ExceptionGroup: Raised when semantic validation finds one or more errors.
+    """
     errors = find_semantic_errors(context)
 
     if errors:
