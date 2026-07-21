@@ -4,8 +4,8 @@ const { globSync } = require('glob');
 const fs = require('fs');
 const { generate: uniqueId } = require('shortid');
 
-const mongoose = require('mongoose');
-mongoose.connect(process.env.DATABASE);
+const connectToDatabase = require('../utils/connectToDatabase');
+connectToDatabase();
 
 async function setupApp() {
   try {
