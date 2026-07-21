@@ -2,10 +2,10 @@
 # -*- coding: UTF-8 -*-
 import sys
 
-from vyper.cli import vyper_compile, vyper_ir
+from vyper.cli import vyper_builtins, vyper_compile, vyper_ir
 
 if __name__ == "__main__":
-    allowed_subcommands = ("--vyper-compile", "--vyper-ir")
+    allowed_subcommands = ("--vyper-compile", "--vyper-ir", "--vyper-builtins")
 
     if len(sys.argv) <= 1 or sys.argv[1] not in allowed_subcommands:
         # default (no args, no switch in first arg): run vyper_compile
@@ -15,5 +15,7 @@ if __name__ == "__main__":
         subcommand = sys.argv.pop(1)
         if subcommand == "--vyper-ir":
             vyper_ir._parse_cli_args()
+        elif subcommand == "--vyper-builtins":
+            vyper_builtins._parse_cli_args()
         else:
             vyper_compile._parse_cli_args()
