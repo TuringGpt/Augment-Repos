@@ -166,7 +166,34 @@ def _deepcopy_ast(ast_node: python_ast.AST):
     return pickle.loads(pickle.dumps(ast_node))
 
 
-class AnnotatingVisitor(python_ast.NodeTransformer):
+class _DocstringVisitorMixin:
+    """
+    Mixin providing docstring promotion for node visitors. Relies on
+    `generic_visit` being provided by the host class.
+    """
+
+    def _visit_docstring(self, node):
+        """
+        Move a node docstring from body to `doc_string` and annotate it as `DocStr`.
+        """
+        self.generic_visit(node)
+
+        if node.body:
+            n = node.body[0]
+            if (
+                isinstance(n, python_ast.Expr)
+                and isinstance(n.value, python_ast.Constant)
+                and isinstance(n.value.value, str)
+            ):
+                self.generic_visit(n.value)
+                n.value.ast_type = "DocStr"
+                del node.body[0]
+                node.doc_string = n.value
+
+        return node
+
+
+class AnnotatingVisitor(_DocstringVisitorMixin, python_ast.NodeTransformer):
     _source_code: str
     _pre_parser: PreParser
     _parents: list[python_ast.AST]
@@ -258,26 +285,6 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
             node = super().generic_visit(node)
         finally:
             self._parents.pop()
-
-        return node
-
-    def _visit_docstring(self, node):
-        """
-        Move a node docstring from body to `doc_string` and annotate it as `DocStr`.
-        """
-        self.generic_visit(node)
-
-        if node.body:
-            n = node.body[0]
-            if (
-                isinstance(n, python_ast.Expr)
-                and isinstance(n.value, python_ast.Constant)
-                and isinstance(n.value.value, str)
-            ):
-                self.generic_visit(n.value)
-                n.value.ast_type = "DocStr"
-                del node.body[0]
-                node.doc_string = n.value
 
         return node
 
