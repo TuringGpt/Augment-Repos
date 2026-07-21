@@ -1,6 +1,9 @@
+from pathlib import PurePath
+
 import pytest
 
 from vyper import compiler
+from vyper.compiler.input_bundle import JSONInputBundle
 from vyper.exceptions import ModuleNotFound, StructureException
 
 CODE_TOP = """
@@ -31,6 +34,84 @@ def foo():
     with pytest.raises(ModuleNotFound) as e:
         compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
     assert "lib0.vy:" in str(e.value)
+
+
+def test_import_not_found_suggests_similar_module(make_input_bundle):
+    top = """
+import subdir.lb0 as lib0
+    """
+
+    input_bundle = make_input_bundle({"top.vy": top, "subdir/lib0.vy": CODE_LIB1})
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "subdir.lb0"
+    assert e.value.hint == "Did you mean 'subdir.lib0'?"
+
+
+def test_import_not_found_suggests_similar_package(make_input_bundle):
+    top = """
+import subidr.lib0 as lib0
+    """
+
+    input_bundle = make_input_bundle({"top.vy": top, "subdir/lib0.vy": CODE_LIB1})
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "subidr.lib0"
+    assert e.value.hint == "Did you mean 'subdir.lib0'?"
+
+
+def test_parent_relative_import_not_found_suggests_similar_module(make_input_bundle):
+    top = """
+import subdir0.subdir1.c as c
+@external
+def foo():
+    c.foo()
+    """
+
+    c = """
+from .. import libaa as libaa
+def foo():
+    libaa.foo()
+    """
+
+    input_bundle = make_input_bundle(
+        {"top.vy": top, "subdir0/liba.vy": CODE_LIB1, "subdir0/subdir1/c.vy": c}
+    )
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "libaa"
+    assert e.value.hint == "Did you mean 'liba'?"
+
+
+def test_json_import_suggestions_ignore_host_filesystem(chdir_tmp_path, make_file):
+    top = """
+import subdir.lb0 as lib0
+    """
+
+    make_file("subdir/lib0.vy", CODE_LIB1)
+    input_bundle = JSONInputBundle(
+        {
+            PurePath("top.vy"): {"content": top},
+            PurePath("bundle_only/foo.vy"): {"content": CODE_LIB1},
+        },
+        [PurePath(".")],
+    )
+    file_input = input_bundle.load_file("top.vy")
+
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+
+    assert e.value._message == "subdir.lb0"
+    assert e.value.hint is None
 
 
 def test_implicitly_relative_import_crashes_2(make_input_bundle):

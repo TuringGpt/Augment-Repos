@@ -487,6 +487,18 @@ from vyper.interfaces import foobar
     assert "code.vy:" in str(e.value)
 
 
+def test_builtin_interface_not_found_suggests_similar_name(make_input_bundle):
+    code = """
+from ethereum.ercs import IER20
+    """
+    input_bundle = make_input_bundle({"code.vy": code})
+    file_input = input_bundle.load_file("code.vy")
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+    assert e.value._message == "ethereum.ercs.IER20"
+    assert e.value.hint == "Did you mean 'IERC20'?"
+
+
 @pytest.mark.parametrize("erc", ("ERC20", "ERC721", "ERC4626"))
 def test_builtins_not_found2(erc, make_input_bundle):
     code = f"""
