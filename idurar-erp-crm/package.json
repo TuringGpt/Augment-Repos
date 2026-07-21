@@ -1,0 +1,9 @@
+{
+  "name": "idurar-erp-crm-dev",
+  "private": true,
+  "scripts": {
+    "dev": "./run-dev.sh",
+    "dev:backend": "npm --prefix ./backend run dev",
+    "dev:frontend": "npm --prefix ./frontend run dev"
+  }
+}
