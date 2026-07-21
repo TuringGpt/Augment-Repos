@@ -1,6 +1,7 @@
 import ast as python_ast
 import copy
 import pickle
+import re
 import tokenize
 from decimal import Decimal
 from functools import cached_property
@@ -19,6 +20,70 @@ PYTHON_AST_SINGLETONS = (
     python_ast.boolop,
     python_ast.expr_context,
 )
+
+_STATICCALL_KEYWORD = "staticcall"
+
+
+def _adjacent_transpositions(value: str) -> tuple[str, ...]:
+    ret = []
+    for i in range(len(value) - 1):
+        if value[i] == value[i + 1]:
+            continue
+
+        chars = list(value)
+        chars[i], chars[i + 1] = chars[i + 1], chars[i]
+        ret.append("".join(chars))
+
+    return tuple(ret)
+
+
+_STATICCALL_LIKELY_ERRORS = ("staticcal", *_adjacent_transpositions(_STATICCALL_KEYWORD))
+
+
+def _levenshtein_distance(source: str, target: str) -> int:
+    if source == target:
+        return 0
+    if not source:
+        return len(target)
+    if not target:
+        return len(source)
+
+    previous = list(range(len(target) + 1))
+    for i, source_ch in enumerate(source, start=1):
+        current = [i]
+        for j, target_ch in enumerate(target, start=1):
+            substitution_cost = 0 if source_ch == target_ch else 1
+            current.append(
+                min(
+                    previous[j] + 1,
+                    current[j - 1] + 1,
+                    previous[j - 1] + substitution_cost,
+                )
+            )
+        previous = current
+
+    return previous[-1]
+
+
+def _maybe_staticcall_hint(vyper_source: str, lineno: Optional[int]) -> Optional[str]:
+    if lineno is None:
+        return None
+
+    lines = vyper_source.splitlines()
+    if lineno < 1 or lineno > len(lines):
+        return None
+
+    likely_errors = _STATICCALL_LIKELY_ERRORS
+    for token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", lines[lineno - 1]):
+        if token == _STATICCALL_KEYWORD:
+            continue
+        if token in likely_errors:
+            return "did you mean `staticcall`?"
+        if abs(len(token) - len(_STATICCALL_KEYWORD)) <= 2:
+            if _levenshtein_distance(token, _STATICCALL_KEYWORD) <= 2:
+                return "did you mean `staticcall`?"
+
+    return None
 
 
 def parse_to_ast(
@@ -91,12 +156,7 @@ def _parse_to_ast(
 
         new_e = SyntaxException(str(e), vyper_source, e.lineno, offset)
 
-        likely_errors = ("staticall", "staticcal")
-        tmp = str(new_e)
-        for s in likely_errors:
-            if s in tmp:
-                new_e._hint = "did you mean `staticcall`?"
-                break
+        new_e._hint = _maybe_staticcall_hint(vyper_source, e.lineno)
 
         raise new_e from None
 
