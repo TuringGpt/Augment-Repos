@@ -357,6 +357,8 @@ class VyperNode:
             self.full_source_code,
             self.lineno,
             self.col_offset,
+            end_lineno=self.end_lineno,
+            end_col_offset=self.end_col_offset,
             context_lines=VYPER_ERROR_CONTEXT_LINES,
             line_numbers=VYPER_ERROR_LINE_NUMBERS,
         )
