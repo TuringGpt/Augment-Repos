@@ -1,36 +1,20 @@
-import { Dropdown, Table } from 'antd';
+import { Table } from 'antd';
 
 import { request } from '@/request';
 import useFetch from '@/hooks/useFetch';
 
-import { EllipsisOutlined, EyeOutlined, EditOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { erp } from '@/redux/erp/actions';
 import useLanguage from '@/locale/useLanguage';
 import { useNavigate } from 'react-router-dom';
 import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
+import { buildErpActionColumn, buildErpActionItems } from '@/modules/ErpPanelModule/tableColumns';
 
 export default function RecentTable({ ...props }) {
   const translate = useLanguage();
   let { entity, dataTableColumns } = props;
 
-  const items = [
-    {
-      label: translate('Show'),
-      key: 'read',
-      icon: <EyeOutlined />,
-    },
-    {
-      label: translate('Edit'),
-      key: 'edit',
-      icon: <EditOutlined />,
-    },
-    {
-      label: translate('Download'),
-      key: 'download',
-      icon: <FilePdfOutlined />,
-    },
-  ];
+  const items = buildErpActionItems({ translate, includeDelete: false });
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -47,41 +31,25 @@ export default function RecentTable({ ...props }) {
     window.open(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${record._id}.pdf`, '_blank');
   };
 
+  const handleAction = (key, record) => {
+    switch (key) {
+      case 'read':
+        handleRead(record);
+        break;
+      case 'edit':
+        handleEdit(record);
+        break;
+      case 'download':
+        handleDownload(record);
+        break;
+      default:
+        break;
+    }
+  };
+
   dataTableColumns = [
     ...dataTableColumns,
-    {
-      title: '',
-      key: 'action',
-      render: (_, record) => (
-        <Dropdown
-          menu={{
-            items,
-            onClick: ({ key }) => {
-              switch (key) {
-                case 'read':
-                  handleRead(record);
-                  break;
-                case 'edit':
-                  handleEdit(record);
-                  break;
-                case 'download':
-                  handleDownload(record);
-                  break;
-
-                default:
-                  break;
-              }
-            },
-          }}
-          trigger={['click']}
-        >
-          <EllipsisOutlined
-            style={{ cursor: 'pointer', fontSize: '24px' }}
-            onClick={(e) => e.preventDefault()}
-          />
-        </Dropdown>
-      ),
-    },
+    buildErpActionColumn({ items, onAction: handleAction, fixed: false }),
   ];
 
   const asyncList = () => {
