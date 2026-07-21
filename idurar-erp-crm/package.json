@@ -1,0 +1,29 @@
+{
+  "name": "idurar-erp-crm-monorepo",
+  "version": "4.1.0",
+  "private": true,
+  "description": "Root scripts to run the IDURAR backend and frontend together",
+  "engines": {
+    "npm": "10.2.4",
+    "node": "20.9.0"
+  },
+  "scripts": {
+    "install:backend": "npm --prefix backend install",
+    "install:frontend": "npm --prefix frontend install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently --kill-others-on-fail --names \"backend,frontend\" --prefix-colors \"blue,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend run preview",
+    "start": "concurrently --kill-others-on-fail --names \"backend,frontend\" --prefix-colors \"blue,magenta\" \"npm run start:backend\" \"npm run start:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "license": "Fair-code License",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idurar/idurar-erp-crm/.git"
+  }
+}
