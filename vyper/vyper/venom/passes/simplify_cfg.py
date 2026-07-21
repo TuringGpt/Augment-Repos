@@ -122,14 +122,16 @@ class SimplifyCFGPass(IRPass):
 
         # Remove phi instructions that reference removed basic blocks
         for bb in self.function.get_basic_blocks():
+            cfg_in_changed = False
             for in_bb in list(self.cfg.cfg_in(bb)):
                 if in_bb not in removed:
                     continue
 
                 self.cfg.remove_cfg_in(bb, in_bb)
+                cfg_in_changed = True
 
-            # TODO: only run this if cfg_in changed
-            self.fix_phi_instructions(bb)
+            if cfg_in_changed:
+                self.fix_phi_instructions(bb)
 
         return len(removed)
 
