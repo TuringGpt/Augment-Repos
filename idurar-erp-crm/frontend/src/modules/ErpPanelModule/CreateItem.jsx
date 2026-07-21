@@ -24,6 +24,13 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 
+const calculateLineTotal = (item = {}) => {
+  const total = calculate.multiply(item.quantity || 0, item.price || 0);
+  const discountAmount = calculate.multiply(total, calculate.divide(item.discount || 0, 100));
+
+  return calculate.sub(total, discountAmount);
+};
+
 function SaveForm({ form }) {
   const translate = useLanguage();
   const handelClick = () => {
@@ -63,8 +70,8 @@ export default function CreateItem({ config, CreateForm }) {
             let offerTotal = calculate.multiply(item['quantity'], item['offerPrice']);
             subOfferTotal = calculate.add(subOfferTotal, offerTotal);
           }
-          if (item.quantity && item.price) {
-            let total = calculate.multiply(item['quantity'], item['price']);
+          if (item.quantity !== undefined && item.price !== undefined) {
+            let total = calculateLineTotal(item);
             //sub total
             subTotal = calculate.add(subTotal, total);
           }
@@ -90,10 +97,11 @@ export default function CreateItem({ config, CreateForm }) {
     console.log('🚀 ~ onSubmit ~ fieldsValue:', fieldsValue);
     if (fieldsValue) {
       if (fieldsValue.items) {
-        let newList = [...fieldsValue.items];
-        newList.map((item) => {
-          item.total = calculate.multiply(item.quantity, item.price);
-        });
+        let newList = fieldsValue.items.map((item) => ({
+          ...item,
+          discount: item.discount ?? 0,
+          total: calculateLineTotal(item),
+        }));
         fieldsValue = {
           ...fieldsValue,
           items: newList,
