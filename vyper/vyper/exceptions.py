@@ -6,6 +6,20 @@ import types
 from vyper.compiler.settings import VYPER_ERROR_CONTEXT_LINES, VYPER_ERROR_LINE_NUMBERS
 
 
+def _exc_lineno(exc):
+    """Extract the source line number from an exception for sorting purposes."""
+    if getattr(exc, "lineno", None) is not None:
+        return exc.lineno
+    annotations = getattr(exc, "annotations", None)
+    if annotations:
+        ann = annotations[0]
+        node = ann[1] if isinstance(ann, tuple) else ann
+        lineno = getattr(node, "lineno", None)
+        if lineno is not None:
+            return lineno
+    return 0
+
+
 class ExceptionList(list):
     """
     List subclass for storing exceptions.
@@ -19,7 +33,7 @@ class ExceptionList(list):
             raise self[0]
         elif len(self) > 1:
             err_msg = ["Compilation failed with the following errors:"]
-            err_msg += [f"{type(i).__name__}: {i}" for i in reversed(self)]
+            err_msg += [f"{type(i).__name__}: {i}" for i in sorted(self, key=_exc_lineno)]
             raise VyperException("\n\n".join(err_msg))
 
 
