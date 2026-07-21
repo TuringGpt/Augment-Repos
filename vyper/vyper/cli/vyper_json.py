@@ -9,7 +9,7 @@ from typing import Any, Callable, Hashable, Optional
 
 import vyper
 from vyper.compiler.input_bundle import FileInput, JSONInput, JSONInputBundle, _normpath
-from vyper.compiler.settings import OptimizationLevel, Settings, VenomOptimizationFlags
+from vyper.compiler.settings import OptimizationLevel, Settings
 from vyper.evm.opcodes import EVM_VERSIONS
 from vyper.exceptions import JSONError
 from vyper.utils import OrderedSet, keccak256
@@ -326,14 +326,7 @@ def get_settings(input_dict: dict) -> Settings:
     else:
         assert optimize is None
 
-    debug = input_dict["settings"].get("debug", None)
-
-    # TODO: maybe change these to camelCase for consistency
-    enable_decimals = input_dict["settings"].get("enable_decimals", None)
-    disable_static_exceptions = input_dict["settings"].get("disableStaticExceptions", None)
-
-    # Create Venom optimization flags with the optimization level
-    venom_flags = VenomOptimizationFlags(level=optimize)
+    venom_kwargs = {}
 
     # Check for Venom-specific settings
     venom_settings = input_dict["settings"].get("venom", {})
@@ -363,16 +356,16 @@ def get_settings(input_dict: dict) -> Settings:
                         f"venom.{json_field} must be {expected_type.__name__}, "
                         f"got {type(value).__name__}"
                     )
-                setattr(venom_flags, attr_name, value)
+                venom_kwargs[attr_name] = value
 
-    return Settings(
+    return Settings.from_compilation_options(
         evm_version=evm_version,
         optimize=optimize,
         experimental_codegen=experimental_codegen,
-        debug=debug,
-        enable_decimals=enable_decimals,
-        disable_static_exceptions=disable_static_exceptions,
-        venom_flags=venom_flags,
+        debug=input_dict["settings"].get("debug", None),
+        enable_decimals=input_dict["settings"].get("enable_decimals", None),
+        disable_static_exceptions=input_dict["settings"].get("disableStaticExceptions", None),
+        venom_kwargs=venom_kwargs,
     )
 
 

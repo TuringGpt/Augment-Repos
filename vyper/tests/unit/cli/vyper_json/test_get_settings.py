@@ -1,6 +1,7 @@
 import pytest
 
 from vyper.cli.vyper_json import get_evm_version, get_settings
+from vyper.compiler.settings import OptimizationLevel, Settings
 from vyper.exceptions import JSONError
 
 
@@ -41,3 +42,25 @@ def test_experimental_codegen_settings():
 
     input_json = {"settings": {"experimentalCodegen": False}}
     assert get_settings(input_json).experimental_codegen is False
+
+
+def test_get_settings_uses_shared_settings_constructor():
+    input_json = {
+        "settings": {
+            "optLevel": "O3",
+            "experimentalCodegen": True,
+            "debug": True,
+            "enable_decimals": True,
+            "disableStaticExceptions": True,
+            "venom": {"disableInlining": True, "inlineThreshold": 99},
+        }
+    }
+
+    assert get_settings(input_json) == Settings.from_compilation_options(
+        optimize=OptimizationLevel.O3,
+        experimental_codegen=True,
+        debug=True,
+        enable_decimals=True,
+        disable_static_exceptions=True,
+        venom_kwargs={"disable_inlining": True, "inline_threshold": 99},
+    )
