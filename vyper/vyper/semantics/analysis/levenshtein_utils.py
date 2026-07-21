@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Callable, Iterable, Optional
 
 
 def levenshtein_norm(source: str, target: str) -> float:
@@ -78,7 +78,7 @@ def get_levenshtein_error_suggestions(*args, **kwargs) -> Callable:
 
 
 def _get_levenshtein_error_suggestions(
-    key: str, namespace: dict[str, Any], threshold: float
+    key: str, namespace: Iterable[str], threshold: float
 ) -> Optional[str]:
     """
     Generate an error message snippet for the suggested closest values in the provided namespace
@@ -92,7 +92,7 @@ def _get_levenshtein_error_suggestions(
     to ensure the matches are relevant.
 
     :param key: A string of the identifier being accessed
-    :param namespace: A dictionary of the possible identifiers
+    :param namespace: An iterable of the possible identifiers (e.g. dict keys or list of names)
     :param threshold: A floating value between 0.0 and 1.0
 
     :return: The error message snippet if the Levenshtein value is below the threshold,
@@ -108,3 +108,65 @@ def _get_levenshtein_error_suggestions(
             return f"Did you mean '{distances[0][0]}', or maybe '{distances[1][0]}'?"
         return f"Did you mean '{distances[0][0]}'?"
     return None
+
+
+def get_module_levenshtein_suggestion(
+    module_str: str, candidates: Iterable[str], threshold: float = 0.5
+) -> Optional[str]:
+    """
+    Generate a hint suggesting a closest-matching module name for a failed import.
+
+    Tries two passes:
+      1. Match against the full dotted module path (e.g. `foo.bar.baz`).
+      2. Match against the leaf component only (e.g. `baz`), and rewrite the
+         suggestion to keep the user's prefix when a unique candidate shares
+         that leaf. This catches typos in just the final segment of long paths.
+
+    :param module_str: The dotted module path the user typed (e.g. `foo.barz`)
+    :param candidates: Iterable of available dotted module paths (e.g. from search paths)
+    :param threshold: Normalized Levenshtein threshold in [0.0, 1.0]; lower means stricter
+
+    :return: A hint string of the form "did you mean `<candidate>`?", or None.
+    """
+    if not module_str:
+        return None
+
+    candidate_list = [c for c in candidates if c]
+    if not candidate_list:
+        return None
+
+    # Pass 1: full dotted-path comparison.
+    full = _get_levenshtein_error_suggestions(module_str, candidate_list, threshold)
+    if full is not None:
+        # rewrite to match the import-error hint style (lowercase, backticks)
+        return _format_module_hint(full)
+
+    # Pass 2: leaf-component comparison. Useful when the user typed
+    # `pkg.subpkg.modulr` and the available candidates include `pkg.subpkg.module`.
+    leaf = module_str.rsplit(".", 1)[-1]
+    if leaf == module_str:
+        return None
+
+    # build a one-to-one leaf -> full-path map, skipping ambiguous leaves
+    # so the rewritten suggestion below points at exactly one candidate.
+    leaves: dict[str, Optional[str]] = {}
+    for c in candidate_list:
+        c_leaf = c.rsplit(".", 1)[-1]
+        leaves[c_leaf] = None if c_leaf in leaves else c
+
+    leaf_hint = _get_levenshtein_error_suggestions(leaf, leaves.keys(), threshold)
+    if leaf_hint is None:
+        return None
+    formatted = _format_module_hint(leaf_hint)
+    # rewrite each suggested leaf back to its full dotted path
+    for c_leaf, full_path in leaves.items():
+        if full_path is None:
+            continue
+        formatted = formatted.replace(f"`{c_leaf}`", f"`{full_path}`")
+    return formatted
+
+
+def _format_module_hint(suggestion: str) -> str:
+    # rewrite the generic `Did you mean '<x>', or maybe '<y>'?` form into the
+    # lowercase, backtick-quoted style used elsewhere in import errors.
+    return suggestion.replace("Did you mean", "did you mean").replace("'", "`")

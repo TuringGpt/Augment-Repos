@@ -497,7 +497,9 @@ from ethereum.ercs import {erc}
     with pytest.raises(ModuleNotFound) as e:
         compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
     assert e.value._message == f"ethereum.ercs.{erc}"
-    assert e.value._hint == f"try renaming `{erc}` to `I{erc}`"
+    # the legacy rename hint is preserved; the levenshtein-based typo hint
+    # may additionally suggest the matching I-prefixed builtin module.
+    assert f"try renaming `{erc}` to `I{erc}`" in e.value._hint
     assert "code.vy:" in str(e.value)
 
 

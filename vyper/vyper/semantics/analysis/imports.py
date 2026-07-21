@@ -25,7 +25,10 @@ from vyper.exceptions import (
     tag_exceptions,
 )
 from vyper.semantics.analysis.base import ImportInfo
+from vyper.semantics.analysis.levenshtein_utils import get_module_levenshtein_suggestion
 from vyper.utils import OrderedSet, safe_relpath, sha256sum
+
+_IMPORT_SUFFIXES = [".vy", ".vyi", ".json"]
 
 """
 collect import statements and validate the import graph.
@@ -249,6 +252,21 @@ class ImportAnalyzer:
 
         # copy search_paths, makes debugging a bit easier
         search_paths = self.input_bundle.search_paths.copy()  # noqa: F841
+
+        # try to suggest a similarly-named module the user may have meant.
+        # for relative imports, candidates come from the current module's
+        # parent directory; for absolute imports, from all search paths.
+        candidate_search_paths: list[PathLike]
+        if level != 0:
+            candidate_search_paths = [Path(self.graph.current_module.resolved_path).parent]
+        else:
+            candidate_search_paths = list(self.absolute_search_paths)
+        candidates = self.input_bundle.available_modules(
+            _IMPORT_SUFFIXES, search_paths=candidate_search_paths
+        )
+        typo_hint = get_module_levenshtein_suggestion(module_str, candidates)
+        hint = _combine_hints(hint, typo_hint)
+
         raise ModuleNotFound(module_str, hint=hint) from err
 
     def _load_file(self, path: PathLike, level: int) -> CompilerInput:
@@ -372,6 +390,8 @@ def _load_builtin_import(level: int, module_str: str) -> tuple[CompilerInput, vy
         if components[-1].startswith("ERC"):
             module_prefix = components[-1]
             hint = f"try renaming `{module_prefix}` to `I{module_prefix}`"
+        typo_hint = get_module_levenshtein_suggestion(module_str, _list_builtin_modules())
+        hint = _combine_hints(hint, typo_hint)
         raise ModuleNotFound(module_str, hint=hint) from e
 
     builtin_ast = _parse_ast(file)
@@ -380,6 +400,55 @@ def _load_builtin_import(level: int, module_str: str) -> tuple[CompilerInput, vy
 
     _builtins_cache[path] = file, builtin_ast
     return file, builtin_ast
+
+
+def _combine_hints(*hints: Optional[str]) -> Optional[str]:
+    parts = [h for h in hints if h]
+    if not parts:
+        return None
+    if len(parts) == 1:
+        return parts[0]
+    return "; ".join(parts)
+
+
+_builtin_modules_cache: Optional[set[str]] = None
+
+
+def _list_builtin_modules() -> set[str]:
+    """Return the set of dotted module paths importable as builtins.
+
+    Walks each package in `BUILTIN_MODULE_RULES` for files matching the
+    rule's suffix and reconstructs the user-facing dotted import paths
+    (e.g. ``ethereum.ercs.IERC20``, ``math``-prefixed stdlib modules).
+    """
+    global _builtin_modules_cache
+    if _builtin_modules_cache is not None:
+        return _builtin_modules_cache
+
+    results: set[str] = set()
+    for module_prefix, (remove_prefix, target_package, suffix) in BUILTIN_MODULE_RULES.items():
+        package_root = Path(vyper.builtins.__path__[0]).parent.parent
+        # target_package is dotted; convert to a path under the builtins root
+        package_dir = package_root / Path(*target_package.split("."))
+        if not package_dir.is_dir():
+            continue
+        for p in package_dir.rglob(f"*{suffix}"):
+            if not p.is_file():
+                continue
+            try:
+                rel = p.relative_to(package_dir).with_suffix("")
+            except ValueError:
+                continue
+            base_name = rel.as_posix().replace("/", ".")
+            if remove_prefix:
+                dotted = f"{module_prefix}.{base_name}" if base_name else module_prefix
+            else:
+                # math: the import path is bare (no prefix)
+                dotted = base_name
+            if dotted:
+                results.add(dotted)
+    _builtin_modules_cache = results
+    return results
 
 
 def resolve_imports(module_ast: vy_ast.Module, input_bundle: InputBundle):

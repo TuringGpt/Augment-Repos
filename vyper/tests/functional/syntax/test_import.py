@@ -194,3 +194,79 @@ def bar():
 
     input_bundle = make_input_bundle({"top.vy": top, "a.vy": a, "subdir/b.vy": b})
     compiler.compile_from_file_input(top, input_bundle=input_bundle)
+
+
+def test_typo_suggestion_for_absolute_import(make_input_bundle):
+    # user typed `helpres` but `helpers` is available
+    top = """
+import helpres as h
+@external
+def foo():
+    h.foo()
+    """
+    helpers = """
+def foo():
+    pass
+    """
+    input_bundle = make_input_bundle({"top.vy": top, "helpers.vy": helpers})
+    file_input = input_bundle.load_file("top.vy")
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+    assert "did you mean `helpers`?" in (e.value._hint or "")
+
+
+def test_typo_suggestion_for_relative_import(make_input_bundle):
+    # user typed `.utlis` in a relative import; `.utils` is in the same dir
+    top = """
+import subdir.lib as lib
+@external
+def foo():
+    lib.foo()
+    """
+    lib = """
+from . import utlis as u
+def foo():
+    u.helper()
+    """
+    utils = """
+def helper():
+    pass
+    """
+    input_bundle = make_input_bundle(
+        {"top.vy": top, "subdir/lib.vy": lib, "subdir/utils.vy": utils}
+    )
+    file_input = input_bundle.load_file("top.vy")
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+    assert "did you mean `utils`?" in (e.value._hint or "")
+
+
+def test_typo_suggestion_for_builtin(make_input_bundle):
+    # user typed a near-miss of a builtin module
+    code = """
+from ethereum.ercs import IERC2O  # typo: O instead of 0
+    """
+    input_bundle = make_input_bundle({"code.vy": code})
+    file_input = input_bundle.load_file("code.vy")
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+    assert "did you mean `ethereum.ercs.IERC20`" in (e.value._hint or "")
+
+
+def test_no_typo_suggestion_when_nothing_close(make_input_bundle):
+    top = """
+import totally_unrelated_zzz as z
+@external
+def foo():
+    z.foo()
+    """
+    helpers = """
+def foo():
+    pass
+    """
+    input_bundle = make_input_bundle({"top.vy": top, "helpers.vy": helpers})
+    file_input = input_bundle.load_file("top.vy")
+    with pytest.raises(ModuleNotFound) as e:
+        compiler.compile_from_file_input(file_input, input_bundle=input_bundle)
+    hint = e.value._hint or ""
+    assert "did you mean" not in hint
