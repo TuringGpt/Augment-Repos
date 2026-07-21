@@ -103,7 +103,7 @@ def exc_handler_raises(file_path: Optional[str], exception: Exception, component
     raise exception
 
 
-def exc_handler_to_dict(file_path: Optional[str], exception: Exception, component: str) -> dict:
+def _format_error_dict(file_path: Optional[str], exception: Exception, component: str) -> dict:
     err_dict: dict = {
         "type": type(exception).__name__,
         "component": component,
@@ -124,7 +124,14 @@ def exc_handler_to_dict(file_path: Optional[str], exception: Exception, componen
                 }
             )
 
-    output_json = {"compiler": f"vyper-{vyper.__version__}", "errors": [err_dict]}
+    return err_dict
+
+
+def exc_handler_to_dict(file_path: Optional[str], exception: Exception, component: str) -> dict:
+    output_json = {
+        "compiler": f"vyper-{vyper.__version__}",
+        "errors": [_format_error_dict(file_path, exception, component)],
+    }
     return output_json
 
 
@@ -378,7 +385,7 @@ def get_settings(input_dict: dict) -> Settings:
 
 def compile_from_input_dict(
     input_dict: dict, exc_handler: Callable = exc_handler_raises
-) -> tuple[dict, dict]:
+) -> tuple[dict, dict, list[dict]]:
     if input_dict["language"] != "Vyper":
         raise JSONError(f"Invalid language '{input_dict['language']}' - Only Vyper is supported.")
 
@@ -396,7 +403,7 @@ def compile_from_input_dict(
 
     input_bundle = JSONInputBundle(sources, search_paths=search_paths)
 
-    res, warnings_dict = {}, {}
+    res, warnings_dict, errors = {}, {}, []
     warnings.simplefilter("always")
     for contract_path in compilation_targets:
         storage_layout_override = storage_layout_overrides.get(contract_path)
@@ -417,12 +424,16 @@ def compile_from_input_dict(
                 assert isinstance(data, dict)
                 data["source_id"] = file.source_id
             except Exception as exc:
-                return exc_handler(contract_path, exc, "compiler"), {}
+                handled = exc_handler(contract_path, exc, "compiler")
+                if isinstance(handled, dict) and "errors" in handled:
+                    errors.extend(handled["errors"])
+                    continue
+                return handled, {}, []
             res[contract_path] = data
             if caught_warnings:
                 warnings_dict[contract_path] = caught_warnings
 
-    return res, warnings_dict
+    return res, warnings_dict, errors
 
 
 # convert output of compile_input_dict to final output format
@@ -521,7 +532,7 @@ def compile_json(
             input_dict = input_json
 
         try:
-            compiler_data, warn_data = compile_from_input_dict(input_dict, exc_handler)
+            compiler_data, warn_data, error_data = compile_from_input_dict(input_dict, exc_handler)
             if "errors" in compiler_data:
                 return compiler_data
         except KeyError as exc:
@@ -530,9 +541,15 @@ def compile_json(
         except (FileNotFoundError, JSONError) as exc:
             return exc_handler(json_path, exc, "json")
 
-        output_dict = format_to_output_dict(compiler_data)
+        if error_data and not compiler_data and not warn_data:
+            output_dict = {"compiler": f"vyper-{vyper.__version__}", "errors": error_data}
+        else:
+            output_dict = format_to_output_dict(compiler_data)
+            if error_data:
+                output_dict["errors"] = error_data
+
         if warn_data:
-            output_dict["errors"] = []
+            output_dict.setdefault("errors", [])
             for path, msg in ((k, x) for k, v in warn_data.items() for x in v):
                 output_dict["errors"].append(
                     {

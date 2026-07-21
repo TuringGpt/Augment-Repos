@@ -305,12 +305,38 @@ def test_exc_handler_raises_compiler(input_json):
 def test_exc_handler_to_dict_compiler(input_json):
     input_json["sources"]["badcode.vy"] = {"content": BAD_COMPILER_CODE}
     result = compile_json(input_json, exc_handler_to_dict)
-    assert sorted(result.keys()) == ["compiler", "errors"]
+    assert sorted(result.keys()) == ["compiler", "contracts", "errors", "sources"]
     assert result["compiler"] == f"vyper-{vyper.__version__}"
+    assert list(result["contracts"].keys()) == [
+        "contracts/foo.vy",
+        "contracts/library.vy",
+        "contracts/bar.vy",
+    ]
     assert len(result["errors"]) == 1
     error = result["errors"][0]
     assert error["component"] == "compiler"
     assert error["type"] == "TypeMismatch"
+
+
+def test_exc_handler_to_dict_multiple_contract_errors(input_json):
+    input_json["sources"]["contracts/badsyntax.vy"] = {"content": BAD_SYNTAX_CODE}
+    input_json["sources"]["contracts/badcompiler.vy"] = {"content": BAD_COMPILER_CODE}
+    input_json["settings"]["outputSelection"] = {
+        "contracts/foo.vy": ["abi"],
+        "contracts/badsyntax.vy": ["abi"],
+        "contracts/library.vy": ["abi"],
+        "contracts/badcompiler.vy": ["abi"],
+    }
+
+    result = compile_json(input_json, exc_handler_to_dict)
+
+    assert list(result["contracts"].keys()) == ["contracts/foo.vy", "contracts/library.vy"]
+    assert len(result["errors"]) == 2
+    assert [error["sourceLocation"]["file"] for error in result["errors"]] == [
+        PurePath("contracts/badsyntax.vy"),
+        PurePath("contracts/badcompiler.vy"),
+    ]
+    assert [error["type"] for error in result["errors"]] == ["SyntaxException", "TypeMismatch"]
 
 
 def test_unknown_storage_layout_overrides(input_json):
