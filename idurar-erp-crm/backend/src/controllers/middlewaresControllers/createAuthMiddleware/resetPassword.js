@@ -4,6 +4,7 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 
 const shortid = require('shortid');
+const { ONE_DAY_MS, setAuthCookie } = require('../../../utils/authCookie');
 
 const resetPassword = async (req, res, { userModel }) => {
   const UserPassword = mongoose.model(userModel + 'Password');
@@ -84,16 +85,9 @@ const resetPassword = async (req, res, { userModel }) => {
     resetToken === databasePassword.resetToken &&
     databasePassword.resetToken !== undefined &&
     databasePassword.resetToken !== null
-  )
-    //  .cookie(`token_${user.cloud}`, token, {
-    //       maxAge: 24 * 60 * 60 * 1000,
-    //       sameSite: 'None',
-    //       httpOnly: true,
-    //       secure: true,
-    //       domain: req.hostname,
-    //       path: '/',
-    //       Partitioned: true,
-    //     })
+  ) {
+    setAuthCookie(res, token, { maxAge: ONE_DAY_MS });
+
     return res.status(200).json({
       success: true,
       result: {
@@ -108,6 +102,7 @@ const resetPassword = async (req, res, { userModel }) => {
       },
       message: 'Successfully resetPassword user',
     });
+  }
 };
 
 module.exports = resetPassword;

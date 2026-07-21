@@ -68,6 +68,22 @@ npm run dev
 
 This command will start the backend server, and it will listen for incoming requests.
 
+#### Production reverse proxy and cookie settings
+
+If the backend is deployed behind a reverse proxy or load balancer, configure Express to trust the proxy so secure cookies and HTTPS detection work correctly:
+
+```bash
+NODE_ENV=production
+TRUST_PROXY=1
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=none
+```
+
+- Set `TRUST_PROXY` to the number of trusted proxy hops in front of Express. For a single Nginx, ingress, load balancer, or PaaS proxy, use `1`. Use a stricter IP/subnet value if your hosting provider requires it.
+- Keep `COOKIE_SECURE=true` in production and terminate traffic over HTTPS. The proxy must forward `X-Forwarded-Proto: https`.
+- Use `COOKIE_SAME_SITE=none` when the frontend and API are on different sites and cookies must be sent cross-site. If they are same-site, `lax` is usually enough.
+- Optionally set `COOKIE_DOMAIN=.example.com` to share the auth cookie across subdomains, and `AUTH_COOKIE_NAME` to override the default cookie name.
+
 #### Step 8: Install Frontend Dependencies
 
 Open a new terminal window , and run the following command to install the frontend dependencies:

@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
+const { clearAuthCookie, getAuthTokenFromRequest } = require('../../../utils/authCookie');
 
 const logout = async (req, res, { userModel }) => {
   const UserPassword = mongoose.model(userModel + 'Password');
 
-  // const token = req.cookies[`token_${cloud._id}`];
-
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Extract the token
+  const token = getAuthTokenFromRequest(req);
 
   if (token)
     await UserPassword.findOneAndUpdate(
@@ -24,6 +22,8 @@ const logout = async (req, res, { userModel }) => {
         new: true,
       }
     ).exec();
+
+  clearAuthCookie(res);
 
   return res.json({
     success: true,
