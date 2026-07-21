@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Divider } from 'antd';
+import { Divider, notification } from 'antd';
 
 import { Button, Row, Col, Descriptions, Statistic, Tag } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 import {
+  CopyOutlined,
   EditOutlined,
   FilePdfOutlined,
   CloseCircleOutlined,
@@ -123,6 +124,23 @@ export default function ReadItem({ config, selectedItem }) {
     }
   }, [currentErp]);
 
+  const publicLink = typeof config.getPublicLink === 'function' ? config.getPublicLink(currentErp) : null;
+
+  const handleCopyPublicLink = async () => {
+    if (!publicLink) return;
+
+    try {
+      await navigator.clipboard.writeText(publicLink);
+      notification.success({
+        message: config.copyPublicLinkSuccessMessage || translate('link_copied_successfully'),
+      });
+    } catch (error) {
+      notification.error({
+        message: translate('failed_to_copy_link'),
+      });
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -161,6 +179,11 @@ export default function ReadItem({ config, selectedItem }) {
           >
             {translate('Download PDF')}
           </Button>,
+          publicLink && (
+            <Button key="copy-public-link" onClick={handleCopyPublicLink} icon={<CopyOutlined />}>
+              {config.copyPublicLinkLabel || translate('Copy link')}
+            </Button>
+          ),
           <Button
             key={`${uniqueId()}`}
             loading={mailInProgress}
