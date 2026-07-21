@@ -51,8 +51,32 @@ def test_contracts_keccak():
 
 
 def test_contracts_outside_pwd():
+    # path traversal: source paths must not escape the (virtual) root
     input_json = {"sources": {"../foo.vy": {"content": FOO_CODE}}}
-    get_inputs(input_json)
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_contracts_escaping_path():
+    # a path which normalizes to escape the root is also rejected
+    input_json = {"sources": {"a/../../foo.vy": {"content": FOO_CODE}}}
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_contracts_absolute_path():
+    input_json = {"sources": {"/etc/passwd.vy": {"content": FOO_CODE}}}
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
+
+
+def test_interfaces_traversal():
+    input_json = {
+        "sources": {"foo.vy": {"content": FOO_CODE}},
+        "interfaces": {"../bar.json": {"abi": []}},
+    }
+    with pytest.raises(JSONError):
+        get_inputs(input_json)
 
 
 def test_contract_collision():
