@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
-const { increaseBySettingKey } = require('@/middlewares/settings');
+const { getNextSequence } = require('@/middlewares/sequence');
 const schema = require('./schemaValidate');
 
 const create = async (req, res) => {
@@ -47,6 +47,13 @@ const create = async (req, res) => {
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;
 
+  // Atomically allocate the invoice number/year so concurrent creates can never
+  // collide; the client-provided values are ignored in favour of the sequence.
+  const year = value.year || new Date(value.date).getFullYear();
+  const sequence = await getNextSequence({ entity: 'invoice', year });
+  body['number'] = sequence.number;
+  body['year'] = sequence.year;
+
   // Creating a new document in the collection
   const result = await new Model(body).save();
   const fileId = 'invoice-' + result._id + '.pdf';
@@ -57,11 +64,6 @@ const create = async (req, res) => {
       new: true,
     }
   ).exec();
-  // Returning successfull response
-
-  increaseBySettingKey({
-    settingKey: 'last_invoice_number',
-  });
 
   // Returning successfull response
   return res.status(200).json({
