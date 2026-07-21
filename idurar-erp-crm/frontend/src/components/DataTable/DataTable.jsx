@@ -18,10 +18,12 @@ import { selectListItems } from '@/redux/crud/selectors';
 import useLanguage from '@/locale/useLanguage';
 import { dataForTable } from '@/utils/dataStructure';
 import { useMoney, useDate } from '@/settings';
+import useDataTablePreferences from '@/hooks/useDataTablePreferences';
 
 import { generate as uniqueId } from 'shortid';
 
 import { useCrudContext } from '@/context/crud';
+import TablePreferences from './TablePreferences';
 
 function AddNewItem({ config }) {
   const { crudContextAction } = useCrudContext();
@@ -103,48 +105,59 @@ export default function DataTable({ config, extra = [] }) {
     dispatchColumns = [...dataTableColumns];
   }
 
-  dataTableColumns = [
-    ...dispatchColumns,
-    {
-      title: '',
-      key: 'action',
-      fixed: 'right',
-      render: (_, record) => (
-        <Dropdown
-          menu={{
-            items,
-            onClick: ({ key }) => {
-              switch (key) {
-                case 'read':
-                  handleRead(record);
-                  break;
-                case 'edit':
-                  handleEdit(record);
-                  break;
+  const actionColumn = {
+    title: '',
+    key: 'action',
+    fixed: 'right',
+    render: (_, record) => (
+      <Dropdown
+        menu={{
+          items,
+          onClick: ({ key }) => {
+            switch (key) {
+              case 'read':
+                handleRead(record);
+                break;
+              case 'edit':
+                handleEdit(record);
+                break;
 
-                case 'delete':
-                  handleDelete(record);
-                  break;
-                case 'updatePassword':
-                  handleUpdatePassword(record);
-                  break;
+              case 'delete':
+                handleDelete(record);
+                break;
+              case 'updatePassword':
+                handleUpdatePassword(record);
+                break;
 
-                default:
-                  break;
-              }
-              // else if (key === '2')handleCloseTask
-            },
-          }}
-          trigger={['click']}
-        >
-          <EllipsisOutlined
-            style={{ cursor: 'pointer', fontSize: '24px' }}
-            onClick={(e) => e.preventDefault()}
-          />
-        </Dropdown>
-      ),
-    },
-  ];
+              default:
+                break;
+            }
+            // else if (key === '2')handleCloseTask
+          },
+        }}
+        trigger={['click']}
+      >
+        <EllipsisOutlined
+          style={{ cursor: 'pointer', fontSize: '24px' }}
+          onClick={(e) => e.preventDefault()}
+        />
+      </Dropdown>
+    ),
+  };
+
+  const {
+    visibleColumns,
+    columnOptions,
+    selectedColumnKeys,
+    pageSize,
+    pageSizeOptions,
+    handleVisibleColumnsChange,
+    handlePageSizeChange,
+  } = useDataTablePreferences({
+    entity,
+    columns: [...dispatchColumns, actionColumn],
+    lockedColumnKeys: ['action'],
+  });
 
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
 
@@ -152,19 +165,31 @@ export default function DataTable({ config, extra = [] }) {
 
   const dispatch = useDispatch();
 
-  const handelDataTableLoad = useCallback((pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
+  const handelDataTableLoad = useCallback((pagination = {}) => {
+    const nextPageSize = Number(pagination.pageSize) || pageSize;
+
+    if (nextPageSize !== pageSize) {
+      handlePageSizeChange(nextPageSize);
+    }
+
+    const options = { page: pagination.current || 1, items: nextPageSize };
     dispatch(crud.list({ entity, options }));
-  }, []);
+  }, [dispatch, entity, pageSize, handlePageSizeChange]);
+
+  const handleTablePageSizeChange = (nextPageSize) => {
+    const size = Number(nextPageSize) || pageSize;
+    handlePageSizeChange(size);
+    dispatch(crud.list({ entity, options: { page: 1, items: size } }));
+  };
 
   const filterTable = (e) => {
     const value = e.target.value;
-    const options = { q: value, fields: searchConfig?.searchFields || '' };
+    const options = { page: 1, items: pageSize, q: value, fields: searchConfig?.searchFields || '' };
     dispatch(crud.list({ entity, options }));
   };
 
   const dispatcher = () => {
-    dispatch(crud.list({ entity }));
+    dispatch(crud.list({ entity, options: { page: 1, items: pageSize } }));
   };
 
   useEffect(() => {
@@ -189,6 +214,15 @@ export default function DataTable({ config, extra = [] }) {
             placeholder={translate('search')}
             allowClear
           />,
+          <TablePreferences
+            key="table-preferences"
+            columnOptions={columnOptions}
+            selectedColumnKeys={selectedColumnKeys}
+            pageSize={pageSize}
+            pageSizeOptions={pageSizeOptions}
+            onColumnsChange={handleVisibleColumnsChange}
+            onPageSizeChange={handleTablePageSizeChange}
+          />,
           <Button onClick={handelDataTableLoad} key={`${uniqueId()}`} icon={<RedoOutlined />}>
             {translate('Refresh')}
           </Button>,
@@ -201,10 +235,10 @@ export default function DataTable({ config, extra = [] }) {
       ></PageHeader>
 
       <Table
-        columns={dataTableColumns}
+        columns={visibleColumns}
         rowKey={(item) => item._id}
         dataSource={dataSource}
-        pagination={pagination}
+        pagination={{ ...pagination, pageSize }}
         loading={listIsLoading}
         onChange={handelDataTableLoad}
         scroll={{ x: true }}

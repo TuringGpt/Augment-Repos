@@ -14,8 +14,10 @@ import { Dropdown, Table, Button } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 
 import AutoCompleteAsync from '@/components/AutoCompleteAsync';
+import TablePreferences from '@/components/DataTable/TablePreferences';
 import { useSelector, useDispatch } from 'react-redux';
 import useLanguage from '@/locale/useLanguage';
+import useDataTablePreferences from '@/hooks/useDataTablePreferences';
 import { erp } from '@/redux/erp/actions';
 import { selectListItems } from '@/redux/erp/selectors';
 import { useErpContext } from '@/context/erp';
@@ -104,59 +106,82 @@ export default function DataTable({ config, extra = [] }) {
     navigate(`/invoice/pay/${record._id}`);
   };
 
-  dataTableColumns = [
-    ...dataTableColumns,
-    {
-      title: '',
-      key: 'action',
-      fixed: 'right',
-      render: (_, record) => (
-        <Dropdown
-          menu={{
-            items,
-            onClick: ({ key }) => {
-              switch (key) {
-                case 'read':
-                  handleRead(record);
-                  break;
-                case 'edit':
-                  handleEdit(record);
-                  break;
-                case 'download':
-                  handleDownload(record);
-                  break;
-                case 'delete':
-                  handleDelete(record);
-                  break;
-                case 'recordPayment':
-                  handleRecordPayment(record);
-                  break;
-                default:
-                  break;
-              }
-              // else if (key === '2')handleCloseTask
-            },
-          }}
-          trigger={['click']}
-        >
-          <EllipsisOutlined
-            style={{ cursor: 'pointer', fontSize: '24px' }}
-            onClick={(e) => e.preventDefault()}
-          />
-        </Dropdown>
-      ),
-    },
-  ];
+  const actionColumn = {
+    title: '',
+    key: 'action',
+    fixed: 'right',
+    render: (_, record) => (
+      <Dropdown
+        menu={{
+          items,
+          onClick: ({ key }) => {
+            switch (key) {
+              case 'read':
+                handleRead(record);
+                break;
+              case 'edit':
+                handleEdit(record);
+                break;
+              case 'download':
+                handleDownload(record);
+                break;
+              case 'delete':
+                handleDelete(record);
+                break;
+              case 'recordPayment':
+                handleRecordPayment(record);
+                break;
+              default:
+                break;
+            }
+            // else if (key === '2')handleCloseTask
+          },
+        }}
+        trigger={['click']}
+      >
+        <EllipsisOutlined
+          style={{ cursor: 'pointer', fontSize: '24px' }}
+          onClick={(e) => e.preventDefault()}
+        />
+      </Dropdown>
+    ),
+  };
+
+  const {
+    visibleColumns,
+    columnOptions,
+    selectedColumnKeys,
+    pageSize,
+    pageSizeOptions,
+    handleVisibleColumnsChange,
+    handlePageSizeChange,
+  } = useDataTablePreferences({
+    entity,
+    columns: [...dataTableColumns, actionColumn],
+    lockedColumnKeys: ['action'],
+  });
 
   const dispatch = useDispatch();
 
-  const handelDataTableLoad = (pagination) => {
-    const options = { page: pagination.current || 1, items: pagination.pageSize || 10 };
+  const handelDataTableLoad = (pagination = {}) => {
+    const nextPageSize = Number(pagination.pageSize) || pageSize;
+
+    if (nextPageSize !== pageSize) {
+      handlePageSizeChange(nextPageSize);
+    }
+
+    const options = { page: pagination.current || 1, items: nextPageSize };
     dispatch(erp.list({ entity, options }));
   };
 
+  const handleTablePageSizeChange = (nextPageSize) => {
+    const size = Number(nextPageSize) || pageSize;
+    handlePageSizeChange(size);
+    dispatch(erp.list({ entity, options: { page: 1, items: size } }));
+  };
+
   const dispatcher = () => {
-    dispatch(erp.list({ entity }));
+    dispatch(erp.list({ entity, options: { page: 1, items: pageSize } }));
   };
 
   useEffect(() => {
@@ -168,7 +193,7 @@ export default function DataTable({ config, extra = [] }) {
   }, []);
 
   const filterTable = (value) => {
-    const options = { equal: value, filter: searchConfig?.entity };
+    const options = { page: 1, items: pageSize, equal: value, filter: searchConfig?.entity };
     dispatch(erp.list({ entity, options }));
   };
 
@@ -190,6 +215,15 @@ export default function DataTable({ config, extra = [] }) {
             // withRedirect
             // urlToRedirect={'/customer'}
           />,
+          <TablePreferences
+            key="table-preferences"
+            columnOptions={columnOptions}
+            selectedColumnKeys={selectedColumnKeys}
+            pageSize={pageSize}
+            pageSizeOptions={pageSizeOptions}
+            onColumnsChange={handleVisibleColumnsChange}
+            onPageSizeChange={handleTablePageSizeChange}
+          />,
           <Button onClick={handelDataTableLoad} key="refresh-button" icon={<RedoOutlined />}>
             {translate('Refresh')}
           </Button>,
@@ -202,10 +236,10 @@ export default function DataTable({ config, extra = [] }) {
       ></PageHeader>
 
       <Table
-        columns={dataTableColumns}
+        columns={visibleColumns}
         rowKey={(item) => item._id}
         dataSource={dataSource}
-        pagination={pagination}
+        pagination={{ ...pagination, pageSize }}
         loading={listIsLoading}
         onChange={handelDataTableLoad}
         scroll={{ x: true }}
