@@ -37,6 +37,16 @@ def get_contract_info(source_code):
     return py_ast, pre_parser.reformatted_code
 
 
+def get_contract_info_with_original_source(source_code):
+    pre_parser = PreParser(is_interface=False)
+    pre_parser.parse(source_code)
+    py_ast = python_ast.parse(pre_parser.reformatted_code)
+
+    annotate_python_ast(py_ast, source_code, pre_parser)
+
+    return py_ast
+
+
 def test_it_annotates_ast_with_source_code():
     contract_ast, reformatted_code = get_contract_info(TEST_CONTRACT_SOURCE_CODE)
 
@@ -65,3 +75,22 @@ def test_it_rewrites_unary_subtractions():
 
     assert isinstance(return_stmt.value, python_ast.Constant)
     assert return_stmt.value.value == -1
+
+
+def test_for_loop_annotation_source_is_spliced_from_real_target():
+    source_code = """
+@external
+def foo():
+    for i: uint256 in range(3):
+        pass
+    """
+    contract_ast = get_contract_info_with_original_source(source_code)
+
+    function_def = contract_ast.body[0]
+    for_node = function_def.body[0]
+    ann_assign = for_node.target
+
+    assert isinstance(ann_assign, python_ast.AnnAssign)
+    assert ann_assign.target.id == "i"
+    assert ann_assign.annotation.id == "uint256"
+    assert ann_assign.node_source_code == "i: uint256"

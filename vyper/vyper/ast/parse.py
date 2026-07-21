@@ -315,6 +315,47 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
         node.ast_type = self._pre_parser.keyword_translations[(node.lineno, node.col_offset)]
         return node
 
+    def _visit_for_loop_annotation(self, node, annotation_tokens):
+        """
+        Parse and return the type annotation for a Vyper for-loop target.
+
+        The pre-parser removes these annotations from the source presented to
+        Python's parser because PEP-526 does not allow annotated for-loop
+        targets. Parse the removed tokens as an annotated assignment only to
+        obtain the annotation expression, then let the caller construct the
+        actual target node with source locations from the real loop target.
+        """
+        # untokenize preserves the original line and column offsets, giving us
+        # something like `\
+        # \
+        # \
+        #   uint8`. Prefixing a dummy target makes it a valid Python statement
+        # while preserving locations on the annotation expression itself.
+        annotation_str = tokenize.untokenize(annotation_tokens)
+        annotation_str = "dummy_target:" + annotation_str
+
+        try:
+            parsed_node = python_ast.parse(annotation_str).body[0]
+            parsed_node = _deepcopy_ast(parsed_node)
+        except SyntaxError as e:
+            raise SyntaxException(
+                "invalid type annotation", self._source_code, node.lineno, node.col_offset
+            ) from e
+
+        if not isinstance(parsed_node, python_ast.AnnAssign):  # pragma: nocover
+            raise CompilerPanic("Unexpected AST node while parsing for-loop annotation")
+
+        # block things like `for x: uint256 = 5 in ...`
+        if (value_node := parsed_node.value) is not None:
+            raise SyntaxException(
+                "invalid type annotation",
+                self._source_code,
+                value_node.lineno,
+                value_node.col_offset,
+            )
+
+        return parsed_node.annotation
+
     def visit_For(self, node):
         """
         Visit a For node, splicing in the loop variable annotation provided by
@@ -335,45 +376,24 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
                 node.col_offset,
             )
 
-        # some kind of black magic. untokenize preserves the line and column
-        # offsets, giving us something like `\
-        # \
-        # \
-        #   uint8`
-        # that's not a valid python Expr because it is indented.
-        # but it's good because the code is indented to exactly the same
-        # offset as it did in the original source!
-        # (to best understand this, print out annotation_str and
-        # self._source_code and compare them side-by-side).
-        #
-        # what we do here is add in a dummy target which we will remove
-        # in a bit, but for now lets us keep the line/col offset, and
-        # *also* gives us a valid AST. it doesn't matter what the dummy
-        # target name is, since it gets removed in a few lines.
-        annotation_str = tokenize.untokenize(annotation_tokens)
-        annotation_str = "dummy_target:" + annotation_str
+        annotation = self._visit_for_loop_annotation(node, annotation_tokens)
+        target = node.target
 
-        try:
-            fake_node = python_ast.parse(annotation_str).body[0]
-            # do we need to fix location info here?
-            fake_node = _deepcopy_ast(fake_node)
-        except SyntaxError as e:
-            raise SyntaxException(
-                "invalid type annotation", self._source_code, node.lineno, node.col_offset
-            ) from e
-        # block things like `for x: uint256 = 5 in ...`
-        if (value_node := fake_node.value) is not None:
-            raise SyntaxException(
-                "invalid type annotation",
-                self._source_code,
-                value_node.lineno,
-                value_node.col_offset,
-            )
-
-        # replace the dummy target name with the real target name.
-        fake_node.target = node.target
-        # replace the For node target with the new ann_assign
-        node.target = fake_node
+        # Replace the For node target with an AnnAssign representing the Vyper
+        # loop variable declaration. Constructing the node directly avoids
+        # mutating the temporary AST used to parse the annotation and keeps the
+        # source range pinned to the real target and annotation.
+        ann_assign = python_ast.AnnAssign(
+            target=target,
+            annotation=annotation,
+            value=None,
+            simple=int(isinstance(target, python_ast.Name)),
+        )
+        ann_assign.lineno = target.lineno
+        ann_assign.col_offset = target.col_offset
+        ann_assign.end_lineno = annotation.end_lineno
+        ann_assign.end_col_offset = annotation.end_col_offset
+        node.target = ann_assign
 
         return self.generic_visit(node)
 
