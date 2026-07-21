@@ -625,7 +625,7 @@ def annotate_source_code(
     if lineno is None:
         return ""
 
-    source_lines = source_code.splitlines(keepends=True)
+    source_lines = source_code.splitlines()
     if lineno < 1 or lineno > len(source_lines):
         raise ValueError("Line number is out of range")
 
@@ -633,48 +633,27 @@ def annotate_source_code(
     start_offset = max(0, line_offset - context_lines)
     end_offset = min(len(source_lines), line_offset + context_lines + 1)
 
-    line_repr = source_lines[line_offset]
-    if "\n" not in line_repr[-2:]:  # Handle certain edge cases
-        line_repr += "\n"
-    if col_offset is None:
-        mark_repr = ""
-    else:
-        mark_repr = "-" * col_offset + "^" + "\n"
+    # rustc-style rendering: line numbers live in a left gutter separated from
+    # the source by a "|", and the source location is marked by a "^" caret on
+    # the line directly below the offending line, aligned to ``col_offset``.
+    gutter_width = len(str(end_offset)) if line_numbers else 0
 
-    before_lines = "".join(source_lines[start_offset:line_offset])
-    after_lines = "".join(source_lines[line_offset + 1 : end_offset])
-    location_repr = "".join((before_lines, line_repr, mark_repr, after_lines))
+    def gutter(lineno_repr=None):
+        if not line_numbers:
+            return ""
+        label = "" if lineno_repr is None else str(lineno_repr)
+        return f"{label:>{gutter_width}} | "
 
-    if line_numbers:
-        # Create line numbers
-        lineno_reprs = [f"{i} " for i in range(start_offset + 1, end_offset + 1)]
+    annotated_lines = []
+    for offset in range(start_offset, end_offset):
+        source_line = source_lines[offset].rstrip()
+        annotated_lines.append(f"{gutter(offset + 1)}{source_line}".rstrip())
 
-        # Highlight line identified by `lineno`
-        local_line_off = line_offset - start_offset
-        lineno_reprs[local_line_off] = "---> " + lineno_reprs[local_line_off]
+        if offset == line_offset and col_offset is not None:
+            caret_line = f"{gutter()}{' ' * col_offset}^"
+            annotated_lines.append(caret_line.rstrip())
 
-        # Calculate width of widest line no
-        max_len = max(len(i) for i in lineno_reprs)
-
-        # Justify all line nos according to this width
-        justified_reprs = [i.rjust(max_len) for i in lineno_reprs]
-        if col_offset is not None:
-            justified_reprs.insert(local_line_off + 1, "-" * max_len)
-
-        location_repr = indent(location_repr, indent_chars=justified_reprs)
-
-    # Ensure no trailing whitespace and trailing blank lines are only included
-    # if they are part of the source code
-    if col_offset is None:
-        # Number of lines doesn't include column marker line
-        num_lines = end_offset - start_offset
-    else:
-        num_lines = end_offset - start_offset + 1
-
-    cleanup_lines = [line.rstrip() for line in location_repr.splitlines()]
-    cleanup_lines += [""] * (num_lines - len(cleanup_lines))
-
-    return "\n".join(cleanup_lines)
+    return "\n".join(annotated_lines)
 
 
 def safe_relpath(path):
