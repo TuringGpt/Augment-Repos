@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
+const dayjs = require('dayjs');
 
 const Model = mongoose.model('Invoice');
 
@@ -24,9 +24,9 @@ const summary = async (req, res) => {
     }
   }
 
-  const currentDate = moment();
-  let startDate = currentDate.clone().startOf(defaultType);
-  let endDate = currentDate.clone().endOf(defaultType);
+  const currentDate = dayjs();
+  let startDate = currentDate.startOf(defaultType);
+  let endDate = currentDate.endOf(defaultType);
 
   const statuses = ['draft', 'pending', 'overdue', 'paid', 'unpaid', 'partially'];
 

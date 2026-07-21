@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
+const dayjs = require('dayjs');
 
 const InvoiceModel = mongoose.model('Invoice');
 
@@ -17,9 +17,9 @@ const summary = async (Model, req, res) => {
     });
   }
 
-  const currentDate = moment();
-  let startDate = currentDate.clone().startOf(defaultType);
-  let endDate = currentDate.clone().endOf(defaultType);
+  const currentDate = dayjs();
+  let startDate = currentDate.startOf(defaultType);
+  let endDate = currentDate.endOf(defaultType);
 
   const pipeline = [
     {
