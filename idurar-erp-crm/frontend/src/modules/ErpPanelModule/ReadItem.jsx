@@ -9,11 +9,13 @@ import {
   CloseCircleOutlined,
   RetweetOutlined,
   MailOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
 import useLanguage from '@/locale/useLanguage';
 import { erp } from '@/redux/erp/actions';
+import { request } from '@/request';
 
 import { generate as uniqueId } from 'shortid';
 
@@ -98,6 +100,16 @@ export default function ReadItem({ config, selectedItem }) {
   const [itemslist, setItemsList] = useState([]);
   const [currentErp, setCurrentErp] = useState(selectedItem ?? resetErp);
   const [client, setClient] = useState({});
+  const [payLoading, setPayLoading] = useState(false);
+
+  const handlePayInvoice = async () => {
+    setPayLoading(true);
+    const data = await request.get({ entity: `invoice/paymentLink/${currentErp._id}` });
+    setPayLoading(false);
+    if (data?.success && data?.result?.url) {
+      window.open(data.result.url, '_blank');
+    }
+  };
 
   useEffect(() => {
     if (currentResult) {
@@ -170,6 +182,15 @@ export default function ReadItem({ config, selectedItem }) {
             icon={<MailOutlined />}
           >
             {translate('Send by Email')}
+          </Button>,
+          <Button
+            key={`${uniqueId()}`}
+            loading={payLoading}
+            onClick={handlePayInvoice}
+            icon={<CreditCardOutlined />}
+            style={{ display: entity === 'invoice' ? 'inline-block' : 'none' }}
+          >
+            {translate('Pay Invoice')}
           </Button>,
           <Button
             key={`${uniqueId()}`}
