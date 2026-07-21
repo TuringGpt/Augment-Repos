@@ -40,6 +40,14 @@ def _parse_args(argv: list[str]):
     parser.add_argument(
         "--stdin", action="store_true", help="whether to pull venom input from stdin"
     )
+    parser.add_argument(
+        "-f",
+        "--format",
+        help="output format: 'bytecode' (default) or 'dot' (Graphviz DOT of the Venom IR)",
+        choices=["bytecode", "dot"],
+        default="bytecode",
+        dest="format",
+    )
 
     args = parser.parse_args(argv)
 
@@ -66,6 +74,11 @@ def _parse_args(argv: list[str]):
 
     flags = VenomOptimizationFlags(level=OptimizationLevel.default())
     run_passes_on(ctx, flags)
+
+    if args.format == "dot":
+        print(ctx.as_graph())
+        return
+
     asm = generate_assembly_experimental(ctx)
     bytecode, _ = generate_bytecode(asm)
     print(f"0x{bytecode.hex()}")
