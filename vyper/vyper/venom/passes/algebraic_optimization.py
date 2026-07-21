@@ -1,4 +1,5 @@
-from vyper.utils import SizeLimits, int_bounds, int_log2, is_power_of_two, wrap256
+from vyper.evm.ints import wrap256
+from vyper.utils import SizeLimits, int_bounds, int_log2, is_power_of_two
 from vyper.venom.analysis.dfg import DFGAnalysis
 from vyper.venom.analysis.liveness import LivenessAnalysis
 from vyper.venom.analysis.variable_range import VariableRangeAnalysis

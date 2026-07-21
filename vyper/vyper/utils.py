@@ -13,6 +13,7 @@ from typing import Generic, Iterable, Iterator, List, Set, TypeVar, Union
 
 from Crypto.Hash import keccak
 
+from vyper.evm.ints import wrap256 as _wrap256
 from vyper.exceptions import CompilerPanic, DecimalOverrideException
 
 _T = TypeVar("_T")
@@ -243,10 +244,7 @@ def int_to_fourbytes(n: int) -> bytes:
 
 
 def wrap256(val: int, signed=False) -> int:
-    ret = val % (2**256)
-    if signed:
-        ret = unsigned_to_signed(ret, 256, strict=True)
-    return ret
+    return _wrap256(val, signed=signed)
 
 
 def signed_to_unsigned(int_, bits, strict=False):
