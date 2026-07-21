@@ -6,6 +6,7 @@ const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
 const schema = require('./schemaValidate');
+const handleDuplicateInvoiceNumber = require('./handleDuplicateInvoiceNumber');
 
 const update = async (req, res) => {
   let body = req.body;
@@ -67,9 +68,14 @@ const update = async (req, res) => {
     calculate.sub(total, discount) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
   body['paymentStatus'] = paymentStatus;
 
-  const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
-    new: true, // return the new result instead of the old one
-  }).exec();
+  let result;
+  try {
+    result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
+      new: true, // return the new result instead of the old one
+    }).exec();
+  } catch (error) {
+    return handleDuplicateInvoiceNumber(error, res);
+  }
 
   // Returning successfull response
 
