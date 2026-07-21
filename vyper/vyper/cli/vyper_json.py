@@ -34,6 +34,7 @@ TRANSLATE_MAP = {
     "ir_runtime": "ir_runtime_dict",
     "metadata": "metadata",
     "layout": "layout",
+    "storageLayout": "storage_layout_override",
     "userdoc": "userdoc",
     "cfg": "cfg",
     "cfg_runtime": "cfg_runtime",
@@ -400,6 +401,13 @@ def compile_from_input_dict(
     warnings.simplefilter("always")
     for contract_path in compilation_targets:
         storage_layout_override = storage_layout_overrides.get(contract_path)
+        contract_output_formats = output_formats[contract_path]
+        # storage_layout_override is a vyper_json-only synthetic output:
+        # it echoes the user-supplied override and is not produced by the compiler
+        emit_storage_layout_override = "storage_layout_override" in contract_output_formats
+        compiler_output_formats = [
+            f for f in contract_output_formats if f != "storage_layout_override"
+        ]
         with warnings.catch_warnings(record=True) as caught_warnings:
             try:
                 # use load_file to get a unique source_id
@@ -408,7 +416,7 @@ def compile_from_input_dict(
                 data = vyper.compile_from_file_input(
                     file,
                     input_bundle=input_bundle,
-                    output_formats=output_formats[contract_path],
+                    output_formats=compiler_output_formats,
                     storage_layout_override=storage_layout_override,
                     integrity_sum=integrity,
                     settings=settings,
@@ -416,6 +424,8 @@ def compile_from_input_dict(
                 )
                 assert isinstance(data, dict)
                 data["source_id"] = file.source_id
+                if emit_storage_layout_override and storage_layout_override is not None:
+                    data["storage_layout_override"] = storage_layout_override.data
             except Exception as exc:
                 return exc_handler(contract_path, exc, "compiler"), {}
             res[contract_path] = data
@@ -451,6 +461,9 @@ def format_to_output_dict(compiler_data: dict) -> dict:
 
         if "layout" in data:
             output_contracts["layout"] = data["layout"]
+
+        if "storage_layout_override" in data:
+            output_contracts["storageLayout"] = data["storage_layout_override"]
 
         if "method_identifiers" in data:
             output_contracts["evm"] = {"methodIdentifiers": data["method_identifiers"]}
