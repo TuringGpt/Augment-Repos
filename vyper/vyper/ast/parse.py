@@ -1,6 +1,5 @@
 import ast as python_ast
 import copy
-import pickle
 import tokenize
 from decimal import Decimal
 from functools import cached_property
@@ -159,11 +158,6 @@ def annotate_python_ast(
     visitor.visit(parsed_ast)
 
     return parsed_ast
-
-
-def _deepcopy_ast(ast_node: python_ast.AST):
-    # pickle roundtrip is faster than copy.deepcopy() here.
-    return pickle.loads(pickle.dumps(ast_node))
 
 
 class AnnotatingVisitor(python_ast.NodeTransformer):
@@ -335,8 +329,25 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
                 node.col_offset,
             )
 
-        # some kind of black magic. untokenize preserves the line and column
-        # offsets, giving us something like `\
+        node.target = self._parse_for_annotation(annotation_tokens, node.target, node)
+
+        return self.generic_visit(node)
+
+    def _parse_for_annotation(self, annotation_tokens, target, for_node):
+        """
+        Parse the type annotation tokens that the pre-parser stripped out of a
+        Vyper ``for x: T in ...`` loop and return a freshly constructed
+        ``python_ast.AnnAssign`` node that combines ``target`` with the parsed
+        annotation.
+
+        This replaces the previous approach of parsing a synthetic
+        ``"dummy_target:" + annotation`` source string and mutating the
+        resulting ``AnnAssign`` in place, which was fragile because it relied
+        on patching fields of a node that was never meant to survive the
+        parse step.
+        """
+        # untokenize preserves the line and column offsets, giving us
+        # something like `\
         # \
         # \
         #   uint8`
@@ -346,23 +357,24 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
         # (to best understand this, print out annotation_str and
         # self._source_code and compare them side-by-side).
         #
-        # what we do here is add in a dummy target which we will remove
-        # in a bit, but for now lets us keep the line/col offset, and
-        # *also* gives us a valid AST. it doesn't matter what the dummy
-        # target name is, since it gets removed in a few lines.
-        annotation_str = tokenize.untokenize(annotation_tokens)
-        annotation_str = "dummy_target:" + annotation_str
+        # we prepend a dummy target so that the resulting source parses as a
+        # valid AnnAssign while preserving the original line/col offsets of
+        # the annotation tokens. the dummy target itself is discarded; only
+        # the parsed annotation expression is reused.
+        annotation_str = "dummy_target:" + tokenize.untokenize(annotation_tokens)
 
         try:
-            fake_node = python_ast.parse(annotation_str).body[0]
-            # do we need to fix location info here?
-            fake_node = _deepcopy_ast(fake_node)
+            parsed = python_ast.parse(annotation_str).body[0]
         except SyntaxError as e:
             raise SyntaxException(
-                "invalid type annotation", self._source_code, node.lineno, node.col_offset
+                "invalid type annotation",
+                self._source_code,
+                for_node.lineno,
+                for_node.col_offset,
             ) from e
+
         # block things like `for x: uint256 = 5 in ...`
-        if (value_node := fake_node.value) is not None:
+        if (value_node := parsed.value) is not None:
             raise SyntaxException(
                 "invalid type annotation",
                 self._source_code,
@@ -370,12 +382,14 @@ class AnnotatingVisitor(python_ast.NodeTransformer):
                 value_node.col_offset,
             )
 
-        # replace the dummy target name with the real target name.
-        fake_node.target = node.target
-        # replace the For node target with the new ann_assign
-        node.target = fake_node
-
-        return self.generic_visit(node)
+        ann_assign = python_ast.AnnAssign(
+            target=target, annotation=parsed.annotation, value=None, simple=1
+        )
+        # anchor the synthesized AnnAssign at the real target's position so
+        # downstream generic_visit() picks up sensible source locations.
+        for field in LINE_INFO_FIELDS:
+            setattr(ann_assign, field, getattr(target, field))
+        return ann_assign
 
     def visit_Expr(self, node):
         """
