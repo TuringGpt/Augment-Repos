@@ -795,6 +795,51 @@ def test_sccp_underflow_sub():
     assert result == SizeLimits.MAX_UINT256
 
 
+def test_sccp_overflow_eq_normalizes_large_literal():
+    """Test comparisons normalize operands with wrap256 before folding."""
+    large_val = 2**256 + 1
+
+    pre = f"""
+    _global:
+        %1 = {large_val}
+        %2 = 1
+        %3 = eq %1, %2
+        sink %3
+    """
+    post = f"""
+    _global:
+        %1 = {large_val}
+        %2 = 1
+        %3 = eq {large_val}, 1
+        sink 1
+    """
+
+    _check_pre_post(pre, post, hevm=False)
+
+
+def test_sccp_overflow_not_normalizes_large_literal():
+    """Test unary folding wraps oversized literals to uint256 first."""
+    from vyper.utils import SizeLimits
+
+    large_val = 2**300 + 0x1234
+    expected = SizeLimits.MAX_UINT256 ^ (large_val % 2**256)
+
+    pre = f"""
+    _global:
+        %1 = {large_val}
+        %2 = not %1
+        sink %2
+    """
+    post = f"""
+    _global:
+        %1 = {large_val}
+        %2 = not {large_val}
+        sink {expected}
+    """
+
+    _check_pre_post(pre, post, hevm=False)
+
+
 # =============================================================================
 # Signed Operation Tests
 # =============================================================================
