@@ -32,7 +32,7 @@ export default function AutoCompleteAsync({
   const [searching, setSearching] = useState(false);
 
   const [valToSearch, setValToSearch] = useState('');
-  const [debouncedValue, setDebouncedValue] = useState('');
+  const lastRequestedSearch = useRef(null);
 
   const navigate = useNavigate();
 
@@ -54,10 +54,31 @@ export default function AutoCompleteAsync({
 
   const [, cancel] = useDebounce(
     () => {
-      //  setState("Typing stopped");
-      setDebouncedValue(valToSearch);
+      const trimmedSearchValue = valToSearch.trim();
+
+      if (!trimmedSearchValue) {
+        lastRequestedSearch.current = null;
+        setSearching(false);
+        setOptions([]);
+        return;
+      }
+
+      if (trimmedSearchValue === lastRequestedSearch.current) {
+        setSearching(false);
+        return;
+      }
+
+      lastRequestedSearch.current = trimmedSearchValue;
+
+      const options = {
+        q: trimmedSearchValue,
+        fields: searchFields,
+      };
+
+      const callback = asyncSearch(options);
+      onFetch(callback);
     },
-    500,
+    300,
     [valToSearch]
   );
 
@@ -72,35 +93,38 @@ export default function AutoCompleteAsync({
   };
 
   useEffect(() => {
-    const options = {
-      q: debouncedValue,
-      fields: searchFields,
-    };
-    const callback = asyncSearch(options);
-    onFetch(callback);
-
     return () => {
       cancel();
     };
-  }, [debouncedValue]);
+  }, []);
 
   const onSearch = (searchText) => {
+    const trimmedSearchText = searchText.trim();
+
+    if (!trimmedSearchText) {
+      lastRequestedSearch.current = null;
+      setSearching(false);
+      setOptions([]);
+      setValToSearch('');
+      return;
+    }
+
     isSearching.current = true;
     setSearching(true);
-    // setOptions([]);
-    // setCurrentValue(undefined);
-    setValToSearch(searchText);
+    setValToSearch(trimmedSearchText);
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      setOptions(result);
-    } else {
+    if (!isLoading) {
       setSearching(false);
-      // setCurrentValue(undefined);
-      // setOptions([]);
     }
-  }, [isSuccess, result]);
+
+    if (isSuccess) {
+      setOptions(result || []);
+    } else {
+      setOptions([]);
+    }
+  }, [isLoading, isSuccess, result]);
   useEffect(() => {
     // this for update Form , it's for setField
     if (value && isUpdating.current) {
@@ -123,9 +147,10 @@ export default function AutoCompleteAsync({
       value={currentValue}
       onSearch={onSearch}
       onClear={() => {
-        // setOptions([]);
-        // setCurrentValue(undefined);
+        lastRequestedSearch.current = null;
         setSearching(false);
+        setOptions([]);
+        setValToSearch('');
       }}
       onChange={handleSelectChange}
       style={{ minWidth: '220px' }}
