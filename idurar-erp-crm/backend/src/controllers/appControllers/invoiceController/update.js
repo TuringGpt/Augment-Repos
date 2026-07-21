@@ -4,7 +4,7 @@ const Model = mongoose.model('Invoice');
 
 const custom = require('@/controllers/pdfController');
 
-const { calculate } = require('@/helpers');
+const invoiceService = require('@/services/invoiceService');
 const schema = require('./schemaValidate');
 
 const update = async (req, res) => {
@@ -37,35 +37,22 @@ const update = async (req, res) => {
     });
   }
 
-  // default
-  let subTotal = 0;
-  let taxTotal = 0;
-  let total = 0;
-
-  //Calculate the items array with subTotal, total, taxTotal
-  items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
-    //sub total
-    subTotal = calculate.add(subTotal, total);
-    //item total
-    item['total'] = total;
-  });
-  taxTotal = calculate.multiply(subTotal, taxRate / 100);
-  total = calculate.add(subTotal, taxTotal);
+  // Compute item totals and invoice totals via the service layer
+  const { items: computedItems, subTotal, taxTotal, total } = invoiceService.calculateInvoiceTotals(
+    { items, taxRate }
+  );
 
   body['subTotal'] = subTotal;
   body['taxTotal'] = taxTotal;
   body['total'] = total;
-  body['items'] = items;
+  body['items'] = computedItems;
   body['pdf'] = 'invoice-' + req.params.id + '.pdf';
   if (body.hasOwnProperty('currency')) {
     delete body.currency;
   }
   // Find document by id and updates with the required fields
 
-  let paymentStatus =
-    calculate.sub(total, discount) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
-  body['paymentStatus'] = paymentStatus;
+  body['paymentStatus'] = invoiceService.getUpdatePaymentStatus({ total, discount, credit });
 
   const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
     new: true, // return the new result instead of the old one
