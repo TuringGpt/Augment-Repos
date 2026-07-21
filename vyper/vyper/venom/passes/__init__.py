@@ -7,6 +7,7 @@ from .branch_optimization import BranchOptimizationPass
 from .cfg_normalization import CFGNormalization
 from .common_subexpression_elimination import CSE
 from .concretize_mem_loc import ConcretizeMemLocPass
+from .consecutive_add_folding import ConsecutiveAddFoldingPass
 from .dead_store_elimination import DeadStoreElimination
 from .dft import DFTPass
 from .function_inliner import FunctionInlinerPass
