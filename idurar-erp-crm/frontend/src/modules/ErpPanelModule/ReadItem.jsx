@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Divider } from 'antd';
 
-import { Button, Row, Col, Descriptions, Statistic, Tag } from 'antd';
+import { Button, Row, Col, Descriptions, Statistic, notification } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 import {
   EditOutlined,
@@ -9,6 +9,7 @@ import {
   CloseCircleOutlined,
   RetweetOutlined,
   MailOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,6 +19,7 @@ import { erp } from '@/redux/erp/actions';
 import { generate as uniqueId } from 'shortid';
 
 import { selectCurrentItem } from '@/redux/erp/selectors';
+import { request } from '@/request';
 
 import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
 import { useMoney, useDate } from '@/settings';
@@ -98,6 +100,32 @@ export default function ReadItem({ config, selectedItem }) {
   const [itemslist, setItemsList] = useState([]);
   const [currentErp, setCurrentErp] = useState(selectedItem ?? resetErp);
   const [client, setClient] = useState({});
+  const [isStripeCheckoutLoading, setIsStripeCheckoutLoading] = useState(false);
+
+  const handleStripeCheckout = async () => {
+    if (!currentErp?._id) return;
+
+    setIsStripeCheckoutLoading(true);
+    const data = await request.post({
+      entity: `invoice/stripe-checkout/${currentErp._id}`,
+      jsonData: {},
+    });
+    setIsStripeCheckoutLoading(false);
+
+    if (data?.success && data?.result?.url) {
+      window.location.href = data.result.url;
+      return;
+    }
+
+    if (data?.success === false) {
+      return;
+    }
+
+    notification.error({
+      message: 'Stripe checkout unavailable',
+      description: data?.message || 'Unable to open Stripe checkout for this invoice.',
+    });
+  };
 
   useEffect(() => {
     if (currentResult) {
@@ -171,6 +199,17 @@ export default function ReadItem({ config, selectedItem }) {
           >
             {translate('Send by Email')}
           </Button>,
+          entity === 'invoice' && currentErp.paymentStatus !== 'paid' && (
+            <Button
+              key={`${uniqueId()}`}
+              type="primary"
+              loading={isStripeCheckoutLoading}
+              onClick={handleStripeCheckout}
+              icon={<CreditCardOutlined />}
+            >
+              {translate('Pay with Stripe')}
+            </Button>
+          ),
           <Button
             key={`${uniqueId()}`}
             onClick={() => {
