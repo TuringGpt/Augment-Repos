@@ -25,6 +25,20 @@ def _parse_cli_args():
     return _parse_args(sys.argv[1:])
 
 
+def _print_pass_timings(pass_timings: list[tuple[str, float]]) -> None:
+    if not pass_timings:
+        return
+
+    max_name_len = max(len(pass_name) for pass_name, _ in pass_timings)
+    print("Venom pass timings:", file=sys.stderr)
+    for pass_name, duration_seconds in pass_timings:
+        print(f"  {pass_name:<{max_name_len}} {duration_seconds * 1000:.3f} ms", file=sys.stderr)
+    print(
+        f"  {'total':<{max_name_len}} {sum(t for _, t in pass_timings) * 1000:.3f} ms",
+        file=sys.stderr,
+    )
+
+
 def _parse_args(argv: list[str]):
     parser = argparse.ArgumentParser(
         description="Venom EVM IR parser & compiler", formatter_class=argparse.RawTextHelpFormatter
@@ -39,6 +53,11 @@ def _parse_args(argv: list[str]):
     )
     parser.add_argument(
         "--stdin", action="store_true", help="whether to pull venom input from stdin"
+    )
+    parser.add_argument(
+        "--time-passes",
+        action="store_true",
+        help="print per-pass Venom optimization timings to stderr",
     )
 
     args = parser.parse_args(argv)
@@ -65,7 +84,17 @@ def _parse_args(argv: list[str]):
     check_venom_ctx(ctx)
 
     flags = VenomOptimizationFlags(level=OptimizationLevel.default())
-    run_passes_on(ctx, flags)
+    pass_timings: list[tuple[str, float]] = []
+    pass_timing_callback = None
+    if args.time_passes:
+
+        def _record_pass_timing(pass_name, duration):
+            pass_timings.append((pass_name, duration))
+
+        pass_timing_callback = _record_pass_timing
+
+    run_passes_on(ctx, flags, pass_timing_callback=pass_timing_callback)
+    _print_pass_timings(pass_timings)
     asm = generate_assembly_experimental(ctx)
     bytecode, _ = generate_bytecode(asm)
     print(f"0x{bytecode.hex()}")
