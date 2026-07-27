@@ -1,3 +1,5 @@
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
+
 const remove = async (Model, req, res) => {
   // Find the document by id and delete it
   let updates = {
@@ -23,7 +25,7 @@ const remove = async (Model, req, res) => {
   } else {
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'Successfully Deleted the document ',
     });
   }

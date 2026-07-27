@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('Setting');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const readBySettingKey = async (req, res) => {
   // Find document by id
@@ -29,7 +30,7 @@ const readBySettingKey = async (req, res) => {
     // Return success resposne
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'we found this document by this settingKey: ' + settingKey,
     });
   }

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('Invoice');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const read = async (req, res) => {
   // Find document by id
@@ -21,7 +22,7 @@ const read = async (req, res) => {
     // Return success resposne
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'we found this document ',
     });
   }

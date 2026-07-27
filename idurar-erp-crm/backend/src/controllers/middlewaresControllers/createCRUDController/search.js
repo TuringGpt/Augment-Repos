@@ -1,3 +1,5 @@
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
+
 const search = async (Model, req, res) => {
   // console.log(req.query.fields)
   // if (req.query.q === undefined || req.query.q.trim() === '') {
@@ -30,7 +32,7 @@ const search = async (Model, req, res) => {
   if (results.length >= 1) {
     return res.status(200).json({
       success: true,
-      result: results,
+      result: sanitizeDocument(results),
       message: 'Successfully found all documents',
     });
   } else {

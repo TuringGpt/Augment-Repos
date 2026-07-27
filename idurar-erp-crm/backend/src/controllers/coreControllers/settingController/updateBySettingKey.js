@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('Setting');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const updateBySettingKey = async (req, res) => {
   const settingKey = req.params.settingKey || undefined;
@@ -40,7 +41,7 @@ const updateBySettingKey = async (req, res) => {
   } else {
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'we update this document by this settingKey: ' + settingKey,
     });
   }

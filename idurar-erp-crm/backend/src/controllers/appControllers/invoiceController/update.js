@@ -5,6 +5,7 @@ const Model = mongoose.model('Invoice');
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 const schema = require('./schemaValidate');
 
 const update = async (req, res) => {
@@ -75,7 +76,7 @@ const update = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result,
+    result: sanitizeDocument(result),
     message: 'we update this document ',
   });
 };

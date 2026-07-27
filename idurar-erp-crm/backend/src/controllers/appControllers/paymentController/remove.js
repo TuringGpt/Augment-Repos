@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const Model = mongoose.model('Payment');
 const Invoice = mongoose.model('Invoice');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const remove = async (req, res) => {
   // Find document by id and updates with the required fields
@@ -60,7 +61,7 @@ const remove = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result,
+    result: sanitizeDocument(result),
     message: 'Successfully Deleted the document ',
   });
 };

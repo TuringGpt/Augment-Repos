@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const Model = mongoose.model('Invoice');
 const ModelPayment = mongoose.model('Payment');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const remove = async (req, res) => {
   const deletedInvoice = await Model.findOneAndUpdate(
@@ -29,7 +30,7 @@ const remove = async (req, res) => {
   );
   return res.status(200).json({
     success: true,
-    result: deletedInvoice,
+    result: sanitizeDocument(deletedInvoice),
     message: 'Invoice deleted successfully',
   });
 };
