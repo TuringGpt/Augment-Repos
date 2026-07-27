@@ -1,3 +1,5 @@
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
+
 const filter = async (Model, req, res) => {
   if (req.query.filter === undefined || req.query.equal === undefined) {
     return res.status(403).json({
@@ -22,7 +24,7 @@ const filter = async (Model, req, res) => {
     // Return success resposne
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'Successfully found all documents  ',
     });
   }

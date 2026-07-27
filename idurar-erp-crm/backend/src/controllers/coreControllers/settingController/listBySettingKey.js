@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('Setting');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const listBySettingKey = async (req, res) => {
   // Find document by id
@@ -32,7 +33,7 @@ const listBySettingKey = async (req, res) => {
   if (results.length >= 1) {
     return res.status(200).json({
       success: true,
-      result: results,
+      result: sanitizeDocument(results),
       message: 'Successfully found all documents',
     });
   } else {

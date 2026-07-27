@@ -4,6 +4,7 @@ const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
 const { increaseBySettingKey } = require('@/middlewares/settings');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 const schema = require('./schemaValidate');
 
 const create = async (req, res) => {
@@ -66,7 +67,7 @@ const create = async (req, res) => {
   // Returning successfull response
   return res.status(200).json({
     success: true,
-    result: updateResult,
+    result: sanitizeDocument(updateResult),
     message: 'Invoice created successfully',
   });
 };

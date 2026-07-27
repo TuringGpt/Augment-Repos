@@ -5,6 +5,7 @@ const Invoice = mongoose.model('Invoice');
 const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const create = async (req, res) => {
   // Creating a new document in the collection
@@ -78,7 +79,7 @@ const create = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    result: updatePath,
+    result: sanitizeDocument(updatePath),
     message: 'Payment Invoice created successfully',
   });
 };

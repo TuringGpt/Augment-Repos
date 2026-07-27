@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const Model = mongoose.model('Invoice');
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
 
 const paginatedList = async (req, res) => {
   const page = req.query.page || 1;
@@ -50,7 +51,7 @@ const paginatedList = async (req, res) => {
   if (count > 0) {
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       pagination,
       message: 'Successfully found all documents',
     });

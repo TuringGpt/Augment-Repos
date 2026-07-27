@@ -1,3 +1,5 @@
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
+
 const paginatedList = async (Model, req, res) => {
   const page = req.query.page || 1;
   const limit = parseInt(req.query.items) || 10;
@@ -57,7 +59,7 @@ const paginatedList = async (Model, req, res) => {
   if (count > 0) {
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       pagination,
       message: 'Successfully found all documents',
     });

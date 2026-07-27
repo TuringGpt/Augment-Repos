@@ -1,3 +1,5 @@
+const { sanitizeDocument } = require('@/utils/sanitizeResponse');
+
 const read = async (Model, req, res) => {
   // Find document by id
   const result = await Model.findOne({
@@ -15,7 +17,7 @@ const read = async (Model, req, res) => {
     // Return success resposne
     return res.status(200).json({
       success: true,
-      result,
+      result: sanitizeDocument(result),
       message: 'we found this document ',
     });
   }
